@@ -28,4 +28,4 @@ Tellery allows you abstract essential business logic, and reuse it in future con
 
 ## Reporting bugs and contributing code
 
-* Want to report a bug or request a feature? Open an [issue](open an issue in GitHub).
+* Want to report a bug or request a feature? Open an [issue](/issues/new).
