@@ -1,7 +1,7 @@
 # Tellery
 
 
-Tellery helps you organize your ad-hoc analyses and then narrate them in one place.
+Tellery helps you to organize your ad-hoc analysis and then narrate them in one place.
 
 Tellery brings all of your words and data into one flexible surface:
 
@@ -10,8 +10,7 @@ Tellery brings all of your words and data into one flexible surface:
 * [x] 📊 Campaign-oriented dashboard
 * [x] 🙌 Or customize your deliverable for your own needs
 
-Tellery allows you abstract essential business logic, and reuse it in future contexts. You can define a model grasping the nuances of datasets to make explorative analysis organizable. Tellery uses SQL to model data, so you can easily consolidates it in dbt.
-
+Tellery allows you to abstract essential business logic, and reuse it in future contexts. You can define a model grasping the nuances of datasets to make explorative analysis organizable. Tellery uses SQL to model data, so you can easily consolidates it in dbt.
 
 ## Getting started
 
