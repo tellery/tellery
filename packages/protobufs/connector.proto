@@ -1,0 +1,143 @@
+syntax = "proto3";
+
+package tellery.grpc;
+option java_package = "io.tellery.grpc";
+option java_outer_classname = "TelleryGRPCProto";
+option java_multiple_files = true;
+
+import "google/protobuf/empty.proto";
+import "displayType.proto";
+import "sqlType.proto";
+
+service Connector {
+  rpc GetAvailableConfigs(google.protobuf.Empty) returns (AvailableConfigs);
+  rpc GetProfiles(google.protobuf.Empty) returns (Profiles);
+  rpc UpsertProfile(UpsertProfileRequest) returns (Profiles);
+  rpc DeleteProfile(DeleteProfileRequest) returns (Profiles);
+  rpc GetDatabases(GetDatabaseRequest) returns (Databases);
+  rpc GetCollections(GetCollectionRequest) returns (Collections);
+  rpc GetCollectionSchema(GetCollectionSchemaRequest) returns (Schema);
+  rpc Query(SubmitQueryRequest) returns (stream QueryResult);
+  rpc ImportFromFile(ImportRequest) returns (ImportResult);
+}
+
+// Connector Management
+message AvailableConfigs{
+  repeated AvailableConfig availableConfigs = 1;
+}
+
+message AvailableConfig {
+  string type = 1;
+  repeated string optionals = 2;
+  repeated string secretOptionals = 3;
+}
+
+message KVEntry{
+  string key = 1;
+  string value = 2;
+}
+
+message UpsertProfileRequest {
+  string type = 1;
+  string name = 2;
+  Auth auth = 3;
+  string connectionStr = 4;
+  repeated KVEntry optionals = 5;
+}
+
+message DeleteProfileRequest {
+  string name = 1;
+}
+
+// Profile Management
+message Auth {
+  string username = 1;
+  string password = 2;
+}
+
+message ProfileProtobuf {
+  string type = 1;
+  string name = 2;
+  Auth auth = 3;
+  string connectionStr = 4;
+  map<string, string> optionals = 5;
+  repeated string secretOptionals = 6;
+}
+
+message Profiles {
+  repeated ProfileProtobuf profiles = 1;
+}
+
+
+message Databases {
+  repeated string database = 1;
+}
+
+message CollectionField {
+  string collection = 1;
+  oneof schema_exists {
+    string schema = 2;
+  }
+}
+
+message Collections {
+  repeated CollectionField collections = 2;
+}
+
+
+message SchemaField {
+  string name = 1;
+  display.DisplayType displayType = 2;
+  types.SQLType sqlType = 3;
+}
+
+message Schema {
+  repeated SchemaField fields = 1;
+}
+
+message GetDatabaseRequest {
+  string profile = 1;
+}
+
+message GetCollectionRequest {
+  string profile = 1;
+  string database = 2;
+}
+
+message GetCollectionSchemaRequest {
+  string profile = 1;
+  string database = 2;
+  string collection = 3;
+  string schema = 4;
+}
+
+message SubmitQueryRequest {
+  string profile = 1;
+  string sql = 2;
+  string questionId = 3;
+  int32 maxRow = 4;
+}
+
+message QueryResult {
+  oneof current {
+    Schema fields = 1;
+    bytes row = 2;
+    bool truncated = 3;
+  }
+}
+
+message ImportRequest {
+  string profile = 1;
+  string database = 2;
+  string collection = 3;
+  string schema = 4;
+  string url = 5;
+}
+
+message ImportResult {
+  string database = 1;
+  string collection = 2;
+  oneof schema_exists {
+    string schema = 3;
+  }
+}
