@@ -1,0 +1,27 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1" }} networking.k8s.io/v1beta1 {{- else }} extensions/v1beta1 {{- end }}
+kind: Ingress
+metadata:
+ name: {{ template "tellery.fullname" . }}
+ labels:
+    app: {{ template "tellery.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: "{{ .Release.Name }}"
+ annotations:
+   {{- range $key, $value := .Values.ingress.annotations }}
+     {{ $key }}: {{ $value | quote }}
+   {{- end }}
+spec:
+  rules:
+    - host: {{ .Values.ingress.hostname }}
+      http:
+        paths:
+          - path: {{ default "/" .Values.ingress.path | quote }}
+            backend:
+              serviceName: {{ template "tellery.fullname" . }}-server
+              servicePort: {{ template "server.port" . }}
+{{- if .Values.ingress.tls }}
+  tls:
+{{ toYaml .Values.ingress.tls | indent 4 }}
+{{- end }}
+{{- end -}}
