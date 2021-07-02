@@ -31,6 +31,8 @@ abstract class JDBCConnector : BaseConnector() {
             scope.coroutineContext.dataSource.connection
 
 
+    abstract fun buildConnectionStr(profile: Profile): String
+
     open fun additionalConfigurationForDataSource(profile: Profile) {
         this.dataSource.apply {
             maximumPoolSize = 15
@@ -40,7 +42,6 @@ abstract class JDBCConnector : BaseConnector() {
             keepaliveTime = 60 * 1000
         }
     }
-
 
     override fun initByProfile(profile: Profile) {
 
@@ -52,7 +53,7 @@ abstract class JDBCConnector : BaseConnector() {
         }
 
         this.dataSource = HikariDataSource().apply {
-            jdbcUrl = profile.connectionStr
+            jdbcUrl = buildConnectionStr(profile)
             profile.auth?.username?.let {
                 username = it
             }
@@ -62,7 +63,16 @@ abstract class JDBCConnector : BaseConnector() {
             driverClassName = this@JDBCConnector.driverClassName
         }
 
+        this.dataSource.apply {
+            maximumPoolSize = 15
+            minimumIdle = 5
+            connectionTimeout = 5 * 60 * 1000
+            maxLifetime = 15 * 60 * 1000
+            keepaliveTime = 60 * 1000
+        }
+
         this.additionalConfigurationForDataSource(profile)
+
         scope += CoroutineDataSource(this.dataSource)
     }
 

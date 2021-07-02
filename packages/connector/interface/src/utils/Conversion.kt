@@ -15,7 +15,7 @@ import java.time.format.DateTimeParseException
 import java.util.*
 
 val SQLTypeValueMap =
-    Types::class.members.filter { it.isFinal }.associate { Pair(it.call() as Int, it.name) }
+    Types::class.members.filter { it.isFinal }.associate { it.call() as Int to it.name }
 
 fun toSQLType(type: Int): String {
     return SQLTypeValueMap[type] ?: "Unknown"
@@ -79,5 +79,5 @@ fun castToTimestamp(s: String): Timestamp {
 val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd[ HH:mm:ss[.SSS]][ zzz]")
 fun castToDate(s: String): Date {
     val localDate = LocalDate.parse(s, formatter)
-    return (Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant()) as java.sql.Date)
+    return (Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant()) as Date)
 }

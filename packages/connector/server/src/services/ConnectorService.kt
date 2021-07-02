@@ -7,10 +7,12 @@ import com.google.protobuf.Empty
 import io.grpc.Status
 import io.grpc.Metadata
 import io.grpc.StatusRuntimeException
+import io.tellery.annotations.Config
 import io.tellery.common.ConfigManager
 import io.tellery.common.ConnectorManager
 import io.tellery.entities.*
 import io.tellery.grpc.*
+import io.tellery.configs.*
 import io.tellery.types.SQLType
 import io.tellery.utils.DateAsTimestampSerializer
 import io.tellery.utils.toDisplayType
@@ -42,6 +44,8 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
         .registerTypeAdapter(Timestamp::class.java, DateAsTimestampSerializer())
         .create()
 
+    private val secretMask = "**TellerySecretField**"
+
     private fun errorWrapper(e: Exception, decoratedName: String): StatusRuntimeException {
         return when (e) {
             is StatusRuntimeException -> e
@@ -65,14 +69,25 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
         }
     }
 
+    private fun buildConfigFieldFromAnnotation(confAnnotation: Config): ConfigField{
+        return ConfigField {
+            name = confAnnotation.name
+            type = confAnnotation.type.name
+            description = confAnnotation.description
+            hint = confAnnotation.hint
+            required = confAnnotation.required
+            secret = confAnnotation.secret
+        }
+    }
+
     override suspend fun getAvailableConfigs(request: Empty): AvailableConfigs {
         return withErrorWrapper(request) {
             AvailableConfigs {
                 addAllAvailableConfigs(ConnectorManager.getAvailableConfigs().map {
                     AvailableConfig {
                         type = it.type
-                        addAllOptionals(it.optionals)
-                        addAllSecretOptionals(it.secretOptionals)
+                        addAllConfigs(it.jdbcConfigs.map(::buildConfigFieldFromAnnotation))
+                        addAllOptionals(it.optionals.map(::buildConfigFieldFromAnnotation))
                     }
                 })
             }
@@ -82,93 +97,95 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
     private val loadedProfiles: Profiles
         get() = Profiles {
             addAllProfiles(ConnectorManager.getCurrentProfiles().values.map {
-                val (_, optionalFields, secretOptionalFields) = ConnectorManager.getAvailableConfigs()
-                    .find { original -> original.type == it.type }!!
-                val currentOptionals = it.optionals?.filterKeys { key -> optionalFields.contains(key) }
-                val currentSecretOptionals = it.optionals?.keys?.filter { key -> secretOptionalFields.contains(key) }
-                ProfileProtobuf {
+                val connectorMeta = ConnectorManager.getAvailableConfigs().find{cfg -> cfg.type == it.type}!!
+                val secretConfigs = connectorMeta.jdbcConfigs.filter{it.secret}.map{it.name}.toSet()
+                val secretOptionals = connectorMeta.optionals.filter{it.secret}.map{it.name}.toSet()
+                ProfileBody {
 
                     type = it.type
                     name = it.name
-                    connectionStr = it.connectionStr
-
-                    currentOptionals?.let {
-                        putAllOptionals(currentOptionals)
-                    }
-
-                    currentSecretOptionals?.let {
-                        addAllSecretOptionals(currentSecretOptionals)
-                    }
-
                     it.auth?.let {
                         auth = Auth {
                             username = it.username
-                            // For security, the password won't be returned
+                            if (it.password != null) {
+                                password = secretMask
+                            }
                         }
+                    }
+
+                    putAllConfigs(it.configs.entries.associate{ (k, v) ->
+                        if (secretConfigs.contains(k)){
+                            k to secretMask
+                        } else {
+                            k to v
+                        }
+                    })
+
+                    it.optionals?.let{
+                        putAllOptionals(it.entries.associate{ (k, v) ->
+                            if (secretOptionals.contains(k)){
+                                k to secretMask
+                            } else {
+                                k to v
+                            }
+                        })
                     }
                 }
             })
         }
 
 
+    private fun handleSecretField(requestField: String, originalField: String?): String{
+        return if (originalField != null && requestField == secretMask){
+            originalField
+        } else {
+            requestField
+        }
+    }
+
+
     override suspend fun upsertProfile(request: UpsertProfileRequest): Profiles {
         return withErrorWrapper(request) { req ->
-            if (req.name.isNullOrBlank()) {
+            if (req.name.isNullOrBlank() || req.type.isNullOrBlank()) {
                 throw InvalidParamException()
             }
             val originalProfile = ConfigManager.profiles.find { it.name == req.name }
 
-            val (_, optionalFields, secretOptionalFields) = ConnectorManager.getAvailableConfigs()
-                .find { it.type == originalProfile?.type ?: req.type }
-                ?: throw CustomizedException("invalid db type or invalid params")
+            val connectorMeta = ConnectorManager.getAvailableConfigs().find{cfg -> cfg.type == req.type} ?: throw CustomizedException("invalid db type or invalid params")
+            val configFields = connectorMeta.jdbcConfigs.associateBy { it.name }
+            val optionalFields = connectorMeta.optionals.associateBy { it.name }
 
             val optionals =
-                req.optionalsList.filter { optionalFields.contains(it.key) || secretOptionalFields.contains(it.key) }
-                    .associate { Pair(it.key, it.value) }
+                req.optionalsList.filter { optionalFields.contains(it.key) }
+                    .associate { it.key to it.value }
 
-            // distinguish create and update
-            val newProfile = if (originalProfile == null) {
-                //Insertion
-                if (req.type.isNullOrBlank() || req.connectionStr.isNullOrBlank()) {
-                    throw InvalidParamException()
-                }
-                Profile(
-                    req.type,
-                    req.name,
-                    if (req.hasAuth()) {
-                        ConnectionAuth(
-                            req.auth.username,
-                            req.auth.password,
-                        )
-                    } else null,
-                    req.connectionStr,
-                    null,
-                    optionals.filterValues { it.isNotBlank() }
-                )
-            } else {
-                // check if auth has been unset
-                val newAuth = if (req.hasAuth()) {
-                    if (req.auth.username.isNotBlank() || req.auth.password.isNotBlank()) {
-                        ConnectionAuth(
-                            req.auth.username.ifBlank { originalProfile.auth?.username }
-                                ?: throw InvalidParamException(),
-                            req.auth.password.ifBlank { originalProfile.auth?.password }
-                        )
-                    } else null
-                } else originalProfile.auth
+            val configs =
+                req.configsList.filter { configFields.contains(it.key) }.associate { it.key to it.value }
 
-                Profile(
-                    originalProfile.type,
-                    originalProfile.name,
-                    newAuth,
-                    req.connectionStr.ifBlank { originalProfile.connectionStr },
-                    null,
-                    (originalProfile.optionals?.filterKeys { k -> !optionals.containsKey(k) }
-                        ?: mapOf()) + optionals.filterValues { v -> v.isNotBlank() }
-                    // v.isNotBlank() means that value is non-null (in the scenario of grpc)
-                    // null value => corresponding key should be deleted
-                )
+            val requiredKeys = configFields.filterValues{it.required}.map{it.key}
+            // check if required fields appears non-blank
+            if (!configs.filterValues { it.isNotBlank() }.keys.containsAll(requiredKeys)){
+                throw InvalidParamException()
             }
+
+            val newProfile = Profile(
+                req.type,
+                req.name,
+                if(req.hasAuth()) {
+                    ConnectionAuth(
+                        req.auth.username,
+                        handleSecretField(req.auth.password, originalProfile?.auth?.password).ifBlank { null }
+                    )
+                } else null,
+                null,
+                configs.entries.associate{(k, v) ->
+                    k to handleSecretField(v, originalProfile?.configs?.get(k))
+                }.filterValues{it.isNotBlank()},
+                optionals.entries.associate { (k, v)->
+                    k to handleSecretField(v, originalProfile?.optionals?.get(k))
+                }
+
+            )
 
             val newProfiles = ConfigManager.profiles.filter { it.name != req.name } + newProfile
             ConfigManager.saveProfiles(newProfiles)

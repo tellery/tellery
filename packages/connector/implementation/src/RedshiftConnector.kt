@@ -2,8 +2,8 @@ package io.tellery.connectors
 
 import io.tellery.annotations.Connector
 import io.tellery.annotations.HandleImport
-import io.tellery.annotations.OptionalField
-import io.tellery.annotations.Optionals
+import io.tellery.annotations.Config
+import io.tellery.annotations.Config.ConfigType
 import io.tellery.entities.ImportFailureException
 import io.tellery.entities.Profile
 import io.tellery.entities.TypeField
@@ -13,13 +13,19 @@ import io.tellery.utils.toSQLType
 import java.sql.Connection
 
 
-@Connector("jdbc:redshift")
-@Optionals([
-    OptionalField("S3_ACCESS_KEY", isSecret = true),
-    OptionalField("S3_SECRET_KEY", isSecret = true),
-    OptionalField("S3_REGION", isSecret = false),
-    OptionalField("S3_BUCKET", isSecret = false),
-    OptionalField("S3_KEY_PREFIX", isSecret = false),
+@Connector(
+    type="jdbc:redshift",
+    jdbcConfigs = [
+        Config(name="endpoint", type= ConfigType.STRING, description="The endpoint of the Amazon Redshift cluster.", hint="examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com",required=true),
+        Config(name="port", type= ConfigType.NUMBER, description="The port number that you specified when you launched the cluster. If you have a firewall, make sure that this port is open for you to use.", hint="5439",required=true),
+        Config(name="database", type= ConfigType.STRING, description="The logical database to connect to and run queries against.", hint="my_db",required=true),
+    ],
+    optionals = [
+        Config(name="s3AccessKey", type=ConfigType.STRING, description="S3 Access Key ID(for uploading csv)"),
+        Config(name="s3SecretKey", type=ConfigType.STRING, description="S3 Secret Access Key (for uploading csv)", secret=true),
+        Config(name="s3Region", type=ConfigType.STRING, description="S3 region (be the same as your Redshift cluster", hint="us-east-1"),
+        Config(name="s3Bucket", type=ConfigType.STRING, description="S3 bucket (where uploaded csv stores)", hint="tellery"),
+        Config(name="s3keyPrefix", type=ConfigType.STRING, description="S3 key prefix prepends to uploaded csv"),
 ])
 class RedshiftConnector : JDBCConnector() {
     override val driverClassName = "com.amazon.redshift.jdbc42.Driver"
@@ -31,6 +37,13 @@ class RedshiftConnector : JDBCConnector() {
     )
 
     private var s3Client: S3Storage? = null
+
+    override fun buildConnectionStr(profile: Profile): String {
+        val endpoint = profile.configs["endpoint"]
+        val port = profile.configs["port"]
+        val database = profile.configs["database"]
+        return "jdbc:redshift://${endpoint}:${port}/${database}"
+    }
 
     override fun initByProfile(profile: Profile) {
         super.initByProfile(profile)

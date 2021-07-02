@@ -46,9 +46,9 @@ class Cache<K, V>(private val updater: suspend (K) -> V, private val intervalSec
             } catch (err: Exception) {
                 val errCount = exceptionStorage[key]?.second
                 if (errCount == null) {
-                    exceptionStorage[key] = Pair(err, 0)
+                    exceptionStorage[key] = err to 0
                 } else {
-                    exceptionStorage[key] = Pair(err, errCount + 1)
+                    exceptionStorage[key] = err to errCount + 1
                 }
                 if (errCount ?: 0 < 3) {
                     // if err count < 3, allow retry

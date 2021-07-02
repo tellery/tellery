@@ -1,21 +1,38 @@
 package io.tellery.connectors
 
+import io.tellery.annotations.Config
+import io.tellery.annotations.Config.ConfigType
 import io.tellery.annotations.Connector
 import io.tellery.annotations.HandleImport
 import io.tellery.entities.CollectionField
+import io.tellery.entities.Profile
 import io.tellery.entities.TypeField
+import io.tellery.utils.buildOptionalsFromConfigs
 import io.tellery.utils.readCSV
 import io.tellery.utils.toSQLType
 import net.snowflake.client.jdbc.SnowflakeConnection
 import java.sql.Connection
 
 
-@Connector("jdbc:snowflake")
+@Connector(
+    type = "jdbc:snowflake",
+    jdbcConfigs = [
+        Config(name="accountName", type=ConfigType.STRING, description = "your Snowflake account name",hint="xy12345", required=true),
+        Config(name="regionId", type=ConfigType.STRING, description="Your region Id", hint="us-ease-2.aws", required=true),
+        Config(name="role", type=ConfigType.STRING, description="the default access control role to use in the Snowflake session", hint="SYSADMIN"),
+        Config(name="warehouse", type=ConfigType.STRING, description="the virtual warehouse to use once connected by default", hint="COMPUTE_WH")
+])
 class SnowflakeJDBCConnector : JDBCConnector() {
 
     override val driverClassName = "net.snowflake.client.jdbc.SnowflakeDriver"
     override val transactionIsolationLevel = Connection.TRANSACTION_READ_COMMITTED
     override val defaultSchema = null
+
+    override fun buildConnectionStr(profile: Profile): String {
+        val accountName = profile.configs["accountName"]
+        val regionId = profile.configs["regionId"]
+        return "jdbc:snowflake://${accountName}.${regionId}.snowflakecomputing.com/${buildOptionalsFromConfigs(profile.configs.filterKeys { it in setOf("role", "warehouse") })}"
+    }
 
     override fun isDefaultSchema(field: CollectionField): Boolean {
         return field.schema?.let {

@@ -3,23 +3,31 @@
     {
       "type": "jdbc:redshift",
       "name": "redshift",
-      "connectionStr": "jdbc:redshift://examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com:5439/dev",
+      "configs": {
+        "endpoint": "examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com",
+        "port": "5439",
+        "database": "dev"
+      },
       "auth": {
         "username": "a-trivial-user",
         "password": "********"
       },
       "optionals": {
-        "S3_ACCESS_KEY": "AWS_ACCESS_KEY_ID",
-        "S3_SECRET_KEY": "AWS_SECRET_ACCESS_KEY",
-        "S3_REGION": "us-west-2",
-        "S3_BUCKET": "data-warehouse",
-        "S3_KEY_PREFIX": "tellery/uploaded/"
+        "s3AccessKey": "AWS_ACCESS_KEY_ID",
+        "s3SecretKey": "AWS_SECRET_ACCESS_KEY",
+        "s3Region": "us-west-2",
+        "s3Bucket": "data-warehouse",
+        "s3KeyPrefix": "tellery/uploaded/"
       }
     },
     {
       "type": "jdbc:snowflake",
       "name": "snowflake",
-      "connectionStr": "jdbc:snowflake://xy12345.eu-central-1.snowflakecomputing.com/?warehouse=mywh&db=mydb&schema=public",
+      configs: {
+        "accountName": "xy12345",
+        "regionId": "en-central-1",
+        "warehouse": "mywh"
+      },
       "auth": {
         "username": "a-trivial-user",
         "password": "********"

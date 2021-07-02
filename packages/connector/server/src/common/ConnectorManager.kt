@@ -2,7 +2,6 @@ package io.tellery.common
 
 import io.tellery.annotations.Connector
 import io.tellery.annotations.HandleImport
-import io.tellery.annotations.Optionals
 import io.tellery.connectors.BaseConnector
 import io.tellery.entities.Profile
 import io.tellery.entities.ProfileNotFoundException
@@ -22,7 +21,7 @@ object ConnectorManager {
     private var profiles: ConcurrentHashMap<String, Profile> = ConcurrentHashMap()
     private var connectors: ConcurrentHashMap<String, BaseConnector> = ConcurrentHashMap()
     private lateinit var dbTypeToClassMap: Map<String, KClass<out BaseConnector>>
-    private lateinit var availableConfig: List<AvailableConfig>
+    private lateinit var availableConfig: List<Connector>
 
     fun init() {
         loadConnectors()
@@ -33,12 +32,6 @@ object ConnectorManager {
         ConfigManager.registerUpdateHandler { initializeProfile(it) }
         ConfigManager.registerDeleteHandler { offloadProfile(it) }
     }
-
-    data class AvailableConfig(
-        val type: String,
-        val optionals: List<String>,
-        val secretOptionals: List<String>,
-    )
 
     private fun loadConnectors() {
         val loadedConnectorClasses = BaseConnector::class.allSubclasses.filter {
@@ -51,16 +44,7 @@ object ConnectorManager {
 
         logger.info { "Loaded Connectors ${dbTypeToClassMap.keys.joinToString(", ")}" }
         availableConfig = loadedConnectorClasses.map { clazz ->
-            val type = clazz.findAnnotation<Connector>()!!.type
-            val optionals = (clazz.findAnnotation<Optionals>()?.fields ?: emptyArray()).map { field ->
-                Pair(field.name, field.isSecret)
-            }
-
-            AvailableConfig(
-                type,
-                optionals.filter { !it.second }.map { it.first },
-                optionals.filter { it.second }.map { it.first },
-            )
+            clazz.findAnnotation()!!
         }
     }
 
@@ -91,12 +75,21 @@ object ConnectorManager {
                     it.findAnnotation<HandleImport>()!!.type
                 }
                 .mapValues { (_, func) ->
-                    suspend fun(database: String, collection: String, schema: String?, content: ByteArray) {
+                    suspend fun(
+                        database: String,
+                        collection: String,
+                        schema: String?,
+                        content: ByteArray
+                    ) {
                         func.callSuspend(connector, database, collection, schema, content)
                     }
                 }
 
-        logger.info("initialized profile {}; loaded import Handler {}", profile.name, connector.importDispatcher.keys)
+        logger.info(
+            "initialized profile {}; loaded import Handler {}",
+            profile.name,
+            connector.importDispatcher.keys
+        )
     }
 
     suspend fun offloadProfile(profileName: String) {
@@ -110,7 +103,7 @@ object ConnectorManager {
         return profiles
     }
 
-    fun getAvailableConfigs(): List<AvailableConfig> {
+    fun getAvailableConfigs(): List<Connector> {
         return availableConfig
     }
 

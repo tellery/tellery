@@ -22,3 +22,11 @@ fun ByteArray.toBase64(): String {
     return Base64.getEncoder().encodeToString(this)
 }
 
+
+fun buildOptionalsFromConfigs(configs: Map<String, String>): String {
+    return if (configs.isEmpty()){
+        ""
+    }else {
+        "?" + configs.entries.joinToString("&") { (k, v) -> "$k=$v"}
+    }
+}

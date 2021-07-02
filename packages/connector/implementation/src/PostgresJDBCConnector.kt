@@ -1,7 +1,10 @@
 package io.tellery.connectors
 
+import io.tellery.annotations.Config
+import io.tellery.annotations.Config.ConfigType
 import io.tellery.annotations.Connector
 import io.tellery.annotations.HandleImport
+import io.tellery.entities.Profile
 import io.tellery.entities.TypeField
 import io.tellery.utils.readCSV
 import io.tellery.utils.setByType
@@ -9,7 +12,13 @@ import io.tellery.utils.toSQLType
 import java.sql.Connection
 
 
-@Connector("jdbc:postgres")
+@Connector(
+    type = "jdbc:postgres",
+    jdbcConfigs = [
+        Config(name="endpoint", type= ConfigType.STRING, description="The endpoint of your postgreSQL", hint="your-db-hostname-or-ip",required=true),
+        Config(name="port", type= ConfigType.NUMBER, description="The port number of your database. If you have a firewall, make sure that this port is open for you to use.", hint="5432",required=true),
+        Config(name="database", type= ConfigType.STRING, description="The logical database to connect to and run queries against.", hint="my_db",required=true),
+])
 class PostgresJDBCConnector : JDBCConnector() {
 
     override val driverClassName = "org.postgresql.Driver"
@@ -19,6 +28,14 @@ class PostgresJDBCConnector : JDBCConnector() {
         "PG_CATALOG",
         "PG_TOAST",
     )
+
+    override fun buildConnectionStr(profile: Profile): String {
+        val endpoint = profile.configs["endpoint"]
+        val port = profile.configs["port"]
+        val database = profile.configs["database"]
+        return "jdbc:postgresql://${endpoint}:${port}/${database}"
+    }
+
 
     private suspend fun createTable(
         connection: Connection, database: String, collection: String, schema: String?,

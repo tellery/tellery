@@ -1,0 +1,6 @@
+dist/
+src/protobufs
+*.json
+*.md
+OWNERS
+Dockerfile

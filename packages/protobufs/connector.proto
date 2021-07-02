@@ -8,6 +8,7 @@ option java_multiple_files = true;
 import "google/protobuf/empty.proto";
 import "displayType.proto";
 import "sqlType.proto";
+import "config.proto";
 
 service Connector {
   rpc GetAvailableConfigs(google.protobuf.Empty) returns (AvailableConfigs);
@@ -22,15 +23,6 @@ service Connector {
 }
 
 // Connector Management
-message AvailableConfigs{
-  repeated AvailableConfig availableConfigs = 1;
-}
-
-message AvailableConfig {
-  string type = 1;
-  repeated string optionals = 2;
-  repeated string secretOptionals = 3;
-}
 
 message KVEntry{
   string key = 1;
@@ -41,7 +33,7 @@ message UpsertProfileRequest {
   string type = 1;
   string name = 2;
   Auth auth = 3;
-  string connectionStr = 4;
+  repeated KVEntry configs = 4;
   repeated KVEntry optionals = 5;
 }
 
@@ -55,17 +47,16 @@ message Auth {
   string password = 2;
 }
 
-message ProfileProtobuf {
+message ProfileBody {
   string type = 1;
   string name = 2;
   Auth auth = 3;
-  string connectionStr = 4;
+  map<string, string> configs = 4;
   map<string, string> optionals = 5;
-  repeated string secretOptionals = 6;
 }
 
 message Profiles {
-  repeated ProfileProtobuf profiles = 1;
+  repeated ProfileBody profiles = 1;
 }
 
 
