@@ -98,7 +98,7 @@ export default function UserAccount() {
               return
             }
             const { key } = await uploadFile(file, workspace.id)
-            setValue('avatar', fileLoader({ src: key, type: 'IMAGE' }))
+            setValue('avatar', fileLoader({ src: key }))
           }}
         />
         <FormButton

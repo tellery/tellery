@@ -81,7 +81,7 @@ export function WorkspacePreferences() {
               return
             }
             const { key } = await uploadFile(file, workspace.id)
-            setValue('avatar', fileLoader({ src: key, type: 'IMAGE' }))
+            setValue('avatar', fileLoader({ src: key }))
           }}
         />
         <FormButton
