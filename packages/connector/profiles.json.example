@@ -1,0 +1,37 @@
+{
+  "profiles": [
+    {
+      "type": "jdbc:redshift",
+      "name": "redshift",
+      "configs": {
+        "endpoint": "examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com",
+        "port": "5439",
+        "database": "dev"
+      },
+      "auth": {
+        "username": "a-trivial-user",
+        "password": "********"
+      },
+      "optionals": {
+        "s3AccessKey": "AWS_ACCESS_KEY_ID",
+        "s3SecretKey": "AWS_SECRET_ACCESS_KEY",
+        "s3Region": "us-west-2",
+        "s3Bucket": "data-warehouse",
+        "s3KeyPrefix": "tellery/uploaded/"
+      }
+    },
+    {
+      "type": "jdbc:snowflake",
+      "name": "snowflake",
+      configs: {
+        "accountName": "xy12345",
+        "regionId": "en-central-1",
+        "warehouse": "mywh"
+      },
+      "auth": {
+        "username": "a-trivial-user",
+        "password": "********"
+      }
+    }
+  ]
+}

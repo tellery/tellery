@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package tellery.grpc;
+option java_package = "io.tellery.configs";
+option java_outer_classname = "TelleryConfigProto";
+option java_multiple_files = true;
+
+message AvailableConfigs{
+  repeated AvailableConfig availableConfigs = 1;
+}
+
+
+message ConfigField {
+  string name = 1;
+  string type = 2;
+  string description = 3;
+  string hint = 4;
+  bool required = 5;
+  bool secret = 6;
+}
+
+message AvailableConfig {
+  string type = 1;
+  repeated ConfigField configs = 2;
+  repeated ConfigField optionals = 3;
+}

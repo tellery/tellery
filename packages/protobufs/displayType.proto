@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package tellery.display;
+option java_package = "io.tellery.grpc";
+option java_outer_classname = "TelleryDisplayProto";
+option java_multiple_files = true;
+
+enum DisplayType {
+  UNKNOWN = 0;
+  STRING = 1;
+  INT = 2;
+  BIGINT = 3;
+  FLOAT = 4;
+  BYTES = 5;
+  BOOLEAN = 6;
+  BLOB = 7;
+  TIME = 8;
+  STRUCT = 9;
+  ARRAY = 10;
+  DATE = 11;
+}
