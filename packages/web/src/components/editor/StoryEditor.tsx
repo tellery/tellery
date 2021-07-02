@@ -1050,6 +1050,9 @@ const _StoryEditor: React.FC<{
   const pasteHandler = useCallback(
     (e: React.ClipboardEvent<HTMLDivElement>) => {
       if (locked) return
+      if (e.defaultPrevented) {
+        return
+      }
       logger('clipboard', e.clipboardData)
       if (e.clipboardData.files.length) {
         e.stopPropagation()
