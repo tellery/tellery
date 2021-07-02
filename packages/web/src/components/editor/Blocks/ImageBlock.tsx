@@ -78,7 +78,7 @@ export const ImageBlock: React.FC<{
           ref={contentRef}
         >
           {block.content?.fileKey && block.content.imageInfo && (
-            <Image src={fileLoader({ src: block.content.fileKey, type: 'IMAGE' })}></Image>
+            <Image src={fileLoader({ src: block.content.fileKey })}></Image>
           )}
           {readonly === false && (
             <BlockResizer

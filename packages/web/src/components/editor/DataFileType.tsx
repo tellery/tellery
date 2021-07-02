@@ -5,7 +5,7 @@ import { customAlphabet } from 'nanoid'
 import { toast } from 'react-toastify'
 import { Editor, Workspace } from 'types'
 import { fileLoader } from 'utils'
-import { uploadFile } from 'utils/upload'
+import { getImageDimension, uploadFile } from 'utils/upload'
 import { setBlockTranscation } from '../../context/editorTranscations'
 
 export enum DataFileType {
@@ -51,7 +51,7 @@ const File2BlockProcessers: Record<
 > = {
   [DataFileType.CSV]: async (file: File, block: Editor.Block, workspace: Workspace) => {
     const uploadedFile = await uploadFile(file, workspace.id)
-    const fileUrl = fileLoader({ src: uploadedFile.key, type: 'OTHER' })
+    const fileUrl = fileLoader({ src: uploadedFile.key })
     const collectionName = getSafeRandomFileName(file.name)
 
     const res = await importFromCSV({
@@ -96,6 +96,7 @@ const File2BlockProcessers: Record<
     return File2BlockProcessers[DataFileType.CSV](csvFile, block, workspace)
   },
   [DataFileType.IMAGE]: async (file: File, block: Editor.Block, workspace: Workspace) => {
+    const dimensions = await getImageDimension(URL.createObjectURL(file))
     const uploadedFile = await uploadFile(file, workspace.id)
     return setBlockTranscation({
       oldBlock: cloneDeep(block),
@@ -104,10 +105,10 @@ const File2BlockProcessers: Record<
         type: Editor.BlockType.Image,
         content: {
           fileKey: uploadedFile.key,
-          imageInfo: uploadedFile.imageInfo
+          imageInfo: dimensions
         },
         format: {
-          aspectRatio: uploadedFile.imageInfo ? uploadedFile.imageInfo.width / uploadedFile.imageInfo.height : 1,
+          aspectRatio: dimensions.width / dimensions.height,
           width: 1
         }
       }

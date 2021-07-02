@@ -1,5 +1,3 @@
-import type { FileInfo } from 'types'
-
 export const getProvision = async (contentType: string, workspaceId: string) => {
   const res = await fetch(
     `/api/upload/provision?contentType=${encodeURIComponent(contentType)}&workspaceId=${workspaceId}`,
@@ -16,6 +14,20 @@ export const getProvision = async (contentType: string, workspaceId: string) => 
   return provision
 }
 
+export const getImageDimension = (url: string) => {
+  return new Promise<{ width: number; height: number }>((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => {
+      resolve({ width: image.width, height: image.height })
+    }
+
+    image.onerror = (err) => {
+      reject(err)
+    }
+    image.src = url
+  })
+}
+
 export const uploadFile = async (file: Blob, workspaceId: string) => {
   const provision = await getProvision(file.type, workspaceId)
   const formData = new FormData()
@@ -24,15 +36,13 @@ export const uploadFile = async (file: Blob, workspaceId: string) => {
   }
   formData.append('file', file)
   try {
-    const res = await fetch(`${provision.url}`, {
+    await fetch(`${provision.url}`, {
       method: 'post',
       mode: 'cors',
       body: formData
     })
-    const data = (await res.json()) as {
-      file: FileInfo
-    }
-    return { key: provision.key, imageInfo: data.file.imageInfo }
+
+    return { key: `${provision.url}/${provision.key}` }
   } catch (err) {
     console.log(err)
     throw err
