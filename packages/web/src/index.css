@@ -1,0 +1,50 @@
+html {
+  font-size: 16px;
+  line-height: 1.5;
+  font-family: 'Work Sans', -apple-system, 'PingFang SC', BlinkMacSystemFont, 'Helvetica Neue',
+  Helvetica, Segoe UI, Ubuntu, Roboto, Oxygen, Ubuntu, Cantarell,
+  Microsoft YaHei UI, Microsoft YaHei, Source Han Sans CN,
+  'WenQuanYi Micro Hei', sans-serif, 'Apple Color Emoji',
+  'Segoe UI Emoji', 'Segoe UI Symbol'; 
+}
+
+body,
+div,
+nav,
+article,
+section,
+main,
+header,
+footer,
+input,
+form,
+table,
+fieldset,
+textarea,
+ul,
+li,
+span {
+  box-sizing: border-box;
+}
+
+.selection-area {
+  background: rgba(46, 115, 252, 0.11);
+  border-radius: 0.1em;
+}
+
+
+.pseudoAfter:after {
+  color: var(--pseudoAfter--color);
+  content: var(--pseudoAfter--content);
+}
+
+.tippy-box[data-theme~='tellery'] {
+  background-color: transparent;
+  color: none;
+}
+
+/* Safari default user-select is none */
+[contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
+}

@@ -1,0 +1,25 @@
+{
+  "include": ["./src", "./vite.config.ts"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "module": "esnext",
+    "target": "esnext",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "moduleResolution": "node",
+    "jsx": "preserve",
+    "baseUrl": "./src",
+    "paths": {
+      "@app/*": ["*"]
+    },
+    "noEmit": true,
+    /* Additional Options */
+    "strict": true,
+    "skipLibCheck": true,
+    "types": ["mocha"],
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "importsNotUsedAsValues": "error"
+  }
+}

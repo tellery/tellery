@@ -1,0 +1,82 @@
+import { request, updateUser, userConfirm, userGenerate, userLogin, userLogout } from 'api'
+import type { User } from 'hooks/api'
+import invariant from 'invariant'
+import { createContext, useCallback, useContext, useState } from 'react'
+import { useQuery } from 'react-query'
+import { useLocation } from 'react-router-dom'
+
+export function useProvideAuth() {
+  const location = useLocation()
+
+  const [user, setUser] = useState<User>()
+
+  const login = useCallback(async (args: { email: string; password: string }) => {
+    return userLogin(args).then((user) => {
+      setUser(user)
+    })
+  }, [])
+
+  const logout = useCallback(async () => {
+    return userLogout().then((user) => {
+      setUser(user)
+    })
+  }, [])
+
+  const confirm = useCallback((args: { code: string }) => {
+    return userConfirm(args)
+  }, [])
+
+  const generate = useCallback((args: { email: string }) => {
+    return userGenerate(args)
+  }, [])
+
+  const update = useCallback(
+    (args: {
+      avatar?: string | undefined
+      name?: string | undefined
+      newPassword?: string | undefined
+      currentPassword?: string | undefined
+    }) => {
+      return updateUser(args).then((res) => {
+        setUser(res)
+      })
+    },
+    []
+  )
+
+  useQuery(
+    ['user', 'me'],
+    async () => {
+      const { data } = await request.post<User>('/api/users/me')
+      setUser(data)
+      return data
+    },
+    { suspense: false, retry: false, enabled: !['/register', '/confirm'].includes(location.pathname) }
+  )
+
+  return {
+    user,
+    login,
+    logout,
+    confirm,
+    generate,
+    update,
+    setUser
+  }
+}
+
+export const authContext = createContext<ReturnType<typeof useProvideAuth> | null>(null)
+
+export function useAuth() {
+  const context = useContext(authContext)
+  invariant(context, 'context must use in provider')
+  return context
+}
+
+export function useLoggedUser() {
+  const context = useContext(authContext)
+  invariant(context, 'context must use in provider')
+  invariant(context.user, 'context must use in provider')
+
+  return context.user
+}
