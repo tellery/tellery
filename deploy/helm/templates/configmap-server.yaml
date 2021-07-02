@@ -39,7 +39,6 @@ data:
   {{- if .Values.objectStorage.region }}
   OBJECT_STORAGE_REGION: {{ .Values.objectStorage.region }}
   {{- end}}
-  OBJECT_STORAGE_CALLBACK_HOST: {{ .Values.system.web.protocol }}://{{ .Values.system.web.host }}
   EMAIL_USE_TLS: {{ .Values.email.tls | quote }}
   EMAIL_USERNAME: {{ .Values.email.username | quote }}
   EMAIL_PASSWORD: {{ .Values.email.password | quote }}

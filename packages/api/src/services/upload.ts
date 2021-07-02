@@ -6,8 +6,6 @@ import { getObjectStorageByName } from '../clients/objectStorage'
 import { IObjectStorage } from '../clients/objectStorage/interface'
 import { ProvisionBody } from '../types/upload'
 import { canGetWorkspaceData } from '../utils/permission'
-import { FileInfo } from '../types/file'
-import fileService from './file'
 
 export class UploadService {
   private permission: IPermission
@@ -25,17 +23,6 @@ export class UploadService {
   async provision(operatorId: string, workspaceId: string): Promise<ProvisionBody> {
     await canGetWorkspaceData(this.permission, operatorId, workspaceId)
     return this.objectStorage.provision()
-  }
-
-  /**
-   * handling callback of object storage vendor
-   * @param file
-   */
-  async handleCallback(file: FileInfo): Promise<FileInfo> {
-    const sanitizer: (x: FileInfo) => FileInfo = this.objectStorage.sanitize ?? _.identity
-    const sanitizedFile = sanitizer(file)
-    await fileService.save(sanitizedFile)
-    return file
   }
 }
 
