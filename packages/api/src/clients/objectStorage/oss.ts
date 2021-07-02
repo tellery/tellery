@@ -4,7 +4,6 @@ import * as crypto from 'crypto'
 import * as qs from 'querystring'
 import { nanoid } from 'nanoid'
 import { ProvisionBody } from '../../types/upload'
-import { FileInfo } from '../../types/file'
 
 type OSSConfig = {
   type: 'oss'
@@ -45,11 +44,11 @@ function provision(): ProvisionBody {
   }
 }
 
-function getTemporaryUrl(file: FileInfo, opts: { ttl?: number } = {}): string {
-  const { bucket, key } = file
+function getTemporaryUrl(fileKey: string, opts: { ttl?: number } = {}): string {
+  const { bucket } = ossConfig
   const { ttl = 60 * 10 } = opts
   const expires = Math.floor(Date.now() / 1000) + ttl
-  const info = ['GET', '', '', expires, `${bucket}/${key}`].join('\n')
+  const info = ['GET', '', '', expires, `${bucket}/${fileKey}`].join('\n')
   const signature = crypto
     .createHmac('sha1', ossConfig.secretKey)
     .update(Buffer.from(info, 'utf-8'))
