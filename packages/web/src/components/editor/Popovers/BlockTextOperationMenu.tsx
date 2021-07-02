@@ -37,7 +37,6 @@ import {
 import Icon from 'components/kit/Icon'
 import { createTranscation } from 'context/editorTranscations'
 import { AnimatePresence, motion, usePresence } from 'framer-motion'
-import type { SafeToRemove } from 'framer-motion/types/components/AnimatePresence/use-presence'
 import { useBlockSuspense } from 'hooks/api'
 import invariant from 'invariant'
 import { nanoid } from 'nanoid'
@@ -365,7 +364,10 @@ export const BlockTextOperationMenuInner = ({
         e.preventDefault()
         e.stopPropagation()
       }}
-      // transition={Fade}
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+      }}
     >
       <motion.div
         initial={{ opacity: 0, transform: 'scale(0.8)' }}

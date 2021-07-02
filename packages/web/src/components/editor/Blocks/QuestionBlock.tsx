@@ -1,3 +1,5 @@
+import { MenuItemDivider } from '@app/components/MenuItemDivider'
+import { Diagram } from '@app/components/v11n'
 import { css, cx } from '@emotion/css'
 import {
   IconCommonCopy,
@@ -13,7 +15,7 @@ import IconButton from 'components/kit/IconButton'
 import { MenuItem } from 'components/MenuItem'
 import { RefreshButton } from 'components/RefreshButton'
 import { useQuestionEditor } from 'components/StoryQuestionsEditor'
-import { charts, useChart } from 'components/v11n/charts'
+import { charts } from 'components/v11n/charts'
 import { Config, Data, Type } from 'components/v11n/types'
 import copy from 'copy-to-clipboard'
 import dayjs from 'dayjs'
@@ -24,6 +26,7 @@ import { useOnClickOutside, useOnScreen } from 'hooks'
 import { useBlockSuspense, useSnapshot, useUser } from 'hooks/api'
 import { useInterval } from 'hooks/useInterval'
 import { useRefreshSnapshot, useSnapshotMutating } from 'hooks/useStorySnapshotManager'
+import html2canvas from 'html2canvas'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRecoilValue } from 'recoil'
 import { ThemingVariables } from 'styles'
@@ -40,9 +43,7 @@ import { useEditor } from '../hooks'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
 import type { OperationInterface } from '../Popovers/BlockOperationPopover'
 import { IsBlockHovering } from '../store'
-import html2canvas from 'html2canvas'
-import { MenuItemDivider } from '@app/components/MenuItemDivider'
-import { Diagram } from '@app/components/v11n'
+import { TelleryBlockSelectionAtom } from '../store/selection'
 
 export const DEFAULT_QUESTION_BLOCK_ASPECT_RATIO = 16 / 9
 export const DEFAULT_QUESTION_BLOCK_WIDTH = 0.7
@@ -63,6 +64,8 @@ export const QuestionBlock: React.FC<{
   const originalBlock = useBlockSuspense<Editor.QuestionBlock>(block.id)
   const questionEditor = useQuestionEditor()
   const [titleEditing, setTitleEditing] = useState(false)
+  const localSelection = useRecoilValue(TelleryBlockSelectionAtom(block.id))
+  const isFocusing = !!localSelection
 
   useEffect(() => {
     editor?.registerOrUnregisterBlockInstance(block.id, {
@@ -119,7 +122,11 @@ export const QuestionBlock: React.FC<{
       ) : (
         originalBlock && (
           <>
-            <QuestionBlockHeader setTitleEditing={setTitleEditing} titleEditing={titleEditing} block={block} />
+            <QuestionBlockHeader
+              setTitleEditing={setTitleEditing}
+              titleEditing={titleEditing || isFocusing}
+              block={block}
+            />
             <motion.div
               style={{
                 paddingTop: props.blockFormat.paddingTop
