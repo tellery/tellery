@@ -1,0 +1,99 @@
+version: "3.6"
+x-restart-policy: &restart_policy
+  restart: unless-stopped
+x-tellery-defaults: &tellery_defaults
+  restart: on-failure
+  build:
+    context: .
+    dockerfile: tellery-server/Dockerfile
+    args:
+      BASE_IMAGE: ${TELLERY_SERVER_IMAGE}
+  # image: ${tellery_API_IMAGE}
+  depends_on:
+    - redis
+    - postgresql
+  entrypoint:
+    - /bin/sh
+    - -c
+  command:
+    - ./wait-for-it.sh postgresql:5432 -- npm start
+  environment:
+    NODE_ENV: production
+    PG_USERNAME: ${POSTGRES_USERNAME}
+    PG_HOST: postgresql
+    PG_PORT: 5432
+    PG_DATABASE: ${POSTGRES_DB}
+    PG_PASSWORD: ${POSTGRES_PASSWORD}
+    REDIS_URL: redis://redis:6379
+    OBJECT_STORAGE_ENDPOINT: http://minio:9000
+    OBJECT_STORAGE_BUCKET: ${OBJECT_STORAGE_BUCKET}
+    OBJECT_STORAGE_ACCESS_KEY_ID: ${OBJECT_STORAGE_ACCESS_KEY_ID}
+    OBJECT_STORAGE_ACCESS_KEY_SECRET: ${OBJECT_STORAGE_ACCESS_KEY_SECRET}
+    OBJECT_STORAGE_CALLBACK_HOST: ${SERVER_PROTO}://${SERVER_HOST}
+    EMAIL_USE_TLS: ${EMAIL_USE_TLS}
+    EMAIL_USERNAME: ${EMAIL_USERNAME}
+    EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+    EMAIL_PORT: ${EMIAL_PORT}
+    EMAIL_HOST: ${EMIAL_HOST}
+    EMAIL_FROM: ${EMIAL_FROM}
+    SECRET_KEY: ${SECRET_KEY}
+    SERVER_PROTO: ${SERVER_PROTO}
+    SERVER_HOST: ${SERVER_HOST}
+services:
+  minio:
+    image: minio/minio:edge
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command:
+      - server /data
+    volumes:
+      - s3_data:/data
+    ports:
+      - 9000:9000
+  postgresql:
+    <<: *restart_policy
+    image: postgres:10
+    environment:
+      POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      # Using default user "postgres" from sentry/sentry.conf.example.py or value of POSTGRES_USER if provided
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+    volumes:
+      - pg_data:/var/lib/postgresql
+  redis:
+    <<: *restart_policy
+    image: redis:6.2.4
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: redis-cli ping
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 3s
+  migration:
+    <<: *tellery_defaults
+    command:
+      - ./wait-for-it.sh postgresql:5432 -- npm run typeorm schema:sync && npm run typeorm migration:run
+  tellery-server:
+    depends_on:
+      - migration
+    <<: *tellery_defaults
+    ports:
+      - 80:80
+  tellery-connector:
+    <<: *restart_policy
+    image: ${TELLERY_CONNECTOR_IMAGE}
+    ports:
+      - 50051:50051
+volumes:
+  pg_data: {}
+  redis_data: {}
+  s3_data: {}
