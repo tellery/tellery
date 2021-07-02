@@ -20,7 +20,11 @@ type TokenPayload = {
 export class UserService {
   private secretKey: string
 
+  private compatible: boolean
+
   constructor() {
+    // ignore this, this is used for earlier version
+    this.compatible = !!process.env.COMPATIBLE
     this.secretKey = getSecretKey()
   }
 
@@ -146,7 +150,7 @@ export class UserService {
    * visible for testing
    */
   getConvertedPassword(password: string, userId: string) {
-    return md5(this.secretKey + password + userId.substring(0, 8))
+    return md5(this.secretKey + password + (this.compatible ? '' : userId.substring(0, 8)))
   }
 
   async generateToken(user: string): Promise<string> {
