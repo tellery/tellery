@@ -4,7 +4,6 @@ import S3 from 'aws-sdk/clients/s3'
 import { Credentials } from 'aws-sdk'
 
 import { ProvisionBody } from '../../types/upload'
-import { FileInfo } from '../../types/file'
 
 type S3Config = {
   type: 's3'
@@ -41,14 +40,14 @@ function provision(): ProvisionBody {
   }
 }
 
-function getTemporaryUrl(file: FileInfo, opts: { ttl?: number } = {}): string {
-  const { bucket, key } = file
+function getTemporaryUrl(fileKey: string, opts: { ttl?: number } = {}): string {
+  const { bucket } = s3Config
   const { ttl = 60 * 10 } = opts
   const expires = Math.floor(Date.now() / 1000) + ttl
 
   const url = s3Client.getSignedUrl('getObject', {
     Bucket: bucket,
-    Key: key,
+    Key: fileKey,
     Expires: expires,
   })
 
