@@ -20,9 +20,10 @@ async function main() {
   }
 
   return getConnection().transaction(async (t) => {
-    const user = await userService.createUserByEmailsIfNotExist([email], t, AccountStatus.ACTIVE)
-    const md5Pass = userService.getConvertedPassword(password)
-    return t.getRepository(UserEntity).update(user[email].id, { username, password: md5Pass })
+    const users = await userService.createUserByEmailsIfNotExist([email], t, AccountStatus.ACTIVE)
+    const user = users[email]
+    const md5Pass = userService.getConvertedPassword(password, user.id)
+    return t.getRepository(UserEntity).update(user.id, { username, password: md5Pass })
   })
 }
 

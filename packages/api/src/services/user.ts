@@ -25,9 +25,12 @@ export class UserService {
   }
 
   async login(email: string, password: string): Promise<User> {
-    const convertedPassword = this.getConvertedPassword(password)
-    const model = await getRepository(UserEntity).findOne({ email, password: convertedPassword })
+    const model = await getRepository(UserEntity).findOne({ email })
     if (!model) {
+      throw InvalidArgumentError.new('incorrect password')
+    }
+    const convertedPassword = this.getConvertedPassword(password, model.id)
+    if (convertedPassword !== model.password) {
       throw InvalidArgumentError.new('incorrect password')
     }
     return User.fromEntity(model)
@@ -126,9 +129,9 @@ export class UserService {
     if (newPassword) {
       if (
         user.status === AccountStatus.CONFIRMED ||
-        this.getConvertedPassword(currentPassword ?? '') === user.password
+        this.getConvertedPassword(currentPassword ?? '', userId) === user.password
       ) {
-        user.password = this.getConvertedPassword(newPassword)
+        user.password = this.getConvertedPassword(newPassword, userId)
       } else {
         throw InvalidArgumentError.new('current password is not correct')
       }
@@ -142,8 +145,8 @@ export class UserService {
   /**
    * visible for testing
    */
-  getConvertedPassword(password: string) {
-    return md5(this.secretKey + password)
+  getConvertedPassword(password: string, userId: string) {
+    return md5(this.secretKey + password + userId.substring(0, 8))
   }
 
   async generateToken(user: string): Promise<string> {
@@ -152,7 +155,7 @@ export class UserService {
       JSON.stringify({
         userId: user,
         expiresAt: _.now() + 30 * 24 * 3600 * 1000, // 30 days
-        passHash: this.getConvertedPassword(model.password),
+        passHash: this.getConvertedPassword(model.password, user),
       } as TokenPayload),
       this.secretKey,
     )
@@ -172,7 +175,7 @@ export class UserService {
     } catch (_err) {
       throw UnauthorizedError.notExist()
     }
-    const passHash = this.getConvertedPassword(model.password)
+    const passHash = this.getConvertedPassword(model.password, model.id)
     if (passHash !== payload.passHash) {
       throw UnauthorizedError.notLogin()
     }

@@ -45,5 +45,5 @@ test('update user info', async (t) => {
 
   t.is(user.username, 'username')
   t.is(user.status, AccountStatus.ACTIVE)
-  t.is(user.password, userService.getConvertedPassword('newPassword'))
+  t.is(user.password, userService.getConvertedPassword('newPassword', user.id))
 })

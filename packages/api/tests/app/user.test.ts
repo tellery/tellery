@@ -73,15 +73,17 @@ test.serial('post login', async (t: ExecutionContext<any>) => {
   const email = `${nanoid()}@test.com`
   const password = 'Aaa1234567'
 
-  const user = await getRepository(UserEntity)
+  let user = await getRepository(UserEntity)
     .create({
       username: nanoid(),
       avatar: 'https://tellery.io/avatar',
-      password: userService.getConvertedPassword(password),
+      password: '',
       email,
       status: AccountStatus.ACTIVE,
     })
     .save()
+  user.password = userService.getConvertedPassword(password, user.id)
+  user = await user.save()
 
   const resp: any = await got<any>('api/users/login', {
     prefixUrl: t.context.prefixUrl,
@@ -114,15 +116,18 @@ test.serial('post api update user', async (t: ExecutionContext<any>) => {
   const email = `${nanoid()}@test.com`
   const password = 'Aaa1234567'
 
-  const user = await getRepository(UserEntity)
+  let user = await getRepository(UserEntity)
     .create({
       username: nanoid(),
       avatar: 'https://tellery.io/avatar',
-      password: userService.getConvertedPassword(password),
+      password: '',
       email,
       status: AccountStatus.ACTIVE,
     })
     .save()
+
+  user.password = userService.getConvertedPassword(password, user.id)
+  user = await user.save()
 
   // update base info
   const baseInfoResp: any = await got<any>('api/users/update', {
@@ -156,7 +161,7 @@ test.serial('post api update user', async (t: ExecutionContext<any>) => {
 
   const model = await getRepository(UserEntity).findOneOrFail(user.id)
 
-  const newPasswordHash = userService.getConvertedPassword(newPassword)
+  const newPasswordHash = userService.getConvertedPassword(newPassword, model.id)
   t.is(newPasswordHash === model.password, true)
   t.not(resp.headers['set-cookie'], undefined)
 })
