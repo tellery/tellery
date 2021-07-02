@@ -169,10 +169,8 @@ export namespace Editor {
 }
 
 export interface ImageInfo {
-  format: string
   height: number
   width: number
-  size: number
 }
 
 export type FileInfo = {
