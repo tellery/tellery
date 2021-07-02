@@ -402,7 +402,7 @@ export const BlockTextOperationMenuInner = ({
           currentType={currentBlock?.type}
         />
         <VerticalDivider />
-        <AddLinkOperation setInlineEditing={setInlineEditing} markHandler={markHandler} />
+        <AddLinkOperation isParentPresent={isPresent} setInlineEditing={setInlineEditing} markHandler={markHandler} />
 
         <VerticalDivider />
         <OperationButton
@@ -620,6 +620,7 @@ const ToggleTypeOperation = (props: {
 const AddLinkOperation = (props: {
   markHandler: (type: Editor.InlineType, links: string[], isFirstLink: boolean) => void
   setInlineEditing: (editing: boolean) => void
+  isParentPresent: boolean
 }) => {
   const [referenceElement, setReferenceElement] = useState<HTMLElement | null>(null)
   const [open, setOpen] = useState(false)
@@ -633,6 +634,12 @@ const AddLinkOperation = (props: {
       inputRef.current?.focus()
     }
   }, [open, props])
+
+  useEffect(() => {
+    if (props.isParentPresent === false) {
+      setOpen(false)
+    }
+  }, [props.isParentPresent])
 
   return (
     <>
@@ -713,6 +720,9 @@ const AddLinkOperation = (props: {
                 padding: 10px 10px;
                 user-select: none;
               `}
+              onPaste={(e) => {
+                e.stopPropagation()
+              }}
               ref={inputRef}
               onSelect={(e) => {
                 e.preventDefault()

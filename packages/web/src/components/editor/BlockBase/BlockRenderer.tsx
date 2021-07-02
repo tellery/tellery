@@ -76,7 +76,7 @@ export const INLINE_STYLES = new Map([
     Editor.InlineType.Link,
     (...args: string[]): CSSProperties => ({
       cursor: 'pointer',
-      color: 'inherit',
+      color: ThemingVariables.colors.primary[1],
       wordWrap: 'break-word',
       fontWeight: 500,
       textDecoration: 'inherit',
