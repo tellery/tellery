@@ -11,9 +11,8 @@ export const DEFAULT_TITLE = 'Untitled'
 export const FIRST_LINE_OR_LAST_LINE_THERESHOLD = 10
 export const WS_URI = (import.meta.env.VITE_WS_URI as string) ?? '/workspace'
 
-export const fileLoader = ({ src, type = 'IMAGE' }: { src: string; type?: 'IMAGE' | 'MEDIA' | 'OTHER' }) => {
-  const host = import.meta.env.VITE_CDN_HOST
-  return `${host}${src}`
+export const fileLoader = ({ host, src }: { host?: string; src: string }) => {
+  return `${host ?? ''}${src}`
 }
 
 export const queryClient = new QueryClient({

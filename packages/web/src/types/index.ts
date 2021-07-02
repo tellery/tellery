@@ -273,5 +273,6 @@ export type Workspace = {
     connectorId?: string
     dbImportsTo?: string
     profile?: string
+    staicHost?: string
   }
 }

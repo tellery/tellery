@@ -51,7 +51,7 @@ const File2BlockProcessers: Record<
 > = {
   [DataFileType.CSV]: async (file: File, block: Editor.Block, workspace: Workspace) => {
     const uploadedFile = await uploadFile(file, workspace.id)
-    const fileUrl = fileLoader({ src: uploadedFile.key, type: 'OTHER' })
+    const fileUrl = fileLoader({ src: uploadedFile.key, host: workspace.preferences.staicHost })
     const collectionName = getSafeRandomFileName(file.name)
 
     const res = await importFromCSV({
