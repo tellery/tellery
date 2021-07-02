@@ -1,0 +1,7 @@
+yarn.lock
+.*ignore
+Dockerfile
+nginx.conf
+.npmrc
+public/
+assets/

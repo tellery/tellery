@@ -1,0 +1,100 @@
+import { WorkspacePreferences } from '@app/components/WorkspacePreferences'
+import { WorkspaceMembers } from '@app/components/WorkspaceMembers'
+import { WorkspaceDatabases } from '@app/components/WorkspaceDatabases'
+import { css, cx } from '@emotion/css'
+import { useState, useRef } from 'react'
+import { ThemingVariables } from 'styles'
+import { useOnClickOutside } from 'hooks'
+
+enum Tabs {
+  Preferences = 'Preferences',
+  Members = 'Members',
+  Databases = 'Databases'
+}
+
+export default function Workspace(props: { onClose(): void }) {
+  const [tab, setTab] = useState(Tabs.Preferences)
+  const ref = useRef(null)
+  useOnClickOutside(ref, props.onClose)
+
+  return (
+    <div
+      ref={ref}
+      className={css`
+        width: 716px;
+        height: 556px;
+        background: ${ThemingVariables.colors.gray[5]};
+        border-radius: 20px;
+        display: flex;
+        box-shadow: ${ThemingVariables.boxShadows[0]};
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 99999;
+      `}
+    >
+      <div
+        className={css`
+          width: 232px;
+          padding: 32px 16px;
+          border-right: 1px solid ${ThemingVariables.colors.gray[1]};
+        `}
+      >
+        <h1
+          className={css`
+            font-size: 14px;
+            line-height: 16px;
+            font-style: normal;
+            font-weight: normal;
+            margin: 0;
+            color: ${ThemingVariables.colors.text[1]};
+          `}
+        >
+          Tellery
+        </h1>
+        <ul
+          className={css`
+            list-style-type: none;
+            padding-inline-start: 0;
+            margin: 20px 0 0 0;
+          `}
+        >
+          {Object.values(Tabs).map((t) => (
+            <li
+              key={t}
+              className={cx(
+                css`
+                  width: 200px;
+                  height: 36px;
+                  padding: 10px;
+                  margin-top: 10px;
+                  font-size: 14px;
+                  line-height: 16px;
+                  border-radius: 8px;
+                  cursor: pointer;
+                `,
+                t === tab
+                  ? css`
+                      color: ${ThemingVariables.colors.gray[5]};
+                      background: ${ThemingVariables.colors.primary[1]};
+                    `
+                  : css`
+                      color: ${ThemingVariables.colors.text[0]};
+                    `
+              )}
+              onClick={() => {
+                setTab(t)
+              }}
+            >
+              {t}
+            </li>
+          ))}
+        </ul>
+      </div>
+      {tab === Tabs.Preferences ? <WorkspacePreferences /> : null}
+      {tab === Tabs.Members ? <WorkspaceMembers /> : null}
+      {tab === Tabs.Databases ? <WorkspaceDatabases /> : null}
+    </div>
+  )
+}

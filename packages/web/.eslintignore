@@ -1,0 +1,13 @@
+out/
+*.json
+yarn.lock
+package.json
+.prettierignore
+Dockerfile
+nginx.conf
+*.css
+public/
+assets/
+*.md
+node_modules
+react-snowpack

@@ -1,0 +1,101 @@
+import { useWorkspaceDetail } from '@app/hooks/api'
+import { ThemingVariables } from '@app/styles'
+import type { Workspace } from '@app/types'
+import { fileLoader } from '@app/utils'
+import { uploadFile } from '@app/utils/upload'
+import { css } from '@emotion/css'
+import { useRef, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { FormButton } from './kit/FormButton'
+import FormInput from './kit/FormInput'
+import FormLabel from './kit/FormLabel'
+
+export function WorkspacePreferences() {
+  const { data: workspace } = useWorkspaceDetail()
+  const {
+    register,
+    reset,
+    getValues,
+    setValue,
+    formState: { errors },
+    handleSubmit
+  } = useForm<Workspace>({
+    defaultValues: workspace,
+    mode: 'all'
+  })
+  useEffect(() => {
+    reset(workspace)
+  }, [workspace, reset])
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  return (
+    <form
+      className={css`
+        flex: 1;
+        height: 100%;
+        padding: 30px 32px 16px;
+        display: flex;
+        flex-direction: column;
+      `}
+    >
+      <h2
+        className={css`
+          font-weight: 600;
+          font-size: 16px;
+          line-height: 19px;
+          margin: 0;
+          color: ${ThemingVariables.colors.text[0]};
+        `}
+      >
+        Preferences
+      </h2>
+      <div
+        className={css`
+          padding: 24px 0;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-bottom: 1px solid ${ThemingVariables.colors.gray[1]};
+          margin-bottom: 20px;
+        `}
+      >
+        <img
+          src={getValues().avatar}
+          className={css`
+            width: 70px;
+            height: 70px;
+            background: ${ThemingVariables.colors.gray[1]};
+            border-radius: 16px;
+          `}
+        />
+        <input
+          type="file"
+          className={css`
+            display: none;
+          `}
+          accept="image/*"
+          ref={fileInputRef}
+          onChange={async (e) => {
+            const file = e.target.files?.item(0)
+            if (!file || !workspace) {
+              return
+            }
+            const { key } = await uploadFile(file, workspace.id)
+            setValue('avatar', fileLoader({ src: key, type: 'IMAGE' }))
+          }}
+        />
+        <FormButton
+          type="button"
+          variant="secondary"
+          onClick={() => {
+            fileInputRef.current?.click()
+          }}
+        >
+          Upload Photo
+        </FormButton>
+      </div>
+      <FormLabel>Name</FormLabel>
+      <FormInput {...register('name')} />
+    </form>
+  )
+}
