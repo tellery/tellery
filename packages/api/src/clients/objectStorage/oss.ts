@@ -12,27 +12,9 @@ type OSSConfig = {
   accessKey: string
   secretKey: string
   region: string
-  callbackHost: string
 }
 
 const ossConfig = config.get<OSSConfig>('objectStorage')
-
-const fileBody =
-  `{ "key": \${object},` +
-  `  "hash": \${etag},` +
-  `  "bucket": \${bucket},` +
-  `  "size": \${size},` + // number
-  `  "mimeType": \${mimeType},` +
-  `  "imageInfo": {"format":\${imageInfo.format},"height":"\${imageInfo.height}","width":"\${imageInfo.width}"}` + // object
-  '}'
-
-const callback = JSON.stringify({
-  callbackUrl: `${ossConfig.callbackHost}/api/upload/callback`,
-  callbackBody: `{"file":${fileBody}}`,
-  callbackBodyType: 'application/json',
-})
-
-const callbackB64 = Buffer.from(callback, 'utf-8').toString('base64')
 
 function provision(): ProvisionBody {
   const expiresIn = 15 * 60
@@ -54,7 +36,6 @@ function provision(): ProvisionBody {
     key,
     expire: expiresIn.toString(),
     success_action_status: '200',
-    callback: callbackB64,
   }
   return {
     url: `https://${ossConfig.bucket}.${ossConfig.region}.aliyuncs.com`,
@@ -62,22 +43,6 @@ function provision(): ProvisionBody {
     form,
     expiresIn,
   }
-}
-
-function sanitize(file: FileInfo): FileInfo {
-  const { imageInfo } = file
-  if (
-    _.isNil(imageInfo) ||
-    _(['format', 'width', 'height'])
-      .map((prop) => _.isNil(_.get(imageInfo, prop)))
-      .some()
-  ) {
-    return {
-      ...file,
-      imageInfo: undefined,
-    }
-  }
-  return file
 }
 
 function getTemporaryUrl(file: FileInfo, opts: { ttl?: number } = {}): string {
@@ -99,4 +64,4 @@ function getTemporaryUrl(file: FileInfo, opts: { ttl?: number } = {}): string {
   return `https://${ossConfig.bucket}.${ossConfig.region}.aliyuncs.com/$key?${qs.stringify(params)}`
 }
 
-export { provision, sanitize, getTemporaryUrl }
+export { provision, getTemporaryUrl }

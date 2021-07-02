@@ -21,7 +21,6 @@ module.exports = {
     accessKey: process.env.OBJECT_STORAGE_ACCESS_KEY_ID,
     secretKey: process.env.OBJECT_STORAGE_ACCESS_KEY_SECRET,
     region: process.env.OBJECT_STORAGE_REGION,
-    callbackHost: process.env.OBJECT_STORAGE_CALLBACK_HOST,
   },
   email: {
     backend: 'smtp',
