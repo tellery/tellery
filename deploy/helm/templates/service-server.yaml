@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "tellery.fullname" . }}-server
+  annotations:
+   {{- range $key, $value := .Values.server.service.annotations }}
+     {{ $key }}: {{ $value | quote }}
+   {{- end }}
+  labels:
+    app: {{ include "tellery.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: {{ .Release.Name }}
+spec:
+  type: {{ .Values.server.service.type }}
+  ports:
+  - port: {{ .Values.server.service.externalPort }}
+    targetPort: {{ include "server.port" . }}
+    protocol: TCP
+    name: {{ .Values.server.service.name }}
+{{- if and (.Values.server.service.nodePort) (eq .Values.server.service.type "NodePort") }}
+    nodePort: {{ .Values.server.service.nodePort }}
+{{- end }}
+{{- if .Values.server.service.externalIPs }}
+  externalIPs:
+{{ toYaml .Values.server.service.externalIPs | indent 4 }}
+{{- end }}
+  selector:
+    app: {{ include "tellery.fullname" . }}
+    role: server
+  {{- with .Values.server.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}

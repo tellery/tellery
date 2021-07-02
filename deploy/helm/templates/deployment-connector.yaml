@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "tellery.fullname" . }}-connector
+  labels:
+    app: {{ include "tellery.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.connector.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "tellery.fullname" . }}
+      release: {{ .Release.Name }}
+      role: connector
+  template:
+    metadata:
+      annotations:
+        checksum/config.yaml: {{ include (print $.Template.BasePath "/configmap-connector.yaml") . | sha256sum }}
+        {{- if .Values.connector.annotations }}
+{{ toYaml .Values.connector.annotations | indent 8 }}
+        {{- end }}
+      labels:
+        app: {{ include "tellery.fullname" . }}
+        release: {{ .Release.Name }}
+        role: connector
+        {{- if .Values.connector.podLabels }}
+{{ toYaml .Values.connector.podLabels | indent 8 }}
+        {{- end }}
+    spec:
+      affinity:
+        {{- if .Values.connector.affinity }}
+{{ toYaml .Values.connector.affinity | indent 8 }}
+        {{- end }}
+      {{- if .Values.connector.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.connector.nodeSelector | indent 8 }}
+      {{- end }}
+      {{- if .Values.connector.tolerations }}
+      tolerations:
+{{ toYaml .Values.connector.tolerations | indent 8 }}
+      {{- end }}
+      {{- if .Values.images.connector.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.images.connector.imagePullSecrets | indent 8 }}
+      {{- end }}
+      containers:
+      - name: {{ .Chart.Name }}-connector
+        image: {{ include "connector.image" . }}
+        imagePullPolicy: {{ default "IfNotPresent" .Values.images.connector.pullPolicy }}
+        ports:
+        - containerPort: {{ include "connector.port" . }}
+        livenessProbe:
+          tcpSocket:
+            port: {{ include "connector.port" . }}
+          initialDelaySeconds: {{ .Values.connector.probeInitialDelaySeconds }} 
+          timeoutSeconds: 3
+          periodSeconds: 30
+          successThreshold: 1
+          failureThreshold: 5
+        readinessProbe:
+          tcpSocket:
+            port: {{ include "connector.port" . }}
+          initialDelaySeconds: {{ .Values.connector.probeInitialDelaySeconds }} 
+          timeoutSeconds: 3
+          periodSeconds: 30
+          successThreshold: 1
+          failureThreshold: 5
+        resources:
+{{ toYaml .Values.connector.resources | indent 12 }}
