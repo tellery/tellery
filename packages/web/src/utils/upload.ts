@@ -32,7 +32,7 @@ export const uploadFile = async (file: Blob, workspaceId: string) => {
     const data = (await res.json()) as {
       file: FileInfo
     }
-    return { key: provision.key, imageInfo: data.file.imageInfo }
+    return { key: `${provision.url}/${provision.key}`, imageInfo: data.file.imageInfo }
   } catch (err) {
     console.log(err)
     throw err

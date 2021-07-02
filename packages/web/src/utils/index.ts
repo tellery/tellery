@@ -12,8 +12,7 @@ export const FIRST_LINE_OR_LAST_LINE_THERESHOLD = 10
 export const WS_URI = (import.meta.env.VITE_WS_URI as string) ?? '/workspace'
 
 export const fileLoader = ({ src, type = 'IMAGE' }: { src: string; type?: 'IMAGE' | 'MEDIA' | 'OTHER' }) => {
-  const host = import.meta.env.VITE_CDN_HOST
-  return `${host}${src}`
+  return `${src}`
 }
 
 export const queryClient = new QueryClient({
