@@ -1,0 +1,38 @@
+{
+  "protoBuilders": [
+    {
+      "filter": {
+        "excludePath": [
+          "google/*"
+        ]
+      },
+      "unwrapBuilders": true,
+      "useDslMarkers": true
+    }
+  ],
+  "grpcStubExts": [
+    {
+      "supportCoroutines": true
+    }
+  ],
+  "grpcCoroutines": [
+    {}
+  ],
+  "extendableMessages": [
+    {
+      "filter": {
+        "excludePath": [
+          "google/*"
+        ]
+      }
+    }
+  ],
+  "mockServices": [
+    {
+      "implementAsObject": true,
+      "generateServiceList": true,
+      "serviceListPackage": "io.tellery",
+      "serviceListName": "ConnectorMockService"
+    }
+  ]
+}
