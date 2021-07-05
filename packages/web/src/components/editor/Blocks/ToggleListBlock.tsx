@@ -6,7 +6,7 @@ import React, { ReactNode, useCallback, useMemo } from 'react'
 import { ThemingVariables } from 'styles'
 import { Editor, TellerySelectionType } from 'types'
 import { ContentEditable } from '../BlockBase/ContentEditable'
-import { useBlockBehavior } from '../ContentBlock'
+import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import { useEditor } from '../hooks'
 
 export const ToggleListBlock: React.FC<{

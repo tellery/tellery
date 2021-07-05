@@ -1254,7 +1254,7 @@ const _StoryEditor: React.FC<{
                 /* margin-bottom: 10px; */
                 padding: 0;
                 *::selection {
-                  background: ${ThemingVariables.colors.primary[4]};
+                  background-color: ${ThemingVariables.colors.selection[0]};
                 }
                 cursor: text;
                 width: 100%;
