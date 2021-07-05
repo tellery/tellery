@@ -20,8 +20,7 @@ export class QuestionBlock extends Block {
   }
 
   getPlainText(): string | undefined {
-    const title = getPlainTextFromTokens(this.getContent().title)
-    return this.getSql() ? `${title} ${this.getSql()}` : title
+    return getPlainTextFromTokens(this.getContent().title)
   }
 
   private getContent(): QuestionBlockContent {

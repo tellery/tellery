@@ -26,7 +26,7 @@ export interface ISearch {
     skip?: number,
     limit?: number,
   ): Promise<HintData[]>
-  searchBlocksByTitle(
+  searchBlocksBySql(
     text: string,
     filter?: SearchFilter,
     skip?: number,
@@ -68,7 +68,7 @@ export enum SearchableResourceType {
   BLOCK = 'block',
   USER = 'user',
   // internal: this will only search question block's title
-  _QUESTION_BLOCK_TITLE = '_question_title',
+  _QUESTION_BLOCK_SQL = '_question_sql',
 }
 
 export interface SearchFilter {
