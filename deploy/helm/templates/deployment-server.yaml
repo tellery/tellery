@@ -61,7 +61,7 @@ spec:
             name: {{ include "tellery.fullname" . }}-server
         livenessProbe:
           httpGet:
-            path: /liveness
+            path: /api/liveness
             port: {{ include "server.port" . }}
             scheme: HTTP
           initialDelaySeconds: {{ .Values.server.probeInitialDelaySeconds }}
@@ -71,7 +71,7 @@ spec:
           failureThreshold: 3
         readinessProbe:
           httpGet:
-            path: /readiness
+            path: /api/readiness
             port: {{ include "server.port" . }}
             scheme: HTTP
           initialDelaySeconds: {{ .Values.server.probeInitialDelaySeconds }}
