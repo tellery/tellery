@@ -254,7 +254,7 @@ test('search blocks group by storyId', async (t) => {
   await getRepository(BlockEntity).delete([sid, bid])
 })
 
-test('search blocks by title', async (t) => {
+test('search blocks by sql', async (t) => {
   const sid = nanoid()
   const bid = nanoid()
   await getConnection().transaction(async (manager) => {
@@ -280,19 +280,19 @@ test('search blocks by title', async (t) => {
   })
 
   const iSearch = getISearch()
-  // found when searching title
-  const res0 = await iSearch.searchBlocksByTitle('this is')
+  // found when searching sql
+  const res0 = await iSearch.searchBlocksBySql('select')
   t.not(res0.length, 0)
-  t.is(res0[0].highlight.indexOf('<em>th<em>is</em></em> <em>is</em>') >= 0, true)
+  t.is(res0[0].highlight.indexOf('<em>select</em> *') >= 0, true)
   // regex
-  const res1 = await iSearch.searchBlocksByTitle('use')
+  const res1 = await iSearch.searchBlocksBySql('sele')
   t.not(res1.length, 0)
 
-  // not found when searching sql
-  const res2 = await iSearch.searchBlocksByTitle('select')
+  // not found when searching title
+  const res2 = await iSearch.searchBlocksBySql('this')
   t.is(res2.length, 0)
   // regex
-  const res3 = await iSearch.searchBlocksByTitle('sel')
+  const res3 = await iSearch.searchBlocksBySql('th')
   t.is(res3.length, 0)
 
   await getRepository(BlockEntity).delete([bid])
