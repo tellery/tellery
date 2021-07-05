@@ -64,9 +64,9 @@ export class WorkspaceService {
       resetInviteCode?: boolean
     },
   ): Promise<WorkspaceDTO> {
-    const workspace = await getRepository(WorkspaceEntity).findOneOrFail(workspaceId)
+    await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
 
-    await canUpdateWorkspaceData(this.permission, operatorId, workspace)
+    const workspace = await getRepository(WorkspaceEntity).findOneOrFail(workspaceId)
     const { name, avatar, resetInviteCode } = params
     if (name) {
       workspace.name = name
