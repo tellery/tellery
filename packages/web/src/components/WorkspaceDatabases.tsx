@@ -1,9 +1,14 @@
 import { useConnectorsList, useConnectorsListAvailableConfigs, useConnectorsListProfiles } from '@app/hooks/api'
 import { ThemingVariables } from '@app/styles'
-import type { ProfileConfig } from '@app/types'
+import type { AvailableConfig, ProfileConfig } from '@app/types'
 import { css } from '@emotion/css'
-import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { upperFirst } from 'lodash'
+import { useMemo, useEffect } from 'react'
+import { useForm, UseFormRegister } from 'react-hook-form'
+import FormInput from './kit/FormInput'
+import FormLabel from './kit/FormLabel'
+import FormSelect from './kit/FormSelect'
+import FormSwitch from './kit/FormSwitch'
 
 export function WorkspaceDatabases() {
   const { data: connectors } = useConnectorsList()
@@ -26,7 +31,7 @@ export function WorkspaceDatabases() {
 
 function Connector(props: { id: string; url: string; name: string }) {
   const { data: profileConfigs } = useConnectorsListProfiles(props.id)
-  const { register, reset, getValues, setValue, handleSubmit } = useForm<ProfileConfig>({
+  const { register, reset, setValue, handleSubmit, watch } = useForm<ProfileConfig>({
     defaultValues: profileConfigs?.[0],
     mode: 'all'
   })
@@ -34,10 +39,9 @@ function Connector(props: { id: string; url: string; name: string }) {
     reset(profileConfigs?.[0])
   }, [profileConfigs, reset])
   const { data: availableConfigs } = useConnectorsListAvailableConfigs(props.id)
+  const type = watch('type')
+  const availableConfig = useMemo(() => availableConfigs?.find((ac) => ac.type === type), [availableConfigs, type])
 
-  if (!availableConfigs) {
-    return null
-  }
   return (
     <div>
       <h2
@@ -52,17 +56,73 @@ function Connector(props: { id: string; url: string; name: string }) {
         {props.name}
       </h2>
       <form>
-        <select {...register('type')}>
-          {availableConfigs.map((availableConfig) => (
+        <FormSelect
+          className={css`
+            margin-top: 20px;
+            width: 100%;
+          `}
+          {...register('type')}
+        >
+          {availableConfigs?.map((availableConfig) => (
             <option key={availableConfig.type} value={availableConfig.type}>
               {availableConfig.type}
             </option>
           ))}
-        </select>
-        {availableConfigs.map((availableConfig) => (
-          <fieldset key={availableConfig.type}>{JSON.stringify(availableConfig)}</fieldset>
+        </FormSelect>
+        <FormLabel
+          className={css`
+            margin-top: 20px;
+          `}
+        >
+          Username
+        </FormLabel>
+        <FormInput {...register('auth.username')} />
+        <FormLabel
+          className={css`
+            margin-top: 20px;
+          `}
+        >
+          Password
+        </FormLabel>
+        <FormInput {...register('auth.password')} type="password" />
+        {availableConfig?.configs.map((config) => (
+          <Config key={config.name} value={config} prefix="configs" register={register} />
+        ))}
+        {availableConfig?.optionals.map((config) => (
+          <Config key={config.name} value={config} prefix="optionals" register={register} />
         ))}
       </form>
     </div>
+  )
+}
+
+function Config(props: {
+  value: AvailableConfig
+  prefix: 'configs' | 'optionals'
+  register: UseFormRegister<ProfileConfig>
+}) {
+  const { value: config, prefix, register } = props
+
+  return (
+    <>
+      <FormLabel
+        required={config.required}
+        className={css`
+          margin-top: 20px;
+        `}
+      >
+        {upperFirst(config.name)}
+      </FormLabel>
+      {config.type === 'BOOLEAN' ? (
+        <FormSwitch {...register(`${prefix}.${config.name}`)} />
+      ) : (
+        <FormInput
+          {...register(`${prefix}.${config.name}`)}
+          required={config.required}
+          type={config.secret ? 'password' : config.type === 'NUMBER' ? 'number' : 'text'}
+          placeholder={config.hint}
+        />
+      )}
+    </>
   )
 }
