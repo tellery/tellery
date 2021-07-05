@@ -2,9 +2,8 @@ import {
   useConnectorsList,
   useConnectorsListAvailableConfigs,
   useConnectorsListProfiles,
-  useConnectorsUpdateProfile
+  useConnectorsUpsertProfile
 } from '@app/hooks/api'
-import { ThemingVariables } from '@app/styles'
 import type { AvailableConfig, ProfileConfig } from '@app/types'
 import { css } from '@emotion/css'
 import { upperFirst } from 'lodash'
@@ -49,30 +48,27 @@ function Connector(props: { id: string; url: string; name: string }) {
   const { data: availableConfigs } = useConnectorsListAvailableConfigs(props.id)
   const type = watch('type')
   const availableConfig = useMemo(() => availableConfigs?.find((ac) => ac.type === type), [availableConfigs, type])
-  const handleUpdateProfile = useConnectorsUpdateProfile(props.id)
+  const handleUpsertProfile = useConnectorsUpsertProfile(props.id)
 
   return (
     <>
-      <h2
-        className={css`
-          font-weight: 600;
-          font-size: 16px;
-          line-height: 19px;
-          margin: 0;
-          color: ${ThemingVariables.colors.text[0]};
-        `}
-      >
-        {props.name}
-      </h2>
       <form
         className={css`
           flex: 1;
           overflow-y: scroll;
         `}
       >
-        <FormSelect
+        <FormLabel>Name</FormLabel>
+        <FormInput {...register('name')} />
+        <FormLabel
           className={css`
             margin-top: 20px;
+          `}
+        >
+          Type
+        </FormLabel>
+        <FormSelect
+          className={css`
             width: 100%;
           `}
           {...register('type')}
@@ -111,7 +107,8 @@ function Connector(props: { id: string; url: string; name: string }) {
           margin-top: 20px;
         `}
         variant="primary"
-        onClick={handleSubmit(handleUpdateProfile.execute)}
+        onClick={handleSubmit(handleUpsertProfile.execute)}
+        disabled={handleUpsertProfile.status === 'pending'}
       >
         Update
       </FormButton>

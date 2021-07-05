@@ -11,21 +11,20 @@ export default forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElem
       {...props}
       className={cx(
         css`
-          width: 185px;
+          height: 36px;
           border: 1px solid ${ThemingVariables.colors.gray[1]};
           border-radius: 8px;
           outline: none;
           font-style: normal;
           font-weight: normal;
           font-size: 14px;
-          padding: 9px 26px 9px 9px;
+          padding: 0 26px 0 15px;
           appearance: none;
           background-repeat: no-repeat;
           background-position: calc(100% - 4px) 50%;
           cursor: pointer;
           text-overflow: ellipsis;
           display: block;
-          padding-right: 30px;
           background-image: ${SVG2DataURI(IconCommonArrowDropDown)};
           color: ${ThemingVariables.colors.text[0]};
         `,
