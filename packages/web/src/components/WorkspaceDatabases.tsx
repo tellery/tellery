@@ -4,8 +4,6 @@ import { css } from '@emotion/css'
 
 export function WorkspaceDatabases() {
   const { data: connectors } = useConnectorsList()
-  const { data } = useConnectorsListAvailableConfigs(connectors?.[0].id)
-  console.log(data)
 
   return (
     <div
@@ -24,8 +22,14 @@ export function WorkspaceDatabases() {
 }
 
 function Connector(props: { id: string; url: string; name: string }) {
-  const { data } = useConnectorsListProfiles(props.id)
+  const { data: profiles } = useConnectorsListProfiles(props.id)
+  const profile = profiles?.[0]
+  const { data } = useConnectorsListAvailableConfigs(props.id)
+  console.log(data)
 
+  if (!profile) {
+    return null
+  }
   return (
     <div>
       <h2
@@ -39,23 +43,21 @@ function Connector(props: { id: string; url: string; name: string }) {
       >
         {props.name}
       </h2>
-      {data?.map((item) => (
-        <pre
-          key={item.name}
-          className={css`
-            font-size: 13px;
-            line-height: 16px;
-            white-space: pre-wrap;
-            word-break: break-all;
-            background-color: ${ThemingVariables.colors.gray[3]};
-            margin: 20px 0 0 0;
-            padding: 10px;
-            border-radius: 10px;
-          `}
-        >
-          {JSON.stringify(item, null, 2)}
-        </pre>
-      ))}
+      <pre
+        key={profile.name}
+        className={css`
+          font-size: 13px;
+          line-height: 16px;
+          white-space: pre-wrap;
+          word-break: break-all;
+          background-color: ${ThemingVariables.colors.gray[3]};
+          margin: 20px 0 0 0;
+          padding: 10px;
+          border-radius: 10px;
+        `}
+      >
+        {JSON.stringify(profile, null, 2)}
+      </pre>
     </div>
   )
 }

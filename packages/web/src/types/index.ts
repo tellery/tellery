@@ -273,3 +273,12 @@ export type Workspace = {
     profile?: string
   }
 }
+
+export type AvailableConfig = {
+  type: 'STRING' | 'NUMBER' | 'BOOLEAN'
+  name: string
+  hint: string
+  description: string
+  required: boolean
+  secret: boolean
+}
