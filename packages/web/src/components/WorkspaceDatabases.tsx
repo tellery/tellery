@@ -1,4 +1,9 @@
-import { useConnectorsList, useConnectorsListAvailableConfigs, useConnectorsListProfiles } from '@app/hooks/api'
+import {
+  useConnectorsList,
+  useConnectorsListAvailableConfigs,
+  useConnectorsListProfiles,
+  useConnectorsUpdateProfile
+} from '@app/hooks/api'
 import { ThemingVariables } from '@app/styles'
 import type { AvailableConfig, ProfileConfig } from '@app/types'
 import { css } from '@emotion/css'
@@ -9,29 +14,32 @@ import FormInput from './kit/FormInput'
 import FormLabel from './kit/FormLabel'
 import FormSelect from './kit/FormSelect'
 import FormSwitch from './kit/FormSwitch'
+import { FormButton } from './kit/FormButton'
 
 export function WorkspaceDatabases() {
   const { data: connectors } = useConnectorsList()
 
+  if (!connectors?.[0]) {
+    return null
+  }
   return (
     <div
       className={css`
         flex: 1;
         padding: 30px 32px 16px;
         height: 100%;
-        overflow-y: scroll;
+        display: flex;
+        flex-direction: column;
       `}
     >
-      {connectors?.map((connector) => (
-        <Connector key={connector.id} {...connector} />
-      ))}
+      <Connector key={connectors[0].id} {...connectors[0]} />
     </div>
   )
 }
 
 function Connector(props: { id: string; url: string; name: string }) {
   const { data: profileConfigs } = useConnectorsListProfiles(props.id)
-  const { register, reset, setValue, handleSubmit, watch } = useForm<ProfileConfig>({
+  const { register, reset, handleSubmit, watch } = useForm<ProfileConfig>({
     defaultValues: profileConfigs?.[0],
     mode: 'all'
   })
@@ -41,9 +49,10 @@ function Connector(props: { id: string; url: string; name: string }) {
   const { data: availableConfigs } = useConnectorsListAvailableConfigs(props.id)
   const type = watch('type')
   const availableConfig = useMemo(() => availableConfigs?.find((ac) => ac.type === type), [availableConfigs, type])
+  const handleUpdateProfile = useConnectorsUpdateProfile(props.id)
 
   return (
-    <div>
+    <>
       <h2
         className={css`
           font-weight: 600;
@@ -55,7 +64,12 @@ function Connector(props: { id: string; url: string; name: string }) {
       >
         {props.name}
       </h2>
-      <form>
+      <form
+        className={css`
+          flex: 1;
+          overflow-y: scroll;
+        `}
+      >
         <FormSelect
           className={css`
             margin-top: 20px;
@@ -92,7 +106,16 @@ function Connector(props: { id: string; url: string; name: string }) {
           <Config key={config.name} value={config} prefix="optionals" register={register} />
         ))}
       </form>
-    </div>
+      <FormButton
+        className={css`
+          margin-top: 20px;
+        `}
+        variant="primary"
+        onClick={handleSubmit(handleUpdateProfile.execute)}
+      >
+        Update
+      </FormButton>
+    </>
   )
 }
 

@@ -603,6 +603,16 @@ export const useConnectorsListAvailableConfigs = (connectorId?: string) => {
   )
 }
 
+export function useConnectorsUpdateProfile(connectorId: string) {
+  const workspace = useWorkspace()
+  const handleUpdateProfile = useCallback(
+    (payload: ProfileConfig) =>
+      request.post('/api/connectors/updateProfile', { ...payload, workspaceId: workspace.id, connectorId }),
+    [connectorId, workspace.id]
+  )
+  return useAsync(handleUpdateProfile)
+}
+
 export const useAllThoughts = () => {
   const workspace = useWorkspace()
   const result = useQuery(['thought', 'loadAll', workspace], async () => {
