@@ -2,7 +2,7 @@ import { css } from '@emotion/css'
 import { MouseEvent, useEffect, useRef } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import Icon from 'components/kit/Icon'
-import { IconCommonBlock, IconCommonSearch, IconCommonSql, IconCommonStory } from 'assets/icons'
+import { IconCommonBlock, IconCommonSearch, IconCommonSql, IconCommonStoryBlock } from 'assets/icons'
 import { ThemingVariables } from 'styles'
 
 export enum ResultType {
@@ -61,7 +61,7 @@ export function OmniBoxItem(props: {
           {
             [ResultType.BLOCK]: IconCommonBlock,
             [ResultType.QUESTION]: IconCommonSql,
-            [ResultType.STORY]: IconCommonStory,
+            [ResultType.STORY]: IconCommonStoryBlock,
             [ResultType.MORE]: IconCommonSearch
           }[props.item.type]
         }

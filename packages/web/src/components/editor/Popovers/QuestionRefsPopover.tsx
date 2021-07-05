@@ -1,5 +1,5 @@
 import { css } from '@emotion/css'
-import { IconCommonStory } from 'assets/icons'
+import { IconCommonStoryBlock } from 'assets/icons'
 import { BlockTitle } from 'components/editor'
 import { SmallStory } from 'components/SmallStory'
 import { useOpenStory } from 'hooks'
@@ -195,7 +195,7 @@ const StoryRefCell = (props: {
         color: ${ThemingVariables.colors.text[0]};
       `}
     >
-      <IconCommonStory
+      <IconCommonStoryBlock
         className={css`
           margin-right: 8px;
           flex-shrink: 0;

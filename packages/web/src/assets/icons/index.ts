@@ -36,7 +36,7 @@ import IconCommonShare from './common/share.svg?component'
 import IconCommonSql from './common/sql.svg?component'
 import IconCommonStarFill from './common/star_fill.svg?component'
 import IconCommonStar from './common/star.svg?component'
-import IconCommonStory from './common/story.svg?component'
+import IconCommonStoryBlock from './common/story_block.svg?component'
 import IconCommonThoughts from './common/thoughts.svg?component'
 import IconCommonUnlock from './common/unlock.svg?component'
 import IconCommonView from './common/view.svg?component'
@@ -131,7 +131,7 @@ export {
   IconCommonSql,
   IconCommonStarFill,
   IconCommonStar,
-  IconCommonStory,
+  IconCommonStoryBlock,
   IconCommonThoughts,
   IconCommonUnlock,
   IconCommonView,

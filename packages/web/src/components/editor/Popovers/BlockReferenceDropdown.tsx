@@ -1,7 +1,7 @@
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { DEFAULT_TITLE } from '@app/utils'
 import { css } from '@emotion/css'
-import { IconCommonAdd, IconCommonStory } from 'assets/icons'
+import { IconCommonAdd, IconCommonStoryBlock } from 'assets/icons'
 import {
   mergeTokens,
   splitToken,
@@ -179,7 +179,7 @@ export const _BlockReferenceDropdownInner: React.FC<
                   flex-shrink: 0;
                 `}
               >
-                <IconCommonStory />
+                <IconCommonStoryBlock />
               </div>
 
               {story && (
