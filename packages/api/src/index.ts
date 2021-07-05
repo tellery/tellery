@@ -9,6 +9,7 @@ import logger from 'koa-logger'
 import mount from 'koa-mount'
 import serve from 'koa-static'
 import path from 'path'
+import { historyApiFallback } from 'koa2-connect-history-api-fallback'
 
 import { initDatabaseConRetry } from './clients/db/orm'
 import error from './middlewares/error'
@@ -27,7 +28,7 @@ if (!host) {
   process.exit(1)
 }
 
-const staticDirPath = path.join(__dirname, 'assets/images')
+const staticDirPath = path.join(__dirname, 'assets')
 
 const app = new Koa()
   .use(koaBody())
@@ -35,7 +36,9 @@ const app = new Koa()
   .use(logger())
   .use(user)
   .use(router.routes())
-  .use(mount('/api/static', serve(staticDirPath)))
+  .use(mount('/api/static', serve(path.join(staticDirPath, 'images'))))
+  .use(historyApiFallback({ index: '/index.html', whiteList: ['/api'] }))
+  .use(mount('/', serve(path.join(staticDirPath, 'web'))))
 
 const server = createServer(app.callback())
 
