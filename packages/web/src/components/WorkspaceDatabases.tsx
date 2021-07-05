@@ -1,9 +1,11 @@
-import { useConnectorsList, useConnectorsListProfiles } from '@app/hooks/api'
+import { useConnectorsList, useConnectorsListAvailableConfigs, useConnectorsListProfiles } from '@app/hooks/api'
 import { ThemingVariables } from '@app/styles'
 import { css } from '@emotion/css'
 
 export function WorkspaceDatabases() {
   const { data: connectors } = useConnectorsList()
+  const { data } = useConnectorsListAvailableConfigs(connectors?.[0].id)
+  console.log(data)
 
   return (
     <div

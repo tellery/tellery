@@ -582,6 +582,20 @@ export const useConnectorsListProfiles = (connectorId: string) => {
   )
 }
 
+export const useConnectorsListAvailableConfigs = (connectorId?: string) => {
+  const workspace = useWorkspace()
+  return useQuery<{}[]>(
+    ['connector', 'listAvailableConfigs', connectorId, workspace],
+    () =>
+      request
+        .post('/api/connectors/listAvailableConfigs', { connectorId, workspaceId: workspace.id })
+        .then((res) => res.data.configs),
+    {
+      enabled: !!connectorId
+    }
+  )
+}
+
 export const useAllThoughts = () => {
   const workspace = useWorkspace()
   const result = useQuery(['thought', 'loadAll', workspace], async () => {
