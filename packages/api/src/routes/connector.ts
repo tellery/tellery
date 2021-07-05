@@ -343,8 +343,6 @@ async function execute(ctx: Context) {
     await connectorService.cancelQuery(manager, identifier)
   })
 
-  ctx.type = 'application/json'
-
   await withKeepaliveStream(ctx, async (streamResponse) => {
     const queryResultStream = await connectorService.executeSql(
       manager,

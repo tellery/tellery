@@ -22,7 +22,11 @@ export async function withKeepaliveStream(
 ) {
   const streamResponse = new PassThrough()
 
-  ctx.headers['Content-Type'] = 'application/json;charset=utf8'
+  ctx.type = 'application/json'
+  ctx.set({
+    'Cache-Control': 'no-cache',
+    'Content-Encoding': 'identity',
+  })
   ctx.body = streamResponse
 
   const keepAlive = setInterval(() => {
