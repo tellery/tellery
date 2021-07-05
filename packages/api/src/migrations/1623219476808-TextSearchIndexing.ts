@@ -37,7 +37,7 @@ export class TextSearchIndexing1623219476808 implements MigrationInterface {
     await queryRunner.query(
       `CREATE INDEX IF NOT EXISTS ${this.getIndexName(
         cfg,
-      )}_title ON blocks USING GIN (to_tsvector('${p}', "blocks"."content"->>'title')) WHERE type='${
+      )}_sql ON blocks USING GIN (to_tsvector('${p}', "blocks"."content"->>'sql')) WHERE type='${
         BlockType.QUESTION
       }';`,
     )
@@ -53,7 +53,7 @@ export class TextSearchIndexing1623219476808 implements MigrationInterface {
     )
     // create gin index on question blocks
     await queryRunner.query(
-      `CREATE INDEX ${this.regIndexName}_title ON blocks USING GIN(text(${this.textSendFunctionName}("content"->>'title')) gin_trgm_ops);`,
+      `CREATE INDEX ${this.regIndexName}_sql ON blocks USING GIN(text(${this.textSendFunctionName}("content"->>'sql')) gin_trgm_ops);`,
     )
   }
 
@@ -61,7 +61,7 @@ export class TextSearchIndexing1623219476808 implements MigrationInterface {
     const cfg = config.get<PostgreSQLConfig>('postgres')
     // drop index before search configuration, because it depends on search configuration
     await queryRunner.query(`DROP INDEX IF EXISTS ${this.getIndexName(cfg)}`)
-    await queryRunner.query(`DROP INDEX IF EXISTS ${this.getIndexName(cfg)}_title`)
+    await queryRunner.query(`DROP INDEX IF EXISTS ${this.getIndexName(cfg)}_sql`)
 
     if (cfg.searchPlugin && cfg.searchLanguage) {
       await queryRunner.query(`DROP TEXT SEARCH CONFIGURATION IF EXISTS ${cfg.searchLanguage}`)
@@ -69,7 +69,7 @@ export class TextSearchIndexing1623219476808 implements MigrationInterface {
     }
 
     await queryRunner.query(`DROP INDEX IF EXISTS ${this.regIndexName}`)
-    await queryRunner.query(`DROP INDEX IF EXISTS ${this.regIndexName}_title`)
+    await queryRunner.query(`DROP INDEX IF EXISTS ${this.regIndexName}_sql`)
     await queryRunner.query(`DROP FUNCTION IF EXISTS ${this.textSendFunctionName}`)
   }
 
