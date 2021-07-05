@@ -196,7 +196,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
       {
         title: 'Center Align',
         icon: <Icon icon={IconMenuCenterAlign} color={ThemingVariables.colors.text[0]} />,
-        side: <FormSwitch value={block?.format?.textAlign === 'center'} onChange={() => {}} />,
+        side: <FormSwitch checked={block?.format?.textAlign === 'center'} />,
         action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
           e.preventDefault()
           e.stopPropagation()

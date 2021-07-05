@@ -2,7 +2,7 @@ import { css, cx } from '@emotion/css'
 import type { ReactNode } from 'react'
 import { ThemingVariables } from 'styles'
 
-export default function FormLabel(props: { className?: string; children: ReactNode }) {
+export default function FormLabel(props: { className?: string; required?: boolean; children: ReactNode }) {
   return (
     <label
       className={cx(
@@ -18,6 +18,15 @@ export default function FormLabel(props: { className?: string; children: ReactNo
       )}
     >
       {props.children}
+      {props.required ? (
+        <span
+          className={css`
+            color: ${ThemingVariables.colors.negative[0]};
+          `}
+        >
+          &nbsp;*
+        </span>
+      ) : null}
     </label>
   )
 }

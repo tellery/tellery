@@ -19,7 +19,7 @@ import invariant from 'invariant'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { QueryObserverResult, useInfiniteQuery, useMutation, useQuery, UseQueryOptions } from 'react-query'
 import { useRecoilCallback, useRecoilValue, useRecoilValueLoadable, waitForAll } from 'recoil'
-import type { BackLinks, Editor, Snapshot, Story, UserInfo, Workspace } from 'types'
+import type { AvailableConfig, BackLinks, Editor, ProfileConfig, Snapshot, Story, UserInfo, Workspace } from 'types'
 import { queryClient } from 'utils'
 import { emitBlockUpdate } from 'utils/remoteStoreObserver'
 import { TelleryBlockAtom, TelleryUserAtom } from '../store/block'
@@ -444,6 +444,16 @@ export function useWorkspaceDetail() {
   )
 }
 
+export function useWorkspaceUpdate() {
+  const workspace = useWorkspace()
+  const handleUpdate = useCallback(
+    (payload: { name?: string; avatar?: string; resetInviteCode?: boolean }) =>
+      request.post('/api/workspaces/update', { ...payload, workspaceId: workspace.id }),
+    [workspace.id]
+  )
+  return useAsync(handleUpdate)
+}
+
 export function useWorkspaceUpdateRole() {
   const workspace = useWorkspace()
   const handleUpdateRole = useCallback(
@@ -566,20 +576,41 @@ export const useConnectorsList = () => {
 
 export const useConnectorsListProfiles = (connectorId: string) => {
   const workspace = useWorkspace()
-  return useQuery<
-    {
-      type: string
-      name: string
-      username?: string
-      connectionStr: string
-      optionals?: Record<string, string>
-      secretOptionals: string[]
-    }[]
-  >(['connector', 'listProfiles', connectorId, workspace], () =>
+  return useQuery<ProfileConfig[]>(['connector', 'listProfiles', connectorId, workspace], () =>
     request
       .post('/api/connectors/listProfiles', { connectorId, workspaceId: workspace.id })
       .then((res) => res.data.profiles)
   )
+}
+
+export const useConnectorsListAvailableConfigs = (connectorId?: string) => {
+  const workspace = useWorkspace()
+  return useQuery<
+    {
+      type: string
+      configs: AvailableConfig[]
+      optionals: AvailableConfig[]
+    }[]
+  >(
+    ['connector', 'listAvailableConfigs', connectorId, workspace],
+    () =>
+      request
+        .post('/api/connectors/listAvailableConfigs', { connectorId, workspaceId: workspace.id })
+        .then((res) => res.data.configs),
+    {
+      enabled: !!connectorId
+    }
+  )
+}
+
+export function useConnectorsUpsertProfile(connectorId: string) {
+  const workspace = useWorkspace()
+  const handleUpdateProfile = useCallback(
+    (payload: ProfileConfig) =>
+      request.post('/api/connectors/upsertProfile', { ...payload, workspaceId: workspace.id, connectorId }),
+    [connectorId, workspace.id]
+  )
+  return useAsync(handleUpdateProfile)
 }
 
 export const useAllThoughts = () => {

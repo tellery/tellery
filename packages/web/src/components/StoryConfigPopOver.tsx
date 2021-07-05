@@ -104,9 +104,9 @@ export const StoryConfigPopOver: React.FC<{
         onClick={() => {}}
         side={
           <FormSwitch
-            value={!!story?.format?.locked}
-            onChange={(value) => {
-              setStoryFormat('locked', value)
+            checked={!!story?.format?.locked}
+            onChange={(e) => {
+              setStoryFormat('locked', e.target.checked)
             }}
           />
         }
@@ -131,13 +131,13 @@ export const StoryConfigPopOver: React.FC<{
         onClick={() => {}}
         side={
           <FormSwitch
-            value={
+            checked={
               !!story?.permissions?.some((permission) => {
                 return permission.type === 'workspace' && permission.role === 'commentator'
               })
             }
-            onChange={(value) => {
-              setWorkspacePermission(value ? 'commentator' : 'manager')
+            onChange={(e) => {
+              setWorkspacePermission(e.target.checked ? 'commentator' : 'manager')
             }}
           />
         }
@@ -148,9 +148,9 @@ export const StoryConfigPopOver: React.FC<{
         onClick={() => {}}
         side={
           <FormSwitch
-            value={!!story?.format?.showBorder}
-            onChange={(value) => {
-              setStoryFormat('showBorder', value)
+            checked={!!story?.format?.showBorder}
+            onChange={(e) => {
+              setStoryFormat('showBorder', e.target.checked)
             }}
           />
         }
