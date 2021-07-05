@@ -444,6 +444,16 @@ export function useWorkspaceDetail() {
   )
 }
 
+export function useWorkspaceUpdate() {
+  const workspace = useWorkspace()
+  const handleUpdate = useCallback(
+    (payload: { name?: string; avatar?: string; resetInviteCode?: boolean }) =>
+      request.post('/api/workspaces/update', { ...payload, workspaceId: workspace.id }),
+    [workspace.id]
+  )
+  return useAsync(handleUpdate)
+}
+
 export function useWorkspaceUpdateRole() {
   const workspace = useWorkspace()
   const handleUpdateRole = useCallback(
