@@ -1,6 +1,9 @@
 import { useConnectorsList, useConnectorsListAvailableConfigs, useConnectorsListProfiles } from '@app/hooks/api'
 import { ThemingVariables } from '@app/styles'
+import type { ProfileConfig } from '@app/types'
 import { css } from '@emotion/css'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
 
 export function WorkspaceDatabases() {
   const { data: connectors } = useConnectorsList()
@@ -23,10 +26,16 @@ export function WorkspaceDatabases() {
 
 function Connector(props: { id: string; url: string; name: string }) {
   const { data: profileConfigs } = useConnectorsListProfiles(props.id)
-  const profile = profileConfigs?.[0]
+  const { register, reset, getValues, setValue, handleSubmit } = useForm<ProfileConfig>({
+    defaultValues: profileConfigs?.[0],
+    mode: 'all'
+  })
+  useEffect(() => {
+    reset(profileConfigs?.[0])
+  }, [profileConfigs, reset])
   const { data: availableConfigs } = useConnectorsListAvailableConfigs(props.id)
 
-  if (!profile) {
+  if (!availableConfigs) {
     return null
   }
   return (
@@ -43,7 +52,14 @@ function Connector(props: { id: string; url: string; name: string }) {
         {props.name}
       </h2>
       <form>
-        {availableConfigs?.map((availableConfig) => (
+        <select {...register('type')}>
+          {availableConfigs.map((availableConfig) => (
+            <option key={availableConfig.type} value={availableConfig.type}>
+              {availableConfig.type}
+            </option>
+          ))}
+        </select>
+        {availableConfigs.map((availableConfig) => (
           <fieldset key={availableConfig.type}>{JSON.stringify(availableConfig)}</fieldset>
         ))}
       </form>
