@@ -3,7 +3,7 @@ import React from 'react'
 import { ThemingVariables } from 'styles'
 import type { Editor } from 'types'
 import { ContentEditable } from '../BlockBase/ContentEditable'
-import { useBlockBehavior } from '../ContentBlock'
+import { useBlockBehavior } from '../hooks/useBlockBehavior'
 
 export const QuoteBlock: React.FC<{
   block: Editor.Block

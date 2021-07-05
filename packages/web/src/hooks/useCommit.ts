@@ -244,7 +244,7 @@ export const CommitContext = createContext<ReturnType<typeof useCommitProvider> 
 export const useCommit = () => {
   const commit = useContext(CommitContext)
 
-  invariant(commit, 'useCommit must use in context')
+  invariant(commit, 'useCommit must use in context', commit)
 
   return commit
 }
