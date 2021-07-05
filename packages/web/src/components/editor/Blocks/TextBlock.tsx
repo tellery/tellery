@@ -2,7 +2,7 @@ import { css } from '@emotion/css'
 import React, { ReactNode, useEffect, useRef } from 'react'
 import { Editor } from 'types'
 import { ContentEditable, EditableRef } from '../BlockBase/ContentEditable'
-import { useBlockBehavior } from '../ContentBlock'
+import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import { useEditor } from '../hooks'
 
 export const TextBlock: React.FC<{
