@@ -1,6 +1,6 @@
 import { DEFAULT_TITLE } from '@app/utils'
 import { css } from '@emotion/css'
-import { IconCommonAdd, IconCommonSearch, IconCommonStory } from 'assets/icons'
+import { IconCommonAdd, IconCommonSearch, IconCommonStoryBlock } from 'assets/icons'
 import Icon from 'components/kit/Icon'
 import { MenuItem } from 'components/MenuItem'
 import { useQuestionEditor } from 'components/StoryQuestionsEditor'
@@ -64,7 +64,7 @@ export const QuestionSearchResultCell = (props: {
                 border-radius: 8px;
               `}
             >
-              <IconCommonStory />
+              <IconCommonStoryBlock />
             </div>
           }
           isActive={selected}
