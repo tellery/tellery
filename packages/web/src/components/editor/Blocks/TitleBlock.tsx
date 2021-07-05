@@ -1,7 +1,7 @@
 import { css, cx } from '@emotion/css'
 import React from 'react'
 import type { Editor } from 'types'
-import { useBlockBehavior } from '../ContentBlock'
+import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import { ContentEditable } from '../BlockBase/ContentEditable'
 
 export const TitleBlock = (props: { block: Editor.Block }) => {

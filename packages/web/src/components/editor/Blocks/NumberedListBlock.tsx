@@ -3,7 +3,7 @@ import { useBlockSuspense, useMgetBlocks } from 'hooks/api'
 import React, { ReactNode, useMemo } from 'react'
 import { Editor } from 'types'
 import { ContentEditable } from '../BlockBase/ContentEditable'
-import { useBlockBehavior } from '../ContentBlock'
+import { useBlockBehavior } from '../hooks/useBlockBehavior'
 
 const OrderOfBlock: React.FC<{ blockId: string; parentId: string }> = ({ blockId, parentId }) => {
   const parentBlock = useBlockSuspense(parentId)

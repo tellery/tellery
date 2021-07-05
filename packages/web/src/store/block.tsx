@@ -1,5 +1,5 @@
 import { applyTransactionsAsync, Operation, Transcation } from '@app/hooks/useCommit'
-import { fetchBlock, fetchUser, request } from 'api'
+import { fetchBlock, fetchUser } from 'api'
 import debug from 'debug'
 import invariant from 'invariant'
 import { cloneDeep } from 'lodash'
