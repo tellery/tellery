@@ -22,10 +22,9 @@ export function WorkspaceDatabases() {
 }
 
 function Connector(props: { id: string; url: string; name: string }) {
-  const { data: profiles } = useConnectorsListProfiles(props.id)
-  const profile = profiles?.[0]
-  const { data } = useConnectorsListAvailableConfigs(props.id)
-  console.log(data)
+  const { data: profileConfigs } = useConnectorsListProfiles(props.id)
+  const profile = profileConfigs?.[0]
+  const { data: availableConfigs } = useConnectorsListAvailableConfigs(props.id)
 
   if (!profile) {
     return null
@@ -43,21 +42,11 @@ function Connector(props: { id: string; url: string; name: string }) {
       >
         {props.name}
       </h2>
-      <pre
-        key={profile.name}
-        className={css`
-          font-size: 13px;
-          line-height: 16px;
-          white-space: pre-wrap;
-          word-break: break-all;
-          background-color: ${ThemingVariables.colors.gray[3]};
-          margin: 20px 0 0 0;
-          padding: 10px;
-          border-radius: 10px;
-        `}
-      >
-        {JSON.stringify(profile, null, 2)}
-      </pre>
+      <form>
+        {availableConfigs?.map((availableConfig) => (
+          <fieldset key={availableConfig.type}>{JSON.stringify(availableConfig)}</fieldset>
+        ))}
+      </form>
     </div>
   )
 }

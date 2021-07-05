@@ -274,6 +274,17 @@ export type Workspace = {
   }
 }
 
+export type ProfileConfig = {
+  type: string
+  name: string
+  auth?: {
+    username: string
+    password?: string
+  }
+  configs: Record<string, string | number | boolean>
+  optionals?: Record<string, string | number | boolean>
+}
+
 export type AvailableConfig = {
   type: 'STRING' | 'NUMBER' | 'BOOLEAN'
   name: string

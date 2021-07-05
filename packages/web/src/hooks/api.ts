@@ -19,7 +19,7 @@ import invariant from 'invariant'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { QueryObserverResult, useInfiniteQuery, useMutation, useQuery, UseQueryOptions } from 'react-query'
 import { useRecoilCallback, useRecoilValue, useRecoilValueLoadable, waitForAll } from 'recoil'
-import type { AvailableConfig, BackLinks, Editor, Snapshot, Story, UserInfo, Workspace } from 'types'
+import type { AvailableConfig, BackLinks, Editor, ProfileConfig, Snapshot, Story, UserInfo, Workspace } from 'types'
 import { queryClient } from 'utils'
 import { emitBlockUpdate } from 'utils/remoteStoreObserver'
 import { TelleryBlockAtom, TelleryUserAtom } from '../store/block'
@@ -576,16 +576,7 @@ export const useConnectorsList = () => {
 
 export const useConnectorsListProfiles = (connectorId: string) => {
   const workspace = useWorkspace()
-  return useQuery<
-    {
-      type: string
-      name: string
-      username?: string
-      connectionStr: string
-      optionals?: Record<string, string>
-      secretOptionals: string[]
-    }[]
-  >(['connector', 'listProfiles', connectorId, workspace], () =>
+  return useQuery<ProfileConfig[]>(['connector', 'listProfiles', connectorId, workspace], () =>
     request
       .post('/api/connectors/listProfiles', { connectorId, workspaceId: workspace.id })
       .then((res) => res.data.profiles)
