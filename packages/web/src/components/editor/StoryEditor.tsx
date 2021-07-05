@@ -20,7 +20,7 @@ import { useRecoilState } from 'recoil'
 import { BlockSnapshot, getBlockFromSnapshot, useBlockSnapshot } from 'store/block'
 import { ThemingVariables } from 'styles'
 import { Editor, Story, TellerySelection, TellerySelectionType, Thought } from 'types'
-import { isUrl, TELLERY_DATA_MIME_TYPE_BLOCK, TELLERY_DATA_MIME_TYPE_TOKEN } from 'utils'
+import { isUrl, TELLERY_MIME_TYPES } from 'utils'
 import {
   addMark,
   applyTransformOnTokensFromSelectionState,
@@ -1075,8 +1075,8 @@ const _StoryEditor: React.FC<{
           transcations.forEach((transcation) => commit({ transcation, storyId }))
         })
       } else if (e.clipboardData) {
-        const telleryBlockDataStr = e.clipboardData.getData(TELLERY_DATA_MIME_TYPE_BLOCK)
-        const telleryTokenDataStr = e.clipboardData.getData(TELLERY_DATA_MIME_TYPE_TOKEN)
+        const telleryBlockDataStr = e.clipboardData.getData(TELLERY_MIME_TYPES.BLOCKS)
+        const telleryTokenDataStr = e.clipboardData.getData(TELLERY_MIME_TYPES.TOKEN)
         const pureText = e.clipboardData.getData('text/plain')
         if (telleryBlockDataStr) {
           if (!focusingBlockId) return

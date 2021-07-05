@@ -179,7 +179,15 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
         action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
           e.preventDefault()
           e.stopPropagation()
-          copy(`${window.location.protocol}//${window.location.hostname}/story/${block?.storyId}#${block?.id}`)
+          copy(`${window.location.protocol}//${window.location.hostname}/story/${block?.storyId}#${block?.id}`, {
+            onCopy: (clipboardData: DataTransfer) => {
+              // clipboardData.setData(TELLERY_MIME_TYPES.BLOCK_REF, data)
+              // onCopy: (clipboardData) => {
+              //   setClipboardWithFragment({ clipboardData } as React.ClipboardEvent<HTMLDivElement>, snapshot)
+              //   deleteBlockFragmentFromSelection()
+              // }
+            }
+          })
           toast('Link Copied')
         }
       },

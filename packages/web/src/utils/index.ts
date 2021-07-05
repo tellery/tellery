@@ -5,8 +5,13 @@ import { formatRecord } from 'components/v11n/utils'
 import { QueryClient } from 'react-query'
 export const DRAG_HANDLE_WIDTH = 4
 export const test = 1
-export const TELLERY_DATA_MIME_TYPE_BLOCK = 'text/tellery-blocks-v1'
-export const TELLERY_DATA_MIME_TYPE_TOKEN = 'text/tellery-tokens-v1'
+
+export enum TELLERY_MIME_TYPES {
+  BLOCKS = 'text/tellery-blocks-v1',
+  BLOCK_REF = 'text/tellery-block-ref-v1',
+  TOKEN = 'text/tellery-tokens-v1'
+}
+
 export const DEFAULT_TITLE = 'Untitled'
 export const FIRST_LINE_OR_LAST_LINE_THERESHOLD = 10
 export const WS_URI = (import.meta.env.VITE_WS_URI as string) ?? '/workspace'
