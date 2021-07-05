@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import svgToTinyDataUri from 'mini-svg-data-uri'
 import type { FunctionComponent, SVGAttributes } from 'react'
 import { css, cx } from '@emotion/css'
-import { IconFontStory, IconMenuH1, IconMenuH2, IconMenuH3, IconMenuQuote } from 'assets/icons'
+import { IconCommonBlock, IconFontStory, IconMenuH1, IconMenuH2, IconMenuH3, IconMenuQuote } from 'assets/icons'
 
 export function svgColorClassName(color: string, icon: FunctionComponent<SVGAttributes<SVGElement>>) {
   return cx(
@@ -26,6 +26,14 @@ export function svgColorClassName(color: string, icon: FunctionComponent<SVGAttr
           & path {
             stroke: ${color};
             fill: none;
+          }
+        `
+      : undefined,
+    icon.name === IconCommonBlock.name
+      ? css`
+          & rect[height='1.5'] {
+            fill: ${color};
+            stroke: none;
           }
         `
       : undefined,
