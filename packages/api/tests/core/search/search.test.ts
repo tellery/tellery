@@ -49,7 +49,7 @@ class TestISearch implements ISearch {
     return []
   }
 
-  async searchBlocksByTitle(): Promise<HintData[]> {
+  async searchBlocksBySql(): Promise<HintData[]> {
     return []
   }
 }

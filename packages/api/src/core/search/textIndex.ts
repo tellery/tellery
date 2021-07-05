@@ -6,7 +6,7 @@ import BlockEntity from '../../entities/block'
 import { UserEntity } from '../../entities/user'
 import { BlockType } from '../../types/block'
 import { highlight } from '../../utils/helper'
-import { Block, getPlainTextFromTokens } from '../block'
+import { Block } from '../block'
 import { User } from '../user'
 import { HintData, ISearch, SearchFilter } from './interface'
 
@@ -69,14 +69,19 @@ export class TextIndexSearch implements ISearch {
     return this.searchBlocksInternal(text, filter, skip, limit)
   }
 
-  searchBlocksByTitle(
+  searchBlocksBySql(
     text: string,
     filter?: SearchFilter,
     skip?: number,
     limit?: number,
   ): Promise<HintData[]> {
-    return this.searchBlocksInternal(text, filter, skip, limit, `"content"->>'title'`, (b) =>
-      getPlainTextFromTokens(_(b).get('content.title') || []),
+    return this.searchBlocksInternal(
+      text,
+      filter,
+      skip,
+      limit,
+      `"content"->>'sql'`,
+      (b) => _(b).get('content.sql') || '',
     )
   }
 

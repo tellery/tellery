@@ -728,12 +728,13 @@ test.serial('global search', async (t: ExecutionContext<any>) => {
   t.is(_(searchQuestions.results.blocks).keys().value().length, 2)
 })
 
-test.serial('search question blocks by title', async (t: ExecutionContext<any>) => {
+test.serial('search question blocks by sql', async (t: ExecutionContext<any>) => {
   const sid1 = nanoid()
   const qid = nanoid()
   const bid = nanoid()
   // here nanoid() will be word cutting
   const title = `title used for api test ${nanoid()}`
+  const sql = 'select * from order limit 1'
 
   await getConnection().transaction(async (manager) => {
     const bop = new BlockOperation('test', 'test', manager)
@@ -768,7 +769,7 @@ test.serial('search question blocks by title', async (t: ExecutionContext<any>) 
         parentTable: 'workspace',
         content: {
           title: [[title]],
-          sql: 'select * from order limit 1',
+          sql,
         },
         alive: true,
       },
@@ -782,8 +783,8 @@ test.serial('search question blocks by title', async (t: ExecutionContext<any>) 
     method: 'POST',
     json: {
       workspaceId,
-      keyword: title,
-      limit: 20,
+      keyword: 'select',
+      limit: 2000, // large enough
     },
   }).json()
 
@@ -797,13 +798,13 @@ test.serial('search question blocks by title', async (t: ExecutionContext<any>) 
     .map((r) => searchQuestions.results.blocks[r].type)
     .forEach((type) => t.is(type, BlockType.QUESTION))
 
-  // not find with sql
+  // not find with title
   const searchWithoutSql: any = await got<any>('api/questions/search', {
     prefixUrl: t.context.prefixUrl,
     method: 'POST',
     json: {
       workspaceId,
-      keyword: 'select',
+      keyword: title,
       limit: 20,
     },
   }).json()

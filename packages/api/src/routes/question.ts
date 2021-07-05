@@ -22,7 +22,7 @@ async function search(ctx: Context) {
     user.id,
     payload.workspaceId,
     payload.keyword,
-    [SearchableResourceType._QUESTION_BLOCK_TITLE],
+    [SearchableResourceType._QUESTION_BLOCK_SQL],
     payload.limit,
     { ...payload.filters, type: BlockType.QUESTION },
   )
