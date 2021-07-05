@@ -5,10 +5,10 @@ import routes from './routes/index'
 
 const router = new Router()
 
-router.get('/liveness', (ctx) => {
+router.get('/api/liveness', (ctx) => {
   ctx.body = 'OK'
 })
-router.get('/readiness', async (ctx) => {
+router.get('/api/readiness', async (ctx) => {
   try {
     await getRepository(UserEntity).find({
       take: 1,
