@@ -4,7 +4,8 @@ import { css, cx } from '@emotion/css'
 import {
   IconCommonArrowDropDown,
   IconCommonClose,
-  IconCommonLink,
+  IconCommonDownstream,
+  IconCommonError,
   IconCommonRun,
   IconCommonSave,
   IconCommonSql,
@@ -16,7 +17,7 @@ import { Configuration } from 'components/v11n'
 import { dequal } from 'dequal'
 import { motion, useMotionValue, useTransform } from 'framer-motion'
 import { useHover, useOpenStory, usePrevious } from 'hooks'
-import { useBlockSuspense, useExecuteSQL, useSnapshot } from 'hooks/api'
+import { useBlockSuspense, useExecuteSQL, useQuestionDownstreams, useSnapshot } from 'hooks/api'
 import { useLocalStorage } from 'hooks/useLocalStorage'
 import { useSqlEditor } from 'hooks/useSqlEditor'
 import { produce } from 'immer'
@@ -42,9 +43,11 @@ import QuestionReferences from './QuestionReferences'
 import { charts } from './v11n/charts'
 import { Config, Type } from './v11n/types'
 
+type Mode = 'SQL' | 'VIS' | 'DOWNSTREAM'
+
 export interface QuestionEditor {
   close: (arg: string) => Promise<void>
-  open: (arg: { mode: 'SQL' | 'VIS'; readonly: boolean }) => Promise<void>
+  open: (arg: { mode: Mode; readonly: boolean }) => Promise<void>
 }
 
 export const useDraftBlockMutating = (blockId: string) => {
@@ -123,17 +126,7 @@ export const useCleanQuestionEditorHandler = () => {
 export const useOpenQuestionBlockIdHandler = () => {
   const handler = useRecoilCallback(
     (recoilCallback) =>
-      ({
-        mode,
-        readonly,
-        blockId,
-        storyId
-      }: {
-        mode: 'SQL' | 'VIS'
-        blockId: string
-        readonly: boolean
-        storyId: string
-      }) => {
+      ({ mode, readonly, blockId, storyId }: { mode: Mode; blockId: string; readonly: boolean; storyId: string }) => {
         recoilCallback.set(questionEditorActiveIdState, blockId)
         recoilCallback.set(questionEditorOpenState, true)
         recoilCallback.set(questionEditorBlockMapState, (state) => {
@@ -570,7 +563,7 @@ export const StoryQuestionEditor: React.FC<{
   )
 
   const setMode = useCallback(
-    (mode: 'VIS' | 'SQL') => {
+    (mode: Mode) => {
       setQuestionBlocksMap((blocksMap) => {
         return {
           ...blocksMap,
@@ -729,7 +722,7 @@ export const StoryQuestionEditor: React.FC<{
 
   const mutatingCount = useDraftBlockMutating(block.id)
   const openStory = useOpenStory()
-
+  const { data: downstreams } = useQuestionDownstreams(block.id)
   const scrollToBlock = useCallback(() => {
     const element = getBlockWrapElementById(block.id)
     element &&
@@ -835,7 +828,7 @@ export const StoryQuestionEditor: React.FC<{
         >
           {mode === 'SQL' && (sqlError || sqlSidePanel) && (
             <IconButton
-              icon={IconCommonLink}
+              icon={IconCommonError}
               color={ThemingVariables.colors.negative[0]}
               onClick={() => {
                 setSqlSidePanel(!sqlSidePanel)
@@ -904,8 +897,26 @@ export const StoryQuestionEditor: React.FC<{
               setMode('SQL')
             }}
           />
+          <IconButton
+            icon={IconCommonDownstream}
+            disabled={downstreams.length === 0}
+            className={css`
+              padding: 10px;
+              border-radius: 8px;
+              background-color: ${mode === 'DOWNSTREAM'
+                ? ThemingVariables.colors.primary[1]
+                : ThemingVariables.colors.primary[4]};
+              &:disabled {
+                background-color: ${ThemingVariables.colors.gray[2]};
+              }
+            `}
+            color={mode === 'DOWNSTREAM' ? ThemingVariables.colors.gray[5] : ThemingVariables.colors.primary[1]}
+            onClick={() => {
+              setMode('DOWNSTREAM')
+            }}
+          />
         </div>
-        {mode === 'SQL' ? (
+        {mode === 'SQL' && (
           <>
             <SQLEditor
               className={css`
@@ -920,14 +931,6 @@ export const StoryQuestionEditor: React.FC<{
               }}
               onRun={run}
               onSave={save}
-            />
-            <QuestionReferences
-              blockId={id}
-              className={css`
-                flex-shrink: 0;
-                box-shadow: -2px 0px 8px rgba(0, 0, 0, 0.04);
-                z-index: 100;
-              `}
             />
             {sqlSidePanel && (
               <div
@@ -951,7 +954,8 @@ export const StoryQuestionEditor: React.FC<{
               </div>
             )}
           </>
-        ) : (
+        )}
+        {mode === 'VIS' && (
           <Configuration
             data={snapshot?.data}
             config={visualizationConfig}
@@ -962,6 +966,14 @@ export const StoryQuestionEditor: React.FC<{
                 overflow: hidden;
               `
             )}
+          />
+        )}
+        {mode === 'DOWNSTREAM' && (
+          <QuestionReferences
+            blockId={id}
+            className={css`
+              flex: 1;
+            `}
           />
         )}
       </div>
