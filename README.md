@@ -1,8 +1,11 @@
 # Tellery
 
-[![CodeQL](https://github.com/tellery/tellery/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/tellery/tellery/actions/workflows/codeql-analysis.yml)
 [![docker-web](https://github.com/tellery/tellery/actions/workflows/docker-web.yml/badge.svg?branch=main)](https://github.com/tellery/tellery/actions/workflows/docker-web.yml)
+[![CodeQL](https://github.com/tellery/tellery/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/tellery/tellery/actions/workflows/codeql-analysis.yml)
+[![GitHub](https://img.shields.io/github/license/tellery/tellery?logo=apache)](/LICENSE)
 [![Documentation](https://img.shields.io/badge/docs-tellery.io%2Fdocs-brightgreen)](https://tellery.io/docs/)
+[![Slack](https://img.shields.io/badge/slack-tellery-blue.svg?logo=slack)](https://join.slack.com/t/telleryio/shared_invite/zt-s37tgvo7-QBdpggK_uG6QqJVWhSXlFg)
+[![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com%2FTelleryHQ)](https://twitter.com/TelleryHQ)
 
 Tellery helps you to organize your ad-hoc analysis and then narrate them in one place.
 
@@ -19,8 +22,12 @@ Tellery allows you to abstract essential business logic, and reuse it in future 
 
 - Install the [demo project](https://tellery.io/docs/getting-started/quick-setup) (run locally with docker)
 - Read the [documentation](https://tellery.io/docs/)
-- Join the chat on [Slack](https://join.slack.com/t/telleryio/shared_invite/zt-s37tgvo7-QBdpggK_uG6QqJVWhSXlFg)
+- Find out [why we built Tellery](https://tellery.io/docs/about)
 
+## Community Support
+
+- Join the chat on [Slack](https://join.slack.com/t/telleryio/shared_invite/zt-s37tgvo7-QBdpggK_uG6QqJVWhSXlFg)
+- Read all the latest news on [Twitter](https://twitter.com/telleryhq)
 
 ## Reporting bugs and contributing code
 
