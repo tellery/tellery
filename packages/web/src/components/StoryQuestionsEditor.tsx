@@ -925,7 +925,7 @@ export const StoryQuestionEditor: React.FC<{
               `}
               value={sql}
               padding={{ top: 20, bottom: 0 }}
-              languageId={workspace.preferences.profile!}
+              languageId="hive" // TODO: use var
               onChange={(e) => {
                 setSql(e)
               }}
