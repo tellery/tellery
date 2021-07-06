@@ -8,9 +8,9 @@ import { blockTitleToText, extractEntitiesFromToken } from '../helpers/tokenMani
 
 // visualization: [
 //   '#669EFF',
-//   '#62D96B',
-//   '#FFC940',
 //   '#FF6E4A',
+//   '#FFC940',
+//   '#62D96B',
 //   '#C274C2',
 //   '#14CCBD',
 //   '#FF66A1',
@@ -21,9 +21,9 @@ import { blockTitleToText, extractEntitiesFromToken } from '../helpers/tokenMani
 
 export const COLORS = {
   blue: ThemingVariables.colors.visualization[0],
-  green: ThemingVariables.colors.visualization[1],
+  orange: ThemingVariables.colors.visualization[1],
   yellow: ThemingVariables.colors.visualization[2],
-  orange: ThemingVariables.colors.visualization[3],
+  green: ThemingVariables.colors.visualization[3],
   pink: ThemingVariables.colors.visualization[4],
   red: ThemingVariables.colors.visualization[5],
   teal: ThemingVariables.colors.visualization[6],

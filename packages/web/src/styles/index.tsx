@@ -30,9 +30,9 @@ export const TelleryThemeLight: TelleryTheme = {
     // https://blueprintjs.com/docs/#core/colors.extended-colors
     visualization: [
       '#669EFF',
-      '#62D96B',
-      '#FFC940',
       '#FF6E4A',
+      '#FFC940',
+      '#62D96B',
       '#C274C2',
       '#14CCBD',
       '#FF66A1',
