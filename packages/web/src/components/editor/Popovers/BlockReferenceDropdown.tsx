@@ -290,7 +290,7 @@ export const _BlockReferenceDropdownInner: React.FC<
             padding: 14px 12px;
           `}
         >
-          Search for a story
+          Search a story
         </div>
       )}
     </motion.div>

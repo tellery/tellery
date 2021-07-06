@@ -1,17 +1,23 @@
 import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
-import { css } from '@emotion/css'
-import { IconCommonSave, IconMiscImageBlock, IconMiscQuestionBlock, IconMiscTextBlock } from 'assets/icons'
+import { css, cx } from '@emotion/css'
+import {
+  IconCommonSave,
+  IconMenuText,
+  IconMiscImageBlock,
+  IconMiscQuestionBlock,
+  IconMiscTextBlock
+} from 'assets/icons'
 import { useBlockSuspense } from 'hooks/api'
 import invariant from 'invariant'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { ThemingVariables } from 'styles'
 import { Editor, TellerySelection, TellerySelectionType } from 'types'
 import { mergeTokens, splitToken, tokenPosition2SplitedTokenPosition } from '..'
-import { BlockMenuItem } from '../BlockMenuItem'
 import { EditorPopover } from '../EditorPopover'
 import { tellerySelection2Native } from '../helpers/tellerySelection'
 import { useEditor } from '../hooks'
 import debug from 'debug'
+import Icon from '@app/components/kit/Icon'
 
 const logger = debug('tellery:slashCommand')
 
@@ -108,7 +114,6 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
     return [
       {
         title: 'Text',
-        desc: 'Text Block',
         action: (block: Editor.BaseBlock) => {
           if (isEmptyTitleBlock(block)) {
             editor?.toggleBlockType(id, Editor.BlockType.Text, 0)
@@ -117,11 +122,10 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
           }
           setOpen(false)
         },
-        icon: <IconMiscTextBlock />
+        icon: <Icon icon={IconMenuText} color={'#000'} />
       },
       {
         title: 'Image',
-        desc: 'Image Block',
         action: (block: Editor.BaseBlock) => {
           if (isEmptyTitleBlock(block)) {
             editor?.toggleBlockType(id, Editor.BlockType.Image, 0)
@@ -135,7 +139,6 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
       },
       {
         title: 'Question',
-        desc: 'Question Block',
         action: (block: Editor.BaseBlock) => {
           invariant(editor, 'editor is null')
           if (isEmptyTitleBlock(block)) {
@@ -154,8 +157,7 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
         icon: <IconMiscQuestionBlock />
       },
       {
-        title: 'File Block',
-        desc: 'Upload CSV/Excel/Image',
+        title: 'Upload CSV/Excel',
         action: (block: Editor.BaseBlock) => {
           if (isEmptyTitleBlock(block)) {
             editor?.toggleBlockType(id, Editor.BlockType.File, 0)
@@ -220,7 +222,7 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
         box-shadow: ${ThemingVariables.boxShadows[0]};
         border-radius: 8px;
         padding: 8px;
-        width: 260px;
+        width: 300px;
         overflow: hidden;
         font-weight: normal;
       `}
@@ -241,6 +243,82 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
           />
         )
       })}
+    </div>
+  )
+}
+
+const BlockMenuItem = (props: {
+  icon?: ReactNode
+  title: string
+  onClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+  active?: boolean
+}) => {
+  return (
+    <div
+      className={cx(
+        css`
+          border-radius: 8px;
+          height: 44px;
+          width: 100%;
+          padding: 4px;
+          box-sizing: border-box;
+          cursor: pointer;
+          transition: all 0.1s ease;
+          display: block;
+          color: ${ThemingVariables.colors.text[0]};
+          text-decoration: none;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          &:hover {
+            background: ${ThemingVariables.colors.primary[4]};
+          }
+          &:active {
+            background: ${ThemingVariables.colors.primary[3]};
+          }
+        `,
+        props.active &&
+          css`
+            background: ${ThemingVariables.colors.primary[3]};
+          `
+      )}
+      onClick={props.onClick}
+    >
+      {props.icon && (
+        <div
+          className={css`
+            width: 36px;
+            border: 1px solid ${ThemingVariables.colors.gray[1]};
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          `}
+        >
+          {props.icon}
+        </div>
+      )}
+      <div
+        className={css`
+          margin-left: 10px;
+          line-height: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        `}
+      >
+        <span
+          className={css`
+            color: ${ThemingVariables.colors.text[0]};
+            font-size: 14px;
+            line-height: 17px;
+          `}
+        >
+          {props.title}
+        </span>
+      </div>
     </div>
   )
 }
