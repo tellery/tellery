@@ -6,19 +6,6 @@ import { ThemingVariables } from 'styles'
 import { Editor, Story } from 'types'
 import { blockTitleToText, extractEntitiesFromToken } from '../helpers/tokenManipulation'
 
-// visualization: [
-//   '#669EFF',
-//   '#FF6E4A',
-//   '#FFC940',
-//   '#62D96B',
-//   '#C274C2',
-//   '#14CCBD',
-//   '#FF66A1',
-//   '#D1F26D',
-//   '#C99765',
-//   '#AD99FF'
-// ],
-
 export const COLORS = {
   blue: ThemingVariables.colors.visualization[0],
   orange: ThemingVariables.colors.visualization[1],
@@ -42,7 +29,7 @@ export const INLINE_STYLES = new Map([
     (...args: string[]): CSSProperties => ({
       fontFamily: 'monospace',
       background: ThemingVariables.colors.primary[5],
-      color: ThemingVariables.colors.visualization[3],
+      color: ThemingVariables.colors.code[0],
       borderRadius: '4px',
       padding: '0.2em 0.4em'
     })

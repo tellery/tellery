@@ -112,7 +112,9 @@ export const _NavigationHeader = (props: {
           `}
         />
         <RefreshAllQuestionBlockButton storyId={props.storyId} />
+
         <IconButton
+          hoverContent={story.format?.fullWidth ? 'Dsiable Full Width' : 'Full Width'}
           icon={story.format?.fullWidth ? IconMenuNormalWidth : IconMenuFullWidth}
           color={ThemingVariables.colors.text[0]}
           className={css`
@@ -124,6 +126,7 @@ export const _NavigationHeader = (props: {
         />
         {props.pinned ? (
           <IconButton
+            hoverContent={'Favorite'}
             icon={IconCommonStarFill}
             onClick={async () => {
               if (!workspaceView) {
@@ -135,6 +138,7 @@ export const _NavigationHeader = (props: {
           />
         ) : (
           <IconButton
+            hoverContent={'Favorite'}
             icon={IconCommonStar}
             color={ThemingVariables.colors.text[0]}
             onClick={async () => {
