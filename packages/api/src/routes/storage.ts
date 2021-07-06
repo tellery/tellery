@@ -1,6 +1,7 @@
 import config from 'config'
 import { File } from 'formidable'
-import { createReadStream } from 'fs'
+import { promisify } from 'util'
+import { createReadStream, unlink } from 'fs'
 import { plainToClass } from 'class-transformer'
 import { IsDefined } from 'class-validator'
 import { Context } from 'koa'
@@ -66,6 +67,7 @@ async function upload(ctx: Context) {
   const file = ctx.request.files.file as File
   const { name, size, path } = file
   const buffer = await readableStreamWrapper(createReadStream(path))
+  await promisify(unlink)(path)
   await selfhostedStorage.putFile(payload.key, buffer, { name, size })
   ctx.body = {
     key: payload.key,
