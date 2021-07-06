@@ -1,5 +1,6 @@
 # Tellery
 
+[![CodeQL](https://github.com/tellery/tellery/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/tellery/tellery/actions/workflows/codeql-analysis.yml)
 [![docker-web](https://github.com/tellery/tellery/actions/workflows/docker-web.yml/badge.svg?branch=main)](https://github.com/tellery/tellery/actions/workflows/docker-web.yml)
 [![Documentation](https://img.shields.io/badge/docs-tellery.io%2Fdocs-brightgreen)](https://tellery.io/docs/)
 
