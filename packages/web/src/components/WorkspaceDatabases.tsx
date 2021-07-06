@@ -14,6 +14,7 @@ import FormLabel from './kit/FormLabel'
 import FormSelect from './kit/FormSelect'
 import FormSwitch from './kit/FormSwitch'
 import { FormButton } from './kit/FormButton'
+import { ThemingVariables } from '@app/styles'
 
 export function WorkspaceDatabases(props: { onClose(): void }) {
   const { data: connectors } = useConnectorsList()
@@ -58,9 +59,21 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
 
   return (
     <>
+      <h2
+        className={css`
+          font-weight: 600;
+          font-size: 16px;
+          line-height: 19px;
+          margin: 0;
+          color: ${ThemingVariables.colors.text[0]};
+        `}
+      >
+        Database Profile
+      </h2>
       <form
         className={css`
           flex: 1;
+          margin-top: 20px;
           overflow-y: scroll;
         `}
       >
@@ -149,6 +162,17 @@ function Config(props: {
           placeholder={config.hint}
         />
       )}
+      <span
+        className={css`
+          font-size: 12px;
+          line-height: 14px;
+          color: ${ThemingVariables.colors.text[1]};
+          margin-top: 5px;
+          display: block;
+        `}
+      >
+        {config.description}
+      </span>
     </>
   )
 }

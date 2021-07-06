@@ -12,8 +12,8 @@ enum Tabs {
   Databases = 'Databases'
 }
 
-export default function Workspace(props: { onClose(): void }) {
-  const [tab, setTab] = useState(Tabs.Preferences)
+export default function Workspace(props: { openForProfiles?: boolean; onClose(): void }) {
+  const [tab, setTab] = useState(props.openForProfiles ? Tabs.Databases : Tabs.Preferences)
   const ref = useRef(null)
   useOnClickOutside(ref, props.onClose)
 

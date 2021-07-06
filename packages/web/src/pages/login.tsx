@@ -16,18 +16,19 @@ export default function Login() {
   const {
     register,
     formState: { errors },
-    handleSubmit
+    handleSubmit,
+    watch
   } = useForm<{ email?: string; password?: string }>({})
   const auth = useAuth()
   const handleUserLogin = useAsync(auth.login)
-
   const history = useHistory()
-
   useEffect(() => {
     if (handleUserLogin.status === 'success') {
       history.push('/')
     }
   }, [handleUserLogin.status, history])
+  const email = watch('email')
+  const password = watch('password')
 
   return (
     <div
@@ -66,43 +67,21 @@ export default function Login() {
               <FormLabel>Password</FormLabel>
               <FormInput type="password" {...register('password')} error={errors.password} />
               <ErrorMessage errors={errors} name="password" render={FormError} />
+              <FormError message={handleUserLogin.error?.response?.data.errMsg} />
             </div>
           </div>
         }
         footer={
-          <>
-            <div
-              className={css`
-                display: flex;
-              `}
-            >
-              <FormButton
-                type="button"
-                variant="secondary"
-                className={css`
-                  flex: 1;
-                  margin-right: 20px;
-                `}
-                disabled={handleUserLogin.status === 'pending'}
-                onClick={() => {
-                  history.push('/register')
-                }}
-              >
-                Sign up
-              </FormButton>
-              <FormButton
-                type="submit"
-                variant="primary"
-                className={css`
-                  flex: 1;
-                `}
-                disabled={handleUserLogin.status === 'pending'}
-              >
-                Login
-              </FormButton>
-            </div>
-            <FormError message={handleUserLogin.error?.response?.data.errMsg} />
-          </>
+          <FormButton
+            type="submit"
+            variant="primary"
+            className={css`
+              width: 100%;
+            `}
+            disabled={!email || !password || handleUserLogin.status === 'pending'}
+          >
+            Login
+          </FormButton>
         }
       />
     </div>
