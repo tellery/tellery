@@ -18,8 +18,10 @@ import IconCommonCloseCircle from './common/close_circle.svg?component'
 import IconCommonClose from './common/close.svg?component'
 import IconCommonCopy from './common/copy.svg?component'
 import IconCommonDot from './common/dot.svg?component'
+import IconCommonDownstream from './common/downstream.svg?component'
 import IconCommonDrag from './common/drag.svg?component'
 import IconCommonEdit from './common/edit.svg?component'
+import IconCommonError from './common/error.svg?component'
 import IconCommonFold from './common/fold.svg?component'
 import IconCommonLike from './common/like.svg?component'
 import IconCommonLink from './common/link.svg?component'
@@ -113,8 +115,10 @@ export {
   IconCommonClose,
   IconCommonCopy,
   IconCommonDot,
+  IconCommonDownstream,
   IconCommonDrag,
   IconCommonEdit,
+  IconCommonError,
   IconCommonFold,
   IconCommonLike,
   IconCommonLink,

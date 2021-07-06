@@ -4,7 +4,7 @@ import { css, cx } from '@emotion/css'
 import {
   IconCommonArrowDropDown,
   IconCommonClose,
-  IconCommonLink,
+  IconCommonError,
   IconCommonRun,
   IconCommonSave,
   IconCommonSql,
@@ -835,7 +835,7 @@ export const StoryQuestionEditor: React.FC<{
         >
           {mode === 'SQL' && (sqlError || sqlSidePanel) && (
             <IconButton
-              icon={IconCommonLink}
+              icon={IconCommonError}
               color={ThemingVariables.colors.negative[0]}
               onClick={() => {
                 setSqlSidePanel(!sqlSidePanel)
