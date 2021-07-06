@@ -24,26 +24,19 @@ async function provision(ctx: Context) {
   ctx.body = await storageService.provision(user.id, payload.workspaceId)
 }
 
-class FetchRequest {
+class GetFileRequest {
   @IsDefined()
   workspaceId!: string
 
   @IsDefined()
-  link!: string
+  fileKey!: string
 }
-async function fetch(ctx: Context) {
-  const payload = plainToClass(FetchRequest, ctx.params)
+async function getFile(ctx: Context) {
+  const payload = plainToClass(GetFileRequest, ctx.params)
   await validate(ctx, payload)
-  const { workspaceId, link } = payload
-
-  const match = link.match(new RegExp('tellery://([0-9a-zA-Z_-]+)'))
-  if (!match) {
-    ctx.redirect(link)
-    return
-  }
-
   const user = mustGetUser(ctx)
-  const fetchedObject = await storageService.objectProxy(user.id, workspaceId, match[1])
+  const { workspaceId, fileKey } = payload
+  const fetchedObject = await storageService.objectProxy(user.id, workspaceId, fileKey)
   if (!fetchedObject) {
     ctx.throw(404)
   }
@@ -79,7 +72,7 @@ async function upload(ctx: Context) {
 const router = new Router()
 
 router.get('/provision', provision)
-router.get('/file/:workspaceId/:link', fetch)
+router.get('/file/:workspaceId/:fileKey', getFile)
 if (!config.has('objectStorage.type') || config.get('objectStorage.type') === 'postgres') {
   router.post('/upload', upload)
 }

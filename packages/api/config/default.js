@@ -36,7 +36,7 @@ module.exports = {
   server: {
     protocol: process.env.SERVER_PROTO || 'https',
     host: process.env.SERVER_HOST,
-    web_port: process.env.SERVER_WEB_PORT || 80,
+    webPort: process.env.SERVER_WEB_PORT || 80,
     port: process.env.SERVER_PORT || 8000,
   },
 }
