@@ -1,13 +1,12 @@
 import { nanoid } from 'nanoid'
 import { ProvisionBody } from '../../types/upload'
-import { absoluteURI } from '../../utils/common'
 import selfhostedStorage from '../../store/selfhostedStorage'
 
 function provision(): ProvisionBody {
   const key = nanoid()
 
   return {
-    url: absoluteURI('/api/storage/upload'),
+    url: '/api/storage/upload',
     key,
     expiresIn: 0,
     form: {
