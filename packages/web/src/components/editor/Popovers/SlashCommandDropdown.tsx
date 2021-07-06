@@ -1,23 +1,33 @@
+import Icon from '@app/components/kit/Icon'
 import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { css, cx } from '@emotion/css'
 import {
   IconCommonSave,
+  IconMenuBulletedList,
+  IconMenuCode,
+  IconMenuDivider,
+  IconMenuH1,
+  IconMenuH2,
+  IconMenuH3,
+  IconMenuImage,
+  IconMenuNumberList,
+  IconMenuQuery,
+  IconMenuQuote,
   IconMenuText,
-  IconMiscImageBlock,
-  IconMiscQuestionBlock,
-  IconMiscTextBlock
+  IconMenuToDo,
+  IconMenuToggleList
 } from 'assets/icons'
+import debug from 'debug'
 import { useBlockSuspense } from 'hooks/api'
 import invariant from 'invariant'
-import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import scrollIntoView from 'scroll-into-view-if-needed'
 import { ThemingVariables } from 'styles'
 import { Editor, TellerySelection, TellerySelectionType } from 'types'
 import { mergeTokens, splitToken, tokenPosition2SplitedTokenPosition } from '..'
 import { EditorPopover } from '../EditorPopover'
 import { tellerySelection2Native } from '../helpers/tellerySelection'
 import { useEditor } from '../hooks'
-import debug from 'debug'
-import Icon from '@app/components/kit/Icon'
 
 const logger = debug('tellery:slashCommand')
 
@@ -110,66 +120,100 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
     return currentBlock
   }, [currentBlock, editor, id, selection])
 
+  const createOrToggleBlock = useCallback(
+    (blockType: Editor.BlockType) => (block: Editor.BaseBlock) => {
+      invariant(editor, 'editor is null')
+      let blockId = ''
+      if (isEmptyTitleBlock(block)) {
+        editor.toggleBlockType(id, blockType, 0)
+        blockId = block.id
+      } else {
+        const newBlock = editor.insertNewEmptyBlock(blockType, id, 'bottom')
+        blockId = newBlock.id
+      }
+
+      editor?.execOnNextFlush(() => {
+        editor?.getBlockInstanceById(blockId)?.openMenu()
+      })
+      setOpen(false)
+    },
+    [editor, id, setOpen]
+  )
+
   const operations = useMemo(() => {
     return [
       {
         title: 'Text',
-        action: (block: Editor.BaseBlock) => {
-          if (isEmptyTitleBlock(block)) {
-            editor?.toggleBlockType(id, Editor.BlockType.Text, 0)
-          } else {
-            editor?.insertNewEmptyBlock(Editor.BlockType.Text, id, 'bottom')
-          }
-          setOpen(false)
-        },
+        action: createOrToggleBlock(Editor.BlockType.Text),
         icon: <Icon icon={IconMenuText} color={'#000'} />
       },
       {
-        title: 'Image',
-        action: (block: Editor.BaseBlock) => {
-          if (isEmptyTitleBlock(block)) {
-            editor?.toggleBlockType(id, Editor.BlockType.Image, 0)
-          } else {
-            editor?.insertNewEmptyBlock(Editor.BlockType.Image, id, 'bottom')
-          }
-
-          setOpen(false)
-        },
-        icon: <IconMiscImageBlock />
-      },
-      {
         title: 'Question',
-        action: (block: Editor.BaseBlock) => {
-          invariant(editor, 'editor is null')
-          if (isEmptyTitleBlock(block)) {
-            editor?.toggleBlockType(id, Editor.BlockType.Question, 0)
-            editor?.execOnNextFlush(() => {
-              editor?.getBlockInstanceById(id)?.openMenu()
-            })
-          } else {
-            const newBlock = editor.insertNewEmptyBlock(Editor.BlockType.Question, id, 'bottom')
-            editor?.execOnNextFlush(() => {
-              editor?.getBlockInstanceById(newBlock.id)?.openMenu()
-            })
-          }
-          setOpen(false)
-        },
-        icon: <IconMiscQuestionBlock />
+        action: createOrToggleBlock(Editor.BlockType.Question),
+        icon: <Icon icon={IconMenuQuery} color={'#000'} />
       },
       {
-        title: 'Upload CSV/Excel',
-        action: (block: Editor.BaseBlock) => {
-          if (isEmptyTitleBlock(block)) {
-            editor?.toggleBlockType(id, Editor.BlockType.File, 0)
-          } else {
-            editor?.insertNewEmptyBlock(Editor.BlockType.File, id, 'bottom')
-          }
-          setOpen(false)
-        },
-        icon: <IconCommonSave />
+        title: 'CSV/Excel',
+        action: createOrToggleBlock(Editor.BlockType.File),
+        icon: <Icon icon={IconCommonSave} color={'#000'} />
+      },
+      {
+        title: 'Heading 1',
+        action: createOrToggleBlock(Editor.BlockType.Header),
+        icon: <Icon icon={IconMenuH1} color={'#000'} />
+      },
+      {
+        title: 'Heading 2',
+        action: createOrToggleBlock(Editor.BlockType.SubHeader),
+        icon: <Icon icon={IconMenuH2} color={'#000'} />
+      },
+      {
+        title: 'Heading 3',
+        action: createOrToggleBlock(Editor.BlockType.SubSubHeader),
+        icon: <Icon icon={IconMenuH3} color={'#000'} />
+      },
+      {
+        title: 'Checklist',
+        action: createOrToggleBlock(Editor.BlockType.Todo),
+        icon: <Icon icon={IconMenuToDo} color={'#000'} />
+      },
+      {
+        title: 'Bullet List',
+        action: createOrToggleBlock(Editor.BlockType.BulletList),
+        icon: <Icon icon={IconMenuBulletedList} color={'#000'} />
+      },
+      {
+        title: 'Numbered List',
+        action: createOrToggleBlock(Editor.BlockType.NumberedList),
+        icon: <Icon icon={IconMenuNumberList} color={'#000'} />
+      },
+      {
+        title: 'Toggle List',
+        action: createOrToggleBlock(Editor.BlockType.Toggle),
+        icon: <Icon icon={IconMenuToggleList} color={'#000'} />
+      },
+      {
+        title: 'Image',
+        action: createOrToggleBlock(Editor.BlockType.Image),
+        icon: <Icon icon={IconMenuImage} color={'#000'} />
+      },
+      {
+        title: 'Code',
+        action: createOrToggleBlock(Editor.BlockType.Code),
+        icon: <Icon icon={IconMenuCode} color={'#000'} />
+      },
+      {
+        title: 'Quote',
+        action: createOrToggleBlock(Editor.BlockType.Quote),
+        icon: <Icon icon={IconMenuQuote} color={'#000'} />
+      },
+      {
+        title: 'Line Divider',
+        action: createOrToggleBlock(Editor.BlockType.Divider),
+        icon: <Icon icon={IconMenuDivider} color={'#000'} />
       }
     ]
-  }, [editor, id, setOpen])
+  }, [createOrToggleBlock])
 
   const snapshot = useBlockSnapshot()
   const execSelectedOperation = useCallback(
@@ -223,7 +267,8 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
         border-radius: 8px;
         padding: 8px;
         width: 300px;
-        overflow: hidden;
+        max-height: ${44 * 7}px;
+        overflow-y: auto;
         font-weight: normal;
       `}
       onMouseDown={(e) => {
@@ -236,7 +281,7 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
           <BlockMenuItem
             key={operation.title}
             title={operation.title}
-            desc={operation.desc}
+            // desc={operation.desc}
             icon={operation.icon}
             active={selectedResultIndex === index}
             onClick={() => execSelectedOperation(index)}
@@ -253,8 +298,20 @@ const BlockMenuItem = (props: {
   onClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   active?: boolean
 }) => {
+  const ref = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    if (props.active && ref.current) {
+      scrollIntoView(ref.current, {
+        scrollMode: 'always',
+        block: 'nearest',
+        inline: 'nearest'
+      })
+    }
+  }, [props.active])
+
   return (
     <div
+      ref={ref}
       className={cx(
         css`
           border-radius: 8px;

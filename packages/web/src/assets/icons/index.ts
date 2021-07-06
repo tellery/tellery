@@ -52,6 +52,7 @@ import IconMenuCenterAlign from './menu/center_align.svg?component'
 import IconMenuCode from './menu/code.svg?component'
 import IconMenuComment from './menu/comment.svg?component'
 import IconMenuDelete from './menu/delete.svg?component'
+import IconMenuDivider from './menu/divider.svg?component'
 import IconMenuDoubleColumn from './menu/double_column.svg?component'
 import IconMenuDownload from './menu/download.svg?component'
 import IconMenuDuplicate1 from './menu/duplicate-1.svg?component'
@@ -62,11 +63,13 @@ import IconMenuH1 from './menu/h1.svg?component'
 import IconMenuH2 from './menu/h2.svg?component'
 import IconMenuH3 from './menu/h3.svg?component'
 import IconMenuHide from './menu/hide.svg?component'
+import IconMenuImage from './menu/image.svg?component'
 import IconMenuInsertAfter from './menu/insert_after.svg?component'
 import IconMenuInsertBefore from './menu/insert_before.svg?component'
 import IconMenuMoveTo from './menu/move_to.svg?component'
 import IconMenuNormalWidth from './menu/normal_width.svg?component'
 import IconMenuNumberList from './menu/number_list.svg?component'
+import IconMenuQuery from './menu/query.svg?component'
 import IconMenuQuote from './menu/quote.svg?component'
 import IconMenuShow from './menu/show.svg?component'
 import IconMenuSortAsc from './menu/sort_asc.svg?component'
@@ -147,6 +150,7 @@ export {
   IconMenuCode,
   IconMenuComment,
   IconMenuDelete,
+  IconMenuDivider,
   IconMenuDoubleColumn,
   IconMenuDownload,
   IconMenuDuplicate1,
@@ -157,11 +161,13 @@ export {
   IconMenuH2,
   IconMenuH3,
   IconMenuHide,
+  IconMenuImage,
   IconMenuInsertAfter,
   IconMenuInsertBefore,
   IconMenuMoveTo,
   IconMenuNormalWidth,
   IconMenuNumberList,
+  IconMenuQuery,
   IconMenuQuote,
   IconMenuShow,
   IconMenuSortAsc,
