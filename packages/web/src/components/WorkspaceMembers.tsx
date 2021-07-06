@@ -25,7 +25,7 @@ import { MenuItemDivider } from './MenuItemDivider'
 
 type Role = Workspace['members'][0]['role']
 
-export function WorkspaceMembers() {
+export function WorkspaceMembers(props: { onClose(): void }) {
   const { data: workspace, refetch } = useWorkspaceDetail()
   const { data: users } = useMgetUsers(workspace?.members.map(({ userId }) => userId))
   const sortedMembers = useMemo(() => sortBy(workspace?.members, 'joinAt'), [workspace?.members])
@@ -33,17 +33,16 @@ export function WorkspaceMembers() {
   const [visible, setVisible] = useState(false)
   const [role, setRole] = useState<Role>('member')
   const [email, setEmail] = useState('')
-  const members = compact(email.split(',')).map((email) => ({ email, role }))
+  const members = useMemo(() => compact(email.split(',')).map((email) => ({ email, role })), [email, role])
   const handleInviteMembers = useWorkspaceInviteMembers(members)
   const user = useLoggedUser()
   const me = useMemo(() => workspace?.members.find(({ userId }) => userId === user.id), [user.id, workspace?.members])
-
+  const { onClose } = props
   useEffect(() => {
     if (handleInviteMembers.status === 'success') {
-      setEmail('')
-      setRole('member')
+      onClose()
     }
-  }, [handleInviteMembers.status])
+  }, [handleInviteMembers.status, onClose])
 
   if (invite) {
     return (
@@ -180,7 +179,7 @@ export function WorkspaceMembers() {
             className={css`
               flex-shrink: 0;
             `}
-            disabled={members.length === 0}
+            disabled={members.length === 0 || handleInviteMembers.status === 'pending'}
             onClick={handleInviteMembers.execute}
           >
             Send invitations

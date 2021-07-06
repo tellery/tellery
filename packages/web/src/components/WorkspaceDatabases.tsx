@@ -15,7 +15,7 @@ import FormSelect from './kit/FormSelect'
 import FormSwitch from './kit/FormSwitch'
 import { FormButton } from './kit/FormButton'
 
-export function WorkspaceDatabases() {
+export function WorkspaceDatabases(props: { onClose(): void }) {
   const { data: connectors } = useConnectorsList()
 
   if (!connectors?.[0]) {
@@ -31,12 +31,12 @@ export function WorkspaceDatabases() {
         flex-direction: column;
       `}
     >
-      <Connector key={connectors[0].id} {...connectors[0]} />
+      <Connector key={connectors[0].id} {...connectors[0]} onClose={props.onClose} />
     </div>
   )
 }
 
-function Connector(props: { id: string; url: string; name: string }) {
+function Connector(props: { id: string; url: string; name: string; onClose(): void }) {
   const { data: profileConfigs } = useConnectorsListProfiles(props.id)
   const { register, reset, handleSubmit, watch } = useForm<ProfileConfig>({
     defaultValues: profileConfigs?.[0],
@@ -49,6 +49,12 @@ function Connector(props: { id: string; url: string; name: string }) {
   const type = watch('type')
   const availableConfig = useMemo(() => availableConfigs?.find((ac) => ac.type === type), [availableConfigs, type])
   const handleUpsertProfile = useConnectorsUpsertProfile(props.id)
+  const { onClose } = props
+  useEffect(() => {
+    if (handleUpsertProfile.status === 'success') {
+      onClose()
+    }
+  }, [handleUpsertProfile.status, onClose])
 
   return (
     <>
