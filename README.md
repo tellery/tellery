@@ -3,9 +3,9 @@
 [![CodeQL](https://github.com/tellery/tellery/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/tellery/tellery/actions/workflows/codeql-analysis.yml)
 [![docker-web](https://github.com/tellery/tellery/actions/workflows/docker-web.yml/badge.svg?branch=main)](https://github.com/tellery/tellery/actions/workflows/docker-web.yml)
 [![Documentation](https://img.shields.io/badge/docs-tellery.io%2Fdocs-brightgreen)](https://tellery.io/docs/)
-[![Slack](https://img.shields.io/badge/slack-Tellery-blue.svg?logo=slack)](https://join.slack.com/t/telleryio/shared_invite/zt-s37tgvo7-QBdpggK_uG6QqJVWhSXlFg)
+[![Slack](https://img.shields.io/badge/slack-tellery-blue.svg?logo=slack)](https://join.slack.com/t/telleryio/shared_invite/zt-s37tgvo7-QBdpggK_uG6QqJVWhSXlFg)
 [![GitHub](https://img.shields.io/github/license/tellery/tellery?logo=apache)](/LICENSE)
-![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com%2FTelleryHQ)
+[![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com%2FTelleryHQ)](https://twitter.com/TelleryHQ)
 
 Tellery helps you to organize your ad-hoc analysis and then narrate them in one place.
 
