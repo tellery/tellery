@@ -51,7 +51,7 @@ export function useProvideAuth() {
       setUser(data)
       return data
     },
-    { suspense: false, retry: false, enabled: !['/register', '/confirm'].includes(location.pathname) }
+    { suspense: false, retry: false, enabled: location.pathname !== '/confirm' }
   )
 
   return {
@@ -59,7 +59,7 @@ export function useProvideAuth() {
     login,
     logout,
     confirm,
-    generate,
+    // generate,
     update,
     setUser
   }
