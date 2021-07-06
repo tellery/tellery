@@ -13,8 +13,8 @@ import { useGetBlockTitleTextSnapshot } from './editor'
 import { useQuestionEditor } from './StoryQuestionsEditor'
 
 const contentWidgetClassname = css`
-  font-size: 14px;
-  line-height: 21px;
+  font-size: 12px;
+  line-height: 18px;
   vertical-align: middle;
   border-radius: 6px;
   padding: 0 8px;
@@ -98,8 +98,8 @@ export function SQLEditor(props: {
       minimap: { enabled: false },
       glyphMargin: false,
       padding: props.padding,
-      lineHeight: 21,
-      fontSize: 14
+      lineHeight: 18,
+      fontSize: 12
     }),
     [props.padding]
   )
