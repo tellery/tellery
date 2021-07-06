@@ -42,9 +42,11 @@ import QuestionReferences from './QuestionReferences'
 import { charts } from './v11n/charts'
 import { Config, Type } from './v11n/types'
 
+type Mode = 'SQL' | 'VIS' | 'DOWNSTREAM'
+
 export interface QuestionEditor {
   close: (arg: string) => Promise<void>
-  open: (arg: { mode: 'SQL' | 'VIS'; readonly: boolean }) => Promise<void>
+  open: (arg: { mode: Mode; readonly: boolean }) => Promise<void>
 }
 
 export const useDraftBlockMutating = (blockId: string) => {
@@ -123,17 +125,7 @@ export const useCleanQuestionEditorHandler = () => {
 export const useOpenQuestionBlockIdHandler = () => {
   const handler = useRecoilCallback(
     (recoilCallback) =>
-      ({
-        mode,
-        readonly,
-        blockId,
-        storyId
-      }: {
-        mode: 'SQL' | 'VIS'
-        blockId: string
-        readonly: boolean
-        storyId: string
-      }) => {
+      ({ mode, readonly, blockId, storyId }: { mode: Mode; blockId: string; readonly: boolean; storyId: string }) => {
         recoilCallback.set(questionEditorActiveIdState, blockId)
         recoilCallback.set(questionEditorOpenState, true)
         recoilCallback.set(questionEditorBlockMapState, (state) => {
@@ -570,7 +562,7 @@ export const StoryQuestionEditor: React.FC<{
   )
 
   const setMode = useCallback(
-    (mode: 'VIS' | 'SQL') => {
+    (mode: Mode) => {
       setQuestionBlocksMap((blocksMap) => {
         return {
           ...blocksMap,
