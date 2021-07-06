@@ -1,15 +1,15 @@
-import MonacoEditor from '@monaco-editor/react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import type { editor } from 'monaco-editor/esm/vs/editor/editor.api'
-import { css, cx } from '@emotion/css'
-import { ThemingVariables } from '@app/styles'
-import { transclusionRegex } from '@app/hooks/useSqlEditor'
-import { compact, uniq } from 'lodash'
-import type { Editor } from '@app/types'
 import { useWorkspace } from '@app/context/workspace'
-import { useMgetBlocks } from '@app/hooks/api'
-import { useGetBlockTitleTextSnapshot } from './editor'
 import { useOpenStory } from '@app/hooks'
+import { useMgetBlocks } from '@app/hooks/api'
+import { transclusionRegex } from '@app/hooks/useSqlEditor'
+import { ThemingVariables } from '@app/styles'
+import type { Editor } from '@app/types'
+import { css, cx } from '@emotion/css'
+import MonacoEditor from '@monaco-editor/react'
+import { compact, uniq } from 'lodash'
+import type { editor } from 'monaco-editor/esm/vs/editor/editor.api'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useGetBlockTitleTextSnapshot } from './editor'
 import { useQuestionEditor } from './StoryQuestionsEditor'
 
 const contentWidgetClassname = css`
@@ -25,6 +25,15 @@ const contentWidgetClassname = css`
   overflow: hidden;
   text-overflow: ellipsis;
 `
+
+const STORY_BLOCK_REGEX = new RegExp(`${window.location.protocol}//${window.location.host}/story/(\\S+)#(\\S+)`)
+
+const trasnformPasteText = (text: string) => {
+  if (STORY_BLOCK_REGEX.test(text)) {
+    const matches = STORY_BLOCK_REGEX.exec(text)!
+    return `{{${matches[2]}}}`
+  }
+}
 
 export function SQLEditor(props: {
   languageId: string
@@ -44,6 +53,21 @@ export function SQLEditor(props: {
     if (!editor) {
       return
     }
+
+    editor.onDidPaste((e) => {
+      const pastedString = editor.getModel()?.getValueInRange(e.range)
+      if (!pastedString) return
+
+      const transformedText = trasnformPasteText(pastedString)
+      if (transformedText) {
+        editor.setSelection(e.range)
+        const id = { major: 1, minor: 1 }
+        const text = transformedText
+        const op = { identifier: id, range: e.range, text: text, forceMoveMarkers: true }
+        editor.executeEdits('my-source', [op])
+      }
+    })
+
     const { dispose } = editor.onKeyDown((e) => {
       if ((e.ctrlKey || e.metaKey) && e.code === 'KeyS') {
         onSave?.()
