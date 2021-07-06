@@ -12,7 +12,7 @@ import FormError from './kit/FormError'
 import FormInput from './kit/FormInput'
 import FormLabel from './kit/FormLabel'
 
-export function WorkspacePreferences() {
+export function WorkspacePreferences(props: { onClose(): void }) {
   const { data: workspace } = useWorkspaceDetail()
   const { register, reset, getValues, setValue, handleSubmit } = useForm<Pick<Workspace, 'avatar' | 'name'>>({
     defaultValues: pick(workspace, ['avatar', 'name']),
@@ -23,6 +23,12 @@ export function WorkspacePreferences() {
   }, [workspace, reset])
   const fileInputRef = useRef<HTMLInputElement>(null)
   const handleWorkspaceUpdate = useWorkspaceUpdate()
+  const { onClose } = props
+  useEffect(() => {
+    if (handleWorkspaceUpdate.status === 'success') {
+      onClose()
+    }
+  }, [handleWorkspaceUpdate.status, onClose])
 
   return (
     <form
@@ -106,6 +112,7 @@ export function WorkspacePreferences() {
           width: 100%;
           margin-top: 5px;
         `}
+        disabled={handleWorkspaceUpdate.status === 'pending'}
       >
         Update
       </FormButton>
