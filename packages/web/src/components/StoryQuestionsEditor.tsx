@@ -865,11 +865,11 @@ export const StoryQuestionEditor: React.FC<{
         <div
           className={css`
             flex-shrink: 0;
-            width: 40px;
+            width: 56px;
             background-color: ${ThemingVariables.colors.gray[3]};
-            padding: 10px;
+            padding: 0 16px;
             > * {
-              margin: 10px 0;
+              margin: 16px 0;
             }
           `}
         >
