@@ -116,7 +116,7 @@ const File2BlockProcessers: Record<
   }
 }
 
-export async function uploadFilesAndUpdateBlocks(files: FileList, fileBlocks: Editor.Block[], workspace: Workspace) {
+export async function uploadFilesAndUpdateBlocks(files: File[], fileBlocks: Editor.Block[], workspace: Workspace) {
   const transcations: Omit<Transcation, 'workspaceId'>[] = []
   for (let i = 0; i < files.length; i++) {
     const file = files[i]

@@ -1,4 +1,7 @@
+import { useWorkspace } from '@app/context/workspace'
 import { useCreateEmptyBlock } from '@app/helpers/blockFactory'
+import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
+import { useCommit } from '@app/hooks/useCommit'
 import {
   DndContext,
   DragEndEvent,
@@ -11,7 +14,6 @@ import {
 } from '@dnd-kit/core'
 import { css } from '@emotion/css'
 import { ContentBlocks } from 'components/editor/ContentBlock'
-import { uploadFilesAndUpdateBlocks } from 'components/editor/DataFileType'
 import { useSelectionArea } from 'hooks/useSelectionArea'
 import invariant from 'invariant'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
@@ -19,21 +21,19 @@ import ReactTestUtils from 'react-dom/test-utils'
 import { useRecoilState } from 'recoil'
 import { useBlockSnapshot } from 'store/block'
 import { Direction, DnDItemTypes, DropItem, Editor } from 'types'
-import { DndSensor } from '../lib/dnd-kit/dndSensor'
 import {
+  BlockDndContext,
+  closetBorder,
   DroppingArea,
-  MouseSensorOptions,
-  logger,
+  DroppingAreaContext,
+  FileDraggble,
   findDroppbleBlockIdAndDirection,
   getFakeDragbleElement,
-  closetBorder,
-  FileDraggble,
-  BlockDndContext,
-  DroppingAreaContext
+  logger,
+  MouseSensorOptions
 } from '../context/blockDnd'
-import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
-import { useWorkspace } from '@app/context/workspace'
-import { useCommit } from '@app/hooks/useCommit'
+import { DndSensor } from '../lib/dnd-kit/dndSensor'
+import { useSetUploadResource } from './editor/hooks/useUploadResource'
 
 export const BlockDndContextProvider: React.FC = ({ children }) => {
   const [selectingBlockIds, setSelectingBlockIds] = useState<string[] | null>(null)
@@ -60,6 +60,8 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
   }, [setDroppingArea])
 
   const workspace = useWorkspace()
+
+  const setUploadResource = useSetUploadResource()
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
@@ -104,7 +106,7 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
           invariant(files, 'files is empty')
           const fileBlocks = [...files].map(() =>
             createEmptyBlock({
-              type: Editor.BlockType.Embed,
+              type: Editor.BlockType.File,
               storyId: overStoryId,
               parentId: overStoryId
             })
@@ -114,8 +116,9 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
             targetBlockId: droppingAreaRef.current.blockId,
             direction: droppingAreaRef.current.direction
           })
-          uploadFilesAndUpdateBlocks(files, fileBlocks, workspace).then((transcations) => {
-            transcations.forEach((transcation) => commit({ transcation, storyId: overStoryId }))
+          fileBlocks.forEach((block, i) => {
+            const file = files[i]
+            setUploadResource({ blockId: block.id, file })
           })
           dataTransferRef.current = null
         } else {
@@ -127,7 +130,7 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
       droppingAreaRef.current = null
       // setSelectingBlockIds(null)
     },
-    [setDroppingArea, blockTranscations, workspace, createEmptyBlock, commit]
+    [setDroppingArea, blockTranscations, createEmptyBlock, setUploadResource]
     // [dropCacheRef, storyId, duplicateBlocks, moveBlocks]
   )
 

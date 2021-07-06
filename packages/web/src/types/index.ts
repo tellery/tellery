@@ -169,7 +169,6 @@ export namespace Editor {
   export interface FileBlock extends ContentBlock {
     content: ContentBlock['content'] & {
       fileKey?: string
-      accept?: string
     }
   }
 
