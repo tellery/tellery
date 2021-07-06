@@ -35,7 +35,7 @@ dependencies {
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
 
     api("ch.qos.logback:logback-classic:$logbackVersion")
-    api("io.github.microutils:kotlin-logging:1.12.0")
+    api("io.github.microutils:kotlin-logging:2.0.8")
     api("javax.annotation:javax.annotation-api:1.2")
 
     api("io.arrow-kt:arrow-core:$arrowVersion")
