@@ -10,6 +10,7 @@ import { DataViewBlock } from './dataView'
 import { DividerBlock } from './divider'
 import { EquationBlock } from './equation'
 import { FileBlock } from './file'
+import { EmbedBlock } from './embed'
 import { Heading1Block } from './heading1'
 import { Heading2Block } from './heading2'
 import { Heading3Block } from './heading3'
@@ -51,6 +52,7 @@ const blockConstructors = {
   [BlockType.DIVIDER]: DividerBlock,
   [BlockType.ROW]: RowBlock,
   [BlockType.COLUMN]: ColumnBlock,
+  [BlockType.EMBED]: EmbedBlock,
 }
 
 _(blockConstructors).forEach((v, k) => {
