@@ -1,13 +1,11 @@
 import React from 'react'
 import type { Editor } from 'types'
-import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
+import { UploadFilePlaceHolder } from '../BlockBase/UploadFilePlaceHolder'
 
 export const FileBlock: React.FC<{
-  block: Editor.Block
+  block: Editor.FileBlock
 }> = ({ block }) => {
   return (
-    <>
-      <BlockPlaceHolder text="Uploading" loading={true} onClick={() => {}} />
-    </>
+    <>{!block.content?.fileKey && <UploadFilePlaceHolder blockId={block.id} text="Click To Upload" accept="*" />}</>
   )
 }

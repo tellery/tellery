@@ -37,7 +37,6 @@ import {
 import { OperatorsContext, useStoryOperators } from './BlockOperators'
 import { ThoughtTitleBlock } from './Blocks/ThoughtTitleBlock'
 import { ContentBlocks } from './ContentBlock'
-import { uploadFilesAndUpdateBlocks } from './DataFileType'
 import { DebouncedResizeBlock } from './DebouncedResizeBlock'
 import {
   createTranscation,
@@ -65,6 +64,7 @@ import {
   setCaretToStart
 } from './helpers'
 import { EditorContext, EditorContextInterface, useMouseMoveInEmitter } from './hooks'
+import { useSetUploadResource } from './hooks/useUploadResource'
 import { BlockTextOperationMenu } from './Popovers/BlockTextOperationMenu'
 import { HovreringBlockId } from './store'
 import { TelleryStorySelection } from './store/selection'
@@ -1046,6 +1046,7 @@ const _StoryEditor: React.FC<{
   )
 
   const workspace = useWorkspace()
+  const setUploadResource = useSetUploadResource()
 
   const pasteHandler = useCallback(
     (e: React.ClipboardEvent<HTMLDivElement>) => {
@@ -1071,8 +1072,9 @@ const _StoryEditor: React.FC<{
           targetBlockId: selectionState.anchor.blockId,
           direction: 'bottom'
         })
-        uploadFilesAndUpdateBlocks(files, fileBlocks, workspace).then((transcations) => {
-          transcations.forEach((transcation) => commit({ transcation, storyId }))
+        fileBlocks.forEach((block, i) => {
+          const file = files[i]
+          setUploadResource({ blockId: block.id, file })
         })
       } else if (e.clipboardData) {
         const telleryBlockDataStr = e.clipboardData.getData(TELLERY_MIME_TYPES.BLOCKS)
@@ -1258,6 +1260,7 @@ const _StoryEditor: React.FC<{
                 }
                 cursor: text;
                 width: 100%;
+                flex: 1;
                 user-select: none;
                 &::-webkit-scrollbar {
                   /* display: none; */
@@ -1301,6 +1304,7 @@ const _StoryEditor: React.FC<{
                       flex-direction: column;
                       align-items: center;
                       font-size: 16px;
+                      min-height: 100%;
                       transition: width 250ms ease;
                       padding: 100px 100px 0 100px;
                       @media (max-width: 700px) {
@@ -1383,7 +1387,15 @@ const EditorEmptyStatePlaceHolder = ({
         align-self: flex-start;
         width: 100%;
       `}
-      onClick={onClick}
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        onClick(e)
+      }}
+      onMouseDown={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+      }}
     >
       Click here or press Enter to continue with an empty story.
     </div>
@@ -1405,7 +1417,15 @@ const EditorEmptyStateEndPlaceHolder = ({
         width: 100%;
         cursor: text;
       `}
-      onClick={onClick}
+      onMouseDown={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+      }}
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        onClick(e)
+      }}
     ></div>
   )
 }
