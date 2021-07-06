@@ -2,20 +2,18 @@ import Icon from '@app/components/kit/Icon'
 import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { css, cx } from '@emotion/css'
 import {
-  IconCommonSave,
   IconMenuBulletedList,
   IconMenuCode,
   IconMenuDivider,
   IconMenuH1,
   IconMenuH2,
   IconMenuH3,
-  IconMenuImage,
   IconMenuNumberList,
   IconMenuQuery,
   IconMenuQuote,
-  IconMenuText,
   IconMenuToDo,
-  IconMenuToggleList
+  IconMenuToggleList,
+  IconMenuUpload
 } from 'assets/icons'
 import debug from 'debug'
 import { useBlockSuspense } from 'hooks/api'
@@ -142,20 +140,15 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
 
   const operations = useMemo(() => {
     return [
-      {
-        title: 'Text',
-        action: createOrToggleBlock(Editor.BlockType.Text),
-        icon: <Icon icon={IconMenuText} color={'#000'} />
-      },
+      // {
+      //   title: 'Text',
+      //   action: createOrToggleBlock(Editor.BlockType.Text),
+      //   icon: <Icon icon={IconMenuText} color={'#000'} />
+      // },
       {
         title: 'Question',
         action: createOrToggleBlock(Editor.BlockType.Question),
         icon: <Icon icon={IconMenuQuery} color={'#000'} />
-      },
-      {
-        title: 'CSV/Excel',
-        action: createOrToggleBlock(Editor.BlockType.File),
-        icon: <Icon icon={IconCommonSave} color={'#000'} />
       },
       {
         title: 'Heading 1',
@@ -192,10 +185,15 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
         action: createOrToggleBlock(Editor.BlockType.Toggle),
         icon: <Icon icon={IconMenuToggleList} color={'#000'} />
       },
+      // {
+      //   title: 'Image',
+      //   action: createOrToggleBlock(Editor.BlockType.Image),
+      //   icon: <Icon icon={IconMenuImage} color={'#000'} />
+      // },
       {
-        title: 'Image',
-        action: createOrToggleBlock(Editor.BlockType.Image),
-        icon: <Icon icon={IconMenuImage} color={'#000'} />
+        title: 'Upload Image, Excel and CSV',
+        action: createOrToggleBlock(Editor.BlockType.File),
+        icon: <Icon icon={IconMenuUpload} color={'#000'} />
       },
       {
         title: 'Code',

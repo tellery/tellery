@@ -4,7 +4,6 @@ import { cloneDeep } from 'lodash'
 import { customAlphabet } from 'nanoid'
 import { toast } from 'react-toastify'
 import { Editor, Workspace } from 'types'
-import { fileLoader } from 'utils'
 import { getImageDimension, uploadFile } from 'utils/upload'
 import { setBlockTranscation } from '../../context/editorTranscations'
 
@@ -51,11 +50,10 @@ const File2BlockProcessers: Record<
 > = {
   [FileType.CSV]: async (file: File, block: Editor.Block, workspace: Workspace) => {
     const uploadedFile = await uploadFile(file, workspace.id)
-    const fileUrl = fileLoader({ src: uploadedFile.key })
     const collectionName = getSafeRandomFileName(file.name)
 
     const res = await importFromCSV({
-      url: fileUrl,
+      key: uploadedFile.key,
       collection: collectionName,
       connectorId: workspace.preferences.connectorId!,
       database: workspace.preferences.dbImportsTo!,

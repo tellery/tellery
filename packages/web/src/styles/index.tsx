@@ -4,6 +4,7 @@ export interface TelleryTheme {
   colors: {
     text: string[]
     gray: string[]
+    code: string[]
     selection: string[]
     primary: string[]
     positive: string[]
@@ -23,6 +24,7 @@ export const TelleryThemeLight: TelleryTheme = {
     text: ['#333333', '#999999', '#CCCCCC'],
     gray: ['#BABABA', '#DEDEDE', '#EFEFEF', '#F7F7F7', '#FBFBFB', '#FFFFFF'],
     primary: ['#002072', '#002FA7', '#ADBCE3', '#D6DEF1', '#EBEEF8', '#F5F7FB'],
+    code: ['#FF6E4A'],
     selection: ['rgba(214, 222, 241, 0.5)'],
     positive: ['#53C556', '#D4F0D5'],
     negative: ['#FF5959', '#FFD5D5'],
