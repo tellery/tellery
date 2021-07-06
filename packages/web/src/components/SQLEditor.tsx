@@ -55,7 +55,6 @@ export function SQLEditor(props: {
     }
 
     editor.onDidPaste((e) => {
-      console.log(e.range)
       const pastedString = editor.getModel()?.getValueInRange(e.range)
       if (!pastedString) return
 
