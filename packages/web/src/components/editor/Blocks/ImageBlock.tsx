@@ -9,6 +9,7 @@ import { useEditor } from '../hooks'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
 import { UploadFilePlaceHolder } from '../BlockBase/UploadFilePlaceHolder'
+import { useWorkspace } from '@app/context/workspace'
 
 const Image = styled.img`
   width: 100%;
@@ -27,6 +28,7 @@ export const ImageBlock: React.FC<{
   const editor = useEditor<Editor.ImageBlock>()
   const contentRef = useRef<HTMLDivElement | null>(null)
   const { readonly } = useBlockBehavior()
+  const workspace = useWorkspace()
 
   useEffect(() => {
     if (!block.content) {
@@ -70,7 +72,7 @@ export const ImageBlock: React.FC<{
           ref={contentRef}
         >
           {block.content?.fileKey && block.content.imageInfo && (
-            <Image src={fileLoader({ src: block.content.fileKey })}></Image>
+            <Image src={fileLoader({ src: block.content.fileKey, workspaceId: workspace.id })}></Image>
           )}
           {readonly === false && (
             <BlockResizer

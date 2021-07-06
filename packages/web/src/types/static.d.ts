@@ -73,6 +73,7 @@ declare global {
       NODE_ENV: 'development' | 'production'
       PORT?: string
       PWD: string
+      VITE_WS_URI?: string
     }
   }
 }

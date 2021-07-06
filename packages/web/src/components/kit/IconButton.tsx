@@ -1,7 +1,8 @@
 import { css, cx } from '@emotion/css'
+import Tippy from '@tippyjs/react'
 import { svgColorClassName } from 'lib/svg'
 import { isNil, omitBy } from 'lodash'
-import { FunctionComponent, SVGAttributes, ButtonHTMLAttributes, useMemo, forwardRef } from 'react'
+import React, { FunctionComponent, SVGAttributes, ButtonHTMLAttributes, useMemo, forwardRef, ReactNode } from 'react'
 import { ThemingVariables } from 'styles'
 
 export default forwardRef<
@@ -10,6 +11,7 @@ export default forwardRef<
     icon: FunctionComponent<SVGAttributes<SVGElement>>
     color?: string
     size?: number
+    hoverContent?: ReactNode
   } & ButtonHTMLAttributes<HTMLButtonElement>
 >(function IconButton(props, ref) {
   const { icon, size, className, ...restProps } = props
@@ -26,7 +28,7 @@ export default forwardRef<
   )
   const color = props.disabled ? ThemingVariables.colors.gray[0] : props.color
 
-  return (
+  const button = (
     <button
       ref={ref}
       className={cx(
@@ -50,5 +52,13 @@ export default forwardRef<
     >
       {icon(iconProps)}
     </button>
+  )
+
+  if (!props.hoverContent) return button
+
+  return (
+    <Tippy content={props.hoverContent ?? null} hideOnClick={false} animation="fade" duration={150} arrow={false}>
+      {button}
+    </Tippy>
   )
 })
