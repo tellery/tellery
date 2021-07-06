@@ -1,4 +1,4 @@
-import MonacoEditor from '@monaco-editor/react'
+import MonacoEditor, { useMonaco } from '@monaco-editor/react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { editor } from 'monaco-editor/esm/vs/editor/editor.api'
 import { css, cx } from '@emotion/css'
@@ -26,6 +26,15 @@ const contentWidgetClassname = css`
   text-overflow: ellipsis;
 `
 
+const STORY_BLOCK_REGEX = new RegExp(`${window.location.protocol}//${window.location.host}/story/(\\S+)#(\\S+)`)
+
+const trasnformPasteText = (text: string) => {
+  if (STORY_BLOCK_REGEX.test(text)) {
+    const matches = STORY_BLOCK_REGEX.exec(text)!
+    return `{{${matches[2]}}}`
+  }
+}
+
 export function SQLEditor(props: {
   languageId: string
   value: string
@@ -39,11 +48,28 @@ export function SQLEditor(props: {
   onRun?(): void
 }) {
   const [editor, setEditor] = useState<editor.IStandaloneCodeEditor>()
+  const monaco = useMonaco()
   const { onRun, onSave } = props
   useEffect(() => {
-    if (!editor) {
+    if (!editor || !monaco) {
       return
     }
+
+    editor.onDidPaste((e) => {
+      console.log(e.range)
+      const pastedString = editor.getModel()?.getValueInRange(e.range)
+      if (!pastedString) return
+
+      const transformedText = trasnformPasteText(pastedString)
+      if (transformedText) {
+        editor.setSelection(e.range)
+        const id = { major: 1, minor: 1 }
+        const text = transformedText
+        const op = { identifier: id, range: e.range, text: text, forceMoveMarkers: true }
+        editor.executeEdits('my-source', [op])
+      }
+    })
+
     const { dispose } = editor.onKeyDown((e) => {
       if ((e.ctrlKey || e.metaKey) && e.code === 'KeyS') {
         onSave?.()
@@ -57,7 +83,7 @@ export function SQLEditor(props: {
       }
     })
     return dispose
-  }, [editor, onRun, onSave])
+  }, [editor, monaco, onRun, onSave])
   const { onChange } = props
   const handleChange = useCallback(
     (value: string | undefined) => {

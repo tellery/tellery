@@ -1053,7 +1053,7 @@ const _StoryEditor: React.FC<{
       if (e.defaultPrevented) {
         return
       }
-      logger('clipboard', e.clipboardData)
+      // logger('clipboard', e.clipboardData.types, e.clipboardData.getData('vscode-editor-data'))
       if (e.clipboardData.files.length) {
         e.stopPropagation()
         e.preventDefault()

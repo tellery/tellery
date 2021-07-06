@@ -9,7 +9,8 @@ export const test = 1
 export enum TELLERY_MIME_TYPES {
   BLOCKS = 'text/tellery-blocks-v1',
   BLOCK_REF = 'text/tellery-block-ref-v1',
-  TOKEN = 'text/tellery-tokens-v1'
+  TOKEN = 'text/tellery-tokens-v1',
+  MONACO = 'vscode-editor-data'
 }
 
 export const DEFAULT_TITLE = 'Untitled'
