@@ -24,7 +24,7 @@ plugins {
 
 dependencies {
     implementation(project(":interface"))
-    implementation("net.snowflake:snowflake-jdbc:3.12.16")
+    implementation("net.snowflake:snowflake-jdbc:3.13.5")
     runtimeOnly("org.apache.hive:hive-jdbc:2.1.0") {
         exclude(group = "org.slf4j", module = "")
         exclude(group = "log4j", module = "log4j")
