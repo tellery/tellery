@@ -31,14 +31,16 @@ class FetchRequest {
   link!: string
 }
 async function fetch(ctx: Context) {
-  const payload = plainToClass(FetchRequest, ctx.request.body)
+  const payload = plainToClass(FetchRequest, ctx.params)
+  await validate(ctx, payload)
   const { workspaceId, link } = payload
+
   const match = link.match(new RegExp('tellery://([0-9a-zA-Z_-]+)'))
   if (!match) {
     ctx.redirect(link)
     return
   }
-  await validate(ctx, payload)
+
   const user = mustGetUser(ctx)
   const fetchedObject = await storageService.objectProxy(user.id, workspaceId, match[1])
   if (!fetchedObject) {
@@ -75,7 +77,7 @@ async function upload(ctx: Context) {
 const router = new Router()
 
 router.get('/provision', provision)
-router.post('/fetch', fetch)
+router.get('/file/:workspaceId/:link', fetch)
 if (!config.has('objectStorage.type') || config.get('objectStorage.type') === 'postgres') {
   router.post('/upload', upload)
 }
