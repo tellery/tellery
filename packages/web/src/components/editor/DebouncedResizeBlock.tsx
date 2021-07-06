@@ -71,6 +71,7 @@ export const DebouncedResizeBlock: React.FC<{
         disableY
           ? css`
               height: auto;
+              min-height: 100%;
             `
           : css`
               height: 100%;

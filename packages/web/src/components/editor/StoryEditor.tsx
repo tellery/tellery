@@ -1258,6 +1258,7 @@ const _StoryEditor: React.FC<{
                 }
                 cursor: text;
                 width: 100%;
+                flex: 1;
                 user-select: none;
                 &::-webkit-scrollbar {
                   /* display: none; */
@@ -1301,6 +1302,7 @@ const _StoryEditor: React.FC<{
                       flex-direction: column;
                       align-items: center;
                       font-size: 16px;
+                      min-height: 100%;
                       transition: width 250ms ease;
                       padding: 100px 100px 0 100px;
                       @media (max-width: 700px) {
@@ -1383,7 +1385,15 @@ const EditorEmptyStatePlaceHolder = ({
         align-self: flex-start;
         width: 100%;
       `}
-      onClick={onClick}
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        onClick(e)
+      }}
+      onMouseDown={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+      }}
     >
       Click here or press Enter to continue with an empty story.
     </div>
@@ -1405,7 +1415,15 @@ const EditorEmptyStateEndPlaceHolder = ({
         width: 100%;
         cursor: text;
       `}
-      onClick={onClick}
+      onMouseDown={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+      }}
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        onClick(e)
+      }}
     ></div>
   )
 }
