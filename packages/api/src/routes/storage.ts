@@ -15,13 +15,20 @@ import selfhostedStorage from '../store/selfhostedStorage'
 class ProvisionRequest {
   @IsDefined()
   workspaceId!: string
+
+  @IsDefined()
+  contentType!: string
 }
 
 async function provision(ctx: Context) {
   const payload = plainToClass(ProvisionRequest, ctx.request.query)
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
-  ctx.body = await storageService.provision(user.id, payload.workspaceId)
+  const { workspaceId, contentType } = payload
+  ctx.body = await storageService.provision(user.id, payload.workspaceId, {
+    workspaceId,
+    contentType,
+  })
 }
 
 class GetFileRequest {
@@ -40,8 +47,13 @@ async function getFile(ctx: Context) {
   if (!fetchedObject) {
     ctx.throw(404)
   }
-  if (fetchedObject instanceof Buffer) {
-    ctx.body = fetchedObject
+  if (fetchedObject instanceof Object) {
+    const { content, contentType } = fetchedObject
+    ctx.body = content
+    ctx.set({
+      'Content-Type': contentType,
+      'Cache-Control': 'public, max-age=31104000',
+    })
   } else {
     ctx.redirect(fetchedObject)
   }
@@ -50,6 +62,12 @@ async function getFile(ctx: Context) {
 class UploadRequest {
   @IsDefined()
   key!: string
+
+  @IsDefined()
+  workspaceId!: string
+
+  @IsDefined()
+  contentType!: string
 }
 async function upload(ctx: Context) {
   const payload = plainToClass(UploadRequest, ctx.request.body)
@@ -59,9 +77,20 @@ async function upload(ctx: Context) {
   }
   const file = ctx.request.files.file as File
   const { name, size, path } = file
+  const { key, workspaceId, contentType } = payload
+
   const buffer = await readableStreamWrapper(createReadStream(path))
   await promisify(unlink)(path)
-  await selfhostedStorage.putFile(payload.key, buffer, { name, size })
+
+  await selfhostedStorage.putFile({
+    key,
+    workspaceId,
+    content: buffer,
+    contentType,
+    size,
+    metadata: { name },
+  })
+
   ctx.body = {
     key: payload.key,
     name,

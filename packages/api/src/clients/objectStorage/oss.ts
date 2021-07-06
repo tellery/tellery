@@ -1,9 +1,10 @@
 import config from 'config'
-import _ from 'lodash'
 import * as crypto from 'crypto'
 import * as qs from 'querystring'
 import { nanoid } from 'nanoid'
-import { ProvisionBody } from '../../types/upload'
+import { ProvisionBody, ProvisionRequest } from '../../types/upload'
+
+const storageType = 'REDIRECT'
 
 type OSSConfig = {
   type: 'oss'
@@ -16,7 +17,7 @@ type OSSConfig = {
 
 const ossConfig = config.get<OSSConfig>('objectStorage')
 
-function provision(): ProvisionBody {
+function provision(_: ProvisionRequest): ProvisionBody {
   const expiresIn = 15 * 60
   const key = nanoid()
 
@@ -73,4 +74,4 @@ async function proxy(fileKey: string): Promise<string> {
   return getTemporaryUrl(fileKey)
 }
 
-export { provision, getTemporaryUrl, proxy }
+export { provision, getTemporaryUrl, proxy, storageType }

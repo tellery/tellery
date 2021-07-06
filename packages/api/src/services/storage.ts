@@ -4,8 +4,9 @@ import * as _ from 'lodash'
 import { getIPermission, IPermission } from '../core/permission'
 import { getObjectStorageByName } from '../clients/objectStorage'
 import { IObjectStorage } from '../clients/objectStorage/interface'
-import { ProvisionBody } from '../types/upload'
+import { ProvisionBody, ProvisionRequest } from '../types/upload'
 import { canGetWorkspaceData } from '../utils/permission'
+import { FileBody } from '../types/file'
 
 export class StorageService {
   private permission: IPermission
@@ -20,9 +21,13 @@ export class StorageService {
   /**
    * making provision of uploading
    */
-  async provision(operatorId: string, workspaceId: string): Promise<ProvisionBody> {
+  async provision(
+    operatorId: string,
+    workspaceId: string,
+    provisionRequest: ProvisionRequest,
+  ): Promise<ProvisionBody> {
     await canGetWorkspaceData(this.permission, operatorId, workspaceId)
-    return this.objectStorage.provision()
+    return this.objectStorage.provision(provisionRequest)
   }
 
   /**
@@ -32,8 +37,15 @@ export class StorageService {
     operatorId: string,
     workspaceId: string,
     fileKey: string,
-  ): Promise<string | Buffer | null> {
-    await canGetWorkspaceData(this.permission, operatorId, workspaceId)
+    opts: { skipPermissionCheck?: boolean; acquireUrlOnly?: boolean } = {},
+  ): Promise<string | FileBody | null> {
+    const { skipPermissionCheck = false, acquireUrlOnly = false } = opts
+    if (!skipPermissionCheck) {
+      await canGetWorkspaceData(this.permission, operatorId, workspaceId)
+    }
+    if (acquireUrlOnly && this.objectStorage.storageType !== 'REDIRECT') {
+      return null
+    }
     return this.objectStorage.proxy(fileKey)
   }
 }

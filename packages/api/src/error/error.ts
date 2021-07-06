@@ -53,3 +53,13 @@ export class CyclicTransclusionError extends Error {
     return new CyclicTransclusionError('cyclic transclusion appears')
   }
 }
+
+export class StorageError extends Error {
+  status = 400
+
+  static notSupportImport(): StorageError {
+    return new StorageError(
+      'Your current storage does not support import data into warehouse by connector, we are working in progress!',
+    )
+  }
+}
