@@ -152,6 +152,19 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
           setOpen(false)
         },
         icon: <IconMiscQuestionBlock />
+      },
+      {
+        title: 'File Block',
+        desc: 'Upload CSV/Excel/Image',
+        action: (block: Editor.BaseBlock) => {
+          if (isEmptyTitleBlock(block)) {
+            editor?.toggleBlockType(id, Editor.BlockType.File, 0)
+          } else {
+            editor?.insertNewEmptyBlock(Editor.BlockType.File, id, 'bottom')
+          }
+          setOpen(false)
+        },
+        icon: <IconMiscTextBlock />
       }
     ]
   }, [editor, id, setOpen])

@@ -89,7 +89,8 @@ export namespace Editor {
     Story = 'story',
     Row = 'row',
     Column = 'column',
-    Thought = 'thought'
+    Thought = 'thought',
+    Embed = 'embed'
   }
 
   export enum BlockParentType {
@@ -162,6 +163,13 @@ export namespace Editor {
     content: ContentBlock['content'] & {
       fileKey?: string
       imageInfo?: ImageInfo
+    }
+  }
+
+  export interface FileBlock extends ContentBlock {
+    content: ContentBlock['content'] & {
+      fileKey?: string
+      accept?: string
     }
   }
 

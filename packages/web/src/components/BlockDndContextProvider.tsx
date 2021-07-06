@@ -104,7 +104,7 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
           invariant(files, 'files is empty')
           const fileBlocks = [...files].map(() =>
             createEmptyBlock({
-              type: Editor.BlockType.File,
+              type: Editor.BlockType.Embed,
               storyId: overStoryId,
               parentId: overStoryId
             })
