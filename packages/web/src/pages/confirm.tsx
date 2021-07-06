@@ -37,10 +37,12 @@ export default function Confirm() {
         subtitle="We will create an account for you."
         footer={
           <>
+            <FormError message={handleUserConfirm.error?.response?.data.errMsg} />
             <FormButton
               type="button"
               variant="primary"
               className={css`
+                margin-top: 5px;
                 width: 100%;
               `}
               disabled={!code || handleUserConfirm.status === 'pending'}
@@ -52,7 +54,6 @@ export default function Confirm() {
             >
               Confirm
             </FormButton>
-            <FormError message={handleUserConfirm.error?.response?.data.errMsg} />
           </>
         }
       />
