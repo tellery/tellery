@@ -4,6 +4,7 @@ import { css, cx } from '@emotion/css'
 import {
   IconCommonArrowDropDown,
   IconCommonClose,
+  IconCommonDownstream,
   IconCommonError,
   IconCommonRun,
   IconCommonSave,
@@ -896,8 +897,22 @@ export const StoryQuestionEditor: React.FC<{
               setMode('SQL')
             }}
           />
+          <IconButton
+            icon={IconCommonDownstream}
+            className={css`
+              padding: 10px;
+              border-radius: 8px;
+              background-color: ${mode === 'DOWNSTREAM'
+                ? ThemingVariables.colors.primary[1]
+                : ThemingVariables.colors.primary[4]};
+            `}
+            color={mode === 'DOWNSTREAM' ? ThemingVariables.colors.gray[5] : ThemingVariables.colors.primary[1]}
+            onClick={() => {
+              setMode('DOWNSTREAM')
+            }}
+          />
         </div>
-        {mode === 'SQL' ? (
+        {mode === 'SQL' && (
           <>
             <SQLEditor
               className={css`
@@ -912,14 +927,6 @@ export const StoryQuestionEditor: React.FC<{
               }}
               onRun={run}
               onSave={save}
-            />
-            <QuestionReferences
-              blockId={id}
-              className={css`
-                flex-shrink: 0;
-                box-shadow: -2px 0px 8px rgba(0, 0, 0, 0.04);
-                z-index: 100;
-              `}
             />
             {sqlSidePanel && (
               <div
@@ -943,7 +950,8 @@ export const StoryQuestionEditor: React.FC<{
               </div>
             )}
           </>
-        ) : (
+        )}
+        {mode === 'VIS' && (
           <Configuration
             data={snapshot?.data}
             config={visualizationConfig}
@@ -954,6 +962,14 @@ export const StoryQuestionEditor: React.FC<{
                 overflow: hidden;
               `
             )}
+          />
+        )}
+        {mode === 'DOWNSTREAM' && (
+          <QuestionReferences
+            blockId={id}
+            className={css`
+              flex: 1;
+            `}
           />
         )}
       </div>
