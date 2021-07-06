@@ -1981,10 +1981,10 @@
   resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-8.3.0.tgz#215c231dff736d5ba92410e6d602050cce7e273f"
   integrity sha512-eQ9qFW/fhfGJF8WKHGEHZEyVWfZxrT+6CLIJGBcZPfxUh/+BnEj+UCGYMlr9qZuX/2AltsvwrGqp0LhEW8D0zQ==
 
-"@types/validator@^13.6.2":
-  version "13.6.2"
-  resolved "https://registry.yarnpkg.com/@types/validator/-/validator-13.6.2.tgz#0559af7f0b6eb34dacebb349087c503d932085fa"
-  integrity sha512-JP1yvp8yWJIxePOswaAqKOkLnMoZOr2XZBloyVE/fZSVuRtobFhI6mnwP1hWNFapKQrQ98p/w5ffELkfL9mo4Q==
+"@types/validator@^13.6.3":
+  version "13.6.3"
+  resolved "https://registry.yarnpkg.com/@types/validator/-/validator-13.6.3.tgz#31ca2e997bf13a0fffca30a25747d5b9f7dbb7de"
+  integrity sha512-fWG42pMJOL4jKsDDZZREnXLjc3UE0R8LOJfARWYg6U966rxDT7TYejYzLnUF5cvSObGg34nd0+H2wHHU5Omdfw==
 
 "@types/ws@^7.4.0":
   version "7.4.5"
