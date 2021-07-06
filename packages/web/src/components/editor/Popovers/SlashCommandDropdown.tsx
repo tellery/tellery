@@ -1,6 +1,6 @@
 import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { css } from '@emotion/css'
-import { IconMiscImageBlock, IconMiscQuestionBlock, IconMiscTextBlock } from 'assets/icons'
+import { IconCommonSave, IconMiscImageBlock, IconMiscQuestionBlock, IconMiscTextBlock } from 'assets/icons'
 import { useBlockSuspense } from 'hooks/api'
 import invariant from 'invariant'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
@@ -152,6 +152,19 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
           setOpen(false)
         },
         icon: <IconMiscQuestionBlock />
+      },
+      {
+        title: 'File Block',
+        desc: 'Upload CSV/Excel/Image',
+        action: (block: Editor.BaseBlock) => {
+          if (isEmptyTitleBlock(block)) {
+            editor?.toggleBlockType(id, Editor.BlockType.File, 0)
+          } else {
+            editor?.insertNewEmptyBlock(Editor.BlockType.File, id, 'bottom')
+          }
+          setOpen(false)
+        },
+        icon: <IconCommonSave />
       }
     ]
   }, [editor, id, setOpen])
