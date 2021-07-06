@@ -1,6 +1,7 @@
 import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { useCreateEmptyBlock } from '@app/helpers/blockFactory'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
+import { TELLERY_MIME_TYPES } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import {
   IconCommonLink,
@@ -179,8 +180,22 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
         action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
           e.preventDefault()
           e.stopPropagation()
-          copy(`${window.location.protocol}//${window.location.hostname}/story/${block?.storyId}#${block?.id}`)
+          copy('placeholder', {
+            onCopy: (clipboardData) => {
+              invariant(block, 'block is null')
+              const dataTranser = clipboardData as DataTransfer
+              dataTranser.setData(
+                TELLERY_MIME_TYPES.BLOCK_REF,
+                JSON.stringify({ blockId: block.id, storyId: block.storyId })
+              )
+              dataTranser.setData(
+                'text/plain',
+                `${window.location.protocol}//${window.location.host}/story/${block?.storyId}#${block?.id}`
+              )
+            }
+          })
           toast('Link Copied')
+          close()
         }
       },
       {

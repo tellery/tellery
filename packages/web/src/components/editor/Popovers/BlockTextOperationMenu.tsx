@@ -36,7 +36,7 @@ import {
 } from 'components/editor/helpers/tokenManipulation'
 import Icon from 'components/kit/Icon'
 import { createTranscation } from 'context/editorTranscations'
-import { AnimatePresence, motion, usePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useBlockSuspense } from 'hooks/api'
 import invariant from 'invariant'
 import { nanoid } from 'nanoid'
@@ -125,7 +125,6 @@ export const BlockTextOperationMenuInner = ({
   selectionString: string
 }) => {
   const editor = useEditor<Editor.Block>()
-  const [isPresent, safeToRemove] = usePresence()
   const currentBlock = useBlockSuspense(currentBlockId)
   const [modalRef, setModalRef] = useState<HTMLDivElement | null>(null)
   const [inlineEditing, setInlineEditing] = useState(false)
@@ -388,7 +387,6 @@ export const BlockTextOperationMenuInner = ({
         `}
       >
         <ToggleTypeOperation
-          isParentPresent={isPresent}
           // parentSafeToRemove={safeToRemove}
           toggleBlockType={(type: Editor.BlockType) => {
             if (!currentBlock?.id) return
@@ -402,7 +400,7 @@ export const BlockTextOperationMenuInner = ({
           currentType={currentBlock?.type}
         />
         <VerticalDivider />
-        <AddLinkOperation isParentPresent={isPresent} setInlineEditing={setInlineEditing} markHandler={markHandler} />
+        <AddLinkOperation setInlineEditing={setInlineEditing} markHandler={markHandler} />
 
         <VerticalDivider />
         <OperationButton
@@ -521,7 +519,6 @@ const TEXT_TYPES = [
 const ToggleTypeOperation = (props: {
   toggleBlockType: (type: Editor.BlockType) => void
   currentType?: Editor.BlockType
-  isParentPresent: boolean
 }) => {
   const [referenceElement, setReferenceElement] = useState<HTMLDivElement | null>(null)
 
@@ -534,12 +531,6 @@ const ToggleTypeOperation = (props: {
     },
     [props]
   )
-
-  useEffect(() => {
-    if (props.isParentPresent === false) {
-      setOpen(false)
-    }
-  }, [props.isParentPresent])
 
   return (
     <>
@@ -568,7 +559,7 @@ const ToggleTypeOperation = (props: {
         {currentTypeText}
         <Icon icon={IconCommonArrowDropDown} color={ThemingVariables.colors.gray[0]} />
       </div>
-      <EditorPopover referenceElement={referenceElement} open={open} setOpen={setOpen}>
+      <EditorPopover referenceElement={referenceElement} open={open} setOpen={setOpen} disableClickThrough>
         <div
           className={css`
             background: ${ThemingVariables.colors.gray[5]};
@@ -620,7 +611,6 @@ const ToggleTypeOperation = (props: {
 const AddLinkOperation = (props: {
   markHandler: (type: Editor.InlineType, links: string[], isFirstLink: boolean) => void
   setInlineEditing: (editing: boolean) => void
-  isParentPresent: boolean
 }) => {
   const [referenceElement, setReferenceElement] = useState<HTMLElement | null>(null)
   const [open, setOpen] = useState(false)
@@ -634,12 +624,6 @@ const AddLinkOperation = (props: {
       inputRef.current?.focus()
     }
   }, [open, props])
-
-  useEffect(() => {
-    if (props.isParentPresent === false) {
-      setOpen(false)
-    }
-  }, [props.isParentPresent])
 
   return (
     <>
@@ -686,7 +670,7 @@ const AddLinkOperation = (props: {
         Link
         <Icon icon={IconCommonArrowDropDown} color={ThemingVariables.colors.gray[0]} />
       </div>
-      <EditorPopover referenceElement={referenceElement} open={open} setOpen={setOpen}>
+      <EditorPopover referenceElement={referenceElement} open={open} setOpen={setOpen} disableClickThrough>
         <div
           className={css`
             background: ${ThemingVariables.colors.gray[5]};
