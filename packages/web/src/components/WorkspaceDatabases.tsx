@@ -14,6 +14,7 @@ import FormLabel from './kit/FormLabel'
 import FormSelect from './kit/FormSelect'
 import FormSwitch from './kit/FormSwitch'
 import { FormButton } from './kit/FormButton'
+import { ThemingVariables } from '@app/styles'
 
 export function WorkspaceDatabases(props: { onClose(): void }) {
   const { data: connectors } = useConnectorsList()
@@ -149,6 +150,17 @@ function Config(props: {
           placeholder={config.hint}
         />
       )}
+      <span
+        className={css`
+          font-size: 12px;
+          line-height: 14px;
+          color: ${ThemingVariables.colors.text[1]};
+          margin-top: 5px;
+          display: block;
+        `}
+      >
+        {config.description}
+      </span>
     </>
   )
 }
