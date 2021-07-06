@@ -6,11 +6,13 @@ on:
       - main
     paths:
       - "packages/web/**"
+      - ".github/workflows/docker-web.yml"
   pull_request:
     branches:
       - main
     paths:
       - "packages/web/**"
+      - ".github/workflows/docker-web.yml"
 
 jobs:
   build-docker-image-and-push:
