@@ -232,7 +232,7 @@ export function StoryListItem(props: {
         {props.width >= 1100 ? (
           <div
             className={css`
-              width: 120px;
+              width: 150px;
               flex-direction: column;
               justify-content: center;
             `}
