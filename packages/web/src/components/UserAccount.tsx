@@ -99,7 +99,7 @@ export default function UserAccount(props: { onClose(): void }) {
               return
             }
             const { key } = await uploadFile(file, workspace.id)
-            setValue('avatar', fileLoader({ src: key }))
+            setValue('avatar', fileLoader({ src: key, workspaceId: workspace.id }))
           }}
         />
         <FormButton
