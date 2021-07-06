@@ -88,21 +88,10 @@ export function Configuration<T extends Type = Type>(props: {
         `
       )}
     >
-      <Diagram
-        className={css`
-          height: calc(100% - 35px);
-          flex: 1;
-          width: 0;
-          margin: 20px;
-        `}
-        data={props.data}
-        config={props.config}
-      />
       <div
         className={css`
           flex-shrink: 0;
           overflow-y: auto;
-          box-shadow: -1px 0px 0px ${ThemingVariables.colors.gray[1]};
           width: 206px;
           padding: 10px;
           overflow: hidden;
@@ -146,6 +135,17 @@ export function Configuration<T extends Type = Type>(props: {
           />
         ) : null}
       </div>
+      <Diagram
+        className={css`
+          box-shadow: -1px 0px 0px ${ThemingVariables.colors.gray[1]};
+          height: 100%;
+          flex: 1;
+          width: 0;
+          padding: 20px;
+        `}
+        data={props.data}
+        config={props.config}
+      />
     </div>
   )
 }
