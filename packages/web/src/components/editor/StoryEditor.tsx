@@ -501,8 +501,8 @@ const _StoryEditor: React.FC<{
   }, [deleteBlockFragmentFromSelection, setClipboardWithFragment, snapshot])
 
   const doCopy = useCallback(() => {
-    const selection = window.getSelection()
-    selection?.removeAllRanges()
+    // const selection = window.getSelection()
+    // selection?.removeAllRanges()
     copy('tellery', {
       debug: true,
       onCopy: (clipboardData) => {

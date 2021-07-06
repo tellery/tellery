@@ -54,6 +54,7 @@ import IconMenuCenterAlign from './menu/center_align.svg?component'
 import IconMenuCode from './menu/code.svg?component'
 import IconMenuComment from './menu/comment.svg?component'
 import IconMenuDelete from './menu/delete.svg?component'
+import IconMenuDivider from './menu/divider.svg?component'
 import IconMenuDoubleColumn from './menu/double_column.svg?component'
 import IconMenuDownload from './menu/download.svg?component'
 import IconMenuDuplicate from './menu/duplicate.svg?component'
@@ -153,6 +154,7 @@ export {
   IconMenuCode,
   IconMenuComment,
   IconMenuDelete,
+  IconMenuDivider,
   IconMenuDoubleColumn,
   IconMenuDownload,
   IconMenuDuplicate,
