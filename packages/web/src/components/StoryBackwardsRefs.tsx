@@ -52,7 +52,7 @@ export const StoryBackwardsRefs = (props: { refs: Ref[]; storyId: string }) => {
             padding-top: 30px;
           `}
         >
-          Back Link
+          Links to this story
         </div>
         {/* TODO: use skelton */}
         <React.Suspense fallback={<CircularLoading size={30} color={ThemingVariables.colors.primary[0]} />}>

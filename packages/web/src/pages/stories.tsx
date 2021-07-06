@@ -268,7 +268,7 @@ const Page = () => {
                     width: 120px;
                   `}
                 >
-                  Update DT
+                  Last Modified
                 </div>
               ) : null}
               <div
