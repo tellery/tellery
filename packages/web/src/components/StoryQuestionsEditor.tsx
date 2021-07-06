@@ -865,24 +865,41 @@ export const StoryQuestionEditor: React.FC<{
         <div
           className={css`
             flex-shrink: 0;
-            width: 56px;
+            width: 70px;
             background-color: ${ThemingVariables.colors.gray[3]};
-            padding: 0 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 5px;
             > * {
-              margin: 16px 0;
+              margin: 10px;
             }
           `}
         >
           <IconButton
             icon={IconVisualizationSetting}
-            color={mode === 'VIS' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
+            className={css`
+              padding: 10px;
+              border-radius: 8px;
+              background-color: ${mode === 'VIS'
+                ? ThemingVariables.colors.primary[1]
+                : ThemingVariables.colors.primary[4]};
+            `}
+            color={mode === 'VIS' ? ThemingVariables.colors.gray[5] : ThemingVariables.colors.primary[1]}
             onClick={() => {
               setMode('VIS')
             }}
           />
           <IconButton
             icon={IconCommonSql}
-            color={mode === 'SQL' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
+            className={css`
+              padding: 10px;
+              border-radius: 8px;
+              background-color: ${mode === 'SQL'
+                ? ThemingVariables.colors.primary[1]
+                : ThemingVariables.colors.primary[4]};
+            `}
+            color={mode === 'SQL' ? ThemingVariables.colors.gray[5] : ThemingVariables.colors.primary[1]}
             onClick={() => {
               setMode('SQL')
             }}
