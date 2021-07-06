@@ -853,90 +853,99 @@ export const StoryQuestionEditor: React.FC<{
             onClick={save}
             color={ThemingVariables.colors.primary[1]}
           />
-          {mode === 'SQL' && (
-            <IconButton
-              icon={IconVisualizationSetting}
-              onClick={() => {
-                setMode('VIS')
-              }}
-            />
-          )}
-          {mode === 'VIS' && (
-            <IconButton
-              icon={IconCommonSql}
-              onClick={() => {
-                setMode('SQL')
-              }}
-            />
-          )}
         </div>
       </div>
-      {mode === 'SQL' ? (
+      <div
+        className={css`
+          display: flex;
+          width: 100%;
+          height: calc(100% - 40px);
+        `}
+      >
         <div
           className={css`
-            display: flex;
-            width: 100%;
-            height: calc(100% - 40px);
+            flex-shrink: 0;
+            width: 40px;
+            background-color: ${ThemingVariables.colors.primary[5]};
+            padding: 10px;
+            > * {
+              margin: 10px 0;
+            }
           `}
         >
-          <SQLEditor
-            className={css`
-              flex: 1;
-              width: 0 !important;
-            `}
-            value={sql}
-            padding={{ top: 20, bottom: 0 }}
-            languageId={workspace.preferences.profile!}
-            onChange={(e) => {
-              setSql(e)
+          <IconButton
+            icon={IconVisualizationSetting}
+            onClick={() => {
+              setMode('VIS')
             }}
-            onRun={run}
-            onSave={save}
           />
-          <QuestionReferences
-            blockId={id}
-            className={css`
-              flex-shrink: 0;
-              box-shadow: -2px 0px 8px rgba(0, 0, 0, 0.04);
-              z-index: 100;
-            `}
+          <IconButton
+            icon={IconCommonSql}
+            onClick={() => {
+              setMode('SQL')
+            }}
           />
-          {sqlSidePanel && (
-            <div
-              className={css`
-                overflow: scroll;
-                word-wrap: break-word;
-                font-style: normal;
-                font-weight: 500;
-                font-size: 14px;
-                flex: 0 0 400px;
-                line-height: 24px;
-                color: ${ThemingVariables.colors.negative[0]};
-                margin: 15px;
-                user-select: text;
-                padding: 10px;
-                border-radius: 10px;
-                background: ${ThemingVariables.colors.negative[1]};
-              `}
-            >
-              {sqlError}
-            </div>
-          )}
         </div>
-      ) : (
-        <Configuration
-          data={snapshot?.data}
-          config={visualizationConfig}
-          onConfigChange={setVisConfig}
-          // key={block.id}
-          className={cx(
-            css`
-              flex: 1;
-              overflow: hidden;
-            `
-          )}
-        />
-      )}
+        {mode === 'SQL' ? (
+          <>
+            <SQLEditor
+              className={css`
+                flex: 1;
+                width: 0 !important;
+              `}
+              value={sql}
+              padding={{ top: 20, bottom: 0 }}
+              languageId={workspace.preferences.profile!}
+              onChange={(e) => {
+                setSql(e)
+              }}
+              onRun={run}
+              onSave={save}
+            />
+            <QuestionReferences
+              blockId={id}
+              className={css`
+                flex-shrink: 0;
+                box-shadow: -2px 0px 8px rgba(0, 0, 0, 0.04);
+                z-index: 100;
+              `}
+            />
+            {sqlSidePanel && (
+              <div
+                className={css`
+                  overflow: scroll;
+                  word-wrap: break-word;
+                  font-style: normal;
+                  font-weight: 500;
+                  font-size: 14px;
+                  flex: 0 0 400px;
+                  line-height: 24px;
+                  color: ${ThemingVariables.colors.negative[0]};
+                  margin: 15px;
+                  user-select: text;
+                  padding: 10px;
+                  border-radius: 10px;
+                  background: ${ThemingVariables.colors.negative[1]};
+                `}
+              >
+                {sqlError}
+              </div>
+            )}
+          </>
+        ) : (
+          <Configuration
+            data={snapshot?.data}
+            config={visualizationConfig}
+            onConfigChange={setVisConfig}
+            className={cx(
+              css`
+                flex: 1;
+                overflow: hidden;
+              `
+            )}
+          />
+        )}
+      </div>
     </TabPanel>
   )
 }
