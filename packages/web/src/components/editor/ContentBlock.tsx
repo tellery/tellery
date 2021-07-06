@@ -145,7 +145,7 @@ export const ContentBlocks: React.FC<{
   )
 }
 
-export const ContentBlockPure: React.FC<{
+export const _ContentBlockPure: React.FC<{
   id: string
   parentType: Editor.BlockType
 }> = (props) => {
@@ -153,6 +153,7 @@ export const ContentBlockPure: React.FC<{
   return <ContentBlockInner block={block} parentType={props.parentType} />
 }
 
+export const ContentBlockPure = memo(_ContentBlockPure)
 const isResizebleBlockType = (blockType: Editor.BlockType) => {
   return blockType === Editor.BlockType.Question || blockType === Editor.BlockType.Image
 }

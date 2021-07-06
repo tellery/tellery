@@ -212,8 +212,14 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
         action: createOrToggleBlock(Editor.BlockType.Divider),
         icon: <Icon icon={IconMenuDivider} color={'#000'} />
       }
-    ]
-  }, [createOrToggleBlock])
+    ].filter((item) => item.title.toLowerCase().indexOf(keyword.toLowerCase()) !== -1)
+  }, [createOrToggleBlock, keyword])
+
+  useEffect(() => {
+    if (operations.length === 0) {
+      setOpen(false)
+    }
+  }, [operations, setOpen])
 
   const snapshot = useBlockSnapshot()
   const execSelectedOperation = useCallback(
