@@ -1,15 +1,15 @@
-import MonacoEditor, { useMonaco } from '@monaco-editor/react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import type { editor } from 'monaco-editor/esm/vs/editor/editor.api'
-import { css, cx } from '@emotion/css'
-import { ThemingVariables } from '@app/styles'
-import { transclusionRegex } from '@app/hooks/useSqlEditor'
-import { compact, uniq } from 'lodash'
-import type { Editor } from '@app/types'
 import { useWorkspace } from '@app/context/workspace'
-import { useMgetBlocks } from '@app/hooks/api'
-import { useGetBlockTitleTextSnapshot } from './editor'
 import { useOpenStory } from '@app/hooks'
+import { useMgetBlocks } from '@app/hooks/api'
+import { transclusionRegex } from '@app/hooks/useSqlEditor'
+import { ThemingVariables } from '@app/styles'
+import type { Editor } from '@app/types'
+import { css, cx } from '@emotion/css'
+import MonacoEditor from '@monaco-editor/react'
+import { compact, uniq } from 'lodash'
+import type { editor } from 'monaco-editor/esm/vs/editor/editor.api'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useGetBlockTitleTextSnapshot } from './editor'
 import { useQuestionEditor } from './StoryQuestionsEditor'
 
 const contentWidgetClassname = css`
@@ -48,10 +48,9 @@ export function SQLEditor(props: {
   onRun?(): void
 }) {
   const [editor, setEditor] = useState<editor.IStandaloneCodeEditor>()
-  const monaco = useMonaco()
   const { onRun, onSave } = props
   useEffect(() => {
-    if (!editor || !monaco) {
+    if (!editor) {
       return
     }
 
@@ -83,7 +82,7 @@ export function SQLEditor(props: {
       }
     })
     return dispose
-  }, [editor, monaco, onRun, onSave])
+  }, [editor, onRun, onSave])
   const { onChange } = props
   const handleChange = useCallback(
     (value: string | undefined) => {
