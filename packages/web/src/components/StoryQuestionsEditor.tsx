@@ -860,27 +860,37 @@ export const StoryQuestionEditor: React.FC<{
         <div
           className={css`
             flex-shrink: 0;
-            width: 70px;
-            background-color: ${ThemingVariables.colors.gray[3]};
+            width: 60px;
+            background-color: ${ThemingVariables.colors.gray[4]};
+            box-shadow: 2px 0px 8px rgba(0, 0, 0, 0.08);
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 5px;
-            > * {
-              margin: 10px;
+            z-index: 100;
+            & > button {
+              padding: 20px;
+              position: relative;
+            }
+            & > button::after {
+              content: '';
+              width: 4px;
+              height: 40px;
+              border-radius: 2px;
+              background: ${ThemingVariables.colors.primary[1]};
+              position: absolute;
+              top: 10px;
+              right: 0;
             }
           `}
         >
           <IconButton
             icon={IconVisualizationSetting}
             className={css`
-              padding: 10px;
-              border-radius: 8px;
-              background-color: ${mode === 'VIS'
-                ? ThemingVariables.colors.primary[1]
-                : ThemingVariables.colors.primary[4]};
+              &::after {
+                display: ${mode === 'VIS' ? 'visible' : 'none'};
+              }
             `}
-            color={mode === 'VIS' ? ThemingVariables.colors.gray[5] : ThemingVariables.colors.primary[1]}
+            color={mode === 'VIS' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
             onClick={() => {
               setMode('VIS')
             }}
@@ -888,35 +898,29 @@ export const StoryQuestionEditor: React.FC<{
           <IconButton
             icon={IconCommonSql}
             className={css`
-              padding: 10px;
-              border-radius: 8px;
-              background-color: ${mode === 'SQL'
-                ? ThemingVariables.colors.primary[1]
-                : ThemingVariables.colors.primary[4]};
+              &::after {
+                display: ${mode === 'SQL' ? 'visible' : 'none'};
+              }
             `}
-            color={mode === 'SQL' ? ThemingVariables.colors.gray[5] : ThemingVariables.colors.primary[1]}
+            color={mode === 'SQL' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
             onClick={() => {
               setMode('SQL')
             }}
           />
-          <IconButton
-            icon={IconCommonDownstream}
-            disabled={downstreams.length === 0}
-            className={css`
-              padding: 10px;
-              border-radius: 8px;
-              background-color: ${mode === 'DOWNSTREAM'
-                ? ThemingVariables.colors.primary[1]
-                : ThemingVariables.colors.primary[4]};
-              &:disabled {
-                background-color: ${ThemingVariables.colors.gray[2]};
-              }
-            `}
-            color={mode === 'DOWNSTREAM' ? ThemingVariables.colors.gray[5] : ThemingVariables.colors.primary[1]}
-            onClick={() => {
-              setMode('DOWNSTREAM')
-            }}
-          />
+          {downstreams.length === 0 || (
+            <IconButton
+              icon={IconCommonDownstream}
+              className={css`
+                &::after {
+                  display: ${mode === 'DOWNSTREAM' ? 'visible' : 'none'};
+                }
+              `}
+              color={mode === 'DOWNSTREAM' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
+              onClick={() => {
+                setMode('DOWNSTREAM')
+              }}
+            />
+          )}
         </div>
         {mode === 'SQL' && (
           <>
@@ -927,7 +931,7 @@ export const StoryQuestionEditor: React.FC<{
               `}
               value={sql}
               padding={{ top: 20, bottom: 0 }}
-              languageId={workspace.preferences.profile!}
+              languageId="hive" // TODO: use var
               onChange={(e) => {
                 setSql(e)
               }}
