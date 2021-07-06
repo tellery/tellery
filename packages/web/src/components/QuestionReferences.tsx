@@ -1,35 +1,16 @@
 import { useOnScreen } from '@app/hooks'
 import { css, cx } from '@emotion/css'
-import { useMgetBlocks, useQuestionBackLinks } from 'hooks/api'
-import { compact } from 'lodash'
-import React, { useEffect, useMemo, useRef } from 'react'
+import { useQuestionDownstreams } from 'hooks/api'
+import React, { useEffect, useRef } from 'react'
 import { ThemingVariables } from 'styles'
-import { Editor } from 'types'
 import { BlockTitle } from './editor'
 import { useOpenQuestionBlockIdHandler } from './StoryQuestionsEditor'
 
 export default function QuestionReferences(props: { blockId: string; className?: string }) {
   const ref = useRef(null)
   const isOnScreen = useOnScreen(ref)
-  const { data: links, refetch } = useQuestionBackLinks(props.blockId)
-  const blockIds = useMemo(
-    () => [
-      ...new Set(links?.backwardRefs.map(({ blockId }) => blockId)),
-      ...new Set(links?.backwardRefs.map(({ storyId }) => storyId))
-    ],
-    [links]
-  )
-  const { data: blocks } = useMgetBlocks(blockIds)
+  const { data: items, blocks, refetch } = useQuestionDownstreams(props.blockId)
   const handleOpen = useOpenQuestionBlockIdHandler()
-  const items = useMemo(
-    () =>
-      compact(
-        links?.backwardRefs
-          ?.map(({ blockId }) => blocks?.[blockId])
-          .filter((block) => block?.type === Editor.BlockType.Question)
-      ),
-    [blocks, links?.backwardRefs]
-  )
   useEffect(() => {
     if (isOnScreen) {
       refetch()

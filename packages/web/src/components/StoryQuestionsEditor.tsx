@@ -17,7 +17,7 @@ import { Configuration } from 'components/v11n'
 import { dequal } from 'dequal'
 import { motion, useMotionValue, useTransform } from 'framer-motion'
 import { useHover, useOpenStory, usePrevious } from 'hooks'
-import { useBlockSuspense, useExecuteSQL, useSnapshot } from 'hooks/api'
+import { useBlockSuspense, useExecuteSQL, useQuestionDownstreams, useSnapshot } from 'hooks/api'
 import { useLocalStorage } from 'hooks/useLocalStorage'
 import { useSqlEditor } from 'hooks/useSqlEditor'
 import { produce } from 'immer'
@@ -722,7 +722,7 @@ export const StoryQuestionEditor: React.FC<{
 
   const mutatingCount = useDraftBlockMutating(block.id)
   const openStory = useOpenStory()
-
+  const { data: downstreams } = useQuestionDownstreams(block.id)
   const scrollToBlock = useCallback(() => {
     const element = getBlockWrapElementById(block.id)
     element &&
@@ -899,12 +899,16 @@ export const StoryQuestionEditor: React.FC<{
           />
           <IconButton
             icon={IconCommonDownstream}
+            disabled={downstreams.length === 0}
             className={css`
               padding: 10px;
               border-radius: 8px;
               background-color: ${mode === 'DOWNSTREAM'
                 ? ThemingVariables.colors.primary[1]
                 : ThemingVariables.colors.primary[4]};
+              &:disabled {
+                background-color: ${ThemingVariables.colors.gray[2]};
+              }
             `}
             color={mode === 'DOWNSTREAM' ? ThemingVariables.colors.gray[5] : ThemingVariables.colors.primary[1]}
             onClick={() => {
