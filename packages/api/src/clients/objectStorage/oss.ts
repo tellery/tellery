@@ -11,6 +11,7 @@ type OSSConfig = {
   accessKey: string
   secretKey: string
   region: string
+  cdn?: string
 }
 
 const ossConfig = config.get<OSSConfig>('objectStorage')
@@ -48,7 +49,7 @@ function getTemporaryUrl(fileKey: string, opts: { ttl?: number } = {}): string {
   const { bucket } = ossConfig
   const { ttl = 60 * 10 } = opts
   const expires = Math.floor(Date.now() / 1000) + ttl
-  const info = ['GET', '', '', expires, `${bucket}/${fileKey}`].join('\n')
+  const info = ['GET', '', '', expires, `/${bucket}/${fileKey}`].join('\n')
   const signature = crypto
     .createHmac('sha1', ossConfig.secretKey)
     .update(Buffer.from(info, 'utf-8'))
@@ -60,7 +61,16 @@ function getTemporaryUrl(fileKey: string, opts: { ttl?: number } = {}): string {
     Signature: signature,
   }
 
-  return `https://${ossConfig.bucket}.${ossConfig.region}.aliyuncs.com/$key?${qs.stringify(params)}`
+  return `https://${ossConfig.bucket}.${ossConfig.region}.aliyuncs.com/${fileKey}?${qs.stringify(
+    params,
+  )}`
 }
 
-export { provision, getTemporaryUrl }
+async function proxy(fileKey: string): Promise<string> {
+  if (ossConfig.cdn) {
+    return `${ossConfig.cdn}/${fileKey}`
+  }
+  return getTemporaryUrl(fileKey)
+}
+
+export { provision, getTemporaryUrl, proxy }

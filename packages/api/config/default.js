@@ -15,12 +15,13 @@ module.exports = {
     url: process.env.SOCKET_URL,
   },
   objectStorage: {
-    type: process.env.OBJECT_STORAGE_TYPE || 's3',
+    type: process.env.OBJECT_STORAGE_TYPE || 'postgres',
     endpoint: process.env.OBJECT_STORAGE_ENDPOINT,
     bucket: process.env.OBJECT_STORAGE_BUCKET,
     accessKey: process.env.OBJECT_STORAGE_ACCESS_KEY_ID,
     secretKey: process.env.OBJECT_STORAGE_ACCESS_KEY_SECRET,
     region: process.env.OBJECT_STORAGE_REGION,
+    cdn: process.env.OBJECT_STORAGE_CDN_ENDPOINT,
   },
   email: {
     backend: 'smtp',

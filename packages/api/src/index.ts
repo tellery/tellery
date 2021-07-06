@@ -31,7 +31,14 @@ if (!host) {
 const staticDirPath = path.join(__dirname, 'assets')
 
 const app = new Koa()
-  .use(koaBody())
+  .use(
+    koaBody({
+      multipart: true,
+      formidable: {
+        maxFieldsSize: 20 * 1024 ** 2, // 20M
+      },
+    }),
+  )
   .use(error)
   .use(logger())
   .use(user)

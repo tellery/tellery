@@ -7,7 +7,7 @@ import { IObjectStorage } from '../clients/objectStorage/interface'
 import { ProvisionBody } from '../types/upload'
 import { canGetWorkspaceData } from '../utils/permission'
 
-export class UploadService {
+export class StorageService {
   private permission: IPermission
 
   private objectStorage: IObjectStorage
@@ -24,9 +24,21 @@ export class UploadService {
     await canGetWorkspaceData(this.permission, operatorId, workspaceId)
     return this.objectStorage.provision()
   }
+
+  /**
+   * proxy of fetching object
+   */
+  async objectProxy(
+    operatorId: string,
+    workspaceId: string,
+    fileKey: string,
+  ): Promise<string | Buffer | null> {
+    await canGetWorkspaceData(this.permission, operatorId, workspaceId)
+    return this.objectStorage.proxy(fileKey)
+  }
 }
 
-const service = new UploadService(
+const service = new StorageService(
   getIPermission(),
   getObjectStorageByName(config.get('objectStorage.type')),
 )

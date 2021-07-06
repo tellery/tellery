@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import config from 'config'
 import { networkInterfaces } from 'os'
+import { Readable } from 'stream'
 import { SearchFilter } from '../core/search/interface'
 
 export function mergeSearchFilters(filters: SearchFilter[]): SearchFilter {
@@ -54,4 +55,19 @@ export function string2Hex(s: string): string {
 
 export function hex2String(h: string): string {
   return Buffer.from(h, 'hex').toString('utf8')
+}
+
+export function readableStreamWrapper(stream: Readable): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const bufs: Buffer[] = []
+    stream.on('data', (chunk: Buffer) => {
+      bufs.push(chunk)
+    })
+    stream.on('end', () => {
+      resolve(Buffer.concat(bufs))
+    })
+    stream.on('error', (err: Error) => {
+      reject(err)
+    })
+  })
 }
