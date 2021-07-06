@@ -574,12 +574,15 @@ export const useConnectorsList = () => {
   )
 }
 
-export const useConnectorsListProfiles = (connectorId: string) => {
+export const useConnectorsListProfiles = (connectorId?: string) => {
   const workspace = useWorkspace()
-  return useQuery<ProfileConfig[]>(['connector', 'listProfiles', connectorId, workspace], () =>
-    request
-      .post('/api/connectors/listProfiles', { connectorId, workspaceId: workspace.id })
-      .then((res) => res.data.profiles)
+  return useQuery<ProfileConfig[]>(
+    ['connector', 'listProfiles', connectorId, workspace],
+    () =>
+      request
+        .post('/api/connectors/listProfiles', { connectorId, workspaceId: workspace.id })
+        .then((res) => res.data.profiles),
+    { enabled: !!connectorId }
   )
 }
 
