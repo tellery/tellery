@@ -866,7 +866,7 @@ export const StoryQuestionEditor: React.FC<{
           className={css`
             flex-shrink: 0;
             width: 40px;
-            background-color: ${ThemingVariables.colors.primary[5]};
+            background-color: ${ThemingVariables.colors.gray[3]};
             padding: 10px;
             > * {
               margin: 10px 0;
@@ -875,12 +875,14 @@ export const StoryQuestionEditor: React.FC<{
         >
           <IconButton
             icon={IconVisualizationSetting}
+            color={mode === 'VIS' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
             onClick={() => {
               setMode('VIS')
             }}
           />
           <IconButton
             icon={IconCommonSql}
+            color={mode === 'SQL' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
             onClick={() => {
               setMode('SQL')
             }}
