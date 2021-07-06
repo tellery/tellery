@@ -186,7 +186,11 @@ export default function UserAccount(props: { onClose(): void }) {
             flex: 1;
             margin-right: 20px;
           `}
-          onClick={handleLogoutUser.execute}
+          onClick={() => {
+            if (confirm('Logout ?')) {
+              handleLogoutUser.execute()
+            }
+          }}
           disabled={handleLogoutUser.status === 'pending'}
         >
           Logout

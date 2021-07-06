@@ -14,7 +14,7 @@ import { useGetBlockTitleTextSnapshot } from 'components/editor'
 import { MainSideBarItem, sideBarContainerStyle } from 'components/MainSideBarItem'
 import { motion, useAnimation, useMotionValue, useTransform } from 'framer-motion'
 import { useOpenStory } from 'hooks'
-import { useBlockSuspense, useWorkspaceView } from 'hooks/api'
+import { useBlockSuspense, useConnectorsListProfiles, useWorkspaceView } from 'hooks/api'
 import { useLocalStorage } from 'hooks/useLocalStorage'
 import { useUpdateAtom } from 'jotai/utils'
 import { nanoid } from 'nanoid'
@@ -28,6 +28,7 @@ import Icon from './kit/Icon'
 import IconButton from './kit/IconButton'
 import Workspace from './Workspace'
 import User from './User'
+import { useWorkspace } from '@app/context/workspace'
 
 const SideBarLoader: React.FC = () => {
   return (
@@ -158,6 +159,14 @@ const SideBarContent: React.FC<{ folded: boolean; toggleFoldStatus: () => void }
   }, [blockTranscations, history])
   const [showUser, setShowUser] = useState(false)
   const [showSetting, setShowSetting] = useState(false)
+  const workspace = useWorkspace()
+  const { data: profiles } = useConnectorsListProfiles(workspace.preferences.connectorId)
+  const hasNoProfile = profiles?.length === 0
+  useEffect(() => {
+    if (hasNoProfile) {
+      setShowSetting(true)
+    }
+  }, [hasNoProfile])
 
   return (
     <div
@@ -179,6 +188,7 @@ const SideBarContent: React.FC<{ folded: boolean; toggleFoldStatus: () => void }
       )}
       {showSetting && (
         <Workspace
+          openForProfiles={hasNoProfile}
           onClose={() => {
             setShowSetting(false)
           }}
