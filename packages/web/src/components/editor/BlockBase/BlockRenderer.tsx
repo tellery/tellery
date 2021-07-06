@@ -42,7 +42,7 @@ export const INLINE_STYLES = new Map([
     (...args: string[]): CSSProperties => ({
       fontFamily: 'monospace',
       background: ThemingVariables.colors.primary[5],
-      color: ThemingVariables.colors.visualization[3],
+      color: ThemingVariables.colors.visualization[1],
       borderRadius: '4px',
       padding: '0.2em 0.4em'
     })
