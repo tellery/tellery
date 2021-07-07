@@ -38,6 +38,7 @@ import { setBlockTranscation } from '../context/editorTranscations'
 import { CircularLoading } from './CircularLoading'
 import { BlockTitle, useGetBlockTitleTextSnapshot } from './editor'
 import type { SetBlock } from './editor/types'
+import Icon from './kit/Icon'
 import IconButton from './kit/IconButton'
 import QuestionDownstreams from './QuestionDownstreams'
 import { charts } from './v11n/charts'
@@ -1024,7 +1025,9 @@ export const DraftStatus: React.FC<{
         ></div>
       )}
       {(hovering || (!isDraft && showClose)) && (
-        <IconCommonClose
+        <Icon
+          icon={IconCommonClose}
+          color={ThemingVariables.colors.gray[0]}
           className={css`
             position: absolute;
             cursor: pointer;
