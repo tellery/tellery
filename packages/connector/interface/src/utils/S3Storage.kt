@@ -53,9 +53,9 @@ class S3Storage(
         val credentials = BasicAWSCredentials(accessKey, secretKey)
         var clientBuilder = AmazonS3ClientBuilder
             .standard()
-            .withCredentials(AWSStaticCredentialsProvider(credentials))
             .withRegion(region)
-        if (endpoint != null) {
+            .withCredentials(AWSStaticCredentialsProvider(credentials))
+        if (!endpoint.isNullOrBlank()) {
             clientBuilder =
                 clientBuilder.withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration(endpoint, region))
         }
