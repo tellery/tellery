@@ -53,7 +53,7 @@ export class Workspace extends Common {
 
   toDTO(userId: string): WorkspaceDTO {
     const isAdmin =
-      _(this.members).find((m) => m.id === userId)?.role === PermissionWorkspaceRole.ADMIN
+      _(this.members).find((m) => m.userId === userId)?.role === PermissionWorkspaceRole.ADMIN
     return {
       id: this.id,
       name: this.name,
