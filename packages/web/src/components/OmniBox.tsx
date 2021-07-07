@@ -342,7 +342,7 @@ export function OmniBox() {
                     `}
                     color={ThemingVariables.colors.gray[3]}
                     storyId={items[activeIndex].storyId!}
-                    blockId={items[activeIndex].type === ResultType.BLOCK ? items[activeIndex].id : undefined}
+                    blockId={items[activeIndex].type !== ResultType.MORE ? items[activeIndex].id : undefined}
                   />
                 ) : null}
               </div>
