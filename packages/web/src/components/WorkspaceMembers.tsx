@@ -183,16 +183,31 @@ export function WorkspaceMembers(props: { onClose(): void }) {
               <Icon icon={IconCommonArrowDropDown} color={ThemingVariables.colors.gray[0]} />
             </button>
           </Tippy>
-          <FormButton
-            variant="primary"
-            className={css`
-              flex-shrink: 0;
-            `}
-            disabled={members.length === 0 || handleInviteMembers.status === 'pending'}
-            onClick={handleInviteMembers.execute}
-          >
-            Send invitations
-          </FormButton>
+          {workspace?.preferences.emailConfig ? (
+            <FormButton
+              variant="primary"
+              className={css`
+                flex-shrink: 0;
+              `}
+              disabled={members.length === 0 || handleInviteMembers.status === 'pending'}
+              onClick={handleInviteMembers.execute}
+            >
+              Send invitations
+            </FormButton>
+          ) : (
+            <FormButton
+              variant="primary"
+              className={css`
+                flex-shrink: 0;
+              `}
+              disabled={members.length === 0}
+              onClick={() => {
+                copy('123123')
+              }}
+            >
+              Copy invitation links
+            </FormButton>
+          )}
         </div>
       </div>
     )
@@ -208,7 +223,7 @@ export function WorkspaceMembers(props: { onClose(): void }) {
       `}
     >
       <div>
-        {me?.role === 'admin' && workspace ? (
+        {me?.role === 'admin' ? (
           <span
             className={css`
               float: right;
@@ -219,12 +234,7 @@ export function WorkspaceMembers(props: { onClose(): void }) {
               cursor: pointer;
             `}
             onClick={() => {
-              if (!workspace.preferences.emailConfig) {
-                setInvite(true)
-              } else {
-                copy('123123')
-                toast.success('Invitation link copied')
-              }
+              setInvite(true)
             }}
           >
             Invite
