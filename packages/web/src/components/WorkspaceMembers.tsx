@@ -208,7 +208,7 @@ export function WorkspaceMembers(props: { onClose(): void }) {
       `}
     >
       <div>
-        {me?.role === 'admin' ? (
+        {me?.role === 'admin' && workspace ? (
           <span
             className={css`
               float: right;
@@ -219,7 +219,7 @@ export function WorkspaceMembers(props: { onClose(): void }) {
               cursor: pointer;
             `}
             onClick={() => {
-              if (workspace?.preferences.emailConfig) {
+              if (!workspace.preferences.emailConfig) {
                 setInvite(true)
               } else {
                 copy('123123')
