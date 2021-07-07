@@ -490,7 +490,13 @@ export function useWorkspaceUpdateRole() {
 export function useWorkspaceInviteMembers(members: { email: string; role: Workspace['members'][0]['role'] }[]) {
   const workspace = useWorkspace()
   const handleInviteMembers = useCallback(
-    () => request.post('/api/workspaces/inviteMembers', { workspaceId: workspace.id, users: members }),
+    () =>
+      request
+        .post<{ linkPairs: { [email: string]: string } }>('/api/workspaces/inviteMembers', {
+          workspaceId: workspace.id,
+          users: members
+        })
+        .then((response) => response.data),
     [members, workspace.id]
   )
   return useAsync(handleInviteMembers)

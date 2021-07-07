@@ -14,7 +14,7 @@ import type { Workspace } from '@app/types'
 import { css, cx } from '@emotion/css'
 import Tippy from '@tippyjs/react'
 import copy from 'copy-to-clipboard'
-import { compact, sortBy } from 'lodash'
+import { compact, map, sortBy } from 'lodash'
 import React, { useEffect, useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import { FormButton } from './kit/FormButton'
@@ -50,8 +50,17 @@ export function WorkspaceMembers(props: { onClose(): void }) {
   useEffect(() => {
     if (handleInviteMembers.status === 'success') {
       onClose()
+      toast.success(workspace?.preferences.emailConfig ? 'Invitation links sent' : 'Invitation links copied')
     }
-  }, [handleInviteMembers.status, onClose])
+  }, [handleInviteMembers.status, onClose, workspace?.preferences.emailConfig])
+  useEffect(() => {
+    if (handleInviteMembers.value && !workspace?.preferences.emailConfig) {
+      const str = map(handleInviteMembers.value?.linkPairs, (link, email) => `${email} ${link}`).join('\n')
+      if (str) {
+        copy(str)
+      }
+    }
+  }, [handleInviteMembers.value, workspace?.preferences.emailConfig])
 
   if (invite) {
     return (
@@ -183,31 +192,16 @@ export function WorkspaceMembers(props: { onClose(): void }) {
               <Icon icon={IconCommonArrowDropDown} color={ThemingVariables.colors.gray[0]} />
             </button>
           </Tippy>
-          {workspace?.preferences.emailConfig ? (
-            <FormButton
-              variant="primary"
-              className={css`
-                flex-shrink: 0;
-              `}
-              disabled={members.length === 0 || handleInviteMembers.status === 'pending'}
-              onClick={handleInviteMembers.execute}
-            >
-              Send invitations
-            </FormButton>
-          ) : (
-            <FormButton
-              variant="primary"
-              className={css`
-                flex-shrink: 0;
-              `}
-              disabled={members.length === 0}
-              onClick={() => {
-                copy('123123')
-              }}
-            >
-              Copy invitation links
-            </FormButton>
-          )}
+          <FormButton
+            variant="primary"
+            className={css`
+              flex-shrink: 0;
+            `}
+            disabled={members.length === 0 || handleInviteMembers.status === 'pending'}
+            onClick={handleInviteMembers.execute}
+          >
+            {workspace?.preferences.emailConfig ? 'Send invitations' : 'Copy invitation links'}
+          </FormButton>
         </div>
       </div>
     )
