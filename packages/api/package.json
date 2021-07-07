@@ -53,7 +53,7 @@
     "socket.io": "^4.1.1",
     "socket.io-client": "^4.1.2",
     "socket.io-redis": "^6.1.0",
-    "typeorm": "^0.2.32"
+    "typeorm": "^0.2.34"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.36",
