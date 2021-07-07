@@ -13,8 +13,10 @@ import { ThemingVariables } from '@app/styles'
 import type { Workspace } from '@app/types'
 import { css, cx } from '@emotion/css'
 import Tippy from '@tippyjs/react'
-import { compact, sortBy } from 'lodash'
+import copy from 'copy-to-clipboard'
+import { compact, map, sortBy } from 'lodash'
 import React, { useEffect, useMemo, useState } from 'react'
+import { toast } from 'react-toastify'
 import { FormButton } from './kit/FormButton'
 import FormInput from './kit/FormInput'
 import FormLabel from './kit/FormLabel'
@@ -48,8 +50,17 @@ export function WorkspaceMembers(props: { onClose(): void }) {
   useEffect(() => {
     if (handleInviteMembers.status === 'success') {
       onClose()
+      toast.success(workspace?.preferences.emailConfig ? 'Invitation links sent' : 'Invitation links copied')
     }
-  }, [handleInviteMembers.status, onClose])
+  }, [handleInviteMembers.status, onClose, workspace?.preferences.emailConfig])
+  useEffect(() => {
+    if (handleInviteMembers.value && !workspace?.preferences.emailConfig) {
+      const str = map(handleInviteMembers.value?.linkPairs, (link, email) => `${email} ${link}`).join('\n')
+      if (str) {
+        copy(str)
+      }
+    }
+  }, [handleInviteMembers.value, workspace?.preferences.emailConfig])
 
   if (invite) {
     return (
@@ -189,7 +200,7 @@ export function WorkspaceMembers(props: { onClose(): void }) {
             disabled={members.length === 0 || handleInviteMembers.status === 'pending'}
             onClick={handleInviteMembers.execute}
           >
-            Send invitations
+            {workspace?.preferences.emailConfig ? 'Send invitations' : 'Copy invitation links'}
           </FormButton>
         </div>
       </div>

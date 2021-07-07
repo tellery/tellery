@@ -279,6 +279,7 @@ export type Workspace = {
     connectorId?: string
     dbImportsTo?: string
     profile?: string
+    emailConfig?: boolean
   }
 }
 
