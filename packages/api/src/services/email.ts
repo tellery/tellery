@@ -53,7 +53,11 @@ export class EmailService {
       const code = this.makeVerificationCode(userId)
       const link = absoluteURI(`/confirm?code=${encodeURIComponent(code)}`)
       const html = await this.render(key, { link, workspace })
-      await this.sender.sendHtml([email], title, html)
+      try {
+        await this.sender.sendHtml([email], title, html)
+      } catch (err) {
+        console.log(err)
+      }
       return { email, link }
     }
     return bluebird.map(inviteeInfos, sendFunc)
