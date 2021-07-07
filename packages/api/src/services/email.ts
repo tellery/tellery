@@ -44,21 +44,19 @@ export class EmailService {
    */
   async sendInvitationEmails(
     inviterName: string,
-    inviteeAddresses: string[],
+    inviteeInfos: { userId: string; email: string }[],
     workspace: string,
-    link: string,
-    each = false,
-  ): Promise<void> {
+  ): Promise<{ email: string; link: string }[]> {
     const key = 'invitation.html'
-    const html = await this.render(key, { link, workspace })
     const title = `[Tellery] ${inviterName} invited you to ${workspace}`
-    if (each) {
-      await bluebird.map(inviteeAddresses, async (address) =>
-        this.sender.sendHtml([address], title, html),
-      )
-    } else {
-      return this.sender.sendHtml(inviteeAddresses, title, html)
+    const sendFunc = async ({ userId, email }: { userId: string; email: string }) => {
+      const code = this.makeVerificationCode(userId)
+      const link = absoluteURI(`/confirm?code=${encodeURIComponent(code)}`)
+      const html = await this.render(key, { link, workspace })
+      await this.sender.sendHtml([email], title, html)
+      return { email, link }
     }
+    return bluebird.map(inviteeInfos, sendFunc)
   }
 
   private loadTemplatesSync() {
@@ -82,10 +80,10 @@ export class EmailService {
     return res
   }
 
-  private makeVerificationCode(userId: string): string {
+  private makeVerificationCode(userId: string, expire = 3600000): string {
     const payload: EmailCodePayload = {
       userId,
-      expiresAt: _.now() + 3600000, // 1 hour
+      expiresAt: _.now() + expire, // 1 hour
       type: 'confirm',
     }
     return encrypt(JSON.stringify(payload), this.secretKey)
