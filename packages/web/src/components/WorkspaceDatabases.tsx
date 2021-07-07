@@ -44,8 +44,9 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
   })
   const type = watch('type')
   useEffect(() => {
-    reset(profileConfigs?.find((profileConfig) => profileConfig.type === type))
-  }, [profileConfigs, reset, type])
+    reset(profileConfigs?.[0])
+  }, [profileConfigs, reset])
+  console.log(type, profileConfigs?.[0])
   const { data: availableConfigs } = useConnectorsListAvailableConfigs(props.id)
   const availableConfig = useMemo(() => availableConfigs?.find((ac) => ac.type === type), [availableConfigs, type])
   const handleUpsertProfile = useConnectorsUpsertProfile(props.id)
@@ -81,6 +82,7 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
           className={css`
             width: 100%;
           `}
+          value={type}
           {...register('type')}
         >
           {availableConfigs?.map((availableConfig) => (

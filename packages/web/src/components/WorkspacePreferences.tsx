@@ -13,7 +13,7 @@ import FormInput from './kit/FormInput'
 import FormLabel from './kit/FormLabel'
 
 export function WorkspacePreferences(props: { onClose(): void }) {
-  const { data: workspace } = useWorkspaceDetail()
+  const { data: workspace, refetch } = useWorkspaceDetail()
   const { register, reset, getValues, setValue, handleSubmit } = useForm<Pick<Workspace, 'avatar' | 'name'>>({
     defaultValues: pick(workspace, ['avatar', 'name']),
     mode: 'all'
@@ -27,8 +27,9 @@ export function WorkspacePreferences(props: { onClose(): void }) {
   useEffect(() => {
     if (handleWorkspaceUpdate.status === 'success') {
       onClose()
+      refetch()
     }
-  }, [handleWorkspaceUpdate.status, onClose])
+  }, [handleWorkspaceUpdate.status, onClose, refetch])
 
   return (
     <form
