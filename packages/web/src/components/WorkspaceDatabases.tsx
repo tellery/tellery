@@ -100,9 +100,11 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
           Name
         </FormLabel>
         <FormInput {...register('name')} />
-        {availableConfig?.configs.map((config) => (
-          <Config key={config.name} value={config} prefix="configs" register={register} />
-        ))}
+        {availableConfig?.configs
+          .filter((config) => config.required)
+          .map((config) => (
+            <Config key={config.name} value={config} register={register} />
+          ))}
         <FormLabel
           className={css`
             margin-top: 20px;
@@ -119,9 +121,11 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
           Password
         </FormLabel>
         <FormInput {...register('auth.password')} type="password" />
-        {availableConfig?.optionals.map((config) => (
-          <Config key={config.name} value={config} prefix="optionals" register={register} />
-        ))}
+        {availableConfig?.configs
+          .filter((config) => !config.required)
+          .map((config) => (
+            <Config key={config.name} value={config} register={register} />
+          ))}
       </form>
       <FormButton
         className={css`
@@ -137,12 +141,8 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
   )
 }
 
-function Config(props: {
-  value: AvailableConfig
-  prefix: 'configs' | 'optionals'
-  register: UseFormRegister<ProfileConfig>
-}) {
-  const { value: config, prefix, register } = props
+function Config(props: { value: AvailableConfig; register: UseFormRegister<ProfileConfig> }) {
+  const { value: config, register } = props
 
   return (
     <>
@@ -155,10 +155,10 @@ function Config(props: {
         {config.name}
       </FormLabel>
       {config.type === 'BOOLEAN' ? (
-        <FormSwitch {...register(`${prefix}.${config.name}`)} />
+        <FormSwitch {...register(`configs.${config.name}`)} />
       ) : (
         <FormInput
-          {...register(`${prefix}.${config.name}`)}
+          {...register(`configs.${config.name}`)}
           required={config.required}
           type={config.secret ? 'password' : config.type === 'NUMBER' ? 'number' : 'text'}
           placeholder={config.hint}

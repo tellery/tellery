@@ -621,7 +621,6 @@ export const useConnectorsListAvailableConfigs = (connectorId?: string) => {
     {
       type: string
       configs: AvailableConfig[]
-      optionals: AvailableConfig[]
     }[]
   >(
     ['connector', 'listAvailableConfigs', connectorId, workspace],
