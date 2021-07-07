@@ -1,4 +1,5 @@
 import Icon from '@app/components/kit/Icon'
+import { useHover } from '@app/hooks'
 import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { css, cx } from '@emotion/css'
 import {
@@ -89,7 +90,7 @@ const isEmptyTitleBlock = (block: Editor.BaseBlock) => {
 export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props) => {
   const { id, keyword, setOpen, blockRef, referenceRange, selection, open } = props
   const editor = useEditor<Editor.Block>()
-  const [selectedResultIndex, setSelectedResultIndex] = useState(-1)
+  const [selectedResultIndex, setSelectedResultIndex] = useState(0)
   const currentBlock = useBlockSuspense(id)
 
   const removeBlockSlashCommandText = useCallback(() => {
@@ -285,10 +286,11 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
           <BlockMenuItem
             key={operation.title}
             title={operation.title}
-            // desc={operation.desc}
             icon={operation.icon}
+            index={index}
             active={selectedResultIndex === index}
             onClick={() => execSelectedOperation(index)}
+            setIndex={setSelectedResultIndex}
           />
         )
       })}
@@ -301,8 +303,10 @@ const BlockMenuItem = (props: {
   title: string
   onClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   active?: boolean
+  setIndex: (index: number) => void
+  index: number
 }) => {
-  const ref = useRef<HTMLDivElement | null>(null)
+  const [ref, hover] = useHover<HTMLDivElement>()
   useEffect(() => {
     if (props.active && ref.current) {
       scrollIntoView(ref.current, {
@@ -311,7 +315,14 @@ const BlockMenuItem = (props: {
         inline: 'nearest'
       })
     }
-  }, [props.active])
+  }, [props.active, ref])
+
+  useEffect(() => {
+    if (hover) {
+      props.setIndex(props.index)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hover, props.setIndex])
 
   return (
     <div
@@ -342,7 +353,7 @@ const BlockMenuItem = (props: {
         `,
         props.active &&
           css`
-            background: ${ThemingVariables.colors.primary[3]};
+            background: ${ThemingVariables.colors.primary[4]};
           `
       )}
       onClick={props.onClick}
