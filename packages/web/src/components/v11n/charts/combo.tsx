@@ -345,6 +345,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
           className={css`
             height: 100%;
             flex-shrink: 0;
+            padding: 5px;
             box-shadow: 1px 0px 0px ${ThemingVariables.colors.gray[1]};
           `}
         >
