@@ -156,7 +156,6 @@ const _StoryQuestionsEditor = () => {
   const [resizeConfig, setResizeConfig] = useLocalStorage('MainSQLEditorConfig_v2', {
     y: -300
   })
-  const workspace = useWorkspace()
 
   const y = useMotionValue(resizeConfig.y)
   const height = useTransform(y, (y) => Math.abs(y - 0.5 * DRAG_HANDLE_WIDTH))
@@ -170,7 +169,7 @@ const _StoryQuestionsEditor = () => {
       unsubscribe()
     }
   }, [setResizeConfig, y])
-  useSqlEditor(workspace.preferences.profile!)
+  useSqlEditor('hive') // TODO: use var
 
   return (
     <>
