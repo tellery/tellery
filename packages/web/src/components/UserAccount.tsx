@@ -15,7 +15,7 @@ import FormError from './kit/FormError'
 import FormInput from './kit/FormInput'
 import FormLabel from './kit/FormLabel'
 
-export default function UserAccount() {
+export default function UserAccount(props: { onClose(): void }) {
   const { user } = useAuth()
   const workspace = useWorkspace()
   const auth = useAuth()
@@ -36,11 +36,12 @@ export default function UserAccount() {
     reset(user)
   }, [user, reset])
   const history = useHistory()
+  const { onClose } = props
   useEffect(() => {
     if (handleUpdateUser.status === 'success') {
-      history.push('/')
+      onClose()
     }
-  }, [handleUpdateUser.status, history])
+  }, [handleUpdateUser.status, onClose])
   useEffect(() => {
     if (handleLogoutUser.status === 'success') {
       history.push('/login')
@@ -98,7 +99,7 @@ export default function UserAccount() {
               return
             }
             const { key } = await uploadFile(file, workspace.id)
-            setValue('avatar', fileLoader({ src: key }))
+            setValue('avatar', fileLoader({ src: key, workspaceId: workspace.id }))
           }}
         />
         <FormButton
@@ -185,7 +186,12 @@ export default function UserAccount() {
             flex: 1;
             margin-right: 20px;
           `}
-          onClick={handleLogoutUser.execute}
+          onClick={() => {
+            if (confirm('Logout ?')) {
+              handleLogoutUser.execute()
+            }
+          }}
+          disabled={handleLogoutUser.status === 'pending'}
         >
           Logout
         </FormButton>
@@ -195,6 +201,7 @@ export default function UserAccount() {
           className={css`
             flex: 1;
           `}
+          disabled={handleUpdateUser.status === 'pending'}
         >
           Update
         </FormButton>

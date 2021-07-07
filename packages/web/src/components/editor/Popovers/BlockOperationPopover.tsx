@@ -1,6 +1,7 @@
 import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { useCreateEmptyBlock } from '@app/helpers/blockFactory'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
+import { TELLERY_MIME_TYPES } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import {
   IconCommonLink,
@@ -125,145 +126,169 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
     blockTranscations.removeBlocks(block.storyId!, [id])
   }, [block.storyId, blockTranscations, id])
 
-  const operations = useMemo(() => {
+  const operationGroups = useMemo(() => {
     return [
-      {
-        title: 'Insert Block Before',
-        icon: <Icon icon={IconMenuInsertBefore} color={ThemingVariables.colors.text[0]} />,
-        action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-          e.preventDefault()
-          e.stopPropagation()
-          close()
-          invariant(editor, 'editor context is null')
-          const newBlock = editor?.insertNewEmptyBlock(Editor.BlockType.Text, id, 'top')
-          invariant(newBlock, 'block not created')
-          editor?.setSelectionState({
-            type: TellerySelectionType.Inline,
-            anchor: { blockId: newBlock.id, nodeIndex: 0, offset: 0 },
-            focus: { blockId: newBlock.id, nodeIndex: 0, offset: 0 },
-            storyId: newBlock.storyId!
-          })
-          editor?.execOnNextFlush(() => {
-            console.log(editor?.getBlockInstanceById(newBlock.id))
-            editor?.getBlockInstanceById(newBlock.id)?.openMenu()
-          })
-          // editor?.setFocusingBlockId(newBlock.id)
+      [
+        {
+          title: 'Copy block ref',
+          icon: <Icon icon={IconCommonLink} color={ThemingVariables.colors.text[0]} />,
+          action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+            e.preventDefault()
+            e.stopPropagation()
+            copy('placeholder', {
+              onCopy: (clipboardData) => {
+                invariant(block, 'block is null')
+                const dataTranser = clipboardData as DataTransfer
+                dataTranser.setData(
+                  TELLERY_MIME_TYPES.BLOCK_REF,
+                  JSON.stringify({ blockId: block.id, storyId: block.storyId })
+                )
+                dataTranser.setData(
+                  'text/plain',
+                  `${window.location.protocol}//${window.location.host}/story/${block?.storyId}#${block?.id}`
+                )
+              }
+            })
+            toast('Link Copied')
+            close()
+          }
+        },
+        {
+          title: 'Duplicate',
+          icon: <Icon icon={IconMenuDuplicate} color={ThemingVariables.colors.text[0]} />,
+          action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+            e.preventDefault()
+            e.stopPropagation()
+            addBlockHandler(Editor.BlockType.Text, true)
+            close()
+          }
         }
-      },
-      {
-        title: 'Insert Block After',
-        icon: <Icon icon={IconMenuInsertAfter} color={ThemingVariables.colors.text[0]} />,
-        action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-          e.preventDefault()
-          e.stopPropagation()
-          close()
+      ],
+      [
+        {
+          title: 'Add block above',
+          icon: <Icon icon={IconMenuInsertBefore} color={ThemingVariables.colors.text[0]} />,
+          action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+            e.preventDefault()
+            e.stopPropagation()
+            close()
+            invariant(editor, 'editor context is null')
+            const newBlock = editor?.insertNewEmptyBlock(Editor.BlockType.Text, id, 'top')
+            invariant(newBlock, 'block not created')
+            editor?.setSelectionState({
+              type: TellerySelectionType.Inline,
+              anchor: { blockId: newBlock.id, nodeIndex: 0, offset: 0 },
+              focus: { blockId: newBlock.id, nodeIndex: 0, offset: 0 },
+              storyId: newBlock.storyId!
+            })
+            editor?.execOnNextFlush(() => {
+              console.log(editor?.getBlockInstanceById(newBlock.id))
+              editor?.getBlockInstanceById(newBlock.id)?.openMenu()
+            })
+            // editor?.setFocusingBlockId(newBlock.id)
+          }
+        },
+        {
+          title: 'Add block below',
+          icon: <Icon icon={IconMenuInsertAfter} color={ThemingVariables.colors.text[0]} />,
+          action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+            e.preventDefault()
+            e.stopPropagation()
+            close()
 
-          invariant(editor, 'editor context is null')
+            invariant(editor, 'editor context is null')
 
-          const newBlock = editor?.insertNewEmptyBlock(Editor.BlockType.Text, id, 'bottom')
-          invariant(newBlock, 'block not created')
-          editor?.setSelectionState({
-            type: TellerySelectionType.Inline,
-            anchor: { blockId: newBlock.id, nodeIndex: 0, offset: 0 },
-            focus: { blockId: newBlock.id, nodeIndex: 0, offset: 0 },
-            storyId: newBlock.storyId!
-          })
-          editor?.execOnNextFlush(() => {
-            editor?.getBlockInstanceById(newBlock.id)?.openMenu()
-          })
+            const newBlock = editor?.insertNewEmptyBlock(Editor.BlockType.Text, id, 'bottom')
+            invariant(newBlock, 'block not created')
+            editor?.setSelectionState({
+              type: TellerySelectionType.Inline,
+              anchor: { blockId: newBlock.id, nodeIndex: 0, offset: 0 },
+              focus: { blockId: newBlock.id, nodeIndex: 0, offset: 0 },
+              storyId: newBlock.storyId!
+            })
+            editor?.execOnNextFlush(() => {
+              editor?.getBlockInstanceById(newBlock.id)?.openMenu()
+            })
+          }
+        },
+        {
+          title: 'Center Align',
+          icon: <Icon icon={IconMenuCenterAlign} color={ThemingVariables.colors.text[0]} />,
+          side: <FormSwitch checked={block?.format?.textAlign === 'center'} />,
+          action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+            e.preventDefault()
+            e.stopPropagation()
+            editor?.setBlockValue(id, (block) => {
+              if (block.format?.textAlign === 'center') {
+                delete block.format?.textAlign
+              } else {
+                block.format = { ...block.format, textAlign: 'center' }
+              }
+            })
+          }
         }
-      },
-      {
-        title: 'Copy Link Ref',
-        icon: <Icon icon={IconCommonLink} color={ThemingVariables.colors.text[0]} />,
-        action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-          e.preventDefault()
-          e.stopPropagation()
-          copy(`${window.location.protocol}//${window.location.hostname}/story/${block?.storyId}#${block?.id}`)
-          toast('Link Copied')
-        }
-      },
-      {
-        title: 'Duplicate block',
-        icon: <Icon icon={IconMenuDuplicate} color={ThemingVariables.colors.text[0]} />,
-        action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-          e.preventDefault()
-          e.stopPropagation()
-          addBlockHandler(Editor.BlockType.Text, true)
-          close()
-        }
-      },
-      {
-        title: 'Center Align',
-        icon: <Icon icon={IconMenuCenterAlign} color={ThemingVariables.colors.text[0]} />,
-        side: <FormSwitch value={block?.format?.textAlign === 'center'} onChange={() => {}} />,
-        action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-          e.preventDefault()
-          e.stopPropagation()
-          editor?.setBlockValue(id, (block) => {
-            if (block.format?.textAlign === 'center') {
-              delete block.format?.textAlign
-            } else {
-              block.format = { ...block.format, textAlign: 'center' }
-            }
-          })
-        }
-      },
-      {
-        title: 'Delete block',
-        icon: <Icon icon={IconMenuDelete} color={ThemingVariables.colors.text[0]} />,
-        action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-          e.preventDefault()
-          e.stopPropagation()
-          close()
+      ],
+      [
+        {
+          title: 'Delete',
+          icon: <Icon icon={IconMenuDelete} color={ThemingVariables.colors.text[0]} />,
+          action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+            e.preventDefault()
+            e.stopPropagation()
+            close()
 
-          // TODO: a workaround to transition
-          setTimeout(() => {
-            deleteBlockHandler()
-          }, 100)
+            // TODO: a workaround to transition
+            setTimeout(() => {
+              deleteBlockHandler()
+            }, 100)
+          }
         }
-      },
-      {
-        title: 'Debug: Copy block id',
-        icon: <Icon icon={IconMenuDuplicate} color={ThemingVariables.colors.text[0]} />,
-        action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-          e.preventDefault()
-          e.stopPropagation()
-          close()
-          copy(block?.id ?? '')
-          toast('Id Copied')
-        }
-      },
-      {
-        title: 'Debug: Copy as json',
-        icon: <Icon icon={IconMenuDuplicate} color={ThemingVariables.colors.text[0]} />,
-        action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-          e.preventDefault()
-          e.stopPropagation()
-          close()
-          copy(JSON.stringify(block ?? {}))
-          toast('Id Copied')
-        }
-      }
-    ].filter((action) => !!action) as OperationInterface[]
+      ]
+      // {
+      //   title: 'Debug: Copy block id',
+      //   icon: <Icon icon={IconMenuDuplicate} color={ThemingVariables.colors.text[0]} />,
+      //   action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      //     e.preventDefault()
+      //     e.stopPropagation()
+      //     close()
+      //     copy(block?.id ?? '')
+      //     toast('Id Copied')
+      //   }
+      // },
+      // {
+      //   title: 'Debug: Copy as json',
+      //   icon: <Icon icon={IconMenuDuplicate} color={ThemingVariables.colors.text[0]} />,
+      //   action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      //     e.preventDefault()
+      //     e.stopPropagation()
+      //     close()
+      //     copy(JSON.stringify(block ?? {}))
+      //     toast('Id Copied')
+      //   }
+      // }
+    ]
   }, [addBlockHandler, block, close, deleteBlockHandler, editor, id])
 
   return (
     <>
-      {operations.map((operation) => {
+      {operationGroups.map((operations) => {
         return (
-          <MenuItem
-            key={operation.title}
-            title={operation.title}
-            icon={operation.icon}
-            onClick={operation.action}
-            side={operation.side}
-          />
+          <>
+            {operations.map((operation) => (
+              <MenuItem
+                key={operation.title}
+                title={operation.title}
+                icon={operation.icon}
+                onClick={operation.action}
+                side={operation.side}
+              />
+            ))}
+            <MenuItemDivider />
+          </>
         )
       })}
       {block?.lastEditedById && (
         <>
-          <MenuItemDivider />
           <div
             className={css`
               color: ${ThemingVariables.colors.text[1]};

@@ -4,6 +4,8 @@ export interface TelleryTheme {
   colors: {
     text: string[]
     gray: string[]
+    code: string[]
+    selection: string[]
     primary: string[]
     positive: string[]
     negative: string[]
@@ -22,15 +24,17 @@ export const TelleryThemeLight: TelleryTheme = {
     text: ['#333333', '#999999', '#CCCCCC'],
     gray: ['#BABABA', '#DEDEDE', '#EFEFEF', '#F7F7F7', '#FBFBFB', '#FFFFFF'],
     primary: ['#002072', '#002FA7', '#ADBCE3', '#D6DEF1', '#EBEEF8', '#F5F7FB'],
+    code: ['#FF6E4A'],
+    selection: ['rgba(214, 222, 241, 0.5)'],
     positive: ['#53C556', '#D4F0D5'],
     negative: ['#FF5959', '#FFD5D5'],
     warning: ['#F9C226', '#FDEFC8'],
     // https://blueprintjs.com/docs/#core/colors.extended-colors
     visualization: [
       '#669EFF',
-      '#62D96B',
-      '#FFC940',
       '#FF6E4A',
+      '#FFC940',
+      '#62D96B',
       '#C274C2',
       '#14CCBD',
       '#FF66A1',

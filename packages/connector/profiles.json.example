@@ -1,7 +1,7 @@
 {
   "profiles": [
     {
-      "type": "jdbc:redshift",
+      "type": "Redshift",
       "name": "redshift",
       "configs": {
         "endpoint": "examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com",
@@ -21,7 +21,7 @@
       }
     },
     {
-      "type": "jdbc:snowflake",
+      "type": "Snowflake",
       "name": "snowflake",
       configs: {
         "accountName": "xy12345",

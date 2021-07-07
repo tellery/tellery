@@ -87,7 +87,6 @@ const StoryContent: React.FC<{ storyId: string; blockId?: string }> = ({ storyId
       >
         {story ? <BlockTitle block={story} /> : ''}
       </div>
-      )
       {story?.children && (
         <ContentBlocks
           blockIds={story?.children}

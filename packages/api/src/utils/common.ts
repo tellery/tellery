@@ -27,6 +27,14 @@ export function getSecretKey(): string {
   return key
 }
 
+export function hasSMTPHost(): boolean {
+  try {
+    return !!config.get('email.host')
+  } catch (e) {
+    return false
+  }
+}
+
 function ip() {
   return _(networkInterfaces())
     .values()

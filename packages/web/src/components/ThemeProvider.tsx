@@ -5,7 +5,7 @@ import { TelleryTheme, TelleryThemeLight, objectKeyValueMapperDeep, ThemeContext
 export const ThemeProvider: React.FC<{ theme?: TelleryTheme }> = ({ children, theme = TelleryThemeLight }) => {
   useIsomorphicLayoutEffect(() => {
     objectKeyValueMapperDeep(TelleryThemeLight, (key, value) => {
-      document.body.style.setProperty(key, value)
+      document.documentElement.style.setProperty(key, value)
       return key
     })
   }, [theme])

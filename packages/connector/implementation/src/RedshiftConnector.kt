@@ -14,18 +14,18 @@ import java.sql.Connection
 
 
 @Connector(
-    type="jdbc:redshift",
+    type="Redshift",
     jdbcConfigs = [
-        Config(name="endpoint", type= ConfigType.STRING, description="The endpoint of the Amazon Redshift cluster.", hint="examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com",required=true),
-        Config(name="port", type= ConfigType.NUMBER, description="The port number that you specified when you launched the cluster. If you have a firewall, make sure that this port is open for you to use.", hint="5439",required=true),
-        Config(name="database", type= ConfigType.STRING, description="The logical database to connect to and run queries against.", hint="my_db",required=true),
+        Config(name="Endpoint", type= ConfigType.STRING, description="The endpoint of the Amazon Redshift cluster", hint="examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com",required=true),
+        Config(name="Port", type= ConfigType.NUMBER, description="The port number that you specified when you launched the cluster. If you have a firewall, make sure that this port is open for you to use", hint="5439",required=true),
+        Config(name="Database", type= ConfigType.STRING, description="The logical database to connect to and run queries against", hint="my_db",required=true),
     ],
     optionals = [
-        Config(name="s3AccessKey", type=ConfigType.STRING, description="S3 Access Key ID(for uploading csv)"),
-        Config(name="s3SecretKey", type=ConfigType.STRING, description="S3 Secret Access Key (for uploading csv)", secret=true),
-        Config(name="s3Region", type=ConfigType.STRING, description="S3 region (be the same as your Redshift cluster", hint="us-east-1"),
-        Config(name="s3Bucket", type=ConfigType.STRING, description="S3 bucket (where uploaded csv stores)", hint="tellery"),
-        Config(name="s3keyPrefix", type=ConfigType.STRING, description="S3 key prefix prepends to uploaded csv"),
+        Config(name="S3AccessKey", type=ConfigType.STRING, description="S3 Access Key ID(for uploading csv)"),
+        Config(name="S3SecretKey", type=ConfigType.STRING, description="S3 Secret Access Key (for uploading csv)", secret=true),
+        Config(name="S3Region", type=ConfigType.STRING, description="S3 region (be the same as your Redshift cluster", hint="us-east-1"),
+        Config(name="S3Bucket", type=ConfigType.STRING, description="S3 bucket (where uploaded csv stores)", hint="tellery"),
+        Config(name="S3KeyPrefix", type=ConfigType.STRING, description="S3 key prefix prepends to uploaded csv"),
 ])
 class RedshiftConnector : JDBCConnector() {
     override val driverClassName = "com.amazon.redshift.jdbc42.Driver"

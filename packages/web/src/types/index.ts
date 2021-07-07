@@ -89,7 +89,8 @@ export namespace Editor {
     Story = 'story',
     Row = 'row',
     Column = 'column',
-    Thought = 'thought'
+    Thought = 'thought',
+    Embed = 'embed'
   }
 
   export enum BlockParentType {
@@ -165,6 +166,12 @@ export namespace Editor {
     }
   }
 
+  export interface FileBlock extends ContentBlock {
+    content: ContentBlock['content'] & {
+      fileKey?: string
+    }
+  }
+
   export type Block = ImageBlock | QuestionBlock | ContentBlock
 }
 
@@ -202,7 +209,8 @@ export interface Thought extends Editor.BaseBlock {
   }
 }
 
-export type Ref = { blockId: string; storyId: string; questionId: string }
+export type Ref = { blockId: string; storyId: string }
+
 export type Asset = Story | Editor.Block
 
 export type TellerySelectionNode = {
@@ -230,8 +238,8 @@ export type TelleryInlineSelection = {
 export type TellerySelection = (TelleryBlockSelection | TelleryInlineSelection) & { storyId: string }
 
 export type BackLinks = {
-  forwardRefs: { storyId: string; blockId: string; questionId: string }[]
-  backwardRefs: { storyId: string; blockId: string; questionId: string }[]
+  forwardRefs: Ref[]
+  backwardRefs: Ref[]
 }
 
 export type DropItem = {
@@ -272,4 +280,24 @@ export type Workspace = {
     dbImportsTo?: string
     profile?: string
   }
+}
+
+export type ProfileConfig = {
+  type: string
+  name: string
+  auth?: {
+    username: string
+    password?: string
+  }
+  configs: Record<string, string | number | boolean>
+  optionals?: Record<string, string | number | boolean>
+}
+
+export type AvailableConfig = {
+  type: 'STRING' | 'NUMBER' | 'BOOLEAN'
+  name: string
+  hint: string
+  description: string
+  required: boolean
+  secret: boolean
 }

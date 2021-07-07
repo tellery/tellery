@@ -20,7 +20,7 @@ import { useRecoilState } from 'recoil'
 import { BlockSnapshot, getBlockFromSnapshot, useBlockSnapshot } from 'store/block'
 import { ThemingVariables } from 'styles'
 import { Editor, Story, TellerySelection, TellerySelectionType, Thought } from 'types'
-import { isUrl, TELLERY_DATA_MIME_TYPE_BLOCK, TELLERY_DATA_MIME_TYPE_TOKEN } from 'utils'
+import { isUrl, TELLERY_MIME_TYPES } from 'utils'
 import {
   addMark,
   applyTransformOnTokensFromSelectionState,
@@ -37,7 +37,6 @@ import {
 import { OperatorsContext, useStoryOperators } from './BlockOperators'
 import { ThoughtTitleBlock } from './Blocks/ThoughtTitleBlock'
 import { ContentBlocks } from './ContentBlock'
-import { uploadFilesAndUpdateBlocks } from './DataFileType'
 import { DebouncedResizeBlock } from './DebouncedResizeBlock'
 import {
   createTranscation,
@@ -65,6 +64,7 @@ import {
   setCaretToStart
 } from './helpers'
 import { EditorContext, EditorContextInterface, useMouseMoveInEmitter } from './hooks'
+import { useSetUploadResource } from './hooks/useUploadResource'
 import { BlockTextOperationMenu } from './Popovers/BlockTextOperationMenu'
 import { HovreringBlockId } from './store'
 import { TelleryStorySelection } from './store/selection'
@@ -501,8 +501,8 @@ const _StoryEditor: React.FC<{
   }, [deleteBlockFragmentFromSelection, setClipboardWithFragment, snapshot])
 
   const doCopy = useCallback(() => {
-    const selection = window.getSelection()
-    selection?.removeAllRanges()
+    // const selection = window.getSelection()
+    // selection?.removeAllRanges()
     copy('tellery', {
       debug: true,
       onCopy: (clipboardData) => {
@@ -1046,6 +1046,7 @@ const _StoryEditor: React.FC<{
   )
 
   const workspace = useWorkspace()
+  const setUploadResource = useSetUploadResource()
 
   const pasteHandler = useCallback(
     (e: React.ClipboardEvent<HTMLDivElement>) => {
@@ -1053,7 +1054,7 @@ const _StoryEditor: React.FC<{
       if (e.defaultPrevented) {
         return
       }
-      logger('clipboard', e.clipboardData)
+      // logger('clipboard', e.clipboardData.types, e.clipboardData.getData('vscode-editor-data'))
       if (e.clipboardData.files.length) {
         e.stopPropagation()
         e.preventDefault()
@@ -1071,12 +1072,13 @@ const _StoryEditor: React.FC<{
           targetBlockId: selectionState.anchor.blockId,
           direction: 'bottom'
         })
-        uploadFilesAndUpdateBlocks(files, fileBlocks, workspace).then((transcations) => {
-          transcations.forEach((transcation) => commit({ transcation, storyId }))
+        fileBlocks.forEach((block, i) => {
+          const file = files[i]
+          setUploadResource({ blockId: block.id, file })
         })
       } else if (e.clipboardData) {
-        const telleryBlockDataStr = e.clipboardData.getData(TELLERY_DATA_MIME_TYPE_BLOCK)
-        const telleryTokenDataStr = e.clipboardData.getData(TELLERY_DATA_MIME_TYPE_TOKEN)
+        const telleryBlockDataStr = e.clipboardData.getData(TELLERY_MIME_TYPES.BLOCKS)
+        const telleryTokenDataStr = e.clipboardData.getData(TELLERY_MIME_TYPES.TOKEN)
         const pureText = e.clipboardData.getData('text/plain')
         if (telleryBlockDataStr) {
           if (!focusingBlockId) return
@@ -1254,10 +1256,11 @@ const _StoryEditor: React.FC<{
                 /* margin-bottom: 10px; */
                 padding: 0;
                 *::selection {
-                  background: ${ThemingVariables.colors.primary[4]};
+                  background-color: ${ThemingVariables.colors.selection[0]};
                 }
                 cursor: text;
                 width: 100%;
+                flex: 1;
                 user-select: none;
                 &::-webkit-scrollbar {
                   /* display: none; */
@@ -1301,6 +1304,7 @@ const _StoryEditor: React.FC<{
                       flex-direction: column;
                       align-items: center;
                       font-size: 16px;
+                      min-height: 100%;
                       transition: width 250ms ease;
                       padding: 100px 100px 0 100px;
                       @media (max-width: 700px) {
@@ -1383,7 +1387,15 @@ const EditorEmptyStatePlaceHolder = ({
         align-self: flex-start;
         width: 100%;
       `}
-      onClick={onClick}
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        onClick(e)
+      }}
+      onMouseDown={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+      }}
     >
       Click here or press Enter to continue with an empty story.
     </div>
@@ -1405,7 +1417,15 @@ const EditorEmptyStateEndPlaceHolder = ({
         width: 100%;
         cursor: text;
       `}
-      onClick={onClick}
+      onMouseDown={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+      }}
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        onClick(e)
+      }}
     ></div>
   )
 }

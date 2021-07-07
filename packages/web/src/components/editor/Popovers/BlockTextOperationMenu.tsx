@@ -2,6 +2,7 @@ import { useWorkspace } from '@app/context/workspace'
 import { useCommit } from '@app/hooks/useCommit'
 import { css } from '@emotion/css'
 import styled from '@emotion/styled'
+import Tippy from '@tippyjs/react'
 import { getStoriesByTitle } from 'api'
 import {
   IconCommonArrowDropDown,
@@ -36,9 +37,10 @@ import {
 } from 'components/editor/helpers/tokenManipulation'
 import Icon from 'components/kit/Icon'
 import { createTranscation } from 'context/editorTranscations'
-import { AnimatePresence, motion, usePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useBlockSuspense } from 'hooks/api'
 import invariant from 'invariant'
+import isHotkey from 'is-hotkey'
 import { nanoid } from 'nanoid'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { usePopper } from 'react-popper'
@@ -125,7 +127,6 @@ export const BlockTextOperationMenuInner = ({
   selectionString: string
 }) => {
   const editor = useEditor<Editor.Block>()
-  const [isPresent, safeToRemove] = usePresence()
   const currentBlock = useBlockSuspense(currentBlockId)
   const [modalRef, setModalRef] = useState<HTMLDivElement | null>(null)
   const [inlineEditing, setInlineEditing] = useState(false)
@@ -312,41 +313,45 @@ export const BlockTextOperationMenuInner = ({
       if (inlineEditing) {
         return
       }
-      if (e.ctrlKey || e.metaKey) {
-        switch (e.key) {
-          case 'B': // ctrl+B or ctrl+b
-          case 'b':
-            markHandler(Editor.InlineType.Bold, [], !!markdMap.get(Editor.InlineType.Bold))
-            break
-          case 'I': // ctrl+I or ctrl+i
-          case 'i':
-            markHandler(Editor.InlineType.Italic, [], !!markdMap.get(Editor.InlineType.Italic))
-            break
-          case 'U': // ctrl+U or ctrl+u
-          case 'u':
-            markHandler(Editor.InlineType.Underline, [], !!markdMap.get(Editor.InlineType.Underline))
-            e.preventDefault()
-            break
-          case 'E': // ctrl+U or ctrl+u
-          case 'e':
-            markHandler(Editor.InlineType.Code, [], !!markdMap.get(Editor.InlineType.Code))
-            e.preventDefault()
-            break
-          case 'R': // ctrl+R or ctrl+r
-          case 'r':
-            e.preventDefault()
-            toggleReference()
-
-            break
-          case 'H': // ctrl+U or ctrl+u
-          case 'h':
+      const handlers = [
+        {
+          hotkeys: ['mod+b'],
+          handler: () => markHandler(Editor.InlineType.Bold, [], !!markdMap.get(Editor.InlineType.Bold))
+        },
+        {
+          hotkeys: ['mod+i'],
+          handler: () => markHandler(Editor.InlineType.Italic, [], !!markdMap.get(Editor.InlineType.Italic))
+        },
+        {
+          hotkeys: ['mod+u'],
+          handler: () => markHandler(Editor.InlineType.Underline, [], !!markdMap.get(Editor.InlineType.Underline))
+        },
+        {
+          hotkeys: ['mod+e'],
+          handler: () => markHandler(Editor.InlineType.Code, [], !!markdMap.get(Editor.InlineType.Code))
+        },
+        {
+          hotkeys: ['mod+y'],
+          handler: () => markHandler(Editor.InlineType.Strike, [], !!markdMap.get(Editor.InlineType.Strike))
+        },
+        // {
+        //   hotkeys: ['mod+r'],
+        //   handler: (e) => {
+        //     e.preventDefault()
+        //     toggleReference()
+        //   }
+        // },
+        {
+          hotkeys: ['mod+h'],
+          handler: () =>
             markHandler(Editor.InlineType.Hightlighted, ['orange'], !!markdMap.get(Editor.InlineType.Hightlighted))
-            e.preventDefault()
-            break
         }
-      } else {
-        // setRange(null)
-        // setOpen(false)
+      ]
+
+      const matchingHandler = handlers.find((handler) => handler.hotkeys.some((hotkey) => isHotkey(hotkey, e)))
+      if (matchingHandler) {
+        e.preventDefault()
+        matchingHandler?.handler()
       }
     }
     document.addEventListener('keydown', onKeyDown)
@@ -354,6 +359,74 @@ export const BlockTextOperationMenuInner = ({
       document.removeEventListener('keydown', onKeyDown)
     }
   }, [inlineEditing, markHandler, markdMap, selectedTokens, toggleReference])
+
+  const markButtons = useMemo(() => {
+    const buttons = [
+      {
+        type: Editor.InlineType.Bold,
+        icon: IconFontBold,
+        hoverContent: 'Bold',
+        onClick: () => markHandler(Editor.InlineType.Bold, [], !!markdMap.get(Editor.InlineType.Bold))
+      },
+      {
+        type: Editor.InlineType.Italic,
+        icon: IconFontItalic,
+        hoverContent: 'Italic',
+        onClick: () => markHandler(Editor.InlineType.Italic, [], !!markdMap.get(Editor.InlineType.Italic))
+      },
+      {
+        type: Editor.InlineType.Underline,
+        icon: IconFontUnderline,
+        hoverContent: 'Underline',
+        onClick: () => markHandler(Editor.InlineType.Underline, [], !!markdMap.get(Editor.InlineType.Underline))
+      },
+      {
+        type: Editor.InlineType.Strike,
+        icon: IconFontStrikethrough,
+        hoverContent: 'Strike-through',
+        onClick: () => markHandler(Editor.InlineType.Strike, [], !!markdMap.get(Editor.InlineType.Strike))
+      },
+      {
+        type: Editor.InlineType.Code,
+        icon: IconFontCode,
+        hoverContent: 'Inline code',
+        onClick: () => markHandler(Editor.InlineType.Code, [], !!markdMap.get(Editor.InlineType.Code))
+      },
+      {
+        type: Editor.InlineType.Reference,
+        icon: IconFontStory,
+        hoverContent: 'Reference story',
+        onClick: toggleReference
+      },
+      { type: 'DIVIDER' },
+      {
+        type: Editor.InlineType.Hightlighted,
+        icon: IconFontColor,
+        hoverContent: 'Highlight',
+        onClick: () => markHandler(Editor.InlineType.Hightlighted, [], !!markdMap.get(Editor.InlineType.Hightlighted))
+      }
+    ]
+
+    return buttons.map((button) => {
+      if (button.type === 'DIVIDER') {
+        return <VerticalDivider />
+      }
+      return (
+        <Tippy
+          key={button.type}
+          content={button.hoverContent}
+          hideOnClick={false}
+          animation="fade"
+          duration={150}
+          arrow={false}
+        >
+          <OperationButton active={markdMap.get(button.type as Editor.InlineType)} onClick={button.onClick}>
+            <Icon icon={button.icon!} color={ThemingVariables.colors.text[0]} />
+          </OperationButton>
+        </Tippy>
+      )
+    })
+  }, [markHandler, markdMap, toggleReference])
 
   return (
     <div
@@ -388,7 +461,6 @@ export const BlockTextOperationMenuInner = ({
         `}
       >
         <ToggleTypeOperation
-          isParentPresent={isPresent}
           // parentSafeToRemove={safeToRemove}
           toggleBlockType={(type: Editor.BlockType) => {
             if (!currentBlock?.id) return
@@ -402,66 +474,10 @@ export const BlockTextOperationMenuInner = ({
           currentType={currentBlock?.type}
         />
         <VerticalDivider />
-        <AddLinkOperation isParentPresent={isPresent} setInlineEditing={setInlineEditing} markHandler={markHandler} />
+        <AddLinkOperation setInlineEditing={setInlineEditing} markHandler={markHandler} />
 
         <VerticalDivider />
-        <OperationButton
-          active={markdMap.get(Editor.InlineType.Bold)}
-          onClick={() => {
-            markHandler(Editor.InlineType.Bold, [], !!markdMap.get(Editor.InlineType.Bold))
-          }}
-        >
-          <Icon icon={IconFontBold} color={ThemingVariables.colors.text[0]} />
-        </OperationButton>
-        <OperationButton
-          active={markdMap.get(Editor.InlineType.Italic)}
-          onClick={() => {
-            markHandler(Editor.InlineType.Italic, [], !!markdMap.get(Editor.InlineType.Italic))
-          }}
-        >
-          <Icon icon={IconFontItalic} color={ThemingVariables.colors.text[0]} />
-        </OperationButton>
-        <OperationButton
-          active={markdMap.get(Editor.InlineType.Underline)}
-          onClick={() => {
-            markHandler(Editor.InlineType.Underline, [], !!markdMap.get(Editor.InlineType.Underline))
-          }}
-        >
-          <Icon icon={IconFontUnderline} color={ThemingVariables.colors.text[0]} />
-        </OperationButton>
-        <OperationButton
-          active={markdMap.get(Editor.InlineType.Strike)}
-          onClick={() => {
-            markHandler(Editor.InlineType.Strike, [], !!markdMap.get(Editor.InlineType.Strike))
-          }}
-        >
-          <Icon icon={IconFontStrikethrough} color={ThemingVariables.colors.text[0]} />
-        </OperationButton>
-        <OperationButton
-          active={markdMap.get(Editor.InlineType.Code)}
-          onClick={() => {
-            markHandler(Editor.InlineType.Code, [], !!markdMap.get(Editor.InlineType.Code))
-          }}
-        >
-          <Icon icon={IconFontCode} color={ThemingVariables.colors.text[0]} />
-        </OperationButton>
-        <OperationButton
-          active={markdMap.get(Editor.InlineType.Reference)}
-          onClick={() => {
-            toggleReference()
-          }}
-        >
-          <Icon icon={IconFontStory} color={ThemingVariables.colors.text[0]} />
-        </OperationButton>
-        <VerticalDivider />
-        <OperationButton
-          active={markdMap.get(Editor.InlineType.Hightlighted)}
-          onClick={() => {
-            markHandler(Editor.InlineType.Hightlighted, ['orange'], !!markdMap.get(Editor.InlineType.Hightlighted))
-          }}
-        >
-          <Icon icon={IconFontColor} color={ThemingVariables.colors.text[0]} />
-        </OperationButton>
+        {markButtons}
         <VerticalDivider />
       </motion.div>
     </div>
@@ -521,7 +537,6 @@ const TEXT_TYPES = [
 const ToggleTypeOperation = (props: {
   toggleBlockType: (type: Editor.BlockType) => void
   currentType?: Editor.BlockType
-  isParentPresent: boolean
 }) => {
   const [referenceElement, setReferenceElement] = useState<HTMLDivElement | null>(null)
 
@@ -534,12 +549,6 @@ const ToggleTypeOperation = (props: {
     },
     [props]
   )
-
-  useEffect(() => {
-    if (props.isParentPresent === false) {
-      setOpen(false)
-    }
-  }, [props.isParentPresent])
 
   return (
     <>
@@ -568,7 +577,7 @@ const ToggleTypeOperation = (props: {
         {currentTypeText}
         <Icon icon={IconCommonArrowDropDown} color={ThemingVariables.colors.gray[0]} />
       </div>
-      <EditorPopover referenceElement={referenceElement} open={open} setOpen={setOpen}>
+      <EditorPopover referenceElement={referenceElement} open={open} setOpen={setOpen} disableClickThrough>
         <div
           className={css`
             background: ${ThemingVariables.colors.gray[5]};
@@ -620,7 +629,6 @@ const ToggleTypeOperation = (props: {
 const AddLinkOperation = (props: {
   markHandler: (type: Editor.InlineType, links: string[], isFirstLink: boolean) => void
   setInlineEditing: (editing: boolean) => void
-  isParentPresent: boolean
 }) => {
   const [referenceElement, setReferenceElement] = useState<HTMLElement | null>(null)
   const [open, setOpen] = useState(false)
@@ -634,12 +642,6 @@ const AddLinkOperation = (props: {
       inputRef.current?.focus()
     }
   }, [open, props])
-
-  useEffect(() => {
-    if (props.isParentPresent === false) {
-      setOpen(false)
-    }
-  }, [props.isParentPresent])
 
   return (
     <>
@@ -686,7 +688,7 @@ const AddLinkOperation = (props: {
         Link
         <Icon icon={IconCommonArrowDropDown} color={ThemingVariables.colors.gray[0]} />
       </div>
-      <EditorPopover referenceElement={referenceElement} open={open} setOpen={setOpen}>
+      <EditorPopover referenceElement={referenceElement} open={open} setOpen={setOpen} disableClickThrough>
         <div
           className={css`
             background: ${ThemingVariables.colors.gray[5]};

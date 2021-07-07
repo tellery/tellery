@@ -1,32 +1,34 @@
-import { useWorkspaceDetail } from '@app/hooks/api'
+import { useWorkspaceDetail, useWorkspaceUpdate } from '@app/hooks/api'
 import { ThemingVariables } from '@app/styles'
 import type { Workspace } from '@app/types'
 import { fileLoader } from '@app/utils'
 import { uploadFile } from '@app/utils/upload'
 import { css } from '@emotion/css'
+import { pick } from 'lodash'
 import { useRef, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { FormButton } from './kit/FormButton'
+import FormError from './kit/FormError'
 import FormInput from './kit/FormInput'
 import FormLabel from './kit/FormLabel'
 
-export function WorkspacePreferences() {
+export function WorkspacePreferences(props: { onClose(): void }) {
   const { data: workspace } = useWorkspaceDetail()
-  const {
-    register,
-    reset,
-    getValues,
-    setValue,
-    formState: { errors },
-    handleSubmit
-  } = useForm<Workspace>({
-    defaultValues: workspace,
+  const { register, reset, getValues, setValue, handleSubmit } = useForm<Pick<Workspace, 'avatar' | 'name'>>({
+    defaultValues: pick(workspace, ['avatar', 'name']),
     mode: 'all'
   })
   useEffect(() => {
-    reset(workspace)
+    reset(pick(workspace, ['avatar', 'name']))
   }, [workspace, reset])
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const handleWorkspaceUpdate = useWorkspaceUpdate()
+  const { onClose } = props
+  useEffect(() => {
+    if (handleWorkspaceUpdate.status === 'success') {
+      onClose()
+    }
+  }, [handleWorkspaceUpdate.status, onClose])
 
   return (
     <form
@@ -37,6 +39,7 @@ export function WorkspacePreferences() {
         display: flex;
         flex-direction: column;
       `}
+      onSubmit={handleSubmit(handleWorkspaceUpdate.execute)}
     >
       <h2
         className={css`
@@ -81,7 +84,7 @@ export function WorkspacePreferences() {
               return
             }
             const { key } = await uploadFile(file, workspace.id)
-            setValue('avatar', fileLoader({ src: key }))
+            setValue('avatar', fileLoader({ src: key, workspaceId: workspace.id }))
           }}
         />
         <FormButton
@@ -96,6 +99,23 @@ export function WorkspacePreferences() {
       </div>
       <FormLabel>Name</FormLabel>
       <FormInput {...register('name')} />
+      <div
+        className={css`
+          flex: 1;
+        `}
+      />
+      <FormError message={handleWorkspaceUpdate.error?.response?.data.errMsg} />
+      <FormButton
+        type="submit"
+        variant="primary"
+        className={css`
+          width: 100%;
+          margin-top: 5px;
+        `}
+        disabled={handleWorkspaceUpdate.status === 'pending'}
+      >
+        Update
+      </FormButton>
     </form>
   )
 }

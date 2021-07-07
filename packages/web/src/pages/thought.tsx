@@ -216,7 +216,7 @@ function Thoughts() {
                       margin-right: 10px;
                     `}
                   />
-                  <ThoughtTitle>Write today&apos;s notes</ThoughtTitle>
+                  <ThoughtTitle>Capture today&apos;s thought</ThoughtTitle>
                 </ThoughtHeader>
               </ThoughtContainer>
             )}

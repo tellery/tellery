@@ -1,6 +1,6 @@
 export const getProvision = async (contentType: string, workspaceId: string) => {
   const res = await fetch(
-    `/api/upload/provision?contentType=${encodeURIComponent(contentType)}&workspaceId=${workspaceId}`,
+    `/api/storage/provision?contentType=${encodeURIComponent(contentType)}&workspaceId=${workspaceId}`,
     {
       method: 'get'
     }
@@ -36,13 +36,13 @@ export const uploadFile = async (file: Blob, workspaceId: string) => {
   }
   formData.append('file', file)
   try {
-    await fetch(`${provision.url}`, {
+    await fetch(provision.url, {
       method: 'post',
       mode: 'cors',
       body: formData
     })
 
-    return { key: `${provision.url}/${provision.key}` }
+    return { key: `${provision.key}` }
   } catch (err) {
     console.log(err)
     throw err

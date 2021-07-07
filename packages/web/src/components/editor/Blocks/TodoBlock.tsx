@@ -5,7 +5,7 @@ import { ThemingVariables } from 'styles'
 import type { Editor } from 'types'
 import { ContentEditable } from '../BlockBase/ContentEditable'
 import { useEditor } from '../hooks'
-import { useBlockBehavior } from '../ContentBlock'
+import { useBlockBehavior } from '../hooks/useBlockBehavior'
 
 export const TodoBlock: React.FC<{
   block: Editor.TodoBlock

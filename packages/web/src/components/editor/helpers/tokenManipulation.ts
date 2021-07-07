@@ -3,7 +3,7 @@ import { dequal } from 'dequal'
 import invariant from 'invariant'
 import { BlockSnapshot, getBlockFromSnapshot } from 'store/block'
 import { Editor, TellerySelection, TellerySelectionType } from 'types'
-import { DEFAULT_TITLE, TELLERY_DATA_MIME_TYPE_BLOCK, TELLERY_DATA_MIME_TYPE_TOKEN } from 'utils'
+import { DEFAULT_TITLE, TELLERY_MIME_TYPES } from 'utils'
 import { isReferenceToken } from '../BlockBase/ContentEditable'
 
 export const mergeTokens = (tokens: Editor.Token[]) => {
@@ -110,7 +110,7 @@ export const getBlocksFragmentFromSelection = (selectionState: TellerySelection,
 
   if (selectionState === null)
     return {
-      type: TELLERY_DATA_MIME_TYPE_BLOCK,
+      type: TELLERY_MIME_TYPES.BLOCKS,
       value: result
     }
 
@@ -120,7 +120,7 @@ export const getBlocksFragmentFromSelection = (selectionState: TellerySelection,
       selectionState
     )
     return {
-      type: TELLERY_DATA_MIME_TYPE_TOKEN,
+      type: TELLERY_MIME_TYPES.TOKEN,
       value: fragment as Editor.Token[]
     }
   } else if (selectionState.type === TellerySelectionType.Block) {
@@ -133,7 +133,7 @@ export const getBlocksFragmentFromSelection = (selectionState: TellerySelection,
       result.push(fragment as Editor.Block)
     }
     return {
-      type: TELLERY_DATA_MIME_TYPE_BLOCK,
+      type: TELLERY_MIME_TYPES.BLOCKS,
       value: result
     }
   }
@@ -143,9 +143,9 @@ export const convertBlocksOrTokensToPureText = (
   fragment: { type: string; value: Editor.Block[] | Editor.Token[] },
   snapshot: BlockSnapshot
 ) => {
-  if (fragment.type === TELLERY_DATA_MIME_TYPE_TOKEN) {
+  if (fragment.type === TELLERY_MIME_TYPES.TOKEN) {
     return tokensToText(fragment.value as Editor.Token[], snapshot)
-  } else if (fragment.type === TELLERY_DATA_MIME_TYPE_BLOCK) {
+  } else if (fragment.type === TELLERY_MIME_TYPES.BLOCKS) {
     return (fragment.value as Editor.Block[]).map((block) => blockTitleToText(block, snapshot)).join('\n')
   }
   return 'tellery'

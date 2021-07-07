@@ -1,7 +1,8 @@
 import { css } from '@emotion/css'
+import { forwardRef, InputHTMLAttributes } from 'react'
 import { ThemingVariables } from 'styles'
 
-export default function FormSwitch(props: { value: boolean; onChange(value: boolean): void }) {
+export default forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(function FormSwitch(props, ref) {
   return (
     <label
       className={css`
@@ -21,10 +22,9 @@ export default function FormSwitch(props: { value: boolean; onChange(value: bool
       `}
     >
       <input
-        checked={props.value}
-        onChange={(e) => {
-          props.onChange(e.target.checked)
-        }}
+        ref={ref}
+        checked={props.checked}
+        onChange={props.onChange}
         type="checkbox"
         className={css`
           opacity: 0;
@@ -59,4 +59,4 @@ export default function FormSwitch(props: { value: boolean; onChange(value: bool
       />
     </label>
   )
-}
+})

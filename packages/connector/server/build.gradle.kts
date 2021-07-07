@@ -7,6 +7,7 @@ val krotoplusVersion: String by project
 val grpcVersion: String by project
 val protobufVersion: String by project
 val nattytcnativeVersion: String by project
+val coroutinesVersion: String by project
 
 repositories {
     jcenter()
@@ -16,7 +17,7 @@ repositories {
 plugins {
 	application
     kotlin("jvm")
-    id("com.google.protobuf") version "0.8.13"
+    id("com.google.protobuf") version "0.8.16"
     id("com.github.marcoferrer.kroto-plus") version "0.6.1"
     id("com.google.cloud.tools.jib") version "3.1.1"
 }
@@ -126,7 +127,7 @@ jib {
         jvmFlags = listOf(
             "-server",
             "-Djava.awt.headless=true",
-            "-javaagent:/usr/app/libs/kotlinx-coroutines-core-jvm-1.3.9.jar",
+            "-javaagent:/usr/app/libs/kotlinx-coroutines-core-jvm-${coroutinesVersion}.jar",
             "-XX:+UnlockExperimentalVMOptions",
             "-XX:+UseCGroupMemoryLimitForHeap",
             "-XX:InitialRAMFraction=2",

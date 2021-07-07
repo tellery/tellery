@@ -40,7 +40,6 @@ const _ContentEditable: React.ForwardRefRenderFunction<
     maxLines?: number
     disableSlashCommand?: boolean
     className?: string
-    hidePlaceHolder?: boolean
     disableTextToolBar?: boolean
     placeHolderText?: string
     disableReferenceDropdown?: boolean
@@ -170,6 +169,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
       try {
         const range = tellerySelection2Native(localSelection!)
         range && restoreRange(range)
+        logger('resotre range', range)
       } catch (e) {
         console.error('selection fail', e)
       }
@@ -269,7 +269,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
     if (keywordRange === null || keywordRange.type === TellerySelectionType.Block) {
       return ''
     }
-    logger('keyword', keywordRange)
+    // logger('keyword', keywordRange)
     const range = {
       start:
         tokenPosition2SplitedTokenPosition(
@@ -392,7 +392,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
         onKeyDown={(e) => {
           if (!isFocusing) return
           if (!localSelection) return
-          logger('key down')
+          // logger('key down')
           if (e.ctrlKey || e.metaKey) {
             switch (e.key) {
               case 'B': // ctrl+B or ctrl+b
@@ -603,7 +603,7 @@ function updateTokensMark(
         if (!draftState[updateIndex]) {
           break
         }
-        logger('marks', currentMarks)
+        // logger('marks', currentMarks)
         if (!currentMarks || currentMarks.length === 0) {
           if (isReferenceToken(draftState[updateIndex]) === false) {
             draftState?.[updateIndex]?.[1] && delete draftState[updateIndex][1]

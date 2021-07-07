@@ -2,7 +2,7 @@ import { css, cx } from '@emotion/css'
 import { TelleryBlockSelectedAtom } from 'components/editor/store/selection'
 import { motion } from 'framer-motion'
 import { useBlockSuspense } from 'hooks/api'
-import React, { memo, ReactNode, useContext, useMemo, useRef } from 'react'
+import React, { memo, ReactNode, useMemo, useRef } from 'react'
 import { useRecoilValue } from 'recoil'
 import { ThemingVariables } from 'styles'
 import { Editor } from 'types'
@@ -15,6 +15,7 @@ import { DividerBlock } from './Blocks/DividerBlock'
 import { FileBlock } from './Blocks/FileBlock'
 import { GridBlock } from './Blocks/GridBlock'
 import { ImageBlock } from './Blocks/ImageBlock'
+import { EmbedBlock } from './Blocks/EmbedBlock'
 import { NoPermissionBlock } from './Blocks/NoPermisionBlock'
 import { NumberedListBlock } from './Blocks/NumberedListBlock'
 import { QuestionBlock } from './Blocks/QuestionBlock'
@@ -27,6 +28,7 @@ import { DroppingAreaIndicator } from './DroppingAreaIndicator'
 import { DroppleableOverlay } from './DroppleableOverlay'
 import { BlockFormatInterface, useBlockFormat } from './hooks/useBlockFormat'
 import { ErrorBoundary } from 'react-error-boundary'
+import { BlockBehaviorConext, useBlockBehavior } from './hooks/useBlockBehavior'
 
 function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   return (
@@ -39,42 +41,16 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetError
       `}
     >
       <p>Failed to display this block:</p>
-      <pre>{error.message}</pre>
+      <pre
+        className={css`
+          overflow: scroll;
+        `}
+      >
+        {error.message}
+      </pre>
       {/* <button onClick={resetErrorBoundary}>Try again</button> */}
     </div>
   )
-}
-
-export const isLayoutBlock = (blockType: Editor.BlockType) => {
-  return blockType === Editor.BlockType.Row || blockType === Editor.BlockType.Column
-}
-
-export const BlockBehaviorConext = React.createContext<{
-  readonly: boolean
-  small: boolean
-  draggable: boolean
-  highlightedBlock?: string
-  // BlockComponent:
-  //   | React.NamedExoticComponent<{
-  //       block: Editor.Block
-  //       parentType: Editor.BlockType
-  //     }>
-  //   | React.FC<{
-  //       block: Editor.Block
-  //       parentType: Editor.BlockType
-  //       hightlighted?: boolean | undefined
-  //     }>
-  //   | null
-}>({
-  readonly: false,
-  highlightedBlock: undefined,
-  small: false,
-  draggable: false
-})
-
-export const useBlockBehavior = () => {
-  const context = useContext(BlockBehaviorConext)
-  return context
 }
 
 const _BlockInner: React.FC<{
@@ -110,6 +86,8 @@ const _BlockInner: React.FC<{
       )
     case Editor.BlockType.File:
       return <FileBlock block={block as Editor.ImageBlock}>{children}</FileBlock>
+    case Editor.BlockType.Embed:
+      return <EmbedBlock block={block as Editor.ImageBlock}>{children}</EmbedBlock>
     case Editor.BlockType.BulletList:
       return <BulletListBlock block={block}>{children}</BulletListBlock>
     case Editor.BlockType.NumberedList:
@@ -134,6 +112,8 @@ const BlockInner = memo(_BlockInner, (prev, next) => {
     prev.parentType === next.parentType
   )
 })
+
+// const BlockInner = _BlockInner
 
 export const ContentBlocks: React.FC<{
   blockIds: string[]
@@ -165,7 +145,7 @@ export const ContentBlocks: React.FC<{
   )
 }
 
-const _ContentBlockPure: React.FC<{
+export const _ContentBlockPure: React.FC<{
   id: string
   parentType: Editor.BlockType
 }> = (props) => {
@@ -174,17 +154,16 @@ const _ContentBlockPure: React.FC<{
 }
 
 export const ContentBlockPure = memo(_ContentBlockPure)
-
-export const isResizebleBlockType = (blockType: Editor.BlockType) => {
+const isResizebleBlockType = (blockType: Editor.BlockType) => {
   return blockType === Editor.BlockType.Question || blockType === Editor.BlockType.Image
 }
 
-_BlockInner.whyDidYouRender = {
-  logOnDifferentValues: true,
-  customName: 'BlockInner'
-}
+// _BlockInner.whyDidYouRender = {
+//   logOnDifferentValues: true,
+//   customName: 'BlockInner'
+// }
 
-export const _ContentBlockInner: React.FC<{
+export const ContentBlockInner: React.FC<{
   block: Editor.Block
   parentType: Editor.BlockType
 }> = ({ block, parentType = Editor.BlockType.Story }) => {
@@ -266,13 +245,7 @@ export const _ContentBlockInner: React.FC<{
   )
 }
 
-export const ContentBlockInner = _ContentBlockInner
-
-ContentBlockInner.whyDidYouRender = {
-  logOnDifferentValues: true
-}
-
-export const getBlockClassNames = (blockType: Editor.BlockType, isSelecteable: boolean) => {
+const getBlockClassNames = (blockType: Editor.BlockType, isSelecteable: boolean) => {
   return [
     css`
       cursor: text;

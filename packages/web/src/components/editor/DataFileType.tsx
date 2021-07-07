@@ -4,11 +4,10 @@ import { cloneDeep } from 'lodash'
 import { customAlphabet } from 'nanoid'
 import { toast } from 'react-toastify'
 import { Editor, Workspace } from 'types'
-import { fileLoader } from 'utils'
 import { getImageDimension, uploadFile } from 'utils/upload'
 import { setBlockTranscation } from '../../context/editorTranscations'
 
-export enum DataFileType {
+export enum FileType {
   CSV,
   EXCEL,
   IMAGE
@@ -17,14 +16,14 @@ export enum DataFileType {
 const getFileType = (file: File) => {
   if (file.type === 'text/csv') {
     console.log('file', file.type)
-    return DataFileType.CSV
+    return FileType.CSV
   } else if (
     file.type === 'application/vnd.ms-excel' ||
     file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
   ) {
-    return DataFileType.EXCEL
+    return FileType.EXCEL
   } else if (file.type.startsWith('image')) {
-    return DataFileType.IMAGE
+    return FileType.IMAGE
   }
 }
 
@@ -46,16 +45,15 @@ const getSafeRandomFileName = (name: string) => {
 }
 
 const File2BlockProcessers: Record<
-  DataFileType,
+  FileType,
   (file: File, block: Editor.Block, workspace: Workspace) => Promise<Omit<Transcation, 'workspaceId'>>
 > = {
-  [DataFileType.CSV]: async (file: File, block: Editor.Block, workspace: Workspace) => {
+  [FileType.CSV]: async (file: File, block: Editor.Block, workspace: Workspace) => {
     const uploadedFile = await uploadFile(file, workspace.id)
-    const fileUrl = fileLoader({ src: uploadedFile.key })
     const collectionName = getSafeRandomFileName(file.name)
 
     const res = await importFromCSV({
-      url: fileUrl,
+      key: uploadedFile.key,
       collection: collectionName,
       connectorId: workspace.preferences.connectorId!,
       database: workspace.preferences.dbImportsTo!,
@@ -76,7 +74,7 @@ const File2BlockProcessers: Record<
       }
     })
   },
-  [DataFileType.EXCEL]: async (file: File, block: Editor.Block, workspace: Workspace) => {
+  [FileType.EXCEL]: async (file: File, block: Editor.Block, workspace: Workspace) => {
     const ExcelJS = await import('exceljs')
     const workbook = new ExcelJS.Workbook()
     const workbookLoaded = await workbook.xlsx.load(await file.arrayBuffer())
@@ -93,9 +91,9 @@ const File2BlockProcessers: Record<
       type: 'text/csv'
     })
 
-    return File2BlockProcessers[DataFileType.CSV](csvFile, block, workspace)
+    return File2BlockProcessers[FileType.CSV](csvFile, block, workspace)
   },
-  [DataFileType.IMAGE]: async (file: File, block: Editor.Block, workspace: Workspace) => {
+  [FileType.IMAGE]: async (file: File, block: Editor.Block, workspace: Workspace) => {
     const dimensions = await getImageDimension(URL.createObjectURL(file))
     const uploadedFile = await uploadFile(file, workspace.id)
     return setBlockTranscation({
@@ -116,7 +114,7 @@ const File2BlockProcessers: Record<
   }
 }
 
-export async function uploadFilesAndUpdateBlocks(files: FileList, fileBlocks: Editor.Block[], workspace: Workspace) {
+export async function uploadFilesAndUpdateBlocks(files: File[], fileBlocks: Editor.Block[], workspace: Workspace) {
   const transcations: Omit<Transcation, 'workspaceId'>[] = []
   for (let i = 0; i < files.length; i++) {
     const file = files[i]

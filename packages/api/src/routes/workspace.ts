@@ -1,24 +1,25 @@
-import { plainToClass, Type } from 'class-transformer'
+import { plainToClass, Type } from 'class-transformer';
 import {
   IsArray,
+  IsBoolean,
   IsDefined,
   IsEmail,
   IsEnum,
-  ValidateNested,
   IsNotEmptyObject,
   IsOptional,
-  IsBoolean,
   IsString,
-} from 'class-validator'
-import { Context } from 'koa'
-import Router from 'koa-router'
+  ValidateNested,
+} from 'class-validator';
+import { Context } from 'koa';
+import Router from 'koa-router';
+import { set } from 'lodash';
 
-import workspaceService from '../services/workspace'
-import { LoadMoreKey } from '../types/common'
-import { PermissionWorkspaceRole } from '../types/permission'
-import { hex2String } from '../utils/common'
-import { validate } from '../utils/http'
-import { mustGetUser } from '../utils/user'
+import workspaceService from '../services/workspace';
+import { LoadMoreKey } from '../types/common';
+import { PermissionWorkspaceRole } from '../types/permission';
+import { hasSMTPHost, hex2String } from '../utils/common';
+import { validate } from '../utils/http';
+import { mustGetUser } from '../utils/user';
 
 class ListWorkspacesRequest {
   @ValidateNested()
@@ -153,6 +154,9 @@ async function getWorkspaceDetail(ctx: Context) {
   const user = mustGetUser(ctx)
 
   const workspace = await workspaceService.get(user.id, payload.workspaceId)
+
+  // pad global configuration
+  set(workspace, 'preferences.emailConfig', hasSMTPHost())
 
   ctx.body = { workspace }
 }

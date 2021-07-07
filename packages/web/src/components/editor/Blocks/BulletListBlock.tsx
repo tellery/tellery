@@ -3,7 +3,7 @@ import React, { ReactNode } from 'react'
 import { IconCommonDot } from 'assets/icons'
 import type { Editor } from 'types'
 import { ContentEditable } from '../BlockBase/ContentEditable'
-import { useBlockBehavior } from '../ContentBlock'
+import { useBlockBehavior } from '../hooks/useBlockBehavior'
 
 export const BulletListBlock: React.FC<{
   block: Editor.Block
