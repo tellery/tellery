@@ -39,7 +39,7 @@ import { CircularLoading } from './CircularLoading'
 import { BlockTitle, useGetBlockTitleTextSnapshot } from './editor'
 import type { SetBlock } from './editor/types'
 import IconButton from './kit/IconButton'
-import QuestionReferences from './QuestionReferences'
+import QuestionDownstreams from './QuestionDownstreams'
 import { charts } from './v11n/charts'
 import { Config, Type } from './v11n/types'
 
@@ -970,7 +970,7 @@ export const StoryQuestionEditor: React.FC<{
           />
         )}
         {mode === 'DOWNSTREAM' && (
-          <QuestionReferences
+          <QuestionDownstreams
             blockId={id}
             className={css`
               flex: 1;
