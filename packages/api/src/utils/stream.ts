@@ -1,5 +1,5 @@
 import { Context, HttpError } from 'koa'
-import { PassThrough } from 'stream'
+import { PassThrough, Readable } from 'stream'
 
 export function streamHttpErrorCb(streamResponse: PassThrough) {
   return (err: Error) => {
@@ -37,5 +37,23 @@ export async function withKeepaliveStream(
 
   streamResponse.on('close', () => {
     clearInterval(keepAlive)
+  })
+}
+
+/*
+  Promisified stream read
+*/
+export function readableStreamWrapper(stream: Readable): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const bufs: Buffer[] = []
+    stream.on('data', (chunk: Buffer) => {
+      bufs.push(chunk)
+    })
+    stream.on('end', () => {
+      resolve(Buffer.concat(bufs))
+    })
+    stream.on('error', (err: Error) => {
+      reject(err)
+    })
   })
 }

@@ -9,7 +9,7 @@ import Router from 'koa-router'
 import storageService from '../services/storage'
 import { mustGetUser } from '../utils/user'
 import { validate } from '../utils/http'
-import { readableStreamWrapper } from '../utils/common'
+import { readableStreamWrapper } from '../utils/stream'
 import selfhostedStorage from '../store/selfhostedStorage'
 
 class ProvisionRequest {

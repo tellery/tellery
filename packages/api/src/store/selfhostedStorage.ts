@@ -1,13 +1,11 @@
-import { Connection, getConnection } from 'typeorm'
+import { getRepository, getConnection } from 'typeorm'
 import { FileEntity } from '../entities/file'
 import { FileBody } from '../types/file'
 
 export class SelfHostedStorage {
-  connection!: Connection
-
   async putFile(file: FileBody) {
     const { key, workspaceId, content, contentType, size, metadata } = file
-    await this.getConnection().getRepository(FileEntity).insert({
+    await getRepository(FileEntity).insert({
       id: key,
       workspaceId,
       content,
@@ -18,10 +16,7 @@ export class SelfHostedStorage {
   }
 
   async fetchFile(key: string): Promise<FileBody | null> {
-    const entity = await this.getConnection().getRepository(FileEntity).findOne(key)
-    if (!entity) {
-      return null
-    }
+    const entity = await getConnection().getRepository(FileEntity).findOne(key)
     if (!entity) {
       return null
     }
@@ -34,13 +29,6 @@ export class SelfHostedStorage {
       size,
       metadata,
     }
-  }
-
-  private getConnection() {
-    if (!this.connection) {
-      this.connection = getConnection()
-    }
-    return this.connection
   }
 }
 
