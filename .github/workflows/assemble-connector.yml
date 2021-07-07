@@ -1,0 +1,35 @@
+name: assemble-connector
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "packages/connector/interface/**"
+      - "packages/connector/build.gradle.kts"
+      - ".github/workflows/assemble-connector.yml"
+
+jobs:
+  build-and-publish:
+    defaults:
+      run:
+        working-directory: packages/connector
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: ${{ runner.os }}-gradle
+
+      - name: Build and Publish with Gradle
+        run: GITHUB_USERNAME=${{ github.repository_owner }} GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} ./gradlew :interface:build :interface:publishMavenPublicationToGithubPackagesRepository
