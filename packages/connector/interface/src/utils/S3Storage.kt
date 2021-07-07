@@ -54,6 +54,7 @@ class S3Storage(
         var clientBuilder = AmazonS3ClientBuilder
             .standard()
             .withCredentials(AWSStaticCredentialsProvider(credentials))
+            .withRegion(region)
         if (endpoint != null) {
             clientBuilder =
                 clientBuilder.withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration(endpoint, region))
