@@ -14,7 +14,7 @@ import java.sql.Connection
 
 
 @Connector(
-    type="jdbc:redshift",
+    type="Redshift",
     jdbcConfigs = [
         Config(name="endpoint", type= ConfigType.STRING, description="The endpoint of the Amazon Redshift cluster.", hint="examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com",required=true),
         Config(name="port", type= ConfigType.NUMBER, description="The port number that you specified when you launched the cluster. If you have a firewall, make sure that this port is open for you to use.", hint="5439",required=true),

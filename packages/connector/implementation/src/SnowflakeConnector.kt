@@ -15,14 +15,14 @@ import java.sql.Connection
 
 
 @Connector(
-    type = "jdbc:snowflake",
+    type = "Snowflake",
     jdbcConfigs = [
         Config(name="accountName", type=ConfigType.STRING, description = "your Snowflake account name",hint="xy12345", required=true),
         Config(name="regionId", type=ConfigType.STRING, description="Your region Id", hint="us-ease-2.aws", required=true),
         Config(name="role", type=ConfigType.STRING, description="the default access control role to use in the Snowflake session", hint="SYSADMIN"),
         Config(name="warehouse", type=ConfigType.STRING, description="the virtual warehouse to use once connected by default", hint="COMPUTE_WH")
 ])
-class SnowflakeJDBCConnector : JDBCConnector() {
+class SnowflakeConnector : JDBCConnector() {
 
     override val driverClassName = "net.snowflake.client.jdbc.SnowflakeDriver"
     override val transactionIsolationLevel = Connection.TRANSACTION_READ_COMMITTED
