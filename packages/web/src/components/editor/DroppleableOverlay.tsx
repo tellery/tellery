@@ -6,10 +6,11 @@ import { useDroppable } from '@dnd-kit/core'
 export const DroppleableOverlay: React.FC<{
   blockId: string
   storyId: string
+  type?: string
   dropRef?: React.MutableRefObject<HTMLDivElement | null>
-}> = ({ blockId, storyId, dropRef }) => {
+}> = ({ blockId, storyId, dropRef, type }) => {
   const { setNodeRef } = useDroppable({
-    id: `drop-block-${blockId}`,
+    id: `drop-block-${type ?? 'normal'}-${blockId}`,
     data: {
       id: blockId,
       accepts: [DnDItemTypes.Block],
