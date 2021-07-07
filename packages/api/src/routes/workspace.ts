@@ -212,12 +212,12 @@ async function inviteMembers(ctx: Context) {
 
   const user = mustGetUser(ctx)
 
-  const workspace = await workspaceService.inviteMembers(
+  const res = await workspaceService.inviteMembers(
     user.id,
     payload.workspaceId,
     payload.users,
   )
-  ctx.body = { workspace }
+  ctx.body = res
 }
 
 async function kickoutMembers(ctx: Context) {

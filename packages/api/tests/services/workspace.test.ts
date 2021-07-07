@@ -139,30 +139,36 @@ test('updateRoleWorkspace', async (t) => {
 test('inviteMembersWorkspace', async (t) => {
   const [inviter] = await mockUsers(1)
   const workspace = await workspaceService.create(inviter.id, 'test')
-
+  const email = `${nanoid()}@test.com`
   // init user
-  const res0 = await workspaceService.inviteMembers(inviter.id, workspace.id, [
-    { email: `${nanoid()}@test.com`, role: PermissionWorkspaceRole.ADMIN },
-  ])
+  const { workspace: res0, linkPairs } = await workspaceService.inviteMembers(
+    inviter.id,
+    workspace.id,
+    [{ email, role: PermissionWorkspaceRole.ADMIN }],
+  )
 
   const first = _(res0.members).find((m) => m.userId !== inviter.id)
   t.is(res0.memberNum, 2)
   t.is(first?.role, PermissionWorkspaceRole.ADMIN)
-  t.is(first?.status, WorkspaceMemberStatus.INVITED)
+  // NOTE user status
+  t.is(first?.status, WorkspaceMemberStatus.ACTIVE)
+  
+  t.not(linkPairs[email], undefined)
   const firstUser = await getRepository(UserEntity).findOne(first?.userId)
   // invited user status is confirmed
   t.is(firstUser?.status, AccountStatus.CREATING)
 
   const [invitee] = await mockUsers(1)
   // invite exist user
-  const res1 = await workspaceService.inviteMembers(inviter.id, workspace.id, [
+  const { workspace: res1 } = await workspaceService.inviteMembers(inviter.id, workspace.id, [
     { email: invitee.email, role: PermissionWorkspaceRole.ADMIN },
   ])
   await getRepository(WorkspaceEntity).delete(workspace.id)
 
   t.deepEqual(res1.memberNum, 3)
   t.deepEqual(findMember(res1, invitee.id)?.role, PermissionWorkspaceRole.ADMIN)
-  t.deepEqual(findMember(res1, invitee.id)?.status, WorkspaceMemberStatus.INVITED)
+  // NOTE user status
+  t.deepEqual(findMember(res1, invitee.id)?.status, WorkspaceMemberStatus.ACTIVE)
 })
 
 test('invite duplicate members', async (t) => {

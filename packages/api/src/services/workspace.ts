@@ -193,11 +193,15 @@ export class WorkspaceService {
     })
   }
 
+  /**
+   *
+   * @returns linkPairs: key=> email, value=> inviteLink
+   */
   async inviteMembers(
     operatorId: string,
     workspaceId: string,
     users: { email: string; role: PermissionWorkspaceRole }[],
-  ): Promise<WorkspaceDTO> {
+  ): Promise<{ workspace: WorkspaceDTO; linkPairs: { [k: string]: string } }> {
     await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
     const inviter = await userService.getById(operatorId)
     const emails = _(users).map('email').value()
@@ -215,7 +219,8 @@ export class WorkspaceService {
             workspaceId,
             userId: userMap[user.email].id,
             role: user.role,
-            status: WorkspaceMemberStatus.INVITED,
+            // NOTE: invited members join workspace automatically
+            status: WorkspaceMemberStatus.ACTIVE,
             invitedAt: new Date(),
             invitedById: operatorId,
           }),
@@ -232,18 +237,19 @@ export class WorkspaceService {
 
       const workspace = await this.mustFindOneWithMembers(workspaceId, t)
 
-      await emailService.sendInvitationEmails(
+      const emailRes = await emailService.sendInvitationEmails(
         inviter.username,
-        // only send email to invited users
-        _(this.getInvitedMembers(_(userMap).values().value(), workspace))
-          .map('email')
+        // FIXME: only send email to invited users
+        _(_(userMap).values().value())
+          .map((u) => ({ userId: u.id, email: u.email }))
           .value(),
         workspace.name,
-        workspace.getInviteLink(operatorId),
-        true,
       )
 
-      return workspace.toDTO(operatorId)
+      return {
+        workspace: workspace.toDTO(operatorId),
+        linkPairs: _(emailRes).keyBy('email').mapValues('link').value(),
+      }
     })
   }
 
