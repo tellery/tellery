@@ -1,0 +1,14 @@
+{
+  "profiles": [
+    {
+      "type": "Postgres",
+      "name": "default",
+      "auth": { "username": "postgres", "password": "ZMnyXaVYm8ItOv+vhoh07Q" },
+      "configs": {
+        "Endpoint": "postgresql",
+        "Port": "5432",
+        "Database": "sample"
+      }
+    }
+  ]
+}

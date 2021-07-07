@@ -1,4 +1,8 @@
 version: "3.6"
+x-connector-volume: &connector_volume
+  type: bind
+  source: ./tellery-connector/profiles.json
+  target: /usr/app/profiles.json
 x-restart-policy: &restart_policy
   restart: unless-stopped
 x-tellery-defaults: &tellery_defaults
@@ -83,6 +87,21 @@ services:
     image: ${TELLERY_CONNECTOR_IMAGE}
     ports:
       - 50051:50051
+    volumes:
+      - <<: *connector_volume
+
+  tellery-connector-config-updater:
+    image: busybox
+    environment:
+      POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    command:
+      - /bin/sh
+      - -c
+      - /usr/app/echo-profiles.sh
+    volumes:
+      - <<: *connector_volume
+      - ./echo-profiles.sh:/usr/app/echo-profiles.sh
 volumes:
   pg_data: {}
   redis_data: {}
