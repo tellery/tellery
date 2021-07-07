@@ -11,6 +11,7 @@ import type { Ref, Story } from 'types'
 import { CircularLoading } from './CircularLoading'
 import { BlockContentOverview } from './editor/BlockContentOverview'
 import { SmallStory } from './SmallStory'
+import { useQuestionEditor } from './StoryQuestionsEditor'
 import { ToggleControl } from './ToggleControl'
 
 export const StoryBackwardsRefs = (props: { refs: Ref[]; storyId: string }) => {
@@ -84,12 +85,11 @@ export const StoryBackwardsRefs = (props: { refs: Ref[]; storyId: string }) => {
   )
 }
 
-export const StoryRefs = (props: { refs: Ref[]; storyId: string }) => {
+export const StoryRefs = (props: { refs: Ref[]; storyId: string; isSQLEditor?: boolean }) => {
   const { refs, storyId } = props
   const [hoverBlockId, setHoverBlockId] = useState<string | null>(null)
   const [modalRef, setModalRef] = useState<HTMLElement | null>(null)
   const [referenceElement, setReferenceElement] = useState<HTMLElement | null>(null)
-
   const story = useBlockSuspense<Story>(storyId)
   const relatedBlocks = useMemo(() => [...new Set(refs.map((ref) => ref.blockId))], [refs])
   const blocks = useMgetBlocksSuspense(relatedBlocks)
@@ -109,6 +109,7 @@ export const StoryRefs = (props: { refs: Ref[]; storyId: string }) => {
     ]
   })
   const openStory = useOpenStory()
+  const { open: openQuestion } = useQuestionEditor()
 
   return (
     <div key={storyId} ref={setReferenceElement}>
@@ -177,10 +178,14 @@ export const StoryRefs = (props: { refs: Ref[]; storyId: string }) => {
                         <motion.div
                           key={block.id}
                           onMouseEnter={() => {
-                            setHoverBlockId(block.id)
+                            if (!props.isSQLEditor) {
+                              setHoverBlockId(block.id)
+                            }
                           }}
                           onMouseLeave={() => {
-                            setHoverBlockId(null)
+                            if (!props.isSQLEditor) {
+                              setHoverBlockId(null)
+                            }
                           }}
                           onClickCapture={(e) => {
                             e.preventDefault()
@@ -190,6 +195,9 @@ export const StoryRefs = (props: { refs: Ref[]; storyId: string }) => {
                               isAltKeyPressed: e.altKey,
                               pageType: story.type
                             })
+                            if (props.isSQLEditor) {
+                              openQuestion({ mode: 'SQL', storyId: block.storyId!, blockId: block.id, readonly: false })
+                            }
                           }}
                         >
                           <BlockContentOverview block={block} />

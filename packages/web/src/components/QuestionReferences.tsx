@@ -32,6 +32,7 @@ export default function QuestionReferences(props: { blockId: string; className?:
           key={storyId}
           storyId={storyId}
           refs={blocks.filter(({ storyId }) => !!storyId).map(({ id, storyId }) => ({ blockId: id, storyId })) as Ref[]}
+          isSQLEditor={true}
         />
       ))}
     </div>
