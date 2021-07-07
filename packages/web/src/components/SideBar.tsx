@@ -227,7 +227,7 @@ const SideBarContent: React.FC<{ folded: boolean; toggleFoldStatus: () => void }
             `}
             onClick={toggleFoldStatus}
           >
-            <IconCommonFold />
+            <Icon icon={IconCommonFold} color={ThemingVariables.colors.gray[0]} />
           </div>
         )}
       </div>

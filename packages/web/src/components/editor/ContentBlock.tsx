@@ -188,7 +188,7 @@ export const ContentBlockInner: React.FC<{
         style={{
           ...(isResizebleBlockType(block.type) &&
             parentType !== Editor.BlockType.Column && { maxWidth: 'var(--max-width, 100%)' }),
-          ...(isResizebleBlockType(block.type) && parentType !== Editor.BlockType.Column
+          ...(isResizebleBlockType(block.type) && parentType !== Editor.BlockType.Column && !small
             ? { width: blockFormat.width }
             : { width: '100%' })
         }}
@@ -245,6 +245,27 @@ export const ContentBlockInner: React.FC<{
   )
 }
 
+export const BLOCK_WRAPPER_CLASS = new Map([
+  [
+    Editor.BlockType.Header,
+    css`
+      margin-top: 1.5em;
+    `
+  ],
+  [
+    Editor.BlockType.SubHeader,
+    css`
+      margin-top: 1em;
+    `
+  ],
+  [
+    Editor.BlockType.SubSubHeader,
+    css`
+      margin-top: 1em;
+    `
+  ]
+])
+
 const getBlockClassNames = (blockType: Editor.BlockType, isSelecteable: boolean) => {
   return [
     css`
@@ -266,7 +287,8 @@ const getBlockClassNames = (blockType: Editor.BlockType, isSelecteable: boolean)
     isSelecteable && 'block-selectble',
     'tellery-block',
     'no-select',
-    `tellery-${blockType}-block`
+    `tellery-${blockType}-block`,
+    BLOCK_WRAPPER_CLASS.has(blockType) && BLOCK_WRAPPER_CLASS.get(blockType)
   ]
 }
 
