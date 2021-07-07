@@ -7,6 +7,7 @@ import { useLocalStorage } from 'hooks/useLocalStorage'
 import { ThemingVariables } from 'styles'
 import { DRAG_HANDLE_WIDTH } from '../../utils'
 import { StoryEditor } from './StoryEditor'
+import Icon from '../kit/Icon'
 
 export const secondaryStoryIdState = atom<string | null>(null)
 
@@ -127,14 +128,17 @@ const _SecondaryEditor = () => {
                 flex: 0 0 44px;
               `}
             >
-              <IconCommonClose
+              <Icon
+                icon={IconCommonClose}
+                color={ThemingVariables.colors.gray[0]}
                 className={css`
+                  cursor: pointer;
+                  margin-right: 4px;
                   cursor: pointer;
                 `}
                 onClick={() => {
                   setStoryId(null)
                 }}
-                style={{ marginRight: '4px', cursor: 'pointer' }}
               />
             </div>
 
