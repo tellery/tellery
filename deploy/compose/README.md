@@ -45,5 +45,5 @@ Now you can access Tellery by visiting `http://localhost:8000`
 Then you can modify the configuration by modifying the variables in the [.env](https://github.com/tellery/tellery/blob/master/hack/compose/.env) or specifying the environment variable at startup.
 
 ```shell
-POSTGRES_USERNAME=tellery docker-compose up
+CREATE_USER_PASSWORD=Aa123456 docker-compose up
 ```
