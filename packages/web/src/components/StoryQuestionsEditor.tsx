@@ -612,7 +612,6 @@ export const StoryQuestionEditor: React.FC<{
       connectorId: workspace.preferences.connectorId!,
       profile: workspace.preferences.profile!
     })
-    console.log('data', data)
     if (typeof data !== 'object' || data.errMsg) {
       setSQLError(data.errMsg ?? 'unknown error')
       setSqlSidePanel(true)
@@ -623,7 +622,6 @@ export const StoryQuestionEditor: React.FC<{
     const snapshotId = nanoid()
     queryClient.setQueryData(['snapshot', snapshotId], { id: snapshotId, data, sql })
     if (isDraftSql) {
-      console.log('is draft')
       // TODO: fix snap shot question id
       await applyCreateSnapshotOperation({
         snapshotId,

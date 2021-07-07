@@ -178,7 +178,8 @@ export const useListDatabases = () => {
         })
         .then((res) => res.data.databases),
     {
-      retry: false
+      retry: false,
+      enabled: !!(workspace.preferences.connectorId && workspace.preferences.profile)
     }
   )
 }
