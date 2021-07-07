@@ -35,8 +35,8 @@ dependencies {
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
 
     api("ch.qos.logback:logback-classic:$logbackVersion")
-    api("io.github.microutils:kotlin-logging:1.12.0")
-    api("javax.annotation:javax.annotation-api:1.2")
+    api("io.github.microutils:kotlin-logging:2.0.8")
+    api("javax.annotation:javax.annotation-api:1.3.2")
 
     api("io.arrow-kt:arrow-core:$arrowVersion")
     api("io.arrow-kt:arrow-syntax:$arrowVersion")
@@ -48,8 +48,8 @@ dependencies {
     api("com.michael-bull.kotlin-coroutines-jdbc:kotlin-coroutines-jdbc:1.0.2")
 
     api("com.aventrix.jnanoid:jnanoid:2.0.0")
-    api("com.amazonaws:aws-java-sdk-s3:1.11.959")
-    api("com.github.doyaaaaaken:kotlin-csv-jvm:0.15.1")
+    api("com.amazonaws:aws-java-sdk-s3:1.12.17")
+    api("com.github.doyaaaaaken:kotlin-csv-jvm:0.15.2")
 
     api("com.github.kittinunf.fuel:fuel:2.3.1")
     api("com.github.kittinunf.fuel:fuel-coroutines:2.3.1")
