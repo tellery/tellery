@@ -39,4 +39,4 @@ jobs:
           restore-keys: ${{ runner.os }}-gradle
 
       - name: Build and Publish with Gradle
-        run: GITHUB_USERNAME=${{ github.repository_owner }} GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} ./gradlew clean :interface:build :interface:publishMavenPublicationToGithubPackagesRepository
+        run: GITHUB_USERNAME=${{ github.repository_owner }} GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} ./gradlew :interface:build :interface:publishMavenPublicationToGithubPackagesRepository
