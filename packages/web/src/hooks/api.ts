@@ -138,7 +138,7 @@ export const useStoriesSearch = (keyword: string) => {
             next?: unknown
           }
         }),
-    { getNextPageParam: ({ next }) => next }
+    { getNextPageParam: ({ next }) => next, refetchOnMount: true }
   )
 
   return result
