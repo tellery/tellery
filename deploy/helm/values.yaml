@@ -9,6 +9,7 @@ objectStorage:
   region: us-west-1
   accessKey: ""
   secretKey: ""
+  # cdnEndpoint: 'https://your-own-cdn.com'
 
 email:
   backend: smtp

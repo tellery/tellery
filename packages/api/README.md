@@ -23,3 +23,10 @@ npm run test
 ```shell
 npm run dev
 ```
+
+Note: Developing on your own database, you can initialize it by run:
+
+```shell
+NODE_ENV=dev npm run typeorm schema:sync
+NODE_ENV=dev npm run typeorm migration:run
+```
