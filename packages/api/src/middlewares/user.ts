@@ -28,7 +28,9 @@ export default async function user(ctx: Context, next: Next) {
   // set token
   if (at || isNull(at)) {
     ctx.set(USER_TOKEN_HEADER_KEY, at ?? '')
-    ctx.cookies.set(USER_TOKEN_HEADER_KEY, at)
+    ctx.cookies.set(USER_TOKEN_HEADER_KEY, at, {
+      expires: new Date(new Date().getTime() + 10 * 365 * 24 * 60 * 60), // never expires
+    })
   }
 
   return resp
