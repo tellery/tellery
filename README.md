@@ -7,7 +7,7 @@
 [![Slack](https://img.shields.io/badge/slack-tellery-blue.svg?logo=slack)](https://join.slack.com/t/telleryio/shared_invite/zt-s37tgvo7-QBdpggK_uG6QqJVWhSXlFg)
 [![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com%2FTelleryHQ)](https://twitter.com/TelleryHQ)
 
-Tellery helps you to organize your ad-hoc analyses and then narrate them in one place.
+Tellery helps data teams to organize ad-hoc analyses and narrate them in one place.
 
 Tellery brings all of your words and data into one flexible surface:
 
