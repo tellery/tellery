@@ -40,6 +40,7 @@ x-tellery-defaults: &tellery_defaults
     CREATE_USER_EMAIL: ${CREATE_USER_EMAIL}
     CREATE_USER_NAME: ${CREATE_USER_NAME}
     CREATE_USER_PASSWORD: ${CREATE_USER_PASSWORD}
+    CREATE_CONNECTOR_URL: ${CREATE_CONNECTOR_URL}
 services:
   postgresql:
     <<: *restart_policy
