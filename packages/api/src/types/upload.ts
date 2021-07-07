@@ -1,3 +1,8 @@
+type ProvisionRequest = {
+  workspaceId: string
+  contentType: string
+}
+
 type ProvisionBody = {
   url: string
   key: string
@@ -5,4 +10,4 @@ type ProvisionBody = {
   expiresIn: number
 }
 
-export { ProvisionBody }
+export { ProvisionRequest, ProvisionBody }

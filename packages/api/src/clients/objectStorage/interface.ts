@@ -1,8 +1,10 @@
-import { ProvisionBody } from '../../types/upload'
+import { FileBody } from '../../types/file'
+import { ProvisionRequest, ProvisionBody } from '../../types/upload'
 
 interface IObjectStorage {
-  provision(): ProvisionBody
-  getTemporaryUrl(fileKey: string, opts: { ttl?: number }): string
+  provision(provisionRequest: ProvisionRequest): ProvisionBody
+  proxy(fileKey: string): Promise<string | FileBody | null>
+  storageType: 'REDIRECT' | 'DIRECT'
 }
 
 export { IObjectStorage }

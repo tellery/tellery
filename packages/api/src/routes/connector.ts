@@ -6,10 +6,12 @@ import { nanoid } from 'nanoid'
 import { getIConnectorManager, getIConnectorManagerFromDB } from '../clients/connector'
 import connectorService from '../services/connector'
 import questionService from '../services/question'
+import storageService from '../services/storage'
 import { AuthData, AuthType } from '../types/auth'
 import { errorResponse, validate } from '../utils/http'
 import { mustGetUser } from '../utils/user'
 import { streamHttpErrorCb, withKeepaliveStream } from '../utils/stream'
+import { StorageError } from '../error/error'
 
 class AddConnectorRequest {
   @IsDefined()
@@ -177,7 +179,7 @@ class ImportRequest {
   schema?: string
 
   @IsDefined()
-  url!: string
+  key!: string
 }
 
 async function listConnectorsRouter(ctx: Context) {
@@ -363,16 +365,24 @@ async function importFromFile(ctx: Context) {
   const payload = plainToClass(ImportRequest, ctx.request.body)
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
-  const { workspaceId, connectorId, profile, url, database, collection, schema } = payload
+  const { workspaceId, connectorId, profile, key, database, collection, schema } = payload
 
   const manager = await getIConnectorManagerFromDB(connectorId)
+
+  const correspondingUrl = (await storageService.objectProxy(user.id, workspaceId, key, {
+    skipPermissionCheck: true,
+    acquireUrlOnly: true,
+  })) as string
+  if (!correspondingUrl) {
+    throw StorageError.notSupportImport()
+  }
 
   const result = await connectorService.importFromFile(
     manager,
     user.id,
     workspaceId,
     profile,
-    url,
+    correspondingUrl,
     database,
     collection,
     schema,

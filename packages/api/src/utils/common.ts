@@ -46,7 +46,7 @@ function ip() {
 function host() {
   const protocol = config.get('server.protocol') as string
   const h = (config.get('server.host') ?? ip()) as string
-  const webPort = config.get('server.web_port') as number
+  const webPort = config.get('server.webPort') as number
   return webPort === 80 ? `${protocol}://${h}` : `${protocol}://${h}:${webPort}`
 }
 

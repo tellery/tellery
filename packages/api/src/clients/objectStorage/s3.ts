@@ -3,7 +3,9 @@ import { nanoid } from 'nanoid'
 import S3 from 'aws-sdk/clients/s3'
 import { Credentials } from 'aws-sdk'
 
-import { ProvisionBody } from '../../types/upload'
+import { ProvisionBody, ProvisionRequest } from '../../types/upload'
+
+const storageType = 'REDIRECT'
 
 type S3Config = {
   type: 's3'
@@ -12,6 +14,7 @@ type S3Config = {
   secretKey: string
   region: string
   endpoint: string
+  cdn?: string
 }
 
 const s3Config = config.get<S3Config>('objectStorage')
@@ -22,7 +25,7 @@ const s3Client = new S3({
   region: s3Config.region,
 })
 
-function provision(): ProvisionBody {
+function provision(_: ProvisionRequest): ProvisionBody {
   const expiresIn = 15 * 60
   const key = nanoid()
 
@@ -54,4 +57,11 @@ function getTemporaryUrl(fileKey: string, opts: { ttl?: number } = {}): string {
   return url
 }
 
-export { provision, getTemporaryUrl }
+async function proxy(fileKey: string): Promise<string> {
+  if (s3Config.cdn) {
+    return `${s3Config.cdn}/${fileKey}`
+  }
+  return getTemporaryUrl(fileKey)
+}
+
+export { provision, getTemporaryUrl, proxy, storageType }
