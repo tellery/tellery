@@ -28,7 +28,7 @@ jobs:
 
       - uses: domechn/postgresql-action@master
         with:
-          postgresql version: '10.2'
+          postgresql version: "10.2"
           postgresql db: tellery
           postgresql user: postgres
           postgresql password: root
@@ -61,7 +61,7 @@ jobs:
 
       - uses: domechn/postgresql-action@master
         with:
-          postgresql version: '10.2'
+          postgresql version: "10.2"
           postgresql db: tellery
           postgresql user: postgres
           postgresql password: root
