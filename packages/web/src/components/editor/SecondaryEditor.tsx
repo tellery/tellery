@@ -130,7 +130,7 @@ const _SecondaryEditor = () => {
             >
               <Icon
                 icon={IconCommonClose}
-                color={ThemingVariables.colors.gray[0]}
+                color={ThemingVariables.colors.text[0]}
                 className={css`
                   cursor: pointer;
                   margin-right: 4px;

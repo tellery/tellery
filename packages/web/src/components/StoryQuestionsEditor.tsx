@@ -400,7 +400,7 @@ export const EditorContent = () => {
         })}
         <IconButton
           icon={IconCommonClose}
-          color={ThemingVariables.colors.gray[0]}
+          color={ThemingVariables.colors.text[0]}
           className={css`
             margin-left: auto;
             cursor: pointer;
@@ -1027,7 +1027,7 @@ export const DraftStatus: React.FC<{
       {(hovering || (!isDraft && showClose)) && (
         <Icon
           icon={IconCommonClose}
-          color={ThemingVariables.colors.gray[0]}
+          color={ThemingVariables.colors.text[0]}
           className={css`
             position: absolute;
             cursor: pointer;
