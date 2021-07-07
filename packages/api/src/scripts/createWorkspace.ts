@@ -49,7 +49,7 @@ async function main() {
     configs: {
       Endpoint: config.get<string>('postgres.host'),
       Port: config.get<number>('postgres.port').toString(),
-      Database: 'sample-data',
+      Database: 'sample',
     },
   })
 

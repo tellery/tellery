@@ -44,7 +44,7 @@ x-tellery-defaults: &tellery_defaults
 services:
   postgresql:
     <<: *restart_policy
-    image: postgres:10
+    image: ${POSTGRES_IMAGE}
     environment:
       POSTGRES_USERNAME: ${POSTGRES_USERNAME}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -69,10 +69,10 @@ services:
       timeout: 3s
       retries: 30
       start_period: 3s
-  tellery-init:
-    <<: *tellery_defaults
-    command:
-      - sleep 10 && npm run typeorm schema:sync && npm run typeorm migration:run && npm run create:user && npm run create:workspace
+  # tellery-init:
+  #   <<: *tellery_defaults
+  #   command:
+  #     - sleep 10 && npm run typeorm schema:sync && npm run typeorm migration:run && npm run create:user && npm run create:workspace
   tellery-server:
     <<: *tellery_defaults
     ports:
