@@ -3,12 +3,12 @@
 # Declare variables to be passed into your templates.
 
 objectStorage:
-  type: s3
+  type: postgres
   # endpoint: https://s3.${objectStorage.region}.amazonaws.com
-  bucket: tellery-uploads
-  region: us-west-1
-  accessKey: ""
-  secretKey: ""
+  # bucket: tellery-uploads
+  # region: us-west-1
+  # accessKey: ""
+  # secretKey: ""
   # cdnEndpoint: 'https://your-own-cdn.com'
 
 email:
@@ -102,7 +102,7 @@ server:
   service:
     name: http
     type: ClusterIP
-    externalPort: 80
+    externalPort: 8000
     annotations: {}
     # externalIPs:
     # - 192.168.0.1

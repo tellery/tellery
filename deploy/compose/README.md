@@ -36,9 +36,6 @@ docker-compose up
 | EMAIL_PORT                   | Mail server port                                           | 587                      |
 | EMAIL_HOST                   | Mail server host                                           | ""                       |
 | EMAIL_FROM                   | System mail sender's email address                         | ""                       |
-| OBJECT_STORAGE_BUCKET        | Object storage bucket                                      | tellery-uploads          |
-| OBJECT_STORAGE_ACCESS_KEY_ID | Object storage access key                                  | minio_local              |
-| OBJECT_STORAGE_ACCESS_SECRET | Object storage secret key                                  | Z9nYZsZpO5d7PZ1k0223aA   |
 
 Then you can modify the configuration by modifying the variables in the [.env](https://github.com/tellery/tellery/blob/master/hack/compose/.env) or specifying the environment variable at startup.
 
