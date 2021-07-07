@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node dist/src/index.js",
     "start:websocket": "node dist/src/socket/index.js",
-    "dev": "NODE_ENV=dev concurrently \"tsc -w\" \"cross-env nodemon dist/src/index.js\"",
+    "dev": "COMPATIBLE=true NODE_ENV=dev concurrently \"tsc -w\" \"cross-env nodemon dist/src/index.js\"",
     "dev:websocket": "NODE_ENV=dev concurrently \"tsc -w\" \"cross-env nodemon dist/src/socket/index.js\"",
     "proto": "mkdir -p dist/src/protobufs src/protobufs && grpc_tools_node_protoc --js_out=import_style=commonjs,binary:dist/src/protobufs --grpc_out=dist/src/protobufs --plugin=grpc_node_plugin -I ../protobufs ../protobufs/*.proto && grpc_tools_node_protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=src/protobufs -I ../protobufs ../protobufs/*.proto",
     "typeorm": "node ./node_modules/typeorm/cli.js -f dist/ormconfig.js",
@@ -32,6 +32,7 @@
     "class-validator": "^0.13.1",
     "config": "^3.3.6",
     "eta": "^1.12.2",
+    "formidable": "^1.2.2",
     "google-protobuf": "^3.17.3",
     "got": "^11.8.2",
     "grpc": "^1.24.10",

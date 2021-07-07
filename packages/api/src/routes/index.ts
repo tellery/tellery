@@ -7,7 +7,7 @@ import operations from './operation'
 import questions from './question'
 import stories from './story'
 import thought from './thought'
-import upload from './upload'
+import upload from './storage'
 import users from './user'
 import workspaces from './workspace'
 
@@ -22,7 +22,7 @@ router.use('/questions', questions.routes(), questions.allowedMethods())
 router.use('/users', users.routes(), users.allowedMethods())
 router.use('/workspaces', workspaces.routes(), workspaces.allowedMethods())
 router.use('/activities', activities.routes(), activities.allowedMethods())
-router.use('/upload', upload.routes(), upload.allowedMethods())
+router.use('/storage', upload.routes(), upload.allowedMethods())
 router.use('/thought', thought.routes(), thought.allowedMethods())
 router.use('', global.routes(), global.allowedMethods())
 
