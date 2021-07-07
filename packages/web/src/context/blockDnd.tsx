@@ -125,7 +125,6 @@ const getMinvalueEntry = (entries: [string, number][]) => {
 }
 
 export const closetBorder: CollisionDetection = (rects, centerRect) => {
-  // logger(rects, centerRect)
   const hitedRects = rects
     .filter((rectEntry) => {
       const [_, rect] = rectEntry
@@ -149,6 +148,9 @@ export const closetBorder: CollisionDetection = (rects, centerRect) => {
   }
 
   const closestLeftDistances = rects
+    .filter(([id]) => {
+      return id.indexOf('row') === -1
+    })
     .filter(([_, rect]) => {
       return (
         centerRect.left <= rect.offsetLeft &&
@@ -163,6 +165,9 @@ export const closetBorder: CollisionDetection = (rects, centerRect) => {
   const closetLeft = getMinvalueEntry(closestLeftDistances)
 
   const closestRightDistances = rects
+    .filter(([id]) => {
+      return id.indexOf('row') === -1
+    })
     .filter(([_, rect]) => {
       return (
         centerRect.left >= rect.offsetLeft + rect.width &&
@@ -209,6 +214,7 @@ export const closetBorder: CollisionDetection = (rects, centerRect) => {
   if (closet) {
     return closet[0] as string
   }
+
   return null
 }
 

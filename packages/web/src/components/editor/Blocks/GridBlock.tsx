@@ -94,7 +94,7 @@ const _GridBlock: React.FC<{
       >
         {!small && !readonly && <DroppingAreaIndicator blockId={block.id} />}
 
-        {!small && !readonly && <DroppleableOverlay blockId={block.id} storyId={block.storyId!} />}
+        {!small && !readonly && <DroppleableOverlay type="row" blockId={block.id} storyId={block.storyId!} />}
 
         {block ? (
           <>
