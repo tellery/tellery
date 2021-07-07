@@ -16,7 +16,7 @@ RUN yarn install --frozen-lockfile
 COPY packages/web .
 RUN yarn build
 
-FROM node:14.17.1-alpine
+FROM node:14.17.1-slim
 WORKDIR /tellery
 COPY --from=api-builder /app/tellery-api/package.json .
 COPY --from=api-builder /app/tellery-api/package-lock.json .
