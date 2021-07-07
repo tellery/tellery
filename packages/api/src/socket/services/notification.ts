@@ -43,8 +43,8 @@ export class NotificationService {
     return Array.from(res.values())
   }
 
-  storeUserIdAndSocketId(socketId: string, operatorId: string): Promise<void> {
-    return this.cache.set(this.getUserSocketIdCachedKey(socketId), operatorId, 1800)
+  async storeUserIdAndSocketId(socketId: string, operatorId: string): Promise<void> {
+    await this.cache.set(this.getUserSocketIdCachedKey(socketId), operatorId, 1800)
   }
 
   getUserIdBySocketId(socketId: string): Promise<string | undefined> {
