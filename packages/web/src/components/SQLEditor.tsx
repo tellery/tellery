@@ -7,7 +7,7 @@ import { SVG2DataURI } from '@app/lib/svg'
 import { ThemingVariables } from '@app/styles'
 import type { Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
-import MonacoEditor from '@monaco-editor/react'
+import MonacoEditor, { useMonaco } from '@monaco-editor/react'
 import { compact, uniq } from 'lodash'
 import type { editor } from 'monaco-editor/esm/vs/editor/editor.api'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -55,8 +55,9 @@ export function SQLEditor(props: {
 }) {
   const [editor, setEditor] = useState<editor.IStandaloneCodeEditor>()
   const { onRun, onSave } = props
+  const monaco = useMonaco()
   useEffect(() => {
-    if (!editor) {
+    if (!editor || !monaco) {
       return
     }
 
@@ -74,20 +75,9 @@ export function SQLEditor(props: {
       }
     })
 
-    const { dispose } = editor.onKeyDown((e) => {
-      if ((e.ctrlKey || e.metaKey) && e.code === 'KeyS') {
-        onSave?.()
-        e.preventDefault()
-        e.stopPropagation()
-      }
-      if ((e.ctrlKey || e.metaKey) && e.keyCode === 3) {
-        onRun?.()
-        e.preventDefault()
-        e.stopPropagation()
-      }
-    })
-    return dispose
-  }, [editor, onRun, onSave])
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, () => onSave?.())
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => onRun?.())
+  }, [editor, monaco, onRun, onSave])
   const { onChange } = props
   const handleChange = useCallback(
     (value: string | undefined) => {
