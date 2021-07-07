@@ -1,3 +1,4 @@
+import { useHover } from '@app/hooks'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { DEFAULT_TITLE } from '@app/utils'
 import { css } from '@emotion/css'
@@ -12,7 +13,7 @@ import { motion } from 'framer-motion'
 import { useBlockSuspense, useSearchBlocks } from 'hooks/api'
 import invariant from 'invariant'
 import { nanoid } from 'nanoid'
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import { ThemingVariables } from 'styles'
 import { Editor, TellerySelection, TellerySelectionType } from 'types'
@@ -231,7 +232,7 @@ export const _BlockReferenceDropdownInner: React.FC<
     return storyItems
   }, [hasExactSame, keyword, searchResultClickHandler, stories])
 
-  const [currentIndex] = useEditableContextMenu(
+  const [currentIndex, setIndex] = useEditableContextMenu(
     open,
     useMemo(() => items.map((item) => item.action), [items]),
     blockRef
@@ -276,7 +277,13 @@ export const _BlockReferenceDropdownInner: React.FC<
             <span>{isLoading && 'loading'}</span>
           </div>
           {items.map((item, index) => (
-            <DropDownMenuItem key={item.id} onClick={item.action} active={currentIndex === index}>
+            <DropDownMenuItem
+              key={item.id}
+              onClick={item.action}
+              active={currentIndex === index}
+              index={index}
+              setIndex={setIndex as (index: number) => void}
+            >
               {item.view}
             </DropDownMenuItem>
           ))}
@@ -297,21 +304,30 @@ export const _BlockReferenceDropdownInner: React.FC<
   )
 }
 
-const DropDownMenuItem: React.FC<{ onClick: React.MouseEventHandler<HTMLDivElement>; active: boolean }> = ({
-  children,
-  onClick,
-  active
-}) => {
-  const ref = useRef<HTMLDivElement | null>(null)
+const DropDownMenuItem: React.FC<{
+  onClick: React.MouseEventHandler<HTMLDivElement>
+  active: boolean
+  setIndex: (index: number) => void
+  index: number
+}> = ({ children, onClick, active, setIndex, index }) => {
+  const [ref, hover] = useHover<HTMLDivElement>()
+
+  useEffect(() => {
+    if (hover) {
+      setIndex(index)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hover, setIndex])
+
   useEffect(() => {
     if (active && ref.current) {
       scrollIntoView(ref.current, {
         scrollMode: 'always',
-        block: 'center',
+        block: 'nearest',
         inline: 'nearest'
       })
     }
-  }, [active])
+  }, [active, ref])
 
   return (
     <div
