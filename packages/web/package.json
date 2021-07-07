@@ -101,7 +101,7 @@
     "@types/is-hotkey": "^0.1.2",
     "@types/is-url": "^1.2.29",
     "@types/lodash": "^4.14.170",
-    "@types/mocha": "^8.2.2",
+    "@types/mocha": "^8.2.3",
     "@types/node": "^16.0.0",
     "@types/numeral": "^2.0.1",
     "@types/papaparse": "^5.2.5",
