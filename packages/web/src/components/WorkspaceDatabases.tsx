@@ -42,11 +42,11 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
     defaultValues: profileConfigs?.[0],
     mode: 'all'
   })
-  useEffect(() => {
-    reset(profileConfigs?.[0])
-  }, [profileConfigs, reset])
-  const { data: availableConfigs } = useConnectorsListAvailableConfigs(props.id)
   const type = watch('type')
+  useEffect(() => {
+    reset(profileConfigs?.find((profileConfig) => profileConfig.type === type))
+  }, [profileConfigs, reset, type])
+  const { data: availableConfigs } = useConnectorsListAvailableConfigs(props.id)
   const availableConfig = useMemo(() => availableConfigs?.find((ac) => ac.type === type), [availableConfigs, type])
   const handleUpsertProfile = useConnectorsUpsertProfile(props.id)
   const { onClose } = props
