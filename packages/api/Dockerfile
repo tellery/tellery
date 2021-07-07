@@ -1,4 +1,4 @@
-FROM node:14.17.1-alpine
+FROM node:14.17.1-slim
 ENV TZ Asia/Shanghai
 WORKDIR /tellery-api
 COPY package.json .

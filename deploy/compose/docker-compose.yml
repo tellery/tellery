@@ -16,8 +16,8 @@ x-tellery-defaults: &tellery_defaults
     - /bin/sh
     - -c
   command:
-    - ./wait-for-it.sh postgresql:5432 -- npm start
-  environment:
+    - npm start
+  environment: &tellery_default_env
     NODE_ENV: production
     PG_USERNAME: ${POSTGRES_USERNAME}
     PG_HOST: postgresql
@@ -26,6 +26,8 @@ x-tellery-defaults: &tellery_defaults
     PG_PASSWORD: ${POSTGRES_PASSWORD}
     REDIS_URL: redis://redis:6379
     OBJECT_STORAGE_TYPE: postgres
+    SERVER_PORT: ${SERVER_PORT}
+    SERVER_WEB_PORT: ${SERVER_PORT}
     EMAIL_USE_TLS: ${EMAIL_USE_TLS}
     EMAIL_USERNAME: ${EMAIL_USERNAME}
     EMAIL_PASSWORD: ${EMAIL_PASSWORD}
@@ -35,6 +37,9 @@ x-tellery-defaults: &tellery_defaults
     SECRET_KEY: ${SECRET_KEY}
     SERVER_PROTO: ${SERVER_PROTO}
     SERVER_HOST: ${SERVER_HOST}
+    CREATE_USER_EMAIL: ${CREATE_USER_EMAIL}
+    CREATE_USER_NAME: ${CREATE_USER_NAME}
+    CREATE_USER_PASSWORD: ${CREATE_USER_PASSWORD}
 services:
   postgresql:
     <<: *restart_policy
@@ -63,16 +68,14 @@ services:
       timeout: 3s
       retries: 30
       start_period: 3s
-  migration:
+  tellery-init:
     <<: *tellery_defaults
     command:
-      - ./wait-for-it.sh postgresql:5432 -- npm run typeorm schema:sync && npm run typeorm migration:run
+      - sleep 10 && npm run typeorm schema:sync && npm run typeorm migration:run && npm run create:user && npm run create:workspace
   tellery-server:
-    depends_on:
-      - migration
     <<: *tellery_defaults
     ports:
-      - 80:80
+      - 8000:8000
   tellery-connector:
     <<: *restart_policy
     image: ${TELLERY_CONNECTOR_IMAGE}

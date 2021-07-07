@@ -291,7 +291,6 @@ export type ProfileConfig = {
     password?: string
   }
   configs: Record<string, string | number | boolean>
-  optionals?: Record<string, string | number | boolean>
 }
 
 export type AvailableConfig = {

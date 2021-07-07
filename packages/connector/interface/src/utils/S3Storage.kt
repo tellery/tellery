@@ -34,14 +34,14 @@ class S3Storage(
     private val transferManager: TransferManager
 
     companion object {
-        fun buildByOptionals(optionals: Map<String, String>?): S3Storage? {
+        fun buildFromConfigs(configs: Map<String, String>): S3Storage? {
             var s3Client: S3Storage? = null
-            val accessKey = optionals?.get("S3_ACCESS_KEY")
-            val secretKey = optionals?.get("S3_SECRET_KEY")
-            val region = optionals?.get("S3_REGION")
-            val bucket = optionals?.get("S3_BUCKET")
-            val endpoint = optionals?.get("S3_ENDPOINT")
-            val keyPrefix = optionals?.get("S3_KEY_PREFIX")
+            val accessKey = configs["S3AccessKey"]
+            val secretKey = configs["S3SecretKey"]
+            val region = configs["S3Region"]
+            val bucket = configs["S3Bucket"]
+            val endpoint = configs["S3Endpoint"]
+            val keyPrefix = configs["S3KeyPrefix"]
             if (accessKey != null && secretKey != null && region != null && bucket != null) {
                 s3Client = S3Storage(accessKey, secretKey, region, bucket, endpoint, keyPrefix)
             }

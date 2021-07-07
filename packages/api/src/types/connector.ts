@@ -12,7 +12,6 @@ type Config = {
 type AvailableConfig = {
   type: string
   configs: Config[]
-  optionals?: Config[]
 }
 
 type Profile = {
@@ -23,7 +22,6 @@ type Profile = {
     password?: string
   }
   configs: { [key: string]: string }
-  optionals?: { [key: string]: string }
 }
 
 type SqlQueryResult = {

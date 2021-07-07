@@ -3,30 +3,28 @@
     {
       "type": "Redshift",
       "name": "redshift",
-      "configs": {
-        "endpoint": "examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com",
-        "port": "5439",
-        "database": "dev"
-      },
       "auth": {
         "username": "a-trivial-user",
         "password": "********"
       },
-      "optionals": {
-        "s3AccessKey": "AWS_ACCESS_KEY_ID",
-        "s3SecretKey": "AWS_SECRET_ACCESS_KEY",
-        "s3Region": "us-west-2",
-        "s3Bucket": "data-warehouse",
-        "s3KeyPrefix": "tellery/uploaded/"
+      "configs": {
+        "Endpoint": "examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com",
+        "Port": "5439",
+        "Database": "dev",
+        "S3AccessKey": "AWS_ACCESS_KEY_ID",
+        "S3SecretKey": "AWS_SECRET_ACCESS_KEY",
+        "S3Region": "us-west-2",
+        "S3Bucket": "data-warehouse",
+        "S3KeyPrefix": "tellery/uploaded/"
       }
     },
     {
       "type": "Snowflake",
       "name": "snowflake",
       configs: {
-        "accountName": "xy12345",
-        "regionId": "en-central-1",
-        "warehouse": "mywh"
+        "Account Name": "xy12345",
+        "Region Id": "en-central-1",
+        "Warehouse": "mywh"
       },
       "auth": {
         "username": "a-trivial-user",

@@ -178,7 +178,8 @@ export const useListDatabases = () => {
         })
         .then((res) => res.data.databases),
     {
-      retry: false
+      retry: false,
+      enabled: !!(workspace.preferences.connectorId && workspace.preferences.profile)
     }
   )
 }
@@ -621,7 +622,6 @@ export const useConnectorsListAvailableConfigs = (connectorId?: string) => {
     {
       type: string
       configs: AvailableConfig[]
-      optionals: AvailableConfig[]
     }[]
   >(
     ['connector', 'listAvailableConfigs', connectorId, workspace],

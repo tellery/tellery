@@ -14,7 +14,7 @@ import java.sql.Connection
 
 @Connector(
     type = "PostgreSQL",
-    jdbcConfigs = [
+    configs = [
         Config(name="Endpoint", type= ConfigType.STRING, description="The endpoint of your postgreSQL", hint="your-db-hostname-or-ip",required=true),
         Config(name="Port", type= ConfigType.NUMBER, description="The port number of your database. If you have a firewall, make sure that this port is open for you to use", hint="5432",required=true),
         Config(name="Database", type= ConfigType.STRING, description="The logical database to connect to and run queries against", hint="my_db",required=true),
@@ -30,9 +30,9 @@ class PostgreSQLConnector : JDBCConnector() {
     )
 
     override fun buildConnectionStr(profile: Profile): String {
-        val endpoint = profile.configs["endpoint"]
-        val port = profile.configs["port"]
-        val database = profile.configs["database"]
+        val endpoint = profile.configs["Endpoint"]
+        val port = profile.configs["Port"]
+        val database = profile.configs["Database"]
         return "jdbc:postgresql://${endpoint}:${port}/${database}"
     }
 

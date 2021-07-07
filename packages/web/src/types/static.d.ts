@@ -74,6 +74,7 @@ declare global {
       PORT?: string
       PWD: string
       VITE_WS_URI?: string
+      VITE_SENTRY_DSN?: string
     }
   }
 }
