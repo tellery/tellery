@@ -5,7 +5,7 @@ COPY packages/api/package.json .
 COPY packages/api/package-lock.json .
 RUN npm ci
 COPY packages/api .
-ADD packages/protobufs /app/protobufs
+COPY packages/protobufs /app/protobufs
 RUN npm run compile
 
 FROM node:16.4.1-alpine as web-builder
