@@ -8,13 +8,6 @@ on:
       - "packages/connector/interface/**"
       - "packages/connector/build.gradle.kts"
       - ".github/workflows/assemble-connector.yml"
-  pull_request:
-    branches:
-      - main
-    paths:
-      - "packages/connector/interface/**"
-      - "packages/connector/build.gradle.kts"
-      - ".github/workflows/assemble-connector.yml"
 
 jobs:
   build-and-publish:

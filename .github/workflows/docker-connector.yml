@@ -7,13 +7,6 @@ on:
     paths:
       - "packages/connector/**"
       - ".github/workflows/docker-connector.yml"
-  pull_request:
-    branches:
-      - main
-    paths:
-      - "packages/connector/interface/**"
-      - "packages/connector/build.gradle.kts"
-      - ".github/workflows/docker-connector.yml"
 
 jobs:
   build-and-publish:
