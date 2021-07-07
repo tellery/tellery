@@ -40,7 +40,6 @@ const _ContentEditable: React.ForwardRefRenderFunction<
     maxLines?: number
     disableSlashCommand?: boolean
     className?: string
-    hidePlaceHolder?: boolean
     disableTextToolBar?: boolean
     placeHolderText?: string
     disableReferenceDropdown?: boolean

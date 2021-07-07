@@ -37,6 +37,8 @@ export const TitleBlock = (props: { block: Editor.Block }) => {
           disableSlashCommand
           disableTextToolBar
           block={block}
+          placeHolderStrategy="always"
+          placeHolderText="Untitled"
           readonly={readonly}
         />
       )}
