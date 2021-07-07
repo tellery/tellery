@@ -1,4 +1,4 @@
-name: assemble-connector
+name: docker-connector
 
 on:
   push:
@@ -13,7 +13,7 @@ on:
     paths:
       - "packages/connector/interface/**"
       - "packages/connector/build.gradle.kts"
-      - ".github/workflows/assemble-connector.yml"
+      - ".github/workflows/docker-connector.yml"
 
 jobs:
   build-and-publish:
