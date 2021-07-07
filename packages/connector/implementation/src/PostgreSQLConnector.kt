@@ -13,13 +13,13 @@ import java.sql.Connection
 
 
 @Connector(
-    type = "jdbc:postgres",
+    type = "PostgreSQL",
     jdbcConfigs = [
         Config(name="endpoint", type= ConfigType.STRING, description="The endpoint of your postgreSQL", hint="your-db-hostname-or-ip",required=true),
         Config(name="port", type= ConfigType.NUMBER, description="The port number of your database. If you have a firewall, make sure that this port is open for you to use.", hint="5432",required=true),
         Config(name="database", type= ConfigType.STRING, description="The logical database to connect to and run queries against.", hint="my_db",required=true),
 ])
-class PostgresJDBCConnector : JDBCConnector() {
+class PostgreSQLConnector : JDBCConnector() {
 
     override val driverClassName = "org.postgresql.Driver"
     override val transactionIsolationLevel = Connection.TRANSACTION_READ_COMMITTED
