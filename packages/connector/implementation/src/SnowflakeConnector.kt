@@ -17,10 +17,10 @@ import java.sql.Connection
 @Connector(
     type = "Snowflake",
     jdbcConfigs = [
-        Config(name="accountName", type=ConfigType.STRING, description = "your Snowflake account name",hint="xy12345", required=true),
-        Config(name="regionId", type=ConfigType.STRING, description="Your region Id", hint="us-ease-2.aws", required=true),
-        Config(name="role", type=ConfigType.STRING, description="the default access control role to use in the Snowflake session", hint="SYSADMIN"),
-        Config(name="warehouse", type=ConfigType.STRING, description="the virtual warehouse to use once connected by default", hint="COMPUTE_WH")
+        Config(name="Account Name", type=ConfigType.STRING, description = "Your Snowflake account name",hint="xy12345", required=true),
+        Config(name="Region Id", type=ConfigType.STRING, description="Your region Id", hint="us-ease-2.aws", required=true),
+        Config(name="Role", type=ConfigType.STRING, description="The default access control role to use in the Snowflake session", hint="SYSADMIN"),
+        Config(name="Warehouse", type=ConfigType.STRING, description="The virtual warehouse to use once connected by default", hint="COMPUTE_WH")
 ])
 class SnowflakeConnector : JDBCConnector() {
 
