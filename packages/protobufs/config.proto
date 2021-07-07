@@ -22,5 +22,4 @@ message ConfigField {
 message AvailableConfig {
   string type = 1;
   repeated ConfigField configs = 2;
-  repeated ConfigField optionals = 3;
 }

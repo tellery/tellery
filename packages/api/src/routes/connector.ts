@@ -79,10 +79,6 @@ class UpsertProfileRequest {
   @Type(() => String)
   @IsDefined()
   configs!: Map<string, string>
-
-  @Type(() => String)
-  @IsOptional()
-  optionals?: Map<string, string>
 }
 
 class DeleteProfileRequest {
@@ -242,7 +238,7 @@ async function upsertProfileRouter(ctx: Context) {
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
 
-  const { connectorId, workspaceId, name, type, auth, configs, optionals } = payload
+  const { connectorId, workspaceId, name, type, auth, configs } = payload
 
   const manager = await getIConnectorManagerFromDB(connectorId)
 
@@ -251,8 +247,6 @@ async function upsertProfileRouter(ctx: Context) {
     type,
     auth,
     configs: Object.fromEntries(configs),
-    // similar to optional values
-    optionals: optionals ? Object.fromEntries(optionals) : undefined,
   }
 
   const profiles = await connectorService.upsertProfile(manager, user.id, workspaceId, profileBody)

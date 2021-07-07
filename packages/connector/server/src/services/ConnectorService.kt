@@ -86,8 +86,7 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
                 addAllAvailableConfigs(ConnectorManager.getAvailableConfigs().map {
                     AvailableConfig {
                         type = it.type
-                        addAllConfigs(it.jdbcConfigs.map(::buildConfigFieldFromAnnotation))
-                        addAllOptionals(it.optionals.map(::buildConfigFieldFromAnnotation))
+                        addAllConfigs(it.configs.map(::buildConfigFieldFromAnnotation))
                     }
                 })
             }
@@ -98,8 +97,7 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
         get() = Profiles {
             addAllProfiles(ConnectorManager.getCurrentProfiles().values.map {
                 val connectorMeta = ConnectorManager.getAvailableConfigs().find{cfg -> cfg.type == it.type}!!
-                val secretConfigs = connectorMeta.jdbcConfigs.filter{it.secret}.map{it.name}.toSet()
-                val secretOptionals = connectorMeta.optionals.filter{it.secret}.map{it.name}.toSet()
+                val secretConfigs = connectorMeta.configs.filter{it.secret}.map{it.name}.toSet()
                 ProfileBody {
 
                     type = it.type
@@ -120,16 +118,6 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
                             k to v
                         }
                     })
-
-                    it.optionals?.let{
-                        putAllOptionals(it.entries.associate{ (k, v) ->
-                            if (secretOptionals.contains(k)){
-                                k to secretMask
-                            } else {
-                                k to v
-                            }
-                        })
-                    }
                 }
             })
         }
@@ -152,13 +140,7 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
             val originalProfile = ConfigManager.profiles.find { it.name == req.name }
 
             val connectorMeta = ConnectorManager.getAvailableConfigs().find{cfg -> cfg.type == req.type} ?: throw CustomizedException("invalid db type or invalid params")
-            val configFields = connectorMeta.jdbcConfigs.associateBy { it.name }
-            val optionalFields = connectorMeta.optionals.associateBy { it.name }
-
-            val optionals =
-                req.optionalsList.filter { optionalFields.contains(it.key) }
-                    .associate { it.key to it.value }
-
+            val configFields = connectorMeta.configs.associateBy { it.name }
             val configs =
                 req.configsList.filter { configFields.contains(it.key) }.associate { it.key to it.value }
 
@@ -180,11 +162,7 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
                 null,
                 configs.entries.associate{(k, v) ->
                     k to handleSecretField(v, originalProfile?.configs?.get(k))
-                }.filterValues{it.isNotBlank()},
-                optionals.entries.associate { (k, v)->
-                    k to handleSecretField(v, originalProfile?.optionals?.get(k))
-                }
-
+                }.filterValues{it.isNotBlank()}
             )
 
             val newProfiles = ConfigManager.profiles.filter { it.name != req.name } + newProfile
