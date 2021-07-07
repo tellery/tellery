@@ -756,6 +756,7 @@ export const StoryQuestionEditor: React.FC<{
           padding: 4px 10px;
           display: flex;
           height: 40px;
+          z-index: 101;
         `}
       >
         <div
@@ -880,18 +881,6 @@ export const StoryQuestionEditor: React.FC<{
           `}
         >
           <IconButton
-            icon={IconVisualizationSetting}
-            className={css`
-              &::after {
-                display: ${mode === 'VIS' ? 'visible' : 'none'};
-              }
-            `}
-            color={mode === 'VIS' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
-            onClick={() => {
-              setMode('VIS')
-            }}
-          />
-          <IconButton
             icon={IconCommonSql}
             className={css`
               &::after {
@@ -903,6 +892,20 @@ export const StoryQuestionEditor: React.FC<{
               setMode('SQL')
             }}
           />
+          {snapshot?.data && (
+            <IconButton
+              icon={IconVisualizationSetting}
+              className={css`
+                &::after {
+                  display: ${mode === 'VIS' ? 'visible' : 'none'};
+                }
+              `}
+              color={mode === 'VIS' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
+              onClick={() => {
+                setMode('VIS')
+              }}
+            />
+          )}
           {downstreams.length === 0 || (
             <IconButton
               icon={IconCommonDownstream}
