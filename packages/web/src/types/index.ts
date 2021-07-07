@@ -209,7 +209,8 @@ export interface Thought extends Editor.BaseBlock {
   }
 }
 
-export type Ref = { blockId: string; storyId: string; questionId: string }
+export type Ref = { blockId: string; storyId: string }
+
 export type Asset = Story | Editor.Block
 
 export type TellerySelectionNode = {
@@ -237,8 +238,8 @@ export type TelleryInlineSelection = {
 export type TellerySelection = (TelleryBlockSelection | TelleryInlineSelection) & { storyId: string }
 
 export type BackLinks = {
-  forwardRefs: { storyId: string; blockId: string; questionId: string }[]
-  backwardRefs: { storyId: string; blockId: string; questionId: string }[]
+  forwardRefs: Ref[]
+  backwardRefs: Ref[]
 }
 
 export type DropItem = {

@@ -442,7 +442,7 @@ export const useQuestionDownstreams = (id?: string) => {
       ),
     [blocks, links?.backwardRefs]
   )
-  return { data: items, blocks, refetch }
+  return { data: items, refetch }
 }
 
 export function useWorkspaceList(options?: UseQueryOptions<Workspace[]>) {
