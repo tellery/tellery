@@ -44,7 +44,7 @@ x-tellery-defaults: &tellery_defaults
 services:
   postgresql:
     <<: *restart_policy
-    image: ${POSTGRES_IMAGE}
+    image: postgres:10
     environment:
       POSTGRES_USERNAME: ${POSTGRES_USERNAME}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -58,6 +58,7 @@ services:
       start_period: 10s
     volumes:
       - pg_data:/var/lib/postgresql
+      - ./assets:/docker-entrypoint-initdb.d/
   redis:
     <<: *restart_policy
     image: redis:6.2.4
