@@ -674,10 +674,10 @@ export const StoryQuestionEditor: React.FC<{
 
   const keyDownHandler = useCallback(
     (e: React.KeyboardEvent) => {
-      // console.log('key down', e)
+      console.log('key down', e)
       const handlers: { hotkeys: string[]; handler: (e: KeyboardEvent) => void }[] = [
         {
-          hotkeys: ['mod+enter', 'ctrl+enter'],
+          hotkeys: ['mod+enter'],
           handler: (e) => {
             console.log('mod + enter')
             e.preventDefault()
@@ -686,7 +686,7 @@ export const StoryQuestionEditor: React.FC<{
           }
         },
         {
-          hotkeys: ['ctrl+s', 'mod+s'],
+          hotkeys: ['mod+s'],
           handler: (e) => {
             e.preventDefault()
             e.stopPropagation()
