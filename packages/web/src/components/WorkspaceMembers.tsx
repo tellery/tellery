@@ -13,8 +13,10 @@ import { ThemingVariables } from '@app/styles'
 import type { Workspace } from '@app/types'
 import { css, cx } from '@emotion/css'
 import Tippy from '@tippyjs/react'
+import copy from 'copy-to-clipboard'
 import { compact, sortBy } from 'lodash'
 import React, { useEffect, useMemo, useState } from 'react'
+import { toast } from 'react-toastify'
 import { FormButton } from './kit/FormButton'
 import FormInput from './kit/FormInput'
 import FormLabel from './kit/FormLabel'
@@ -217,7 +219,12 @@ export function WorkspaceMembers(props: { onClose(): void }) {
               cursor: pointer;
             `}
             onClick={() => {
-              setInvite(true)
+              if (workspace?.preferences.emailConfig) {
+                setInvite(true)
+              } else {
+                copy('123123')
+                toast.success('Invitation link copied')
+              }
             }}
           >
             Invite
