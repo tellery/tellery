@@ -142,19 +142,21 @@ export const StoryConfigPopOver: React.FC<{
           />
         }
       />
-      <MenuItem
-        icon={<Icon icon={IconMenuShow} color={ThemingVariables.colors.text[0]} />}
-        title="Show border"
-        onClick={() => {}}
-        side={
-          <FormSwitch
-            checked={!!story?.format?.showBorder}
-            onChange={(e) => {
-              setStoryFormat('showBorder', e.target.checked)
-            }}
-          />
-        }
-      />
+      {import.meta.env.DEV && (
+        <MenuItem
+          icon={<Icon icon={IconMenuShow} color={ThemingVariables.colors.text[0]} />}
+          title="Show border"
+          onClick={() => {}}
+          side={
+            <FormSwitch
+              checked={!!story?.format?.showBorder}
+              onChange={(e) => {
+                setStoryFormat('showBorder', e.target.checked)
+              }}
+            />
+          }
+        />
+      )}
       <MenuItemDivider />
       <MenuItem
         icon={<Icon icon={IconMenuDelete} color={ThemingVariables.colors.negative[0]} />}
