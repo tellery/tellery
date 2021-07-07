@@ -76,15 +76,7 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
           overflow-y: scroll;
         `}
       >
-        <FormLabel>Name</FormLabel>
-        <FormInput {...register('name')} />
-        <FormLabel
-          className={css`
-            margin-top: 20px;
-          `}
-        >
-          Type
-        </FormLabel>
+        <FormLabel required={true}>Type</FormLabel>
         <FormSelect
           className={css`
             width: 100%;
@@ -97,6 +89,18 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
             </option>
           ))}
         </FormSelect>
+        <FormLabel
+          required={true}
+          className={css`
+            margin-top: 20px;
+          `}
+        >
+          Name
+        </FormLabel>
+        <FormInput {...register('name')} />
+        {availableConfig?.configs.map((config) => (
+          <Config key={config.name} value={config} prefix="configs" register={register} />
+        ))}
         <FormLabel
           className={css`
             margin-top: 20px;
@@ -113,9 +117,6 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
           Password
         </FormLabel>
         <FormInput {...register('auth.password')} type="password" />
-        {availableConfig?.configs.map((config) => (
-          <Config key={config.name} value={config} prefix="configs" register={register} />
-        ))}
         {availableConfig?.optionals.map((config) => (
           <Config key={config.name} value={config} prefix="optionals" register={register} />
         ))}
