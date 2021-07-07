@@ -91,7 +91,7 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
             </option>
           ))}
         </FormSelect>
-        <FormLabel
+        {/* <FormLabel
           required={true}
           className={css`
             margin-top: 20px;
@@ -99,7 +99,7 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
         >
           Name
         </FormLabel>
-        <FormInput {...register('name')} />
+        <FormInput {...register('name')} /> */}
         {availableConfig?.configs
           .filter((config) => config.required)
           .map((config) => (
