@@ -660,7 +660,7 @@ export const StoryQuestionEditor: React.FC<{
     if (block?.id) {
       const mutations = queryClient.getMutationCache().getAll()
       mutations
-        .filter((mutation) => mutation.options.mutationKey === block.id)
+        .filter((mutation) => mutation.options.mutationKey === `draft/${block.id}`)
         .forEach((mutation) => {
           queryClient.getMutationCache().remove(mutation)
         })
@@ -668,16 +668,11 @@ export const StoryQuestionEditor: React.FC<{
     }
   }, [executeSQL, block?.id])
 
-  useEffect(() => {
-    console.log('side panel', sqlSidePanel)
-  }, [sqlSidePanel])
-
   const keyDownHandler = useCallback(
     (e: React.KeyboardEvent) => {
-      console.log('key down', e)
       const handlers: { hotkeys: string[]; handler: (e: KeyboardEvent) => void }[] = [
         {
-          hotkeys: ['mod+enter'],
+          hotkeys: ['mod+enter', 'ctrl+enter'],
           handler: (e) => {
             console.log('mod + enter')
             e.preventDefault()
@@ -686,7 +681,7 @@ export const StoryQuestionEditor: React.FC<{
           }
         },
         {
-          hotkeys: ['mod+s'],
+          hotkeys: ['mod+s', 'ctrl+s'],
           handler: (e) => {
             e.preventDefault()
             e.stopPropagation()

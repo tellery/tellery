@@ -71,7 +71,7 @@ export function SQLEditor(props: {
         const id = { major: 1, minor: 1 }
         const text = transformedText
         const op = { identifier: id, range: e.range, text: text, forceMoveMarkers: true }
-        editor.executeEdits('my-source', [op])
+        editor.executeEdits('transform-pasted-text', [op])
       }
     })
 
