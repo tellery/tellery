@@ -39,6 +39,9 @@ data:
   {{- if .Values.objectStorage.region }}
   OBJECT_STORAGE_REGION: {{ .Values.objectStorage.region }}
   {{- end}}
+  {{- if .Values.objectStorage.cdnEndpoint }}
+  OBJECT_STORAGE_CDN_ENDPOINT: {{ .Values.objectStorage.cdnEndpoint }}
+  {{- end}}
   EMAIL_USE_TLS: {{ .Values.email.tls | quote }}
   EMAIL_USERNAME: {{ .Values.email.username | quote }}
   EMAIL_PASSWORD: {{ .Values.email.password | quote }}
