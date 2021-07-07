@@ -16,7 +16,7 @@ import java.sql.Connection
 
 @Connector(
     type = "Snowflake",
-    jdbcConfigs = [
+    configs = [
         Config(name="Account Name", type=ConfigType.STRING, description = "Your Snowflake account name",hint="xy12345", required=true),
         Config(name="Region Id", type=ConfigType.STRING, description="Your region Id", hint="us-ease-2.aws", required=true),
         Config(name="Role", type=ConfigType.STRING, description="The default access control role to use in the Snowflake session", hint="SYSADMIN"),
