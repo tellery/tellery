@@ -119,6 +119,13 @@ jib {
     from {
         image = "openjdk:8-jre-alpine"
     }
+    to {
+        image = "ghcr.io/tellery/tellery-connector"
+        auth {
+            username =  project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USERNAME")
+            password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+        }
+    }
     container {
         appRoot = "/usr/app"
         containerizingMode = "packaged"
