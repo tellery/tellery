@@ -753,7 +753,7 @@ export const StoryQuestionEditor: React.FC<{
           padding: 4px 10px;
           display: flex;
           height: 40px;
-          z-index: 101;
+          z-index: 2;
         `}
       >
         <div
@@ -860,7 +860,7 @@ export const StoryQuestionEditor: React.FC<{
             display: flex;
             flex-direction: column;
             align-items: center;
-            z-index: 100;
+            z-index: 1;
             & > button {
               padding: 20px;
               position: relative;
