@@ -1,7 +1,5 @@
-import { useWorkspace } from '@app/context/workspace'
 import { useCreateEmptyBlock } from '@app/helpers/blockFactory'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
-import { useCommit } from '@app/hooks/useCommit'
 import {
   DndContext,
   DragEndEvent,
@@ -46,8 +44,6 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
   const sensors = useSensors(dragSensor, mouseSensor)
   const dataTransferRef = useRef<DataTransfer | null>(null)
 
-  const commit = useCommit()
-
   const blockTranscations = useBlockTranscations()
   const createEmptyBlock = useCreateEmptyBlock()
 
@@ -58,8 +54,6 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
     droppingAreaRef.current = null
     setSelectingBlockIds(null)
   }, [setDroppingArea])
-
-  const workspace = useWorkspace()
 
   const setUploadResource = useSetUploadResource()
 
@@ -78,7 +72,6 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
           const over = event.over
           if (!over) return
           const overData = over.data.current
-          // const leaveBlockId = overData?.id
           const overStoryId = overData?.storyId
           invariant(overData?.storyId, 'overing story id is null')
           if (item.storyId !== overStoryId) {
@@ -101,7 +94,6 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
           const overData = over.data.current
           const overStoryId = overData?.storyId
           logger('drga end', event, dataTransferRef.current)
-          // invariant(selectionState?.type === TellerySelectionType.Inline, 'selection state is not inline')
           const files = dataTransferRef.current?.files
           invariant(files, 'files is empty')
           const fileBlocks = [...files].map(() =>
@@ -128,10 +120,8 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
 
       setDroppingArea(null)
       droppingAreaRef.current = null
-      // setSelectingBlockIds(null)
     },
     [setDroppingArea, blockTranscations, createEmptyBlock, setUploadResource]
-    // [dropCacheRef, storyId, duplicateBlocks, moveBlocks]
   )
 
   const snapshot = useBlockSnapshot()
@@ -212,7 +202,6 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
       selectingBlockIdsRef.current = newSelectBlockIds
       setSelectingBlockIds(newSelectBlockIds)
     }
-    // const currentSelection = editor.getSelection()
   }, [])
 
   const blockDndContext = useMemo(() => {
