@@ -75,7 +75,7 @@ export const useBlockTranscationProvider = () => {
   const createNewStory = useCallback(
     async (props?: { id: string; title?: string }) => {
       const id = props?.id ? props.id : nanoid()
-      const title = props?.title ? props.title : DEFAULT_TITLE
+      const title = props?.title ? props.title : undefined
       return commit({
         storyId: id,
         transcation: createTranscation({
@@ -90,7 +90,7 @@ export const useBlockTranscationProvider = () => {
                 parentId: workspace.id,
                 parentTable: Editor.BlockParentType.WORKSPACE,
                 format: {},
-                content: { title: [[title]] },
+                content: { title: title ? [[title]] : [] },
                 children: [],
                 type: Editor.BlockType.Story,
                 storyId: id
