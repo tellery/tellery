@@ -30,9 +30,9 @@ class PostgreSQLConnector : JDBCConnector() {
     )
 
     override fun buildConnectionStr(profile: Profile): String {
-        val endpoint = profile.configs["endpoint"]
-        val port = profile.configs["port"]
-        val database = profile.configs["database"]
+        val endpoint = profile.configs["Endpoint"]
+        val port = profile.configs["Port"]
+        val database = profile.configs["Database"]
         return "jdbc:postgresql://${endpoint}:${port}/${database}"
     }
 
