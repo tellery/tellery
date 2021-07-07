@@ -25,10 +25,7 @@ x-tellery-defaults: &tellery_defaults
     PG_DATABASE: ${POSTGRES_DB}
     PG_PASSWORD: ${POSTGRES_PASSWORD}
     REDIS_URL: redis://redis:6379
-    OBJECT_STORAGE_ENDPOINT: http://minio:9000
-    OBJECT_STORAGE_BUCKET: ${OBJECT_STORAGE_BUCKET}
-    OBJECT_STORAGE_ACCESS_KEY_ID: ${OBJECT_STORAGE_ACCESS_KEY_ID}
-    OBJECT_STORAGE_ACCESS_KEY_SECRET: ${OBJECT_STORAGE_ACCESS_KEY_SECRET}
+    OBJECT_STORAGE_TYPE: postgres
     SERVER_PORT: ${SERVER_PORT}
     SERVER_WEB_PORT: ${SERVER_PORT}
     EMAIL_USE_TLS: ${EMAIL_USE_TLS}
@@ -44,17 +41,6 @@ x-tellery-defaults: &tellery_defaults
     CREATE_USER_NAME: ${CREATE_USER_NAME}
     CREATE_USER_PASSWORD: ${CREATE_USER_PASSWORD}
 services:
-  minio:
-    image: minio/minio:edge
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    command:
-      - server /data
-    volumes:
-      - s3_data:/data
-    ports:
-      - 9000:9000
   postgresql:
     <<: *restart_policy
     image: postgres:10
