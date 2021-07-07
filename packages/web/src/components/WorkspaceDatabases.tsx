@@ -6,7 +6,6 @@ import {
 } from '@app/hooks/api'
 import type { AvailableConfig, ProfileConfig } from '@app/types'
 import { css } from '@emotion/css'
-import { upperFirst } from 'lodash'
 import { useMemo, useEffect } from 'react'
 import { useForm, UseFormRegister } from 'react-hook-form'
 import FormInput from './kit/FormInput'
@@ -150,7 +149,7 @@ function Config(props: {
           margin-top: 20px;
         `}
       >
-        {upperFirst(config.name)}
+        {config.name}
       </FormLabel>
       {config.type === 'BOOLEAN' ? (
         <FormSwitch {...register(`${prefix}.${config.name}`)} />
