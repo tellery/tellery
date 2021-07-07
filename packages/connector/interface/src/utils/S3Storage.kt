@@ -36,12 +36,12 @@ class S3Storage(
     companion object {
         fun buildByOptionals(optionals: Map<String, String>?): S3Storage? {
             var s3Client: S3Storage? = null
-            val accessKey = optionals?.get("S3_ACCESS_KEY")
-            val secretKey = optionals?.get("S3_SECRET_KEY")
-            val region = optionals?.get("S3_REGION")
-            val bucket = optionals?.get("S3_BUCKET")
-            val endpoint = optionals?.get("S3_ENDPOINT")
-            val keyPrefix = optionals?.get("S3_KEY_PREFIX")
+            val accessKey = optionals?.get("S3AccessKey")
+            val secretKey = optionals?.get("S3SecretKey")
+            val region = optionals?.get("S3Region")
+            val bucket = optionals?.get("S3Bucket")
+            val endpoint = optionals?.get("S3Endpoint")
+            val keyPrefix = optionals?.get("S3KeyPrefix")
             if (accessKey != null && secretKey != null && region != null && bucket != null) {
                 s3Client = S3Storage(accessKey, secretKey, region, bucket, endpoint, keyPrefix)
             }
