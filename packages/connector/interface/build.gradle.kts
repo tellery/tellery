@@ -44,8 +44,8 @@ dependencies {
 
     api("io.grpc:grpc-stub:$grpcVersion")
 
-    api("com.zaxxer:HikariCP:4.0.1")
-    api("com.michael-bull.kotlin-coroutines-jdbc:kotlin-coroutines-jdbc:1.0.1")
+    api("com.zaxxer:HikariCP:4.0.3")
+    api("com.michael-bull.kotlin-coroutines-jdbc:kotlin-coroutines-jdbc:1.0.2")
 
     api("com.aventrix.jnanoid:jnanoid:2.0.0")
     api("com.amazonaws:aws-java-sdk-s3:1.11.959")

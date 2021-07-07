@@ -16,10 +16,11 @@ import {
 } from 'api'
 import { useAsync } from 'hooks'
 import invariant from 'invariant'
+import { compact } from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { QueryObserverResult, useInfiniteQuery, useMutation, useQuery, UseQueryOptions } from 'react-query'
 import { useRecoilCallback, useRecoilValue, useRecoilValueLoadable, waitForAll } from 'recoil'
-import type { AvailableConfig, BackLinks, Editor, ProfileConfig, Snapshot, Story, UserInfo, Workspace } from 'types'
+import { AvailableConfig, BackLinks, Editor, ProfileConfig, Snapshot, Story, UserInfo, Workspace } from 'types'
 import { queryClient } from 'utils'
 import { emitBlockUpdate } from 'utils/remoteStoreObserver'
 import { TelleryBlockAtom, TelleryUserAtom } from '../store/block'
@@ -420,6 +421,28 @@ export const useQuestionBackLinks = (id: string = '') => {
 export const useStoryBackLinks = (id: string = '') => {
   const workspace = useWorkspace()
   return useQuery<BackLinks>(['backlinks', 'story', id], () => fetchStoryBackLinks(id, workspace.id), { enabled: !!id })
+}
+
+export const useQuestionDownstreams = (id?: string) => {
+  const { data: links, refetch } = useQuestionBackLinks(id)
+  const blockIds = useMemo(
+    () => [
+      ...new Set(links?.backwardRefs.map(({ blockId }) => blockId)),
+      ...new Set(links?.backwardRefs.map(({ storyId }) => storyId))
+    ],
+    [links]
+  )
+  const { data: blocks } = useMgetBlocks(blockIds)
+  const items = useMemo(
+    () =>
+      compact(
+        links?.backwardRefs
+          ?.map(({ blockId }) => blocks?.[blockId])
+          .filter((block) => block?.type === Editor.BlockType.Question)
+      ),
+    [blocks, links?.backwardRefs]
+  )
+  return { data: items, blocks, refetch }
 }
 
 export function useWorkspaceList(options?: UseQueryOptions<Workspace[]>) {

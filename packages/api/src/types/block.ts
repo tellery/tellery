@@ -24,6 +24,7 @@ enum BlockType {
   DIVIDER = 'divider',
   ROW = 'row',
   COLUMN = 'column',
+  EMBED = 'embed',
   // Deprecated
   DEPRECATED_RICH_TEXT = 'RICH_TEXT',
   DEPRECATED_QUESTION = 'QUESTION',

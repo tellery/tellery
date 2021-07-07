@@ -4,7 +4,8 @@ import { css, cx } from '@emotion/css'
 import {
   IconCommonArrowDropDown,
   IconCommonClose,
-  IconCommonLink,
+  IconCommonDownstream,
+  IconCommonError,
   IconCommonRun,
   IconCommonSave,
   IconCommonSql,
@@ -16,7 +17,7 @@ import { Configuration } from 'components/v11n'
 import { dequal } from 'dequal'
 import { motion, useMotionValue, useTransform } from 'framer-motion'
 import { useHover, useOpenStory, usePrevious } from 'hooks'
-import { useBlockSuspense, useExecuteSQL, useSnapshot } from 'hooks/api'
+import { useBlockSuspense, useExecuteSQL, useQuestionDownstreams, useSnapshot } from 'hooks/api'
 import { useLocalStorage } from 'hooks/useLocalStorage'
 import { useSqlEditor } from 'hooks/useSqlEditor'
 import { produce } from 'immer'
@@ -42,9 +43,11 @@ import QuestionReferences from './QuestionReferences'
 import { charts } from './v11n/charts'
 import { Config, Type } from './v11n/types'
 
+type Mode = 'SQL' | 'VIS' | 'DOWNSTREAM'
+
 export interface QuestionEditor {
   close: (arg: string) => Promise<void>
-  open: (arg: { mode: 'SQL' | 'VIS'; readonly: boolean }) => Promise<void>
+  open: (arg: { mode: Mode; readonly: boolean }) => Promise<void>
 }
 
 export const useDraftBlockMutating = (blockId: string) => {
@@ -123,17 +126,7 @@ export const useCleanQuestionEditorHandler = () => {
 export const useOpenQuestionBlockIdHandler = () => {
   const handler = useRecoilCallback(
     (recoilCallback) =>
-      ({
-        mode,
-        readonly,
-        blockId,
-        storyId
-      }: {
-        mode: 'SQL' | 'VIS'
-        blockId: string
-        readonly: boolean
-        storyId: string
-      }) => {
+      ({ mode, readonly, blockId, storyId }: { mode: Mode; blockId: string; readonly: boolean; storyId: string }) => {
         recoilCallback.set(questionEditorActiveIdState, blockId)
         recoilCallback.set(questionEditorOpenState, true)
         recoilCallback.set(questionEditorBlockMapState, (state) => {
@@ -570,7 +563,7 @@ export const StoryQuestionEditor: React.FC<{
   )
 
   const setMode = useCallback(
-    (mode: 'VIS' | 'SQL') => {
+    (mode: Mode) => {
       setQuestionBlocksMap((blocksMap) => {
         return {
           ...blocksMap,
@@ -729,7 +722,7 @@ export const StoryQuestionEditor: React.FC<{
 
   const mutatingCount = useDraftBlockMutating(block.id)
   const openStory = useOpenStory()
-
+  const { data: downstreams } = useQuestionDownstreams(block.id)
   const scrollToBlock = useCallback(() => {
     const element = getBlockWrapElementById(block.id)
     element &&
@@ -835,7 +828,7 @@ export const StoryQuestionEditor: React.FC<{
         >
           {mode === 'SQL' && (sqlError || sqlSidePanel) && (
             <IconButton
-              icon={IconCommonLink}
+              icon={IconCommonError}
               color={ThemingVariables.colors.negative[0]}
               onClick={() => {
                 setSqlSidePanel(!sqlSidePanel)
@@ -843,100 +836,153 @@ export const StoryQuestionEditor: React.FC<{
             />
           )}
           <IconButton
+            hoverContent={mutatingCount !== 0 ? 'Cancel Query' : 'Execute Query'}
             icon={mutatingCount !== 0 ? IconCommonClose : IconCommonRun}
             color={ThemingVariables.colors.primary[1]}
             onClick={mutatingCount !== 0 ? cancelExecuteSql : run}
           />
           <IconButton
+            hoverContent="Save"
             disabled={!isDraft || readonly === true}
             icon={IconCommonSave}
             onClick={save}
             color={ThemingVariables.colors.primary[1]}
           />
-          {mode === 'SQL' && (
+        </div>
+      </div>
+      <div
+        className={css`
+          display: flex;
+          width: 100%;
+          height: calc(100% - 40px);
+        `}
+      >
+        <div
+          className={css`
+            flex-shrink: 0;
+            width: 60px;
+            background-color: ${ThemingVariables.colors.gray[4]};
+            box-shadow: 2px 0px 8px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 100;
+            & > button {
+              padding: 20px;
+              position: relative;
+            }
+            & > button::after {
+              content: '';
+              width: 4px;
+              height: 40px;
+              border-radius: 2px;
+              background: ${ThemingVariables.colors.primary[1]};
+              position: absolute;
+              top: 10px;
+              right: 0;
+            }
+          `}
+        >
+          <IconButton
+            icon={IconVisualizationSetting}
+            className={css`
+              &::after {
+                display: ${mode === 'VIS' ? 'visible' : 'none'};
+              }
+            `}
+            color={mode === 'VIS' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
+            onClick={() => {
+              setMode('VIS')
+            }}
+          />
+          <IconButton
+            icon={IconCommonSql}
+            className={css`
+              &::after {
+                display: ${mode === 'SQL' ? 'visible' : 'none'};
+              }
+            `}
+            color={mode === 'SQL' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
+            onClick={() => {
+              setMode('SQL')
+            }}
+          />
+          {downstreams.length === 0 || (
             <IconButton
-              icon={IconVisualizationSetting}
+              icon={IconCommonDownstream}
+              className={css`
+                &::after {
+                  display: ${mode === 'DOWNSTREAM' ? 'visible' : 'none'};
+                }
+              `}
+              color={mode === 'DOWNSTREAM' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
               onClick={() => {
-                setMode('VIS')
-              }}
-            />
-          )}
-          {mode === 'VIS' && (
-            <IconButton
-              icon={IconCommonSql}
-              onClick={() => {
-                setMode('SQL')
+                setMode('DOWNSTREAM')
               }}
             />
           )}
         </div>
-      </div>
-      {mode === 'SQL' ? (
-        <div
-          className={css`
-            display: flex;
-            width: 100%;
-            height: calc(100% - 40px);
-          `}
-        >
-          <SQLEditor
-            className={css`
-              flex: 1;
-              width: 0 !important;
-            `}
-            value={sql}
-            padding={{ top: 20, bottom: 0 }}
-            languageId={workspace.preferences.profile!}
-            onChange={(e) => {
-              setSql(e)
-            }}
-            onRun={run}
-            onSave={save}
+        {mode === 'SQL' && (
+          <>
+            <SQLEditor
+              className={css`
+                flex: 1;
+                width: 0 !important;
+              `}
+              value={sql}
+              padding={{ top: 20, bottom: 0 }}
+              languageId="hive" // TODO: use var
+              onChange={(e) => {
+                setSql(e)
+              }}
+              onRun={run}
+              onSave={save}
+            />
+            {sqlSidePanel && (
+              <div
+                className={css`
+                  overflow: scroll;
+                  word-wrap: break-word;
+                  font-style: normal;
+                  font-weight: 500;
+                  font-size: 14px;
+                  flex: 0 0 400px;
+                  line-height: 24px;
+                  color: ${ThemingVariables.colors.negative[0]};
+                  margin: 15px;
+                  user-select: text;
+                  padding: 10px;
+                  border-radius: 10px;
+                  background: ${ThemingVariables.colors.negative[1]};
+                `}
+              >
+                {sqlError}
+              </div>
+            )}
+          </>
+        )}
+        {mode === 'VIS' && (
+          <Configuration
+            data={snapshot?.data}
+            config={visualizationConfig}
+            onConfigChange={setVisConfig}
+            className={cx(
+              css`
+                flex: 1;
+                overflow: hidden;
+              `
+            )}
           />
+        )}
+        {mode === 'DOWNSTREAM' && (
           <QuestionReferences
             blockId={id}
             className={css`
-              flex-shrink: 0;
-              box-shadow: -2px 0px 8px rgba(0, 0, 0, 0.04);
-              z-index: 100;
+              flex: 1;
             `}
           />
-          {sqlSidePanel && (
-            <div
-              className={css`
-                overflow: scroll;
-                word-wrap: break-word;
-                font-style: normal;
-                font-weight: 500;
-                font-size: 14px;
-                flex: 0 0 400px;
-                line-height: 24px;
-                color: ${ThemingVariables.colors.negative[0]};
-                margin: 15px;
-                user-select: text;
-                padding: 10px;
-                border-radius: 10px;
-                background: ${ThemingVariables.colors.negative[1]};
-              `}
-            >
-              {sqlError}
-            </div>
-          )}
-        </div>
-      ) : (
-        <Configuration
-          data={snapshot?.data}
-          config={visualizationConfig}
-          onConfigChange={setVisConfig}
-          // key={block.id}
-          className={cx(
-            css`
-              flex: 1;
-              overflow: hidden;
-            `
-          )}
-        />
-      )}
+        )}
+      </div>
     </TabPanel>
   )
 }

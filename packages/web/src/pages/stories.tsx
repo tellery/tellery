@@ -265,10 +265,10 @@ const Page = () => {
               {width >= 1100 ? (
                 <div
                   className={css`
-                    width: 120px;
+                    width: 150px;
                   `}
                 >
-                  Update DT
+                  Last Modified
                 </div>
               ) : null}
               <div

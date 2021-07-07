@@ -68,7 +68,7 @@ export const updateUser = async ({
 }
 
 export const importFromCSV = (props: {
-  url: string
+  key: string
   collection: string
   connectorId: string
   profile: string

@@ -239,7 +239,7 @@ const SideBarContent: React.FC<{ folded: boolean; toggleFoldStatus: () => void }
         <MainSideBarItem
           icon={IconCommonSearch}
           folded={folded}
-          title="Quick Find"
+          title="Search"
           onClick={() => {
             setOmniboxShow(true)
           }}
@@ -253,7 +253,7 @@ const SideBarContent: React.FC<{ folded: boolean; toggleFoldStatus: () => void }
         />
         <MainSideBarItem
           icon={IconCommonThoughts}
-          title="Thoughts"
+          title="My Thoughts"
           onClick="/thought"
           active={location.pathname === '/thought'}
           folded={folded}

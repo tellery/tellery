@@ -2,6 +2,7 @@ import { useWorkspace } from '@app/context/workspace'
 import { useCommit } from '@app/hooks/useCommit'
 import { css } from '@emotion/css'
 import styled from '@emotion/styled'
+import Tippy from '@tippyjs/react'
 import { getStoriesByTitle } from 'api'
 import {
   IconCommonArrowDropDown,
@@ -354,6 +355,74 @@ export const BlockTextOperationMenuInner = ({
     }
   }, [inlineEditing, markHandler, markdMap, selectedTokens, toggleReference])
 
+  const markButtons = useMemo(() => {
+    const buttons = [
+      {
+        type: Editor.InlineType.Bold,
+        icon: IconFontBold,
+        hoverContent: 'Bold',
+        onClick: () => markHandler(Editor.InlineType.Bold, [], !!markdMap.get(Editor.InlineType.Bold))
+      },
+      {
+        type: Editor.InlineType.Italic,
+        icon: IconFontItalic,
+        hoverContent: 'Italic',
+        onClick: () => markHandler(Editor.InlineType.Italic, [], !!markdMap.get(Editor.InlineType.Italic))
+      },
+      {
+        type: Editor.InlineType.Underline,
+        icon: IconFontUnderline,
+        hoverContent: 'Underline',
+        onClick: () => markHandler(Editor.InlineType.Underline, [], !!markdMap.get(Editor.InlineType.Underline))
+      },
+      {
+        type: Editor.InlineType.Strike,
+        icon: IconFontStrikethrough,
+        hoverContent: 'Strike-through',
+        onClick: () => markHandler(Editor.InlineType.Strike, [], !!markdMap.get(Editor.InlineType.Strike))
+      },
+      {
+        type: Editor.InlineType.Code,
+        icon: IconFontCode,
+        hoverContent: 'Inline code',
+        onClick: () => markHandler(Editor.InlineType.Code, [], !!markdMap.get(Editor.InlineType.Code))
+      },
+      {
+        type: Editor.InlineType.Reference,
+        icon: IconFontStory,
+        hoverContent: 'Reference story',
+        onClick: toggleReference
+      },
+      { type: 'DIVIDER' },
+      {
+        type: Editor.InlineType.Hightlighted,
+        icon: IconFontColor,
+        hoverContent: 'Highlight',
+        onClick: () => markHandler(Editor.InlineType.Hightlighted, [], !!markdMap.get(Editor.InlineType.Hightlighted))
+      }
+    ]
+
+    return buttons.map((button) => {
+      if (button.type === 'DIVIDER') {
+        return <VerticalDivider />
+      }
+      return (
+        <Tippy
+          key={button.type}
+          content={button.hoverContent}
+          hideOnClick={false}
+          animation="fade"
+          duration={150}
+          arrow={false}
+        >
+          <OperationButton active={markdMap.get(button.type as Editor.InlineType)} onClick={button.onClick}>
+            <Icon icon={button.icon!} color={ThemingVariables.colors.text[0]} />
+          </OperationButton>
+        </Tippy>
+      )
+    })
+  }, [markHandler, markdMap, toggleReference])
+
   return (
     <div
       {...pop.attributes.popper}
@@ -403,63 +472,7 @@ export const BlockTextOperationMenuInner = ({
         <AddLinkOperation setInlineEditing={setInlineEditing} markHandler={markHandler} />
 
         <VerticalDivider />
-        <OperationButton
-          active={markdMap.get(Editor.InlineType.Bold)}
-          onClick={() => {
-            markHandler(Editor.InlineType.Bold, [], !!markdMap.get(Editor.InlineType.Bold))
-          }}
-        >
-          <Icon icon={IconFontBold} color={ThemingVariables.colors.text[0]} />
-        </OperationButton>
-        <OperationButton
-          active={markdMap.get(Editor.InlineType.Italic)}
-          onClick={() => {
-            markHandler(Editor.InlineType.Italic, [], !!markdMap.get(Editor.InlineType.Italic))
-          }}
-        >
-          <Icon icon={IconFontItalic} color={ThemingVariables.colors.text[0]} />
-        </OperationButton>
-        <OperationButton
-          active={markdMap.get(Editor.InlineType.Underline)}
-          onClick={() => {
-            markHandler(Editor.InlineType.Underline, [], !!markdMap.get(Editor.InlineType.Underline))
-          }}
-        >
-          <Icon icon={IconFontUnderline} color={ThemingVariables.colors.text[0]} />
-        </OperationButton>
-        <OperationButton
-          active={markdMap.get(Editor.InlineType.Strike)}
-          onClick={() => {
-            markHandler(Editor.InlineType.Strike, [], !!markdMap.get(Editor.InlineType.Strike))
-          }}
-        >
-          <Icon icon={IconFontStrikethrough} color={ThemingVariables.colors.text[0]} />
-        </OperationButton>
-        <OperationButton
-          active={markdMap.get(Editor.InlineType.Code)}
-          onClick={() => {
-            markHandler(Editor.InlineType.Code, [], !!markdMap.get(Editor.InlineType.Code))
-          }}
-        >
-          <Icon icon={IconFontCode} color={ThemingVariables.colors.text[0]} />
-        </OperationButton>
-        <OperationButton
-          active={markdMap.get(Editor.InlineType.Reference)}
-          onClick={() => {
-            toggleReference()
-          }}
-        >
-          <Icon icon={IconFontStory} color={ThemingVariables.colors.text[0]} />
-        </OperationButton>
-        <VerticalDivider />
-        <OperationButton
-          active={markdMap.get(Editor.InlineType.Hightlighted)}
-          onClick={() => {
-            markHandler(Editor.InlineType.Hightlighted, ['orange'], !!markdMap.get(Editor.InlineType.Hightlighted))
-          }}
-        >
-          <Icon icon={IconFontColor} color={ThemingVariables.colors.text[0]} />
-        </OperationButton>
+        {markButtons}
         <VerticalDivider />
       </motion.div>
     </div>

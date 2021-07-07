@@ -1,7 +1,9 @@
+import { IconMenuQuery } from '@app/assets/icons'
 import { useWorkspace } from '@app/context/workspace'
 import { useOpenStory } from '@app/hooks'
 import { useMgetBlocks } from '@app/hooks/api'
 import { transclusionRegex } from '@app/hooks/useSqlEditor'
+import { SVG2DataURI } from '@app/lib/svg'
 import { ThemingVariables } from '@app/styles'
 import type { Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
@@ -17,9 +19,13 @@ const contentWidgetClassname = css`
   line-height: 18px;
   vertical-align: middle;
   border-radius: 6px;
-  padding: 0 8px;
-  color: ${ThemingVariables.colors.text[1]};
-  background: ${ThemingVariables.colors.gray[2]};
+  padding: 0 5px 0 23px;
+  color: ${ThemingVariables.colors.text[0]};
+  background-color: ${ThemingVariables.colors.primary[4]};
+  background-image: ${SVG2DataURI(IconMenuQuery)};
+  background-size: 16px;
+  background-repeat: no-repeat;
+  background-position: 5px 50%;
   white-space: nowrap;
   cursor: pointer;
   overflow: hidden;

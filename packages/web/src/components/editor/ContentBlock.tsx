@@ -15,6 +15,7 @@ import { DividerBlock } from './Blocks/DividerBlock'
 import { FileBlock } from './Blocks/FileBlock'
 import { GridBlock } from './Blocks/GridBlock'
 import { ImageBlock } from './Blocks/ImageBlock'
+import { EmbedBlock } from './Blocks/EmbedBlock'
 import { NoPermissionBlock } from './Blocks/NoPermisionBlock'
 import { NumberedListBlock } from './Blocks/NumberedListBlock'
 import { QuestionBlock } from './Blocks/QuestionBlock'
@@ -85,6 +86,8 @@ const _BlockInner: React.FC<{
       )
     case Editor.BlockType.File:
       return <FileBlock block={block as Editor.ImageBlock}>{children}</FileBlock>
+    case Editor.BlockType.Embed:
+      return <EmbedBlock block={block as Editor.ImageBlock}>{children}</EmbedBlock>
     case Editor.BlockType.BulletList:
       return <BulletListBlock block={block}>{children}</BulletListBlock>
     case Editor.BlockType.NumberedList:
@@ -142,7 +145,7 @@ export const ContentBlocks: React.FC<{
   )
 }
 
-export const ContentBlockPure: React.FC<{
+export const _ContentBlockPure: React.FC<{
   id: string
   parentType: Editor.BlockType
 }> = (props) => {
@@ -150,6 +153,7 @@ export const ContentBlockPure: React.FC<{
   return <ContentBlockInner block={block} parentType={props.parentType} />
 }
 
+export const ContentBlockPure = memo(_ContentBlockPure)
 const isResizebleBlockType = (blockType: Editor.BlockType) => {
   return blockType === Editor.BlockType.Question || blockType === Editor.BlockType.Image
 }
