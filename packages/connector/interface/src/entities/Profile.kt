@@ -24,7 +24,6 @@ data class Profile(
     val auth: ConnectionAuth?,
     val jar: String?,
     val configs: Map<String, String>,
-    val optionals: Map<String, String>?,
 ) {
     override fun equals(other: Any?): Boolean {
         if (other !is Profile) {
@@ -33,11 +32,7 @@ data class Profile(
         return  type == other.type &&
                 name == other.name &&
                 auth == other.auth &&
-                configs.entries.fold(true) {acc, (k,v) -> return acc && other.configs[k] == v} &&
-                !((optionals == null && other.optionals != null) || (optionals != null && other.optionals == null)) &&
-                optionals?.entries?.fold(true) { acc, (k, v) ->
-                    return acc && other.optionals?.get(k) == v
-                } ?: true
+                configs.entries.fold(true) {acc, (k,v) -> return acc && other.configs[k] == v}
     }
 
     override fun hashCode(): Int {
@@ -46,7 +41,6 @@ data class Profile(
         result = 31 * result + (auth?.hashCode() ?: 0)
         result = 31 * result + (jar?.hashCode() ?: 0)
         result = 31 * result + configs.hashCode()
-        result = 31 * result + (optionals?.hashCode() ?: 0)
         return result
     }
 }
