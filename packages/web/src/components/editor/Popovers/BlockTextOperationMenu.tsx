@@ -40,6 +40,7 @@ import { createTranscation } from 'context/editorTranscations'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useBlockSuspense } from 'hooks/api'
 import invariant from 'invariant'
+import isHotkey from 'is-hotkey'
 import { nanoid } from 'nanoid'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { usePopper } from 'react-popper'
@@ -312,41 +313,45 @@ export const BlockTextOperationMenuInner = ({
       if (inlineEditing) {
         return
       }
-      if (e.ctrlKey || e.metaKey) {
-        switch (e.key) {
-          case 'B': // ctrl+B or ctrl+b
-          case 'b':
-            markHandler(Editor.InlineType.Bold, [], !!markdMap.get(Editor.InlineType.Bold))
-            break
-          case 'I': // ctrl+I or ctrl+i
-          case 'i':
-            markHandler(Editor.InlineType.Italic, [], !!markdMap.get(Editor.InlineType.Italic))
-            break
-          case 'U': // ctrl+U or ctrl+u
-          case 'u':
-            markHandler(Editor.InlineType.Underline, [], !!markdMap.get(Editor.InlineType.Underline))
-            e.preventDefault()
-            break
-          case 'E': // ctrl+U or ctrl+u
-          case 'e':
-            markHandler(Editor.InlineType.Code, [], !!markdMap.get(Editor.InlineType.Code))
-            e.preventDefault()
-            break
-          case 'R': // ctrl+R or ctrl+r
-          case 'r':
-            e.preventDefault()
-            toggleReference()
-
-            break
-          case 'H': // ctrl+U or ctrl+u
-          case 'h':
+      const handlers = [
+        {
+          hotkeys: ['mod+b'],
+          handler: () => markHandler(Editor.InlineType.Bold, [], !!markdMap.get(Editor.InlineType.Bold))
+        },
+        {
+          hotkeys: ['mod+i'],
+          handler: () => markHandler(Editor.InlineType.Italic, [], !!markdMap.get(Editor.InlineType.Italic))
+        },
+        {
+          hotkeys: ['mod+u'],
+          handler: () => markHandler(Editor.InlineType.Underline, [], !!markdMap.get(Editor.InlineType.Underline))
+        },
+        {
+          hotkeys: ['mod+e'],
+          handler: () => markHandler(Editor.InlineType.Code, [], !!markdMap.get(Editor.InlineType.Code))
+        },
+        {
+          hotkeys: ['mod+y'],
+          handler: () => markHandler(Editor.InlineType.Strike, [], !!markdMap.get(Editor.InlineType.Strike))
+        },
+        // {
+        //   hotkeys: ['mod+r'],
+        //   handler: (e) => {
+        //     e.preventDefault()
+        //     toggleReference()
+        //   }
+        // },
+        {
+          hotkeys: ['mod+h'],
+          handler: () =>
             markHandler(Editor.InlineType.Hightlighted, ['orange'], !!markdMap.get(Editor.InlineType.Hightlighted))
-            e.preventDefault()
-            break
         }
-      } else {
-        // setRange(null)
-        // setOpen(false)
+      ]
+
+      const matchingHandler = handlers.find((handler) => handler.hotkeys.some((hotkey) => isHotkey(hotkey, e)))
+      if (matchingHandler) {
+        e.preventDefault()
+        matchingHandler?.handler()
       }
     }
     document.addEventListener('keydown', onKeyDown)
