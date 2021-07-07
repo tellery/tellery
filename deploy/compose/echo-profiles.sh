@@ -1,2 +1,2 @@
 #!/bin/sh
-echo "{ \"profiles\": [{ \"type\": \"Postgres\", \"name\": \"default\", \"auth\": { \"username\": \"${POSTGRES_USERNAME}\", \"password\": \"${POSTGRES_PASSWORD}\" }, \"configs\": { \"Endpoint\": \"postgresql\", \"Port\": \"5432\", \"Database\": \"sample\" }}]}" > /usr/app/profiles.json
+echo "{ \"profiles\": [{ \"type\": \"PostgreSQL\", \"name\": \"default\", \"auth\": { \"username\": \"${POSTGRES_USERNAME}\", \"password\": \"${POSTGRES_PASSWORD}\" }, \"configs\": { \"Endpoint\": \"postgresql\", \"Port\": \"5432\", \"Database\": \"sample\" }}]}" > /usr/app/profiles.json
