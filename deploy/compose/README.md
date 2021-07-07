@@ -14,7 +14,7 @@ Open your terminal, and run:
 
 ```shell
 git clone https://github.com/tellery/tellery.git
-cd tellery/hack/compose
+cd tellery/deploy/compose
 docker-compose up
 ```
 
