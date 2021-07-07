@@ -50,7 +50,7 @@ export function WorkspacePreferences(props: { onClose(): void }) {
           color: ${ThemingVariables.colors.text[0]};
         `}
       >
-        Preferences
+        Workspace Preferences
       </h2>
       <div
         className={css`

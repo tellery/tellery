@@ -22,6 +22,7 @@ export default forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement
             box-sizing: border-box;
             width: 100%;
             background-color: ${ThemingVariables.colors.gray[5]};
+            color: ${ThemingVariables.colors.text[0]};
             &::placeholder {
               color: ${ThemingVariables.colors.text[2]};
             }

@@ -166,7 +166,7 @@ function Config(props: {
         className={css`
           font-size: 12px;
           line-height: 14px;
-          color: ${ThemingVariables.colors.text[1]};
+          color: ${ThemingVariables.colors.text[2]};
           margin-top: 5px;
           display: block;
         `}
