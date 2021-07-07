@@ -77,7 +77,6 @@ export class ConnectorManager implements IConnectorManager {
     return configs.getAvailableconfigsList().map((cfg) => ({
       type: cfg.getType(),
       configs: cfg.getConfigsList().map((i) => i.toObject()),
-      optionals: cfg.getOptionalsList().map((i) => i.toObject()),
     }))
   }
 
@@ -95,10 +94,6 @@ export class ConnectorManager implements IConnectorManager {
       name: item.getName(),
       auth,
       configs: Object.fromEntries(item.getConfigsMap().toArray()),
-      optionals:
-        item.getOptionalsMap().getLength() > 0
-          ? Object.fromEntries(item.getOptionalsMap().toArray())
-          : undefined,
     }
   }
 
@@ -108,7 +103,7 @@ export class ConnectorManager implements IConnectorManager {
   }
 
   async upsertProfile(profileBody: Profile): Promise<Profile[]> {
-    const { name, type, auth, configs, optionals } = profileBody
+    const { name, type, auth, configs } = profileBody
 
     let request = new UpsertProfileRequest()
       .setName(name)
@@ -121,12 +116,6 @@ export class ConnectorManager implements IConnectorManager {
         protoAuth = protoAuth.setPassword(auth.password)
       }
       request.setAuth(protoAuth)
-    }
-
-    if (optionals) {
-      request = request.setOptionalsList(
-        Object.entries(optionals).map(([k, v]) => new KVEntry().setKey(k).setValue(v)),
-      )
     }
 
     const newProfiles = await beautyCall(this.client.upsertProfile, this.client, request)
