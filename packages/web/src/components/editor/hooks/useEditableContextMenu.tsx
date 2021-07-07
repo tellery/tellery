@@ -43,5 +43,5 @@ export const useEditableContextMenu = (
     }
   }, [setIndex, open, actions?.length, index, element, actions])
 
-  return [index]
+  return [index, setIndex]
 }
