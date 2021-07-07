@@ -87,15 +87,23 @@ const StoryContent: React.FC<{ storyId: string; blockId?: string }> = ({ storyId
       >
         {story ? <BlockTitle block={story} /> : ''}
       </div>
-      {story?.children && (
-        <ContentBlocks
-          blockIds={story?.children}
-          readonly
-          parentType={Editor.BlockType.Story}
-          small
-          highlightedBlock={blockId}
-        />
-      )}
+      <div
+        className={css`
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        `}
+      >
+        {story?.children && (
+          <ContentBlocks
+            blockIds={story?.children}
+            readonly
+            parentType={Editor.BlockType.Story}
+            small
+            highlightedBlock={blockId}
+          />
+        )}
+      </div>
     </>
   )
 }
