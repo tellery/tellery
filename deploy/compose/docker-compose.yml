@@ -83,7 +83,7 @@ services:
   tellery-init:
     <<: *tellery_defaults
     command:
-      - sleep 10 && npm run typeorm schema:sync && npm run typeorm migration:run && npm run create:user
+      - sleep 10 && npm run typeorm schema:sync && npm run typeorm migration:run && npm run create:user && npm run create:workspace
   tellery-server:
     <<: *tellery_defaults
     ports:

@@ -18,7 +18,8 @@
     "test": "NODE_ENV=test ava",
     "test:init": "./hack/init_test.sh",
     "coverage": "nyc ava",
-    "create:user": "node dist/src/scripts/createUser.js"
+    "create:user": "node dist/src/scripts/createUser.js",
+    "create:workspace": "node dist/src/scripts/createWorkspace.js"
   },
   "author": "iftech",
   "license": "ISC",
