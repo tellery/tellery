@@ -17,7 +17,7 @@ x-tellery-defaults: &tellery_defaults
     - -c
   command:
     - ./wait-for-it.sh postgresql:5432 -- npm start
-  environment:
+  environment: &tellery_default_env
     NODE_ENV: production
     PG_USERNAME: ${POSTGRES_USERNAME}
     PG_HOST: postgresql
@@ -77,16 +77,17 @@ services:
       timeout: 3s
       retries: 30
       start_period: 3s
-  migration:
+  tellery-init:
     <<: *tellery_defaults
+    environment: *tellery_default_env
     command:
-      - ./wait-for-it.sh postgresql:5432 -- npm run typeorm schema:sync && npm run typeorm migration:run
+      - ./wait-for-it.sh postgresql:5432 -- npm run typeorm schema:sync && npm run typeorm migration:run && npm run create:user
   tellery-server:
     depends_on:
-      - migration
+      - tellery-init
     <<: *tellery_defaults
     ports:
-      - 80:80
+      - 8000:8000
   tellery-connector:
     <<: *restart_policy
     image: ${TELLERY_CONNECTOR_IMAGE}

@@ -18,6 +18,8 @@ cd tellery/hack/compose
 docker-compose up
 ```
 
+Now you can access Tellery by visiting `http://localhost:8000`
+
 ## Environments
 
 | Parameter                    | Description                                                | Default                  |
@@ -39,6 +41,9 @@ docker-compose up
 | OBJECT_STORAGE_BUCKET        | Object storage bucket                                      | tellery-uploads          |
 | OBJECT_STORAGE_ACCESS_KEY_ID | Object storage access key                                  | minio_local              |
 | OBJECT_STORAGE_ACCESS_SECRET | Object storage secret key                                  | Z9nYZsZpO5d7PZ1k0223aA   |
+| CREATE_USER_EMAIL            | Email of default user                                      | admin@tellery.local      |
+| CREATE_USER_NAME             | Name of default user                                       | admin                    |
+| CREATE_USER_PASSWORD         | Password of default user                                   | ognThIrfzRDhSQcg8lQrdg   |
 
 Then you can modify the configuration by modifying the variables in the [.env](https://github.com/tellery/tellery/blob/master/hack/compose/.env) or specifying the environment variable at startup.
 
