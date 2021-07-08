@@ -6,7 +6,7 @@ Expand the name of the chart.
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-{{- define "server.port" -}}80{{- end -}}
+{{- define "server.port" -}}8000{{- end -}}
 {{- define "connector.port" -}}50051{{- end -}}
 
 {{/*
