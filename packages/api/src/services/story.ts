@@ -19,6 +19,7 @@ import { md5 } from '../utils/helper'
 import { loadMore } from '../utils/loadMore'
 import { canGetBlockData, canGetWorkspaceData } from '../utils/permission'
 import * as userService from './user'
+import { LinkType } from '../types/link'
 
 export class StoryService {
   private permission: IPermission
@@ -209,7 +210,11 @@ export class StoryService {
       .map((id) => ({
         id,
         val: _(linkModels)
-          .filter((m) => m.sourceBlock.storyId === id || m.targetBlock.storyId === id)
+          .filter(
+            (m) =>
+              (m.sourceBlock.storyId === id || m.targetBlock.storyId === id) &&
+              m.type === LinkType.BLOCK,
+          )
           .map((m) =>
             m.sourceBlock.storyId === id ? m.targetBlock.storyId : m.sourceBlock.storyId,
           )
