@@ -16,7 +16,15 @@ Tellery brings all of your words and data into one flexible surface:
 - [x] 📊 Campaign-oriented dashboard
 - [x] 🙌 Or customize your deliverable for your own needs
 
-Tellery allows you to abstract essential business logic, and reuse it in future contexts. You can define a model grasping the nuances of datasets to make exploratory analysis organizable. Tellery uses SQL to model data, so you can easily consolidate it in dbt.
+
+## Features
+
+- Create visualizations, [drag-and-drop](https://tellery.io/docs/how-to-use/create-story#drag-and-drop) them into a single dashboard
+- [Create a metric](https://tellery.io/docs/how-to-use/question-referencing) and reuse it in the future analyses
+- Write a story without closing the question editor
+- Thoughts: a workflow for daily analysis
+- Collaborative by nature
+
 
 ## Getting started
 
