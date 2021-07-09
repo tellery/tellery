@@ -74,7 +74,13 @@ export const SlashCommandDropdown: React.FC<SlachCommandDropDown> = (props) => {
   }, [open, selection, setOpen])
 
   return (
-    <EditorPopover open={open} setOpen={setOpen} referenceElement={referenceRange ?? null} placement="bottom-start">
+    <EditorPopover
+      open={open}
+      setOpen={setOpen}
+      referenceElement={referenceRange ?? null}
+      placement="bottom-start"
+      lockBodyScroll
+    >
       {referenceRange && open && (
         <SlashCommandDropDownInner {...props} open={!!(referenceRange && open)} referenceRange={referenceRange} />
       )}

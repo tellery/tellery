@@ -15,6 +15,7 @@ interface PopoverProps {
   modifiers?: Partial<Modifier<'offset' | 'flip', Options>>[] | undefined
   placement?: Placement
   disableClickThrough?: boolean
+  lockBodyScroll?: boolean
 }
 
 export const EditorPopover = (props: PopoverProps) => {
@@ -27,11 +28,13 @@ export const _EditorPopoverContent = (props: PopoverProps) => {
   const editor = useEditor()
 
   useEffect(() => {
-    editor?.lockOrUnlockScroll(true)
-    return () => {
-      editor?.lockOrUnlockScroll(false)
+    if (props.lockBodyScroll) {
+      editor?.lockOrUnlockScroll(true)
+      return () => {
+        editor?.lockOrUnlockScroll(false)
+      }
     }
-  }, [editor])
+  }, [editor, props.lockBodyScroll])
 
   useEffect(() => {
     ref.current = modalRef

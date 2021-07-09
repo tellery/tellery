@@ -66,7 +66,13 @@ export const _BlockReferenceDropdown: React.FC<BlockReferenceDropDownInterface> 
   }, [open, selection, setOpen])
 
   return (
-    <EditorPopover open={open} setOpen={setOpen} referenceElement={referenceRange ?? null} placement="bottom-start">
+    <EditorPopover
+      open={open}
+      setOpen={setOpen}
+      referenceElement={referenceRange ?? null}
+      placement="bottom-start"
+      lockBodyScroll
+    >
       {referenceRange && open && (
         <_BlockReferenceDropdownInner {...props} open={!!(referenceRange && open)} referenceRange={referenceRange} />
       )}

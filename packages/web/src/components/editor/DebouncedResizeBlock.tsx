@@ -1,7 +1,6 @@
 import { css, cx } from '@emotion/css'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { useDebounce } from 'hooks'
-import { dequal } from 'dequal'
+import React, { useEffect, useRef } from 'react'
+import { useDebouncedDimension } from './hooks/useDebouncedDimensions'
 
 export const DebouncedResizeBlock: React.FC<{
   className?: string
@@ -21,45 +20,11 @@ export const DebouncedResizeBlock: React.FC<{
   leading = false
 }) => {
   const ref = useRef<HTMLDivElement>(null)
-  const lastEntries = useRef<DOMRectReadOnly>()
-  const [resizing, setResizing] = useState(false)
-
-  const debouncedCalculate = useDebounce(
-    (domRect: DOMRectReadOnly) => {
-      onDimensionsUpdate(domRect)
-      setResizing(false)
-    },
-    debounceDelay,
-    leading
-  )
-
-  const observerCallback = useCallback(
-    (entries: ResizeObserverEntry[]) => {
-      const contentRect = entries[0].contentRect
-      if (lastEntries.current !== contentRect) {
-        debouncedCalculate(contentRect)
-      }
-
-      if (lastEntries.current === undefined || dequal(lastEntries.current, contentRect)) {
-        lastEntries.current = contentRect
-      } else {
-        setResizing(true)
-      }
-    },
-    [debouncedCalculate]
-  )
+  const [dimensions, resizing] = useDebouncedDimension(ref, debounceDelay, leading)
 
   useEffect(() => {
-    if (!ref.current) {
-      return
-    }
-    const { current } = ref
-    const observer = new ResizeObserver(observerCallback)
-    observer.observe(current, { box: 'border-box' })
-    return () => {
-      observer.unobserve(current)
-    }
-  }, [ref, observerCallback])
+    dimensions && onDimensionsUpdate(dimensions)
+  }, [dimensions, onDimensionsUpdate])
 
   return (
     <div

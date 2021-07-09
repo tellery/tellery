@@ -64,6 +64,7 @@ import {
   setCaretToStart
 } from './helpers'
 import { EditorContext, EditorContextInterface, useMouseMoveInEmitter } from './hooks'
+import { useDebouncedDimension } from './hooks/useDebouncedDimensions'
 import { useSetUploadResource } from './hooks/useUploadResource'
 import { BlockTextOperationMenu } from './Popovers/BlockTextOperationMenu'
 import { HovreringBlockId } from './store'
@@ -1234,11 +1235,7 @@ const _StoryEditor: React.FC<{
     [selectionState]
   )
 
-  const [dimensionsWidth, setDimensionsWidth] = useState<number>()
-
-  const onDimensionsUpdate = useCallback((dimensions?: DOMRect) => {
-    setDimensionsWidth(dimensions?.width)
-  }, [])
+  const [dimensions, resizing] = useDebouncedDimension(editorRef, 100, true)
 
   return (
     <>
@@ -1263,16 +1260,6 @@ const _StoryEditor: React.FC<{
                 width: 100%;
                 flex: 1;
                 user-select: none;
-                &::-webkit-scrollbar {
-                  /* display: none; */
-                }
-                &::-webkit-scrollbar-track {
-                  /* box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3); */
-                }
-                &::-webkit-scrollbar-thumb {
-                  /* background-color: ${ThemingVariables.colors.gray[1]}; */
-                  display: none;
-                }
               `,
               'editor',
               locked && 'no-select'
@@ -1289,86 +1276,84 @@ const _StoryEditor: React.FC<{
             onCut={cutHandler}
             onCopy={copyHandler}
           >
-            <DebouncedResizeBlock onDimensionsUpdate={onDimensionsUpdate} disableY debounceDelay={100} leading>
-              {rootBlock && (
-                <motion.div
-                  // layout
-                  data-block-id={rootBlock.id}
-                  style={
-                    {
-                      '--max-width': `${dimensionsWidth}px` ?? '100%'
-                      // paddingLeft: paddingHorizon,
-                      // padddingRight: paddingHorizon,
-                      // paddingTop: paddingTop
-                    } as CSSProperties
-                  }
-                  className={cx(
-                    props.className,
+            {rootBlock && dimensions && (
+              <motion.div
+                // layout
+                data-block-id={rootBlock.id}
+                style={
+                  {
+                    '--max-width': `${dimensions.width}px` ?? '100%'
+                    // paddingLeft: paddingHorizon,
+                    // padddingRight: paddingHorizon,
+                    // paddingTop: paddingTop
+                  } as CSSProperties
+                }
+                className={cx(
+                  props.className,
+                  css`
+                    max-width: 100%;
+                    width: 900px;
+                    margin: 0 auto;
+                    display: flex;
+                    outline: none;
+                    flex-direction: column;
+                    align-items: center;
+                    font-size: 16px;
+                    min-height: 100%;
+                    transition: width 250ms ease;
+                  `,
+                  ((rootBlock as Story).format?.fullWidth || props.fullWidth) &&
                     css`
-                      max-width: 100%;
-                      width: 900px;
-                      margin: 0 auto;
-                      display: flex;
-                      outline: none;
-                      flex-direction: column;
-                      align-items: center;
-                      font-size: 16px;
-                      min-height: 100%;
-                      transition: width 250ms ease;
+                      width: 100%;
                     `,
-                    ((rootBlock as Story).format?.fullWidth || props.fullWidth) &&
-                      css`
-                        width: 100%;
-                      `,
-                    (rootBlock as Story)?.format?.showBorder &&
-                      css`
-                        --border: dashed 1px ${ThemingVariables.colors.text[2]};
-                      `,
-                    'editor-content',
-                    'tellery-block'
-                  )}
-                  ref={editorBlocksRef}
-                >
-                  {dimensionsWidth && (
-                    <>
-                      <React.Suspense fallback={<div>Loading...</div>}>
-                        {props.showTitle !== false && (rootBlock as Editor.Block).type !== Editor.BlockType.Thought && (
-                          <ContentBlocks
-                            blockIds={[storyId]}
-                            parentType={rootBlock.type}
-                            readonly={locked}
-                          ></ContentBlocks>
-                        )}
-                        {props.showTitle !== false && (rootBlock as Editor.Block).type === Editor.BlockType.Thought && (
-                          <ThoughtTitleBlock block={rootBlock as unknown as Thought} />
-                        )}
-
-                        {rootBlock.children?.length === 0 && (
-                          <EditorEmptyStatePlaceHolder onClick={createFirstOrLastBlockHandler} />
-                        )}
-                        {rootBlock.children && (
-                          <ContentBlocks blockIds={rootBlock.children} parentType={rootBlock.type} readonly={locked} />
-                        )}
-                      </React.Suspense>
-                      <EditorEmptyStateEndPlaceHolder
-                        onClick={createFirstOrLastBlockHandler}
-                        height={rootBlock.type === Editor.BlockType.Story ? 272 : 72}
-                      />
-                      {!locked && <BlockTextOperationMenu currentBlockId={focusingBlockId} />}
-                      {props.bottom && (
-                        <div
-                          className={css`
-                            width: 100%;
-                          `}
-                        >
-                          {props.bottom}
-                        </div>
+                  (rootBlock as Story)?.format?.showBorder &&
+                    css`
+                      --border: dashed 1px ${ThemingVariables.colors.text[2]};
+                    `,
+                  'editor-content',
+                  'tellery-block'
+                )}
+                ref={editorBlocksRef}
+              >
+                {dimensions?.width && (
+                  <>
+                    <React.Suspense fallback={<div>Loading...</div>}>
+                      {props.showTitle !== false && (rootBlock as Editor.Block).type !== Editor.BlockType.Thought && (
+                        <ContentBlocks
+                          blockIds={[storyId]}
+                          parentType={rootBlock.type}
+                          readonly={locked}
+                        ></ContentBlocks>
                       )}
-                    </>
-                  )}
-                </motion.div>
-              )}
-            </DebouncedResizeBlock>
+                      {props.showTitle !== false && (rootBlock as Editor.Block).type === Editor.BlockType.Thought && (
+                        <ThoughtTitleBlock block={rootBlock as unknown as Thought} />
+                      )}
+
+                      {rootBlock.children?.length === 0 && (
+                        <EditorEmptyStatePlaceHolder onClick={createFirstOrLastBlockHandler} />
+                      )}
+                      {rootBlock.children && (
+                        <ContentBlocks blockIds={rootBlock.children} parentType={rootBlock.type} readonly={locked} />
+                      )}
+                    </React.Suspense>
+                    <EditorEmptyStateEndPlaceHolder
+                      onClick={createFirstOrLastBlockHandler}
+                      height={rootBlock.type === Editor.BlockType.Story ? 272 : 72}
+                    />
+                    {!locked && <BlockTextOperationMenu currentBlockId={focusingBlockId} />}
+                    {props.bottom && (
+                      <div
+                        className={css`
+                          width: 100%;
+                        `}
+                      >
+                        {props.bottom}
+                      </div>
+                    )}
+                  </>
+                )}
+              </motion.div>
+            )}
           </div>
         </EditorContext.Provider>
       </OperatorsContext.Provider>
