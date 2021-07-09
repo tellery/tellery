@@ -75,12 +75,13 @@ const logger = debug('tellery:editor')
 const _StoryEditor: React.FC<{
   storyId: string
   bottom?: ReactNode
-  slim?: boolean
   fullWidth?: boolean
   showTitle?: boolean
+  className?: string
+  paddingHorizon?: number
   scrollToBlockId?: string | null
 }> = (props) => {
-  const { storyId, slim = false } = props
+  const { storyId } = props
   const editorRef = useRef<HTMLDivElement | null>(null)
   const editorBlocksRef = useRef<HTMLDivElement | null>(null)
   const [hoverBlockId, setHoverBlockId] = useRecoilState(HovreringBlockId)
@@ -1293,8 +1294,16 @@ const _StoryEditor: React.FC<{
                 <motion.div
                   // layout
                   data-block-id={rootBlock.id}
-                  style={{ '--max-width': `${dimensionsWidth}px` ?? '100%' } as CSSProperties}
+                  style={
+                    {
+                      '--max-width': `${dimensionsWidth}px` ?? '100%'
+                      // paddingLeft: paddingHorizon,
+                      // padddingRight: paddingHorizon,
+                      // paddingTop: paddingTop
+                    } as CSSProperties
+                  }
                   className={cx(
+                    props.className,
                     css`
                       max-width: 100%;
                       width: 900px;
@@ -1306,18 +1315,10 @@ const _StoryEditor: React.FC<{
                       font-size: 16px;
                       min-height: 100%;
                       transition: width 250ms ease;
-                      padding: 100px 100px 0 100px;
-                      @media (max-width: 700px) {
-                        padding: 20px 20px 0 20px;
-                      }
                     `,
                     ((rootBlock as Story).format?.fullWidth || props.fullWidth) &&
                       css`
                         width: 100%;
-                      `,
-                    slim &&
-                      css`
-                        padding: 0 50px;
                       `,
                     (rootBlock as Story)?.format?.showBorder &&
                       css`
@@ -1339,7 +1340,7 @@ const _StoryEditor: React.FC<{
                           ></ContentBlocks>
                         )}
                         {props.showTitle !== false && (rootBlock as Editor.Block).type === Editor.BlockType.Thought && (
-                          <ThoughtTitleBlock block={rootBlock as unknown as Thought} slim={slim} />
+                          <ThoughtTitleBlock block={rootBlock as unknown as Thought} />
                         )}
 
                         {rootBlock.children?.length === 0 && (

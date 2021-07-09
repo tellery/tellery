@@ -4,8 +4,8 @@ import React, { useMemo } from 'react'
 import type { Editor, Thought } from 'types'
 import { ContentEditable } from '../BlockBase/ContentEditable'
 
-export const ThoughtTitleBlock = (props: { block: Thought; slim: boolean }) => {
-  const { block, slim } = props
+export const ThoughtTitleBlock = (props: { block: Thought }) => {
+  const { block } = props
 
   const fakeBlock = useMemo(() => {
     return {
