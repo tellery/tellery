@@ -1,4 +1,3 @@
-import { useIsomorphicLayoutEffect } from '@app/hooks/useIsomorphicLayoutEffect'
 import { css, cx } from '@emotion/css'
 import { deserialize, restoreRange, saveSelection } from 'components/editor/helpers/contentEditable'
 import { nativeSelection2Tellery, tellerySelection2Native } from 'components/editor/helpers/tellerySelection'
@@ -86,10 +85,16 @@ const _ContentEditable: React.ForwardRefRenderFunction<
   }, [titleTokens])
 
   const { data: dependsAssetsResult } = useMgetBlocks(dependsAssetsKeys)
+  // const dependsAssetsResult = useMgetBlocksSuspense(dependsAssetsKeys)
 
   useEffect(() => {
     if (!isComposing.current && titleTokens) {
+      // const result = dependsAssetsResult.reduce((a, c) => {
+      //   a[c.id] = c
+      //   return a
+      // }, {})
       const targetHtml = BlockRenderer(titleTokens, dependsAssetsResult ?? {})
+      logger('setLeavesHtml', titleTokens, dependsAssetsResult)
       setLeavesHtml(targetHtml)
     }
   }, [titleTokens, dependsAssetsResult])
@@ -155,7 +160,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
     }
   }, [isFocusing, leavesHtml])
 
-  useIsomorphicLayoutEffect(() => {
+  useEffect(() => {
     if (readonly) return
     if (isFocusing === false) {
       setWillFlush(false)
@@ -176,7 +181,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
       setWillFlush(false)
       setContentWillChange(false)
     }
-  }, [isFocusing, willFlush, contentWillChange, localSelection, block.id])
+  }, [isFocusing, willFlush, contentWillChange, localSelection, block.id, readonly])
 
   const onMutation = useCallback(() => {
     invariant(editor, 'editor context is null,')

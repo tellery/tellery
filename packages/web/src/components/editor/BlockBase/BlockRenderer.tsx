@@ -136,6 +136,8 @@ export const Token = ({
       const targetAsset = assetsMap[id] as Story
       if (targetAsset) {
         title = blockTitleToText(targetAsset, snapshot)
+      } else {
+        title = 'loading...'
       }
       href = `/story/${id}`
     }

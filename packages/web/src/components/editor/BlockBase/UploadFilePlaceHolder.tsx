@@ -31,7 +31,6 @@ export const UploadFilePlaceHolder: React.FC<{ blockId: string; text: string; ac
         text={text}
         loading={uploading}
         onClick={() => {
-          console.log(fileInputRef.current)
           fileInputRef.current?.click()
         }}
       />
