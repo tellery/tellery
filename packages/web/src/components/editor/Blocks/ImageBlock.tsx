@@ -67,7 +67,7 @@ export const ImageBlock: React.FC<{
             position: relative;
             display: inline-block;
             width: 100%;
-            min-height: 100px;
+            min-width: 100px;
           `}
           ref={contentRef}
         >

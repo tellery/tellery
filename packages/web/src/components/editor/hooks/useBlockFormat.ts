@@ -48,13 +48,13 @@ export const useBlockFormat = (block: Editor.Block) => {
     const initWidth = startDimensionRef.current?.width ?? 0
     const newWidth = latestX * 2 + initWidth
     if (isDragging === false) return `${100 * (block.format?.width ?? 1)}%`
-    return newWidth
+    return Math.max(200, newWidth)
   })
 
   const height = useTransform(y, (latestY) => {
     const initHeight = startDimensionRef.current?.height ?? 0
     const newHeight = latestY + initHeight
-    return newHeight
+    return Math.max(100, newHeight)
   })
 
   const paddingTop = useTransform([width, height], ([latestWidth, latestHeight]) => {
@@ -103,7 +103,8 @@ export const useBlockFormat = (block: Editor.Block) => {
         // const heightValue = height.get()
         // invariant(typeof heightValue === 'number' && typeof widthValue === 'number', 'height or width invalid')
         logger('resize end', 'width', rect.width, 'parentWidth', parentWidth, 'height', rect.height)
-        draftBlock.format.width = Math.max(rect.width / parentWidth, 1 / 6)
+        const newWidth = Math.max(rect.width / parentWidth, 1 / 6)
+        draftBlock.format.width = newWidth
         if (keepAspectRatio === false) {
           draftBlock.format.aspectRatio = Math.max(rect.width / rect.height, 0.5)
         }
