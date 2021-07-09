@@ -36,7 +36,7 @@ jobs:
         run: echo "GITHUB_USERNAME=${{ github.repository_owner }}\nGITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
 
       - name: Build and Publish with Gradle
-        run:  ./gradlew :interface:build :interface:publishMavenPublicationToGithubPackagesRepository
+        run:  ./gradlew :interface:publishMavenPublicationToGithubPackagesRepository
 
   build-and-publish-service:
     runs-on: ubuntu-latest
@@ -89,7 +89,7 @@ jobs:
             org.opencontainers.image.created=${{ steps.prep.outputs.created }}
             org.opencontainers.image.revision=${{ github.sha }}
 
-  build-and-publish:
+  build-and-publish-connector:
     defaults:
       run:
         working-directory: packages/connector

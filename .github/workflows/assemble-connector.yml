@@ -35,4 +35,4 @@ jobs:
         run: echo "GITHUB_USERNAME=${{ github.repository_owner }}\nGITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
 
       - name: Build and Publish with Gradle
-        run: ./gradlew :build :interface:publishMavenPublicationToGithubPackagesRepository
+        run: ./gradlew :interface:publishMavenPublicationToGithubPackagesRepository
