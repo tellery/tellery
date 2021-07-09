@@ -279,7 +279,6 @@ const getBlockClassNames = (blockType: Editor.BlockType, isSelecteable: boolean)
       word-break: break-word;
       caret-color: ${ThemingVariables.colors.text[0]};
       text-align: left;
-      align-self: center;
       color: ${ThemingVariables.colors.text[0]};
       --line-height: 1.5;
       --line-height-em: 1.5em;
@@ -327,6 +326,7 @@ export const BlockChildren: React.FC<{
         css`
           display: flex;
           flex-direction: column;
+          align-items: flex-start;
         `
       )}
       ref={ref}
