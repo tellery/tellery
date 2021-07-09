@@ -137,7 +137,6 @@ export const QuestionBlock: React.FC<{
                 display: inline-block;
                 width: 100%;
                 min-height: 100px;
-                min-width: 100px;
               `}
               onClick={() => {
                 setTitleEditing(false)

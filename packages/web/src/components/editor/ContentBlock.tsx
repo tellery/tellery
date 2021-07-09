@@ -201,6 +201,7 @@ export const ContentBlockInner: React.FC<{
           ),
           css`
             border: var(--border, solid 1px transparent);
+            min-width: 200px;
           `,
           small
             ? css`
