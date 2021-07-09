@@ -37,6 +37,22 @@ export interface OperationInterface {
   side?: ReactNode
 }
 
+const PopperModifiers = [
+  {
+    name: 'offset',
+    enabled: true,
+    options: {
+      offset: [0, 10]
+    }
+  },
+  {
+    name: 'flip',
+    options: {
+      fallbackPlacements: ['bottom-start', 'top-start']
+    }
+  }
+]
+
 export const BlockOperationPopover = (props: { id: string; children?: ReactNode }) => {
   const { id } = props
 
@@ -65,6 +81,7 @@ export const BlockOperationPopover = (props: { id: string; children?: ReactNode 
       disableClickThrough
       referenceElement={referenceElement}
       placement="left-start"
+      modifiers={PopperModifiers}
     >
       <div
         className={cx(
