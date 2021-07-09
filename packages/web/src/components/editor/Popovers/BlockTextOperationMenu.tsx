@@ -474,7 +474,7 @@ export const BlockTextOperationMenuInner = ({
           currentType={currentBlock?.type}
         />
         <VerticalDivider />
-        <AddLinkOperation setInlineEditing={setInlineEditing} markHandler={markHandler} />
+        <AddLinkOperation setInlineEditing={setInlineEditing} markHandler={markHandler} referenceRange={range} />
 
         <VerticalDivider />
         {markButtons}
@@ -629,8 +629,8 @@ const ToggleTypeOperation = (props: {
 const AddLinkOperation = (props: {
   markHandler: (type: Editor.InlineType, links: string[], isFirstLink: boolean) => void
   setInlineEditing: (editing: boolean) => void
+  referenceRange: Range | null
 }) => {
-  const [referenceElement, setReferenceElement] = useState<HTMLElement | null>(null)
   const [open, setOpen] = useState(false)
   const [link, setLink] = useState('')
   const inputRef = useRef<HTMLInputElement | null>(null)
@@ -646,7 +646,6 @@ const AddLinkOperation = (props: {
   return (
     <>
       <div
-        ref={setReferenceElement}
         className={css`
           cursor: pointer;
           user-select: none;
@@ -688,7 +687,7 @@ const AddLinkOperation = (props: {
         Link
         <Icon icon={IconCommonArrowDropDown} color={ThemingVariables.colors.gray[0]} />
       </div>
-      <EditorPopover referenceElement={referenceElement} open={open} setOpen={setOpen} disableClickThrough>
+      <EditorPopover referenceElement={props.referenceRange} open={open} setOpen={setOpen} disableClickThrough>
         <div
           className={css`
             background: ${ThemingVariables.colors.gray[5]};

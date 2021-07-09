@@ -169,7 +169,15 @@ const _SecondaryEditor = () => {
                       overflow: hidden;
                     `}
                   >
-                    {storyId && <StoryEditor storyId={storyId} key={storyId} slim />}
+                    {storyId && (
+                      <StoryEditor
+                        storyId={storyId}
+                        key={storyId}
+                        className={css`
+                          padding: 0 50px;
+                        `}
+                      />
+                    )}
                   </div>
                 </div>
               )}

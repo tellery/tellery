@@ -1,6 +1,7 @@
 import { useWorkspace } from '@app/context/workspace'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { DEFAULT_TITLE } from '@app/utils'
+import { css } from '@emotion/css'
 import styled from '@emotion/styled'
 import { SecondaryEditor, StoryEditor, useGetBlockTitleTextSnapshot } from 'components/editor'
 import { NavigationHeader } from 'components/NavigationHeader'
@@ -51,7 +52,12 @@ const _Page: React.FC = () => {
             <StoryEditor
               key={id}
               storyId={id}
-              slim={false}
+              className={css`
+                @media (max-width: 700px) {
+                  padding: 20px 20px 0 20px;
+                }
+                padding: 100px 100px 0 100px;
+              `}
               scrollToBlockId={scrollToBlockId}
               bottom={storyBottom}
             ></StoryEditor>

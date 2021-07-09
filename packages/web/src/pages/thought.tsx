@@ -1,6 +1,7 @@
 import { createTranscation } from '@app/context/editorTranscations'
 import { useWorkspace } from '@app/context/workspace'
 import { useCommit } from '@app/hooks/useCommit'
+import { useDimensions } from '@app/hooks/useDimensions'
 import { css } from '@emotion/css'
 import styled from '@emotion/styled'
 import { IconCommonAdd, IconCommonCalendar } from 'assets/icons'
@@ -11,7 +12,7 @@ import Icon from 'components/kit/Icon'
 import { SmallStory } from 'components/SmallStory'
 import { StoryQuestionsEditor } from 'components/StoryQuestionsEditor'
 import dayjs from 'dayjs'
-import { useSearchParams } from 'hooks'
+import { useOnScreen, useSearchParams } from 'hooks'
 import { useAllThoughts } from 'hooks/api'
 import { nanoid } from 'nanoid'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -272,9 +273,16 @@ function Thoughts() {
 
 export const Thought: React.FC<{ id: string; date: string }> = ({ id, date }) => {
   const ref = useRef<HTMLDivElement | null>(null)
-  // const isOnScreen = useOnScreen(ref)
+  const isOnScreen = useOnScreen(ref)
+
   return (
-    <ThoughtContainer ref={ref}>
+    <ThoughtContainer
+      ref={ref}
+      style={{
+        // height: isOnScreen === false && dimension.height ? `${dimension.height}px` : 'auto',
+        minHeight: 300
+      }}
+    >
       <ThoughtHeader>
         <Icon
           icon={IconCommonCalendar}
@@ -290,7 +298,17 @@ export const Thought: React.FC<{ id: string; date: string }> = ({ id, date }) =>
           {dayjs(date).format('MMM DD, YYYY')}
         </ThoughtTitle>
       </ThoughtHeader>
-      <StoryEditor storyId={id} key={id} slim showTitle={false} fullWidth />
+      {isOnScreen && (
+        <StoryEditor
+          storyId={id}
+          key={id}
+          showTitle={false}
+          fullWidth
+          className={css`
+            padding: 0 80px;
+          `}
+        />
+      )}
     </ThoughtContainer>
   )
 }
@@ -307,10 +325,11 @@ export const ThoughtHeader = styled.div`
   display: flex;
   align-items: center;
   margin-bottom: 10px;
+  padding: 0 80px;
 `
 
 export const ThoughtContainer = styled.div`
-  padding: 0 80px;
+  padding: 0;
   margin-bottom: 40px;
 `
 
