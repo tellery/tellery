@@ -81,7 +81,7 @@ publishing {
         create<MavenPublication>("maven"){
             groupId = project.group.toString()
             artifactId = "connector-interface"
-            version = project.version.toString() + "-SNAPSHOT"
+            version = System.getenv("RELEASE_VERSION") ?: project.version.toString() + "-SNAPSHOT"
             from(components["java"])
         }
     }
