@@ -169,7 +169,8 @@ const _StoryQuestionsEditor = () => {
       unsubscribe()
     }
   }, [setResizeConfig, y])
-  useSqlEditor('hive') // TODO: use var
+  const workspace = useWorkspace()
+  useSqlEditor(workspace.preferences.profile)
 
   return (
     <>
@@ -927,7 +928,7 @@ export const StoryQuestionEditor: React.FC<{
               `}
               value={sql}
               padding={{ top: 20, bottom: 0 }}
-              languageId="hive" // TODO: use var
+              languageId={workspace.preferences.profile}
               onChange={(e) => {
                 setSql(e)
               }}
