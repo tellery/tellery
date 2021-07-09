@@ -31,8 +31,5 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
 
-      - name: Setup Github Package Repository
-        run: echo "GITHUB_USERNAME=${{ github.repository_owner }}\nGITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
-
       - name: Build and Publish with Gradle
-        run: ./gradlew :interface:publishMavenPublicationToGithubPackagesRepository
+        run: GITHUB_USERNAME=${{ github.repository_owner }} GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} ./gradlew :interface:publishMavenPublicationToGithubPackagesRepository

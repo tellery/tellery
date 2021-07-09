@@ -32,11 +32,8 @@ jobs:
       - name: Set release
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
-      - name: Setup Github Package Repository
-        run: echo "GITHUB_USERNAME=${{ github.repository_owner }}\nGITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
-
       - name: Build and Publish with Gradle
-        run:  ./gradlew :interface:publishMavenPublicationToGithubPackagesRepository
+        run: RELEASE_VERSION=${{ env.RELEASE_VERSION }} GITHUB_USERNAME=${{ github.repository_owner }} GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} ./gradlew :interface:publishMavenPublicationToGithubPackagesRepository
 
   build-and-publish-service:
     runs-on: ubuntu-latest
