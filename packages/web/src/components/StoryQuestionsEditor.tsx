@@ -17,7 +17,13 @@ import { Configuration } from 'components/v11n'
 import { dequal } from 'dequal'
 import { motion, useMotionValue, useTransform } from 'framer-motion'
 import { useHover, useOpenStory, usePrevious } from 'hooks'
-import { useBlockSuspense, useExecuteSQL, useQuestionDownstreams, useSnapshot } from 'hooks/api'
+import {
+  useBlockSuspense,
+  useConnectorsListProfiles,
+  useExecuteSQL,
+  useQuestionDownstreams,
+  useSnapshot
+} from 'hooks/api'
 import { useLocalStorage } from 'hooks/useLocalStorage'
 import { useSqlEditor } from 'hooks/useSqlEditor'
 import { produce } from 'immer'
@@ -170,7 +176,12 @@ const _StoryQuestionsEditor = () => {
     }
   }, [setResizeConfig, y])
   const workspace = useWorkspace()
-  useSqlEditor(workspace.preferences.profile)
+  const { data: profiles } = useConnectorsListProfiles(workspace.preferences.connectorId)
+  const profileType = useMemo(
+    () => profiles?.find((profile) => profile.name === workspace.preferences.profile)?.type,
+    [profiles, workspace.preferences.profile]
+  )
+  useSqlEditor(profileType)
 
   return (
     <>
@@ -601,6 +612,11 @@ export const StoryQuestionEditor: React.FC<{
 
   // const mutateBlock = useMutateBlock<Editor.QuestionBlock>()
   const workspace = useWorkspace()
+  const { data: profiles } = useConnectorsListProfiles(workspace.preferences.connectorId)
+  const profileType = useMemo(
+    () => profiles?.find((profile) => profile.name === workspace.preferences.profile)?.type,
+    [profiles, workspace.preferences.profile]
+  )
   const run = useCallback(async () => {
     if (!block) return
     if (!sql) return
@@ -928,7 +944,7 @@ export const StoryQuestionEditor: React.FC<{
               `}
               value={sql}
               padding={{ top: 20, bottom: 0 }}
-              languageId={workspace.preferences.profile}
+              languageId={profileType}
               onChange={(e) => {
                 setSql(e)
               }}
