@@ -76,6 +76,7 @@ services:
       start_period: 3s
   # tellery-init:
   #   <<: *tellery_defaults
+  #   restart_policy: none
   #   command:
   #     - sleep 10 && npm run typeorm schema:sync && npm run typeorm migration:run && npm run create:user && npm run create:workspace
   tellery-server:

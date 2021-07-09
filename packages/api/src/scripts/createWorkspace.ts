@@ -68,5 +68,5 @@ main()
   .catch((err) => {
     console.log('create workspace failed', err)
     // not throw error
-    process.exit(0)
+    process.exit(1)
   })

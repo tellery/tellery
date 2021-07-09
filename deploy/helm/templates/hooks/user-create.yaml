@@ -52,7 +52,7 @@ spec:
         command:
         - /bin/sh
         - -c
-        - npm run create:user && npm run create:workspace
+        - npm run create:user
         env:
         - name: NODE_ENV
           value: production
@@ -62,8 +62,6 @@ spec:
           value: {{ .Values.init.user.name }}
         - name: CREATE_USER_PASSWORD
           value: {{ .Values.init.user.password }}
-        - name: CREATE_CONNECTOR_URL
-          value: {{ include "tellery.fullname" . }}-connector:{{ .Values.connector.service.externalPort }}
         {{- if .Values.server.env }}
 {{ toYaml .Values.server.env | indent 12 }}
         {{- end }}
