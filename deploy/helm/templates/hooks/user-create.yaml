@@ -1,4 +1,4 @@
-{{- if and .Values.user.create -}}
+{{- if and .Values.init.user.create -}}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -52,18 +52,16 @@ spec:
         command:
         - /bin/sh
         - -c
-        - npm run create:user && npm run create:workspace
+        - npm run create:user
         env:
         - name: NODE_ENV
           value: production
         - name: CREATE_USER_EMAIL
-          value: {{ .Values.user.email }}
+          value: {{ .Values.init.user.email }}
         - name: CREATE_USER_NAME
-          value: {{ .Values.user.name }}
+          value: {{ .Values.init.user.name }}
         - name: CREATE_USER_PASSWORD
-          value: {{ .Values.user.password }}
-        - name: CREATE_CONNECTOR_URL
-          value: {{ include "tellery.fullname" . }}-connector:{{ .Values.connector.service.externalPort }}
+          value: {{ .Values.init.user.password }}
         {{- if .Values.server.env }}
 {{ toYaml .Values.server.env | indent 12 }}
         {{- end }}
