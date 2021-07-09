@@ -86,7 +86,7 @@ object ConnectorManager {
                 }
 
         logger.info(
-            "initialized profile {}; loaded import Handler {}",
+            "initialized profile {}; loaded import handler {}",
             profile.name,
             connector.importDispatcher.keys
         )

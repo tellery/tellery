@@ -21,7 +21,7 @@
     {
       "type": "Snowflake",
       "name": "snowflake",
-      configs: {
+      "configs": {
         "Account Name": "xy12345",
         "Region Id": "en-central-1",
         "Warehouse": "mywh"
