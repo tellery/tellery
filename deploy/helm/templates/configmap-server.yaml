@@ -33,22 +33,28 @@ data:
   {{- if .Values.objectStorage.endpoint }}
   OBJECT_STORAGE_ENDPOINT: {{ .Values.objectStorage.endpoint }}
   {{- end }}
+  {{- if .Values.objectStorage.bucket }}
   OBJECT_STORAGE_BUCKET: {{ .Values.objectStorage.bucket }}
-  OBJECT_STORAGE_ACCESS_KEY_ID: {{ .Values.objectStorage.accessKey | quote }}
-  OBJECT_STORAGE_ACCESS_KEY_SECRET: {{ .Values.objectStorage.secretKey | quote }}
+  {{- end }}
+  {{- if .Values.objectStorage.accessKey }}
+  OBJECT_STORAGE_ACCESS_KEY_ID: {{ .Values.objectStorage.accessKey }}
+  {{- end }}
+  {{- if .Values.objectStorage.secretKey }}
+  OBJECT_STORAGE_ACCESS_KEY_SECRET: {{ .Values.objectStorage.secretKey }}
+  {{- end }}
   {{- if .Values.objectStorage.region }}
   OBJECT_STORAGE_REGION: {{ .Values.objectStorage.region }}
-  {{- end}}
+  {{- end }}
   {{- if .Values.objectStorage.cdnEndpoint }}
   OBJECT_STORAGE_CDN_ENDPOINT: {{ .Values.objectStorage.cdnEndpoint }}
-  {{- end}}
+  {{- end }}
   EMAIL_USE_TLS: {{ .Values.email.tls | quote }}
   EMAIL_USERNAME: {{ .Values.email.username | quote }}
   EMAIL_PASSWORD: {{ .Values.email.password | quote }}
   EMAIL_PORT: {{ .Values.email.port | quote }}
-  EMAIL_HOST: {{ default .Values.email.host .Values.ingress.hostname | quote }}
+  EMAIL_HOST: {{ default .Values.email.host | quote }}
   EMAIL_FROM: {{ .Values.email.from | quote }}
   SECRET_KEY: {{ .Values.system.secretKey }}
   SERVER_PROTO: {{ .Values.system.web.protocol }}
-  SERVER_HOST: {{ .Values.system.web.host }}
+  SERVER_HOST: {{ required "A valid system.web.host required!" .Values.system.web.host }}
   SERVER_WEB_PORT: {{ .Values.system.web.port | quote }}

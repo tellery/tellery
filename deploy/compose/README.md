@@ -26,7 +26,7 @@ Now you can access Tellery by visiting `http://localhost:8000`
 | ----------------------- | ---------------------------------------------------------- | ------------------------ |
 | TELLERY_SERVER_IMAGE    | Server image name                                          | tellery/tellery:latest   |
 | TELLERY_CONNECTOR_IMAGE | Connector server image name                                | tellery/connector:latest |
-| POSTGRES_USERNAME       | Postgresql username                                        | tellery                  |
+| POSTGRES_USERNAME       | Postgresql username                                        | postgres                 |
 | POSTGRES_PASSWORD       | Postgresql password                                        | ZMnyXaVYm8ItOv+vhoh07Q   |
 | POSTGRES_DB             | Postgresql database name                                   | tellery                  |
 | SERVER_PROTO            | Web server protocol                                        | http                     |
@@ -42,7 +42,7 @@ Now you can access Tellery by visiting `http://localhost:8000`
 | CREATE_USER_NAME        | Name of default user                                       | admin                    |
 | CREATE_USER_PASSWORD    | Password of default user                                   | gnThIrfzRDhSQcg8lQrdg    |
 
-Then you can modify the configuration by modifying the variables in the [.env](https://github.com/tellery/tellery/blob/master/hack/compose/.env) or specifying the environment variable at startup.
+Then you can modify the configuration by modifying the variables in the [.env](https://github.com/tellery/tellery/blob/main/deploy/compose/.env) or specifying the environment variable at startup.
 
 ```shell
 CREATE_USER_PASSWORD=Aa123456 docker-compose up

@@ -161,13 +161,17 @@ system:
   web:
     port: 80
     protocol: https
-    host: tellery.local
+    # host: tellery.local
 
 profile:
   create: false
 
-user:
-  create: false
-  name: admin
-  email: admin@tellery.local
-  password: Aa123456
+init:
+  user:
+    create: false
+    name: admin
+    email: admin@tellery.local
+    password: admin
+  workspace:
+    create: false
+    name: Default
