@@ -40,7 +40,7 @@ async function main() {
 
   const newConnector = await getIConnectorManagerFromDB(connectorId)
   await newConnector.upsertProfile({
-    type: 'Postgres',
+    type: 'PostgreSQL',
     name: 'default',
     auth: {
       username: config.get<string>('postgres.username'),
@@ -56,7 +56,7 @@ async function main() {
   return workspaceService.updateWorkspacePreferences(superUser.id, workspace.id, {
     connectorId: connectorId,
     profile: 'default',
-    dbImportsTo: 'tellery',
+    dbImportsTo: 'sample',
   })
 }
 
