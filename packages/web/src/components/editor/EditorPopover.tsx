@@ -12,7 +12,7 @@ interface PopoverProps {
   open: boolean
   setOpen: (open: boolean) => void
   children: ReactNode
-  modifiers?: Partial<Modifier<'offset', Options>>[] | undefined
+  modifiers?: Partial<Modifier<'offset' | 'flip', Options>>[] | undefined
   placement?: Placement
   disableClickThrough?: boolean
 }

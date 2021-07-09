@@ -3,6 +3,8 @@ import { useCreateEmptyBlock } from '@app/helpers/blockFactory'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { TELLERY_MIME_TYPES } from '@app/utils'
 import { css, cx } from '@emotion/css'
+import type { FlipModifier } from '@popperjs/core/lib/modifiers/flip'
+import type { OffsetModifier } from '@popperjs/core/lib/modifiers/offset'
 import {
   IconCommonLink,
   IconMenuCenterAlign,
@@ -37,7 +39,7 @@ export interface OperationInterface {
   side?: ReactNode
 }
 
-const PopperModifiers = [
+const PopperModifiers: Partial<Partial<OffsetModifier | FlipModifier>>[] = [
   {
     name: 'offset',
     enabled: true,
