@@ -42,7 +42,7 @@ const trasnformPasteText = (text: string) => {
 }
 
 export function SQLEditor(props: {
-  languageId: string
+  languageId?: string
   value: string
   onChange(value: string): void
   padding?: {

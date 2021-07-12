@@ -36,4 +36,4 @@
 
 ## Reporting bugs and contributing code
 
-- Want to report a bug or request a feature? Open an [issue](/issues/new).
+- Want to report a bug or request a feature? Open an [issue](https://github.com/tellery/tellery/issues/new/choose).
