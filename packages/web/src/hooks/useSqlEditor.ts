@@ -163,7 +163,7 @@ function useSqlEditorLanguage(languageId?: string, monaco?: Monaco) {
       return
     }
     const { dispose } = monaco.languages.registerCompletionItemProvider(languageId, {
-      triggerCharacters: ['.', ','],
+      triggerCharacters: ['.'],
       provideCompletionItems(model, position) {
         const matches = model.findMatches(incompleteTransclusionRegex.source, true, true, true, null, true)
         const current = matches.find((match) => match.range.containsPosition(position))
