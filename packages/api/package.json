@@ -70,7 +70,7 @@
     "@types/koa-router": "^7.4.3",
     "@types/koa-static": "^4.0.2",
     "@types/lodash": "^4.14.171",
-    "@types/node": "^16.0.0",
+    "@types/node": "^16.3.1",
     "@types/nodemailer": "^6.4.2",
     "@types/pg": "^8.6.0",
     "@types/redis": "^2.8.30",
