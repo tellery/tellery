@@ -1,5 +1,7 @@
 # Tellery
 
+![Tellery Product Usage Recoding](docs/img/tellery-usage-recording.gif)
+
 [![docker-web](https://github.com/tellery/tellery/actions/workflows/docker-web.yml/badge.svg?branch=main)](https://github.com/tellery/tellery/actions/workflows/docker-web.yml)
 [![CodeQL](https://github.com/tellery/tellery/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/tellery/tellery/actions/workflows/codeql-analysis.yml)
 [![GitHub](https://img.shields.io/github/license/tellery/tellery?logo=apache)](/LICENSE)
