@@ -8,19 +8,21 @@ import { Editor } from 'types'
 import { useGetCollectionSchema, useListCollections, useListDatabases } from './api'
 import { useWorkspace } from '@app/context/workspace'
 
-export function useSqlEditor(languageId: string) {
-  const monaco = useMonaco()
+export function useSqlEditor(languageId?: string) {
+  const monaco = useMonaco() || undefined
   useEffect(() => {
-    monaco?.languages.register({ id: languageId })
+    if (languageId && monaco) {
+      monaco.languages.register({ id: languageId })
+    }
   }, [languageId, monaco])
   useSqlEditorColor(languageId, monaco)
   useSqlEditorLanguage(languageId, monaco)
   useSqlEditorTransclusion(languageId, monaco)
 }
 
-function useSqlEditorColor(languageId: string, monaco: Monaco | null) {
+function useSqlEditorColor(languageId?: string, monaco?: Monaco) {
   useEffect(() => {
-    if (!monaco) {
+    if (!monaco || !languageId) {
       return
     }
     monaco.editor.defineTheme('tellery', {
@@ -50,7 +52,7 @@ function useSqlEditorColor(languageId: string, monaco: Monaco | null) {
   }, [monaco, languageId])
 }
 
-function useSqlEditorLanguage(languageId: string, monaco: Monaco | null) {
+function useSqlEditorLanguage(languageId?: string, monaco?: Monaco) {
   const { data: databases = [] } = useListDatabases()
   const [database, setDatabase] = useState<string>()
   const { data: collections = [] } = useListCollections(database)
@@ -68,7 +70,8 @@ function useSqlEditorLanguage(languageId: string, monaco: Monaco | null) {
   >()
   useEffect(() => {
     // see: https://github.com/rollup/plugins/tree/master/packages/dynamic-import-vars#limitations
-    import(`../lib/monarch/${languageId}.ts`)
+    console.log(`../lib/monarch/${languageId?.replace('/', '-')}.ts`)
+    import(`../lib/monarch/${languageId?.replace('/', '-')}.ts`)
       .then(({ default: _monarch }) => {
         setMonarch(_monarch)
       })
@@ -78,14 +81,14 @@ function useSqlEditorLanguage(languageId: string, monaco: Monaco | null) {
       })
   }, [languageId])
   useEffect(() => {
-    if (!monaco || typeof monarch !== 'object') {
+    if (!monaco || !languageId || typeof monarch !== 'object') {
       return
     }
     const { dispose } = monaco.languages.setMonarchTokensProvider(languageId, monarch as languages.IMonarchLanguage)
     return dispose
   }, [monaco, languageId, monarch])
   useEffect(() => {
-    if (!monaco) {
+    if (!monaco || !languageId) {
       return
     }
     const { dispose } = monaco.languages.setLanguageConfiguration(languageId, {
@@ -156,7 +159,7 @@ function useSqlEditorLanguage(languageId: string, monaco: Monaco | null) {
     [monaco, monarch]
   )
   useEffect(() => {
-    if (!monaco) {
+    if (!monaco || !languageId) {
       return
     }
     const { dispose } = monaco.languages.registerCompletionItemProvider(languageId, {
@@ -230,7 +233,7 @@ function useSqlEditorLanguage(languageId: string, monaco: Monaco | null) {
     return dispose
   }, [collections, databases, schemas, monaco, builtinSuggestions, languageId])
   useEffect(() => {
-    if (!monaco) {
+    if (!monaco || !languageId) {
       return
     }
     const { dispose } = monaco.languages.registerHoverProvider(languageId, {
@@ -284,12 +287,12 @@ const incompleteTransclusionRegex = /\{\{([^{}]+)\}\}/
  * @see https://github.com/microsoft/monaco-editor/issues/1857
  * @see https://github.com/microsoft/monaco-editor/issues/1704
  */
-function useSqlEditorTransclusion(languageId: string, monaco: Monaco | null) {
+function useSqlEditorTransclusion(languageId?: string, monaco?: Monaco) {
   const getBlockTitle = useGetBlockTitleTextSnapshot()
   const workspace = useWorkspace()
 
   useEffect(() => {
-    if (!monaco) {
+    if (!monaco || !languageId) {
       return
     }
     const { dispose } = monaco.languages.registerCompletionItemProvider(languageId, {
@@ -321,7 +324,7 @@ function useSqlEditorTransclusion(languageId: string, monaco: Monaco | null) {
     return dispose
   }, [monaco, languageId, getBlockTitle, workspace.id])
   // useEffect(() => {
-  //   if (!monaco) {
+  //    if (!monaco || !languageId) {
   //     return
   //   }
   //   const { dispose } = monaco.languages.registerHoverProvider(languageId, {
@@ -360,7 +363,7 @@ function useSqlEditorTransclusion(languageId: string, monaco: Monaco | null) {
   //   return dispose
   // }, [monaco, languageId, getBlockTitle, workspace.id])
   // useEffect(() => {
-  //   if (!monaco) {
+  //    if (!monaco || !languageId) {
   //     return
   //   }
   //   const { dispose } = monaco.languages.registerCodeLensProvider(languageId, {
@@ -401,7 +404,7 @@ function useSqlEditorTransclusion(languageId: string, monaco: Monaco | null) {
   //   return dispose
   // }, [monaco, languageId, getBlockTitle, workspace.id])
   // useEffect(() => {
-  //   if (!monaco) {
+  //    if (!monaco || !languageId) {
   //     return
   //   }
   //   const { dispose } = monaco.languages.registerLinkProvider(languageId, {
@@ -440,7 +443,7 @@ function useSqlEditorTransclusion(languageId: string, monaco: Monaco | null) {
   // const openStoryHandler = useOpenStory()
   // const { open } = useQuestionEditor()
   // useEffect(() => {
-  //   if (!monaco) {
+  //    if (!monaco || !languageId) {
   //     return
   //   }
   //   const { dispose } = monaco.editor.registerCommand(commandId, (_accessor, ...args) => {
