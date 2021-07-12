@@ -32,7 +32,7 @@
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
     "config": "^3.3.6",
-    "eta": "^1.12.2",
+    "eta": "^1.12.3",
     "formidable": "^1.2.2",
     "google-protobuf": "^3.17.3",
     "got": "^11.8.2",
