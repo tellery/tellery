@@ -8,29 +8,14 @@ import { ThemingVariables } from '@app/styles'
 import type { Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
 import MonacoEditor, { useMonaco } from '@monaco-editor/react'
+import Tippy from '@tippyjs/react'
 import { compact, uniq } from 'lodash'
 import type { editor } from 'monaco-editor/esm/vs/editor/editor.api'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { useQuery } from 'react-query'
 import { useGetBlockTitleTextSnapshot } from './editor'
 import { useQuestionEditor } from './StoryQuestionsEditor'
-
-const contentWidgetClassname = css`
-  font-size: 12px;
-  line-height: 18px;
-  vertical-align: middle;
-  border-radius: 6px;
-  padding: 0 5px 0 23px;
-  color: ${ThemingVariables.colors.text[0]};
-  background-color: ${ThemingVariables.colors.primary[4]};
-  background-image: ${SVG2DataURI(IconMenuQuery)};
-  background-size: 16px;
-  background-repeat: no-repeat;
-  background-position: 5px 50%;
-  white-space: nowrap;
-  cursor: pointer;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`
 
 const STORY_BLOCK_REGEX = new RegExp(`${window.location.protocol}//${window.location.host}/story/(\\S+)#(\\S+)`)
 
@@ -101,6 +86,33 @@ export function SQLEditor(props: {
   )
   const workspace = useWorkspace()
   const [matches, setMatches] = useState<editor.FindMatch[]>([])
+  const questionIds = useMemo(() => uniq(compact(matches.map((match) => match.matches?.[1]))), [matches])
+  const { data: questions } = useMgetBlocks(questionIds)
+  const mapMatchToContentWidget = useCallback((match: editor.FindMatch, index: number) => {
+    const questionId = match.matches?.[1]
+    if (!questionId) {
+      return null
+    }
+    return {
+      getId: () => {
+        return `content.widget.transclusion.${questionId}.${index}`
+      },
+      getDomNode: () => {
+        return document.createElement('div')
+      },
+      getPosition: () => {
+        return {
+          position: match.range.getStartPosition(),
+          range: match.range,
+          preference: [0]
+        }
+      }
+    }
+  }, [])
+  const contentWidgets = useMemo<editor.IContentWidget[]>(
+    () => compact(matches.map(mapMatchToContentWidget)),
+    [mapMatchToContentWidget, matches]
+  )
   useEffect(() => {
     if (!editor) {
       return
@@ -115,53 +127,6 @@ export function SQLEditor(props: {
     })
     return dispose
   }, [editor, workspace.id])
-  const questionIds = useMemo(() => uniq(compact(matches.map((match) => match.matches?.[1]))), [matches])
-  const { data: questions } = useMgetBlocks(questionIds)
-  const getBlockTitle = useGetBlockTitleTextSnapshot()
-  const openStoryHandler = useOpenStory()
-  const { open } = useQuestionEditor()
-  const contentWidgets = useMemo<editor.IContentWidget[]>(
-    () =>
-      compact(
-        matches.map((match, index) => {
-          const questionId = match.matches?.[1]
-          const block = (questionId ? questions?.[questionId] : undefined) as Editor.QuestionBlock | undefined
-          if (!block) {
-            return undefined
-          }
-          return {
-            getId: () => {
-              return `content.widget.transclusion.${questionId}.${index}`
-            },
-            getDomNode: () => {
-              const domNode = document.createElement('div')
-              domNode.innerHTML = getBlockTitle(block)
-              domNode.className = contentWidgetClassname
-              if (match.matches?.[0]) {
-                domNode.style.width = `${match.matches[0].length * 0.955}ch`
-              }
-              domNode.title = `${getBlockTitle(block)}\n${block.content?.sql || ''}`
-              domNode.onclick = () => {
-                if (!block.storyId) {
-                  return
-                }
-                openStoryHandler(block.storyId, { blockId: block.id, isAltKeyPressed: true })
-                open({ mode: 'SQL', storyId: block.storyId, blockId: block.id, readonly: false })
-              }
-              return domNode
-            },
-            getPosition: () => {
-              return {
-                position: match.range.getStartPosition(),
-                range: match.range,
-                preference: [0]
-              }
-            }
-          }
-        })
-      ),
-    [getBlockTitle, matches, open, openStoryHandler, questions]
-  )
   useEffect(() => {
     if (!editor) {
       return
@@ -175,28 +140,194 @@ export function SQLEditor(props: {
       })
     }
   }, [editor, contentWidgets])
+  const widgets = useMemo(
+    () =>
+      matches.map((match, index) => {
+        if (!match.matches) {
+          return null
+        }
+        const questionId = match.matches[1]
+        return questions?.[questionId] ? (
+          <TransclusionContentWidget
+            key={questionId}
+            value={questions[questionId]}
+            languageId={props.languageId}
+            length={match.matches[0].length}
+            index={index}
+          />
+        ) : null
+      }),
+    [matches, props.languageId, questions]
+  )
 
   return (
-    <MonacoEditor
-      className={cx(
-        css`
-          .scroll-decoration {
-            display: none;
-          }
-          .detected-link {
-            text-decoration: unset !important;
-          }
-        `
-      )}
-      wrapperClassName={props.className}
-      theme="tellery"
-      value={props.value}
-      onChange={handleChange}
-      height="100%"
-      width="100%"
-      language={props.languageId}
-      options={options}
-      onMount={setEditor}
-    />
+    <>
+      {widgets}
+      <MonacoEditor
+        className={cx(
+          css`
+            .scroll-decoration {
+              display: none;
+            }
+            .detected-link {
+              text-decoration: unset !important;
+            }
+          `
+        )}
+        wrapperClassName={props.className}
+        theme="tellery"
+        value={props.value}
+        onChange={handleChange}
+        height="100%"
+        width="100%"
+        language={props.languageId}
+        options={options}
+        onMount={setEditor}
+      />
+    </>
   )
+}
+
+function TransclusionContentWidget(props: {
+  languageId?: string
+  value: Editor.QuestionBlock
+  length: number
+  index: number
+}) {
+  const { value: block } = props
+  const getBlockTitle = useGetBlockTitleTextSnapshot()
+  const openStoryHandler = useOpenStory()
+  const { open } = useQuestionEditor()
+  const el = document.querySelector(`[widgetid="content.widget.transclusion.${block.id}.${props.index}"]`)
+  const monaco = useMonaco()
+  const { data } = useQuery<string | undefined>(
+    ['editor.colorize', props.languageId, block.content?.sql],
+    () => monaco?.editor.colorize(block.content?.sql!, props.languageId!, {}),
+    { enabled: !!props.languageId && !!block.content?.sql }
+  )
+  const title = getBlockTitle(block)
+  const [visible, setVisible] = useState(false)
+
+  return el
+    ? createPortal(
+        <Tippy
+          visible={visible}
+          theme="tellery"
+          followCursor={true}
+          duration={150}
+          content={
+            data ? (
+              <div
+                className={css`
+                  pointer-events: all;
+                  width: 600px;
+                  max-height: 360px;
+                  box-shadow: ${ThemingVariables.boxShadows[0]};
+                  border-radius: 8px;
+                  padding: 20px 15px 0 15px;
+                  display: flex;
+                  flex-direction: column;
+                  background: ${ThemingVariables.colors.gray[5]};
+                `}
+              >
+                <h4
+                  className={css`
+                    flex-shrink: 0;
+                    font-weight: 600;
+                    font-size: 16px;
+                    line-height: 22px;
+                    margin: 0;
+                    color: ${ThemingVariables.colors.text[0]};
+                  `}
+                >
+                  {title}
+                </h4>
+                <div
+                  className={css`
+                    flex: 1;
+                    height: 0;
+                    margin: 10px 0;
+                    overflow: scroll;
+                    font-family: Menlo, Monaco, 'Courier New', monospace;
+                    line-height: 18px;
+                    font-size: 12px;
+                  `}
+                  dangerouslySetInnerHTML={{ __html: data }}
+                />
+                <div
+                  className={css`
+                    border-top: 1px solid ${ThemingVariables.colors.gray[1]};
+                    height: 44px;
+                    flex-shrink: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 14px 0;
+                    span {
+                      font-size: 14px;
+                      line-height: 16px;
+                      color: ${ThemingVariables.colors.text[1]};
+                    }
+                  `}
+                >
+                  <span
+                    className={css`
+                      cursor: pointer;
+                    `}
+                    onClick={() => {
+                      if (!block.storyId) {
+                        return
+                      }
+                      openStoryHandler(block.storyId, { blockId: block.id, isAltKeyPressed: true })
+                      open({ mode: 'SQL', storyId: block.storyId, blockId: block.id, readonly: false })
+                    }}
+                  >
+                    Go to question
+                  </span>
+                  <span>⌘+click</span>
+                </div>
+              </div>
+            ) : null
+          }
+          onClickOutside={() => {
+            setVisible(false)
+          }}
+          arrow={false}
+          sticky="popper"
+          trigger="manual"
+        >
+          <div
+            className={css`
+              font-size: 12px;
+              line-height: 18px;
+              vertical-align: middle;
+              border-radius: 6px;
+              padding: 0 5px 0 23px;
+              color: ${ThemingVariables.colors.text[0]};
+              background-color: ${ThemingVariables.colors.primary[4]};
+              background-image: ${SVG2DataURI(IconMenuQuery)};
+              background-size: 16px;
+              background-repeat: no-repeat;
+              background-position: 5px 50%;
+              white-space: nowrap;
+              cursor: pointer;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              width: ${props.length * 0.955}ch;
+            `}
+            onClick={(e) => {
+              if (!block.storyId || !e.metaKey) {
+                setVisible((old) => !old)
+                return
+              }
+              openStoryHandler(block.storyId, { blockId: block.id, isAltKeyPressed: true })
+              open({ mode: 'SQL', storyId: block.storyId, blockId: block.id, readonly: false })
+            }}
+          >
+            {title}
+          </div>
+        </Tippy>,
+        el
+      )
+    : null
 }
