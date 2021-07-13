@@ -1,3 +1,0 @@
-* When running upgrades, make sure to give back the `system.secretKey` value.
-
-kubectl -n {{ .Release.Namespace }} get configmap {{ template "tellery.fullname" . }}-server -o json | grep -m1 -Po '(?<=SECRET_KEY": )[^\\]*'
