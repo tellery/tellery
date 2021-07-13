@@ -942,6 +942,7 @@ export const StoryQuestionEditor: React.FC<{
                 flex: 1;
                 width: 0 !important;
               `}
+              blockId={block.id}
               value={sql}
               padding={{ top: 20, bottom: 0 }}
               languageId={profileType}
