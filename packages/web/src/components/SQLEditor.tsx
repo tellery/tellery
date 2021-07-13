@@ -100,7 +100,52 @@ export function SQLEditor(props: {
     [props.padding]
   )
   const workspace = useWorkspace()
-  const [matches, setMatches] = useState<editor.FindMatch[]>([])
+  const [questionIds, setQuestionIds] = useState<string[]>([])
+  const { data: questions } = useMgetBlocks(questionIds)
+  const getBlockTitle = useGetBlockTitleTextSnapshot()
+  const openStoryHandler = useOpenStory()
+  const { open } = useQuestionEditor()
+  const mapMatchToQuestionId = useCallback((match: editor.FindMatch) => match.matches?.[1], [])
+  const mapMatchToContentWidget = useCallback(
+    (match: editor.FindMatch, index: number) => {
+      const questionId = match.matches?.[1]
+      const block = (questionId ? questions?.[questionId] : undefined) as Editor.QuestionBlock | undefined
+      if (!block) {
+        return undefined
+      }
+      return {
+        getId: () => {
+          return `content.widget.transclusion.${questionId}.${index}`
+        },
+        getDomNode: () => {
+          const domNode = document.createElement('div')
+          domNode.innerHTML = getBlockTitle(block)
+          domNode.className = contentWidgetClassname
+          if (match.matches?.[0]) {
+            domNode.style.width = `${match.matches[0].length * 0.955}ch`
+          }
+          domNode.title = `${getBlockTitle(block)}\n${block.content?.sql || ''}`
+          domNode.onclick = () => {
+            if (!block.storyId) {
+              return
+            }
+            openStoryHandler(block.storyId, { blockId: block.id, isAltKeyPressed: true })
+            open({ mode: 'SQL', storyId: block.storyId, blockId: block.id, readonly: false })
+          }
+          return domNode
+        },
+        getPosition: () => {
+          return {
+            position: match.range.getStartPosition(),
+            range: match.range,
+            preference: [0]
+          }
+        }
+      }
+    },
+    [getBlockTitle, open, openStoryHandler, questions]
+  )
+  const [contentWidgets, setContentWidgets] = useState<editor.IContentWidget[]>([])
   useEffect(() => {
     if (!editor) {
       return
@@ -109,59 +154,17 @@ export function SQLEditor(props: {
     if (!model) {
       return
     }
-    setMatches(model.findMatches(transclusionRegex.source, true, true, true, null, true))
+    const matches = model.findMatches(transclusionRegex.source, true, true, true, null, true)
+    setQuestionIds(uniq(compact(matches.map(mapMatchToQuestionId))))
+    setContentWidgets(compact(matches.map(mapMatchToContentWidget)))
     const { dispose } = model.onDidChangeContent(() => {
-      setMatches(model.findMatches(transclusionRegex.source, true, true, true, null, true))
+      const matches = model.findMatches(transclusionRegex.source, true, true, true, null, true)
+      setQuestionIds(uniq(compact(matches.map(mapMatchToQuestionId))))
+      setContentWidgets(compact(matches.map(mapMatchToContentWidget)))
     })
     return dispose
-  }, [editor, workspace.id])
-  const questionIds = useMemo(() => uniq(compact(matches.map((match) => match.matches?.[1]))), [matches])
-  const { data: questions } = useMgetBlocks(questionIds)
-  const getBlockTitle = useGetBlockTitleTextSnapshot()
-  const openStoryHandler = useOpenStory()
-  const { open } = useQuestionEditor()
-  const contentWidgets = useMemo<editor.IContentWidget[]>(
-    () =>
-      compact(
-        matches.map((match, index) => {
-          const questionId = match.matches?.[1]
-          const block = (questionId ? questions?.[questionId] : undefined) as Editor.QuestionBlock | undefined
-          if (!block) {
-            return undefined
-          }
-          return {
-            getId: () => {
-              return `content.widget.transclusion.${questionId}.${index}`
-            },
-            getDomNode: () => {
-              const domNode = document.createElement('div')
-              domNode.innerHTML = getBlockTitle(block)
-              domNode.className = contentWidgetClassname
-              if (match.matches?.[0]) {
-                domNode.style.width = `${match.matches[0].length * 0.955}ch`
-              }
-              domNode.title = `${getBlockTitle(block)}\n${block.content?.sql || ''}`
-              domNode.onclick = () => {
-                if (!block.storyId) {
-                  return
-                }
-                openStoryHandler(block.storyId, { blockId: block.id, isAltKeyPressed: true })
-                open({ mode: 'SQL', storyId: block.storyId, blockId: block.id, readonly: false })
-              }
-              return domNode
-            },
-            getPosition: () => {
-              return {
-                position: match.range.getStartPosition(),
-                range: match.range,
-                preference: [0]
-              }
-            }
-          }
-        })
-      ),
-    [getBlockTitle, matches, open, openStoryHandler, questions]
-  )
+  }, [editor, mapMatchToContentWidget, mapMatchToQuestionId, workspace.id])
+
   useEffect(() => {
     if (!editor) {
       return
