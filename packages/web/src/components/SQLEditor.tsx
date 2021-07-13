@@ -8,10 +8,12 @@ import { ThemingVariables } from '@app/styles'
 import type { Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
 import MonacoEditor, { useMonaco } from '@monaco-editor/react'
+import Tippy from '@tippyjs/react'
 import { compact, uniq } from 'lodash'
 import type { editor } from 'monaco-editor/esm/vs/editor/editor.api'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useQuery } from 'react-query'
 import { useGetBlockTitleTextSnapshot } from './editor'
 import { useQuestionEditor } from './StoryQuestionsEditor'
 
@@ -150,6 +152,7 @@ export function SQLEditor(props: {
           <TransclusionContentWidget
             key={questionId}
             value={questions[questionId]}
+            languageId={props.languageId}
             length={match.matches[0].length}
             index={index}
           />
@@ -180,44 +183,144 @@ export function SQLEditor(props: {
   )
 }
 
-function TransclusionContentWidget(props: { value: Editor.QuestionBlock; length: number; index: number }) {
+function TransclusionContentWidget(props: {
+  languageId?: string
+  value: Editor.QuestionBlock
+  length: number
+  index: number
+}) {
   const { value: block } = props
   const getBlockTitle = useGetBlockTitleTextSnapshot()
   const openStoryHandler = useOpenStory()
   const { open } = useQuestionEditor()
   const el = document.querySelector(`[widgetid="content.widget.transclusion.${block.id}.${props.index}"]`)
+  const monaco = useMonaco()
+  const { data } = useQuery<string | undefined>(
+    ['editor.colorize', props.languageId, block.content?.sql],
+    () => monaco?.editor.colorize(block.content?.sql!, props.languageId!, {}),
+    { enabled: !!props.languageId && !!block.content?.sql }
+  )
+  const title = getBlockTitle(block)
+  const [visible, setVisible] = useState(false)
 
   return el
     ? createPortal(
-        <div
-          className={css`
-            font-size: 12px;
-            line-height: 18px;
-            vertical-align: middle;
-            border-radius: 6px;
-            padding: 0 5px 0 23px;
-            color: ${ThemingVariables.colors.text[0]};
-            background-color: ${ThemingVariables.colors.primary[4]};
-            background-image: ${SVG2DataURI(IconMenuQuery)};
-            background-size: 16px;
-            background-repeat: no-repeat;
-            background-position: 5px 50%;
-            white-space: nowrap;
-            cursor: pointer;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            width: ${props.length * 0.955}ch;
-          `}
-          onClick={() => {
-            if (!block.storyId) {
-              return
-            }
-            openStoryHandler(block.storyId, { blockId: block.id, isAltKeyPressed: true })
-            open({ mode: 'SQL', storyId: block.storyId, blockId: block.id, readonly: false })
+        <Tippy
+          visible={visible}
+          theme="tellery"
+          followCursor={true}
+          duration={150}
+          content={
+            data ? (
+              <div
+                className={css`
+                  pointer-events: all;
+                  width: 600px;
+                  max-height: 360px;
+                  box-shadow: ${ThemingVariables.boxShadows[0]};
+                  border-radius: 8px;
+                  display: flex;
+                  flex-direction: column;
+                  background: ${ThemingVariables.colors.gray[5]};
+                `}
+              >
+                <h4
+                  className={css`
+                    flex-shrink: 0;
+                    font-weight: 600;
+                    font-size: 16px;
+                    line-height: 22px;
+                    margin: 20px 15px 0 15px;
+                    color: ${ThemingVariables.colors.text[0]};
+                  `}
+                >
+                  {title}
+                </h4>
+                <div
+                  className={css`
+                    flex: 1;
+                    height: 0;
+                    padding: 10px 15px;
+                    overflow: scroll;
+                    font-family: Menlo, Monaco, 'Courier New', monospace;
+                    line-height: 18px;
+                    font-size: 12px;
+                  `}
+                  dangerouslySetInnerHTML={{ __html: data }}
+                />
+                <div
+                  className={css`
+                    border-top: 1px solid ${ThemingVariables.colors.gray[1]};
+                    height: 44px;
+                    flex-shrink: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 14px 15px;
+                    span {
+                      font-size: 14px;
+                      line-height: 16px;
+                      color: ${ThemingVariables.colors.text[1]};
+                    }
+                  `}
+                >
+                  <span
+                    className={css`
+                      cursor: pointer;
+                    `}
+                    onClick={() => {
+                      if (!block.storyId) {
+                        return
+                      }
+                      openStoryHandler(block.storyId, { blockId: block.id, isAltKeyPressed: true })
+                      open({ mode: 'SQL', storyId: block.storyId, blockId: block.id, readonly: false })
+                    }}
+                  >
+                    Go to question
+                  </span>
+                  <span>⌘+click</span>
+                </div>
+              </div>
+            ) : null
+          }
+          onClickOutside={() => {
+            setVisible(false)
           }}
+          arrow={false}
+          sticky="popper"
+          trigger="manual"
         >
-          {getBlockTitle(block)}
-        </div>,
+          <div
+            className={css`
+              font-size: 12px;
+              line-height: 18px;
+              vertical-align: middle;
+              border-radius: 6px;
+              padding: 0 5px 0 23px;
+              color: ${ThemingVariables.colors.text[0]};
+              background-color: ${ThemingVariables.colors.primary[4]};
+              background-image: ${SVG2DataURI(IconMenuQuery)};
+              background-size: 16px;
+              background-repeat: no-repeat;
+              background-position: 5px 50%;
+              white-space: nowrap;
+              cursor: pointer;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              width: ${props.length * 0.955}ch;
+            `}
+            onClick={(e) => {
+              if (!block.storyId || !e.metaKey) {
+                setVisible((old) => !old)
+                return
+              }
+              openStoryHandler(block.storyId, { blockId: block.id, isAltKeyPressed: true })
+              open({ mode: 'SQL', storyId: block.storyId, blockId: block.id, readonly: false })
+            }}
+          >
+            {title}
+          </div>
+        </Tippy>,
         el
       )
     : null
