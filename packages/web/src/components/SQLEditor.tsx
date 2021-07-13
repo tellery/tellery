@@ -140,10 +140,9 @@ export function SQLEditor(props: {
       })
     }
   }, [editor, contentWidgets])
-
-  return (
-    <>
-      {matches.map((match, index) => {
+  const widgets = useMemo(
+    () =>
+      matches.map((match, index) => {
         if (!match.matches) {
           return null
         }
@@ -157,7 +156,13 @@ export function SQLEditor(props: {
             index={index}
           />
         ) : null
-      })}
+      }),
+    [matches, props.languageId, questions]
+  )
+
+  return (
+    <>
+      {widgets}
       <MonacoEditor
         className={cx(
           css`
