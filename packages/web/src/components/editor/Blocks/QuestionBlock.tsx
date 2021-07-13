@@ -27,26 +27,22 @@ import { useBlockSuspense, useSnapshot, useUser } from 'hooks/api'
 import { useInterval } from 'hooks/useInterval'
 import { useRefreshSnapshot, useSnapshotMutating } from 'hooks/useStorySnapshotManager'
 import html2canvas from 'html2canvas'
+import invariant from 'invariant'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useRecoilValue } from 'recoil'
 import { ThemingVariables } from 'styles'
 import type { Editor, Snapshot } from 'types'
 import { DEFAULT_TITLE, snapshotToCSV } from 'utils'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
 import { BlockResizer } from '../BlockBase/BlockResizer'
 import { ContentEditable } from '../BlockBase/ContentEditable'
-import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import { DebouncedResizeBlock } from '../DebouncedResizeBlock'
 import { EditorPopover } from '../EditorPopover'
 import { getBlockImageById } from '../helpers/contentEditable'
-import { useEditor } from '../hooks'
+import { useEditor, useLocalSelection } from '../hooks'
+import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
 import type { OperationInterface } from '../Popovers/BlockOperationPopover'
-import { IsBlockHovering } from '../store'
-import { TelleryBlockSelectionAtom } from '../store/selection'
-
-export const DEFAULT_QUESTION_BLOCK_ASPECT_RATIO = 16 / 9
-export const DEFAULT_QUESTION_BLOCK_WIDTH = 0.7
+import { DEFAULT_QUESTION_BLOCK_ASPECT_RATIO, DEFAULT_QUESTION_BLOCK_WIDTH } from '../utils'
 
 const FOOTER_HEIGHT = 56
 
@@ -64,8 +60,9 @@ export const QuestionBlock: React.FC<{
   const originalBlock = useBlockSuspense<Editor.QuestionBlock>(block.id)
   const questionEditor = useQuestionEditor()
   const [titleEditing, setTitleEditing] = useState(false)
-  const localSelection = useRecoilValue(TelleryBlockSelectionAtom(block.id))
-  const isFocusing = !!localSelection
+  const [blockFocusing, setBlockFocusing] = useState(false)
+  const localSelection = useLocalSelection(block.id)
+  const isInputFocusing = !!localSelection
 
   useEffect(() => {
     editor?.registerOrUnregisterBlockInstance(block.id, {
@@ -110,7 +107,13 @@ export const QuestionBlock: React.FC<{
   const visualization = block.content?.visualization
 
   return (
-    <motion.div ref={ref} className={QuestionsBlockContainer}>
+    <div
+      ref={ref}
+      className={QuestionsBlockContainer}
+      tabIndex={-1}
+      onFocus={() => setBlockFocusing(true)}
+      onBlur={() => setBlockFocusing(false)}
+    >
       {isEmptyBlock ? (
         <BlockPlaceHolder
           onClick={() => {
@@ -124,7 +127,7 @@ export const QuestionBlock: React.FC<{
           <>
             <QuestionBlockHeader
               setTitleEditing={setTitleEditing}
-              titleEditing={titleEditing || isFocusing}
+              titleEditing={titleEditing || isInputFocusing}
               block={block}
             />
             <motion.div
@@ -158,6 +161,7 @@ export const QuestionBlock: React.FC<{
           </>
         )
       )}
+      <QuestionBlockButtons blockId={block.id} show={blockFocusing} />
       {/* 
       {!readonly && ref.current && (
         <NewQuestionPopover
@@ -167,7 +171,53 @@ export const QuestionBlock: React.FC<{
           referneceElement={ref.current}
         />
       )} */}
-    </motion.div>
+    </div>
+  )
+}
+
+export const QuestionBlockButtons: React.FC<{ blockId: string; show: boolean }> = ({ blockId, show }) => {
+  const block = useBlockSuspense<Editor.QuestionBlock>(blockId)
+  const {
+    data: snapshot,
+    isFetched: isSnapshotFetched,
+    isIdle: isSnapshotIdle
+  } = useSnapshot(block?.content?.snapshotId)
+  const { small } = useBlockBehavior()
+
+  return (
+    <AnimatePresence>
+      {!small && show && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25 }}
+          className={css`
+            background: #ffffff;
+            box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.08), 0px 1px 2px rgba(0, 0, 0, 0.08),
+              0px 4px 12px rgba(0, 0, 0, 0.16);
+            border-radius: 8px;
+            position: absolute;
+            right: 0;
+            bottom: 100%;
+            margin-bottom: 13px;
+            padding: 5px;
+            display: inline-flex;
+            align-items: center;
+            flex-shrink: 0;
+            > * + * {
+              margin-left: 10px;
+            }
+            > * {
+              cursor: pointer;
+            }
+            opacity: 1;
+          `}
+        >
+          <TitleButtonsInner snapshot={snapshot} block={block} sql={block.content?.sql ?? ''} />
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }
 
@@ -357,11 +407,6 @@ const QuestionBlockFooter: React.FC<{
           overflow: hidden;
         `}
       >
-        <RefreshButton
-          color={ThemingVariables.colors.primary[1]}
-          loading={loading}
-          onClick={loading ? mutateSnapshot.cancel : mutateSnapshot.execute}
-        />
         <div
           className={css`
             width: 100%;
@@ -381,8 +426,6 @@ const QuestionBlockFooter: React.FC<{
             ? dayjs(nowTimeStamp).subtract(mutatingStartTimeStamp).format('mm:ss')
             : dayjs(snapshot?.createdAt).fromNow()}
         </div>
-
-        <TitleButtons snapshot={snapshot} block={block} sql={originalBlock.content?.sql ?? ''} />
       </div>
     </>
   )
@@ -456,8 +499,9 @@ export const MoreDropdownSelect: React.FC<{
   snapshot?: Snapshot
   block: Editor.Block
   sql: string
+  className?: string
   setIsActive: (active: boolean) => void
-}> = ({ snapshot, block, sql, setIsActive }) => {
+}> = ({ snapshot, block, sql, setIsActive, className }) => {
   const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null)
   const { data: user } = useUser(block?.lastEditedById ?? null)
 
@@ -468,10 +512,10 @@ export const MoreDropdownSelect: React.FC<{
         icon: <Icon icon={IconMenuDownload} color={ThemingVariables.colors.text[0]} />,
         action: () => {
           const snapshotData = snapshot?.data
-          if (snapshotData) {
-            const csvString = snapshotToCSV(snapshotData)
-            csvString && download(csvString, 'data.csv', 'text/csv')
-          }
+          invariant(snapshotData, 'snapshotData is null')
+          const csvString = snapshotToCSV(snapshotData)
+          invariant(csvString, 'csvString is null')
+          csvString && download(csvString, 'data.csv', 'text/csv')
         }
       },
       {
@@ -515,19 +559,22 @@ export const MoreDropdownSelect: React.FC<{
         icon={IconCommonMore}
         color={ThemingVariables.colors.gray[0]}
         {...getToggleButtonProps({ ref: setReferenceElement })}
-        className={css`
-          outline: none;
-          outline: none;
-          border: none;
-          border-radius: 4px;
-          font-size: 16px;
-          font-weight: 500;
-          padding: 0;
-          display: flex;
-          align-items: center;
-          cursor: pointer;
-          background: transparent;
-        `}
+        className={cx(
+          css`
+            outline: none;
+            outline: none;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            background: transparent;
+          `,
+          className
+        )}
       />
       <div {...getMenuProps()}>
         <EditorPopover
@@ -585,21 +632,6 @@ export const MoreDropdownSelect: React.FC<{
   )
 }
 
-const TitleButtons: React.FC<{
-  snapshot: Snapshot | undefined
-  block: Editor.Block
-  sql: string
-}> = ({ snapshot, block, sql }) => {
-  const { small } = useBlockBehavior()
-  const isHovering = useRecoilValue(IsBlockHovering(block.id))
-
-  return (
-    <AnimatePresence>
-      {!small && isHovering && <TitleButtonsInner snapshot={snapshot} block={block} sql={sql} />}
-    </AnimatePresence>
-  )
-}
-
 const TitleButtonsInner: React.FC<{
   snapshot: Snapshot | undefined
   block: Editor.Block
@@ -609,44 +641,46 @@ const TitleButtonsInner: React.FC<{
   const [isActive, setIsActive] = useState(false)
   const [isPresent, safeToRemove] = usePresence()
   const questionEditor = useQuestionEditor()
+  const mutateSnapshot = useRefreshSnapshot(block, block.id, block.storyId!)
+  const mutatingCount = useSnapshotMutating(block.id)
+  const loading = mutatingCount !== 0
 
   useEffect(() => {
     isActive === false && !isPresent && safeToRemove?.()
   }, [isActive, isPresent, safeToRemove])
 
   return (
-    <motion.div
-      className={titleButtonsContainer}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.25 }}
-    >
+    <>
+      <RefreshButton
+        color={ThemingVariables.colors.primary[1]}
+        loading={loading}
+        className={QuestionBlockIconButton}
+        onClick={loading ? mutateSnapshot.cancel : mutateSnapshot.execute}
+      />
       <IconButton
         icon={IconVisualizationSetting}
+        className={QuestionBlockIconButton}
         onClick={() => questionEditor.open({ mode: 'VIS', readonly, blockId: block.id, storyId: block.storyId! })}
       />
       <IconButton
+        className={QuestionBlockIconButton}
         icon={IconCommonSql}
         onClick={() => questionEditor.open({ mode: 'SQL', readonly, blockId: block.id, storyId: block.storyId! })}
       />
-      <MoreDropdownSelect snapshot={snapshot} block={block} sql={sql} setIsActive={setIsActive} />
-    </motion.div>
+      <MoreDropdownSelect
+        className={QuestionBlockIconButton}
+        snapshot={snapshot}
+        block={block}
+        sql={sql}
+        setIsActive={setIsActive}
+      />
+    </>
   )
 }
 
-const titleButtonsContainer = css`
-  display: inline-flex;
-  align-items: center;
-  margin-left: 20px;
-  flex-shrink: 0;
-  > * + * {
-    margin-left: 20px;
-  }
-  > * {
-    cursor: pointer;
-  }
-  opacity: 1;
+const QuestionBlockIconButton = css`
+  width: 30px;
+  height: 30px;
 `
 
 const QuestionsBlockContainer = css`
