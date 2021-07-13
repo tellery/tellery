@@ -27,6 +27,7 @@ const trasnformPasteText = (text: string) => {
 }
 
 export function SQLEditor(props: {
+  blockId: string
   languageId?: string
   value: string
   onChange(value: string): void
@@ -88,27 +89,30 @@ export function SQLEditor(props: {
   const [matches, setMatches] = useState<editor.FindMatch[]>([])
   const questionIds = useMemo(() => uniq(compact(matches.map((match) => match.matches?.[1]))), [matches])
   const { data: questions } = useMgetBlocks(questionIds)
-  const mapMatchToContentWidget = useCallback((match: editor.FindMatch, index: number) => {
-    const questionId = match.matches?.[1]
-    if (!questionId) {
-      return null
-    }
-    return {
-      getId: () => {
-        return `content.widget.transclusion.${questionId}.${index}`
-      },
-      getDomNode: () => {
-        return document.createElement('div')
-      },
-      getPosition: () => {
-        return {
-          position: match.range.getStartPosition(),
-          range: match.range,
-          preference: [0]
+  const mapMatchToContentWidget = useCallback(
+    (match: editor.FindMatch, index: number) => {
+      const questionId = match.matches?.[1]
+      if (!questionId) {
+        return null
+      }
+      return {
+        getId: () => {
+          return `content.widget.transclusion.${props.blockId}.${questionId}.${index}`
+        },
+        getDomNode: () => {
+          return document.createElement('div')
+        },
+        getPosition: () => {
+          return {
+            position: match.range.getStartPosition(),
+            range: match.range,
+            preference: [0]
+          }
         }
       }
-    }
-  }, [])
+    },
+    [props.blockId]
+  )
   const contentWidgets = useMemo<editor.IContentWidget[]>(
     () => compact(matches.map(mapMatchToContentWidget)),
     [mapMatchToContentWidget, matches]
@@ -150,6 +154,7 @@ export function SQLEditor(props: {
         return questions?.[questionId] ? (
           <TransclusionContentWidget
             key={questionId}
+            blockId={props.blockId}
             value={questions[questionId]}
             languageId={props.languageId}
             length={match.matches[0].length}
@@ -157,7 +162,7 @@ export function SQLEditor(props: {
           />
         ) : null
       }),
-    [matches, props.languageId, questions]
+    [matches, props.blockId, props.languageId, questions]
   )
 
   return (
@@ -189,6 +194,7 @@ export function SQLEditor(props: {
 }
 
 function TransclusionContentWidget(props: {
+  blockId: string
   languageId?: string
   value: Editor.QuestionBlock
   length: number
@@ -198,7 +204,9 @@ function TransclusionContentWidget(props: {
   const getBlockTitle = useGetBlockTitleTextSnapshot()
   const openStoryHandler = useOpenStory()
   const { open } = useQuestionEditor()
-  const el = document.querySelector(`[widgetid="content.widget.transclusion.${block.id}.${props.index}"]`)
+  const el = document.querySelector(
+    `[widgetid="content.widget.transclusion.${props.blockId}.${block.id}.${props.index}"]`
+  )
   const monaco = useMonaco()
   const { data } = useQuery<string | undefined>(
     ['editor.colorize', props.languageId, block.content?.sql],
