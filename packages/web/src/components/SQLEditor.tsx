@@ -219,6 +219,7 @@ function TransclusionContentWidget(props: {
                   max-height: 360px;
                   box-shadow: ${ThemingVariables.boxShadows[0]};
                   border-radius: 8px;
+                  padding: 20px 15px 0 15px;
                   display: flex;
                   flex-direction: column;
                   background: ${ThemingVariables.colors.gray[5]};
@@ -230,7 +231,7 @@ function TransclusionContentWidget(props: {
                     font-weight: 600;
                     font-size: 16px;
                     line-height: 22px;
-                    margin: 20px 15px 0 15px;
+                    margin: 0;
                     color: ${ThemingVariables.colors.text[0]};
                   `}
                 >
@@ -240,7 +241,7 @@ function TransclusionContentWidget(props: {
                   className={css`
                     flex: 1;
                     height: 0;
-                    padding: 10px 15px;
+                    margin: 10px 0;
                     overflow: scroll;
                     font-family: Menlo, Monaco, 'Courier New', monospace;
                     line-height: 18px;
@@ -256,7 +257,7 @@ function TransclusionContentWidget(props: {
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
-                    padding: 14px 15px;
+                    padding: 14px 0;
                     span {
                       font-size: 14px;
                       line-height: 16px;
