@@ -19,7 +19,7 @@ import invariant from 'invariant'
 import { compact } from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { QueryObserverResult, useInfiniteQuery, useMutation, useQuery, UseQueryOptions } from 'react-query'
-import { useRecoilCallback, useRecoilValue, useRecoilValueLoadable, waitForAll } from 'recoil'
+import { useRecoilCallback, useRecoilValue, useRecoilValueLoadable, waitForAll, waitForAny } from 'recoil'
 import { AvailableConfig, BackLinks, Editor, ProfileConfig, Snapshot, Story, UserInfo, Workspace } from 'types'
 import { queryClient } from 'utils'
 import { emitBlockUpdate } from 'utils/remoteStoreObserver'
@@ -291,6 +291,37 @@ export const useMgetBlocks = (ids?: string[]): { data?: Record<string, Editor.Bl
           data: atoms.contents.reduce((acc, block) => {
             invariant(block, 'block is undefined')
             if (block.id) {
+              acc[block.id] = block
+            }
+            return acc
+          }, {} as { [key: string]: Editor.Block }),
+          isSuccess: true
+        })
+        break
+      case 'loading':
+        setState({})
+        break
+    }
+  }, [atoms, ids])
+
+  return state
+}
+
+export const useMgetBlocksAny = (ids?: string[]): { data?: Record<string, Editor.Block>; isSuccess?: boolean } => {
+  const atoms = useRecoilValueLoadable(waitForAny(ids?.map((id) => TelleryBlockAtom(id)) ?? []))
+  const [state, setState] = useState({})
+
+  useEffect(() => {
+    if (!ids || !ids.length) {
+      setState({})
+      return
+    }
+    switch (atoms.state) {
+      case 'hasValue':
+        setState({
+          data: atoms.contents.reduce((acc, atom) => {
+            if (atom.state === 'hasValue') {
+              const block = atom.contents
               acc[block.id] = block
             }
             return acc

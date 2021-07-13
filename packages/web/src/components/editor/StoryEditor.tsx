@@ -37,7 +37,6 @@ import {
 import { OperatorsContext, useStoryOperators } from './BlockOperators'
 import { ThoughtTitleBlock } from './Blocks/ThoughtTitleBlock'
 import { ContentBlocks } from './ContentBlock'
-import { DebouncedResizeBlock } from './DebouncedResizeBlock'
 import {
   createTranscation,
   findPreviousTextBlock,
@@ -91,6 +90,7 @@ const _StoryEditor: React.FC<{
   const tellerySelectionRef = useRef<TellerySelection | null>(null)
   const [selectionState, setSelectionState] = useRecoilState<TellerySelection | null>(TelleryStorySelection(storyId))
   const [scrollLocked, setScrollLocked] = useState(false)
+  const [scrollbarWidth, setScrollbarWidth] = useState(0)
   const isSelectingRef = useRef<DOMRect | null>(null)
   const mouseDownEventRef = useRef<MouseEvent | null>(null)
   const blockDnd = useBlockDndContext()
@@ -110,6 +110,10 @@ const _StoryEditor: React.FC<{
 
   const lockOrUnlockScroll = useCallback((lock: boolean) => {
     setScrollLocked(lock)
+    const editorElement = editorRef.current
+    invariant(editorElement, 'editor is nullable')
+    const spareWidth = editorElement.getBoundingClientRect().width - editorElement?.clientWidth
+    setScrollbarWidth(spareWidth)
   }, [])
 
   const focusingBlockId = useMemo(() => {
@@ -1235,14 +1239,17 @@ const _StoryEditor: React.FC<{
     [selectionState]
   )
 
-  const [dimensions, resizing] = useDebouncedDimension(editorRef, 100, true)
+  const [dimensions] = useDebouncedDimension(editorRef, 100, true)
 
   return (
     <>
       <OperatorsContext.Provider value={storyOperators}>
         <EditorContext.Provider value={editorContext}>
           <div
-            style={{ overflowY: scrollLocked ? 'hidden' : 'auto' }}
+            style={{
+              overflowY: scrollLocked ? 'hidden' : 'auto',
+              paddingRight: scrollLocked ? `${scrollbarWidth}px` : '0'
+            }}
             onKeyDown={keyDownHandler}
             tabIndex={1}
             className={cx(

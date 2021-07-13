@@ -5,19 +5,19 @@ import { useBlockSuspense, useMgetBlocksSuspense } from 'hooks/api'
 import { useDimensions } from 'hooks/useDimensions'
 import produce from 'immer'
 import invariant from 'invariant'
-import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { ThemingVariables } from 'styles'
 import { Editor } from 'types'
 import { createTranscation } from '../../../context/editorTranscations'
 import { BlockChildren } from '../ContentBlock'
-import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import { DroppingAreaIndicator } from '../DroppingAreaIndicator'
 import { DroppleableOverlay } from '../DroppleableOverlay'
+import { useBlockBehavior } from '../hooks/useBlockBehavior'
 
 const BREAK_POINT = 500
 const GAP_WIDTH = 40
 
-const _GridBlock: React.FC<{
+export const GridBlock: React.FC<{
   block: Editor.Block
 }> = ({ block }) => {
   const ref = useRef<HTMLDivElement | null>(null)
@@ -134,12 +134,12 @@ const _GridBlock: React.FC<{
   )
 }
 
-_GridBlock.whyDidYouRender = true
-export const GridBlock = memo(_GridBlock, (prev, next) => {
-  return prev.block.version === next.block.version
-})
+// _GridBlock.whyDidYouRender = true
+// export const GridBlock = memo(_GridBlock, (prev, next) => {
+//   return prev.block.version === next.block.version
+// })
 
-export const _ColumnBlock: React.FC<{
+export const ColumnBlock: React.FC<{
   id: string
   childrenCount: number
   width: number
@@ -316,4 +316,4 @@ export const _ColumnBlock: React.FC<{
   )
 }
 
-export const ColumnBlock = memo(_ColumnBlock)
+// export const ColumnBlock = memo(_ColumnBlock)
