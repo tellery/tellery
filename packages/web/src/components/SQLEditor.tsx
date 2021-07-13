@@ -174,9 +174,6 @@ export function SQLEditor(props: {
             .scroll-decoration {
               display: none;
             }
-            .detected-link {
-              text-decoration: unset !important;
-            }
           `
         )}
         wrapperClassName={props.className}
@@ -232,7 +229,6 @@ function TransclusionContentWidget(props: {
                   max-height: 360px;
                   box-shadow: ${ThemingVariables.boxShadows[0]};
                   border-radius: 8px;
-                  padding: 20px 15px 0 15px;
                   display: flex;
                   flex-direction: column;
                   background: ${ThemingVariables.colors.gray[5]};
@@ -244,7 +240,7 @@ function TransclusionContentWidget(props: {
                     font-weight: 600;
                     font-size: 16px;
                     line-height: 22px;
-                    margin: 0;
+                    margin: 20px 15px 0 15px;
                     color: ${ThemingVariables.colors.text[0]};
                   `}
                 >
@@ -254,11 +250,13 @@ function TransclusionContentWidget(props: {
                   className={css`
                     flex: 1;
                     height: 0;
-                    margin: 10px 0;
-                    overflow: scroll;
+                    padding: 10px 15px;
+                    overflow-y: auto;
                     font-family: Menlo, Monaco, 'Courier New', monospace;
                     line-height: 18px;
                     font-size: 12px;
+                    word-break: break-word;
+                    white-space: pre-wrap;
                   `}
                   dangerouslySetInnerHTML={{ __html: data }}
                 />
@@ -271,6 +269,7 @@ function TransclusionContentWidget(props: {
                     align-items: center;
                     justify-content: space-between;
                     padding: 14px 0;
+                    margin: 0 15px;
                     span {
                       font-size: 14px;
                       line-height: 16px;
