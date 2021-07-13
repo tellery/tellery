@@ -1,6 +1,7 @@
 import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { Diagram } from '@app/components/v11n'
 import { css, cx } from '@emotion/css'
+import styled from '@emotion/styled'
 import {
   IconCommonCopy,
   IconCommonMore,
@@ -407,9 +408,10 @@ const QuestionBlockFooter: React.FC<{
           overflow: hidden;
         `}
       >
+        <StatusIndicator size={10} status={loading ? 'loading' : 'success'} />
+
         <div
           className={css`
-            width: 100%;
             flex-grow: 0;
             flex-shrink: 1;
             margin-left: 4px;
@@ -420,6 +422,7 @@ const QuestionBlockFooter: React.FC<{
             color: ${ThemingVariables.colors.text[2]};
             white-space: nowrap;
             text-overflow: ellipsis;
+            display: inline-flex;
           `}
         >
           {loading
@@ -557,7 +560,7 @@ export const MoreDropdownSelect: React.FC<{
     <div>
       <IconButton
         icon={IconCommonMore}
-        color={ThemingVariables.colors.gray[0]}
+        color={ThemingVariables.colors.primary[0]}
         {...getToggleButtonProps({ ref: setReferenceElement })}
         className={cx(
           css`
@@ -677,6 +680,46 @@ const TitleButtonsInner: React.FC<{
     </>
   )
 }
+
+const StatusIndicator = styled.div<{ size: number; status: 'error' | 'loading' | 'success' }>`
+  --status-indicator-color: ${(props) => {
+    switch (props.status) {
+      case 'error':
+        return ThemingVariables.colors.negative[0]
+      case 'loading':
+        return ThemingVariables.colors.warning[0]
+      case 'success':
+        return ThemingVariables.colors.positive[0]
+      default:
+        return ThemingVariables.colors.positive[0]
+    }
+  }};
+  @keyframes status-indicator-pulse {
+    0% {
+      box-shadow: 0 0 0 0 ${ThemingVariables.colors.warning[1]};
+    }
+    70% {
+      box-shadow: 0 0 0 ${(props) => props.size}px transparent;
+    }
+    100% {
+      box-shadow: 0 0 0 0 transparent;
+    }
+  }
+
+  display: ${(props) => (props.status === 'success' ? 'none' : 'inline-block')};
+  border-radius: 50%;
+  width: ${(props) => props.size}px;
+  height: ${(props) => props.size}px;
+  animation-name: ${(props) => (props.status === 'loading' ? 'status-indicator-pulse' : '')};
+  animation-duration: 1.5s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: normal;
+  animation-delay: 0;
+  animation-fill-mode: none;
+  margin-right: 10px;
+  background-color: var(--status-indicator-color);
+`
 
 const QuestionBlockIconButton = css`
   width: 30px;
