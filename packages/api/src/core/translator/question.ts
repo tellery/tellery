@@ -30,6 +30,9 @@ async function translate(sql: string): Promise<string> {
 }
 
 async function loadSqlFromBlocks(blockIds: string[]): Promise<{ [k: string]: string }> {
+  if (_.isEmpty(blockIds)) {
+    return {}
+  }
   const records = await getRepository(BlockEntity).find({
     id: In(blockIds),
     alive: true,
