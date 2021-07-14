@@ -15,7 +15,7 @@ test.before(async () => {
   await createDatabaseCon()
 })
 
-test('translate', async (t) => {
+test('question translate', async (t) => {
   const storyId = nanoid()
   const blockId = nanoid()
   await getRepository(BlockEntity).save({
@@ -49,7 +49,7 @@ select * from t1`,
   await getRepository(BlockEntity).delete(blockId)
 })
 
-test('cyclic assemble', async (t) => {
+test('question cyclic assemble', async (t) => {
   const storyId = nanoid()
   const blockId1 = nanoid()
   const blockId2 = nanoid()
@@ -100,7 +100,7 @@ test('cyclic assemble', async (t) => {
   }
 })
 
-test('sqlMacro', (t) => {
+test('question sqlMacro', (t) => {
   const sql = `select * from {{blockId1 as t1}} left join {{blockId2}} p on t1.a = p.a union all {{ blockId3 }} order by c`
   const { mainBody, subs } = sqlMacro(sql)
   t.deepEqual(

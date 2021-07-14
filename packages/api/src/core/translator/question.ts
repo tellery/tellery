@@ -8,6 +8,29 @@ import { BlockType } from '../../types/block'
 import { DirectedGraph } from '../../utils/directedgraph'
 import { QuestionBlock } from '../block/question'
 
+const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 8)
+
+type PartialQuery = {
+  startIndex: number
+  endIndex: number
+  blockId: string
+  alias: string
+}
+
+type SQLPieces = {
+  subs: {
+    blockId: string
+    alias: string
+  }[]
+  mainBody: string
+}
+
+// Matching the form of {{ $blockId as $alias }} or {{ $blockId }}
+const partialQueryPattern = new RegExp(
+  `{{\\s*([a-zA-Z0-9-_]+)\\s*(?:as\\s+(\\w[\\w\\d]*))?\\s*}}`,
+  'gi',
+)
+
 /**
  * This is the default translator, its matching priority is the lowest. It will match all that is not matched by other Translator
  */
@@ -29,6 +52,9 @@ async function translate(sql: string): Promise<string> {
   return buildSqlFromGraph('root', graph)
 }
 
+/**
+ * @returns key: blockId, value: sql
+ */
 async function loadSqlFromBlocks(blockIds: string[]): Promise<{ [k: string]: string }> {
   if (_.isEmpty(blockIds)) {
     return {}
@@ -38,6 +64,11 @@ async function loadSqlFromBlocks(blockIds: string[]): Promise<{ [k: string]: str
     alive: true,
     type: BlockType.QUESTION,
   })
+
+  // validate the integrity of blocks
+  if (records.length !== blockIds.length) {
+    throw NotFoundError.resourceNotFound(_.xor(_(records).map('id').value(), blockIds).toString())
+  }
 
   return _(records)
     .map((r) => QuestionBlock.fromEntity(r) as QuestionBlock)
@@ -66,12 +97,6 @@ async function buildGraph(sql: string): Promise<DirectedGraph<SQLPieces, string>
       .value()
 
     const noIncludedSqls = await loadSqlFromBlocks(noIncludedBlockIds)
-    // validate the integrity of blocks
-    if (_(noIncludedSqls).size() !== noIncludedBlockIds.length) {
-      throw NotFoundError.resourceNotFound(
-        _.xor(_.keys(noIncludedSqls), noIncludedBlockIds).toString(),
-      )
-    }
 
     _(noIncludedSqls).forEach((sql, key) => queue.push({ key, node: sqlMacro(sql) }))
   }
@@ -105,29 +130,6 @@ function buildSqlFromGraph(rootKey: string, graph: DirectedGraph<SQLPieces, stri
   }
   return `${commonTableExprBody}\n${polishedMainBody}`
 }
-
-const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 8)
-
-type PartialQuery = {
-  startIndex: number
-  endIndex: number
-  blockId: string
-  alias: string
-}
-
-type SQLPieces = {
-  subs: {
-    blockId: string
-    alias: string
-  }[]
-  mainBody: string
-}
-
-// Matching the form of {{ $blockId as $alias }} or {{ $blockId }}
-const partialQueryPattern = new RegExp(
-  '\\{\\{\\s*([a-zA-Z0-9-_]+)\\s*(?:as\\s+(\\w[\\w\\d]*))?\\s*\\}\\}',
-  'gi',
-)
 
 function extractPartialQueries(sql: string): PartialQuery[] {
   const matches = Array.from(sql.matchAll(partialQueryPattern))

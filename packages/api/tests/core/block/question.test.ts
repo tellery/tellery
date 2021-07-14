@@ -1,9 +1,9 @@
-import test from 'ava';
-import { nanoid } from 'nanoid';
+import test from 'ava'
+import { nanoid } from 'nanoid'
 
-import { QuestionBlock } from '../../../src/core/block/question';
-import { BlockParentType } from '../../../src/types/block';
-import { LinkType } from '../../../src/types/link';
+import { QuestionBlock } from '../../../src/core/block/question'
+import { BlockParentType } from '../../../src/types/block'
+import { LinkType } from '../../../src/types/link'
 
 test('getLinksFromSql', (t) => {
   const block = new QuestionBlock(
