@@ -25,6 +25,7 @@ import { ThemingVariables } from 'styles'
 import { Editor, TellerySelection, TellerySelectionType } from 'types'
 import { mergeTokens, splitToken, tokenPosition2SplitedTokenPosition } from '..'
 import { EditorPopover } from '../EditorPopover'
+import { subscribeBlockMountedOnce } from '../helpers/blockObserver'
 import { tellerySelection2Native } from '../helpers/tellerySelection'
 import { useEditor } from '../hooks'
 
@@ -137,9 +138,10 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
         blockId = newBlock.id
       }
 
-      editor?.execOnNextFlush(() => {
+      subscribeBlockMountedOnce(blockId, () => {
         editor?.getBlockInstanceById(blockId)?.openMenu()
       })
+
       setOpen(false)
     },
     [editor, id, setOpen]

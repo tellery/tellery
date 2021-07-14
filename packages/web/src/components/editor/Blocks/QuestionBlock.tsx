@@ -26,7 +26,7 @@ import { AnimatePresence, motion, usePresence } from 'framer-motion'
 import { useOnClickOutside, useOnScreen } from 'hooks'
 import { useBlockSuspense, useSnapshot, useUser } from 'hooks/api'
 import { useInterval } from 'hooks/useInterval'
-import { useRefreshSnapshot, useSnapshotMutating } from 'hooks/useStorySnapshotManager'
+import { SnapshotMutation, useRefreshSnapshot, useSnapshotMutating } from 'hooks/useStorySnapshotManager'
 import html2canvas from 'html2canvas'
 import invariant from 'invariant'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -70,10 +70,10 @@ export const QuestionBlock: React.FC<{
       openMenu: () => {
         questionEditor.open({ mode: 'SQL', readonly, blockId: block.id, storyId: block.storyId! })
         // setIsPopoverOpen(true)
-      },
-      afterDuplicate: () => {
-        questionEditor.open({ mode: 'SQL', readonly, blockId: block.id, storyId: block.storyId! })
       }
+      // afterDuplicate: () => {
+      //   questionEditor.open({ mode: 'SQL', readonly, blockId: block.id, storyId: block.storyId! })
+      // }
     })
     return () => {
       editor?.registerOrUnregisterBlockInstance(block.id, undefined)
@@ -107,6 +107,16 @@ export const QuestionBlock: React.FC<{
   const snapshotId = originalBlock?.content?.snapshotId
   const visualization = block.content?.visualization
 
+  const mutateSnapshot = useRefreshSnapshot()
+  const mutatingCount = useSnapshotMutating(originalBlock.id)
+
+  useEffect(() => {
+    if (originalBlock.id === block.id && !snapshotId && originalBlock.content?.sql && mutatingCount === 0) {
+      mutateSnapshot.execute(originalBlock)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
     <div
       ref={ref}
@@ -116,13 +126,7 @@ export const QuestionBlock: React.FC<{
       onBlur={() => setBlockFocusing(false)}
     >
       {isEmptyBlock ? (
-        <BlockPlaceHolder
-          onClick={() => {
-            // setIsPopoverOpen(true)
-          }}
-          loading={false}
-          text="New Question"
-        />
+        <BlockPlaceHolder loading={false} text="New Question" />
       ) : (
         originalBlock && (
           <>
@@ -367,19 +371,11 @@ const QuestionBlockFooter: React.FC<{
   snapshotId?: string
 }> = ({ block, originalBlock, snapshotId }) => {
   const { data: snapshot } = useSnapshot(snapshotId)
-  const mutateSnapshot = useRefreshSnapshot(originalBlock, block.id, block.storyId!)
   const mutatingCount = useSnapshotMutating(originalBlock.id)
   const [mutatingStartTimeStamp, setMutatingStartTimeStamp] = useState(0)
   const [nowTimeStamp, setNowTimeStamp] = useState(0)
 
   const loading = mutatingCount !== 0
-
-  useEffect(() => {
-    if (originalBlock.id === block.id && !snapshotId && originalBlock.content?.sql && mutatingCount === 0) {
-      mutateSnapshot.execute()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   useEffect(() => {
     if (loading) {
@@ -644,7 +640,7 @@ const TitleButtonsInner: React.FC<{
   const [isActive, setIsActive] = useState(false)
   const [isPresent, safeToRemove] = usePresence()
   const questionEditor = useQuestionEditor()
-  const mutateSnapshot = useRefreshSnapshot(block, block.id, block.storyId!)
+  const mutateSnapshot = useRefreshSnapshot()
   const mutatingCount = useSnapshotMutating(block.id)
   const loading = mutatingCount !== 0
 
@@ -658,7 +654,7 @@ const TitleButtonsInner: React.FC<{
         color={ThemingVariables.colors.primary[1]}
         loading={loading}
         className={QuestionBlockIconButton}
-        onClick={loading ? mutateSnapshot.cancel : mutateSnapshot.execute}
+        onClick={loading ? () => mutateSnapshot.cancel(block.id) : () => mutateSnapshot.execute(block)}
       />
       <IconButton
         icon={IconVisualizationSetting}

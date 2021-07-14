@@ -1,3 +1,4 @@
+import { IconCommonLink } from '@app/assets/icons'
 import { css } from '@emotion/css'
 import React, { CSSProperties, useEffect, useRef } from 'react'
 import ReactDOMServer from 'react-dom/server'
@@ -119,7 +120,9 @@ export const Token = ({
     return (
       <>
         <a href={linkEntity[1]} data-token-index={index} target="_blank" rel="noopener noreferrer" style={styleGen()}>
-          <span style={{ whiteSpace: 'nowrap' }}></span>
+          <span style={{ whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+            <IconCommonLink height="1em" width="1em" viewBox="0 0 20 20" />
+          </span>
           {getTextElement(token, index)}
           <span style={{ whiteSpace: 'nowrap' }}></span>
         </a>

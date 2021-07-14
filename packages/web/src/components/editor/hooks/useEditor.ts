@@ -16,12 +16,12 @@ export type EditorContextInterface<BlockType> = {
   deleteBackward: (unit: 'character', options: { selection: TellerySelection }) => void
   registerOrUnregisterBlockInstance: (id: string, blockInstance?: BlockInstanceInterface) => void
   getBlockInstanceById: (id: string) => BlockInstanceInterface | undefined
-  execOnNextFlush: (func: Function) => void
   getSelection: () => TellerySelection | null
   toggleBlockType: (id: string, type: Editor.BlockType, removePrefixCount: number) => void
   lockOrUnlockScroll: (lock: boolean) => void
   selectBlocks: (blockIds: string[]) => void
   storyId: string
+  duplicateHandler: (blockIds: string[]) => Editor.BaseBlock[] | undefined
 }
 
 export const useEditor = <BlockType extends unknown>() => {

@@ -2,7 +2,7 @@ import { css, cx } from '@emotion/css'
 import { TelleryBlockSelectedAtom } from 'components/editor/store/selection'
 import { motion } from 'framer-motion'
 import { useBlockSuspense } from 'hooks/api'
-import React, { memo, ReactNode, useMemo, useRef } from 'react'
+import React, { memo, ReactNode, useEffect, useMemo, useRef } from 'react'
 import { useRecoilValue } from 'recoil'
 import { ThemingVariables } from 'styles'
 import { Editor } from 'types'
@@ -29,6 +29,7 @@ import { DroppleableOverlay } from './DroppleableOverlay'
 import { BlockFormatInterface, useBlockFormat } from './hooks/useBlockFormat'
 import { ErrorBoundary } from 'react-error-boundary'
 import { BlockBehaviorConext, useBlockBehavior } from './hooks/useBlockBehavior'
+import { emitBlockMounted } from './helpers/blockObserver'
 
 function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   return (
@@ -171,6 +172,12 @@ export const ContentBlockInner: React.FC<{
   const { small, readonly, highlightedBlock } = useBlockBehavior()
   const isHighlighted = highlightedBlock === block.id
   const ref = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (ref.current) {
+      emitBlockMounted(block, ref.current)
+    }
+  }, [block])
 
   if (block.type === Editor.BlockType.Row) {
     return <GridBlock block={block} />

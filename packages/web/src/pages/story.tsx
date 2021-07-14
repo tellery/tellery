@@ -47,11 +47,18 @@ const _Page: React.FC = () => {
       <VerticalLayout>
         <Layout>
           <StoryContainer>
-            <NavigationHeader storyId={id} story={story} title={title} pinned={pinned} locked={story.format?.locked} />
-
             <StoryEditor
               key={id}
               storyId={id}
+              top={
+                <NavigationHeader
+                  storyId={id}
+                  story={story}
+                  title={title}
+                  pinned={pinned}
+                  locked={story.format?.locked}
+                />
+              }
               className={css`
                 @media (max-width: 700px) {
                   padding: 20px 20px 0 20px;
