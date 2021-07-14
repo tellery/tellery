@@ -66,9 +66,9 @@ export const INLINE_STYLES = new Map([
       cursor: 'pointer',
       color: ThemingVariables.colors.primary[1],
       wordWrap: 'break-word',
-      fontWeight: 500,
       textDecoration: 'inherit',
-      userSelect: 'text'
+      userSelect: 'text',
+      borderBottom: 'solid 1px currentColor'
     })
   ]
 ])
