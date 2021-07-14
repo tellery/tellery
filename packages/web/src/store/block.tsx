@@ -66,6 +66,27 @@ export const TelleryBlockAtom = atomFamily<Editor.BaseBlock, string>({
   ]
 })
 
+export const TelleryStoryBlocks = selectorFamily<Record<string, Editor.BaseBlock>, string>({
+  key: 'TelleryStoryBlocks',
+  get:
+    (storyId) =>
+    ({ get }) => {
+      const result: Record<string, Editor.BaseBlock> = {}
+      const nodeStack = [storyId]
+
+      while (nodeStack.length !== 0) {
+        const currentNodeId = nodeStack.pop()
+        invariant(currentNodeId, 'currentNodeId is null')
+        const currentNode = get(TelleryBlockAtom(currentNodeId))
+        result[currentNodeId] = currentNode
+        const children = currentNode.children ?? []
+        nodeStack.push(...children)
+      }
+
+      return result
+    }
+})
+
 export const TelleryUserAtom = atomFamily({
   key: 'TelleryUserAtom',
   default: selectorFamily({

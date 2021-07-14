@@ -1,3 +1,4 @@
+import { getDuplicatedBlocks } from '@app/context/editorTranscations'
 import { useCreateEmptyBlock } from '@app/helpers/blockFactory'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import {
@@ -17,7 +18,7 @@ import invariant from 'invariant'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import ReactTestUtils from 'react-dom/test-utils'
 import { useRecoilState } from 'recoil'
-import { useBlockSnapshot } from 'store/block'
+import { getBlockFromSnapshot, useBlockSnapshot } from 'store/block'
 import { Direction, DnDItemTypes, DropItem, Editor } from 'types'
 import {
   BlockDndContext,
@@ -75,11 +76,13 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
           const overStoryId = overData?.storyId
           invariant(overData?.storyId, 'overing story id is null')
           if (item.storyId !== overStoryId) {
-            blockTranscations.duplicateBlocks(overStoryId, {
-              blockIds,
+            blockTranscations.insertBlocks(overStoryId, {
+              blocks: getDuplicatedBlocks(
+                blockIds.map((blockId) => getBlockFromSnapshot(blockId, snapshot)),
+                overStoryId
+              ),
               targetBlockId: id,
-              direction: droppingAreaRef.current.direction,
-              duplicate: true
+              direction: droppingAreaRef.current.direction
             })
           } else {
             blockTranscations.moveBlocks(overStoryId, {

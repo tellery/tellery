@@ -39,7 +39,7 @@ export const useWaitForBlockAndScrollTo = (
     if (blockId && containerRef?.current) {
       waitForElm(`[data-block-id='${blockId}']`).then((element: Element) => {
         scrollIntoView(element, {
-          scrollMode: 'always',
+          scrollMode: 'if-needed',
           block: 'center',
           // behavior: 'smooth',
           inline: 'nearest',

@@ -186,8 +186,8 @@ export const _NavigationHeader = (props: {
   )
 }
 
-export const RefreshAllQuestionBlockButton: React.FC<{ storyId: string }> = ({ storyId }) => {
-  const storySnapshotManger = useStorySnapshotManager(storyId)
+export const RefreshAllQuestionBlockButton: React.FC<{ storyId: string }> = () => {
+  const storySnapshotManger = useStorySnapshotManager()
 
   if (storySnapshotManger.total <= 0) return null
   return (
