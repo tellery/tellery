@@ -1,22 +1,20 @@
-import '../../src/core/block/init'
+import '../../../src/core/block/init'
 
 import test from 'ava'
 import { nanoid } from 'nanoid'
 import { getRepository } from 'typeorm'
 
-import { createDatabaseCon } from '../../src/clients/db/orm'
-import BlockEntity from '../../src/entities/block'
-import { CyclicTransclusionError } from '../../src/error/error'
-import { QuestionService } from '../../src/services/question'
-import { BlockParentType, BlockType } from '../../src/types/block'
-
-const questionService = new QuestionService()
+import { createDatabaseCon } from '../../../src/clients/db/orm'
+import BlockEntity from '../../../src/entities/block'
+import { CyclicTransclusionError } from '../../../src/error/error'
+import { BlockParentType, BlockType } from '../../../src/types/block'
+import { translate } from '../../../src/core/translator/question'
 
 test.before(async () => {
   await createDatabaseCon()
 })
 
-test('assembleSql', async (t) => {
+test('translate', async (t) => {
   const storyId = nanoid()
   const blockId = nanoid()
   await getRepository(BlockEntity).save({
@@ -37,7 +35,7 @@ test('assembleSql', async (t) => {
   const refId = `${blockId}`
   const sql = `select * from {{${refId} as t1}}`
 
-  const sqlBody = await questionService.assembleSql(sql)
+  const sqlBody = await translate(sql)
 
   t.deepEqual(
     sqlBody,
@@ -90,7 +88,7 @@ test('cyclic assemble', async (t) => {
   const sql = `select * from {{${blockId1} as t1}}`
 
   try {
-    await questionService.assembleSql(sql)
+    await translate(sql)
     t.fail()
   } catch (e) {
     if (!(e instanceof CyclicTransclusionError)) {

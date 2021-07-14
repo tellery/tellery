@@ -5,13 +5,13 @@ import Router from 'koa-router'
 import { nanoid } from 'nanoid'
 import { getIConnectorManager, getIConnectorManagerFromDB } from '../clients/connector'
 import connectorService from '../services/connector'
-import questionService from '../services/question'
 import storageService from '../services/storage'
 import { AuthData, AuthType } from '../types/auth'
 import { errorResponse, validate } from '../utils/http'
 import { mustGetUser } from '../utils/user'
 import { streamHttpErrorCb, withKeepaliveStream } from '../utils/stream'
 import { StorageError } from '../error/error'
+import { getSqlTranslator } from '../core/translator'
 
 class AddConnectorRequest {
   @IsDefined()
@@ -329,7 +329,7 @@ async function execute(ctx: Context) {
   const user = mustGetUser(ctx)
   const { workspaceId, connectorId, profile, sql, maxRow, questionId } = payload
 
-  const assembledSql = await questionService.assembleSql(sql)
+  const assembledSql = await getSqlTranslator(sql).translate(sql)
 
   const manager = await getIConnectorManagerFromDB(connectorId)
 
