@@ -304,6 +304,7 @@ export const Thought: React.FC<{ id: string; date: string }> = ({ id, date }) =>
           key={id}
           showTitle={false}
           fullWidth
+          defaultOverflowY="visible"
           className={css`
             padding: 0 80px;
           `}

@@ -85,8 +85,9 @@ const _StoryEditor: React.FC<{
   paddingHorizon?: number
   scrollToBlockId?: string | null
   top?: ReactNode
+  defaultOverflowY?: 'auto' | 'visible' | 'hidden'
 }> = (props) => {
-  const { storyId } = props
+  const { storyId, defaultOverflowY = 'auto' } = props
   const editorRef = useRef<HTMLDivElement | null>(null)
   const editorBlocksRef = useRef<HTMLDivElement | null>(null)
   const [hoverBlockId, setHoverBlockId] = useRecoilState(HovreringBlockId)
@@ -1293,7 +1294,7 @@ const _StoryEditor: React.FC<{
             {props.top}
             <div
               style={{
-                overflowY: scrollLocked ? 'hidden' : 'auto',
+                overflowY: scrollLocked ? 'hidden' : defaultOverflowY,
                 paddingRight: scrollLocked ? `${scrollbarWidth}px` : '0'
               }}
               onKeyDown={keyDownHandler}
