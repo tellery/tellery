@@ -17,6 +17,8 @@ import invariant from 'invariant'
 import isHotkey from 'is-hotkey'
 import React, { CSSProperties, memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRecoilState } from 'recoil'
+import scrollIntoView from 'scroll-into-view-if-needed'
+import computeScrollIntoView from 'compute-scroll-into-view'
 import { BlockSnapshot, getBlockFromSnapshot, useBlockSnapshot } from 'store/block'
 import { ThemingVariables } from 'styles'
 import { Editor, Story, TellerySelection, TellerySelectionType, Thought } from 'types'
@@ -679,12 +681,31 @@ const _StoryEditor: React.FC<{
         targetBlockId: blockIds[blockIds.length - 1],
         direction: 'bottom'
       })
-      const lastBlockId = duplicatedBlocks[duplicatedBlocks.length - 1].id
       setSelectedBlocks(duplicatedBlocks.map((block) => block.id))
-      setScrollToBlockId(lastBlockId)
+      if (duplicatedBlocks && duplicatedBlocks.length === 1) {
+        const currentBlock = duplicatedBlocks[0]
+        const blockId = currentBlock.id
+        subscribeBlockMountedOnce(blockId, (_block, element) => {
+          if (currentBlock.type === Editor.BlockType.Question) {
+            getBlockInstanceById(blockId)?.openMenu()
+          }
+          setTimeout(() => {
+            const actions = computeScrollIntoView(element, {
+              scrollMode: 'if-needed',
+              block: 'end',
+              inline: 'nearest',
+              boundary: editorRef.current
+            })
+            actions.forEach(({ el, top, left }) => {
+              el.scrollTop = top + 100
+              el.scrollLeft = left
+            })
+          }, 100)
+        })
+      }
       return duplicatedBlocks
     },
-    [blockTranscations, setSelectedBlocks, snapshot, storyId]
+    [blockTranscations, getBlockInstanceById, setSelectedBlocks, snapshot, storyId]
   )
 
   const keyDownHandler = useCallback(

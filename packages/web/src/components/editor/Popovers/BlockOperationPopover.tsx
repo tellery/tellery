@@ -144,13 +144,8 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
           action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault()
             e.stopPropagation()
-            const newBlocks = editor?.duplicateHandler([id])
-            if (newBlocks && newBlocks.length === 1) {
-              const blockId = newBlocks[0].id
-              subscribeBlockMountedOnce(blockId, () => {
-                editor?.getBlockInstanceById(blockId)?.openMenu()
-              })
-            }
+            editor?.duplicateHandler([id])
+
             close()
           }
         }
