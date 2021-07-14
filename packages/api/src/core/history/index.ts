@@ -20,9 +20,7 @@ export interface IHistoryStore {
     next?: LoadMoreKey,
   ): Promise<StoryHistoryVersion[]>
 
-  getStoryBlocksAndLinksByVersionId(
-    versionId: string,
-  ): Promise<{
+  getStoryBlocksAndLinksByVersionId(versionId: string): Promise<{
     blocks: BlockEntity[]
     links: LinkEntity[]
   }>

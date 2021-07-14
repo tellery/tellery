@@ -1,4 +1,4 @@
-import { plainToClass, Type } from 'class-transformer';
+import { plainToClass, Type } from 'class-transformer'
 import {
   IsArray,
   IsBoolean,
@@ -9,17 +9,17 @@ import {
   IsOptional,
   IsString,
   ValidateNested,
-} from 'class-validator';
-import { Context } from 'koa';
-import Router from 'koa-router';
-import { set } from 'lodash';
+} from 'class-validator'
+import { Context } from 'koa'
+import Router from 'koa-router'
+import { set } from 'lodash'
 
-import workspaceService from '../services/workspace';
-import { LoadMoreKey } from '../types/common';
-import { PermissionWorkspaceRole } from '../types/permission';
-import { hasSMTPHost, hex2String } from '../utils/common';
-import { validate } from '../utils/http';
-import { mustGetUser } from '../utils/user';
+import workspaceService from '../services/workspace'
+import { LoadMoreKey } from '../types/common'
+import { PermissionWorkspaceRole } from '../types/permission'
+import { hasSMTPHost, hex2String } from '../utils/common'
+import { validate } from '../utils/http'
+import { mustGetUser } from '../utils/user'
 
 class ListWorkspacesRequest {
   @ValidateNested()
@@ -212,11 +212,7 @@ async function inviteMembers(ctx: Context) {
 
   const user = mustGetUser(ctx)
 
-  const res = await workspaceService.inviteMembers(
-    user.id,
-    payload.workspaceId,
-    payload.users,
-  )
+  const res = await workspaceService.inviteMembers(user.id, payload.workspaceId, payload.users)
   ctx.body = res
 }
 

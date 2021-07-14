@@ -35,7 +35,7 @@ test('test merging block activity', async (t) => {
     wid,
     oid,
     sid,
-    ({ id: bid, content: 'before', alive: true } as any) as Block,
+    { id: bid, content: 'before', alive: true } as any as Block,
     0,
   )
   const updated = new BlockUpdatedActivity( // edit
@@ -43,8 +43,8 @@ test('test merging block activity', async (t) => {
     wid,
     oid,
     sid,
-    ({ id: bid, content: 'before', alive: true } as any) as Block,
-    ({ id: bid, content: 'after', alive: true } as any) as Block,
+    { id: bid, content: 'before', alive: true } as any as Block,
+    { id: bid, content: 'after', alive: true } as any as Block,
     0,
   )
 
@@ -53,8 +53,8 @@ test('test merging block activity', async (t) => {
     wid,
     oid,
     sid,
-    ({ id: bid, content: 'after', alive: true } as any) as Block,
-    ({ id: bid, content: 'after', alive: false } as any) as Block,
+    { id: bid, content: 'after', alive: true } as any as Block,
+    { id: bid, content: 'after', alive: false } as any as Block,
     0,
   )
 
@@ -116,7 +116,7 @@ test('save block activities', async (t) => {
       operatorId: 'testUser',
       timestamp,
       // resource after update
-      after: ({ id: bid1, storyId: sid, content: 'before', alive: true } as any) as Block,
+      after: { id: bid1, storyId: sid, content: 'before', alive: true } as any as Block,
     },
     {
       id: bid1,
@@ -124,9 +124,9 @@ test('save block activities', async (t) => {
       workspaceId: 'test',
       operatorId: 'testUser',
       timestamp: timestamp + 5000,
-      before: ({ id: bid1, storyId: sid, content: 'before', alive: true } as any) as Block,
+      before: { id: bid1, storyId: sid, content: 'before', alive: true } as any as Block,
       // resource after update
-      after: ({ id: bid1, storyId: sid, content: 'after', alive: true } as any) as Block,
+      after: { id: bid1, storyId: sid, content: 'after', alive: true } as any as Block,
     },
     {
       id: bid2,
@@ -135,7 +135,7 @@ test('save block activities', async (t) => {
       operatorId: 'testUser',
       timestamp: timestamp + 10000,
       // resource after update
-      after: ({ id: bid2, storyId: sid, content: 'before', alive: true } as any) as Block,
+      after: { id: bid2, storyId: sid, content: 'before', alive: true } as any as Block,
     },
     {
       id: bid2,
@@ -143,9 +143,9 @@ test('save block activities', async (t) => {
       workspaceId: 'test',
       operatorId: 'testUser',
       timestamp: nowTimestamp,
-      before: ({ id: bid2, storyId: sid, content: 'before', alive: true } as any) as Block,
+      before: { id: bid2, storyId: sid, content: 'before', alive: true } as any as Block,
       // resource after update
-      after: ({ id: bid2, storyId: sid, content: 'before', alive: false } as any) as Block,
+      after: { id: bid2, storyId: sid, content: 'before', alive: false } as any as Block,
     },
   ])
 

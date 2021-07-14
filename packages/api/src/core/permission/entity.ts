@@ -40,8 +40,9 @@ export function getRoleInStory(
   operatorId: string,
   block: BlockEntity,
 ): PermissionEntityRole | undefined {
-  const userRole = _(block.permissions).find((permission) => _(permission).get('id') === operatorId)
-    ?.role
+  const userRole = _(block.permissions).find(
+    (permission) => _(permission).get('id') === operatorId,
+  )?.role
   const workspaceRole = _(block.permissions).find(
     (permission) => permission.type === PermissionEntityRoleType.WORKSPACE,
   )?.role

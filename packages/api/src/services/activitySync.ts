@@ -32,7 +32,7 @@ export class ActivitySyncService {
     after: IOperationEntity,
     before?: IOperationEntity,
   ): Payload {
-    let art = (table as any) as ActivityResourceType
+    let art = table as any as ActivityResourceType
     // distinguish block and story
     if (art === ActivityResourceType.BLOCK && (after as Block).getType() === BlockType.STORY) {
       art = ActivityResourceType.STORY

@@ -3,12 +3,12 @@
  */
 export interface ISqlTranslator {
   /**
-   * Can SQL can be translated by this Translator 
+   * Can SQL can be translated by this Translator
    */
-  match(param: string) :boolean
+  match(param: string): boolean
 
   /**
-   * Assist param to an executable statement 
+   * Assist param to an executable statement
    */
   translate(param: string): Promise<string>
 }

@@ -152,7 +152,7 @@ test('inviteMembersWorkspace', async (t) => {
   t.is(first?.role, PermissionWorkspaceRole.ADMIN)
   // NOTE user status
   t.is(first?.status, WorkspaceMemberStatus.ACTIVE)
-  
+
   t.not(linkPairs[email], undefined)
   const firstUser = await getRepository(UserEntity).findOne(first?.userId)
   // invited user status is confirmed
