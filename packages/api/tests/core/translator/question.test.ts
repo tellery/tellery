@@ -1,6 +1,7 @@
 import '../../../src/core/block/init'
 
 import test from 'ava'
+import _ from 'lodash'
 import { nanoid } from 'nanoid'
 import { getRepository } from 'typeorm'
 
@@ -8,7 +9,7 @@ import { createDatabaseCon } from '../../../src/clients/db/orm'
 import BlockEntity from '../../../src/entities/block'
 import { CyclicTransclusionError } from '../../../src/error/error'
 import { BlockParentType, BlockType } from '../../../src/types/block'
-import { translate } from '../../../src/core/translator/question'
+import { sqlMacro, translate } from '../../../src/core/translator/question'
 
 test.before(async () => {
   await createDatabaseCon()
@@ -97,4 +98,15 @@ test('cyclic assemble', async (t) => {
   } finally {
     await getRepository(BlockEntity).delete([blockId1, blockId2])
   }
+})
+
+test('sqlMacro', (t) => {
+  const sql = `select * from {{blockId1 as t1}} left join {{blockId2}} p on t1.a = p.a union all {{ blockId3 }} order by c`
+  const { mainBody, subs } = sqlMacro(sql)
+  t.deepEqual(
+    mainBody,
+    `select * from t1 left join ${subs[1].alias} p on t1.a = p.a union all ${subs[2].alias} order by c`,
+  )
+  t.deepEqual(_(subs).map('blockId').value(), ['blockId1', 'blockId2', 'blockId3'])
+  t.deepEqual(subs[0].alias, 't1')
 })

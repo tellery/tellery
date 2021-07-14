@@ -1,8 +1,10 @@
-import { uniqBy } from 'lodash'
+import { map, uniqBy } from 'lodash'
 import { Block, getPlainTextFromTokens } from '.'
 import { BlockType } from '../../types/block'
+import { LinkType } from '../../types/link'
 import { Token } from '../../types/token'
-import { getLinksFromSql, Link } from '../link'
+import { Link } from '../link'
+import { extractPartialQueries } from '../translator/question'
 
 type QuestionBlockContent = {
   title: Token[]
@@ -32,8 +34,17 @@ export class QuestionBlock extends Block {
     if (!this.alive) {
       return []
     }
+    const input = this.getSql()
+    if (!input) {
+      return []
+    }
+    const partialQueries = extractPartialQueries(input)
+    const links = map(partialQueries, ({ blockId }) => ({
+      blockId,
+      type: LinkType.QUESTION,
+    }))
     // extract questions it referred by transclusion from its sql
-    return uniqBy(getLinksFromSql(this.getSql()), 'blockId')
+    return uniqBy(links, 'blockId')
   }
 
   getSql(): string {
