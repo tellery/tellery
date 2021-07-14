@@ -62,15 +62,18 @@ export const useRefreshSnapshot = () => {
     [commit, queryClient, workspace.id, workspace.preferences.connectorId, workspace.preferences.profile]
   )
 
-  const cancel = useCallback(() => {
-    const mutations = queryClient.getMutationCache().getAll()
-    mutations
-      .filter((mutation) => (mutation.options.mutationKey as string)?.endsWith(block.id))
-      .forEach((mutation) => {
-        queryClient.getMutationCache().remove(mutation)
-      })
-    // executeSQL.reset()
-  }, [queryClient])
+  const cancel = useCallback(
+    (blockId) => {
+      const mutations = queryClient.getMutationCache().getAll()
+      mutations
+        .filter((mutation) => (mutation.options.mutationKey as string)?.endsWith(blockId))
+        .forEach((mutation) => {
+          queryClient.getMutationCache().remove(mutation)
+        })
+      // executeSQL.reset()
+    },
+    [queryClient]
+  )
 
   const snapshotMutation = useMemo<SnapshotMutation>(
     () => ({
@@ -133,5 +136,5 @@ export const useSnapshotMutating = (originalBlockId: string) => {
 
 export interface SnapshotMutation {
   execute: (questionBlock: Editor.QuestionBlock) => void
-  cancel: () => void
+  cancel: (blockId: string) => void
 }

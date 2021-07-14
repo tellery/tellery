@@ -654,7 +654,7 @@ const TitleButtonsInner: React.FC<{
         color={ThemingVariables.colors.primary[1]}
         loading={loading}
         className={QuestionBlockIconButton}
-        onClick={loading ? mutateSnapshot.cancel : () => mutateSnapshot.execute(block)}
+        onClick={loading ? () => mutateSnapshot.cancel(block.id) : () => mutateSnapshot.execute(block)}
       />
       <IconButton
         icon={IconVisualizationSetting}
