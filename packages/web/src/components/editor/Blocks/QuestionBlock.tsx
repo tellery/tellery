@@ -111,7 +111,6 @@ export const QuestionBlock: React.FC<{
   const mutateSnapshot = useRefreshSnapshot()
   const mutatingCount = useSnapshotMutating(originalBlock.id)
 
-  const snapshot = useSnapshot(snapshotId)
   // TODO: story render may cause performance issue
   const story = useBlockSuspense<Story>(block.storyId!)
   const refreshOnOpen = !!story.format?.refreshOnOpen
@@ -119,10 +118,11 @@ export const QuestionBlock: React.FC<{
   useEffect(() => {
     if (refreshOnOpen && mutatingCount === 0) {
       if (dayjs().diff(dayjs(block.content?.lastRunAt ?? 0)) > 1000 * 5 * 60) {
-        mutateSnapshot.execute(originalBlock)
+        mutateSnapshot.execute(block)
       }
     }
-  }, [snapshot, snapshotId, refreshOnOpen, mutatingCount, block.content?.lastRunAt, mutateSnapshot, originalBlock])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshOnOpen, mutatingCount, block.content?.lastRunAt, mutateSnapshot])
 
   useEffect(() => {
     if (originalBlock.id === block.id && !snapshotId && originalBlock.content?.sql && mutatingCount === 0) {
