@@ -111,6 +111,7 @@ export namespace Editor {
     snapshotId?: string
     visualization?: Config<Type>
     sql?: string
+    error?: string | null
   }
 
   export type CodeBlockContent = {

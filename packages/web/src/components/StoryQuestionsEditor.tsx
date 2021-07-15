@@ -605,6 +605,7 @@ export const StoryQuestionEditor: React.FC<{
       draftBlock.content!.sql = sql
       draftBlock.content!.snapshotId = snapShotId
       draftBlock.content!.visualization = visualizationConfig
+      draftBlock.content!.error = null
     })
   }, [block, isDraft, readonly, sql, setBlock, snapShotId, visualizationConfig])
 

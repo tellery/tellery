@@ -32,6 +32,20 @@ export const useRefreshSnapshot = () => {
         mutationKey: ['story', questionBlock.storyId, questionBlock.id, originalBlockId].join('/'),
         onSuccess: async (data) => {
           if (typeof data !== 'object' || data.errMsg) {
+            commit({
+              storyId: questionBlock.storyId!,
+              transcation: createTranscation({
+                operations: [
+                  {
+                    cmd: 'update',
+                    id: originalBlockId,
+                    path: ['content', 'error'],
+                    table: 'block',
+                    args: data.errMsg ?? data
+                  }
+                ]
+              })
+            })
             return
           }
           const snapshotId = nanoid()
@@ -46,6 +60,13 @@ export const useRefreshSnapshot = () => {
             storyId: questionBlock.storyId!,
             transcation: createTranscation({
               operations: [
+                {
+                  cmd: 'update',
+                  id: originalBlockId,
+                  path: ['content', 'error'],
+                  table: 'block',
+                  args: ''
+                },
                 {
                   cmd: 'update',
                   id: originalBlockId,

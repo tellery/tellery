@@ -2,6 +2,7 @@ import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { Diagram } from '@app/components/v11n'
 import { css, cx } from '@emotion/css'
 import styled from '@emotion/styled'
+import Tippy from '@tippyjs/react'
 import {
   IconCommonCopy,
   IconCommonMore,
@@ -26,7 +27,7 @@ import { AnimatePresence, motion, usePresence } from 'framer-motion'
 import { useOnClickOutside, useOnScreen } from 'hooks'
 import { useBlockSuspense, useSnapshot, useUser } from 'hooks/api'
 import { useInterval } from 'hooks/useInterval'
-import { SnapshotMutation, useRefreshSnapshot, useSnapshotMutating } from 'hooks/useStorySnapshotManager'
+import { useRefreshSnapshot, useSnapshotMutating } from 'hooks/useStorySnapshotManager'
 import html2canvas from 'html2canvas'
 import invariant from 'invariant'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -404,7 +405,38 @@ const QuestionBlockFooter: React.FC<{
           overflow: hidden;
         `}
       >
-        <StatusIndicator size={10} status={loading ? 'loading' : 'success'} />
+        <Tippy
+          content={
+            <div
+              className={css`
+                max-height: 100px;
+                overflow: auto;
+              `}
+            >
+              {block.content?.error} 333
+            </div>
+          }
+          // hideOnClick={true}
+          // theme="tellery"
+          animation="fade"
+          duration={150}
+          arrow={false}
+          interactive
+          // trigger="click"
+          popperOptions={{
+            modifiers: [
+              {
+                name: 'offset',
+                enabled: true,
+                options: {
+                  offset: [10, 20]
+                }
+              }
+            ]
+          }}
+        >
+          <StatusIndicator size={10} status={block.content?.error ? 'error' : loading ? 'loading' : 'success'} />
+        </Tippy>
 
         <div
           className={css`
