@@ -9,12 +9,7 @@ import { createDatabaseCon } from '../../../src/clients/db/orm'
 import BlockEntity from '../../../src/entities/block'
 import { CyclicTransclusionError } from '../../../src/error/error'
 import { BlockParentType, BlockType } from '../../../src/types/block'
-import {
-  buildSqlFromGraph,
-  buildSqlFromGraphWithStack,
-  sqlMacro,
-  translate,
-} from '../../../src/core/translator'
+import { buildSqlFromGraph, sqlMacro, translate } from '../../../src/core/translator'
 import { DirectedGraph } from '../../../src/utils/directedgraph'
 import { Block, register } from '../../../src/core/block'
 import { QuestionBlock } from '../../../src/core/block/question'
@@ -166,9 +161,13 @@ test('buildSqlFromGraph', async (t) => {
   g.addEdge('root', bid)
   g.addEdge(bid, bid2)
   g.addEdge(bid2, bid3)
-  const sqlCycle = buildSqlFromGraph('root', g)
-  const sqlStack = buildSqlFromGraphWithStack(g)
-  stringCompare(t, sqlCycle, sqlStack)
+  const sqlStack = buildSqlFromGraph(g)
+
+  stringCompare(
+    t,
+    sqlStack,
+    'WITH t1 AS ( WITH t2 AS ( WITH t3 AS ( WITH RECURSIVE result AS ( SELECT id, children FROM blocks WHERE id = a UNION ALL SELECT origin.id, origin.children FROM result JOIN blocks origin ON origin.id = ANY(result.children)) updateSql ) select * from t3 ) select * from t2 ) select * from t1',
+  )
 })
 
 function stringCompare(t: ExecutionContext<any>, a: string, b: string) {

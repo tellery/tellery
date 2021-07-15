@@ -49,7 +49,7 @@ async function translate(sql: string): Promise<string> {
     throw CyclicTransclusionError.new()
   }
 
-  return buildSqlFromGraphWithStack(graph)
+  return buildSqlFromGraph(graph)
 }
 
 /**
@@ -113,7 +113,7 @@ async function buildGraph(sql: string): Promise<DirectedGraph<SQLPieces, string>
   return res
 }
 
-export function buildSqlFromGraphWithStack(graph: DirectedGraph<SQLPieces, string>): string {
+export function buildSqlFromGraph(graph: DirectedGraph<SQLPieces, string>): string {
   const sqlMap: { [k: string]: string } = {}
 
   const root = graph.getNode(rootKey)
@@ -176,37 +176,6 @@ export function buildSqlFromGraphWithStack(graph: DirectedGraph<SQLPieces, strin
     }
   }
   return sqlMap[rootKey]
-}
-
-export function buildSqlFromGraph(
-  rootKey: string,
-  graph: DirectedGraph<SQLPieces, string>,
-): string {
-  const { subs, mainBody } = graph.getNode(rootKey)
-
-  const commonTableExprs = subs.map(({ blockId, alias }) => {
-    const cteBody = buildSqlFromGraph(blockId, graph)
-    return `  ${alias} AS (\n    ${cteBody.replace(/\n/g, '\n    ')}\n  )`
-  })
-
-  if (commonTableExprs.length === 0) {
-    return mainBody
-  }
-
-  // remove leading space and newlines, for further check
-  const polishedMainBody = mainBody.trim()
-
-  // compatible with `with recursive clause` in main body
-  if (polishedMainBody.toLowerCase().startsWith('with recursive')) {
-    return `WITH RECURSIVE \n${commonTableExprs.join(',\n')},\n${polishedMainBody.substring(15)}`
-  }
-
-  const commonTableExprBody = `WITH\n${commonTableExprs.join(',\n')}`
-  // compatible with `with clause` in main body
-  if (polishedMainBody.toLowerCase().startsWith('with ')) {
-    return `${commonTableExprBody},\n${polishedMainBody.substring(5)}`
-  }
-  return `${commonTableExprBody}\n${polishedMainBody}`
 }
 
 function extractPartialQueries(sql: string): PartialQuery[] {
