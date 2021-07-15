@@ -144,6 +144,25 @@ export function SQLEditor(props: {
       })
     }
   }, [editor, contentWidgets])
+  useEffect(() => {
+    if (!editor) {
+      return
+    }
+    const { dispose } = editor.onDidChangeCursorPosition((e) => {
+      const match = matches.find(({ range }) => range.containsPosition(e.position))
+      if (!match?.matches?.[0]) {
+        return
+      }
+      if (
+        match.range.getStartPosition().isBefore(e.position) &&
+        (e.position.isBefore(match.range.getEndPosition()) ||
+          (e.source === 'deleteLeft' && e.position.isBeforeOrEqual(match.range.getEndPosition())))
+      ) {
+        editor.setSelection(match.range)
+      }
+    })
+    return dispose
+  }, [editor, contentWidgets, matches])
   const widgets = useMemo(
     () =>
       matches.map((match, index) => {
@@ -218,7 +237,6 @@ function TransclusionContentWidget(props: {
         <Tippy
           visible={visible}
           theme="tellery"
-          followCursor={true}
           duration={150}
           content={
             data ? (
@@ -300,8 +318,6 @@ function TransclusionContentWidget(props: {
             setVisible(false)
           }}
           arrow={false}
-          sticky="popper"
-          trigger="manual"
         >
           <div
             className={css`
