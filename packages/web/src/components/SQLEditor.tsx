@@ -218,7 +218,6 @@ function TransclusionContentWidget(props: {
         <Tippy
           visible={visible}
           theme="tellery"
-          followCursor={true}
           duration={150}
           content={
             data ? (
@@ -300,8 +299,6 @@ function TransclusionContentWidget(props: {
             setVisible(false)
           }}
           arrow={false}
-          sticky="popper"
-          trigger="manual"
         >
           <div
             className={css`
