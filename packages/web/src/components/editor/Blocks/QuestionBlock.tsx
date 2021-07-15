@@ -46,7 +46,7 @@ import type { BlockFormatInterface } from '../hooks/useBlockFormat'
 import type { OperationInterface } from '../Popovers/BlockOperationPopover'
 import { DEFAULT_QUESTION_BLOCK_ASPECT_RATIO, DEFAULT_QUESTION_BLOCK_WIDTH } from '../utils'
 
-const FOOTER_HEIGHT = 56
+const FOOTER_HEIGHT = 20
 
 export const QuestionBlock: React.FC<{
   block: Editor.QuestionBlock
@@ -136,6 +136,7 @@ export const QuestionBlock: React.FC<{
               titleEditing={titleEditing || isInputFocusing}
               block={block}
             />
+            <QuestionBlockStatus snapshotId={snapshotId} block={block} originalBlock={originalBlock} />
             <motion.div
               style={{
                 paddingTop: props.blockFormat.paddingTop
@@ -152,7 +153,6 @@ export const QuestionBlock: React.FC<{
               }}
             >
               <QuestionBlockBody ref={contentRef} snapshotId={snapshotId} visualization={visualization} />
-
               {readonly === false && (
                 <BlockResizer
                   blockFormat={props.blockFormat}
@@ -163,7 +163,11 @@ export const QuestionBlock: React.FC<{
                 />
               )}
             </motion.div>
-            <QuestionBlockFooter snapshotId={snapshotId} block={block} originalBlock={originalBlock} />
+            <div
+              className={css`
+                height: ${FOOTER_HEIGHT}px;
+              `}
+            />
           </>
         )
       )}
@@ -318,8 +322,8 @@ const QuestionBlockHeader: React.FC<{
           align-items: center;
           justify-content: flex-start;
           align-self: stretch;
-          height: 60px;
-          padding: 20px;
+          height: 40px;
+          padding: 20px 20px 0 20px;
         `}
       >
         <div
@@ -327,14 +331,13 @@ const QuestionBlockHeader: React.FC<{
             display: flex;
             align-items: center;
             flex: 1;
-            padding: 5px 5px;
           `}
         >
           <div
             className={cx(
               css`
                 font-style: normal;
-                font-weight: 500;
+                font-weight: 600;
                 font-size: 1em;
                 line-height: 1.2;
                 color: ${ThemingVariables.colors.text[0]};
@@ -366,7 +369,7 @@ const QuestionBlockHeader: React.FC<{
   )
 }
 
-const QuestionBlockFooter: React.FC<{
+const QuestionBlockStatus: React.FC<{
   block: Editor.QuestionBlock
   originalBlock: Editor.QuestionBlock
   snapshotId?: string
@@ -400,8 +403,8 @@ const QuestionBlockFooter: React.FC<{
           align-items: center;
           justify-content: flex-start;
           align-self: stretch;
-          padding: 16px 20px 20px;
-          height: ${FOOTER_HEIGHT}px;
+          padding: 3px 20px 20px;
+          height: 37px;
           overflow: hidden;
         `}
       >
@@ -442,11 +445,11 @@ const QuestionBlockFooter: React.FC<{
           className={css`
             flex-grow: 0;
             flex-shrink: 1;
-            margin-left: 4px;
             overflow: hidden;
             align-items: center;
             font-weight: 600;
             font-size: 12px;
+            line-height: 14px;
             color: ${ThemingVariables.colors.text[2]};
             white-space: nowrap;
             text-overflow: ellipsis;
