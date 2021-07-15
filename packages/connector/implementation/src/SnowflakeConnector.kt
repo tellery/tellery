@@ -17,11 +17,34 @@ import java.sql.Connection
 @Connector(
     type = "Snowflake",
     configs = [
-        Config(name="Account Name", type=ConfigType.STRING, description = "Your Snowflake account name",hint="xy12345", required=true),
-        Config(name="Region Id", type=ConfigType.STRING, description="Your region Id", hint="us-ease-2.aws", required=true),
-        Config(name="Role", type=ConfigType.STRING, description="The default access control role to use in the Snowflake session", hint="SYSADMIN"),
-        Config(name="Warehouse", type=ConfigType.STRING, description="The virtual warehouse to use once connected by default", hint="COMPUTE_WH")
-])
+        Config(
+            name = "Account Name",
+            type = ConfigType.STRING,
+            description = "Your Snowflake account name",
+            hint = "xy12345",
+            required = true
+        ),
+        Config(
+            name = "Region Id",
+            type = ConfigType.STRING,
+            description = "Your region Id",
+            hint = "us-ease-2.aws",
+            required = true
+        ),
+        Config(
+            name = "Role",
+            type = ConfigType.STRING,
+            description = "The default access control role to use in the Snowflake session",
+            hint = "SYSADMIN"
+        ),
+        Config(
+            name = "Warehouse",
+            type = ConfigType.STRING,
+            description = "The virtual warehouse to use once connected by default",
+            hint = "COMPUTE_WH"
+        )
+    ]
+)
 class SnowflakeConnector : JDBCConnector() {
 
     override val driverClassName = "net.snowflake.client.jdbc.SnowflakeDriver"
@@ -31,7 +54,10 @@ class SnowflakeConnector : JDBCConnector() {
     override fun buildConnectionStr(profile: Profile): String {
         val accountName = profile.configs["Account Name"]
         val regionId = profile.configs["Region Id"]
-        return "jdbc:snowflake://${accountName}.${regionId}.snowflakecomputing.com/${buildOptionalsFromConfigs(profile.configs.filterKeys { it in setOf("Role", "Warehouse") })}"
+        return "jdbc:snowflake://${accountName}.${regionId}.snowflakecomputing.com/${
+            buildOptionalsFromConfigs(
+                profile.configs.filterKeys { it in setOf("Role", "Warehouse") })
+        }"
     }
 
     override fun isDefaultSchema(field: CollectionField): Boolean {
@@ -85,7 +111,11 @@ class SnowflakeConnector : JDBCConnector() {
         )
     }
 
-    private suspend fun copyFromStageIntoTable(connection: Connection, database: String, tableName: String) {
+    private suspend fun copyFromStageIntoTable(
+        connection: Connection,
+        database: String,
+        tableName: String
+    ) {
         connection.createStatement().use { stmt ->
             val copyFromSQL = """
                 |COPY INTO $database.$tableName FILE_FORMAT = (
@@ -100,7 +130,12 @@ class SnowflakeConnector : JDBCConnector() {
 
 
     @HandleImport("text/csv")
-    suspend fun importFromCSV(database: String, collection: String, schema: String?, content: ByteArray) {
+    suspend fun importFromCSV(
+        database: String,
+        collection: String,
+        schema: String?,
+        content: ByteArray
+    ) {
         val csvData = readCSV(content)
         dbConnection.apply {
             transactionIsolation = transactionIsolationLevel
@@ -109,7 +144,14 @@ class SnowflakeConnector : JDBCConnector() {
             try {
                 connection.autoCommit = false
                 createTable(connection, database, tableName, csvData.fields)
-                uploadToStage(connection, database, schema ?: "PUBLIC", collection, tableName, content)
+                uploadToStage(
+                    connection,
+                    database,
+                    schema ?: "PUBLIC",
+                    collection,
+                    tableName,
+                    content
+                )
                 copyFromStageIntoTable(connection, database, tableName)
                 connection.commit()
             } catch (error: Exception) {
@@ -118,6 +160,4 @@ class SnowflakeConnector : JDBCConnector() {
             }
         }
     }
-
-
 }
