@@ -3,7 +3,7 @@ import { InvalidArgumentError } from '../../error/error'
 import { Block } from '../block'
 
 /**
- * This is the default translator, its matching priority is the lowest. It will match all that is not matched by other Translator
+ * Only match DBT Blocks
  */
 function match(block: Block): boolean {
   // TODO: support custom block type
@@ -12,6 +12,8 @@ function match(block: Block): boolean {
 
 /**
  * Assist param to an executable statement
+ * There are two references in DBT, which are `ref` and `source`, which are now stored in the content of DBT Block.
+ * If something references DBT Block, we convert the {{$dbtBlockId}} to ref('xxx') or source('xxx')
  */
 function translate(block: Block): string {
   const type = _(block.content).get('type')
