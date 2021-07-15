@@ -30,7 +30,7 @@ import { useInterval } from 'hooks/useInterval'
 import { useRefreshSnapshot, useSnapshotMutating } from 'hooks/useStorySnapshotManager'
 import html2canvas from 'html2canvas'
 import invariant from 'invariant'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ThemingVariables } from 'styles'
 import type { Editor, Snapshot } from 'types'
 import { DEFAULT_TITLE, snapshotToCSV } from 'utils'
@@ -533,9 +533,10 @@ export const MoreDropdownSelect: React.FC<{
   snapshot?: Snapshot
   block: Editor.Block
   sql: string
+  hoverContent: ReactNode
   className?: string
   setIsActive: (active: boolean) => void
-}> = ({ snapshot, block, sql, setIsActive, className }) => {
+}> = ({ snapshot, block, sql, setIsActive, className, hoverContent }) => {
   const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null)
   const { data: user } = useUser(block?.lastEditedById ?? null)
 
@@ -590,6 +591,7 @@ export const MoreDropdownSelect: React.FC<{
   return (
     <div>
       <IconButton
+        hoverContent={hoverContent}
         icon={IconCommonMore}
         color={ThemingVariables.colors.primary[0]}
         {...getToggleButtonProps({ ref: setReferenceElement })}
@@ -688,20 +690,24 @@ const TitleButtonsInner: React.FC<{
       <RefreshButton
         color={ThemingVariables.colors.primary[1]}
         loading={loading}
+        hoverContent="Refresh"
         className={QuestionBlockIconButton}
         onClick={loading ? () => mutateSnapshot.cancel(block.id) : () => mutateSnapshot.execute(block)}
       />
       <IconButton
+        hoverContent="Visualization options"
         icon={IconVisualizationSetting}
         className={QuestionBlockIconButton}
         onClick={() => questionEditor.open({ mode: 'VIS', readonly, blockId: block.id, storyId: block.storyId! })}
       />
       <IconButton
+        hoverContent="Edit SQL"
         className={QuestionBlockIconButton}
         icon={IconCommonSql}
         onClick={() => questionEditor.open({ mode: 'SQL', readonly, blockId: block.id, storyId: block.storyId! })}
       />
       <MoreDropdownSelect
+        hoverContent="More"
         className={QuestionBlockIconButton}
         snapshot={snapshot}
         block={block}
