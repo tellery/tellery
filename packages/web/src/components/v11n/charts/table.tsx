@@ -195,20 +195,21 @@ export const table: Chart<Type.TABLE> = {
             <thead>
               <tr>
                 {columns.map((column) => (
-                  <Tippy key={column.name} content={`${column.name}: ${column.sqlType}`}>
-                    <th
-                      className={css`
-                        height: ${tableRowHeight}px;
-                        padding: 0 10px;
-                        font-weight: 600;
-                        background: ${ThemingVariables.colors.primary[4]};
-                        white-space: nowrap;
-                      `}
-                      align={isNumeric(column.displayType) ? 'right' : 'left'}
-                    >
-                      {column.name}
-                    </th>
-                  </Tippy>
+                  <th
+                    key={column.name}
+                    className={css`
+                      height: ${tableRowHeight}px;
+                      padding: 0 10px;
+                      font-weight: 600;
+                      background: ${ThemingVariables.colors.primary[4]};
+                      white-space: nowrap;
+                    `}
+                    align={isNumeric(column.displayType) ? 'right' : 'left'}
+                  >
+                    <Tippy content={column.sqlType}>
+                      <span>{column.name}</span>
+                    </Tippy>
+                  </th>
                 ))}
               </tr>
             </thead>
