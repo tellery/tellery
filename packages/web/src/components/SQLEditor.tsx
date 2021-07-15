@@ -153,7 +153,11 @@ export function SQLEditor(props: {
       if (!match?.matches?.[0]) {
         return
       }
-      if (match.range.getStartPosition().isBefore(e.position) && e.position.isBefore(match.range.getEndPosition())) {
+      if (
+        match.range.getStartPosition().isBefore(e.position) &&
+        (e.position.isBefore(match.range.getEndPosition()) ||
+          (e.source === 'deleteLeft' && e.position.isBeforeOrEqual(match.range.getEndPosition())))
+      ) {
         editor.setSelection(match.range)
       }
     })
