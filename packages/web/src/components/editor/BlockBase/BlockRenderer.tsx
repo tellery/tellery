@@ -73,6 +73,19 @@ export const INLINE_STYLES = new Map([
   ]
 ])
 
+export const INLINE_WRAPPER_STYLE = new Map([
+  [
+    Editor.InlineType.Link,
+    (...args: string[]): CSSProperties => ({
+      cursor: 'pointer',
+      color: ThemingVariables.colors.primary[1],
+      wordWrap: 'break-word',
+      textDecoration: 'inherit',
+      userSelect: 'text'
+    })
+  ]
+])
+
 export const getStylesForTokenText = (token: Editor.Token) => {
   const marks = token[1] || []
   return (
@@ -115,14 +128,12 @@ export const Token = ({
   const snapshot = useBlockSnapshot()
   const { link: linkEntity, reference: referenceEntity } = extractEntitiesFromToken(token)
   if (linkEntity) {
-    const styleGen = INLINE_STYLES.get(Editor.InlineType.Link)!
+    const styleGen = INLINE_WRAPPER_STYLE.get(Editor.InlineType.Link)!
 
     return (
       <>
         <a href={linkEntity[1]} data-token-index={index} target="_blank" rel="noopener noreferrer" style={styleGen()}>
-          <span style={{ whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
-            <IconCommonLink height="1em" width="1em" viewBox="0 0 20 20" />
-          </span>
+          <IconCommonLink height="1em" width="1em" viewBox="0 0 20 20" style={{ verticalAlign: 'middle' }} />
           {getTextElement(token, index)}
           <span style={{ whiteSpace: 'nowrap' }}></span>
         </a>
