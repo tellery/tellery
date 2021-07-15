@@ -56,8 +56,6 @@ dependencies {
     implementation("com.github.marcoferrer.krotoplus:kroto-plus-message:$krotoplusVersion")
     implementation("com.github.marcoferrer.krotoplus:kroto-plus-test:$krotoplusVersion")
     implementation("com.google.protobuf:protobuf-java:$protobufVersion")
-
-    implementation("com.github.vishna:watchservice-ktx:master-SNAPSHOT")
 }
 
 
