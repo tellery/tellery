@@ -11,7 +11,7 @@ import { errorResponse, validate } from '../utils/http'
 import { mustGetUser } from '../utils/user'
 import { streamHttpErrorCb, withKeepaliveStream } from '../utils/stream'
 import { StorageError } from '../error/error'
-import { getSqlTranslator } from '../core/translator'
+import { translate } from '../core/translator'
 
 class AddConnectorRequest {
   @IsDefined()
@@ -329,7 +329,7 @@ async function execute(ctx: Context) {
   const user = mustGetUser(ctx)
   const { workspaceId, connectorId, profile, sql, maxRow, questionId } = payload
 
-  const assembledSql = await getSqlTranslator(sql).translate(sql)
+  const assembledSql = await translate(sql)
 
   const manager = await getIConnectorManagerFromDB(connectorId)
 

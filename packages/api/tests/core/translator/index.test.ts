@@ -14,20 +14,31 @@ import {
   buildSqlFromGraphWithStack,
   sqlMacro,
   translate,
-} from '../../../src/core/translator/question'
+} from '../../../src/core/translator'
 import { DirectedGraph } from '../../../src/utils/directedgraph'
+import { Block, register } from '../../../src/core/block'
+import { QuestionBlock } from '../../../src/core/block/question'
 
 test.before(async () => {
   await createDatabaseCon()
 })
 
-test('question translate', async (t) => {
+class DBTBlock extends Block {
+  getType() {
+    return 'dbt' as BlockType
+  }
+}
+
+test('translate', async (t) => {
+  register('dbt' as BlockType, DBTBlock)
+
   const storyId = nanoid()
-  const blockId = nanoid()
+  const questionBlockId = nanoid()
+  const dbtBlockId = nanoid()
   await getRepository(BlockEntity).save({
-    id: blockId,
+    id: questionBlockId,
     workspaceId: 'test',
-    interKey: blockId,
+    interKey: questionBlockId,
     parentId: 'test',
     parentTable: BlockParentType.BLOCK,
     storyId,
@@ -39,24 +50,33 @@ test('question translate', async (t) => {
     children: [],
     alive: true,
   })
-  const refId = `${blockId}`
-  const sql = `select * from {{${refId} as t1}}`
+  await getRepository(BlockEntity).save({
+    id: dbtBlockId,
+    workspaceId: 'test',
+    interKey: dbtBlockId,
+    parentId: 'test',
+    parentTable: BlockParentType.BLOCK,
+    storyId,
+    content: {
+      type: 'ref',
+    },
+    type: 'dbt' as BlockType,
+    children: [],
+    alive: true,
+  })
+  const sql = `select * from {{${questionBlockId} as t1}} left join {{${dbtBlockId} as t2}}`
 
   const sqlBody = await translate(sql)
 
   stringCompare(
     t,
     sqlBody,
-    `WITH
-  t1 AS (
-    select * from order_x
+    `WITH t1 AS ( select * from order_x ), t2 AS ( ref('${dbtBlockId}') ) select * from t1 left join t2`,
   )
-select * from t1`,
-  )
-  await getRepository(BlockEntity).delete(blockId)
+  await getRepository(BlockEntity).delete([questionBlockId, dbtBlockId])
 })
 
-test('question cyclic assemble', async (t) => {
+test('cyclic assemble', async (t) => {
   const storyId = nanoid()
   const blockId1 = nanoid()
   const blockId2 = nanoid()
@@ -107,7 +127,7 @@ test('question cyclic assemble', async (t) => {
   }
 })
 
-test('question sqlMacro', (t) => {
+test('sqlMacro', (t) => {
   const sql = `select * from {{blockId1 as t1}} left join {{blockId2}} p on t1.a = p.a union all {{ blockId3 }} order by c`
   const { mainBody, subs } = sqlMacro(sql)
   t.deepEqual(
@@ -118,7 +138,7 @@ test('question sqlMacro', (t) => {
   t.deepEqual(subs[0].alias, 't1')
 })
 
-test('question buildSqlFromGraph', async (t) => {
+test('buildSqlFromGraph', async (t) => {
   const bid = nanoid()
   const bid2 = nanoid()
   const bid3 = nanoid()
