@@ -10,6 +10,7 @@ import { formatRecord, isNumeric } from '../utils'
 import type { Chart } from './base'
 import { useDataFieldsDisplayType } from 'hooks/useDataFieldsDisplayType'
 import IconButton from 'components/kit/IconButton'
+import Tippy from '@tippyjs/react'
 
 const TABLE_ROW_HEIGHT_MIN = 30
 
@@ -194,20 +195,20 @@ export const table: Chart<Type.TABLE> = {
             <thead>
               <tr>
                 {columns.map((column) => (
-                  <th
-                    key={column.name}
-                    className={css`
-                      height: ${tableRowHeight}px;
-                      padding: 0 10px;
-                      font-weight: 600;
-                      background: ${ThemingVariables.colors.primary[4]};
-                      white-space: nowrap;
-                    `}
-                    align={isNumeric(column.displayType) ? 'right' : 'left'}
-                    title={`${column.name}: ${column.sqlType}`}
-                  >
-                    {column.name}
-                  </th>
+                  <Tippy key={column.name} content={`${column.name}: ${column.sqlType}`}>
+                    <th
+                      className={css`
+                        height: ${tableRowHeight}px;
+                        padding: 0 10px;
+                        font-weight: 600;
+                        background: ${ThemingVariables.colors.primary[4]};
+                        white-space: nowrap;
+                      `}
+                      align={isNumeric(column.displayType) ? 'right' : 'left'}
+                    >
+                      {column.name}
+                    </th>
+                  </Tippy>
                 ))}
               </tr>
             </thead>
@@ -234,7 +235,6 @@ export const table: Chart<Type.TABLE> = {
                           : undefined
                       )}
                       align={isNumeric(column.displayType) ? 'right' : 'left'}
-                      title={formatRecord(record[column.order], displayTypes[column.name])}
                     >
                       {formatRecord(record[column.order], displayTypes[column.name])}
                     </td>
