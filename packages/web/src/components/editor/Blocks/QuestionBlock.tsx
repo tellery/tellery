@@ -32,7 +32,7 @@ import html2canvas from 'html2canvas'
 import invariant from 'invariant'
 import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ThemingVariables } from 'styles'
-import type { Editor, Snapshot } from 'types'
+import type { Editor, Snapshot, Story } from 'types'
 import { DEFAULT_TITLE, snapshotToCSV } from 'utils'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
 import { BlockResizer } from '../BlockBase/BlockResizer'
@@ -110,6 +110,19 @@ export const QuestionBlock: React.FC<{
 
   const mutateSnapshot = useRefreshSnapshot()
   const mutatingCount = useSnapshotMutating(originalBlock.id)
+
+  const snapshot = useSnapshot(snapshotId)
+  // TODO: story render may cause performance issue
+  const story = useBlockSuspense<Story>(block.storyId!)
+  const refreshOnOpen = !!story.format?.refreshOnOpen
+
+  useEffect(() => {
+    if (refreshOnOpen && mutatingCount === 0) {
+      if (dayjs().diff(dayjs(block.content?.lastRunAt ?? 0)) > 1000 * 5 * 60) {
+        mutateSnapshot.execute(originalBlock)
+      }
+    }
+  }, [snapshot, snapshotId, refreshOnOpen, mutatingCount, block.content?.lastRunAt, mutateSnapshot, originalBlock])
 
   useEffect(() => {
     if (originalBlock.id === block.id && !snapshotId && originalBlock.content?.sql && mutatingCount === 0) {

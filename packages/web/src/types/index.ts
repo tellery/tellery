@@ -111,6 +111,7 @@ export namespace Editor {
     snapshotId?: string
     visualization?: Config<Type>
     sql?: string
+    lastRunAt?: number
     error?: string | null
   }
 
@@ -196,6 +197,7 @@ export interface Story extends Editor.BaseBlock {
   format?: {
     fullWidth?: boolean
     locked?: boolean
+    refreshOnOpen?: boolean
     smallText?: boolean
     fontFamily?: string
     showBorder?: boolean

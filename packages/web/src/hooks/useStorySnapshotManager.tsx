@@ -3,10 +3,10 @@ import { useWorkspace } from '@app/context/workspace'
 import { createTranscation } from 'context/editorTranscations'
 import invariant from 'invariant'
 import { nanoid } from 'nanoid'
-import React, { useCallback, useContext, useMemo } from 'react'
+import React, { useCallback, useContext, useEffect, useMemo } from 'react'
 import { useIsMutating, useQueryClient } from 'react-query'
 import { applyCreateSnapshotOperation } from 'store/block'
-import { Editor } from 'types'
+import { Editor, Story } from 'types'
 import { useCommit } from './useCommit'
 import { useStoryBlocksMap } from './useStoryBlock'
 
@@ -32,10 +32,18 @@ export const useRefreshSnapshot = () => {
         mutationKey: ['story', questionBlock.storyId, questionBlock.id, originalBlockId].join('/'),
         onSuccess: async (data) => {
           if (typeof data !== 'object' || data.errMsg) {
+            // const snapshotId = questionBlock.content!.snapshotId
             commit({
               storyId: questionBlock.storyId!,
               transcation: createTranscation({
                 operations: [
+                  {
+                    cmd: 'update',
+                    id: originalBlockId,
+                    path: ['content', 'lastRunAt'],
+                    table: 'block',
+                    args: Date.now()
+                  },
                   {
                     cmd: 'update',
                     id: originalBlockId,
@@ -60,6 +68,13 @@ export const useRefreshSnapshot = () => {
             storyId: questionBlock.storyId!,
             transcation: createTranscation({
               operations: [
+                {
+                  cmd: 'update',
+                  id: originalBlockId,
+                  path: ['content', 'lastRunAt'],
+                  table: 'block',
+                  args: Date.now()
+                },
                 {
                   cmd: 'update',
                   id: originalBlockId,

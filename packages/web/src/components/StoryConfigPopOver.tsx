@@ -2,7 +2,14 @@ import { useLoggedUser } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useCommit } from '@app/hooks/useCommit'
 import { css, cx } from '@emotion/css'
-import { IconCommonCopy, IconCommonLock, IconMenuDelete, IconMenuDuplicate, IconMenuShow } from 'assets/icons'
+import {
+  IconCommonCopy,
+  IconCommonLock,
+  IconCommonRefresh,
+  IconMenuDelete,
+  IconMenuDuplicate,
+  IconMenuShow
+} from 'assets/icons'
 import FormSwitch from 'components/kit/FormSwitch'
 import { MenuItem } from 'components/MenuItem'
 import { MenuItemDivider } from 'components/MenuItemDivider'
@@ -102,6 +109,15 @@ export const StoryConfigPopOver: React.FC<{
         `
       )}
     >
+      <MenuItem
+        icon={<Icon icon={IconCommonRefresh} color={ThemingVariables.colors.text[0]} />}
+        title="Refresh On Open"
+        onClick={(e) => {
+          e.preventDefault()
+          setStoryFormat('refreshOnOpen', !story?.format?.refreshOnOpen)
+        }}
+        side={<FormSwitch checked={!!story?.format?.refreshOnOpen} />}
+      />
       <MenuItem
         icon={<Icon icon={IconCommonLock} color={ThemingVariables.colors.text[0]} />}
         title="Lock"
