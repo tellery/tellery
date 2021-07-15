@@ -10,6 +10,8 @@ import { QuestionBlock } from '../block/question'
 
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 8)
 
+const rootKey = 'root'
+
 type PartialQuery = {
   startIndex: number
   endIndex: number
@@ -45,11 +47,11 @@ async function translate(sql: string): Promise<string> {
   const graph = await buildGraph(sql)
 
   // check if the graph is valid
-  if (graph.isCyclic('root')) {
+  if (graph.isCyclic(rootKey)) {
     throw CyclicTransclusionError.new()
   }
 
-  return buildSqlFromGraph('root', graph)
+  return buildSqlFromGraphWithStack(graph)
 }
 
 /**
@@ -81,7 +83,7 @@ async function buildGraph(sql: string): Promise<DirectedGraph<SQLPieces, string>
   const res = new DirectedGraph<SQLPieces>()
   const root = sqlMacro(sql)
   const queue = new Array<{ key: string; node: SQLPieces }>()
-  queue.push({ key: 'root', node: root })
+  queue.push({ key: rootKey, node: root })
 
   while (queue.length !== 0) {
     const { key, node } = queue.shift()!
@@ -103,7 +105,75 @@ async function buildGraph(sql: string): Promise<DirectedGraph<SQLPieces, string>
   return res
 }
 
-function buildSqlFromGraph(rootKey: string, graph: DirectedGraph<SQLPieces, string>): string {
+export function buildSqlFromGraphWithStack(graph: DirectedGraph<SQLPieces, string>): string {
+  const sqlMap: { [k: string]: string } = {}
+
+  const root = graph.getNode(rootKey)
+  if (_(root.subs).isEmpty()) {
+    return root.mainBody
+  }
+
+  const stack = new Array<{ blockId: string; alias?: string }>()
+  stack.push({ blockId: rootKey })
+
+  while (stack.length !== 0) {
+    const { blockId, alias } = stack.slice(-1)[0]
+
+    let cteBody = ''
+    let record = false
+    const { subs, mainBody } = graph.getNode(blockId)
+    if (subs.length === 0) {
+      stack.pop()
+      cteBody = mainBody
+      record = true
+    } else {
+      let whole = true
+      subs.forEach((s) => {
+        if (!sqlMap[s.blockId]) {
+          whole = false
+          stack.push(s)
+        }
+      })
+
+      if (whole) {
+        stack.pop()
+        record = true
+
+        const commonTableExprs = _(subs)
+          .map((s) => sqlMap[s.blockId])
+          .value()
+        // remove leading space and newlines, for further check
+        const polishedMainBody = mainBody.trim()
+        // compatible with `with recursive clause` in main body
+        if (polishedMainBody.toLowerCase().startsWith('with recursive')) {
+          cteBody = `WITH RECURSIVE \n${commonTableExprs.join(
+            ',\n',
+          )},\n${polishedMainBody.substring(15)}`
+        } else {
+          const commonTableExprBody = `WITH\n${commonTableExprs.join(',\n')}`
+          // compatible with `with clause` in main body
+          if (polishedMainBody.toLowerCase().startsWith('with ')) {
+            cteBody = `${commonTableExprBody},\n${polishedMainBody.substring(5)}`
+          } else {
+            cteBody = `${commonTableExprBody}\n${polishedMainBody}`
+          }
+        }
+      }
+    }
+
+    if (record) {
+      sqlMap[blockId] = alias
+        ? `  ${alias} AS (\n    ${cteBody.replace(/\n/g, '\n    ')}\n  )`
+        : cteBody.replace(/\n/g, '\n    ')
+    }
+  }
+  return sqlMap[rootKey]
+}
+
+export function buildSqlFromGraph(
+  rootKey: string,
+  graph: DirectedGraph<SQLPieces, string>,
+): string {
   const { subs, mainBody } = graph.getNode(rootKey)
 
   const commonTableExprs = subs.map(({ blockId, alias }) => {
