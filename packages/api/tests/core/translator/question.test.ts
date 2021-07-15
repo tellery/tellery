@@ -1,6 +1,6 @@
 import '../../../src/core/block/init'
 
-import test from 'ava'
+import test, { ExecutionContext } from 'ava'
 import _ from 'lodash'
 import { nanoid } from 'nanoid'
 import { getRepository } from 'typeorm'
@@ -44,7 +44,8 @@ test('question translate', async (t) => {
 
   const sqlBody = await translate(sql)
 
-  t.deepEqual(
+  stringCompare(
+    t,
     sqlBody,
     `WITH
   t1 AS (
@@ -147,5 +148,17 @@ test('question buildSqlFromGraph', async (t) => {
   g.addEdge(bid2, bid3)
   const sqlCycle = buildSqlFromGraph('root', g)
   const sqlStack = buildSqlFromGraphWithStack(g)
-  t.is(sqlCycle, sqlStack)
+  stringCompare(t, sqlCycle, sqlStack)
 })
+
+function stringCompare(t: ExecutionContext<any>, a: string, b: string) {
+  const tags = [' ', '\n', '\t']
+
+  const splitAndJoin = (str: string): string => {
+    for (const tag of tags) {
+      str = str.split(tag).join(' ')
+    }
+    return _(str).split(' ').compact().join(' ')
+  }
+  t.deepEqual(splitAndJoin(a), splitAndJoin(b))
+}

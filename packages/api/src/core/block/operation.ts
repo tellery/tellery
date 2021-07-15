@@ -113,7 +113,6 @@ export class BlockOperation extends DefaultOperation {
   async checkPermission(ipv: IPermission, entity: Block, origin?: Block): Promise<void> {
     const block = origin ?? entity
     block.createdById = block.createdById ?? this.operator
-    console.log(block.createdById, this.operator)
 
     const etm = block.toModel(this.workspaceId)
     etm.permissions = await block.getPermissions(async () =>
