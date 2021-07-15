@@ -84,6 +84,10 @@ export const StoryConfigPopOver: React.FC<{
     [blockTranscation, openStory, story.id]
   )
 
+  const readOnlyStatus = !!story?.permissions?.some((permission) => {
+    return permission.type === 'workspace' && permission.role === 'commentator'
+  })
+
   return (
     <div
       className={cx(
@@ -101,15 +105,11 @@ export const StoryConfigPopOver: React.FC<{
       <MenuItem
         icon={<Icon icon={IconCommonLock} color={ThemingVariables.colors.text[0]} />}
         title="Lock"
-        onClick={() => {}}
-        side={
-          <FormSwitch
-            checked={!!story?.format?.locked}
-            onChange={(e) => {
-              setStoryFormat('locked', e.target.checked)
-            }}
-          />
-        }
+        onClick={(e) => {
+          e.preventDefault()
+          setStoryFormat('locked', !story?.format?.locked)
+        }}
+        side={<FormSwitch checked={!!story?.format?.locked} />}
       />
       <MenuItem
         icon={<Icon icon={IconCommonCopy} color={ThemingVariables.colors.text[0]} />}
@@ -128,33 +128,21 @@ export const StoryConfigPopOver: React.FC<{
       <MenuItem
         icon={<Icon icon={IconMenuShow} color={ThemingVariables.colors.text[0]} />}
         title="Readonly"
-        onClick={() => {}}
-        side={
-          <FormSwitch
-            checked={
-              !!story?.permissions?.some((permission) => {
-                return permission.type === 'workspace' && permission.role === 'commentator'
-              })
-            }
-            onChange={(e) => {
-              setWorkspacePermission(e.target.checked ? 'commentator' : 'manager')
-            }}
-          />
-        }
+        onClick={(e) => {
+          e.preventDefault()
+          setWorkspacePermission(readOnlyStatus ? 'manager' : 'commentator')
+        }}
+        side={<FormSwitch checked={readOnlyStatus} />}
       />
       {import.meta.env.DEV && (
         <MenuItem
           icon={<Icon icon={IconMenuShow} color={ThemingVariables.colors.text[0]} />}
           title="Show border"
-          onClick={() => {}}
-          side={
-            <FormSwitch
-              checked={!!story?.format?.showBorder}
-              onChange={(e) => {
-                setStoryFormat('showBorder', e.target.checked)
-              }}
-            />
-          }
+          onClick={(e) => {
+            e.preventDefault()
+            setStoryFormat('showBorder', !story?.format?.showBorder)
+          }}
+          side={<FormSwitch checked={!!story?.format?.showBorder} />}
         />
       )}
       <MenuItemDivider />

@@ -25,6 +25,7 @@ export default forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement
         ref={ref}
         checked={props.checked}
         onChange={props.onChange}
+        {...props}
         type="checkbox"
         className={css`
           opacity: 0;

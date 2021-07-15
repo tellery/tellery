@@ -275,6 +275,7 @@ export const applyOperations = (
 
     switch (operation.cmd) {
       case 'set':
+      case 'setPermissions':
       case 'update': {
         const getProp = (data: Record<string, any>, path: string[]): any => {
           if (path.length) {
