@@ -117,7 +117,7 @@ tasks.withType<Jar> {
 
 jib {
     from {
-        image = "openjdk:8-jre-alpine"
+        image = "adoptopenjdk/openjdk8:alpine"
     }
     container {
         appRoot = "/usr/app"
