@@ -102,13 +102,13 @@ async function buildGraph(sql: string): Promise<DirectedGraph<SQLPieces, string>
     // add edges
     bids.forEach((bid) => res.addEdge(key, bid))
 
-    const noIncludedBlockIds = _(bids)
+    const notIncludedBlockIds = _(bids)
       .filter((bid) => !res.hasNode(bid))
       .value()
 
-    const noIncludedSqls = await loadSqlFromBlocks(noIncludedBlockIds)
+    const notIncludedSqls = await loadSqlFromBlocks(notIncludedBlockIds)
 
-    _(noIncludedSqls).forEach((s, key) => queue.push({ key, node: sqlMacro(s) }))
+    _(notIncludedSqls).forEach((s, key) => queue.push({ key, node: sqlMacro(s) }))
   }
   return res
 }
