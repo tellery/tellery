@@ -76,9 +76,9 @@ services:
       start_period: 3s
   # tellery-init:
   #   <<: *tellery_defaults
-  #   restart_policy: none
+  #   restart: 'no'
   #   command:
-  #     - sleep 10 && npm run typeorm schema:sync && npm run typeorm migration:run && npm run create:user && npm run create:workspace
+  #     - while ./pg_isready -U ${POSTGRES_USER:-postgres} -h postgresql; do sleep 1; done && npm run typeorm schema:sync && npm run typeorm migration:run && npm run create:user && npm run create:workspace
   tellery-server:
     <<: *tellery_defaults
     ports:
