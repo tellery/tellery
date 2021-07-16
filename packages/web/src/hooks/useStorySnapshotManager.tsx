@@ -1,6 +1,7 @@
 import { sqlRequest } from '@app/api'
 import { useWorkspace } from '@app/context/workspace'
 import { createTranscation } from 'context/editorTranscations'
+import dayjs from 'dayjs'
 import invariant from 'invariant'
 import { nanoid } from 'nanoid'
 import React, { useCallback, useContext, useEffect, useMemo } from 'react'
@@ -130,7 +131,19 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
     return Object.values(storyBlocksMap).filter((block) => block.type === Editor.BlockType.Question)
   }, [storyBlocksMap])
 
+  const refreshOnInit = (storyBlocksMap[storyId] as Story)?.format?.refreshOnOpen
   const refreshSnapshot = useRefreshSnapshot()
+
+  useEffect(() => {
+    if (refreshOnInit) {
+      questionBlocks.forEach((questionBlock: Editor.QuestionBlock) => {
+        if (dayjs().diff(dayjs(questionBlock.content?.lastRunAt ?? 0)) > 1000 * 5 * 60) {
+          refreshSnapshot.execute(questionBlock)
+        }
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshOnInit, refreshSnapshot])
 
   const runAll = useCallback(() => {
     questionBlocks.forEach((questionBlock: Editor.QuestionBlock) => {

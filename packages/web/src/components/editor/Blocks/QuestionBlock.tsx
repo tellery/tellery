@@ -111,19 +111,6 @@ export const QuestionBlock: React.FC<{
   const mutateSnapshot = useRefreshSnapshot()
   const mutatingCount = useSnapshotMutating(originalBlock.id)
 
-  // TODO: story render may cause performance issue
-  const story = useBlockSuspense<Story>(block.storyId!)
-  const refreshOnOpen = !!story.format?.refreshOnOpen
-
-  useEffect(() => {
-    if (refreshOnOpen && mutatingCount === 0) {
-      if (dayjs().diff(dayjs(block.content?.lastRunAt ?? 0)) > 1000 * 5 * 60) {
-        mutateSnapshot.execute(block)
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refreshOnOpen, mutatingCount, block.content?.lastRunAt, mutateSnapshot])
-
   useEffect(() => {
     if (originalBlock.id === block.id && !snapshotId && originalBlock.content?.sql && mutatingCount === 0) {
       mutateSnapshot.execute(originalBlock)
@@ -248,7 +235,12 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
   HTMLDivElement | null,
   { snapshotId?: string; visualization?: Config<Type> }
 > = ({ snapshotId, visualization }, ref) => {
-  const { data: snapshot, isFetched: isSnapshotFetched, isIdle: isSnapshotIdle } = useSnapshot(snapshotId)
+  const {
+    data: snapshot,
+    isFetched: isSnapshotFetched,
+    isIdle: isSnapshotIdle,
+    isPreviousData
+  } = useSnapshot(snapshotId)
 
   const visualizationConfig = useMemo(() => {
     // ensure snapshot data is valid
@@ -260,7 +252,7 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
   }, [snapshot, visualization])
 
   return (
-    <BlockingUI blocking={isSnapshotIdle === false && isSnapshotFetched === false}>
+    <BlockingUI blocking={isSnapshotIdle === false && isSnapshotFetched === false && isPreviousData === false}>
       <div
         ref={ref}
         onCopy={(e) => {
@@ -423,14 +415,18 @@ const QuestionBlockStatus: React.FC<{
       >
         <Tippy
           content={
-            <div
-              className={css`
-                max-height: 100px;
-                overflow: auto;
-              `}
-            >
-              {block.content?.error} 333
-            </div>
+            block.content?.error ? (
+              <div
+                className={css`
+                  max-height: 100px;
+                  overflow: auto;
+                `}
+              >
+                {block.content?.error}
+              </div>
+            ) : (
+              'loading...'
+            )
           }
           // hideOnClick={true}
           // theme="tellery"
