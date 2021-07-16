@@ -14,7 +14,7 @@ export default forwardRef<
     hoverContent?: ReactNode
   } & ButtonHTMLAttributes<HTMLButtonElement>
 >(function IconButton(props, ref) {
-  const { icon, size, className, ...restProps } = props
+  const { icon, size, className, hoverContent, ...restProps } = props
   const iconProps = useMemo(
     () =>
       omitBy(
@@ -54,10 +54,10 @@ export default forwardRef<
     </button>
   )
 
-  if (!props.hoverContent) return button
+  if (!hoverContent) return button
 
   return (
-    <Tippy content={props.hoverContent ?? null} hideOnClick={false} animation="fade" duration={150} arrow={false}>
+    <Tippy content={hoverContent ?? null} hideOnClick={false} animation="fade" duration={150} arrow={false}>
       {button}
     </Tippy>
   )

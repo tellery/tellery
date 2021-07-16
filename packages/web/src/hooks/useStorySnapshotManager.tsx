@@ -20,6 +20,15 @@ export const useRefreshSnapshot = () => {
     (questionBlock: Editor.QuestionBlock) => {
       const originalBlockId = questionBlock.id
       const sql = questionBlock.content?.sql ?? ''
+      const mutationCount = queryClient
+        .getMutationCache()
+        .getAll()
+        .filter(
+          (mutation) =>
+            (mutation.options.mutationKey as string)?.endsWith(originalBlockId) && mutation.state.status === 'loading'
+        ).length
+
+      if (mutationCount >= 1) return
 
       queryClient.executeMutation({
         mutationFn: sqlRequest,
@@ -151,6 +160,12 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
     })
   }, [questionBlocks, refreshSnapshot])
 
+  const cancelAll = useCallback(() => {
+    questionBlocks.forEach((questionBlock: Editor.QuestionBlock) => {
+      refreshSnapshot.cancel(questionBlock.id)
+    })
+  }, [questionBlocks, refreshSnapshot])
+
   const refreshingSnapshot = useIsMutating({
     predicate: (mutation) => (mutation.options.mutationKey as string)?.startsWith(`story/${storyId}`)
   })
@@ -159,9 +174,10 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
     () => ({
       total: questionBlocks.length,
       mutating: refreshingSnapshot,
-      runAll
+      runAll,
+      cancelAll
     }),
-    [questionBlocks.length, refreshingSnapshot, runAll]
+    [cancelAll, questionBlocks.length, refreshingSnapshot, runAll]
   )
 }
 

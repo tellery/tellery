@@ -116,7 +116,7 @@ export const StoryConfigPopOver: React.FC<{
           e.preventDefault()
           setStoryFormat('refreshOnOpen', !story?.format?.refreshOnOpen)
         }}
-        side={<FormSwitch checked={!!story?.format?.refreshOnOpen} />}
+        side={<FormSwitch checked={!!story?.format?.refreshOnOpen} readOnly />}
       />
       <MenuItem
         icon={<Icon icon={IconCommonLock} color={ThemingVariables.colors.text[0]} />}
@@ -125,7 +125,7 @@ export const StoryConfigPopOver: React.FC<{
           e.preventDefault()
           setStoryFormat('locked', !story?.format?.locked)
         }}
-        side={<FormSwitch checked={!!story?.format?.locked} />}
+        side={<FormSwitch checked={!!story?.format?.locked} readOnly />}
       />
       <MenuItem
         icon={<Icon icon={IconCommonCopy} color={ThemingVariables.colors.text[0]} />}
@@ -148,7 +148,7 @@ export const StoryConfigPopOver: React.FC<{
           e.preventDefault()
           setWorkspacePermission(readOnlyStatus ? 'manager' : 'commentator')
         }}
-        side={<FormSwitch checked={readOnlyStatus} />}
+        side={<FormSwitch checked={readOnlyStatus} readOnly />}
       />
       {import.meta.env.DEV && (
         <MenuItem
@@ -158,7 +158,7 @@ export const StoryConfigPopOver: React.FC<{
             e.preventDefault()
             setStoryFormat('showBorder', !story?.format?.showBorder)
           }}
-          side={<FormSwitch checked={!!story?.format?.showBorder} />}
+          side={<FormSwitch checked={!!story?.format?.showBorder} readOnly />}
         />
       )}
       <MenuItemDivider />

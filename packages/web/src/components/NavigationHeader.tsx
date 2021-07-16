@@ -204,7 +204,7 @@ export const RefreshAllQuestionBlockButton: React.FC<{ storyId: string }> = () =
       <Tippy
         content={
           storySnapshotManger.mutating !== 0
-            ? `Refreshing... ${storySnapshotManger.mutating}/${storySnapshotManger.total}`
+            ? `Refreshing... ${storySnapshotManger.mutating}/${storySnapshotManger.total}, click to stop`
             : `Refresh ${storySnapshotManger.total} Questions`
         }
         hideOnClick={false}
@@ -215,7 +215,7 @@ export const RefreshAllQuestionBlockButton: React.FC<{ storyId: string }> = () =
         <RefreshButton
           color={ThemingVariables.colors.text[0]}
           loading={storySnapshotManger.mutating !== 0}
-          onClick={storySnapshotManger.runAll}
+          onClick={storySnapshotManger.mutating !== 0 ? storySnapshotManger.cancelAll : storySnapshotManger.runAll}
         />
       </Tippy>
     </div>
