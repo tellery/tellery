@@ -106,7 +106,7 @@ export class UserService {
     }
     const { userId } = payload
     const user = await getRepository(UserEntity).findOneOrFail(userId)
-    if (user.status !== AccountStatus.VERIFYING) {
+    if (![AccountStatus.VERIFYING,AccountStatus.CREATING].includes(user.status)) {
       return { id: user.id, status: user.status }
     }
     user.status = AccountStatus.CONFIRMED
