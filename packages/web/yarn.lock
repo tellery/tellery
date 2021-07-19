@@ -1880,10 +1880,10 @@
   resolved "https://registry.yarnpkg.com/@types/range-parser/-/range-parser-1.2.3.tgz#7ee330ba7caafb98090bece86a5ee44115904c2c"
   integrity sha512-ewFXqrQHlFsgc09MK5jP5iR7vumV/BYayNC6PgJO2LPe8vrnNFyjQjSppfEngITi0qvfKtzFvgKymGheFM9UOA==
 
-"@types/react-calendar@^3.4.1":
-  version "3.4.1"
-  resolved "https://registry.yarnpkg.com/@types/react-calendar/-/react-calendar-3.4.1.tgz#e531f7bd3046304bbb0c063724f2bb4076d05297"
-  integrity sha512-q2PGQmRsqIUPNlZOxhbHVOZRYxGFZ77cPOP5ugqiPcaV7iSTNfPiGuoEZxTDJKSR658u30yHxjQYPZj52ra+GA==
+"@types/react-calendar@^3.4.2":
+  version "3.4.2"
+  resolved "https://registry.yarnpkg.com/@types/react-calendar/-/react-calendar-3.4.2.tgz#32d45cbed22f439b27c238ba8285e5b9b8205056"
+  integrity sha512-4GdZMJDLna65rWXAmsTfpqHSqxGxNSxdDGLHHfu8SdVlDkh15ti767KkgRYDtXUGBToz1MSZDy3AcgHpNNSPxA==
   dependencies:
     "@types/react" "*"
 
@@ -1954,16 +1954,7 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react@*":
-  version "17.0.11"
-  resolved "https://registry.yarnpkg.com/@types/react/-/react-17.0.11.tgz#67fcd0ddbf5a0b083a0f94e926c7d63f3b836451"
-  integrity sha512-yFRQbD+whVonItSk7ZzP/L+gPTJVBkL/7shLEF+i9GC/1cV3JmUxEQz6+9ylhUpWSDuqo1N9qEvqS6vTj4USUA==
-  dependencies:
-    "@types/prop-types" "*"
-    "@types/scheduler" "*"
-    csstype "^3.0.2"
-
-"@types/react@^17.0.14":
+"@types/react@*", "@types/react@^17.0.14":
   version "17.0.14"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-17.0.14.tgz#f0629761ca02945c4e8fea99b8177f4c5c61fb0f"
   integrity sha512-0WwKHUbWuQWOce61UexYuWTGuGY/8JvtUe/dtQ6lR4sZ3UiylHotJeWpf3ArP9+DSGUoLY3wbU59VyMrJps5VQ==
