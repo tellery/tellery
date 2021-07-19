@@ -6,7 +6,7 @@ import { useWorkspaceIdState } from '@app/store/block'
 export const WorkspaceProvider: React.FC = ({ children }) => {
   const { data: workspaces } = useWorkspaceList({ suspense: true })
   const currentWorkspace = workspaces?.[0]
-  const [workspaceId, setWorkspaceId] = useWorkspaceIdState()
+  const [, setWorkspaceId] = useWorkspaceIdState()
 
   useEffect(() => {
     setWorkspaceId(currentWorkspace?.id ?? null)

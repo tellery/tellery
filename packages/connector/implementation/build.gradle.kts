@@ -24,9 +24,11 @@ plugins {
 
 dependencies {
     implementation(project(":interface"))
+    implementation(platform("com.google.cloud:libraries-bom:20.8.0"))
     implementation("net.snowflake:snowflake-jdbc:3.13.5")
     runtimeOnly("org.postgresql:postgresql:42.2.23")
     runtimeOnly("com.amazon.redshift:redshift-jdbc42:2.0.0.6")
+    implementation("com.google.cloud:google-cloud-bigquery")
 }
 
 tasks.withType<KotlinCompile> {

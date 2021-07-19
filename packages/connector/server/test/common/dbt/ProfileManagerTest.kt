@@ -15,13 +15,13 @@ class ProfileManagerTest {
     @Test
     fun `get dbt profile from tellery profile`() {
         val profiles = mapper.readValue(
-            ProfileManagerTest::class.java.getResource("/profiles.json"),
+            ProfileManagerTest::class.java.getResource("/dbt_profiles.json"),
             object : TypeReference<List<Profile>>() {}
         )
 
         val profilesYamlContent = ProfileManager.batchToDbtProfile(profiles)
         val expectYamlContent =
-            ProfileManager::class.java.getResource("/profiles.yml").readText()
+            ProfileManager::class.java.getResource("/dbt_profiles.yml").readText()
         assertEquals(expectYamlContent, profilesYamlContent)
     }
 }

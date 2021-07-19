@@ -38,9 +38,9 @@ const getSafeFileName = (name: string) => {
   return safename
 }
 
-const getSafeRandomFileName = (name: string) => {
-  const customNanoId = customAlphabet('abcdef', 3)
-  const collectionName = `${getSafeFileName(name)}_${customNanoId()}`
+const getSafeRandomFileName = () => {
+  const customNanoId = customAlphabet('abcdefghijklmnopqrstuvwxyz', 7)
+  const collectionName = `csv_${customNanoId()}`
   return collectionName
 }
 
@@ -50,7 +50,7 @@ const File2BlockProcessers: Record<
 > = {
   [FileType.CSV]: async (file: File, block: Editor.Block, workspace: Workspace) => {
     const uploadedFile = await uploadFile(file, workspace.id)
-    const collectionName = getSafeRandomFileName(file.name)
+    const collectionName = getSafeRandomFileName()
 
     const res = await importFromCSV({
       key: uploadedFile.key,

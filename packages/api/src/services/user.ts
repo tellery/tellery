@@ -81,7 +81,7 @@ export class UserService {
         return r.create({
           username: '',
           email,
-          avatar: absoluteURI(`/api/static/avatars/user-${randomInt(4)}.png`),
+          avatar: `api/static/avatars/user-${randomInt(4)}.png`,
           password: '',
           status,
         })
@@ -106,7 +106,7 @@ export class UserService {
     }
     const { userId } = payload
     const user = await getRepository(UserEntity).findOneOrFail(userId)
-    if (user.status !== AccountStatus.VERIFYING) {
+    if (![AccountStatus.VERIFYING, AccountStatus.CREATING].includes(user.status)) {
       return { id: user.id, status: user.status }
     }
     user.status = AccountStatus.CONFIRMED

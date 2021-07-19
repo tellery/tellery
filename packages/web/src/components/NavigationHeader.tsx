@@ -186,8 +186,8 @@ export const _NavigationHeader = (props: {
   )
 }
 
-export const RefreshAllQuestionBlockButton: React.FC<{ storyId: string }> = ({ storyId }) => {
-  const storySnapshotManger = useStorySnapshotManager(storyId)
+export const RefreshAllQuestionBlockButton: React.FC<{ storyId: string }> = () => {
+  const storySnapshotManger = useStorySnapshotManager()
 
   if (storySnapshotManger.total <= 0) return null
   return (
@@ -204,7 +204,7 @@ export const RefreshAllQuestionBlockButton: React.FC<{ storyId: string }> = ({ s
       <Tippy
         content={
           storySnapshotManger.mutating !== 0
-            ? `Refreshing... ${storySnapshotManger.mutating}/${storySnapshotManger.total}`
+            ? `Refreshing... ${storySnapshotManger.mutating}/${storySnapshotManger.total}, click to stop`
             : `Refresh ${storySnapshotManger.total} Questions`
         }
         hideOnClick={false}
@@ -215,7 +215,7 @@ export const RefreshAllQuestionBlockButton: React.FC<{ storyId: string }> = ({ s
         <RefreshButton
           color={ThemingVariables.colors.text[0]}
           loading={storySnapshotManger.mutating !== 0}
-          onClick={storySnapshotManger.runAll}
+          onClick={storySnapshotManger.mutating !== 0 ? storySnapshotManger.cancelAll : storySnapshotManger.runAll}
         />
       </Tippy>
     </div>

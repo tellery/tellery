@@ -4,5 +4,5 @@ export type SetBlock<BlockType> = (id: string, update: (block: WritableDraft<Blo
 
 export interface BlockInstanceInterface {
   openMenu: () => void
-  afterDuplicate?: () => void
+  // afterDuplicate?: () => void
 }

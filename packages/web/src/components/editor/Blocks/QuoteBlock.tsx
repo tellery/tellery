@@ -1,13 +1,16 @@
 import { css, cx } from '@emotion/css'
 import React from 'react'
 import { ThemingVariables } from 'styles'
-import type { Editor } from 'types'
+import { Editor } from 'types'
 import { ContentEditable } from '../BlockBase/ContentEditable'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
+import { BlockComponent, registerBlock } from './utils'
 
-export const QuoteBlock: React.FC<{
-  block: Editor.Block
-}> = ({ block, children }) => {
+export const QuoteBlock: BlockComponent<
+  React.FC<{
+    block: Editor.Block
+  }>
+> = ({ block, children }) => {
   const { readonly } = useBlockBehavior()
 
   return (
@@ -28,3 +31,10 @@ export const QuoteBlock: React.FC<{
     </>
   )
 }
+
+QuoteBlock.meta = {
+  isText: true,
+  hasChildren: false
+}
+
+registerBlock(Editor.BlockType.Quote, QuoteBlock)

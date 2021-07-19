@@ -3,7 +3,7 @@ import React from 'react'
 import { ThemingVariables } from 'styles'
 import { CircularLoading } from '../../CircularLoading'
 
-export const BlockPlaceHolder = (props: { onClick: () => void; loading: boolean; text: string }) => {
+export const BlockPlaceHolder = (props: { onClick?: () => void; loading: boolean; text: string }) => {
   const { loading, text, ...rest } = props
   return (
     <div

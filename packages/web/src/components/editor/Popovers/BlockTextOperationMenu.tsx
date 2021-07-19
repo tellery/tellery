@@ -21,7 +21,8 @@ import {
   IconMenuNumberList,
   IconMenuQuote,
   IconMenuText,
-  IconMenuToDo
+  IconMenuToDo,
+  IconMenuToggleList
 } from 'assets/icons'
 import { getBlockElementContentEditbleById, isTextBlock } from 'components/editor/helpers/contentEditable'
 import { nativeSelection2Tellery } from 'components/editor/helpers/tellerySelection'
@@ -531,6 +532,11 @@ const TEXT_TYPES = [
     type: Editor.BlockType.Todo,
     text: 'Todo',
     icon: <Icon icon={IconMenuToDo} color={ThemingVariables.colors.text[0]} />
+  },
+  {
+    type: Editor.BlockType.Toggle,
+    text: 'Toggle',
+    icon: <Icon icon={IconMenuToggleList} color={ThemingVariables.colors.text[0]} />
   }
 ]
 

@@ -173,7 +173,12 @@ export const scatter: Chart<Type.SCATTER> = {
                     'color',
                     color,
                     'colors',
-                    color ? Object.keys(groupBy(records, color)).map((c, index) => ({ key: c, color: index })) : []
+                    color
+                      ? Object.keys(groupBy(records, color)).map((c, index) => ({
+                          key: c,
+                          color: index % ThemingVariables.colors.visualization.length
+                        }))
+                      : []
                   )
                 }}
                 placeholder="Please select"

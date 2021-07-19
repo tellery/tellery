@@ -4,8 +4,9 @@ import React, { ReactNode, useMemo } from 'react'
 import { Editor } from 'types'
 import { ContentEditable } from '../BlockBase/ContentEditable'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
+import { registerBlock, BlockComponent } from './utils'
 
-const OrderOfBlock: React.FC<{ blockId: string; parentId: string }> = ({ blockId, parentId }) => {
+const OrderOfBlock: BlockComponent<React.FC<{ blockId: string; parentId: string }>> = ({ blockId, parentId }) => {
   const parentBlock = useBlockSuspense(parentId)
   const { data: sibilingBlocks } = useMgetBlocks(parentBlock?.children)
 
@@ -78,3 +79,10 @@ export const NumberedListBlock: React.FC<{
     </>
   )
 }
+
+OrderOfBlock.meta = {
+  hasChildren: true,
+  isText: true
+}
+
+registerBlock(Editor.BlockType.NumberedList, OrderOfBlock)

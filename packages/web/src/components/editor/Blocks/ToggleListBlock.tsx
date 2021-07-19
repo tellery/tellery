@@ -8,11 +8,14 @@ import { Editor, TellerySelectionType } from 'types'
 import { ContentEditable } from '../BlockBase/ContentEditable'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import { useEditor } from '../hooks'
+import { BlockComponent, registerBlock } from './utils'
 
-export const ToggleListBlock: React.FC<{
-  block: Editor.Block
-  children: ReactNode
-}> = ({ block, children }) => {
+export const ToggleListBlock: BlockComponent<
+  React.FC<{
+    block: Editor.Block
+    children: ReactNode
+  }>
+> = ({ block, children }) => {
   const { readonly, small } = useBlockBehavior()
   const [isCollapsedLocalState, setIsCollapsedLocalState] = useLocalStorage(`${block.id}:toggle`, true)
   const isCollapsed = useMemo(() => (small ? false : isCollapsedLocalState), [isCollapsedLocalState, small])
@@ -84,3 +87,10 @@ export const ToggleListBlock: React.FC<{
     </>
   )
 }
+
+ToggleListBlock.meta = {
+  isText: true,
+  hasChildren: true
+}
+
+registerBlock(Editor.BlockType.Toggle, ToggleListBlock)

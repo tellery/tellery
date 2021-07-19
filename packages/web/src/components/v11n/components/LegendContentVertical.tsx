@@ -58,7 +58,6 @@ function LegendItem(props: { value: Payload; onMouseEnter(): void; onMouseLeave(
       key={props.value.id}
       onMouseEnter={props.onMouseEnter}
       onMouseLeave={props.onMouseLeave}
-      title={props.value.value}
     >
       <Icon
         icon={IconVisualizationCircle}
@@ -76,6 +75,7 @@ function LegendItem(props: { value: Payload; onMouseEnter(): void; onMouseLeave(
           white-space: nowrap;
           text-overflow: ellipsis;
           font-size: ${fontSize}px;
+          line-height: 1.5;
         `}
       >
         {props.value.value}

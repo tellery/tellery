@@ -64,7 +64,7 @@ declare module '*.png' {
 
 declare global {
   declare module '*.svg?component' {
-    const content: React.FunctionComponent<React.SVGAttributes<SVGElement>>
+    const content: React.ForwardRefExoticComponent<React.SVGAttributes<SVGElement>>
     export default content
   }
   interface ImportMeta {

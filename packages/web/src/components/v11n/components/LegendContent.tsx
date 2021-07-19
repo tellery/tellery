@@ -4,10 +4,10 @@ import { useRef, MouseEvent } from 'react'
 import type { Props, Payload } from '@tellery/recharts/types/component/DefaultLegendContent'
 import { useDimensions } from 'hooks/useDimensions'
 import { fontFamily } from '../constants'
-
 import { IconVisualizationCircle } from 'assets/icons'
 import { ThemingVariables } from 'styles'
 import Icon from 'components/kit/Icon'
+import Tippy from '@tippyjs/react'
 
 const fontSize = 14
 
@@ -79,16 +79,17 @@ function LegendItem(props: { value: Payload; small?: boolean; onMouseEnter(): vo
       key={props.value.id}
       onMouseEnter={props.onMouseEnter}
       onMouseLeave={props.onMouseLeave}
-      title={props.value.value}
     >
-      <Icon
-        icon={IconVisualizationCircle}
-        size={iconSize}
-        color={props.value.color}
-        className={css`
-          margin-right: ${iconMargin}px;
-        `}
-      />
+      <Tippy content={props.value.value} disabled={!props.small}>
+        <Icon
+          icon={IconVisualizationCircle}
+          size={iconSize}
+          color={props.value.color}
+          className={css`
+            margin-right: ${iconMargin}px;
+          `}
+        />
+      </Tippy>
       {props.small ? null : props.value.value}
     </li>
   )

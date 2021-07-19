@@ -58,9 +58,6 @@ dependencies {
     implementation("com.github.marcoferrer.krotoplus:kroto-plus-message:$krotoplusVersion")
     implementation("com.github.marcoferrer.krotoplus:kroto-plus-test:$krotoplusVersion")
     implementation("com.google.protobuf:protobuf-java:$protobufVersion")
-
-    implementation("com.github.vishna:watchservice-ktx:master-SNAPSHOT")
-
     implementation("org.eclipse.jgit:org.eclipse.jgit:$jgitVersion")
     implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:$jgitVersion")
     implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:$jgitVersion")
@@ -139,7 +136,7 @@ tasks.test {
 
 jib {
     from {
-        image = "openjdk:8-jre-alpine"
+        image = "adoptopenjdk/openjdk8:alpine"
     }
     container {
         appRoot = "/usr/app"

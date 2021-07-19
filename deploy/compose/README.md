@@ -40,7 +40,7 @@ Now you can access Tellery by visiting `http://localhost:8000`
 | EMAIL_FROM              | System mail sender's email address                         | ""                       |
 | CREATE_USER_EMAIL       | Email of default user                                      | admin@tellery.local      |
 | CREATE_USER_NAME        | Name of default user                                       | admin                    |
-| CREATE_USER_PASSWORD    | Password of default user                                   | gnThIrfzRDhSQcg8lQrdg    |
+| CREATE_USER_PASSWORD    | Password of default user                                   | tellery    |
 
 Then you can modify the configuration by modifying the variables in the [.env](https://github.com/tellery/tellery/blob/main/deploy/compose/.env) or specifying the environment variable at startup.
 

@@ -1,7 +1,4 @@
-import {
-  DEFAULT_QUESTION_BLOCK_ASPECT_RATIO,
-  DEFAULT_QUESTION_BLOCK_WIDTH
-} from '@app/components/editor/Blocks/QuestionBlock'
+import { DEFAULT_QUESTION_BLOCK_ASPECT_RATIO, DEFAULT_QUESTION_BLOCK_WIDTH } from '@app/components/editor/utils'
 import { cloneDeep } from 'lodash'
 import { nanoid } from 'nanoid'
 import { Editor } from 'types'

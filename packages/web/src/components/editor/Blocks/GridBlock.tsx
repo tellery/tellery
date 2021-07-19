@@ -5,21 +5,24 @@ import { useBlockSuspense, useMgetBlocksSuspense } from 'hooks/api'
 import { useDimensions } from 'hooks/useDimensions'
 import produce from 'immer'
 import invariant from 'invariant'
-import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { ThemingVariables } from 'styles'
 import { Editor } from 'types'
 import { createTranscation } from '../../../context/editorTranscations'
 import { BlockChildren } from '../ContentBlock'
-import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import { DroppingAreaIndicator } from '../DroppingAreaIndicator'
 import { DroppleableOverlay } from '../DroppleableOverlay'
+import { useBlockBehavior } from '../hooks/useBlockBehavior'
+import { registerBlock, BlockComponent } from './utils'
 
 const BREAK_POINT = 500
 const GAP_WIDTH = 40
 
-const _GridBlock: React.FC<{
-  block: Editor.Block
-}> = ({ block }) => {
+const GridBlock: BlockComponent<
+  React.FC<{
+    block: Editor.Block
+  }>
+> = ({ block }) => {
   const ref = useRef<HTMLDivElement | null>(null)
   const dimensions = useDimensions(ref, 250)
   const [isDragging, setIsDragging] = useState(false)
@@ -134,24 +137,32 @@ const _GridBlock: React.FC<{
   )
 }
 
-_GridBlock.whyDidYouRender = true
-export const GridBlock = memo(_GridBlock, (prev, next) => {
-  return prev.block.version === next.block.version
-})
+GridBlock.meta = {
+  isText: false,
+  hasChildren: true
+}
 
-export const _ColumnBlock: React.FC<{
-  id: string
-  childrenCount: number
-  width: number
-  index: number
-  singleColumn: boolean
-  setWidths: React.Dispatch<React.SetStateAction<number[]>>
-  setIsDragging: React.Dispatch<React.SetStateAction<boolean>>
-  updateWidths: () => void
-  parentWidth: number
-  isDragging: boolean
-  // block: Editor.Block
-}> = ({
+registerBlock(Editor.BlockType.Row, GridBlock)
+// _GridBlock.whyDidYouRender = true
+// export const GridBlock = memo(_GridBlock, (prev, next) => {
+//   return prev.block.version === next.block.version
+// })
+
+const ColumnBlock: BlockComponent<
+  React.FC<{
+    id: string
+    childrenCount: number
+    width: number
+    index: number
+    singleColumn: boolean
+    setWidths: React.Dispatch<React.SetStateAction<number[]>>
+    setIsDragging: React.Dispatch<React.SetStateAction<boolean>>
+    updateWidths: () => void
+    parentWidth: number
+    isDragging: boolean
+    // block: Editor.Block
+  }>
+> = ({
   id,
   childrenCount,
   singleColumn,
@@ -316,4 +327,11 @@ export const _ColumnBlock: React.FC<{
   )
 }
 
-export const ColumnBlock = memo(_ColumnBlock)
+ColumnBlock.meta = {
+  isText: false,
+  hasChildren: true
+}
+
+registerBlock(Editor.BlockType.Column, ColumnBlock)
+
+// export const ColumnBlock = memo(_ColumnBlock)

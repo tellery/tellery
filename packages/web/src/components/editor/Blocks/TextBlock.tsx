@@ -4,11 +4,14 @@ import { Editor } from 'types'
 import { ContentEditable, EditableRef } from '../BlockBase/ContentEditable'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import { useEditor } from '../hooks'
+import { registerBlock, BlockComponent } from './utils'
 
-export const TextBlock: React.FC<{
-  block: Editor.Block
-  children: ReactNode
-}> = ({ block, children }) => {
+const TextBlock: BlockComponent<
+  React.FC<{
+    block: Editor.Block
+    children: ReactNode
+  }>
+> = ({ block, children }) => {
   const editor = useEditor()
   const editableRef = useRef<EditableRef>(null)
   const { readonly } = useBlockBehavior()
@@ -34,7 +37,12 @@ export const TextBlock: React.FC<{
   )
 }
 
-export const TEXT_BLOCK_CLASS = new Map([
+TextBlock.meta = {
+  isText: true,
+  hasChildren: true
+}
+
+const TEXT_BLOCK_CLASS = new Map([
   [
     Editor.BlockType.Header,
     css`
@@ -72,3 +80,8 @@ export const TEXT_BLOCK_CLASS = new Map([
     `
   ]
 ])
+
+registerBlock(Editor.BlockType.Text, TextBlock)
+registerBlock(Editor.BlockType.Header, TextBlock)
+registerBlock(Editor.BlockType.SubHeader, TextBlock)
+registerBlock(Editor.BlockType.SubSubHeader, TextBlock)

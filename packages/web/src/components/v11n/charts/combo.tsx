@@ -22,7 +22,7 @@ import type { CurveGenerator } from 'd3-shape'
 import { ComboShape, ComboStack, Config, DisplayType, Type } from '../types'
 import type { Chart } from './base'
 import { ConfigLabel } from '../components/ConfigLabel'
-import { DragableList } from '../components/DragableList'
+import { SortableList } from '../components/SortableList'
 import { ConfigNumericInput } from '../components/ConfigNumericInput'
 import { ConfigButton } from '../components/ConfigButton'
 import { ShapeSelector } from '../components/ShapeSelector'
@@ -230,7 +230,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
         return (
           <>
             <ConfigLabel top={first ? 0 : undefined}>{title}</ConfigLabel>
-            <DragableList
+            <SortableList
               className={css`
                 margin: -5px;
               `}

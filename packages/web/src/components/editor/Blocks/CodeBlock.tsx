@@ -1,6 +1,6 @@
 import { css, cx } from '@emotion/css'
 import { MenuItem } from 'components/MenuItem'
-import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useRecoilValue } from 'recoil'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import { ThemingVariables } from 'styles'
@@ -9,11 +9,13 @@ import { ContentEditable } from '../BlockBase/ContentEditable'
 import { EditorPopover } from '../EditorPopover'
 import { useEditor } from '../hooks'
 import { IsBlockHovering } from '../store'
+import { BlockComponent, registerBlock } from './utils'
 
-export const CodeBlock: React.FC<{
-  block: Editor.Block
-  children: ReactNode
-}> = ({ block, children }) => {
+const CodeBlock: BlockComponent<
+  React.FC<{
+    block: Editor.Block
+  }>
+> = ({ block }) => {
   return (
     <>
       <div
@@ -33,10 +35,16 @@ export const CodeBlock: React.FC<{
         <CodeBlockOperation block={block as Editor.CodeBlock} />
         <ContentEditable block={block} placeHolderStrategy="never"></ContentEditable>
       </div>
-      {children}
     </>
   )
 }
+
+CodeBlock.meta = {
+  isText: true,
+  hasChildren: false
+}
+
+registerBlock(Editor.BlockType.Code, CodeBlock)
 
 const SUPPORT_LANGS = Object.keys(CodeBlockLangDisplayName) as CodeBlockLang[]
 

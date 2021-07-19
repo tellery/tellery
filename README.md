@@ -22,10 +22,6 @@
 - Thoughts: a workflow for daily analysis
 - Collaborative by nature
 
-
-## Getting started
-
-
 ## Getting started
 
 - Install the [demo project](https://tellery.io/docs/getting-started/quick-setup) (run locally with docker)

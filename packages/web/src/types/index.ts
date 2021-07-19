@@ -1,5 +1,4 @@
 /// <reference types="resize-observer-browser" />
-
 import type { Config, Type, Data } from '../components/v11n/types'
 import type { MotionValue } from 'framer-motion'
 
@@ -111,6 +110,8 @@ export namespace Editor {
     snapshotId?: string
     visualization?: Config<Type>
     sql?: string
+    lastRunAt?: number
+    error?: string | null
   }
 
   export type CodeBlockContent = {
@@ -195,6 +196,7 @@ export interface Story extends Editor.BaseBlock {
   format?: {
     fullWidth?: boolean
     locked?: boolean
+    refreshOnOpen?: boolean
     smallText?: boolean
     fontFamily?: string
     showBorder?: boolean

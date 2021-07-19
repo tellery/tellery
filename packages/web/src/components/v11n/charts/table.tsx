@@ -4,12 +4,13 @@ import React, { useMemo, useState } from 'react'
 import { IconCommonArrowDropDown, IconMenuHide, IconMenuShow } from 'assets/icons'
 import { ThemingVariables } from 'styles'
 import { ConfigLabel } from '../components/ConfigLabel'
-import { DragableList } from '../components/DragableList'
+import { SortableList } from '../components/SortableList'
 import { Type } from '../types'
 import { formatRecord, isNumeric } from '../utils'
 import type { Chart } from './base'
 import { useDataFieldsDisplayType } from 'hooks/useDataFieldsDisplayType'
 import IconButton from 'components/kit/IconButton'
+import Tippy from '@tippyjs/react'
 
 const TABLE_ROW_HEIGHT_MIN = 30
 
@@ -50,7 +51,7 @@ export const table: Chart<Type.TABLE> = {
         >
           Drag to reorder columns
         </h4>
-        <DragableList
+        <SortableList
           className={css`
             margin: 0 -5px;
           `}
@@ -204,9 +205,10 @@ export const table: Chart<Type.TABLE> = {
                       white-space: nowrap;
                     `}
                     align={isNumeric(column.displayType) ? 'right' : 'left'}
-                    title={`${column.name}: ${column.sqlType}`}
                   >
-                    {column.name}
+                    <Tippy content={column.sqlType}>
+                      <span>{column.name}</span>
+                    </Tippy>
                   </th>
                 ))}
               </tr>
@@ -234,7 +236,6 @@ export const table: Chart<Type.TABLE> = {
                           : undefined
                       )}
                       align={isNumeric(column.displayType) ? 'right' : 'left'}
-                      title={formatRecord(record[column.order], displayTypes[column.name])}
                     >
                       {formatRecord(record[column.order], displayTypes[column.name])}
                     </td>

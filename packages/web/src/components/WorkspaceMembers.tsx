@@ -61,6 +61,7 @@ export function WorkspaceMembers(props: { onClose(): void }) {
       }
     }
   }, [handleInviteMembers.value, workspace?.preferences.emailConfig])
+  const disabled = me?.role !== 'admin'
 
   if (invite) {
     return (
@@ -263,7 +264,7 @@ export function WorkspaceMembers(props: { onClose(): void }) {
               userId={userId}
               role={role}
               user={users?.[userId]}
-              isAdmin={me?.role === 'admin'}
+              disabled={disabled}
               isMe={me?.userId === userId}
               onClick={refetch}
             />
@@ -278,7 +279,7 @@ function WorkspaceMember(props: {
   userId: string
   role: Role
   user: User
-  isAdmin: boolean
+  disabled: boolean
   isMe: boolean
   onClick(): void
 }) {
@@ -445,9 +446,12 @@ function WorkspaceMember(props: {
             cursor: pointer;
             &:disabled {
               cursor: not-allowed;
+              color: ${ThemingVariables.colors.text[1]};
+              background-color: ${ThemingVariables.colors.gray[3]};
+              border: 1px solid ${ThemingVariables.colors.gray[1]};
             }
           `}
-          disabled={!props.isAdmin}
+          disabled={props.disabled}
           onClick={() => {
             setVisible(true)
           }}

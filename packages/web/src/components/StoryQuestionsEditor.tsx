@@ -605,6 +605,8 @@ export const StoryQuestionEditor: React.FC<{
       draftBlock.content!.sql = sql
       draftBlock.content!.snapshotId = snapShotId
       draftBlock.content!.visualization = visualizationConfig
+      draftBlock.content!.error = null
+      draftBlock.content!.lastRunAt = Date.now()
     })
   }, [block, isDraft, readonly, sql, setBlock, snapShotId, visualizationConfig])
 
@@ -942,6 +944,7 @@ export const StoryQuestionEditor: React.FC<{
                 flex: 1;
                 width: 0 !important;
               `}
+              blockId={block.id}
               value={sql}
               padding={{ top: 20, bottom: 0 }}
               languageId={profileType}

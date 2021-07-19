@@ -11,9 +11,9 @@ import scrollIntoView from 'scroll-into-view-if-needed'
 import { ThemingVariables } from 'styles'
 import { Editor } from 'types'
 import { BlockTitle } from '..'
-import { DEFAULT_QUESTION_BLOCK_ASPECT_RATIO, DEFAULT_QUESTION_BLOCK_WIDTH } from '../Blocks/QuestionBlock'
 import { EditorPopover } from '../EditorPopover'
 import { useEditor } from '../hooks'
+import { DEFAULT_QUESTION_BLOCK_ASPECT_RATIO, DEFAULT_QUESTION_BLOCK_WIDTH } from '../utils'
 
 export const QuestionSearchResultCell = (props: {
   block?: Editor.QuestionBlock

@@ -1,13 +1,13 @@
-import { css } from '@emotion/css'
+import { css, cx } from '@emotion/css'
 import { IconCommonRefresh } from 'assets/icons'
 import { motion, useAnimation } from 'framer-motion'
-import React, { useEffect } from 'react'
+import React, { ReactNode, useEffect } from 'react'
 import IconButton from './kit/IconButton'
 
 const _RefreshButton: React.ForwardRefRenderFunction<
   HTMLDivElement,
-  { color: string; loading: boolean; onClick: () => void }
-> = ({ color, loading, onClick }, ref) => {
+  { color: string; loading: boolean; onClick: () => void; className?: string; hoverContent?: ReactNode }
+> = ({ color, loading, onClick, className, hoverContent }, ref) => {
   const controls = useAnimation()
 
   useEffect(() => {
@@ -25,12 +25,16 @@ const _RefreshButton: React.ForwardRefRenderFunction<
       ref={ref}
       animate={controls}
       transition={{ type: 'tween', repeat: Infinity, duration: 0.75, ease: 'linear' }}
-      className={css`
-        display: inline-flex;
-        align-items: center;
-      `}
+      className={cx(
+        css`
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+        `,
+        className
+      )}
     >
-      <IconButton icon={IconCommonRefresh} color={color} onClick={onClick} />
+      <IconButton hoverContent={hoverContent} icon={IconCommonRefresh} color={color} onClick={onClick} />
     </motion.div>
   )
 }

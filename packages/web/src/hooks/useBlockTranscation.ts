@@ -2,7 +2,6 @@ import saveTranscations from '@app/api'
 import {
   createTranscation,
   duplicateStoryTranscation,
-  getDuplicatedBlocks,
   insertBlocksAndMoveTranscation,
   moveBlocksTranscation
 } from '@app/context/editorTranscations'
@@ -10,7 +9,6 @@ import { useWorkspace } from '@app/context/workspace'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { getBlockFromSnapshot } from '@app/store/block'
 import { Editor, Permission } from '@app/types'
-import { DEFAULT_TITLE } from '@app/utils'
 import debug from 'debug'
 import invariant from 'invariant'
 import { nanoid } from 'nanoid'
@@ -40,38 +38,7 @@ export const useBlockTranscationProvider = () => {
     },
     [commit]
   )
-  const duplicateBlocks = useCallback(
-    (
-      storyId: string,
-      {
-        blockIds,
-        targetBlockId,
-        direction,
-        duplicate
-      }: {
-        blockIds: string[]
-        targetBlockId: string
-        direction: 'top' | 'left' | 'bottom' | 'right' | 'child'
-        duplicate: boolean
-      }
-    ) => {
-      return commit({
-        transcation: (snapshot) => {
-          const blocks = blockIds.map((blockId) => getBlockFromSnapshot(blockId, snapshot))
-          return insertBlocksAndMoveTranscation({
-            storyId,
-            blocks: duplicate ? getDuplicatedBlocks(blocks, storyId) : blocks,
-            targetBlockId,
-            direction,
-            duplicate: duplicate,
-            snapshot
-          })
-        },
-        storyId
-      })
-    },
-    [commit]
-  )
+
   const createNewStory = useCallback(
     async (props?: { id: string; title?: string }) => {
       const id = props?.id ? props.id : nanoid()
@@ -190,48 +157,54 @@ export const useBlockTranscationProvider = () => {
   )
 
   // TODO: use commit
-  const pinStory = useCallback((workspaceViewId: string, storyId: string) => {
-    return saveTranscations([
-      {
-        ...createTranscation({
-          operations: [
-            {
-              cmd: 'listBefore',
-              table: 'workspaceView',
-              id: workspaceViewId,
-              args: {
-                id: storyId
-              },
-              path: ['pinnedList']
-            }
-          ]
-        }),
-        workspaceId: workspace.id
-      }
-    ])
-  }, [])
+  const pinStory = useCallback(
+    (workspaceViewId: string, storyId: string) => {
+      return saveTranscations([
+        {
+          ...createTranscation({
+            operations: [
+              {
+                cmd: 'listBefore',
+                table: 'workspaceView',
+                id: workspaceViewId,
+                args: {
+                  id: storyId
+                },
+                path: ['pinnedList']
+              }
+            ]
+          }),
+          workspaceId: workspace.id
+        }
+      ])
+    },
+    [workspace.id]
+  )
 
   // TODO: use commit
-  const unpinStory = useCallback((workspaceViewId: string, storyId: string) => {
-    return saveTranscations([
-      {
-        ...createTranscation({
-          operations: [
-            {
-              cmd: 'listRemove',
-              table: 'workspaceView',
-              id: workspaceViewId,
-              args: {
-                id: storyId
-              },
-              path: ['pinnedList']
-            }
-          ]
-        }),
-        workspaceId: workspace.id
-      }
-    ])
-  }, [])
+  const unpinStory = useCallback(
+    (workspaceViewId: string, storyId: string) => {
+      return saveTranscations([
+        {
+          ...createTranscation({
+            operations: [
+              {
+                cmd: 'listRemove',
+                table: 'workspaceView',
+                id: workspaceViewId,
+                args: {
+                  id: storyId
+                },
+                path: ['pinnedList']
+              }
+            ]
+          }),
+          workspaceId: workspace.id
+        }
+      ])
+    },
+    [workspace.id]
+  )
 
   const deleteStory = useCallback(
     (storyId: string) => {
@@ -270,7 +243,6 @@ export const useBlockTranscationProvider = () => {
   )
 
   return {
-    duplicateBlocks,
     moveBlocks,
     createNewStory,
     removeBlocks,

@@ -1,9 +1,13 @@
 import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { Diagram } from '@app/components/v11n'
-import { css, cx } from '@emotion/css'
+import { css, cx, keyframes } from '@emotion/css'
+import styled from '@emotion/styled'
+import Tippy from '@tippyjs/react'
 import {
   IconCommonCopy,
+  IconCommonError,
   IconCommonMore,
+  IconCommonRefresh,
   IconCommonSql,
   IconMenuDownload,
   IconMiscNoResult,
@@ -27,34 +31,42 @@ import { useBlockSuspense, useSnapshot, useUser } from 'hooks/api'
 import { useInterval } from 'hooks/useInterval'
 import { useRefreshSnapshot, useSnapshotMutating } from 'hooks/useStorySnapshotManager'
 import html2canvas from 'html2canvas'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useRecoilValue } from 'recoil'
+import invariant from 'invariant'
+import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ThemingVariables } from 'styles'
-import type { Editor, Snapshot } from 'types'
+import { Editor, Snapshot } from 'types'
 import { DEFAULT_TITLE, snapshotToCSV } from 'utils'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
 import { BlockResizer } from '../BlockBase/BlockResizer'
 import { ContentEditable } from '../BlockBase/ContentEditable'
-import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import { DebouncedResizeBlock } from '../DebouncedResizeBlock'
 import { EditorPopover } from '../EditorPopover'
 import { getBlockImageById } from '../helpers/contentEditable'
-import { useEditor } from '../hooks'
+import { useEditor, useLocalSelection } from '../hooks'
+import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
 import type { OperationInterface } from '../Popovers/BlockOperationPopover'
-import { IsBlockHovering } from '../store'
-import { TelleryBlockSelectionAtom } from '../store/selection'
+import { DEFAULT_QUESTION_BLOCK_ASPECT_RATIO, DEFAULT_QUESTION_BLOCK_WIDTH } from '../utils'
+import { BlockComponent, registerBlock } from './utils'
 
-export const DEFAULT_QUESTION_BLOCK_ASPECT_RATIO = 16 / 9
-export const DEFAULT_QUESTION_BLOCK_WIDTH = 0.7
+const FOOTER_HEIGHT = 20
 
-const FOOTER_HEIGHT = 56
+const rotateAnimation = keyframes`
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+`
 
-export const QuestionBlock: React.FC<{
-  block: Editor.QuestionBlock
-  blockFormat: BlockFormatInterface
-  parentType: Editor.BlockType
-}> = (props) => {
+export const QuestionBlock: BlockComponent<
+  React.FC<{
+    block: Editor.QuestionBlock
+    blockFormat: BlockFormatInterface
+    parentType: Editor.BlockType
+  }>
+> = (props) => {
   const editor = useEditor<Editor.QuestionBlock>()
   const { block } = props
   const { readonly } = useBlockBehavior()
@@ -64,18 +76,19 @@ export const QuestionBlock: React.FC<{
   const originalBlock = useBlockSuspense<Editor.QuestionBlock>(block.id)
   const questionEditor = useQuestionEditor()
   const [titleEditing, setTitleEditing] = useState(false)
-  const localSelection = useRecoilValue(TelleryBlockSelectionAtom(block.id))
-  const isFocusing = !!localSelection
+  const [blockFocusing, setBlockFocusing] = useState(false)
+  const localSelection = useLocalSelection(block.id)
+  const isInputFocusing = !!localSelection
 
   useEffect(() => {
     editor?.registerOrUnregisterBlockInstance(block.id, {
       openMenu: () => {
         questionEditor.open({ mode: 'SQL', readonly, blockId: block.id, storyId: block.storyId! })
         // setIsPopoverOpen(true)
-      },
-      afterDuplicate: () => {
-        questionEditor.open({ mode: 'SQL', readonly, blockId: block.id, storyId: block.storyId! })
       }
+      // afterDuplicate: () => {
+      //   questionEditor.open({ mode: 'SQL', readonly, blockId: block.id, storyId: block.storyId! })
+      // }
     })
     return () => {
       editor?.registerOrUnregisterBlockInstance(block.id, undefined)
@@ -109,24 +122,35 @@ export const QuestionBlock: React.FC<{
   const snapshotId = originalBlock?.content?.snapshotId
   const visualization = block.content?.visualization
 
+  const mutateSnapshot = useRefreshSnapshot()
+  const mutatingCount = useSnapshotMutating(originalBlock.id)
+
+  useEffect(() => {
+    if (originalBlock.id === block.id && !snapshotId && originalBlock.content?.sql && mutatingCount === 0) {
+      mutateSnapshot.execute(originalBlock)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
-    <motion.div ref={ref} className={QuestionsBlockContainer}>
+    <div
+      ref={ref}
+      className={QuestionsBlockContainer}
+      tabIndex={-1}
+      onFocus={() => setBlockFocusing(true)}
+      onBlur={() => setBlockFocusing(false)}
+    >
       {isEmptyBlock ? (
-        <BlockPlaceHolder
-          onClick={() => {
-            // setIsPopoverOpen(true)
-          }}
-          loading={false}
-          text="New Question"
-        />
+        <BlockPlaceHolder loading={false} text="New Question" />
       ) : (
         originalBlock && (
           <>
             <QuestionBlockHeader
               setTitleEditing={setTitleEditing}
-              titleEditing={titleEditing || isFocusing}
+              titleEditing={titleEditing || isInputFocusing}
               block={block}
             />
+            <QuestionBlockStatus snapshotId={snapshotId} block={block} originalBlock={originalBlock} />
             <motion.div
               style={{
                 paddingTop: props.blockFormat.paddingTop
@@ -143,7 +167,6 @@ export const QuestionBlock: React.FC<{
               }}
             >
               <QuestionBlockBody ref={contentRef} snapshotId={snapshotId} visualization={visualization} />
-
               {readonly === false && (
                 <BlockResizer
                   blockFormat={props.blockFormat}
@@ -154,10 +177,15 @@ export const QuestionBlock: React.FC<{
                 />
               )}
             </motion.div>
-            <QuestionBlockFooter snapshotId={snapshotId} block={block} originalBlock={originalBlock} />
+            <div
+              className={css`
+                height: ${FOOTER_HEIGHT}px;
+              `}
+            />
           </>
         )
       )}
+      <QuestionBlockButtons blockId={block.id} show={blockFocusing} />
       {/* 
       {!readonly && ref.current && (
         <NewQuestionPopover
@@ -167,7 +195,56 @@ export const QuestionBlock: React.FC<{
           referneceElement={ref.current}
         />
       )} */}
-    </motion.div>
+    </div>
+  )
+}
+
+QuestionBlock.meta = {
+  isText: true,
+  hasChildren: false
+}
+
+registerBlock(Editor.BlockType.Question, QuestionBlock)
+
+export const QuestionBlockButtons: React.FC<{ blockId: string; show: boolean }> = ({ blockId, show }) => {
+  const block = useBlockSuspense<Editor.QuestionBlock>(blockId)
+  const { data: snapshot } = useSnapshot(block?.content?.snapshotId)
+  const { small } = useBlockBehavior()
+
+  return (
+    <AnimatePresence>
+      {!small && show && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25 }}
+          className={css`
+            background: #ffffff;
+            box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.08), 0px 1px 2px rgba(0, 0, 0, 0.08),
+              0px 4px 12px rgba(0, 0, 0, 0.16);
+            border-radius: 8px;
+            position: absolute;
+            right: 0;
+            bottom: 100%;
+            margin-bottom: 13px;
+            padding: 5px;
+            display: inline-flex;
+            align-items: center;
+            flex-shrink: 0;
+            > * + * {
+              margin-left: 10px;
+            }
+            > * {
+              cursor: pointer;
+            }
+            opacity: 1;
+          `}
+        >
+          <TitleButtonsInner snapshot={snapshot} block={block} sql={block.content?.sql ?? ''} />
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }
 
@@ -175,7 +252,12 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
   HTMLDivElement | null,
   { snapshotId?: string; visualization?: Config<Type> }
 > = ({ snapshotId, visualization }, ref) => {
-  const { data: snapshot, isFetched: isSnapshotFetched, isIdle: isSnapshotIdle } = useSnapshot(snapshotId)
+  const {
+    data: snapshot,
+    isFetched: isSnapshotFetched,
+    isIdle: isSnapshotIdle,
+    isPreviousData
+  } = useSnapshot(snapshotId)
 
   const visualizationConfig = useMemo(() => {
     // ensure snapshot data is valid
@@ -187,7 +269,7 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
   }, [snapshot, visualization])
 
   return (
-    <BlockingUI blocking={isSnapshotIdle === false && isSnapshotFetched === false}>
+    <BlockingUI blocking={isSnapshotIdle === false && isSnapshotFetched === false && isPreviousData === false}>
       <div
         ref={ref}
         onCopy={(e) => {
@@ -262,8 +344,8 @@ const QuestionBlockHeader: React.FC<{
           align-items: center;
           justify-content: flex-start;
           align-self: stretch;
-          height: 60px;
-          padding: 20px;
+          height: 40px;
+          padding: 20px 20px 0 20px;
         `}
       >
         <div
@@ -271,14 +353,13 @@ const QuestionBlockHeader: React.FC<{
             display: flex;
             align-items: center;
             flex: 1;
-            padding: 5px 5px;
           `}
         >
           <div
             className={cx(
               css`
                 font-style: normal;
-                font-weight: 500;
+                font-weight: 600;
                 font-size: 1em;
                 line-height: 1.2;
                 color: ${ThemingVariables.colors.text[0]};
@@ -310,25 +391,16 @@ const QuestionBlockHeader: React.FC<{
   )
 }
 
-const QuestionBlockFooter: React.FC<{
+const QuestionBlockStatus: React.FC<{
   block: Editor.QuestionBlock
   originalBlock: Editor.QuestionBlock
   snapshotId?: string
 }> = ({ block, originalBlock, snapshotId }) => {
   const { data: snapshot } = useSnapshot(snapshotId)
-  const mutateSnapshot = useRefreshSnapshot(originalBlock, block.id, block.storyId!)
   const mutatingCount = useSnapshotMutating(originalBlock.id)
   const [mutatingStartTimeStamp, setMutatingStartTimeStamp] = useState(0)
   const [nowTimeStamp, setNowTimeStamp] = useState(0)
-
   const loading = mutatingCount !== 0
-
-  useEffect(() => {
-    if (originalBlock.id === block.id && !snapshotId && originalBlock.content?.sql && mutatingCount === 0) {
-      mutateSnapshot.execute()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   useEffect(() => {
     if (loading) {
@@ -337,12 +409,9 @@ const QuestionBlockFooter: React.FC<{
     }
   }, [loading])
 
-  useInterval(
-    () => {
-      setNowTimeStamp(Date.now())
-    },
-    loading ? 1000 : null
-  )
+  useInterval(() => {
+    setNowTimeStamp(Date.now())
+  }, 1000)
 
   return (
     <>
@@ -352,37 +421,90 @@ const QuestionBlockFooter: React.FC<{
           align-items: center;
           justify-content: flex-start;
           align-self: stretch;
-          padding: 16px 20px 20px;
-          height: ${FOOTER_HEIGHT}px;
+          padding: 3px 20px 20px;
+          height: 37px;
           overflow: hidden;
         `}
       >
-        <RefreshButton
-          color={ThemingVariables.colors.primary[1]}
-          loading={loading}
-          onClick={loading ? mutateSnapshot.cancel : mutateSnapshot.execute}
-        />
+        <Tippy
+          content={
+            block.content?.error ? (
+              <div
+                className={css`
+                  max-height: 100px;
+                  overflow: auto;
+                `}
+              >
+                {block.content?.error}
+              </div>
+            ) : (
+              'loading...'
+            )
+          }
+          // hideOnClick={true}
+          // theme="tellery"
+          animation="fade"
+          duration={150}
+          arrow={false}
+          interactive
+          // trigger="click"
+          popperOptions={{
+            modifiers: [
+              {
+                name: 'offset',
+                enabled: true,
+                options: {
+                  offset: [10, 20]
+                }
+              }
+            ]
+          }}
+        >
+          <div
+            className={css`
+              margin-right: 5px;
+            `}
+          >
+            {loading ? (
+              <>
+                <IconCommonRefresh
+                  width="12px"
+                  height="12px"
+                  fill={ThemingVariables.colors.warning[0]}
+                  className={css`
+                    animation: ${rotateAnimation} 1.2s linear infinite;
+                  `}
+                />
+              </>
+            ) : block.content?.error ? (
+              <>
+                <IconCommonError width="12px" height="12px" fill={ThemingVariables.colors.negative[0]} />
+              </>
+            ) : null}
+          </div>
+        </Tippy>
+
         <div
           className={css`
-            width: 100%;
             flex-grow: 0;
             flex-shrink: 1;
-            margin-left: 4px;
             overflow: hidden;
             align-items: center;
             font-weight: 600;
             font-size: 12px;
+            line-height: 14px;
             color: ${ThemingVariables.colors.text[2]};
             white-space: nowrap;
             text-overflow: ellipsis;
+            display: inline-flex;
           `}
         >
           {loading
             ? dayjs(nowTimeStamp).subtract(mutatingStartTimeStamp).format('mm:ss')
-            : dayjs(snapshot?.createdAt).fromNow()}
+            : snapshot?.createdAt
+            ? dayjs(snapshot?.createdAt).fromNow()
+            : ''}
         </div>
-
-        <TitleButtons snapshot={snapshot} block={block} sql={originalBlock.content?.sql ?? ''} />
       </div>
     </>
   )
@@ -456,8 +578,10 @@ export const MoreDropdownSelect: React.FC<{
   snapshot?: Snapshot
   block: Editor.Block
   sql: string
+  hoverContent: ReactNode
+  className?: string
   setIsActive: (active: boolean) => void
-}> = ({ snapshot, block, sql, setIsActive }) => {
+}> = ({ snapshot, block, sql, setIsActive, className, hoverContent }) => {
   const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null)
   const { data: user } = useUser(block?.lastEditedById ?? null)
 
@@ -468,10 +592,10 @@ export const MoreDropdownSelect: React.FC<{
         icon: <Icon icon={IconMenuDownload} color={ThemingVariables.colors.text[0]} />,
         action: () => {
           const snapshotData = snapshot?.data
-          if (snapshotData) {
-            const csvString = snapshotToCSV(snapshotData)
-            csvString && download(csvString, 'data.csv', 'text/csv')
-          }
+          invariant(snapshotData, 'snapshotData is null')
+          const csvString = snapshotToCSV(snapshotData)
+          invariant(csvString, 'csvString is null')
+          csvString && download(csvString, 'data.csv', 'text/csv')
         }
       },
       {
@@ -512,22 +636,26 @@ export const MoreDropdownSelect: React.FC<{
   return (
     <div>
       <IconButton
+        hoverContent={hoverContent}
         icon={IconCommonMore}
-        color={ThemingVariables.colors.gray[0]}
+        color={ThemingVariables.colors.primary[0]}
         {...getToggleButtonProps({ ref: setReferenceElement })}
-        className={css`
-          outline: none;
-          outline: none;
-          border: none;
-          border-radius: 4px;
-          font-size: 16px;
-          font-weight: 500;
-          padding: 0;
-          display: flex;
-          align-items: center;
-          cursor: pointer;
-          background: transparent;
-        `}
+        className={cx(
+          css`
+            outline: none;
+            outline: none;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            background: transparent;
+          `,
+          className
+        )}
       />
       <div {...getMenuProps()}>
         <EditorPopover
@@ -585,21 +713,6 @@ export const MoreDropdownSelect: React.FC<{
   )
 }
 
-const TitleButtons: React.FC<{
-  snapshot: Snapshot | undefined
-  block: Editor.Block
-  sql: string
-}> = ({ snapshot, block, sql }) => {
-  const { small } = useBlockBehavior()
-  const isHovering = useRecoilValue(IsBlockHovering(block.id))
-
-  return (
-    <AnimatePresence>
-      {!small && isHovering && <TitleButtonsInner snapshot={snapshot} block={block} sql={sql} />}
-    </AnimatePresence>
-  )
-}
-
 const TitleButtonsInner: React.FC<{
   snapshot: Snapshot | undefined
   block: Editor.Block
@@ -609,44 +722,90 @@ const TitleButtonsInner: React.FC<{
   const [isActive, setIsActive] = useState(false)
   const [isPresent, safeToRemove] = usePresence()
   const questionEditor = useQuestionEditor()
+  const mutateSnapshot = useRefreshSnapshot()
+  const mutatingCount = useSnapshotMutating(block.id)
+  const loading = mutatingCount !== 0
 
   useEffect(() => {
     isActive === false && !isPresent && safeToRemove?.()
   }, [isActive, isPresent, safeToRemove])
 
   return (
-    <motion.div
-      className={titleButtonsContainer}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.25 }}
-    >
+    <>
+      <RefreshButton
+        color={ThemingVariables.colors.primary[1]}
+        loading={loading}
+        hoverContent="Refresh"
+        className={QuestionBlockIconButton}
+        onClick={loading ? () => mutateSnapshot.cancel(block.id) : () => mutateSnapshot.execute(block)}
+      />
       <IconButton
+        hoverContent="Visualization options"
         icon={IconVisualizationSetting}
+        className={QuestionBlockIconButton}
         onClick={() => questionEditor.open({ mode: 'VIS', readonly, blockId: block.id, storyId: block.storyId! })}
       />
       <IconButton
+        hoverContent="Edit SQL"
+        className={QuestionBlockIconButton}
         icon={IconCommonSql}
         onClick={() => questionEditor.open({ mode: 'SQL', readonly, blockId: block.id, storyId: block.storyId! })}
       />
-      <MoreDropdownSelect snapshot={snapshot} block={block} sql={sql} setIsActive={setIsActive} />
-    </motion.div>
+      <MoreDropdownSelect
+        hoverContent="More"
+        className={QuestionBlockIconButton}
+        snapshot={snapshot}
+        block={block}
+        sql={sql}
+        setIsActive={setIsActive}
+      />
+    </>
   )
 }
 
-const titleButtonsContainer = css`
-  display: inline-flex;
-  align-items: center;
-  margin-left: 20px;
-  flex-shrink: 0;
-  > * + * {
-    margin-left: 20px;
+const StatusIndicator = styled.div<{ size: number; status: 'error' | 'loading' | 'success' }>`
+  --status-indicator-color: ${(props) => {
+    switch (props.status) {
+      case 'error':
+        return ThemingVariables.colors.negative[0]
+      case 'loading':
+        return ThemingVariables.colors.warning[0]
+      case 'success':
+        return ThemingVariables.colors.positive[0]
+      default:
+        return ThemingVariables.colors.positive[0]
+    }
+  }};
+  @keyframes status-indicator-pulse {
+    0% {
+      box-shadow: 0 0 0 0 ${ThemingVariables.colors.warning[1]};
+    }
+    70% {
+      box-shadow: 0 0 0 ${(props) => props.size}px transparent;
+    }
+    100% {
+      box-shadow: 0 0 0 0 transparent;
+    }
   }
-  > * {
-    cursor: pointer;
-  }
-  opacity: 1;
+
+  display: ${(props) => (props.status === 'success' ? 'none' : 'inline-block')};
+  border-radius: 50%;
+  width: ${(props) => props.size}px;
+  height: ${(props) => props.size}px;
+  animation-name: ${(props) => (props.status === 'loading' ? 'status-indicator-pulse' : '')};
+  animation-duration: 1.5s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: normal;
+  animation-delay: 0;
+  animation-fill-mode: none;
+  margin-right: 10px;
+  background-color: var(--status-indicator-color);
+`
+
+const QuestionBlockIconButton = css`
+  width: 30px;
+  height: 30px;
 `
 
 const QuestionsBlockContainer = css`
@@ -657,4 +816,8 @@ const QuestionsBlockContainer = css`
   align-self: center;
   background-color: ${ThemingVariables.colors.gray[4]};
   border-radius: 20px;
+  border: 4px solid transparent;
+  :focus-within {
+    border-color: ${ThemingVariables.colors.primary[3]};
+  }
 `

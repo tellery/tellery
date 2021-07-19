@@ -10,18 +10,16 @@ import {
   toggleMark,
   tokenPosition2SplitedTokenPosition
 } from 'components/editor/helpers/tokenManipulation'
-import { TelleryBlockSelectionAtom } from 'components/editor/store/selection'
 import debug from 'debug'
 import { dequal } from 'dequal'
 import { useOpenStory, usePrevious } from 'hooks'
-import { useMgetBlocks } from 'hooks/api'
+import { useMgetBlocksAny } from 'hooks/api'
 import produce from 'immer'
 import invariant from 'invariant'
 import React, { useCallback, useDebugValue, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
-import { useRecoilValue } from 'recoil'
 import { ThemingVariables } from 'styles'
 import { Editor, TellerySelection, TellerySelectionType } from 'types'
-import { useEditor } from '../hooks'
+import { useEditor, useLocalSelection } from '../hooks'
 import { BlockReferenceDropdown } from '../Popovers/BlockReferenceDropdown'
 import { SlashCommandDropdown } from '../Popovers/SlashCommandDropdown'
 import { BlockRenderer } from './BlockRenderer'
@@ -58,7 +56,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
   const [contentWillChange, setContentWillChange] = useState(false)
   const isComposing = useRef(false)
   const [composingState, setComposingState] = useState(false)
-  const localSelection = useRecoilValue(TelleryBlockSelectionAtom(block.id))
+  const localSelection = useLocalSelection(block.id)
   const isFocusing = !!localSelection
   const openStoryHandler = useOpenStory()
 
@@ -84,7 +82,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
       .filter((x) => x !== null) as string[]
   }, [titleTokens])
 
-  const { data: dependsAssetsResult } = useMgetBlocks(dependsAssetsKeys)
+  const { data: dependsAssetsResult } = useMgetBlocksAny(dependsAssetsKeys)
   // const dependsAssetsResult = useMgetBlocksSuspense(dependsAssetsKeys)
 
   useEffect(() => {
