@@ -1,11 +1,13 @@
 import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { Diagram } from '@app/components/v11n'
-import { css, cx } from '@emotion/css'
+import { css, cx, keyframes } from '@emotion/css'
 import styled from '@emotion/styled'
 import Tippy from '@tippyjs/react'
 import {
   IconCommonCopy,
+  IconCommonError,
   IconCommonMore,
+  IconCommonRefresh,
   IconCommonSql,
   IconMenuDownload,
   IconMiscNoResult,
@@ -47,6 +49,15 @@ import type { OperationInterface } from '../Popovers/BlockOperationPopover'
 import { DEFAULT_QUESTION_BLOCK_ASPECT_RATIO, DEFAULT_QUESTION_BLOCK_WIDTH } from '../utils'
 
 const FOOTER_HEIGHT = 20
+
+const rotateAnimation = keyframes`
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+`
 
 export const QuestionBlock: React.FC<{
   block: Editor.QuestionBlock
@@ -383,7 +394,6 @@ const QuestionBlockStatus: React.FC<{
   const mutatingCount = useSnapshotMutating(originalBlock.id)
   const [mutatingStartTimeStamp, setMutatingStartTimeStamp] = useState(0)
   const [nowTimeStamp, setNowTimeStamp] = useState(0)
-
   const loading = mutatingCount !== 0
 
   useEffect(() => {
@@ -393,12 +403,9 @@ const QuestionBlockStatus: React.FC<{
     }
   }, [loading])
 
-  useInterval(
-    () => {
-      setNowTimeStamp(Date.now())
-    },
-    loading ? 1000 : null
-  )
+  useInterval(() => {
+    setNowTimeStamp(Date.now())
+  }, 1000)
 
   return (
     <>
@@ -447,7 +454,28 @@ const QuestionBlockStatus: React.FC<{
             ]
           }}
         >
-          <StatusIndicator size={10} status={block.content?.error ? 'error' : loading ? 'loading' : 'success'} />
+          <div
+            className={css`
+              margin-right: 5px;
+            `}
+          >
+            {loading ? (
+              <>
+                <IconCommonRefresh
+                  width="12px"
+                  height="12px"
+                  fill={ThemingVariables.colors.warning[0]}
+                  className={css`
+                    animation: ${rotateAnimation} 1.2s linear infinite;
+                  `}
+                />
+              </>
+            ) : block.content?.error ? (
+              <>
+                <IconCommonError width="12px" height="12px" fill={ThemingVariables.colors.negative[0]} />
+              </>
+            ) : null}
+          </div>
         </Tippy>
 
         <div
@@ -467,7 +495,9 @@ const QuestionBlockStatus: React.FC<{
         >
           {loading
             ? dayjs(nowTimeStamp).subtract(mutatingStartTimeStamp).format('mm:ss')
-            : dayjs(snapshot?.createdAt).fromNow()}
+            : snapshot?.createdAt
+            ? dayjs(snapshot?.createdAt).fromNow()
+            : ''}
         </div>
       </div>
     </>
@@ -780,4 +810,8 @@ const QuestionsBlockContainer = css`
   align-self: center;
   background-color: ${ThemingVariables.colors.gray[4]};
   border-radius: 20px;
+  border: 4px solid transparent;
+  :focus-within {
+    border-color: ${ThemingVariables.colors.primary[3]};
+  }
 `

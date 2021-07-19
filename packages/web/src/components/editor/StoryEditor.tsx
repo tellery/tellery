@@ -671,6 +671,29 @@ const _StoryEditor: React.FC<{
     return !!(rootBlock as Story)?.format?.locked || canWrite === false
   }, [canWrite, rootBlock])
 
+  const focusBlockHandler = useCallback(
+    (blockId: string, blockType: Editor.BlockType) => {
+      subscribeBlockMountedOnce(blockId, (_block, element) => {
+        if (blockType === Editor.BlockType.Question) {
+          getBlockInstanceById(blockId)?.openMenu()
+        }
+        setTimeout(() => {
+          const actions = computeScrollIntoView(element, {
+            scrollMode: 'if-needed',
+            block: 'end',
+            inline: 'nearest',
+            boundary: editorRef.current
+          })
+          actions.forEach(({ el, top, left }) => {
+            el.scrollTop = top + 100
+            el.scrollLeft = left
+          })
+        }, 100)
+      })
+    },
+    [getBlockInstanceById]
+  )
+
   const duplicateHandler = useCallback(
     (blockIds: string[]) => {
       if (blockIds.length === 0) return
@@ -686,27 +709,11 @@ const _StoryEditor: React.FC<{
       if (duplicatedBlocks && duplicatedBlocks.length === 1) {
         const currentBlock = duplicatedBlocks[0]
         const blockId = currentBlock.id
-        subscribeBlockMountedOnce(blockId, (_block, element) => {
-          if (currentBlock.type === Editor.BlockType.Question) {
-            getBlockInstanceById(blockId)?.openMenu()
-          }
-          setTimeout(() => {
-            const actions = computeScrollIntoView(element, {
-              scrollMode: 'if-needed',
-              block: 'end',
-              inline: 'nearest',
-              boundary: editorRef.current
-            })
-            actions.forEach(({ el, top, left }) => {
-              el.scrollTop = top + 100
-              el.scrollLeft = left
-            })
-          }, 100)
-        })
+        focusBlockHandler(blockId, currentBlock.type)
       }
       return duplicatedBlocks
     },
-    [blockTranscations, getBlockInstanceById, setSelectedBlocks, snapshot, storyId]
+    [blockTranscations, focusBlockHandler, setSelectedBlocks, snapshot, storyId]
   )
 
   const keyDownHandler = useCallback(
@@ -1230,7 +1237,8 @@ const _StoryEditor: React.FC<{
       storyId,
       lockOrUnlockScroll,
       selectBlocks,
-      duplicateHandler
+      duplicateHandler,
+      focusBlockHandler
     } as EditorContextInterface<Editor.BaseBlock>
   }, [
     blurEditor,
@@ -1246,6 +1254,7 @@ const _StoryEditor: React.FC<{
     toggleBlockType,
     storyId,
     duplicateHandler,
+    focusBlockHandler,
     selectBlocks
   ])
 

@@ -64,7 +64,11 @@ export default defineConfig(({ command, mode }: { command: string; mode: string 
       reactSvgPlugin({
         defaultExport: 'component',
         svgo: true,
-        svgoConfig: {},
+        svgoConfig: {
+          plugins: {
+            removeViewBox: false
+          }
+        },
         expandProps: 'end',
         ref: false,
         memo: false,

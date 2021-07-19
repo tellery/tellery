@@ -8,7 +8,7 @@ export const useEditableContextMenu = (
   const [index, setIndex] = useState(-1)
 
   useEffect(() => {
-    setIndex(-1)
+    setIndex(0)
   }, [actions])
 
   useEffect(() => {
@@ -43,5 +43,5 @@ export const useEditableContextMenu = (
     }
   }, [setIndex, open, actions?.length, index, element, actions])
 
-  return [index, setIndex]
+  return [index, setIndex] as [number, React.Dispatch<React.SetStateAction<number>>]
 }

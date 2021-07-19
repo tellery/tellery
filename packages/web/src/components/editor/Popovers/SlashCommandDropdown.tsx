@@ -19,15 +19,14 @@ import {
 import debug from 'debug'
 import { useBlockSuspense } from 'hooks/api'
 import invariant from 'invariant'
-import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import { ThemingVariables } from 'styles'
 import { Editor, TellerySelection, TellerySelectionType } from 'types'
 import { mergeTokens, splitToken, tokenPosition2SplitedTokenPosition } from '..'
 import { EditorPopover } from '../EditorPopover'
-import { subscribeBlockMountedOnce } from '../helpers/blockObserver'
 import { tellerySelection2Native } from '../helpers/tellerySelection'
-import { useEditor } from '../hooks'
+import { useEditableContextMenu, useEditor } from '../hooks'
 
 const logger = debug('tellery:slashCommand')
 
@@ -97,7 +96,7 @@ const isEmptyTitleBlock = (block: Editor.BaseBlock) => {
 export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props) => {
   const { id, keyword, setOpen, blockRef, referenceRange, selection, open } = props
   const editor = useEditor<Editor.Block>()
-  const [selectedResultIndex, setSelectedResultIndex] = useState(0)
+  // const [selectedResultIndex, setSelectedResultIndex] = useState(0)
   const currentBlock = useBlockSuspense(id)
 
   const removeBlockSlashCommandText = useCallback(() => {
@@ -136,11 +135,15 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
       } else {
         const newBlock = editor.insertNewEmptyBlock(blockType, id, 'bottom')
         blockId = newBlock.id
+        editor?.setSelectionState({
+          type: TellerySelectionType.Inline,
+          storyId: newBlock.storyId!,
+          anchor: { blockId, offset: 0, nodeIndex: 0 },
+          focus: { blockId, offset: 0, nodeIndex: 0 }
+        })
       }
 
-      subscribeBlockMountedOnce(blockId, () => {
-        editor?.getBlockInstanceById(blockId)?.openMenu()
-      })
+      editor?.focusBlockHandler(id, blockType)
 
       setOpen(false)
     },
@@ -239,38 +242,17 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
     [id, operations, removeBlockSlashCommandText, snapshot]
   )
 
-  useEffect(() => {
-    if (!open) return
-    const blockElement = blockRef.current
-    if (!blockElement) return
-    const onKeyDown = (e: KeyboardEvent) => {
-      switch (e.key) {
-        case 'ArrowDown': {
-          setSelectedResultIndex((index) => {
-            const length = operations?.length || 0
-            return index >= length ? length : index + 1
-          })
-          break
-        }
-        case 'ArrowUp': {
-          setSelectedResultIndex((index) => {
-            return index <= 1 ? 0 : index - 1
-          })
-          break
-        }
-        case 'Enter': {
-          e.preventDefault()
-          e.stopPropagation()
-          execSelectedOperation(selectedResultIndex)
-          break
-        }
-      }
-    }
-    blockElement.addEventListener('keydown', onKeyDown)
-    return () => {
-      blockElement.removeEventListener('keydown', onKeyDown)
-    }
-  }, [selectedResultIndex, blockRef, operations, open, execSelectedOperation])
+  const [selectedResultIndex, setSelectedResultIndex] = useEditableContextMenu(
+    open,
+    useMemo(
+      () =>
+        operations.map((item, index) => {
+          return () => execSelectedOperation(index)
+        }),
+      [execSelectedOperation, operations]
+    ),
+    blockRef
+  )
 
   return (
     <div
@@ -352,9 +334,9 @@ const BlockMenuItem = (props: {
           overflow: hidden;
           display: flex;
           align-items: center;
-          &:hover {
+          /* &:hover {
             background: ${ThemingVariables.colors.primary[4]};
-          }
+          } */
           &:active {
             background: ${ThemingVariables.colors.primary[3]};
           }
