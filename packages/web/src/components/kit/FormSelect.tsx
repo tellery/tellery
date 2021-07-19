@@ -27,6 +27,12 @@ export default forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElem
           display: block;
           background-image: ${SVG2DataURI(IconCommonArrowDropDown)};
           color: ${ThemingVariables.colors.text[0]};
+          &:disabled {
+            opacity: 1;
+            color: ${ThemingVariables.colors.text[1]};
+            background-color: ${ThemingVariables.colors.gray[3]};
+            cursor: not-allowed;
+          }
         `,
         props.className
       )}

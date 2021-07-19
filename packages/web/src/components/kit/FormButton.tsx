@@ -23,6 +23,7 @@ export function FormButton(
           border-radius: 8px;
           cursor: pointer;
           &:disabled {
+            font-weight: unset;
             cursor: not-allowed;
             color: ${ThemingVariables.colors.text[1]};
             background-color: ${ThemingVariables.colors.gray[1]};

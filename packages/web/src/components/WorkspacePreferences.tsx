@@ -33,6 +33,7 @@ export function WorkspacePreferences(props: { onClose(): void }) {
   }, [handleWorkspaceUpdate.status, onClose, refetch])
   const user = useLoggedUser()
   const me = useMemo(() => workspace?.members.find(({ userId }) => userId === user.id), [user.id, workspace?.members])
+  const disabled = me?.role !== 'admin'
 
   return (
     <form
@@ -97,12 +98,13 @@ export function WorkspacePreferences(props: { onClose(): void }) {
           onClick={() => {
             fileInputRef.current?.click()
           }}
+          disabled={disabled}
         >
           Upload Photo
         </FormButton>
       </div>
       <FormLabel>Name</FormLabel>
-      <FormInput {...register('name')} />
+      <FormInput {...register('name')} disabled={disabled} />
       <div
         className={css`
           flex: 1;
@@ -116,7 +118,7 @@ export function WorkspacePreferences(props: { onClose(): void }) {
           width: 100%;
           margin-top: 5px;
         `}
-        disabled={handleWorkspaceUpdate.status === 'pending' || me?.role !== 'admin'}
+        disabled={handleWorkspaceUpdate.status === 'pending' || disabled}
       >
         Update
       </FormButton>

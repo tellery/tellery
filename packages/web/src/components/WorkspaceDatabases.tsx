@@ -61,6 +61,7 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
   const user = useLoggedUser()
   const { data: workspace } = useWorkspaceDetail()
   const me = useMemo(() => workspace?.members.find(({ userId }) => userId === user.id), [user.id, workspace?.members])
+  const disabled = me?.role !== 'admin'
 
   return (
     <>
@@ -89,6 +90,7 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
           `}
           value={type}
           {...register('type')}
+          disabled={disabled}
         >
           {availableConfigs?.map((availableConfig) => (
             <option key={availableConfig.type} value={availableConfig.type}>
@@ -108,7 +110,7 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
         {availableConfig?.configs
           .filter((config) => config.required)
           .map((config) => (
-            <Config key={config.name} value={config} register={register} />
+            <Config key={config.name} value={config} register={register} disabled={disabled} />
           ))}
         <FormLabel
           className={css`
@@ -117,7 +119,7 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
         >
           Username
         </FormLabel>
-        <FormInput {...register('auth.username')} />
+        <FormInput {...register('auth.username')} disabled={disabled} />
         <FormLabel
           className={css`
             margin-top: 20px;
@@ -125,11 +127,11 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
         >
           Password
         </FormLabel>
-        <FormInput {...register('auth.password')} type="password" />
+        <FormInput {...register('auth.password')} type="password" disabled={disabled} />
         {availableConfig?.configs
           .filter((config) => !config.required)
           .map((config) => (
-            <Config key={config.name} value={config} register={register} />
+            <Config key={config.name} value={config} register={register} disabled={disabled} />
           ))}
       </form>
       <FormButton
@@ -138,7 +140,7 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
         `}
         variant="primary"
         onClick={handleSubmit(handleUpsertProfile.execute)}
-        disabled={handleUpsertProfile.status === 'pending' || me?.role !== 'admin'}
+        disabled={handleUpsertProfile.status === 'pending' || disabled}
       >
         Update
       </FormButton>
@@ -146,7 +148,7 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
   )
 }
 
-function Config(props: { value: AvailableConfig; register: UseFormRegister<ProfileConfig> }) {
+function Config(props: { value: AvailableConfig; register: UseFormRegister<ProfileConfig>; disabled: boolean }) {
   const { value: config, register } = props
 
   return (
@@ -160,13 +162,14 @@ function Config(props: { value: AvailableConfig; register: UseFormRegister<Profi
         {config.name}
       </FormLabel>
       {config.type === 'BOOLEAN' ? (
-        <FormSwitch {...register(`configs.${config.name}`)} />
+        <FormSwitch {...register(`configs.${config.name}`)} disabled={props.disabled} />
       ) : (
         <FormInput
           {...register(`configs.${config.name}`)}
           required={config.required}
           type={config.secret ? 'password' : config.type === 'NUMBER' ? 'number' : 'text'}
           placeholder={config.hint}
+          disabled={props.disabled}
         />
       )}
       <span
