@@ -134,7 +134,7 @@
     "eslint-plugin-standard": "^5.0.0",
     "file-loader": "^6.2.0",
     "husky": "^7.0.1",
-    "lint-staged": "^11.0.0",
+    "lint-staged": "^11.0.1",
     "mocha": "^9.0.2",
     "prettier": "^2.3.2",
     "rollup-plugin-node-polyfills": "^0.2.1",
