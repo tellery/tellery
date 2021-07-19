@@ -1,11 +1,12 @@
 import { useWorkspaceDetail, useWorkspaceUpdate } from '@app/hooks/api'
+import { useLoggedUser } from '@app/hooks/useAuth'
 import { ThemingVariables } from '@app/styles'
 import type { Workspace } from '@app/types'
 import { fileLoader } from '@app/utils'
 import { uploadFile } from '@app/utils/upload'
 import { css } from '@emotion/css'
 import { pick } from 'lodash'
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { FormButton } from './kit/FormButton'
 import FormError from './kit/FormError'
@@ -30,6 +31,8 @@ export function WorkspacePreferences(props: { onClose(): void }) {
       refetch()
     }
   }, [handleWorkspaceUpdate.status, onClose, refetch])
+  const user = useLoggedUser()
+  const me = useMemo(() => workspace?.members.find(({ userId }) => userId === user.id), [user.id, workspace?.members])
 
   return (
     <form
@@ -113,7 +116,7 @@ export function WorkspacePreferences(props: { onClose(): void }) {
           width: 100%;
           margin-top: 5px;
         `}
-        disabled={handleWorkspaceUpdate.status === 'pending'}
+        disabled={handleWorkspaceUpdate.status === 'pending' || me?.role !== 'admin'}
       >
         Update
       </FormButton>

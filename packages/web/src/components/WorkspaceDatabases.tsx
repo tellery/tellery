@@ -2,7 +2,8 @@ import {
   useConnectorsList,
   useConnectorsListAvailableConfigs,
   useConnectorsListProfiles,
-  useConnectorsUpsertProfile
+  useConnectorsUpsertProfile,
+  useWorkspaceDetail
 } from '@app/hooks/api'
 import type { AvailableConfig, ProfileConfig } from '@app/types'
 import { css } from '@emotion/css'
@@ -14,6 +15,7 @@ import FormSelect from './kit/FormSelect'
 import FormSwitch from './kit/FormSwitch'
 import { FormButton } from './kit/FormButton'
 import { ThemingVariables } from '@app/styles'
+import { useLoggedUser } from '@app/hooks/useAuth'
 
 export function WorkspaceDatabases(props: { onClose(): void }) {
   const { data: connectors } = useConnectorsList()
@@ -56,6 +58,9 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
       onClose()
     }
   }, [handleUpsertProfile.status, onClose])
+  const user = useLoggedUser()
+  const { data: workspace } = useWorkspaceDetail()
+  const me = useMemo(() => workspace?.members.find(({ userId }) => userId === user.id), [user.id, workspace?.members])
 
   return (
     <>
@@ -133,7 +138,7 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
         `}
         variant="primary"
         onClick={handleSubmit(handleUpsertProfile.execute)}
-        disabled={handleUpsertProfile.status === 'pending'}
+        disabled={handleUpsertProfile.status === 'pending' || me?.role !== 'admin'}
       >
         Update
       </FormButton>
