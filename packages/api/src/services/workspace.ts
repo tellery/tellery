@@ -43,6 +43,9 @@ export class WorkspaceService {
       throw NotFoundError.resourceNotFound(workspaceId)
     }
 
+    // typeorm not supported ordering, so need to order it using lodash
+    model.members = _(model.members).orderBy('joinAt', 'desc').value()
+
     return Workspace.fromEntity(model)
   }
 
@@ -103,7 +106,10 @@ export class WorkspaceService {
       take: limit,
     })
     const dtos = _(models)
-      .map((m) => Workspace.fromEntity(m).toDTO(operatorId))
+      .map((m) => {
+        m.members = _(m.members).orderBy('joinAt', 'desc').value()
+        return Workspace.fromEntity(m).toDTO(operatorId)
+      })
       .value()
 
     const { data: workspaces, next: nextNext } = loadMore(dtos, limit, (q) => q.createdAt)
