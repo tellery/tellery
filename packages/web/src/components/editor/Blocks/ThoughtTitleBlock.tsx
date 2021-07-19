@@ -1,10 +1,11 @@
 import { css, cx } from '@emotion/css'
 import dayjs from 'dayjs'
 import React, { useMemo } from 'react'
-import type { Editor, Thought } from 'types'
+import { Editor, Thought } from 'types'
 import { ContentEditable } from '../BlockBase/ContentEditable'
+import { BlockComponent, registerBlock } from './utils'
 
-export const ThoughtTitleBlock = (props: { block: Thought }) => {
+export const ThoughtTitleBlock: BlockComponent<React.FC<{ block: Thought }>> = (props: { block: Thought }) => {
   const { block } = props
 
   const fakeBlock = useMemo(() => {
@@ -45,3 +46,10 @@ export const ThoughtTitleBlock = (props: { block: Thought }) => {
     </div>
   )
 }
+
+ThoughtTitleBlock.meta = {
+  isText: true,
+  hasChildren: false
+}
+
+registerBlock(Editor.BlockType.Thought, ThoughtTitleBlock)

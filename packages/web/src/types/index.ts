@@ -1,5 +1,4 @@
 /// <reference types="resize-observer-browser" />
-
 import type { Config, Type, Data } from '../components/v11n/types'
 import type { MotionValue } from 'framer-motion'
 

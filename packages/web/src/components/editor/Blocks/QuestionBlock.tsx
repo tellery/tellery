@@ -34,7 +34,7 @@ import html2canvas from 'html2canvas'
 import invariant from 'invariant'
 import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ThemingVariables } from 'styles'
-import type { Editor, Snapshot } from 'types'
+import { Editor, Snapshot } from 'types'
 import { DEFAULT_TITLE, snapshotToCSV } from 'utils'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
 import { BlockResizer } from '../BlockBase/BlockResizer'
@@ -47,6 +47,7 @@ import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
 import type { OperationInterface } from '../Popovers/BlockOperationPopover'
 import { DEFAULT_QUESTION_BLOCK_ASPECT_RATIO, DEFAULT_QUESTION_BLOCK_WIDTH } from '../utils'
+import { BlockComponent, registerBlock } from './utils'
 
 const FOOTER_HEIGHT = 20
 
@@ -59,11 +60,13 @@ const rotateAnimation = keyframes`
   }
 `
 
-export const QuestionBlock: React.FC<{
-  block: Editor.QuestionBlock
-  blockFormat: BlockFormatInterface
-  parentType: Editor.BlockType
-}> = (props) => {
+export const QuestionBlock: BlockComponent<
+  React.FC<{
+    block: Editor.QuestionBlock
+    blockFormat: BlockFormatInterface
+    parentType: Editor.BlockType
+  }>
+> = (props) => {
   const editor = useEditor<Editor.QuestionBlock>()
   const { block } = props
   const { readonly } = useBlockBehavior()
@@ -195,6 +198,13 @@ export const QuestionBlock: React.FC<{
     </div>
   )
 }
+
+QuestionBlock.meta = {
+  isText: true,
+  hasChildren: false
+}
+
+registerBlock(Editor.BlockType.Question, QuestionBlock)
 
 export const QuestionBlockButtons: React.FC<{ blockId: string; show: boolean }> = ({ blockId, show }) => {
   const block = useBlockSuspense<Editor.QuestionBlock>(blockId)

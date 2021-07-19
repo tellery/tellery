@@ -2,14 +2,17 @@ import { css, cx } from '@emotion/css'
 import React, { useCallback } from 'react'
 import { CheckBox } from 'components/CheckBox'
 import { ThemingVariables } from 'styles'
-import type { Editor } from 'types'
+import { Editor } from 'types'
 import { ContentEditable } from '../BlockBase/ContentEditable'
 import { useEditor } from '../hooks'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
+import { BlockComponent, registerBlock } from './utils'
 
-export const TodoBlock: React.FC<{
-  block: Editor.TodoBlock
-}> = ({ block, children }) => {
+const TodoBlock: BlockComponent<
+  React.FC<{
+    block: Editor.TodoBlock
+  }>
+> = ({ block, children }) => {
   const { readonly } = useBlockBehavior()
 
   const editor = useEditor<Editor.TodoBlock>()
@@ -54,3 +57,10 @@ export const TodoBlock: React.FC<{
     </>
   )
 }
+
+TodoBlock.meta = {
+  isText: true,
+  hasChildren: true
+}
+
+registerBlock(Editor.BlockType.Todo, TodoBlock)

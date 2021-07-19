@@ -4,6 +4,7 @@ import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { Operation, useCommit, useCommitHistory } from '@app/hooks/useCommit'
 import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
 import { css, cx } from '@emotion/css'
+import computeScrollIntoView from 'compute-scroll-into-view'
 import { useBlockDndContext } from 'context/blockDnd'
 import copy from 'copy-to-clipboard'
 import debug from 'debug'
@@ -17,8 +18,6 @@ import invariant from 'invariant'
 import isHotkey from 'is-hotkey'
 import React, { CSSProperties, memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRecoilState } from 'recoil'
-import scrollIntoView from 'scroll-into-view-if-needed'
-import computeScrollIntoView from 'compute-scroll-into-view'
 import { BlockSnapshot, getBlockFromSnapshot, useBlockSnapshot } from 'store/block'
 import { ThemingVariables } from 'styles'
 import { Editor, Story, TellerySelection, TellerySelectionType, Thought } from 'types'
@@ -89,6 +88,7 @@ const _StoryEditor: React.FC<{
 }> = (props) => {
   const { storyId, defaultOverflowY = 'auto' } = props
   const editorRef = useRef<HTMLDivElement | null>(null)
+  const editorTextAreaRef = useRef<HTMLTextAreaElement | null>(null)
   const editorBlocksRef = useRef<HTMLDivElement | null>(null)
   const [hoverBlockId, setHoverBlockId] = useRecoilState(HovreringBlockId)
   const blockInstances = useRef<Record<string, BlockInstanceInterface>>({})
@@ -100,7 +100,6 @@ const _StoryEditor: React.FC<{
   const mouseDownEventRef = useRef<MouseEvent | null>(null)
   const blockDnd = useBlockDndContext()
   const [lastInputChar, setLastInputChar] = useState<string | null>(null)
-  const [scrollToBlockId, setScrollToBlockId] = useState<string | null | undefined>(props.scrollToBlockId)
 
   const registerOrUnregisterBlockInstance = useCallback((id: string, blockInstance?: BlockInstanceInterface) => {
     if (!blockInstance) {
@@ -143,7 +142,7 @@ const _StoryEditor: React.FC<{
 
   const snapshot = useBlockSnapshot()
 
-  useWaitForBlockAndScrollTo(scrollToBlockId, editorRef)
+  useWaitForBlockAndScrollTo(props.scrollToBlockId, editorRef)
 
   const setSelectedBlocks = useCallback(
     (blockIds: string[]) => {
@@ -156,7 +155,7 @@ const _StoryEditor: React.FC<{
           storyId: storyId
         })
         // trap focus state
-        editorRef.current?.focus()
+        editorTextAreaRef.current?.focus()
       }
     },
     [setSelectionState, storyId]
@@ -166,6 +165,9 @@ const _StoryEditor: React.FC<{
     (blockIds: string[]) => {
       // blockIds.length && blockDnd?.selectBlockIds(blockIds)
       setSelectedBlocks(blockIds)
+      if (blockIds.length) {
+        editorTextAreaRef.current?.focus()
+      }
     },
     [setSelectedBlocks]
   )
@@ -1103,12 +1105,11 @@ const _StoryEditor: React.FC<{
   const setUploadResource = useSetUploadResource()
 
   const pasteHandler = useCallback(
-    (e: React.ClipboardEvent<HTMLDivElement>) => {
+    (e: React.ClipboardEvent<HTMLElement>) => {
       if (locked) return
       if (e.defaultPrevented) {
         return
       }
-      // logger('clipboard', e.clipboardData.types, e.clipboardData.getData('vscode-editor-data'))
       if (e.clipboardData.files.length) {
         e.stopPropagation()
         e.preventDefault()
@@ -1135,26 +1136,27 @@ const _StoryEditor: React.FC<{
         const telleryTokenDataStr = e.clipboardData.getData(TELLERY_MIME_TYPES.TOKEN)
         const pureText = e.clipboardData.getData('text/plain')
         if (telleryBlockDataStr) {
-          if (!focusingBlockId) return
+          if (!selectionState) return
           e.preventDefault()
+          const targetBlockId =
+            selectionState.type === TellerySelectionType.Inline
+              ? selectionState.anchor.blockId
+              : selectionState.selectedBlocks[selectionState.selectedBlocks.length - 1]
           const telleryBlocksData: Editor.Block[] = JSON.parse(telleryBlockDataStr)
           const duplicatedBlocks = getDuplicatedBlocks(telleryBlocksData, storyId)
-          if (selectionState && isSelectionCollapsed(selectionState)) {
-            blockTranscations.insertBlocks(storyId, {
-              blocks: duplicatedBlocks,
-              targetBlockId: focusingBlockId,
-              direction: 'bottom'
-            })
-          }
+          blockTranscations.insertBlocks(storyId, {
+            blocks: duplicatedBlocks,
+            targetBlockId: targetBlockId,
+            direction: 'bottom'
+          })
+          setSelectedBlocks(duplicatedBlocks.map((block) => block.id))
         } else if (telleryTokenDataStr) {
-          if (
-            selectionState &&
-            isSelectionCollapsed(selectionState) &&
-            selectionState.type === TellerySelectionType.Inline
-          ) {
+          if (!selectionState) return
+          if (isSelectionCollapsed(selectionState) && selectionState.type === TellerySelectionType.Inline) {
             e.preventDefault()
+            const targetBlockId = selectionState.anchor.blockId
             const telleryTokensData: Editor.Token[] = JSON.parse(telleryTokenDataStr)
-            setBlockValue(selectionState.anchor.blockId, (currentBlock) => {
+            setBlockValue(targetBlockId, (currentBlock) => {
               const [tokens1, tokens2] = splitBlockTokens(currentBlock!.content!.title || [], selectionState)
               const beforeToken = mergeTokens([...tokens1, ...(telleryTokensData || [])])
               const afterToken = tokens2
@@ -1338,6 +1340,17 @@ const _StoryEditor: React.FC<{
               onCut={cutHandler}
               onCopy={copyHandler}
             >
+              <textarea
+                onPaste={pasteHandler}
+                ref={editorTextAreaRef}
+                className={css`
+                  position: fixed;
+                  left: 0;
+                  top: 0;
+                  pointer-events: none;
+                  opacity: 0;
+                `}
+              />
               {dimensions && (
                 <motion.div
                   data-block-id={rootBlock.id}

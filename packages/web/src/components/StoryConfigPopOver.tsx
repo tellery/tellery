@@ -111,7 +111,7 @@ export const StoryConfigPopOver: React.FC<{
     >
       <MenuItem
         icon={<Icon icon={IconCommonRefresh} color={ThemingVariables.colors.text[0]} />}
-        title="Refresh On Open"
+        title="Refresh on open"
         onClick={(e) => {
           e.preventDefault()
           setStoryFormat('refreshOnOpen', !story?.format?.refreshOnOpen)

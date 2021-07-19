@@ -1,13 +1,22 @@
 import React from 'react'
-import type { Editor } from 'types'
+import { Editor } from 'types'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
+import { BlockComponent, registerBlock } from './utils'
 
-export const EmbedBlock: React.FC<{
-  block: Editor.Block
-}> = ({ block }) => {
+const EmbedBlock: BlockComponent<
+  React.FC<{
+    block: Editor.Block
+  }>
+> = ({ block }) => {
   return (
     <>
       <BlockPlaceHolder text="Uploading" loading={true} onClick={() => {}} />
     </>
   )
 }
+
+EmbedBlock.meta = {
+  isText: false,
+  hasChildren: false
+}
+registerBlock(Editor.BlockType.Embed, EmbedBlock)

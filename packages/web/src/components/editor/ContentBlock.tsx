@@ -2,34 +2,21 @@ import { css, cx } from '@emotion/css'
 import { TelleryBlockSelectedAtom } from 'components/editor/store/selection'
 import { motion } from 'framer-motion'
 import { useBlockSuspense } from 'hooks/api'
-import React, { memo, ReactNode, useEffect, useMemo, useRef } from 'react'
+import React, { memo, useEffect, useMemo, useRef } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
 import { useRecoilValue } from 'recoil'
 import { ThemingVariables } from 'styles'
 import { Editor } from 'types'
 import { BlockOperations } from './BlockOperations'
 import { OperatorsAvatar } from './BlockOperators'
-import { BulletListBlock } from './Blocks/BulletListBlock'
-import { CodeBlock } from './Blocks/CodeBlock'
-import { DeletedBlock } from './Blocks/DeletedBlock'
-import { DividerBlock } from './Blocks/DividerBlock'
-import { FileBlock } from './Blocks/FileBlock'
-import { GridBlock } from './Blocks/GridBlock'
-import { ImageBlock } from './Blocks/ImageBlock'
-import { EmbedBlock } from './Blocks/EmbedBlock'
-import { NoPermissionBlock } from './Blocks/NoPermisionBlock'
-import { NumberedListBlock } from './Blocks/NumberedListBlock'
-import { QuestionBlock } from './Blocks/QuestionBlock'
-import { QuoteBlock } from './Blocks/QuoteBlock'
-import { TextBlock } from './Blocks/TextBlock'
+import { BlockInner } from './Blocks'
+// import { GridBlock } from './Blocks/GridBlock'
 import { TitleBlock } from './Blocks/TitleBlock'
-import { TodoBlock } from './Blocks/TodoBlock'
-import { ToggleListBlock } from './Blocks/ToggleListBlock'
 import { DroppingAreaIndicator } from './DroppingAreaIndicator'
 import { DroppleableOverlay } from './DroppleableOverlay'
-import { BlockFormatInterface, useBlockFormat } from './hooks/useBlockFormat'
-import { ErrorBoundary } from 'react-error-boundary'
-import { BlockBehaviorConext, useBlockBehavior } from './hooks/useBlockBehavior'
 import { emitBlockMounted } from './helpers/blockObserver'
+import { BlockBehaviorConext, useBlockBehavior } from './hooks/useBlockBehavior'
+import { useBlockFormat } from './hooks/useBlockFormat'
 
 function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   return (
@@ -53,66 +40,6 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetError
     </div>
   )
 }
-
-const _BlockInner: React.FC<{
-  block: Editor.Block
-  children: ReactNode
-  blockFormat: BlockFormatInterface
-  parentType: Editor.BlockType
-}> = ({ block, children, blockFormat, parentType }) => {
-  if (block.alive === false) {
-    return <DeletedBlock block={block}></DeletedBlock>
-  }
-  if (block.permissions.length === 0) {
-    return <NoPermissionBlock block={block} />
-  }
-  switch (block.type) {
-    case Editor.BlockType.Text:
-      return <TextBlock block={block}>{children}</TextBlock>
-    case Editor.BlockType.Todo:
-      return <TodoBlock block={block}>{children}</TodoBlock>
-    case Editor.BlockType.Toggle:
-      return <ToggleListBlock block={block}>{children}</ToggleListBlock>
-    case Editor.BlockType.Code:
-      return <CodeBlock block={block}>{children}</CodeBlock>
-    case Editor.BlockType.Quote:
-      return <QuoteBlock block={block}>{children}</QuoteBlock>
-    case Editor.BlockType.Divider:
-      return <DividerBlock block={block}>{children}</DividerBlock>
-    case Editor.BlockType.Image:
-      return (
-        <ImageBlock block={block as Editor.ImageBlock} blockFormat={blockFormat} parentType={parentType}>
-          {children}
-        </ImageBlock>
-      )
-    case Editor.BlockType.File:
-      return <FileBlock block={block as Editor.ImageBlock}>{children}</FileBlock>
-    case Editor.BlockType.Embed:
-      return <EmbedBlock block={block as Editor.ImageBlock}>{children}</EmbedBlock>
-    case Editor.BlockType.BulletList:
-      return <BulletListBlock block={block}>{children}</BulletListBlock>
-    case Editor.BlockType.NumberedList:
-      return <NumberedListBlock block={block}>{children}</NumberedListBlock>
-    case Editor.BlockType.Story:
-      return <TitleBlock block={block}></TitleBlock>
-    case Editor.BlockType.Question:
-      return (
-        <QuestionBlock block={block} blockFormat={blockFormat} parentType={parentType}>
-          {children}
-        </QuestionBlock>
-      )
-    default:
-      return <TextBlock block={block}>{children}</TextBlock>
-  }
-}
-
-const BlockInner = memo(_BlockInner, (prev, next) => {
-  return (
-    prev.block.version === next.block.version &&
-    prev.blockFormat === next.blockFormat &&
-    prev.parentType === next.parentType
-  )
-})
 
 // const BlockInner = _BlockInner
 
@@ -180,7 +107,7 @@ export const ContentBlockInner: React.FC<{
   }, [block])
 
   if (block.type === Editor.BlockType.Row) {
-    return <GridBlock block={block} />
+    return <BlockInner block={block} />
   }
 
   if (block.type === Editor.BlockType.Story) {
