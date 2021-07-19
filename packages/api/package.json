@@ -26,7 +26,7 @@
   "license": "ISC",
   "dependencies": {
     "@socket.io/postgres-adapter": "^0.1.1",
-    "aws-sdk": "^2.947.0",
+    "aws-sdk": "^2.949.0",
     "bluebird": "^3.7.2",
     "cache-manager": "^3.4.4",
     "cache-manager-ioredis": "^2.1.0",
