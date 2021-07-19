@@ -34,7 +34,7 @@ import html2canvas from 'html2canvas'
 import invariant from 'invariant'
 import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ThemingVariables } from 'styles'
-import type { Editor, Snapshot, Story } from 'types'
+import type { Editor, Snapshot } from 'types'
 import { DEFAULT_TITLE, snapshotToCSV } from 'utils'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
 import { BlockResizer } from '../BlockBase/BlockResizer'
@@ -198,11 +198,7 @@ export const QuestionBlock: React.FC<{
 
 export const QuestionBlockButtons: React.FC<{ blockId: string; show: boolean }> = ({ blockId, show }) => {
   const block = useBlockSuspense<Editor.QuestionBlock>(blockId)
-  const {
-    data: snapshot,
-    isFetched: isSnapshotFetched,
-    isIdle: isSnapshotIdle
-  } = useSnapshot(block?.content?.snapshotId)
+  const { data: snapshot } = useSnapshot(block?.content?.snapshotId)
   const { small } = useBlockBehavior()
 
   return (

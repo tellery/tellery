@@ -17,7 +17,7 @@ export const useWaitForBlockAndScrollTo = (
         }
 
         const observer = new MutationObserver(
-          debounce((mutations) => {
+          debounce(() => {
             const element = container.querySelector(selector)
             if (element) {
               resolve(element)

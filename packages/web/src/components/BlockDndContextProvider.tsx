@@ -58,6 +58,8 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
 
   const setUploadResource = useSetUploadResource()
 
+  const snapshot = useBlockSnapshot()
+
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       logger('drag end', event)
@@ -124,10 +126,8 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
       setDroppingArea(null)
       droppingAreaRef.current = null
     },
-    [setDroppingArea, blockTranscations, createEmptyBlock, setUploadResource]
+    [setDroppingArea, blockTranscations, snapshot, createEmptyBlock, setUploadResource]
   )
-
-  const snapshot = useBlockSnapshot()
 
   const handleDragMove = useCallback(
     (event: DragMoveEvent) => {

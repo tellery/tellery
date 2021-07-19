@@ -1,7 +1,6 @@
 import { createTranscation } from '@app/context/editorTranscations'
 import { useWorkspace } from '@app/context/workspace'
 import { useCommit } from '@app/hooks/useCommit'
-import { useDimensions } from '@app/hooks/useDimensions'
 import { css } from '@emotion/css'
 import styled from '@emotion/styled'
 import { IconCommonAdd, IconCommonCalendar } from 'assets/icons'

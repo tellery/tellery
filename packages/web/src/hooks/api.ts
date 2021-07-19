@@ -47,7 +47,7 @@ export const useFetchStoryChunk = <T extends Editor.BaseBlock = Story>(id: strin
   })
   const workspace = useWorkspace()
   // console.log('fetch story chunk', id)
-  const res = useQuery<Record<string, Editor.Block>>(
+  useQuery<Record<string, Editor.Block>>(
     ['story', 'chunk', workspace, id],
     async () =>
       request

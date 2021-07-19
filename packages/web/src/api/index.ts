@@ -9,7 +9,6 @@ import { emitBlockUpdate } from 'utils/remoteStoreObserver'
 import JSON5 from 'json5'
 import type { Data } from 'components/v11n/types'
 import { wrapAuth } from './auth'
-import { nanoid } from 'nanoid'
 import type { Transcation } from '@app/hooks/useCommit'
 
 export const request = wrapAuth(axios.create({ baseURL: '', withCredentials: true }))

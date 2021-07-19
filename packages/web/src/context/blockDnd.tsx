@@ -127,7 +127,7 @@ const getMinvalueEntry = (entries: [string, number][]) => {
 export const closetBorder: CollisionDetection = (rects, centerRect) => {
   const hitedRects = rects
     .filter((rectEntry) => {
-      const [_, rect] = rectEntry
+      const [, rect] = rectEntry
       if (
         centerRect.left >= rect.offsetLeft &&
         centerRect.top >= rect.offsetTop &&
