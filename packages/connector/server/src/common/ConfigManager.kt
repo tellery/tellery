@@ -67,7 +67,7 @@ object ConfigManager {
         fchannel.close()
     }
 
-    private fun loadConfig(): ConnectorConfig {
+    fun loadConfig(): ConnectorConfig {
         val gson = Gson()
         val file = File(dbConfigPath)
         return if (!file.exists()) {
