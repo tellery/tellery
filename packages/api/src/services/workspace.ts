@@ -118,7 +118,7 @@ export class WorkspaceService {
     return getConnection().transaction(async (t) => {
       const model = await t.getRepository(WorkspaceEntity).save({
         name,
-        avatar: avatar || absoluteURI('/api/static/avatars/workspace-default.png'),
+        avatar: avatar || 'api/static/avatars/workspace-default.png',
         inviteCode: this.generateInviteCode(),
       })
 
