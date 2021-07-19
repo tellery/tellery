@@ -13,6 +13,7 @@
   "dependencies": {
     "@dnd-kit/core": "^3.1.1",
     "@dnd-kit/modifiers": "^3.0.0",
+    "@dnd-kit/sortable": "^4.0.0",
     "@emotion/css": "^11.1.3",
     "@emotion/react": "^11.4.0",
     "@emotion/styled": "^11.3.0",
@@ -28,7 +29,6 @@
     "@tellery/viselect-vanilla": "3.0.0-beta.3",
     "@tippyjs/react": "^4.2.5",
     "@welldone-software/why-did-you-render": "^6.2.0",
-    "array-move": "^3.0.1",
     "axios": "^0.21.1",
     "compute-scroll-into-view": "^1.0.17",
     "copy-to-clipboard": "^3.3.1",
@@ -67,7 +67,6 @@
     "react-popper": "^2.2.5",
     "react-query": "^3.18.1",
     "react-router-dom": "^5.2.0",
-    "react-sortable-hoc": "^2.0.0",
     "react-toastify": "^7.0.4",
     "react-use-gesture": "^9.1.3",
     "react-use-scroll-position": "^2.0.0",
