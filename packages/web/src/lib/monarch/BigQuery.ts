@@ -1,9 +1,3 @@
-/**
- * keywords / builtinFunctions come from documents of hive and spark 3.0.0
- * in the setting of SparkSQL, ` (backquote) will be considered as (delimited) identifers
- * and ' (single quote) / " (double quote) will be considered as literals
- */
-
 export default {
   defaultToken: '',
   ignoreCase: true,
