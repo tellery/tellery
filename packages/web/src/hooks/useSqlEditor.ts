@@ -307,10 +307,8 @@ function useSqlEditorTransclusion(languageId?: string, monaco?: Monaco) {
           return {
             suggestions: questionSearchResults.map((question) => ({
               range: current.range,
-              label: {
-                label: getBlockTitle(question),
-                description: question.storyId ? getBlockTitle(data?.blocks[question.storyId]) : undefined
-              },
+              label: getBlockTitle(question) || '',
+              detail: question.storyId ? getBlockTitle(data?.blocks[question.storyId]) : undefined,
               kind: monaco.languages.CompletionItemKind.Function,
               insertText: `{{${question.id}}}`,
               filterText: `{{${keyword}}}`
