@@ -7,7 +7,7 @@ import {
 } from '@app/hooks/api'
 import type { AvailableConfig, ProfileConfig } from '@app/types'
 import { css } from '@emotion/css'
-import { useMemo, useEffect, useRef } from 'react'
+import { useMemo, useEffect } from 'react'
 import { useForm, UseFormRegister } from 'react-hook-form'
 import FormInput from './kit/FormInput'
 import FormLabel from './kit/FormLabel'
@@ -16,6 +16,7 @@ import FormSwitch from './kit/FormSwitch'
 import { FormButton } from './kit/FormButton'
 import { ThemingVariables } from '@app/styles'
 import { useLoggedUser } from '@app/hooks/useAuth'
+import FormFileButton from './kit/FormFileButton'
 
 export function WorkspaceDatabases(props: { onClose(): void }) {
   const { data: connectors } = useConnectorsList()
@@ -146,7 +147,6 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
 
 function FileConfig(props: { value: AvailableConfig; setValue: (value: string) => void; disabled: boolean }) {
   const { value: config } = props
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   return (
     <>
@@ -158,33 +158,20 @@ function FileConfig(props: { value: AvailableConfig; setValue: (value: string) =
       >
         {config.name}
       </FormLabel>
-
-      <input
-        type="file"
-        className={css`
-          display: none;
-        `}
-        ref={fileInputRef}
-        onChange={async (e) => {
-          const file = e.target.files?.item(0)
+      <FormFileButton
+        variant="secondary"
+        onChange={async (file) => {
           if (file) {
             props.setValue(btoa(String.fromCharCode(...new Uint8Array(await file.arrayBuffer()))))
           }
-        }}
-      />
-      <FormButton
-        type="button"
-        variant="secondary"
-        onClick={() => {
-          fileInputRef.current?.click()
         }}
         disabled={props.disabled}
         className={css`
           width: 100%;
         `}
       >
-        {props.value.hint || 'Upload file'}
-      </FormButton>
+        {props.value.hint}
+      </FormFileButton>
       <span
         className={css`
           font-size: 12px;
