@@ -1,12 +1,12 @@
+import { useDroppingAreaBlock } from '@app/hooks/useDroppingArea'
 import { css } from '@emotion/css'
 import React, { memo } from 'react'
 import { ThemingVariables } from 'styles'
-import { useDroppingArea } from 'context/blockDnd'
 
 const _DroppingAreaIndicator: React.FC<{
   blockId: string
 }> = ({ blockId }) => {
-  const droppingArea = useDroppingArea(blockId)
+  const droppingArea = useDroppingAreaBlock(blockId)
 
   return (
     <>

@@ -17,13 +17,11 @@ import { useSelectionArea } from 'hooks/useSelectionArea'
 import invariant from 'invariant'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import ReactTestUtils from 'react-dom/test-utils'
-import { useRecoilState } from 'recoil'
 import { getBlockFromSnapshot, useBlockSnapshot } from 'store/block'
 import { Direction, DnDItemTypes, DropItem, Editor } from 'types'
 import {
   BlockDndContext,
   closetBorder,
-  DroppingArea,
   DroppingAreaContext,
   FileDraggble,
   findDroppbleBlockIdAndDirection,
@@ -33,12 +31,13 @@ import {
 } from '../context/blockDnd'
 import { DndSensor } from '../lib/dnd-kit/dndSensor'
 import { useSetUploadResource } from './editor/hooks/useUploadResource'
+import { useDroppingArea } from '../hooks/useDroppingArea'
 
 export const BlockDndContextProvider: React.FC = ({ children }) => {
   const [selectingBlockIds, setSelectingBlockIds] = useState<string[] | null>(null)
   const selectingBlockIdsRef = useRef<string[] | null>(null)
   const [isDragging, setIsDragging] = useState(false)
-  const [droppingArea, setDroppingArea] = useRecoilState(DroppingArea)
+  const [droppingArea, setDroppingArea] = useDroppingArea()
   const droppingAreaRef = useRef<{ blockId: string; direction: Direction } | null>(null)
   const mouseSensor = useSensor(MouseSensor, MouseSensorOptions)
   const dragSensor = useSensor(DndSensor)

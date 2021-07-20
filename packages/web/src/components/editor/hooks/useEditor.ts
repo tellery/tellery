@@ -14,15 +14,13 @@ export type EditorContextInterface<BlockType> = {
   setSelectionState: (newSelectionState: TellerySelection | null) => void
   removeBlocks: (targetBlockIds: string[]) => void
   deleteBackward: (unit: 'character', options: { selection: TellerySelection }) => void
-  registerOrUnregisterBlockInstance: (id: string, blockInstance?: BlockInstanceInterface) => void
-  getBlockInstanceById: (id: string) => BlockInstanceInterface | undefined
   getSelection: () => TellerySelection | null
   toggleBlockType: (id: string, type: Editor.BlockType, removePrefixCount: number) => void
   lockOrUnlockScroll: (lock: boolean) => void
   selectBlocks: (blockIds: string[]) => void
   storyId: string
   duplicateHandler: (blockIds: string[]) => Editor.BaseBlock[] | undefined
-  focusBlockHandler: (blockId: string, type: Editor.BlockType) => void
+  focusBlockHandler: (blockId: string, openMenu: boolean) => void
 }
 
 export const useEditor = <BlockType extends unknown>() => {

@@ -4,9 +4,10 @@ import debug from 'debug'
 import invariant from 'invariant'
 import { cloneDeep } from 'lodash'
 import { nanoid } from 'nanoid'
-import { atom, atomFamily, DefaultValue, selectorFamily, Snapshot, useRecoilState } from 'recoil'
+import { atomFamily, DefaultValue, selectorFamily, Snapshot } from 'recoil'
 import type { Editor } from 'types'
 import { subscribeBlockUpdate } from 'utils/remoteStoreObserver'
+import { WorkspaceIdAtom } from '../hooks/useWorkspaceIdAtom'
 
 export type BlockSnapshot = Map<string, Editor.BaseBlock>
 export const TelleryBlockMap: BlockSnapshot = new Map()
@@ -23,12 +24,6 @@ const blockUpdater = (newValue: Editor.BaseBlock | DefaultValue, oldValue: Edito
       return oldValue
     }
   }
-}
-
-export const WorkspaceIdAtom = atom<string | null>({ key: 'workspaceId', default: null })
-
-export const useWorkspaceIdState = () => {
-  return useRecoilState(WorkspaceIdAtom)
 }
 
 export const TelleryBlockAtom = atomFamily<Editor.BaseBlock, string>({

@@ -7,10 +7,11 @@ export type BlockComponent<P = {}> = P & {
     isText?: boolean
     supportBlockFormat?: boolean
     needParentType?: boolean
+    forwardRef?: boolean
   }
 }
 
-export const Blocks: Record<string, BlockComponent<React.FC>> = {}
+export const Blocks: Record<string, BlockComponent<React.FC | React.ForwardRefRenderFunction<any, any>>> = {}
 
 export const registerBlock = (type: Editor.BlockType, component: any) => {
   console.log('register block')

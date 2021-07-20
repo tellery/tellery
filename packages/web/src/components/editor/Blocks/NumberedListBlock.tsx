@@ -6,7 +6,7 @@ import { ContentEditable } from '../BlockBase/ContentEditable'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import { registerBlock, BlockComponent } from './utils'
 
-const OrderOfBlock: BlockComponent<React.FC<{ blockId: string; parentId: string }>> = ({ blockId, parentId }) => {
+const OrderOfBlock: React.FC<{ blockId: string; parentId: string }> = ({ blockId, parentId }) => {
   const parentBlock = useBlockSuspense(parentId)
   const { data: sibilingBlocks } = useMgetBlocks(parentBlock?.children)
 
@@ -46,10 +46,12 @@ const OrderOfBlock: BlockComponent<React.FC<{ blockId: string; parentId: string 
   )
 }
 
-export const NumberedListBlock: React.FC<{
-  block: Editor.Block
-  children: ReactNode
-}> = ({ block, children }) => {
+export const NumberedListBlock: BlockComponent<
+  React.FC<{
+    block: Editor.Block
+    children: ReactNode
+  }>
+> = ({ block, children }) => {
   const { readonly } = useBlockBehavior()
 
   return (
@@ -80,9 +82,9 @@ export const NumberedListBlock: React.FC<{
   )
 }
 
-OrderOfBlock.meta = {
+NumberedListBlock.meta = {
   hasChildren: true,
   isText: true
 }
 
-registerBlock(Editor.BlockType.NumberedList, OrderOfBlock)
+registerBlock(Editor.BlockType.NumberedList, NumberedListBlock)

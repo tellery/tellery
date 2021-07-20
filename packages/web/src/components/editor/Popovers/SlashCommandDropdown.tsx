@@ -130,8 +130,8 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
       invariant(editor, 'editor is null')
       let blockId = ''
       if (isEmptyTitleBlock(block)) {
-        editor.toggleBlockType(id, blockType, 0)
         blockId = block.id
+        editor.toggleBlockType(id, blockType, 0)
       } else {
         const newBlock = editor.insertNewEmptyBlock(blockType, id, 'bottom')
         blockId = newBlock.id
@@ -142,8 +142,7 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
           focus: { blockId, offset: 0, nodeIndex: 0 }
         })
       }
-
-      editor?.focusBlockHandler(id, blockType)
+      editor?.focusBlockHandler(blockId, blockType === Editor.BlockType.Question)
 
       setOpen(false)
     },

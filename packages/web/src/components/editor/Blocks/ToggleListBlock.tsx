@@ -31,12 +31,6 @@ export const ToggleListBlock: BlockComponent<
       focus: { blockId: newBlock.id, nodeIndex: 0, offset: 0 },
       storyId: block.storyId!
     })
-    // editor?.execOnNextFlush(() => {
-    //   console.log('exec on flush')
-    //   console.log(editor?.getBlockInstanceById(newBlock.id))
-    //   editor?.getBlockInstanceById(newBlock.id)?.openMenu()
-    // })
-    // editor?.setFocusingBlockId(newBlock.id)
   }, [block.id, block.storyId, editor])
 
   return (

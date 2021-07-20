@@ -1,5 +1,6 @@
 import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
+import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { TELLERY_MIME_TYPES } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import type { FlipModifier } from '@popperjs/core/lib/modifiers/flip'
@@ -27,7 +28,6 @@ import { ThemingVariables } from 'styles'
 import { Editor, TellerySelectionType } from 'types'
 import { MenuItem } from '../../MenuItem'
 import { EditorPopover } from '../EditorPopover'
-import { subscribeBlockMountedOnce } from '../helpers/blockObserver'
 import { useEditor } from '../hooks'
 
 export interface OperationInterface {
@@ -111,6 +111,8 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
     blockTranscations.removeBlocks(block.storyId!, [id])
   }, [block.storyId, blockTranscations, id])
 
+  const snapshot = useBlockSnapshot()
+
   const operationGroups = useMemo(() => {
     return [
       [
@@ -124,14 +126,24 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
               onCopy: (clipboardData) => {
                 invariant(block, 'block is null')
                 const dataTranser = clipboardData as DataTransfer
-                dataTranser.setData(
-                  TELLERY_MIME_TYPES.BLOCK_REF,
-                  JSON.stringify({ blockId: block.id, storyId: block.storyId })
-                )
-                dataTranser.setData(
-                  'text/plain',
-                  `${window.location.protocol}//${window.location.host}/story/${block?.storyId}#${block?.id}`
-                )
+                if (!block.storyId) return
+
+                const storyBlock = getBlockFromSnapshot(block.storyId, snapshot)
+                if (storyBlock.type === Editor.BlockType.Story) {
+                  dataTranser.setData(
+                    TELLERY_MIME_TYPES.BLOCK_REF,
+                    JSON.stringify({ blockId: block.id, storyId: block.storyId })
+                  )
+                  dataTranser.setData(
+                    'text/plain',
+                    `${window.location.protocol}//${window.location.host}/story/${block?.storyId}#${block?.id}`
+                  )
+                } else if (storyBlock.type === Editor.BlockType.Thought) {
+                  dataTranser.setData(
+                    'text/plain',
+                    `${window.location.protocol}//${window.location.host}/thought/${block?.storyId}#${block?.id}`
+                  )
+                }
               }
             })
             toast('Link Copied')
@@ -167,9 +179,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
               focus: { blockId: newBlock.id, nodeIndex: 0, offset: 0 },
               storyId: newBlock.storyId!
             })
-            subscribeBlockMountedOnce(newBlock.id, () => {
-              editor?.getBlockInstanceById(newBlock.id)?.openMenu()
-            })
+            editor?.focusBlockHandler(newBlock.id, true)
           }
         },
         {
@@ -190,9 +200,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
               focus: { blockId: newBlock.id, nodeIndex: 0, offset: 0 },
               storyId: newBlock.storyId!
             })
-            subscribeBlockMountedOnce(newBlock.id, () => {
-              editor?.getBlockInstanceById(newBlock.id)?.openMenu()
-            })
+            editor?.focusBlockHandler(newBlock.id, true)
           }
         },
         {

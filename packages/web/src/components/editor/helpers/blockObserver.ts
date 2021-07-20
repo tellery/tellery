@@ -5,26 +5,18 @@ const emitter = new TinyEmitter()
 
 const EVENT_BLOCK_MOUNTED = 'block:mounted'
 
+const EVENT_BLOCK_REGISTER = 'block:register'
+
 export const emitBlockMounted = (block: Editor.BaseBlock, element: HTMLDivElement) => {
-  emitter.emit(`${EVENT_BLOCK_MOUNTED}:${block.id}`, block, element)
+  emitter.emit(`${EVENT_BLOCK_MOUNTED}`, block, element)
 }
 
-export const subscribeBlockMounted = (
-  blockId: string,
-  callback: (block: Editor.BaseBlock, element: HTMLDivElement) => void
-) => {
-  emitter.on(`${EVENT_BLOCK_MOUNTED}:${blockId}`, callback)
+export const subscribeBlockMounted = (callback: (block: Editor.BaseBlock, element: HTMLDivElement) => void) => {
+  emitter.on(`${EVENT_BLOCK_MOUNTED}`, callback)
 
   return () => {
-    emitter.off(`${EVENT_BLOCK_MOUNTED}:${blockId}`, callback)
+    emitter.off(`${EVENT_BLOCK_MOUNTED}`, callback)
   }
-}
-
-export const subscribeBlockMountedOnce = (
-  blockId: string,
-  callback: (block: Editor.BaseBlock, element: HTMLDivElement) => void
-) => {
-  emitter.once(`${EVENT_BLOCK_MOUNTED}:${blockId}`, callback)
 }
 
 export default emitter

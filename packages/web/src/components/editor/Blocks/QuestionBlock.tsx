@@ -32,7 +32,7 @@ import { useInterval } from 'hooks/useInterval'
 import { useRefreshSnapshot, useSnapshotMutating } from 'hooks/useStorySnapshotManager'
 import html2canvas from 'html2canvas'
 import invariant from 'invariant'
-import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { ThemingVariables } from 'styles'
 import { Editor, Snapshot } from 'types'
 import { DEFAULT_TITLE, snapshotToCSV } from 'utils'
@@ -60,18 +60,17 @@ const rotateAnimation = keyframes`
   }
 `
 
-export const QuestionBlock: BlockComponent<
-  React.FC<{
-    block: Editor.QuestionBlock
-    blockFormat: BlockFormatInterface
-    parentType: Editor.BlockType
-  }>
-> = (props) => {
+interface QuestionBlockProps {
+  block: Editor.QuestionBlock
+  blockFormat: BlockFormatInterface
+  parentType: Editor.BlockType
+}
+
+const _QuestionBlock: React.ForwardRefRenderFunction<any, QuestionBlockProps> = (props, ref) => {
   const editor = useEditor<Editor.QuestionBlock>()
   const { block } = props
   const { readonly } = useBlockBehavior()
-
-  const ref = useRef<HTMLDivElement | null>(null)
+  const elementRef = useRef<HTMLDivElement | null>(null)
   const contentRef = useRef<HTMLDivElement | null>(null)
   const originalBlock = useBlockSuspense<Editor.QuestionBlock>(block.id)
   const questionEditor = useQuestionEditor()
@@ -80,26 +79,21 @@ export const QuestionBlock: BlockComponent<
   const localSelection = useLocalSelection(block.id)
   const isInputFocusing = !!localSelection
 
-  useEffect(() => {
-    editor?.registerOrUnregisterBlockInstance(block.id, {
+  useImperativeHandle(
+    ref,
+    () => ({
       openMenu: () => {
         questionEditor.open({ mode: 'SQL', readonly, blockId: block.id, storyId: block.storyId! })
-        // setIsPopoverOpen(true)
       }
-      // afterDuplicate: () => {
-      //   questionEditor.open({ mode: 'SQL', readonly, blockId: block.id, storyId: block.storyId! })
-      // }
-    })
-    return () => {
-      editor?.registerOrUnregisterBlockInstance(block.id, undefined)
-    }
-  }, [block.id, block.storyId, editor, questionEditor, readonly])
+    }),
+    [block.id, block.storyId, questionEditor, readonly]
+  )
 
   const onClickOutSide = useCallback(() => {
     setTitleEditing(false)
   }, [])
 
-  useOnClickOutside(ref, onClickOutSide)
+  useOnClickOutside(elementRef, onClickOutSide)
 
   useEffect(() => {
     if (!block.content) {
@@ -134,7 +128,7 @@ export const QuestionBlock: BlockComponent<
 
   return (
     <div
-      ref={ref}
+      ref={elementRef}
       className={QuestionsBlockContainer}
       tabIndex={-1}
       onFocus={() => setBlockFocusing(true)}
@@ -198,9 +192,13 @@ export const QuestionBlock: BlockComponent<
     </div>
   )
 }
+const QuestionBlock = React.forwardRef(_QuestionBlock) as BlockComponent<
+  React.ForwardRefExoticComponent<QuestionBlockProps & React.RefAttributes<any>>
+>
 
 QuestionBlock.meta = {
   isText: true,
+  forwardRef: true,
   hasChildren: false
 }
 
@@ -501,8 +499,8 @@ const QuestionBlockStatus: React.FC<{
         >
           {loading
             ? dayjs(nowTimeStamp).subtract(mutatingStartTimeStamp).format('mm:ss')
-            : snapshot?.createdAt
-            ? dayjs(snapshot?.createdAt).fromNow()
+            : snapshot?.createdAt || block.content?.lastRunAt
+            ? dayjs(block.content?.lastRunAt ?? snapshot?.createdAt).fromNow()
             : ''}
         </div>
       </div>
@@ -819,5 +817,6 @@ const QuestionsBlockContainer = css`
   border: 4px solid transparent;
   :focus-within {
     border-color: ${ThemingVariables.colors.primary[3]};
+    outline: none;
   }
 `

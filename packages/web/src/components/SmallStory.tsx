@@ -1,25 +1,38 @@
+import { useDimensions } from '@app/hooks/useDimensions'
 import { css, cx } from '@emotion/css'
 import { useFetchStoryChunk } from 'hooks/api'
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useMemo, useRef } from 'react'
+import scrollIntoView from 'scroll-into-view-if-needed'
 import { Editor } from 'types'
-import { useWaitForBlockAndScrollTo } from '../hooks/useWaitForBlockAndScrollTo'
-import { BlockTitle } from './editor'
 import { BlockingUI } from './BlockingUI'
+import { BlockTitle } from './editor'
 import { ContentBlocks } from './editor/ContentBlock'
+import { BlockAdminContext, useBlockAdminProvider } from './editor/hooks/useBlockAdminProvider'
 
 export function SmallStory(props: { storyId: string; blockId?: string; className?: string; color: string }) {
-  const ref = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+  const { height: containerHeight } = useDimensions(containerRef, 0)
+  const { height: contentHeight } = useDimensions(contentRef, 0)
+
+  const isOverflow = useMemo(() => {
+    return contentHeight > containerHeight
+  }, [containerHeight, contentHeight])
+
+  const blockAdminValue = useBlockAdminProvider()
 
   useEffect(() => {
-    if (!ref.current) {
-      return
-    }
-    if (!props.blockId) {
-      ref.current.children.item(0)?.scrollTo({ top: 0 })
-    }
-  }, [props.storyId, props.blockId])
-
-  useWaitForBlockAndScrollTo(props.blockId, ref)
+    if (!props.blockId) return
+    blockAdminValue.getBlockInstanceById(props.blockId).then((res) => {
+      res.setHighlighted(true)
+      scrollIntoView(res.wrapperElement, {
+        scrollMode: 'if-needed',
+        block: 'center',
+        inline: 'nearest',
+        boundary: containerRef.current
+      })
+    })
+  }, [blockAdminValue, props.blockId])
 
   return (
     <div
@@ -30,7 +43,6 @@ export function SmallStory(props: { storyId: string; blockId?: string; className
         `,
         props.className
       )}
-      ref={ref}
       style={{
         backgroundColor: props.color
       }}
@@ -43,12 +55,17 @@ export function SmallStory(props: { storyId: string; blockId?: string; className
             display: none;
           }
         `}
+        ref={containerRef}
       >
-        <React.Suspense fallback={<BlockingUI blocking />}>
-          <StoryContent storyId={props.storyId} blockId={props.blockId} />
-        </React.Suspense>
+        <div ref={contentRef}>
+          <BlockAdminContext.Provider value={blockAdminValue}>
+            <React.Suspense fallback={<BlockingUI blocking />}>
+              <StoryContent storyId={props.storyId} blockId={props.blockId} />
+            </React.Suspense>
+          </BlockAdminContext.Provider>
+        </div>
       </div>
-      {props.blockId ? (
+      {props.blockId && isOverflow ? (
         <div
           className={css`
             position: absolute;
@@ -60,16 +77,18 @@ export function SmallStory(props: { storyId: string; blockId?: string; className
           style={{ background: `linear-gradient(180deg, ${props.color}, transparent)` }}
         />
       ) : null}
-      <div
-        className={css`
-          position: absolute;
-          left: 0;
-          bottom: 0;
-          width: 100%;
-          height: 15%;
-        `}
-        style={{ background: `linear-gradient(0deg, ${props.color}, transparent)` }}
-      />
+      {isOverflow && (
+        <div
+          className={css`
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 15%;
+          `}
+          style={{ background: `linear-gradient(0deg, ${props.color}, transparent)` }}
+        />
+      )}
     </div>
   )
 }
@@ -80,10 +99,17 @@ const StoryContent: React.FC<{ storyId: string; blockId?: string }> = ({ storyId
   return (
     <>
       <div
-        className={css`
-          padding-top: 10px;
-          font-weight: 600;
-        `}
+        className={cx(
+          css`
+            padding-top: 10px;
+            font-weight: 600;
+            position: relative;
+          `,
+          blockId === storyId &&
+            css`
+              background: rgba(46, 115, 252, 0.2);
+            `
+        )}
       >
         {story ? <BlockTitle block={story} /> : ''}
       </div>
@@ -95,13 +121,7 @@ const StoryContent: React.FC<{ storyId: string; blockId?: string }> = ({ storyId
         `}
       >
         {story?.children && (
-          <ContentBlocks
-            blockIds={story?.children}
-            readonly
-            parentType={Editor.BlockType.Story}
-            small
-            highlightedBlock={blockId}
-          />
+          <ContentBlocks blockIds={story?.children} readonly parentType={Editor.BlockType.Story} small />
         )}
       </div>
     </>
