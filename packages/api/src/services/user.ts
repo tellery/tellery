@@ -81,7 +81,7 @@ export class UserService {
         return r.create({
           username: email.split('@')[0] || email,
           email,
-          avatar: `api/static/avatars/user-${randomInt(4)}.png`,
+          avatar: `/api/static/avatars/user-${randomInt(4)}.png`,
           password: '',
           status,
         })
