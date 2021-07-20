@@ -7,7 +7,7 @@ import {
 } from '@app/hooks/api'
 import type { AvailableConfig, ProfileConfig } from '@app/types'
 import { css } from '@emotion/css'
-import { useMemo, useEffect } from 'react'
+import { useMemo, useEffect, useCallback } from 'react'
 import { useForm, UseFormRegister } from 'react-hook-form'
 import FormInput from './kit/FormInput'
 import FormLabel from './kit/FormLabel'
@@ -19,8 +19,13 @@ import { useLoggedUser } from '@app/hooks/useAuth'
 import FormFileButton from './kit/FormFileButton'
 
 export function WorkspaceDatabases(props: { onClose(): void }) {
-  const { data: connectors } = useConnectorsList()
+  const { data: connectors, refetch } = useConnectorsList()
   const connector = connectors?.[0]
+  const { onClose } = props
+  const handleClose = useCallback(() => {
+    refetch()
+    onClose()
+  }, [onClose, refetch])
 
   if (!connector) {
     return null
@@ -35,13 +40,13 @@ export function WorkspaceDatabases(props: { onClose(): void }) {
         flex-direction: column;
       `}
     >
-      <Connector {...connector} onClose={props.onClose} />
+      <Connector {...connector} onClose={handleClose} />
     </div>
   )
 }
 
 function Connector(props: { id: string; url: string; name: string; onClose(): void }) {
-  const { data: profileConfigs } = useConnectorsListProfiles(props.id)
+  const { data: profileConfigs, refetch } = useConnectorsListProfiles(props.id)
   const profileConfig = profileConfigs?.[0]
   const { register, reset, handleSubmit, watch, setValue } = useForm<ProfileConfig>({
     defaultValues: profileConfig,
@@ -57,9 +62,10 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
   const { onClose } = props
   useEffect(() => {
     if (handleUpsertProfile.status === 'success') {
+      refetch()
       onClose()
     }
-  }, [handleUpsertProfile.status, onClose])
+  }, [handleUpsertProfile.status, onClose, refetch])
   const user = useLoggedUser()
   const { data: workspace } = useWorkspaceDetail()
   const me = useMemo(() => workspace?.members.find(({ userId }) => userId === user.id), [user.id, workspace?.members])
@@ -82,7 +88,7 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
         className={css`
           flex: 1;
           margin-top: 20px;
-          overflow-y: scroll;
+          overflow-y: auto;
         `}
       >
         <FormLabel required={true}>Type</FormLabel>
