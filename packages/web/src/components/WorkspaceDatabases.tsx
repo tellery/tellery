@@ -91,6 +91,9 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
           `}
           value={type}
           {...(disabled ? {} : register('type'))}
+          onChange={(e) => {
+            reset({ type: e.target.value, name: profileConfig?.name })
+          }}
           disabled={disabled}
         >
           {availableConfigs?.map((availableConfig) => (
