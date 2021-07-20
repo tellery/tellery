@@ -36,4 +36,4 @@ DividerBlock.meta = {
   hasChildren: false
 }
 
-registerBlock(Editor.BlockType.Code, DividerBlock)
+registerBlock(Editor.BlockType.Divider, DividerBlock)
