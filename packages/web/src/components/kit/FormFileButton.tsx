@@ -2,7 +2,8 @@ import { css } from '@emotion/css'
 import { ReactNode, useRef } from 'react'
 import { FormButton } from './FormButton'
 
-export default function FormFile(props: {
+export default function FormFileButton(props: {
+  accept?: string
   variant: 'primary' | 'secondary' | 'danger'
   onChange: (file?: File) => void
   disabled?: boolean
@@ -15,6 +16,7 @@ export default function FormFile(props: {
     <>
       <input
         type="file"
+        accept={props.accept}
         className={css`
           display: none;
         `}

@@ -16,7 +16,7 @@ import FormSwitch from './kit/FormSwitch'
 import { FormButton } from './kit/FormButton'
 import { ThemingVariables } from '@app/styles'
 import { useLoggedUser } from '@app/hooks/useAuth'
-import FormFile from './kit/FormFile'
+import FormFileButton from './kit/FormFileButton'
 
 export function WorkspaceDatabases(props: { onClose(): void }) {
   const { data: connectors } = useConnectorsList()
@@ -158,7 +158,7 @@ function FileConfig(props: { value: AvailableConfig; setValue: (value: string) =
       >
         {config.name}
       </FormLabel>
-      <FormFile
+      <FormFileButton
         variant="secondary"
         onChange={async (file) => {
           if (file) {
@@ -170,8 +170,8 @@ function FileConfig(props: { value: AvailableConfig; setValue: (value: string) =
           width: 100%;
         `}
       >
-        {props.value.hint || 'Upload File'}
-      </FormFile>
+        {props.value.hint}
+      </FormFileButton>
       <span
         className={css`
           font-size: 12px;

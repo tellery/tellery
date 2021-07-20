@@ -7,11 +7,12 @@ import { fileLoader } from '@app/utils'
 import { uploadFile } from '@app/utils/upload'
 import { css } from '@emotion/css'
 import { ErrorMessage } from '@hookform/error-message'
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useHistory } from 'react-router-dom'
 import { FormButton } from './kit/FormButton'
 import FormError from './kit/FormError'
+import FormFileButton from './kit/FormFileButton'
 import FormInput from './kit/FormInput'
 import FormLabel from './kit/FormLabel'
 
@@ -47,7 +48,6 @@ export default function UserAccount(props: { onClose(): void }) {
       history.push('/login')
     }
   }, [handleLogoutUser.status, history])
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   return (
     <form
@@ -86,31 +86,19 @@ export default function UserAccount(props: { onClose(): void }) {
             border-radius: 50%;
           `}
         />
-        <input
-          type="file"
-          className={css`
-            display: none;
-          `}
+        <FormFileButton
           accept="image/*"
-          ref={fileInputRef}
-          onChange={async (e) => {
-            const file = e.target.files?.item(0)
+          variant="secondary"
+          onChange={async (file) => {
             if (!file) {
               return
             }
             const { key } = await uploadFile(file, workspace.id)
             setValue('avatar', fileLoader({ src: key, workspaceId: workspace.id }))
           }}
-        />
-        <FormButton
-          type="button"
-          variant="secondary"
-          onClick={() => {
-            fileInputRef.current?.click()
-          }}
         >
           Upload Photo
-        </FormButton>
+        </FormFileButton>
       </div>
       <div
         className={css`
