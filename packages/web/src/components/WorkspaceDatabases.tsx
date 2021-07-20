@@ -115,54 +115,20 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
           Name
         </FormLabel>
         <FormInput {...register('name')} /> */}
-        {availableConfig?.configs
-          .filter((config) => config.required)
-          .map((config) =>
-            config.type === 'FILE' ? (
-              <FileConfig
-                key={config.name}
-                value={config}
-                setValue={(value) => {
-                  setValue(`configs.${config.name}`, value)
-                }}
-                disabled={disabled}
-              />
-            ) : (
-              <Config key={config.name} value={config} register={register} disabled={disabled} />
-            )
-          )}
-        <FormLabel
-          className={css`
-            margin-top: 20px;
-          `}
-        >
-          Username
-        </FormLabel>
-        <FormInput {...register('auth.username')} autoComplete="off" disabled={disabled} />
-        <FormLabel
-          className={css`
-            margin-top: 20px;
-          `}
-        >
-          Password
-        </FormLabel>
-        <FormInput {...register('auth.password')} autoComplete="new-password" type="password" disabled={disabled} />
-        {availableConfig?.configs
-          .filter((config) => !config.required)
-          .map((config) =>
-            config.type === 'FILE' ? (
-              <FileConfig
-                key={config.name}
-                value={config}
-                setValue={(value) => {
-                  setValue(`configs.${config.name}`, value)
-                }}
-                disabled={disabled}
-              />
-            ) : (
-              <Config key={config.name} value={config} register={register} disabled={disabled} />
-            )
-          )}
+        {availableConfig?.configs.map((config) =>
+          config.type === 'FILE' ? (
+            <FileConfig
+              key={config.name}
+              value={config}
+              setValue={(value) => {
+                setValue(`configs.${config.name}`, value)
+              }}
+              disabled={disabled}
+            />
+          ) : (
+            <Config key={config.name} value={config} register={register} disabled={disabled} />
+          )
+        )}
       </form>
       <FormButton
         className={css`
@@ -252,7 +218,8 @@ function Config(props: { value: AvailableConfig; register: UseFormRegister<Profi
       ) : (
         <FormInput
           {...register(`configs.${config.name}`)}
-          autoComplete="off"
+          // @see https://developer.mozilla.org/en-US/docs/Web/Security/Securing_your_site/Turning_off_form_autocompletion#preventing_autofilling_with_autocompletenew-password
+          autoComplete="new-password"
           required={config.required}
           type={config.secret ? 'password' : config.type === 'NUMBER' ? 'number' : 'text'}
           placeholder={config.hint}

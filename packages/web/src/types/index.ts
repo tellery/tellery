@@ -288,10 +288,6 @@ export type Workspace = {
 export type ProfileConfig = {
   type: string
   name: string
-  auth?: {
-    username: string
-    password?: string
-  }
   configs: Record<string, string | number | boolean>
 }
 
