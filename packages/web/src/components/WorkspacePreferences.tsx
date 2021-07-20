@@ -16,7 +16,7 @@ import FormLabel from './kit/FormLabel'
 
 export function WorkspacePreferences(props: { onClose(): void }) {
   const { data: workspace, refetch } = useWorkspaceDetail()
-  const { register, reset, getValues, setValue, handleSubmit } = useForm<Pick<Workspace, 'avatar' | 'name'>>({
+  const { register, reset, watch, setValue, handleSubmit } = useForm<Pick<Workspace, 'avatar' | 'name'>>({
     defaultValues: pick(workspace, ['avatar', 'name']),
     mode: 'all'
   })
@@ -33,6 +33,7 @@ export function WorkspacePreferences(props: { onClose(): void }) {
   }, [handleWorkspaceUpdate.status, onClose, refetch])
   const user = useLoggedUser()
   const me = useMemo(() => workspace?.members.find(({ userId }) => userId === user.id), [user.id, workspace?.members])
+  const avatar = watch('avatar')
   const disabled = me?.role !== 'admin'
 
   return (
@@ -68,7 +69,7 @@ export function WorkspacePreferences(props: { onClose(): void }) {
         `}
       >
         <img
-          src={getValues().avatar}
+          src={avatar}
           className={css`
             width: 70px;
             height: 70px;

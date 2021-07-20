@@ -25,7 +25,7 @@ export default function UserAccount(props: { onClose(): void }) {
   const {
     register,
     reset,
-    getValues,
+    watch,
     setValue,
     formState: { errors },
     handleSubmit
@@ -48,6 +48,8 @@ export default function UserAccount(props: { onClose(): void }) {
       history.push('/login')
     }
   }, [handleLogoutUser.status, history])
+  const avatar = watch('avatar')
+  const newPassword = watch('newPassword')
 
   return (
     <form
@@ -78,7 +80,7 @@ export default function UserAccount(props: { onClose(): void }) {
         `}
       >
         <img
-          src={getValues().avatar}
+          src={avatar}
           className={css`
             width: 70px;
             height: 70px;
@@ -160,7 +162,7 @@ export default function UserAccount(props: { onClose(): void }) {
         <FormLabel>Repeat password</FormLabel>
         <FormInput
           {...register('repeatPassword', {
-            validate: (v) => (v === getValues().newPassword ? true : 'password mismatch')
+            validate: (v) => (v === newPassword ? true : 'password mismatch')
           })}
           type="password"
           error={errors.repeatPassword}
