@@ -79,7 +79,7 @@ export class UserService {
     const inserts = _(missing)
       .map((email) => {
         return r.create({
-          username: '',
+          username: email.split('@')[0] || email,
           email,
           avatar: `api/static/avatars/user-${randomInt(4)}.png`,
           password: '',
