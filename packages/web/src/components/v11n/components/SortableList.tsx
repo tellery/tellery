@@ -40,6 +40,7 @@ export function SortableList<T extends string | { id: string }>(props: {
           )
         })}
       </SortableContext>
+      {props.footer}
     </DndContext>
   )
 }
