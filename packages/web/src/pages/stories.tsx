@@ -84,7 +84,9 @@ const Page = () => {
           results.searchResults.map((storyId) => {
             const story = results.blocks[storyId]
             const block = story.children?.find((id) => results.highlights[id])
-            const highlight = Object.entries(results.highlights).find(([id]) => results.blocks[id].storyId === storyId)
+            const highlight = Object.entries(results.highlights).find(
+              ([id]) => results.blocks[id].storyId === storyId && id !== storyId
+            )
             return {
               id: story.id,
               title: results.highlights[story.id].trim().length ? results.highlights[story.id] : DEFAULT_TITLE,
