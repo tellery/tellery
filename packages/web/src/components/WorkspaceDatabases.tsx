@@ -92,7 +92,11 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
           value={type}
           {...(disabled ? {} : register('type'))}
           onChange={(e) => {
-            reset({ type: e.target.value, name: profileConfig?.name })
+            reset({
+              type: e.target.value,
+              name: profileConfig?.name,
+              ...(profileConfig?.type === e.target.value ? profileConfig : {})
+            })
           }}
           disabled={disabled}
         >
@@ -134,7 +138,7 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
         >
           Username
         </FormLabel>
-        <FormInput {...register('auth.username')} disabled={disabled} />
+        <FormInput {...register('auth.username')} autoComplete="off" disabled={disabled} />
         <FormLabel
           className={css`
             margin-top: 20px;
@@ -142,7 +146,7 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
         >
           Password
         </FormLabel>
-        <FormInput {...register('auth.password')} type="password" disabled={disabled} />
+        <FormInput {...register('auth.password')} autoComplete="new-password" type="password" disabled={disabled} />
         {availableConfig?.configs
           .filter((config) => !config.required)
           .map((config) =>
@@ -248,6 +252,7 @@ function Config(props: { value: AvailableConfig; register: UseFormRegister<Profi
       ) : (
         <FormInput
           {...register(`configs.${config.name}`)}
+          autoComplete="off"
           required={config.required}
           type={config.secret ? 'password' : config.type === 'NUMBER' ? 'number' : 'text'}
           placeholder={config.hint}
