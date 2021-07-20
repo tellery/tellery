@@ -19,8 +19,9 @@ import { useLoggedUser } from '@app/hooks/useAuth'
 
 export function WorkspaceDatabases(props: { onClose(): void }) {
   const { data: connectors } = useConnectorsList()
+  const connector = connectors?.[0]
 
-  if (!connectors?.[0]) {
+  if (!connector) {
     return null
   }
   return (
@@ -33,22 +34,22 @@ export function WorkspaceDatabases(props: { onClose(): void }) {
         flex-direction: column;
       `}
     >
-      <Connector key={connectors[0].id} {...connectors[0]} onClose={props.onClose} />
+      <Connector {...connector} onClose={props.onClose} />
     </div>
   )
 }
 
 function Connector(props: { id: string; url: string; name: string; onClose(): void }) {
   const { data: profileConfigs } = useConnectorsListProfiles(props.id)
+  const profileConfig = profileConfigs?.[0]
   const { register, reset, handleSubmit, watch } = useForm<ProfileConfig>({
-    defaultValues: profileConfigs?.[0],
+    defaultValues: profileConfig,
     mode: 'all'
   })
   const type = watch('type')
   useEffect(() => {
-    reset(profileConfigs?.[0])
-  }, [profileConfigs, reset])
-  console.log(type, profileConfigs?.[0])
+    reset(profileConfig)
+  }, [profileConfig, reset])
   const { data: availableConfigs } = useConnectorsListAvailableConfigs(props.id)
   const availableConfig = useMemo(() => availableConfigs?.find((ac) => ac.type === type), [availableConfigs, type])
   const handleUpsertProfile = useConnectorsUpsertProfile(props.id)
