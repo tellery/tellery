@@ -215,7 +215,7 @@ function useSqlEditorLanguage(languageId?: string, monaco?: Monaco) {
               range
             })),
             ...schemas.map((schema, index) => ({
-              label: schema,
+              label: schema.name,
               kind: monaco.languages.CompletionItemKind.Variable,
               insertText: schema.name.startsWith('$') ? `\`${schema.name}\`` : schema.name,
               sortText: padStart(index.toString(), 5, '0'),
@@ -308,8 +308,8 @@ function useSqlEditorTransclusion(languageId?: string, monaco?: Monaco) {
             suggestions: questionSearchResults.map((question) => ({
               range: current.range,
               label: {
-                name: getBlockTitle(question),
-                type: question.storyId ? getBlockTitle(data?.blocks[question.storyId]) : undefined
+                label: getBlockTitle(question),
+                description: question.storyId ? getBlockTitle(data?.blocks[question.storyId]) : undefined
               },
               kind: monaco.languages.CompletionItemKind.Function,
               insertText: `{{${question.id}}}`,
