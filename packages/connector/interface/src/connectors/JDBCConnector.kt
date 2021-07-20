@@ -91,11 +91,11 @@ abstract class JDBCConnector : BaseConnector() {
 
 
     open fun shouldKeepSchema(field: CollectionField): Boolean {
-        return field.schema?.toUpperCase() !in skippedSchema
+        return field.schema?.uppercase() !in skippedSchema
     }
 
     open fun isDefaultSchema(field: CollectionField): Boolean {
-        return defaultSchema != null && field.schema?.toUpperCase() == defaultSchema
+        return defaultSchema != null && field.schema?.uppercase() == defaultSchema
     }
 
     override suspend fun getCollections(dbName: String): List<CollectionField> {

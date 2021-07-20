@@ -68,7 +68,7 @@ class PostgreSQLConnector : JDBCConnector() {
                         type,
                     ),
                 ->
-                "${name.toUpperCase()} ${toSQLType(type)},"
+                "${name.uppercase()} ${toSQLType(type)},"
             }
             val tableName = if (schema != null) "$schema.$collection" else collection
 

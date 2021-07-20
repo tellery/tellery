@@ -13,12 +13,12 @@ import mu.*
 abstract class BaseConnector : IConnector {
 
     // Caches
-    private var _databases: Cache<String, List<String>> = Cache({ this.getDatabases() }, 60 * 60 * 2)
+    private var _databases: Cache<String, List<String>> = Cache({ this.getDatabases() }, 60 * 60 * 2L)
     private var _collections: Cache<String, List<CollectionField>> =
-        Cache({ key -> this.getCollections(key) }, 60 * 60 * 2)
+        Cache({ key -> this.getCollections(key) }, 60 * 60 * 2L)
     private var _schema: Cache<Triple<String, String, String?>, List<TypeField>> =
         Cache({ (dbName, collectionName, schemaName) -> this.getCollectionSchema(dbName, collectionName, schemaName) },
-            60 * 60 * 2)
+            60 * 60 * 2L)
 
     protected var scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
     private val semaphore = Semaphore(10)
@@ -47,7 +47,7 @@ abstract class BaseConnector : IConnector {
     suspend fun queryWithLimit(ctx: QueryContext, channel: Channel<Either<Exception, QueryResultWrapper>>): Job {
         return scope.launch(SupervisorJob()) {
             try {
-                withTimeout(10 * 60 * 1000) {
+                withTimeout(10 * 60 * 1000L) {
                     semaphore.withPermit {
                         logger.info("start query ${ctx.questionId}")
                         query(ctx) { item -> channel.send(Either.Right(item)) }
