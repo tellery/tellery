@@ -105,7 +105,7 @@ class RedshiftConnector : JDBCConnector() {
                         type,
                     ),
                 ->
-                "${name.toUpperCase()} ${toSQLType(type)}"
+                "${name.uppercase()} ${toSQLType(type)}"
             }
 
             val createTableSQL = """

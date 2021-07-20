@@ -78,7 +78,7 @@ class SnowflakeConnector : JDBCConnector() {
                         type,
                     ),
                 ->
-                "${name.toUpperCase()} ${toSQLType(type)}"
+                "${name.uppercase()} ${toSQLType(type)}"
             }
 
             val createTableSQL = """

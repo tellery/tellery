@@ -29,7 +29,7 @@ fun readCSV(content: ByteArray): CSVData {
                         isDate(item) -> {
                             ret!!.setDataType(index, Types.DATE, initialized)
                         }
-                        item.toLowerCase() in listOf("true", "false") -> {
+                        item.lowercase() in listOf("true", "false") -> {
                             ret!!.setDataType(index, Types.BOOLEAN, initialized)
                         }
                         else -> {
