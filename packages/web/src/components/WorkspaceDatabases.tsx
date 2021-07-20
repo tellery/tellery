@@ -90,7 +90,7 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
             width: 100%;
           `}
           value={type}
-          {...register('type')}
+          {...(disabled ? {} : register('type'))}
           disabled={disabled}
         >
           {availableConfigs?.map((availableConfig) => (
