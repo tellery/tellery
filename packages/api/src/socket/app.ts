@@ -27,9 +27,13 @@ export function initSocketServer(s: Server): SocketIO {
     const subClient = pubClient.duplicate()
     io.adapter(createRedisAdapter({ pubClient, subClient }))
   } else {
-    const { username: user, host, database, port, password } = config.get<PostgreSQLConfig>(
-      'postgres',
-    )
+    const {
+      username: user,
+      host,
+      database,
+      port,
+      password,
+    } = config.get<PostgreSQLConfig>('postgres')
 
     const pool = new Pool({
       user,

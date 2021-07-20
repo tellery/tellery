@@ -1,12 +1,14 @@
 import test from 'ava'
 import _, { filter } from 'lodash'
 import { nanoid } from 'nanoid'
-import { getRepository } from 'typeorm'
+import { getRepository, In } from 'typeorm'
+
 import { createDatabaseCon } from '../../src/clients/db/orm'
 import { FakePermission } from '../../src/core/permission'
 import { Workspace } from '../../src/core/workspace'
 import { UserEntity } from '../../src/entities/user'
 import { WorkspaceEntity } from '../../src/entities/workspace'
+import { WorkspaceMemberEntity } from '../../src/entities/workspaceMember'
 import { WorkspaceViewEntity } from '../../src/entities/workspaceView'
 import { WorkspaceService } from '../../src/services/workspace'
 import { PermissionWorkspaceRole } from '../../src/types/permission'
@@ -14,7 +16,25 @@ import { AccountStatus } from '../../src/types/user'
 import { WorkspaceDTO, WorkspaceMemberStatus } from '../../src/types/workspace'
 import { mockUsers, uuid } from '../testutils'
 
-const workspaceService = new WorkspaceService(new FakePermission())
+class TestPermission extends FakePermission {
+  async getListWorkspacesQuery(operatorId: string): Promise<{ [k: string]: any }> {
+    const ids = _(
+      await getRepository(WorkspaceMemberEntity).find({
+        select: ['workspaceId'],
+        where: {
+          userId: operatorId,
+        },
+      }),
+    )
+      .map('workspaceId')
+      .value()
+    return {
+      id: In(ids),
+    }
+  }
+}
+
+const workspaceService = new WorkspaceService(new TestPermission())
 
 test.before(async () => {
   await createDatabaseCon()
@@ -44,7 +64,7 @@ test('createWorkspace', async (t) => {
 test('listWorkspaces', async (t) => {
   const uid = uuid()
   const workspace = await workspaceService.create(uid, 'test')
-  const res1 = await workspaceService.list('test')
+  const res1 = await workspaceService.list(uid)
   t.is(res1.workspaces.length > 0, true)
   await getRepository(WorkspaceEntity).delete(workspace.id)
 })
@@ -53,7 +73,7 @@ test('getWorkspace', async (t) => {
   const uid = uuid()
   const workspace = await workspaceService.create(uid, 'test')
 
-  const res = await workspaceService.get('test', workspace.id)
+  const res = await workspaceService.get(uid, workspace.id)
 
   t.deepEqual(res.id, workspace.id)
   t.deepEqual(res.members[0].userId, uid)
@@ -85,6 +105,21 @@ test('joinWorkspace', async (t) => {
   t.is(res2.memberNum, 2)
 
   await getRepository(WorkspaceEntity).delete(res.id)
+})
+
+test('sort user members', async (t) => {
+  const uid1 = uuid()
+  const uid2 = uuid()
+  const uid3 = uuid()
+  const workspace = await workspaceService.create(uid1, 'test')
+  await workspaceService.join(workspace.id, uid3, await getInviteCode(workspace.id))
+  await workspaceService.join(workspace.id, uid2, await getInviteCode(workspace.id))
+
+  const w = await workspaceService.get(uid1, workspace.id)
+  // desc order by updatedAt
+  t.deepEqual(_(w.members).map('userId').value(), [uid1, uid2, uid3])
+
+  await getRepository(WorkspaceEntity).delete(w.id)
 })
 
 test('leaveWorkspace', async (t) => {
@@ -152,7 +187,7 @@ test('inviteMembersWorkspace', async (t) => {
   t.is(first?.role, PermissionWorkspaceRole.ADMIN)
   // NOTE user status
   t.is(first?.status, WorkspaceMemberStatus.ACTIVE)
-  
+
   t.not(linkPairs[email], undefined)
   const firstUser = await getRepository(UserEntity).findOne(first?.userId)
   // invited user status is confirmed

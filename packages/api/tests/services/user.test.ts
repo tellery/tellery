@@ -32,7 +32,9 @@ test('confirm user', async (t) => {
 
 test('update user info', async (t) => {
   const { id: userId } = await userService.confirmUser(
-    (await userService.generateUserVerification(nanoid())).code!,
+    (
+      await userService.generateUserVerification(nanoid())
+    ).code!,
   )
 
   // user confirmed

@@ -49,9 +49,7 @@ export class PgHistoryStore implements IHistoryStore {
       .value()
   }
 
-  async getStoryBlocksAndLinksByVersionId(
-    versionId: string,
-  ): Promise<{
+  async getStoryBlocksAndLinksByVersionId(versionId: string): Promise<{
     blocks: BlockEntity[]
     links: LinkEntity[]
   }> {
