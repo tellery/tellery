@@ -14,7 +14,7 @@ import type { Workspace } from '@app/types'
 import { css, cx } from '@emotion/css'
 import Tippy from '@tippyjs/react'
 import copy from 'copy-to-clipboard'
-import { compact, map, sortBy } from 'lodash'
+import { compact, map } from 'lodash'
 import React, { useEffect, useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import { FormButton } from './kit/FormButton'
@@ -31,14 +31,6 @@ export function WorkspaceMembers(props: { onClose(): void }) {
   const user = useLoggedUser()
   const { data: workspace, refetch } = useWorkspaceDetail()
   const { data: users } = useMgetUsers(workspace?.members.map(({ userId }) => userId))
-  const sortedMembers = useMemo(
-    () =>
-      compact([
-        workspace?.members.find(({ userId }) => userId === user.id),
-        ...sortBy(workspace?.members, 'joinAt').filter(({ userId }) => userId !== user.id)
-      ]),
-    [user.id, workspace?.members]
-  )
   const [invite, setInvite] = useState(false)
   const [visible, setVisible] = useState(false)
   const [role, setRole] = useState<Role>('member')
@@ -257,7 +249,7 @@ export function WorkspaceMembers(props: { onClose(): void }) {
           overflow-y: auto;
         `}
       >
-        {sortedMembers.map(({ userId, role }) =>
+        {workspace?.members.map(({ userId, role }) =>
           users?.[userId] ? (
             <WorkspaceMember
               key={userId}
