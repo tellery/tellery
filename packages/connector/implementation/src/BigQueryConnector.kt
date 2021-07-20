@@ -17,6 +17,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.nio.channels.Channels
 import java.sql.Types
+import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import kotlin.coroutines.resumeWithException
@@ -27,7 +28,7 @@ import kotlin.coroutines.resumeWithException
     configs = [
         Config(
             name = "Key File",
-            type = ConfigType.STRING,
+            type = ConfigType.FILE,
             description = "Upload your key file right here. For instruction see here: https://cloud.google.com/bigquery/docs/quickstarts/quickstart-client-libraries",
             hint = "",
             required = true
@@ -45,7 +46,8 @@ class BigQueryConnector : BaseConnector() {
     private val executor = Executors.newFixedThreadPool(10)
 
     override fun initByProfile(profile: Profile) {
-        val keyfileBody = gson.fromJson(profile.configs["Key File"], BigQueryKeyBody::class.java)
+        val jsonBody = Base64.getDecoder().decode(profile.configs["Key File"]).decodeToString()
+        val keyfileBody = gson.fromJson(jsonBody, BigQueryKeyBody::class.java)
         bigQueryOpts = BigQueryOptions.newBuilder().setCredentials(keyfileBody.toCreds()).build()
         bigQueryClient = bigQueryOpts.service
     }
