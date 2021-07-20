@@ -63,7 +63,6 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
   const { data: workspace } = useWorkspaceDetail()
   const me = useMemo(() => workspace?.members.find(({ userId }) => userId === user.id), [user.id, workspace?.members])
   const disabled = me?.role !== 'admin'
-  console.log(watch('configs'))
 
   return (
     <>
