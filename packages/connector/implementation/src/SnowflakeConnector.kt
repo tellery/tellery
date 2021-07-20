@@ -32,6 +32,21 @@ import java.sql.Connection
             required = true
         ),
         Config(
+            name = "Username",
+            type = ConfigType.STRING,
+            description = "Your Snowflake username",
+            hint = "your_username",
+            required = true,
+        ),
+        Config(
+            name = "Password",
+            type = ConfigType.STRING,
+            description = "Your Snowflake password",
+            hint = "",
+            required = true,
+            secret = true,
+        ),
+        Config(
             name = "Role",
             type = ConfigType.STRING,
             description = "The default access control role to use in the Snowflake session",

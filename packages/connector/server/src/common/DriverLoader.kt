@@ -52,7 +52,7 @@ object DriverLoader {
         val lock = fchannel.lock()
         try {
             if (Path("drivers/${jar.filename}").notExists()) {
-                withTimeout(5 * 60 * 1000) {
+                withTimeout(5 * 60 * 1000L) {
                     ConfigManager.repos.forEach { repoUrl ->
                         try {
                             Fuel.download(jar.toRepoUrl(repoUrl), Method.GET)

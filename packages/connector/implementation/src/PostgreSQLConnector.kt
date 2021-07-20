@@ -36,6 +36,21 @@ import java.sql.Connection
             hint = "my_db",
             required = true
         ),
+        Config(
+            name = "Username",
+            type = ConfigType.STRING,
+            description = "The username (role) you used to connect to your database",
+            hint = "postgres",
+            required = true,
+        ),
+        Config(
+            name = "Password",
+            type = ConfigType.STRING,
+            description = "",
+            hint = "",
+            required = true,
+            secret = true,
+        )
     ]
 )
 class PostgreSQLConnector : JDBCConnector() {

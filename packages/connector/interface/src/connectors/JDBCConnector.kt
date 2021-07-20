@@ -34,13 +34,6 @@ abstract class JDBCConnector : BaseConnector() {
     abstract fun buildConnectionStr(profile: Profile): String
 
     open fun additionalConfigurationForDataSource(profile: Profile) {
-        this.dataSource.apply {
-            maximumPoolSize = 15
-            minimumIdle = 5
-            connectionTimeout = 5 * 60 * 1000
-            maxLifetime = 15 * 60 * 1000
-            keepaliveTime = 60 * 1000
-        }
     }
 
     override fun initByProfile(profile: Profile) {
@@ -54,12 +47,6 @@ abstract class JDBCConnector : BaseConnector() {
 
         this.dataSource = HikariDataSource().apply {
             jdbcUrl = buildConnectionStr(profile)
-            profile.auth?.username?.let {
-                username = it
-            }
-            profile.auth?.password?.let {
-                password = it
-            }
             driverClassName = this@JDBCConnector.driverClassName
         }
 
@@ -69,6 +56,12 @@ abstract class JDBCConnector : BaseConnector() {
             connectionTimeout = 5 * 60 * 1000
             maxLifetime = 15 * 60 * 1000
             keepaliveTime = 60 * 1000
+            profile.configs["Username"].let{
+                username = it
+            }
+            profile.configs["Password"].let{
+                password = it
+            }
         }
 
         this.additionalConfigurationForDataSource(profile)
