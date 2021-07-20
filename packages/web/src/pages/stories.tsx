@@ -84,6 +84,7 @@ const Page = () => {
           results.searchResults.map((storyId) => {
             const story = results.blocks[storyId]
             const block = story.children?.find((id) => results.highlights[id])
+            const highlight = Object.entries(results.highlights).find(([id]) => results.blocks[id].storyId === storyId)
             return {
               id: story.id,
               title: results.highlights[story.id].trim().length ? results.highlights[story.id] : DEFAULT_TITLE,
@@ -94,6 +95,12 @@ const Page = () => {
                     id: block,
                     text: results.highlights[block],
                     originText: getBlockTitle(results.blocks[block])
+                  }
+                : highlight
+                ? {
+                    id: highlight[0],
+                    text: highlight[1],
+                    originText: getBlockTitle(results.blocks[highlight[0]])
                   }
                 : undefined,
               user: results.users[story.createdById!],
