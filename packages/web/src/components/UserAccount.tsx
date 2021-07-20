@@ -128,7 +128,12 @@ export default function UserAccount(props: { onClose(): void }) {
           `}
         >
           <FormLabel>Current password</FormLabel>
-          <FormInput {...register('currentPassword')} type="password" error={errors.currentPassword} />
+          <FormInput
+            {...register('currentPassword')}
+            type="password"
+            autoComplete="current-password"
+            error={errors.currentPassword}
+          />
           <ErrorMessage errors={errors} name="currentPassword" render={FormError} />
         </div>
       ) : null}
@@ -153,6 +158,7 @@ export default function UserAccount(props: { onClose(): void }) {
                   : 'at least a lowercase char'
                 : true
           })}
+          autoComplete="new-password"
           type="password"
           error={errors.newPassword}
         />

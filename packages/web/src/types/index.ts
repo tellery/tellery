@@ -296,7 +296,7 @@ export type ProfileConfig = {
 }
 
 export type AvailableConfig = {
-  type: 'STRING' | 'NUMBER' | 'BOOLEAN'
+  type: 'STRING' | 'NUMBER' | 'BOOLEAN' | 'FILE'
   name: string
   hint: string
   description: string

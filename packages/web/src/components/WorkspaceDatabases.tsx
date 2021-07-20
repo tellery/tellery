@@ -7,7 +7,7 @@ import {
 } from '@app/hooks/api'
 import type { AvailableConfig, ProfileConfig } from '@app/types'
 import { css } from '@emotion/css'
-import { useMemo, useEffect } from 'react'
+import { useMemo, useEffect, useRef } from 'react'
 import { useForm, UseFormRegister } from 'react-hook-form'
 import FormInput from './kit/FormInput'
 import FormLabel from './kit/FormLabel'
@@ -42,7 +42,7 @@ export function WorkspaceDatabases(props: { onClose(): void }) {
 function Connector(props: { id: string; url: string; name: string; onClose(): void }) {
   const { data: profileConfigs } = useConnectorsListProfiles(props.id)
   const profileConfig = profileConfigs?.[0]
-  const { register, reset, handleSubmit, watch } = useForm<ProfileConfig>({
+  const { register, reset, handleSubmit, watch, setValue } = useForm<ProfileConfig>({
     defaultValues: profileConfig,
     mode: 'all'
   })
@@ -91,6 +91,13 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
           `}
           value={type}
           {...(disabled ? {} : register('type'))}
+          onChange={(e) => {
+            reset({
+              type: e.target.value,
+              name: profileConfig?.name,
+              ...(profileConfig?.type === e.target.value ? profileConfig : {})
+            })
+          }}
           disabled={disabled}
         >
           {availableConfigs?.map((availableConfig) => (
@@ -110,9 +117,20 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
         <FormInput {...register('name')} /> */}
         {availableConfig?.configs
           .filter((config) => config.required)
-          .map((config) => (
-            <Config key={config.name} value={config} register={register} disabled={disabled} />
-          ))}
+          .map((config) =>
+            config.type === 'FILE' ? (
+              <FileConfig
+                key={config.name}
+                value={config}
+                setValue={(value) => {
+                  setValue(`configs.${config.name}`, value)
+                }}
+                disabled={disabled}
+              />
+            ) : (
+              <Config key={config.name} value={config} register={register} disabled={disabled} />
+            )
+          )}
         <FormLabel
           className={css`
             margin-top: 20px;
@@ -120,7 +138,7 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
         >
           Username
         </FormLabel>
-        <FormInput {...register('auth.username')} disabled={disabled} />
+        <FormInput {...register('auth.username')} autoComplete="off" disabled={disabled} />
         <FormLabel
           className={css`
             margin-top: 20px;
@@ -128,12 +146,23 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
         >
           Password
         </FormLabel>
-        <FormInput {...register('auth.password')} type="password" disabled={disabled} />
+        <FormInput {...register('auth.password')} autoComplete="new-password" type="password" disabled={disabled} />
         {availableConfig?.configs
           .filter((config) => !config.required)
-          .map((config) => (
-            <Config key={config.name} value={config} register={register} disabled={disabled} />
-          ))}
+          .map((config) =>
+            config.type === 'FILE' ? (
+              <FileConfig
+                key={config.name}
+                value={config}
+                setValue={(value) => {
+                  setValue(`configs.${config.name}`, value)
+                }}
+                disabled={disabled}
+              />
+            ) : (
+              <Config key={config.name} value={config} register={register} disabled={disabled} />
+            )
+          )}
       </form>
       <FormButton
         className={css`
@@ -145,6 +174,62 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
       >
         Update
       </FormButton>
+    </>
+  )
+}
+
+function FileConfig(props: { value: AvailableConfig; setValue: (value: string) => void; disabled: boolean }) {
+  const { value: config } = props
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  return (
+    <>
+      <FormLabel
+        required={config.required}
+        className={css`
+          margin-top: 20px;
+        `}
+      >
+        {config.name}
+      </FormLabel>
+
+      <input
+        type="file"
+        className={css`
+          display: none;
+        `}
+        ref={fileInputRef}
+        onChange={async (e) => {
+          const file = e.target.files?.item(0)
+          if (file) {
+            props.setValue(btoa(String.fromCharCode(...new Uint8Array(await file.arrayBuffer()))))
+          }
+        }}
+      />
+      <FormButton
+        type="button"
+        variant="secondary"
+        onClick={() => {
+          fileInputRef.current?.click()
+        }}
+        disabled={props.disabled}
+        className={css`
+          width: 100%;
+        `}
+      >
+        {props.value.hint || 'Upload file'}
+      </FormButton>
+      <span
+        className={css`
+          font-size: 12px;
+          line-height: 14px;
+          color: ${ThemingVariables.colors.text[2]};
+          margin-top: 5px;
+          display: block;
+        `}
+      >
+        {config.description}
+      </span>
     </>
   )
 }
@@ -167,6 +252,7 @@ function Config(props: { value: AvailableConfig; register: UseFormRegister<Profi
       ) : (
         <FormInput
           {...register(`configs.${config.name}`)}
+          autoComplete="off"
           required={config.required}
           type={config.secret ? 'password' : config.type === 'NUMBER' ? 'number' : 'text'}
           placeholder={config.hint}
