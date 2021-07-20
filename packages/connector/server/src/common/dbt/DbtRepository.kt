@@ -9,8 +9,9 @@ data class DbtRepository(
     val sshFolder: File,
     val privateKey: File,
     val publicKey: File,
-    val gitUrl: String?,
-    val profile: Profile?
+    val gitUrl: String,
+    val dbtProjectName: String,
+    val profile: Profile
 ) {
     constructor(
         rootFolder: File,
@@ -22,21 +23,8 @@ data class DbtRepository(
         sshFolder = File(keyFolder, profile.name),
         privateKey = File(File(keyFolder, profile.name), "dbt_rsa"),
         publicKey = File(File(keyFolder, profile.name), "dbt_rsa.pub"),
-        gitUrl = profile.configs[Constants.PROFILE_GIT_URL_FIELD]!!,
+        gitUrl = profile.configs[Constants.PROFILE_GIT_URL_FIELD] ?: "",
+        dbtProjectName = profile.configs[Constants.PROFILE_DBT_PROJECT_FIELD] ?: "",
         profile = profile
-    )
-
-    constructor(
-        name: String,
-        rootFolder: File,
-        keyFolder: File
-    ) : this(
-        name = name,
-        gitRepoFolder = File(rootFolder, name),
-        sshFolder = File(keyFolder, name),
-        privateKey = File(File(keyFolder, name), "dbt_rsa"),
-        publicKey = File(File(keyFolder, name), "dbt_rsa.pub"),
-        gitUrl = null,
-        profile = null
     )
 }

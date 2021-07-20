@@ -14,7 +14,7 @@ object ProfileManager {
 
     fun batchToDbtProfile(profiles: List<Profile>): String {
         val profileMap = profiles
-            .map { it.name to Entity(Output(toDbtProfile(it))) }
+            .map { it.configs[Constants.PROFILE_DBT_PROJECT_FIELD] to Entity(Output(toDbtProfile(it))) }
             .toMap()
         return mapper.writeValueAsString(profileMap)
     }

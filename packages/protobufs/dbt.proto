@@ -72,6 +72,6 @@ message Block {
 }
 
 message QuestionBlockContent {
-  string title = 1;
+  repeated string title = 1;
   string sql = 2;
 }

@@ -1,6 +1,7 @@
 package io.tellery
 
 import io.grpc.*
+import io.grpc.protobuf.services.ProtoReflectionService
 import io.grpc.util.*
 import io.tellery.common.*
 import io.tellery.services.*
@@ -38,10 +39,11 @@ class ConnectorServer(
         server = partialBuilder
             .addService(ConnectorService())
             .addService(DbtService())
+            .addService(ProtoReflectionService.newInstance())
             .intercept(TransmitStatusRuntimeExceptionInterceptor.instance())
             .build()
     }
-    
+
     fun start() {
         server.start()
         logger.info("Server started, listening on {}", port)

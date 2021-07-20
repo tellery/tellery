@@ -7,6 +7,7 @@ import com.google.protobuf.Empty
 import io.tellery.annotations.Config
 import io.tellery.common.ConfigManager
 import io.tellery.common.ConnectorManager
+import io.tellery.common.dbt.Constants.EXTERNAL_CONFIG_FIELDS
 import io.tellery.common.dbt.DbtManager
 import io.tellery.configs.AvailableConfig
 import io.tellery.configs.AvailableConfigs
@@ -120,7 +121,8 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
                     ?: throw CustomizedException("invalid db type or invalid params")
             val configFields = connectorMeta.configs.associateBy { it.name }
             val configs =
-                req.configsList.filter { configFields.contains(it.key) }
+                req.configsList
+                    .filter { configFields.contains(it.key) || EXTERNAL_CONFIG_FIELDS.contains(it.key) }
                     .associate { it.key to it.value }
 
             val requiredKeys = configFields.filterValues { it.required }.map { it.key }

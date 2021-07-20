@@ -1,5 +1,7 @@
 package io.tellery.common.dbt
 
+import com.google.common.collect.ImmutableList
+
 object Constants {
     const val PROFILE_PG_TYPE = "postgres"
     const val PROFILE_REDSHIFT_TYPE = "redshift"
@@ -11,6 +13,7 @@ object Constants {
     const val PROFILE_SCHEMA: String = "tellery_schema"
 
     const val PROFILE_GIT_URL_FIELD: String = "GitUrl"
+    const val PROFILE_DBT_PROJECT_FIELD: String = "DbtProjectName"
 
     const val PG_ENDPOINT_FIELD: String = "Endpoint"
     const val PG_PORT_FIELD: String = "Port"
@@ -22,4 +25,7 @@ object Constants {
 
     const val SF_ACCOUNT_FIELD: String = "Account Name"
     const val SF_REGION_FIELD: String = "Region Id"
+
+    val EXTERNAL_CONFIG_FIELDS: List<String> =
+        ImmutableList.of(PROFILE_GIT_URL_FIELD, PROFILE_DBT_PROJECT_FIELD)
 }
