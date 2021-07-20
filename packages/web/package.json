@@ -102,7 +102,7 @@
     "@types/is-url": "^1.2.30",
     "@types/lodash": "^4.14.171",
     "@types/mocha": "^8.2.3",
-    "@types/node": "^16.3.1",
+    "@types/node": "^16.3.3",
     "@types/numeral": "^2.0.1",
     "@types/papaparse": "^5.2.6",
     "@types/react": "^17.0.14",
