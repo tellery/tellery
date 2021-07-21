@@ -13,11 +13,11 @@ import { CombineProviderSession } from './CombineProviderSession'
 const PrivateRoutes = () => {
   return (
     <Switch>
-      <React.Suspense fallback={<BlockingUI blocking />}>
+      <React.Suspense fallback={<BlockingUI blocking size={50} />}>
         <CombineProviderSession>
           <Main>
             <OmniBox />
-            <React.Suspense fallback={<BlockingUI blocking />}>
+            <React.Suspense fallback={<BlockingUI blocking size={50} />}>
               <Route path="/thought">
                 <Thought />
               </Route>

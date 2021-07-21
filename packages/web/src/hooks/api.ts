@@ -39,7 +39,7 @@ export const useStory = (id: string) => {
   return result
 }
 
-export const useFetchStoryChunk = <T extends Editor.BaseBlock = Story>(id: string): T => {
+export const useFetchStoryChunk = <T extends Editor.BaseBlock = Story>(id: string, suspense: boolean = true): T => {
   const updateBlocks = useRecoilCallback((recoilInterface) => (blocks: Record<string, Editor.Block>) => {
     Object.values(blocks).forEach((block) => {
       recoilInterface.set(TelleryBlockAtom(block.id), block)
@@ -65,7 +65,7 @@ export const useFetchStoryChunk = <T extends Editor.BaseBlock = Story>(id: strin
           // })
           return blocks
         }),
-    { suspense: true }
+    { suspense: suspense }
   )
 
   // console.log('useFetchStoryChunk useBlockSuspense', id)
@@ -411,7 +411,6 @@ export const useBlock = <T extends Editor.BaseBlock = Editor.Block>(
   const [state, setState] = useState({})
 
   useEffect(() => {
-    console.log(atom.contents, id, 'use block', atom.state)
     if (!id) {
       setState({})
       return
