@@ -89,7 +89,21 @@ export namespace Editor {
     Row = 'row',
     Column = 'column',
     Thought = 'thought',
-    Embed = 'embed'
+    Bookmark = 'bookmark',
+    StoryLink = 'story_link',
+    QuestionReference = 'question_reference',
+
+    // embeds
+    Embed = 'embed',
+    Metabase = 'metabse',
+    ModeAnalytics = 'mode_analytics',
+    Figma = 'figma',
+    Gist = 'gist',
+    GoogleDrive = 'google_drive',
+    Excalidraw = 'excalidraw',
+    Codepen = 'codepen',
+    Tweet = 'tweet',
+    Observeablehq = 'observablehq'
   }
 
   export enum BlockParentType {
