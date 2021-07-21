@@ -100,7 +100,7 @@ export default {
     'WHERE',
     'WINDOW',
     'WITH',
-    'WITHIN',
+    'WITHIN'
   ],
   operators: [
     'LIKE',
@@ -415,7 +415,7 @@ export default {
     'COALESCE',
     'IF',
     'IFNULL',
-    'NULLIF',
+    'NULLIF'
   ],
   builtinVariables: [],
   pseudoColumns: [],
@@ -490,16 +490,16 @@ export default {
       [/""/, 'string'],
       [/"/, { token: 'string', next: '@pop' }]
     ],
-	tripleQuotedString: [
+    tripleQuotedString: [
       [/[rR]?[^'{3}]+/, 'string'],
       [/'{6}/, 'string'],
       [/'{3}/, { token: 'string', next: '@pop' }]
-	],
-	tripleQuotedString2: [
+    ],
+    tripleQuotedString2: [
       [/[rR]?[^"{3}]+/, 'string'],
       [/"{6}/, 'string'],
       [/"{3}/, { token: 'string', next: '@pop' }]
-	],
+    ],
     complexIdentifiers: [['`', { token: 'identifier.quote', next: '@backquotedIdentifier' }]],
     backquotedIdentifier: [
       [/[^`]+/, 'identifier'],
