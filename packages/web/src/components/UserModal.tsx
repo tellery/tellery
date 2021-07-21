@@ -4,19 +4,24 @@ import UserAccount from '@app/components/UserAccount'
 import { useState, useRef } from 'react'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useOnClickOutside } from 'hooks'
+import { AnimatePresence, motion } from 'framer-motion'
 
 enum Tabs {
   Account = 'Account'
 }
 
-export default function User(props: { onClose(): void }) {
+function UserModalContent(props: { onClose(): void }) {
   const user = useLoggedUser()
   const [tab, setTab] = useState(Tabs.Account)
   const ref = useRef(null)
   useOnClickOutside(ref, props.onClose)
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.25 }}
+      exit={{ opacity: 0 }}
       className={css`
         position: fixed;
         top: 0;
@@ -106,6 +111,10 @@ export default function User(props: { onClose(): void }) {
         </div>
         {tab === Tabs.Account ? <UserAccount onClose={props.onClose} /> : null}
       </div>
-    </div>
+    </motion.div>
   )
+}
+
+export default function UserModal(props: { onClose(): void; open: boolean }) {
+  return <AnimatePresence>{props.open && <UserModalContent onClose={props.onClose} />}</AnimatePresence>
 }

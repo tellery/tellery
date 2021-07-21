@@ -1,5 +1,7 @@
+import { BlockingUI } from '@app/components/BlockingUI'
 import { useWorkspace } from '@app/context/workspace'
 import { useLoggedUser } from '@app/hooks/useAuth'
+import type { Story } from '@app/types'
 import { DEFAULT_TITLE } from '@app/utils'
 import { css } from '@emotion/css'
 import styled from '@emotion/styled'
@@ -7,7 +9,7 @@ import { SecondaryEditor, StoryEditor, useGetBlockTitleTextSnapshot } from 'comp
 import { NavigationHeader } from 'components/NavigationHeader'
 import { StoryBackLinks } from 'components/StoryBackLinks'
 import { StoryQuestionsEditor } from 'components/StoryQuestionsEditor'
-import { useFetchStoryChunk, useRecordStoryVisits, useStoryPinnedStatus } from 'hooks/api'
+import { useBlock, useBlockSuspense, useFetchStoryChunk, useRecordStoryVisits, useStoryPinnedStatus } from 'hooks/api'
 import React, { useEffect, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet'
 import { useLocation, useParams } from 'react-router-dom'
@@ -20,7 +22,8 @@ const _Page: React.FC = () => {
 
   const user = useLoggedUser()
   const [scrollToBlockId, setScrollToBlockId] = useState<string | null>(null)
-  const story = useFetchStoryChunk(id)
+  const storyBlock = useFetchStoryChunk(id, false)
+  // const { data: storyBlock } = useBlock<Story>(id)
   const workspace = useWorkspace()
   useEffect(() => {
     if (id) {
@@ -36,7 +39,7 @@ const _Page: React.FC = () => {
 
   const getBlockTitle = useGetBlockTitleTextSnapshot()
 
-  const title = useMemo(() => getBlockTitle(story), [getBlockTitle, story])
+  const title = useMemo(() => storyBlock && getBlockTitle(storyBlock), [getBlockTitle, storyBlock])
   const storyBottom = useMemo(() => id && <StoryBackLinks storyId={id} />, [id])
 
   return (
@@ -47,27 +50,29 @@ const _Page: React.FC = () => {
       <VerticalLayout>
         <Layout>
           <StoryContainer>
-            <StoryEditor
-              key={id}
-              storyId={id}
-              top={
-                <NavigationHeader
-                  storyId={id}
-                  story={story}
-                  title={title}
-                  pinned={pinned}
-                  locked={story.format?.locked}
-                />
-              }
-              className={css`
-                @media (max-width: 700px) {
-                  padding: 20px 20px 0 20px;
+            <React.Suspense fallback={<BlockingUI blocking size={50} />}>
+              <StoryEditor
+                key={id}
+                storyId={id}
+                top={
+                  <NavigationHeader
+                    storyId={id}
+                    story={storyBlock}
+                    title={title}
+                    pinned={pinned}
+                    locked={storyBlock.format?.locked}
+                  />
                 }
-                padding: 100px 100px 0 100px;
-              `}
-              scrollToBlockId={scrollToBlockId}
-              bottom={storyBottom}
-            ></StoryEditor>
+                className={css`
+                  @media (max-width: 700px) {
+                    padding: 20px 20px 0 20px;
+                  }
+                  padding: 100px 100px 0 100px;
+                `}
+                scrollToBlockId={scrollToBlockId}
+                bottom={storyBottom}
+              ></StoryEditor>
+            </React.Suspense>
           </StoryContainer>
           <SecondaryEditor />
         </Layout>

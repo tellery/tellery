@@ -26,8 +26,8 @@ import { ThemingVariables } from 'styles'
 import { DRAG_HANDLE_WIDTH } from 'utils'
 import Icon from './kit/Icon'
 import IconButton from './kit/IconButton'
-import Workspace from './Workspace'
-import User from './User'
+import WorkspaceModal from './WorkspaceModal'
+import UserModal from './UserModal'
 import { useWorkspace } from '@app/context/workspace'
 
 const SideBarLoader: React.FC = () => {
@@ -179,21 +179,19 @@ const SideBarContent: React.FC<{ folded: boolean; toggleFoldStatus: () => void }
         position: relative;
       `}
     >
-      {showUser && (
-        <User
-          onClose={() => {
-            setShowUser(false)
-          }}
-        />
-      )}
-      {showSetting && (
-        <Workspace
-          openForProfiles={hasNoProfile}
-          onClose={() => {
-            setShowSetting(false)
-          }}
-        />
-      )}
+      <UserModal
+        onClose={() => {
+          setShowUser(false)
+        }}
+        open={showUser}
+      />
+      <WorkspaceModal
+        openForProfiles={hasNoProfile}
+        onClose={() => {
+          setShowSetting(false)
+        }}
+        open={showSetting}
+      />
       {folded === true && (
         <div
           className={css`

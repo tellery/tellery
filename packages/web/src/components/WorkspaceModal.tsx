@@ -2,9 +2,10 @@ import { WorkspacePreferences } from '@app/components/WorkspacePreferences'
 import { WorkspaceMembers } from '@app/components/WorkspaceMembers'
 import { WorkspaceDatabases } from '@app/components/WorkspaceDatabases'
 import { css, cx } from '@emotion/css'
-import { useState, useRef } from 'react'
+import React, { useState, useRef } from 'react'
 import { ThemingVariables } from 'styles'
 import { useOnClickOutside } from 'hooks'
+import { AnimatePresence, motion } from 'framer-motion'
 
 enum Tabs {
   Preferences = 'Preferences',
@@ -12,13 +13,22 @@ enum Tabs {
   Databases = 'Databases'
 }
 
-export default function Workspace(props: { openForProfiles?: boolean; onClose(): void }) {
+interface ModalProps {
+  openForProfiles?: boolean
+  onClose(): void
+}
+
+function WorkspaceModalContent(props: ModalProps) {
   const [tab, setTab] = useState(props.openForProfiles ? Tabs.Databases : Tabs.Preferences)
   const ref = useRef(null)
   useOnClickOutside(ref, props.onClose)
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.25 }}
+      exit={{ opacity: 0 }}
       className={css`
         position: fixed;
         top: 0;
@@ -110,6 +120,11 @@ export default function Workspace(props: { openForProfiles?: boolean; onClose():
         {tab === Tabs.Members ? <WorkspaceMembers onClose={props.onClose} /> : null}
         {tab === Tabs.Databases ? <WorkspaceDatabases onClose={props.onClose} /> : null}
       </div>
-    </div>
+    </motion.div>
   )
+}
+
+export default function WorkspaceModal(props: ModalProps & { open: boolean }) {
+  const { open, ...rest } = props
+  return <AnimatePresence>{open && <WorkspaceModalContent {...rest} />}</AnimatePresence>
 }
