@@ -22,16 +22,12 @@ export function ShapeSelector(props: {
       className={cx(
         props.className,
         css`
-          border: 1px solid ${ThemingVariables.colors.gray[1]};
-          border-radius: 8px;
           background-color: ${ThemingVariables.colors.gray[5]};
           overflow: hidden;
-          margin-top: 10px;
           display: inline-flex;
           align-items: center;
           height: 36px;
           width: 185px;
-          padding-left: 10px;
           padding-right: 5px;
         `
       )}
