@@ -36,7 +36,7 @@ import { ToggleBlock } from './toggle'
 import { TweetBlock } from './tweet'
 import { VideoBlock } from './video'
 import { QuestionReferenceBlock } from './questionReference'
-import { YoutubeBlock } from './youtube'
+import { YouTubeBlock } from './youtube'
 
 
 
