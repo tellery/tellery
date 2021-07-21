@@ -3,6 +3,7 @@ import { useHover } from '@app/hooks'
 import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { css, cx } from '@emotion/css'
 import {
+  IconCommonLink,
   IconMenuBulletedList,
   IconMenuCode,
   IconMenuDivider,
@@ -215,6 +216,16 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
         title: 'Quote',
         action: createOrToggleBlock(Editor.BlockType.Quote),
         icon: <Icon icon={IconMenuQuote} color={'#000'} />
+      },
+      {
+        title: 'Embed',
+        action: createOrToggleBlock(Editor.BlockType.Embed),
+        icon: <Icon icon={IconCommonLink} color={'#000'} />
+      },
+      {
+        title: 'Metabase',
+        action: createOrToggleBlock(Editor.BlockType.Metabase),
+        icon: <Icon icon={IconCommonLink} color={'#000'} />
       },
       {
         title: 'Line Divider',

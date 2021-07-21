@@ -20,7 +20,7 @@ export type BlockFormatResizerDragEvent = (
       height: number
     }
     keepAspectRatio?: boolean
-    contentRef?: HTMLDivElement
+    contentRef?: HTMLElement
   }
 ) => void
 

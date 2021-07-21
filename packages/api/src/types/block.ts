@@ -39,6 +39,7 @@ enum BlockType {
   CODEPEN = 'codepen',
   TWEET = 'tweet',
   OBSERVEABLEHQ = 'observablehq',
+  YOUTUBE = 'youtube',
 
   // Deprecated
   DEPRECATED_RICH_TEXT = 'RICH_TEXT',

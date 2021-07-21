@@ -6,7 +6,7 @@ import { EmbedBlockPopover } from '../BlockBase/EmbedBlockPopover'
 import { BlockFormatInterface, useEditor } from '../hooks'
 import { BlockComponent, registerBlock } from './utils'
 
-const EmbedBlock: BlockComponent<
+const MetabaseBlock: BlockComponent<
   React.FC<{
     block: Editor.EmbedBlock
     blockFormat: BlockFormatInterface
@@ -27,14 +27,13 @@ const EmbedBlock: BlockComponent<
           </>
         ) : (
           <BlockPlaceHolder
-            text="Uploading"
+            text="Input public dashboard URL"
             loading={false}
             onClick={() => {
               setShowPopover(true)
             }}
           />
         )}
-
         <EmbedBlockPopover
           open={showPopover}
           setOpen={setShowPopover}
@@ -54,9 +53,9 @@ const EmbedBlock: BlockComponent<
   )
 }
 
-EmbedBlock.meta = {
+MetabaseBlock.meta = {
   isText: false,
   hasChildren: false,
-  supportBlockFormat: true
+  supportBlockFormat: false
 }
-registerBlock(Editor.BlockType.Embed, EmbedBlock)
+registerBlock(Editor.BlockType.Metabase, MetabaseBlock)

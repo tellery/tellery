@@ -103,7 +103,8 @@ export namespace Editor {
     Excalidraw = 'excalidraw',
     Codepen = 'codepen',
     Tweet = 'tweet',
-    Observeablehq = 'observablehq'
+    Observeablehq = 'observablehq',
+    YouTube = 'youtube'
   }
 
   export enum BlockParentType {
@@ -184,6 +185,12 @@ export namespace Editor {
   export interface FileBlock extends ContentBlock {
     content: ContentBlock['content'] & {
       fileKey?: string
+    }
+  }
+
+  export interface EmbedBlock extends ContentBlock {
+    content: ContentBlock['content'] & {
+      src?: string
     }
   }
 

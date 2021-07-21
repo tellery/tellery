@@ -5,14 +5,13 @@ import invariant from 'invariant'
 import React, { useCallback } from 'react'
 import { Editor } from 'types'
 import type { BlockFormatInterface } from '../hooks'
-
 const HANDLE_WIDTH = 10
 
 export const BlockResizer: React.FC<{
   blockFormat: BlockFormatInterface
   parentType: Editor.BlockType
   blockId: string
-  contentRef: React.MutableRefObject<HTMLDivElement | null>
+  contentRef: React.MutableRefObject<HTMLElement | null>
   disableY?: boolean
   keepAspectRatio?: boolean
   offsetY?: number

@@ -36,6 +36,8 @@ import { ToggleBlock } from './toggle'
 import { TweetBlock } from './tweet'
 import { VideoBlock } from './video'
 import { QuestionReferenceBlock } from './questionReference'
+import { YoutubeBlock } from './youtube'
+
 
 
 // record all block types
@@ -75,7 +77,8 @@ const blockConstructors = {
   [BlockType.OBSERVEABLEHQ]: ObservablehqBlock,
   [BlockType.STORY_LINK]: StoryLinkBlock,
   [BlockType.TWEET]: TweetBlock,
-  [BlockType.QUESTION_REFERENCE]: QuestionReferenceBlock
+  [BlockType.QUESTION_REFERENCE]: QuestionReferenceBlock,
+  [BlockType.YOUTUBE]: YoutubeBlock
 }
 
 _(blockConstructors).forEach((v, k) => {
