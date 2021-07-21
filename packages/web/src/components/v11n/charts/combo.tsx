@@ -428,31 +428,30 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                       }}
                     />
                   </div>
-                  <div
+                  <SortableList
+                    value={props.config.shapes.filter(({ groupId }) => groupId === item.key)}
+                    onChange={(value) => {
+                      onConfigChange('shapes', value)
+                    }}
+                    renderItem={(item) => (
+                      <ShapeSelector
+                        key={item.key}
+                        className={css`
+                          margin: 5px;
+                        `}
+                        value={item}
+                        onChange={(value) => {
+                          onConfigChange(
+                            'shapes',
+                            props.config.shapes.map((shape) => (shape.key === item.key ? { ...item, ...value } : shape))
+                          )
+                        }}
+                      />
+                    )}
                     className={css`
                       margin: -5px;
                     `}
-                  >
-                    {props.config.shapes
-                      .filter(({ groupId }) => groupId === item.key)
-                      .map((item) => (
-                        <ShapeSelector
-                          key={item.key}
-                          className={css`
-                            margin: 5px;
-                          `}
-                          value={item}
-                          onChange={(value) => {
-                            onConfigChange(
-                              'shapes',
-                              props.config.shapes.map((shape) =>
-                                shape.key === item.key ? { ...item, ...value } : shape
-                              )
-                            )
-                          }}
-                        />
-                      ))}
-                  </div>
+                  />
                 </div>
               ))}
 
