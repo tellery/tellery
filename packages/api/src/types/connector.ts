@@ -17,10 +17,6 @@ type AvailableConfig = {
 type Profile = {
   type: string
   name: string
-  auth?: {
-    username: string
-    password?: string
-  }
   configs: { [key: string]: string }
 }
 
