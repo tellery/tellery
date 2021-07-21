@@ -78,7 +78,7 @@ const blockConstructors = {
   [BlockType.STORY_LINK]: StoryLinkBlock,
   [BlockType.TWEET]: TweetBlock,
   [BlockType.QUESTION_REFERENCE]: QuestionReferenceBlock,
-  [BlockType.YOUTUBE]: YoutubeBlock
+  [BlockType.YOUTUBE]: YouTubeBlock
 }
 
 _(blockConstructors).forEach((v, k) => {
