@@ -49,6 +49,9 @@ export const EmbedBlockPopover: React.FC<{
       >
         <form onSubmit={handleSubmit(onSubmit)}>
           <input
+            onKeyDown={(e) => {
+              e.stopPropagation()
+            }}
             autoFocus
             {...register('src', { required: true })}
             className={css`

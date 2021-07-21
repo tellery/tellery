@@ -194,6 +194,16 @@ export namespace Editor {
     }
   }
 
+  export interface MetabaseBlock extends ContentBlock {
+    content: ContentBlock['content'] & {
+      siteUrl?: string
+      resourceType?: string
+      resourceId?: number
+      params?: object
+      publicToken?: string
+    }
+  }
+
   export type Block = ImageBlock | QuestionBlock | ContentBlock
 }
 

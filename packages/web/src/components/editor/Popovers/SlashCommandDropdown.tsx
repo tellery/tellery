@@ -223,7 +223,7 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
         icon: <Icon icon={IconCommonLink} color={'#000'} />
       },
       {
-        title: 'Metabase',
+        title: 'Metabase (Beta)',
         action: createOrToggleBlock(Editor.BlockType.Metabase),
         icon: <Icon icon={IconCommonLink} color={'#000'} />
       },
