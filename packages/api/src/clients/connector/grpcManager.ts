@@ -12,7 +12,6 @@ import {
   SubmitQueryRequest,
   QueryResult,
   ImportRequest,
-  Auth,
   KVEntry,
   ProfileBody,
 } from '../../protobufs/connector_pb'
@@ -81,18 +80,9 @@ export class ConnectorManager implements IConnectorManager {
   }
 
   private profileToObject(item: ProfileBody): Profile {
-    let auth: Profile['auth'] | undefined
-    if (item.hasAuth()) {
-      const { username, password } = item.getAuth()!.toObject()
-      auth = {
-        username,
-        password: password === '' ? undefined : password,
-      }
-    }
     return {
       type: item.getType(),
       name: item.getName(),
-      auth,
       configs: Object.fromEntries(item.getConfigsMap().toArray()),
     }
   }
@@ -103,20 +93,12 @@ export class ConnectorManager implements IConnectorManager {
   }
 
   async upsertProfile(profileBody: Profile): Promise<Profile[]> {
-    const { name, type, auth, configs } = profileBody
+    const { name, type, configs } = profileBody
 
     let request = new UpsertProfileRequest()
       .setName(name)
       .setType(type)
       .setConfigsList(Object.entries(configs).map(([k, v]) => new KVEntry().setKey(k).setValue(v)))
-
-    if (auth) {
-      let protoAuth = new Auth().setUsername(auth.username)
-      if (auth.password) {
-        protoAuth = protoAuth.setPassword(auth.password)
-      }
-      request.setAuth(protoAuth)
-    }
 
     const newProfiles = await beautyCall(this.client.upsertProfile, this.client, request)
     return newProfiles.getProfilesList().map(this.profileToObject)
