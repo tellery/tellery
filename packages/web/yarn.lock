@@ -4836,9 +4836,9 @@ istanbul-reports@^3.0.2:
     istanbul-lib-report "^3.0.0"
 
 jotai@^1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/jotai/-/jotai-1.2.1.tgz#74ec241023bf26a36ec0e87faa4e946bcd29422c"
-  integrity sha512-OdkFSLoAHTAe1KWndMRMKdr/fqNan4SKAg0UDp1j6Mo2RebAy3NEDGAUCWVX9dfmvSRMz+4mkzAxfi1Z4dy56w==
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/jotai/-/jotai-1.2.2.tgz#631fd7ad44e9ac26cdf9874d52282c1cfe032807"
+  integrity sha512-iqkkUdWsH2Mk4HY1biba/8kA77+8liVBy8E0d8Nce29qow4h9mzdDhpTasAruuFYPycw6JvfZgL5RB0JJuIZjw==
 
 js-sha3@0.8.0:
   version "0.8.0"
