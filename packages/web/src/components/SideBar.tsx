@@ -252,8 +252,8 @@ const SideBarContent: React.FC<{ folded: boolean; toggleFoldStatus: () => void }
         <MainSideBarItem
           icon={IconCommonThoughts}
           title="My Thoughts"
-          onClick="/thought"
-          active={location.pathname === '/thought'}
+          onClick="/thoughts"
+          active={location.pathname === '/thoughts'}
           folded={folded}
         />
         <MainSideBarItem

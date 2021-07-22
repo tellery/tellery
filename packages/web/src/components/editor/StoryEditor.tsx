@@ -1397,7 +1397,7 @@ const _StoryEditor: React.FC<{
                     )}
                     ref={editorBlocksRef}
                   >
-                    {dimensions?.width && (
+                    {dimensions && dimensions.width !== 0 && (
                       <>
                         <React.Suspense fallback={<div>Loading...</div>}>
                           {props.showTitle !== false &&
