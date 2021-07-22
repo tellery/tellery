@@ -1,6 +1,7 @@
 import React, { useContext } from 'react'
-import type { Editor, TellerySelection } from 'types'
-import type { BlockInstanceInterface, SetBlock } from '../types'
+import type { Editor } from 'types'
+import type { TellerySelection } from '../helpers'
+import type { SetBlock } from '../types'
 
 export type EditorContextInterface<BlockType> = {
   insertNewEmptyBlock: (

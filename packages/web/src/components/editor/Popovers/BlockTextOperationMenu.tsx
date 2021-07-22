@@ -25,7 +25,7 @@ import {
   IconMenuToggleList
 } from 'assets/icons'
 import { getBlockElementContentEditbleById, isTextBlock } from 'components/editor/helpers/contentEditable'
-import { nativeSelection2Tellery } from 'components/editor/helpers/tellerySelection'
+import { nativeSelection2Tellery, TellerySelectionType } from 'components/editor/helpers/tellerySelection'
 import {
   addMark,
   applyTransformOnSplitedTokens,
@@ -47,7 +47,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { usePopper } from 'react-popper'
 import { getBlockFromSnapshot, useBlockSnapshot } from 'store/block'
 import { ThemingVariables } from 'styles'
-import { Editor, Story, TellerySelectionType } from 'types'
+import { Editor, Story } from 'types'
 import { EditorPopover } from '../EditorPopover'
 import { useEditor, useGetBlockTitleTextSnapshot } from '../hooks'
 const MARK_TYPES = Object.values(Editor.InlineType)

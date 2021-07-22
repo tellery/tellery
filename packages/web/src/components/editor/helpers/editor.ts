@@ -6,7 +6,8 @@ import {
 } from 'components/editor/helpers/tokenManipulation'
 import debug from 'debug'
 import { BlockSnapshot, getBlockFromSnapshot } from 'store/block'
-import { Editor, TellerySelection, TellerySelectionType } from 'types'
+import type { Editor } from 'types'
+import { TellerySelection, TellerySelectionType } from '.'
 const logger = debug('tellery:editor:helper')
 
 export const getEndContainerFromPoint = (x: number, y: number) => {

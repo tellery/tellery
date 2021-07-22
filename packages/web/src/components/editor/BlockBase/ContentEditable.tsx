@@ -1,6 +1,11 @@
 import { css, cx } from '@emotion/css'
 import { deserialize, restoreRange, saveSelection } from 'components/editor/helpers/contentEditable'
-import { nativeSelection2Tellery, tellerySelection2Native } from 'components/editor/helpers/tellerySelection'
+import {
+  nativeSelection2Tellery,
+  TellerySelection,
+  tellerySelection2Native,
+  TellerySelectionType
+} from '../helpers/tellerySelection'
 import {
   extractEntitiesFromToken,
   getTokensLength,
@@ -9,7 +14,7 @@ import {
   splitToken,
   toggleMark,
   tokenPosition2SplitedTokenPosition
-} from 'components/editor/helpers/tokenManipulation'
+} from '../helpers/tokenManipulation'
 import debug from 'debug'
 import { dequal } from 'dequal'
 import { useOpenStory, usePrevious } from 'hooks'
@@ -18,7 +23,7 @@ import produce from 'immer'
 import invariant from 'invariant'
 import React, { useCallback, useDebugValue, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { ThemingVariables } from 'styles'
-import { Editor, TellerySelection, TellerySelectionType } from 'types'
+import { Editor } from 'types'
 import { useEditor, useLocalSelection } from '../hooks'
 import { BlockReferenceDropdown } from '../Popovers/BlockReferenceDropdown'
 import { SlashCommandDropdown } from '../Popovers/SlashCommandDropdown'

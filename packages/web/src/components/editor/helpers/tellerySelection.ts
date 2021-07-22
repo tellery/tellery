@@ -1,5 +1,5 @@
 import invariant from 'invariant'
-import { Editor, TellerySelection, TellerySelectionType } from 'types'
+import type { Editor } from 'types'
 import { FIRST_LINE_OR_LAST_LINE_THERESHOLD } from 'utils'
 import {
   getBlockElementContentEditbleById,
@@ -9,6 +9,30 @@ import {
   saveSelection
 } from './contentEditable'
 import { isSelectionAtStart } from './tokenManipulation'
+
+export type TellerySelectionNode = {
+  blockId: string
+  nodeIndex: number
+  offset: number
+}
+
+export enum TellerySelectionType {
+  Inline,
+  Block
+}
+
+export type TelleryBlockSelection = {
+  type: TellerySelectionType.Block
+  selectedBlocks: string[]
+}
+
+export type TelleryInlineSelection = {
+  type: TellerySelectionType.Inline
+  focus: TellerySelectionNode
+  anchor: TellerySelectionNode
+}
+
+export type TellerySelection = (TelleryBlockSelection | TelleryInlineSelection) & { storyId: string }
 
 const findNodePositionAndOffset = (node: Node, offset: number) => {
   let root: HTMLElement = node as HTMLElement

@@ -12,7 +12,6 @@ import { dequal } from 'dequal'
 import { motion } from 'framer-motion'
 import { useOnClickOutside } from 'hooks'
 import { useFetchStoryChunk } from 'hooks/api'
-import { useWaitForBlockAndScrollTo } from 'hooks/useWaitForBlockAndScrollTo'
 import produce from 'immer'
 import invariant from 'invariant'
 import isHotkey from 'is-hotkey'
@@ -20,7 +19,7 @@ import React, { CSSProperties, memo, ReactNode, useCallback, useEffect, useMemo,
 import { useRecoilState } from 'recoil'
 import { BlockSnapshot, getBlockFromSnapshot, useBlockSnapshot } from 'store/block'
 import { ThemingVariables } from 'styles'
-import { Editor, Story, TellerySelection, TellerySelectionType, Thought } from 'types'
+import { Editor, Story, Thought } from 'types'
 import { isUrl, TELLERY_MIME_TYPES } from 'utils'
 import {
   addMark,
@@ -62,7 +61,9 @@ import {
   restoreRange,
   setBlockTranscation,
   setCaretToEnd,
-  setCaretToStart
+  setCaretToStart,
+  TellerySelection,
+  TellerySelectionType
 } from './helpers'
 import { EditorContext, EditorContextInterface, useMouseMoveInEmitter } from './hooks'
 import { useBlockHoveringState } from './hooks/useBlockHoveringState'
@@ -659,7 +660,7 @@ const _StoryEditor: React.FC<{
 
   const user = useLoggedUser()
 
-  const commitHistory = useCommitHistory(user.id, storyId)
+  const commitHistory = useCommitHistory<{ selection: TellerySelection }>(user.id, storyId)
 
   const canWrite = useMemo(() => {
     if (!rootBlock) return false
@@ -984,20 +985,16 @@ const _StoryEditor: React.FC<{
           hotkeys: ['mod+z'],
           handler: async (e) => {
             e.preventDefault()
-            const selection = await commitHistory.undo()
-            if (selection !== undefined) {
-              setSelectionState(selection)
-            }
+            const env = await commitHistory.undo()
+            env?.selection && setSelectionState(env.selection)
           }
         },
         {
           hotkeys: ['mod+shift+z'],
           handler: async (e) => {
             e.preventDefault()
-            const selection = await commitHistory.redo()
-            if (selection !== undefined) {
-              setSelectionState(selection)
-            }
+            const env = await commitHistory.redo()
+            env?.selection && setSelectionState(env.selection)
           }
         },
         {
@@ -1229,7 +1226,16 @@ const _StoryEditor: React.FC<{
         }
       }
     },
-    [locked, selectionState, blockTranscations, storyId, setUploadResource, focusingBlockId, setBlockValue]
+    [
+      locked,
+      selectionState,
+      blockTranscations,
+      storyId,
+      setUploadResource,
+      setSelectedBlocks,
+      setBlockValue,
+      focusingBlockId
+    ]
   )
 
   const editorContext = useMemo(() => {

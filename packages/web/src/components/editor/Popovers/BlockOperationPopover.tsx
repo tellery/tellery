@@ -25,9 +25,10 @@ import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'rea
 import { toast } from 'react-toastify'
 import { editorTransformBlockPopoverState } from 'store'
 import { ThemingVariables } from 'styles'
-import { Editor, TellerySelectionType } from 'types'
+import { Editor } from 'types'
 import { MenuItem } from '../../MenuItem'
 import { EditorPopover } from '../EditorPopover'
+import { TellerySelectionType } from '../helpers'
 import { useEditor } from '../hooks'
 
 export interface OperationInterface {

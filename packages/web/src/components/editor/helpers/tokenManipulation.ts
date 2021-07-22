@@ -2,8 +2,9 @@ import dayjs from 'dayjs'
 import { dequal } from 'dequal'
 import invariant from 'invariant'
 import { BlockSnapshot, getBlockFromSnapshot } from 'store/block'
-import { Editor, TellerySelection, TellerySelectionType } from 'types'
+import { Editor } from 'types'
 import { DEFAULT_TITLE, TELLERY_MIME_TYPES } from 'utils'
+import { TellerySelection, TellerySelectionType } from './tellerySelection'
 import { isReferenceToken } from '../BlockBase/ContentEditable'
 
 export const mergeTokens = (tokens: Editor.Token[]) => {

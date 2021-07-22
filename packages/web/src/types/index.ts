@@ -246,30 +246,6 @@ export type Ref = { blockId: string; storyId: string }
 
 export type Asset = Story | Editor.Block
 
-export type TellerySelectionNode = {
-  blockId: string
-  nodeIndex: number
-  offset: number
-}
-
-export enum TellerySelectionType {
-  Inline,
-  Block
-}
-
-export type TelleryBlockSelection = {
-  type: TellerySelectionType.Block
-  selectedBlocks: string[]
-}
-
-export type TelleryInlineSelection = {
-  type: TellerySelectionType.Inline
-  focus: TellerySelectionNode
-  anchor: TellerySelectionNode
-}
-
-export type TellerySelection = (TelleryBlockSelection | TelleryInlineSelection) & { storyId: string }
-
 export type BackLinks = {
   forwardRefs: Ref[]
   backwardRefs: Ref[]

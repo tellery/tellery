@@ -23,10 +23,10 @@ import invariant from 'invariant'
 import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import { ThemingVariables } from 'styles'
-import { Editor, TellerySelection, TellerySelectionType } from 'types'
+import { Editor } from 'types'
 import { mergeTokens, splitToken, tokenPosition2SplitedTokenPosition } from '..'
 import { EditorPopover } from '../EditorPopover'
-import { tellerySelection2Native } from '../helpers/tellerySelection'
+import { TellerySelection, tellerySelection2Native, TellerySelectionType } from '../helpers/tellerySelection'
 import { useEditableContextMenu, useEditor } from '../hooks'
 
 const logger = debug('tellery:slashCommand')

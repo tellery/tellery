@@ -4,11 +4,12 @@ import { useLocalStorage } from 'hooks/useLocalStorage'
 import invariant from 'invariant'
 import React, { ReactNode, useCallback, useMemo } from 'react'
 import { ThemingVariables } from 'styles'
-import { Editor, TellerySelectionType } from 'types'
+import { Editor } from 'types'
 import { ContentEditable } from '../BlockBase/ContentEditable'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import { useEditor } from '../hooks'
 import { BlockComponent, registerBlock } from './utils'
+import { TellerySelectionType } from '../helpers/tellerySelection'
 
 export const ToggleListBlock: BlockComponent<
   React.FC<{

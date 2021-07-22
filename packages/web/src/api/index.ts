@@ -320,7 +320,7 @@ export type ResourceType = 'block' | 'user' | 'link'
 
 export type Entity = (User | Editor.Block | Story | Thought) & { resourceType: string }
 
-export default function saveTranscations(transcations: Transcation[]) {
+export function saveTranscations(transcations: Transcation[]) {
   return request.post('/api/operations/saveTransactions', {
     transactions: transcations
   })
