@@ -349,7 +349,9 @@ export const BlockTextOperationMenuInner = ({
         }
       ]
 
-      const matchingHandler = handlers.find((handler) => handler.hotkeys.some((hotkey) => isHotkey(hotkey, e)))
+      const matchingHandler = handlers.find((handler) =>
+        handler.hotkeys.some((hotkey) => isHotkey(hotkey, { byKey: true }, e))
+      )
       if (matchingHandler) {
         e.preventDefault()
         matchingHandler?.handler()

@@ -109,28 +109,25 @@ const _ContentEditable: React.ForwardRefRenderFunction<
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey) {
         switch (e.key) {
-          case 'B': // ctrl+B or ctrl+b
+          case 'B':
           case 'b':
             currentMarksRef.current = toggleMark(currentMarksRef.current, Editor.InlineType.Bold)
             break
-          case 'I': // ctrl+I or ctrl+i
+          case 'I':
           case 'i':
             currentMarksRef.current = toggleMark(currentMarksRef.current, Editor.InlineType.Italic)
             break
-          case 'U': // ctrl+U or ctrl+u
+          case 'U':
           case 'u':
             currentMarksRef.current = toggleMark(currentMarksRef.current, Editor.InlineType.Underline)
-            e.preventDefault()
             break
-          case 'E': // ctrl+U or ctrl+u
+          case 'E':
           case 'e':
             currentMarksRef.current = toggleMark(currentMarksRef.current, Editor.InlineType.Code)
-            e.preventDefault()
             break
-          case 'H': // ctrl+U or ctrl+u
+          case 'H':
           case 'h':
             currentMarksRef.current = toggleMark(currentMarksRef.current, Editor.InlineType.Hightlighted)
-            e.preventDefault()
             break
         }
       }

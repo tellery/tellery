@@ -723,7 +723,7 @@ export const StoryQuestionEditor: React.FC<{
         }
       ]
       const matchingHandler = handlers.find((handler) =>
-        handler.hotkeys.some((hotkey) => isHotkey(hotkey, e.nativeEvent))
+        handler.hotkeys.some((hotkey) => isHotkey(hotkey, { byKey: true }, e.nativeEvent))
       )
       matchingHandler?.handler(e.nativeEvent)
     },
