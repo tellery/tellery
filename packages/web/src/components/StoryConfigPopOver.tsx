@@ -25,6 +25,7 @@ import { toast } from 'react-toastify'
 import { ThemingVariables } from '@app/styles'
 import type { Permission, PermissionEntityRole, Story } from '@app/types'
 import Icon from './kit/Icon'
+import { env } from '@app/env'
 
 const upsertPermission = (permissions: Permission[], permission: Permission): Permission[] => {
   const filteredPermission = permissions.filter(
@@ -150,7 +151,7 @@ export const StoryConfigPopOver: React.FC<{
         }}
         side={<FormSwitch checked={readOnlyStatus} readOnly />}
       />
-      {import.meta.env.DEV && (
+      {env.DEV && (
         <MenuItem
           icon={<Icon icon={IconMenuShow} color={ThemingVariables.colors.text[0]} />}
           title="Show border"

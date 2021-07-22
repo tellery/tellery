@@ -3,6 +3,7 @@ import Papa from 'papaparse'
 import type { Data } from '@app/components/v11n/types'
 import { formatRecord } from '@app/components/v11n/utils'
 import { QueryClient } from 'react-query'
+import { env } from '@app/env'
 export const DRAG_HANDLE_WIDTH = 4
 
 export enum TELLERY_MIME_TYPES {
@@ -14,7 +15,7 @@ export enum TELLERY_MIME_TYPES {
 
 export const DEFAULT_TITLE = 'Untitled'
 export const FIRST_LINE_OR_LAST_LINE_THERESHOLD = 10
-export const WS_URI = (import.meta.env.VITE_WS_URI as string) ?? '/workspace'
+export const WS_URI = env.WEB_SOCKET_URI
 
 export const fileLoader = ({ src, workspaceId }: { src: string; workspaceId?: string }) => {
   if (src.startsWith('http')) {
