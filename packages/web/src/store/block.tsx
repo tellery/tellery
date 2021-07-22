@@ -1,12 +1,12 @@
 import { applyTransactionsAsync, Operation, Transcation } from '@app/hooks/useCommit'
-import { fetchBlock, fetchUser } from 'api'
+import { fetchBlock, fetchUser } from '@app/api'
 import debug from 'debug'
 import invariant from 'invariant'
 import { cloneDeep } from 'lodash'
 import { nanoid } from 'nanoid'
 import { atomFamily, DefaultValue, selectorFamily, Snapshot } from 'recoil'
-import type { Editor } from 'types'
-import { subscribeBlockUpdate } from 'utils/remoteStoreObserver'
+import type { Editor } from '@app/types'
+import { subscribeBlockUpdate } from '@app/utils/remoteStoreObserver'
 import { WorkspaceIdAtom } from '../hooks/useWorkspaceIdAtom'
 
 export type BlockSnapshot = Map<string, Editor.BaseBlock>

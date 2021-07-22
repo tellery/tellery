@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { useWorkspaceList } from 'hooks/api'
+import { useWorkspaceList } from '@app/hooks/api'
 import { WorkspaceContext } from '@app/context/workspace'
 import { useWorkspaceIdState } from '@app/hooks/useWorkspaceIdAtom'
 

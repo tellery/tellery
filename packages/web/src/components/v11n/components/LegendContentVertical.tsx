@@ -1,9 +1,9 @@
 import { css } from '@emotion/css'
 import type { Props, Payload } from '@tellery/recharts/types/component/DefaultLegendContent'
 import type { MouseEvent } from 'react'
-import { IconVisualizationCircle } from 'assets/icons'
-import { ThemingVariables } from 'styles'
-import Icon from 'components/kit/Icon'
+import { IconVisualizationCircle } from '@app/assets/icons'
+import { ThemingVariables } from '@app/styles'
+import Icon from '@app/components/kit/Icon'
 
 const fontSize = 14
 

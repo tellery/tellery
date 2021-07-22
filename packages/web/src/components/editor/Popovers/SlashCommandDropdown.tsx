@@ -16,14 +16,14 @@ import {
   IconMenuToDo,
   IconMenuToggleList,
   IconMenuUpload
-} from 'assets/icons'
+} from '@app/assets/icons'
 import debug from 'debug'
-import { useBlockSuspense } from 'hooks/api'
+import { useBlockSuspense } from '@app/hooks/api'
 import invariant from 'invariant'
 import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
-import { ThemingVariables } from 'styles'
-import { Editor } from 'types'
+import { ThemingVariables } from '@app/styles'
+import { Editor } from '@app/types'
 import { mergeTokens, splitToken, tokenPosition2SplitedTokenPosition } from '..'
 import { EditorPopover } from '../EditorPopover'
 import { TellerySelection, tellerySelection2Native, TellerySelectionType } from '../helpers/tellerySelection'

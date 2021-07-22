@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import type { Editor } from 'types'
+import type { Editor } from '@app/types'
 import type { TellerySelection } from '../helpers'
 import type { SetBlock } from '../types'
 

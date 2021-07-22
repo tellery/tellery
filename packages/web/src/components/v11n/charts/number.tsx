@@ -7,8 +7,8 @@ import { Type } from '../types'
 import { formatRecord, isNumeric } from '../utils'
 import { ConfigLabel } from '../components/ConfigLabel'
 import { ConfigSelect } from '../components/ConfigSelect'
-import { ThemingVariables } from 'styles'
-import { useDataFieldsDisplayType } from 'hooks/useDataFieldsDisplayType'
+import { ThemingVariables } from '@app/styles'
+import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 import { useDataRecords } from '@app/hooks/useDataRecords'
 
 export const number: Chart<Type.NUMBER> = {

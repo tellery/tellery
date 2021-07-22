@@ -1,5 +1,5 @@
 import { TinyEmitter } from 'tiny-emitter'
-import type { Editor } from 'types'
+import type { Editor } from '@app/types'
 
 const emitter = new TinyEmitter()
 

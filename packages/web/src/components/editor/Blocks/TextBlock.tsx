@@ -1,6 +1,6 @@
 import { css } from '@emotion/css'
 import React, { ReactNode, useImperativeHandle, useRef } from 'react'
-import { Editor } from 'types'
+import { Editor } from '@app/types'
 import { ContentEditable, EditableRef } from '../BlockBase/ContentEditable'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import { BlockComponent, registerBlock } from './utils'

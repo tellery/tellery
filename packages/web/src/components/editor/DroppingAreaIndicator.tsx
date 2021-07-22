@@ -1,7 +1,7 @@
 import { useDroppingAreaBlock } from '@app/hooks/useDroppingArea'
 import { css } from '@emotion/css'
 import React, { memo } from 'react'
-import { ThemingVariables } from 'styles'
+import { ThemingVariables } from '@app/styles'
 
 const _DroppingAreaIndicator: React.FC<{
   blockId: string

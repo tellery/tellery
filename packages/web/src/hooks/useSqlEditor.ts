@@ -1,10 +1,10 @@
 import { Monaco, useMonaco } from '@monaco-editor/react'
-import { getCollectionSchema, searchBlocks } from 'api'
-import { useGetBlockTitleTextSnapshot } from 'components/editor'
+import { getCollectionSchema, searchBlocks } from '@app/api'
+import { useGetBlockTitleTextSnapshot } from '@app/components/editor'
 import { compact, padStart } from 'lodash'
 import type { editor, languages } from 'monaco-editor'
 import { useEffect, useMemo, useState } from 'react'
-import { Editor } from 'types'
+import { Editor } from '@app/types'
 import { useGetCollectionSchema, useListCollections, useListDatabases } from './api'
 import { useWorkspace } from '@app/context/workspace'
 

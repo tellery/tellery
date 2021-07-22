@@ -1,6 +1,6 @@
 import { css, cx } from '@emotion/css'
 import type { ReactNode } from 'react'
-import { ThemingVariables } from 'styles'
+import { ThemingVariables } from '@app/styles'
 
 export default function FormLabel(props: { className?: string; required?: boolean; children: ReactNode }) {
   return (

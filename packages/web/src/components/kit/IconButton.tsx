@@ -1,9 +1,9 @@
 import { css, cx } from '@emotion/css'
 import Tippy from '@tippyjs/react'
-import { svgColorClassName } from 'lib/svg'
+import { svgColorClassName } from '@app/lib/svg'
 import { isNil, omitBy } from 'lodash'
 import React, { FunctionComponent, SVGAttributes, ButtonHTMLAttributes, useMemo, forwardRef, ReactNode } from 'react'
-import { ThemingVariables } from 'styles'
+import { ThemingVariables } from '@app/styles'
 
 export default forwardRef<
   HTMLButtonElement,

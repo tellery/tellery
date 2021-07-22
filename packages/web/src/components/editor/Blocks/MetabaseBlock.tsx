@@ -1,7 +1,7 @@
 import IframeResizer from 'iframe-resizer-react'
 import React, { useCallback, useRef, useState, useMemo } from 'react'
 
-import { Editor } from 'types'
+import { Editor } from '@app/types'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
 import { EmbedBlockPopover } from '../BlockBase/EmbedBlockPopover'
 import { BlockFormatInterface, useEditor } from '../hooks'

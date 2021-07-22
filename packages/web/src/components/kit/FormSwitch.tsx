@@ -1,6 +1,6 @@
 import { css } from '@emotion/css'
 import { forwardRef, InputHTMLAttributes } from 'react'
-import { ThemingVariables } from 'styles'
+import { ThemingVariables } from '@app/styles'
 
 export default forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(function FormSwitch(props, ref) {
   return (

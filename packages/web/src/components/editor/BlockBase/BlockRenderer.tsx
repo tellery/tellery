@@ -2,9 +2,9 @@ import { IconCommonLink } from '@app/assets/icons'
 import { css } from '@emotion/css'
 import React, { CSSProperties, useEffect, useRef } from 'react'
 import ReactDOMServer from 'react-dom/server'
-import { useBlockSnapshot } from 'store/block'
-import { ThemingVariables } from 'styles'
-import { Editor, Story } from 'types'
+import { useBlockSnapshot } from '@app/store/block'
+import { ThemingVariables } from '@app/styles'
+import { Editor, Story } from '@app/types'
 import { blockTitleToText, extractEntitiesFromToken } from '../helpers/tokenManipulation'
 
 export const COLORS = {

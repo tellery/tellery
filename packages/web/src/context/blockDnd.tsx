@@ -1,12 +1,12 @@
 import { CollisionDetection, useDraggable } from '@dnd-kit/core'
 import { css } from '@emotion/css'
-import { getBlockElementById } from 'components/editor/helpers/contentEditable'
+import { getBlockElementById } from '@app/components/editor/helpers/contentEditable'
 import debug from 'debug'
 import invariant from 'invariant'
 import React, { useContext, useRef } from 'react'
 import { atom, atomFamily, selector } from 'recoil'
-import { BlockSnapshot, getBlockFromSnapshot } from 'store/block'
-import { Direction, DnDItemTypes, Editor } from 'types'
+import { BlockSnapshot, getBlockFromSnapshot } from '@app/store/block'
+import { Direction, DnDItemTypes, Editor } from '@app/types'
 export const logger = debug('tellery:dnd')
 
 interface BlockAreaInterface {

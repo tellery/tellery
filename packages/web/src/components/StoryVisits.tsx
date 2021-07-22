@@ -1,9 +1,9 @@
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { css, cx } from '@emotion/css'
-import { SocketContext } from 'context/socketio'
-import { useMgetUsers, useStoryVisits } from 'hooks/api'
+import { SocketContext } from '@app/context/socketio'
+import { useMgetUsers, useStoryVisits } from '@app/hooks/api'
 import React, { useContext, useEffect, useMemo, useState } from 'react'
-import { ThemingVariables } from 'styles'
+import { ThemingVariables } from '@app/styles'
 
 export function StoryVisits(props: { storyId: string; className?: string }) {
   const { storyId } = props

@@ -3,8 +3,8 @@ import { WorkspaceMembers } from '@app/components/WorkspaceMembers'
 import { WorkspaceDatabases } from '@app/components/WorkspaceDatabases'
 import { css, cx } from '@emotion/css'
 import React, { useState, useRef } from 'react'
-import { ThemingVariables } from 'styles'
-import { useOnClickOutside } from 'hooks'
+import { ThemingVariables } from '@app/styles'
+import { useOnClickOutside } from '@app/hooks'
 import { AnimatePresence, motion } from 'framer-motion'
 
 enum Tabs {

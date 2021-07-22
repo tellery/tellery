@@ -1,11 +1,11 @@
 import { css, cx } from '@emotion/css'
 import type { ValueType } from '@tellery/recharts/types/component/DefaultTooltipContent'
 import type { TooltipProps } from '@tellery/recharts/types/component/Tooltip'
-import { IconCommonDot } from 'assets/icons'
-import { ThemingVariables } from 'styles'
+import { IconCommonDot } from '@app/assets/icons'
+import { ThemingVariables } from '@app/styles'
 import { formatRecord } from '../utils'
 import type { DisplayType } from '../types'
-import Icon from 'components/kit/Icon'
+import Icon from '@app/components/kit/Icon'
 
 export function CustomTooltip(
   props: TooltipProps<ValueType, string> & {

@@ -12,13 +12,13 @@ import {
   useSensors
 } from '@dnd-kit/core'
 import { css } from '@emotion/css'
-import { ContentBlocks } from 'components/editor/ContentBlock'
-import { useSelectionArea } from 'hooks/useSelectionArea'
+import { ContentBlocks } from '@app/components/editor/ContentBlock'
+import { useSelectionArea } from '@app/hooks/useSelectionArea'
 import invariant from 'invariant'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import ReactTestUtils from 'react-dom/test-utils'
-import { getBlockFromSnapshot, useBlockSnapshot } from 'store/block'
-import { Direction, DnDItemTypes, DropItem, Editor } from 'types'
+import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
+import { Direction, DnDItemTypes, DropItem, Editor } from '@app/types'
 import {
   BlockDndContext,
   closetBorder,

@@ -1,8 +1,8 @@
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { css } from '@emotion/css'
-import { SocketContext } from 'context/socketio'
+import { SocketContext } from '@app/context/socketio'
 import { motion } from 'framer-motion'
-import { useMgetUsers, User } from 'hooks/api'
+import { useMgetUsers, User } from '@app/hooks/api'
 import React, { useContext, useEffect, useMemo, useState } from 'react'
 
 export const OperatorsContext = React.createContext<Record<string, User[]> | null>(null)

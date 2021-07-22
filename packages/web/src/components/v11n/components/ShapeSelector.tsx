@@ -4,9 +4,9 @@ import { CSSProperties, ReactNode, useRef, useState } from 'react'
 import { ConfigSwitch } from './ConfigSwitch'
 import type { Config, Type } from '../types'
 import { BlockPopover } from '../../BlockPopover'
-import { ThemingVariables } from 'styles'
-import { IconCommonCheck } from 'assets/icons'
-import Icon from 'components/kit/Icon'
+import { ThemingVariables } from '@app/styles'
+import { IconCommonCheck } from '@app/assets/icons'
+import Icon from '@app/components/kit/Icon'
 
 export function ShapeSelector(props: {
   className?: string

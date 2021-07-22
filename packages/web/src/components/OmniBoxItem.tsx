@@ -1,9 +1,9 @@
 import { css } from '@emotion/css'
 import { MouseEvent, useEffect, useRef } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
-import Icon from 'components/kit/Icon'
-import { IconCommonBlock, IconCommonSearch, IconMenuQuery, IconCommonStoryBlock } from 'assets/icons'
-import { ThemingVariables } from 'styles'
+import Icon from '@app/components/kit/Icon'
+import { IconCommonBlock, IconCommonSearch, IconMenuQuery, IconCommonStoryBlock } from '@app/assets/icons'
+import { ThemingVariables } from '@app/styles'
 
 export enum ResultType {
   BLOCK,

@@ -14,11 +14,11 @@ import { ConfigSelect } from '../components/ConfigSelect'
 import { ConfigNumericInput } from '../components/ConfigNumericInput'
 import { ConfigSwitch } from '../components/ConfigSwitch'
 import { SliceSelector } from '../components/SliceSelector'
-import { ThemingVariables } from 'styles'
+import { ThemingVariables } from '@app/styles'
 import { CustomTooltip } from '../components/CustomTooltip'
 import { fontFamily } from '../constants'
-import { useCrossFilter } from 'hooks/useDataRecords'
-import { useDataFieldsDisplayType } from 'hooks/useDataFieldsDisplayType'
+import { useCrossFilter } from '@app/hooks/useDataRecords'
+import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 
 enum Tab {
   DATA = 'Data',

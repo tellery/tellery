@@ -12,10 +12,10 @@ import {
   IconVisualizationPie,
   IconVisualizationScatter,
   IconVisualizationNumber
-} from 'assets/icons'
+} from '@app/assets/icons'
 import { Diagram } from './Diagram'
-import { ThemingVariables } from 'styles'
-import IconButton from 'components/kit/IconButton'
+import { ThemingVariables } from '@app/styles'
+import IconButton from '@app/components/kit/IconButton'
 
 const icons = {
   [Type.TABLE]: IconVisualizationTable,

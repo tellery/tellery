@@ -1,4 +1,4 @@
-import { TelleryBlockSelectedAtom } from 'components/editor/store/selection'
+import { TelleryBlockSelectedAtom } from '@app/components/editor/store/selection'
 import { useRecoilValue } from 'recoil'
 
 export const useBlockSelected = (blockId: string) => {

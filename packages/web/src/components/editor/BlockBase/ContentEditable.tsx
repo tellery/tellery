@@ -1,5 +1,5 @@
 import { css, cx } from '@emotion/css'
-import { deserialize, restoreRange, saveSelection } from 'components/editor/helpers/contentEditable'
+import { deserialize, restoreRange, saveSelection } from '@app/components/editor/helpers/contentEditable'
 import {
   nativeSelection2Tellery,
   TellerySelection,
@@ -17,13 +17,13 @@ import {
 } from '../helpers/tokenManipulation'
 import debug from 'debug'
 import { dequal } from 'dequal'
-import { useOpenStory, usePrevious } from 'hooks'
-import { useMgetBlocksAny } from 'hooks/api'
+import { useOpenStory, usePrevious } from '@app/hooks'
+import { useMgetBlocksAny } from '@app/hooks/api'
 import produce from 'immer'
 import invariant from 'invariant'
 import React, { useCallback, useDebugValue, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
-import { ThemingVariables } from 'styles'
-import { Editor } from 'types'
+import { ThemingVariables } from '@app/styles'
+import { Editor } from '@app/types'
 import { useEditor, useLocalSelection } from '../hooks'
 import { BlockReferenceDropdown } from '../Popovers/BlockReferenceDropdown'
 import { SlashCommandDropdown } from '../Popovers/SlashCommandDropdown'

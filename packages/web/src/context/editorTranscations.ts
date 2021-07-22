@@ -5,8 +5,8 @@ import invariant from 'invariant'
 import { cloneDeep } from 'lodash'
 import { nanoid } from 'nanoid'
 import { toast } from 'react-toastify'
-import { BlockSnapshot, getBlockFromSnapshot } from 'store/block'
-import { Editor } from 'types'
+import { BlockSnapshot, getBlockFromSnapshot } from '@app/store/block'
+import { Editor } from '@app/types'
 import { mergeTokens } from '../components/editor'
 
 export const createTranscation = ({ operations }: { operations: Operation[] }) => {

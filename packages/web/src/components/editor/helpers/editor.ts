@@ -1,12 +1,12 @@
-import { getBlockElementContentEditbleById, isTextBlock } from 'components/editor/helpers/contentEditable'
+import { getBlockElementContentEditbleById, isTextBlock } from '@app/components/editor/helpers/contentEditable'
 import {
   getTokensLength,
   splitedTokenPosition2TokenPosition,
   tokenPosition2SplitedTokenPosition
-} from 'components/editor/helpers/tokenManipulation'
+} from '@app/components/editor/helpers/tokenManipulation'
 import debug from 'debug'
-import { BlockSnapshot, getBlockFromSnapshot } from 'store/block'
-import type { Editor } from 'types'
+import { BlockSnapshot, getBlockFromSnapshot } from '@app/store/block'
+import type { Editor } from '@app/types'
 import { TellerySelection, TellerySelectionType } from '.'
 const logger = debug('tellery:editor:helper')
 

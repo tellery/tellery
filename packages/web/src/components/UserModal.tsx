@@ -1,9 +1,9 @@
 import { css, cx } from '@emotion/css'
-import { ThemingVariables } from 'styles'
+import { ThemingVariables } from '@app/styles'
 import UserAccount from '@app/components/UserAccount'
 import { useState, useRef } from 'react'
 import { useLoggedUser } from '@app/hooks/useAuth'
-import { useOnClickOutside } from 'hooks'
+import { useOnClickOutside } from '@app/hooks'
 import { AnimatePresence, motion } from 'framer-motion'
 
 enum Tabs {

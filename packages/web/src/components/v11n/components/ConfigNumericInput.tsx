@@ -1,5 +1,5 @@
 import { cx, css } from '@emotion/css'
-import { ThemingVariables } from 'styles'
+import { ThemingVariables } from '@app/styles'
 
 export function ConfigNumericInput(props: {
   value?: number

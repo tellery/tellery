@@ -5,11 +5,17 @@ import type { Story } from '@app/types'
 import { DEFAULT_TITLE } from '@app/utils'
 import { css } from '@emotion/css'
 import styled from '@emotion/styled'
-import { SecondaryEditor, StoryEditor, useGetBlockTitleTextSnapshot } from 'components/editor'
-import { NavigationHeader } from 'components/NavigationHeader'
-import { StoryBackLinks } from 'components/StoryBackLinks'
-import { StoryQuestionsEditor } from 'components/StoryQuestionsEditor'
-import { useBlock, useBlockSuspense, useFetchStoryChunk, useRecordStoryVisits, useStoryPinnedStatus } from 'hooks/api'
+import { SecondaryEditor, StoryEditor, useGetBlockTitleTextSnapshot } from '@app/components/editor'
+import { NavigationHeader } from '@app/components/NavigationHeader'
+import { StoryBackLinks } from '@app/components/StoryBackLinks'
+import { StoryQuestionsEditor } from '@app/components/StoryQuestionsEditor'
+import {
+  useBlock,
+  useBlockSuspense,
+  useFetchStoryChunk,
+  useRecordStoryVisits,
+  useStoryPinnedStatus
+} from '@app/hooks/api'
 import React, { useEffect, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet'
 import { useLocation, useParams } from 'react-router-dom'

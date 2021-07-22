@@ -1,7 +1,7 @@
 import { css, cx } from '@emotion/css'
 import dayjs from 'dayjs'
 import React, { useMemo } from 'react'
-import { Editor, Thought } from 'types'
+import { Editor, Thought } from '@app/types'
 import { ContentEditable } from '../BlockBase/ContentEditable'
 import { BlockComponent, registerBlock } from './utils'
 

@@ -3,7 +3,7 @@ import { css } from '@emotion/css'
 import { motion, PanInfo } from 'framer-motion'
 import invariant from 'invariant'
 import React, { useCallback } from 'react'
-import { Editor } from 'types'
+import { Editor } from '@app/types'
 import type { BlockFormatInterface } from '../hooks'
 const HANDLE_WIDTH = 10
 

@@ -1,5 +1,5 @@
 import type { AxiosError } from 'axios'
-import { secondaryStoryIdState } from 'components/editor'
+import { secondaryStoryIdState } from '@app/components/editor'
 import { useAtom } from 'jotai'
 import { debounce } from 'lodash'
 import { MutableRefObject, RefObject, useCallback, useEffect, useRef, useState } from 'react'

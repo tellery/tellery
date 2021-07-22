@@ -5,7 +5,7 @@ import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'reac
 import { createPortal } from 'react-dom'
 import { Modifier, usePopper } from 'react-popper'
 import { useEditor } from './hooks'
-import { useOnClickOutside } from 'hooks'
+import { useOnClickOutside } from '@app/hooks'
 
 interface PopoverProps {
   referenceElement: HTMLElement | null | Range

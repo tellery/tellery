@@ -9,12 +9,12 @@ import {
   IconCommonStarFill,
   IconMenuFullWidth,
   IconMenuNormalWidth
-} from 'assets/icons'
-import { createTranscation } from 'context/editorTranscations'
-import { useWorkspaceView } from 'hooks/api'
+} from '@app/assets/icons'
+import { createTranscation } from '@app/context/editorTranscations'
+import { useWorkspaceView } from '@app/hooks/api'
 import React, { memo, useCallback } from 'react'
-import { ThemingVariables } from 'styles'
-import type { Story } from 'types'
+import { ThemingVariables } from '@app/styles'
+import type { Story } from '@app/types'
 import { useStorySnapshotManager } from '../hooks/useStorySnapshotManager'
 import IconButton from './kit/IconButton'
 import { RefreshButton } from './RefreshButton'

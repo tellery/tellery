@@ -1,9 +1,9 @@
 import dayjs from 'dayjs'
 import { dequal } from 'dequal'
 import invariant from 'invariant'
-import { BlockSnapshot, getBlockFromSnapshot } from 'store/block'
-import { Editor } from 'types'
-import { DEFAULT_TITLE, TELLERY_MIME_TYPES } from 'utils'
+import { BlockSnapshot, getBlockFromSnapshot } from '@app/store/block'
+import { Editor } from '@app/types'
+import { DEFAULT_TITLE, TELLERY_MIME_TYPES } from '@app/utils'
 import { TellerySelection, TellerySelectionType } from './tellerySelection'
 import { isReferenceToken } from '../BlockBase/ContentEditable'
 

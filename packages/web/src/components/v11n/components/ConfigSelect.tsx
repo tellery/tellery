@@ -1,8 +1,8 @@
 import { css, cx } from '@emotion/css'
 
-import { ThemingVariables } from 'styles'
-import { SVG2DataURI } from 'lib/svg'
-import { IconCommonArrowDropDown } from 'assets/icons'
+import { ThemingVariables } from '@app/styles'
+import { SVG2DataURI } from '@app/lib/svg'
+import { IconCommonArrowDropDown } from '@app/assets/icons'
 
 export function ConfigSelect(props: {
   className?: string

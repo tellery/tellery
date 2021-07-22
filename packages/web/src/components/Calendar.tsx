@@ -3,10 +3,10 @@ import ReactCalendar from 'react-calendar'
 import dayjs from 'dayjs'
 import { useMemo, useState, forwardRef, useCallback } from 'react'
 
-import { IconCommonArrowDouble, IconCommonArrowDropDown } from 'assets/icons'
-import { useAllThoughts, useMgetBlocks } from 'hooks/api'
-import type { Thought } from 'types'
-import { ThemingVariables } from 'styles'
+import { IconCommonArrowDouble, IconCommonArrowDropDown } from '@app/assets/icons'
+import { useAllThoughts, useMgetBlocks } from '@app/hooks/api'
+import type { Thought } from '@app/types'
+import { ThemingVariables } from '@app/styles'
 import Icon from './kit/Icon'
 
 export const Calendar = forwardRef<

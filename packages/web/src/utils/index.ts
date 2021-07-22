@@ -1,7 +1,7 @@
 import isUrl from 'is-url'
 import Papa from 'papaparse'
-import type { Data } from 'components/v11n/types'
-import { formatRecord } from 'components/v11n/utils'
+import type { Data } from '@app/components/v11n/types'
+import { formatRecord } from '@app/components/v11n/utils'
 import { QueryClient } from 'react-query'
 export const DRAG_HANDLE_WIDTH = 4
 

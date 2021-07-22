@@ -13,16 +13,16 @@ import {
   SearchBlockResult,
   searchBlocks,
   sqlRequest
-} from 'api'
-import { useAsync } from 'hooks'
+} from '@app/api'
+import { useAsync } from '@app/hooks'
 import invariant from 'invariant'
 import { compact } from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { QueryObserverResult, useInfiniteQuery, useMutation, useQuery, UseQueryOptions } from 'react-query'
 import { useRecoilCallback, useRecoilValue, useRecoilValueLoadable, waitForAll, waitForAny } from 'recoil'
-import { AvailableConfig, BackLinks, Editor, ProfileConfig, Snapshot, Story, UserInfo, Workspace } from 'types'
-import { queryClient } from 'utils'
-import { emitBlockUpdate } from 'utils/remoteStoreObserver'
+import { AvailableConfig, BackLinks, Editor, ProfileConfig, Snapshot, Story, UserInfo, Workspace } from '@app/types'
+import { queryClient } from '@app/utils'
+import { emitBlockUpdate } from '@app/utils/remoteStoreObserver'
 import { TelleryBlockAtom, TelleryUserAtom } from '../store/block'
 import { useBatchQueries } from './useBatchQueries'
 
