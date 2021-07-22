@@ -70,7 +70,7 @@ function useSqlEditorLanguage(languageId?: string, monaco?: Monaco) {
   >()
   useEffect(() => {
     // see: https://github.com/rollup/plugins/tree/master/packages/dynamic-import-vars#limitations
-    console.log(`../lib/monarch/${languageId?.replace('/', '-')}.ts`)
+    if (!languageId) return
     import(`../lib/monarch/${languageId?.replace('/', '-')}.ts`)
       .then(({ default: _monarch }) => {
         setMonarch(_monarch)
