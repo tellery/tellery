@@ -25,7 +25,7 @@
 Tellery helps data teams explore, analyze and share analytics in one place. 
 
 
-Tellery brings your words and data into one flexible surface. Want an anomalies investigation? A campaign-oriented dashboard? A feature-specific analysis? Tellery brings words and data into one flexible surface. You can customize your deliverables for your own needs. 
+Want an anomalies investigation? A campaign-oriented dashboard? A feature-specific analysis? Tellery brings words and data into one flexible surface. You can customize your deliverables for your own needs. 
 
 
 ## Features
