@@ -112,8 +112,6 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
     blockTranscations.removeBlocks(block.storyId!, [id])
   }, [block.storyId, blockTranscations, id])
 
-  const snapshot = useBlockSnapshot()
-
   const operationGroups = useMemo(() => {
     return [
       [
@@ -129,22 +127,14 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
                 const dataTranser = clipboardData as DataTransfer
                 if (!block.storyId) return
 
-                const storyBlock = getBlockFromSnapshot(block.storyId, snapshot)
-                if (storyBlock.type === Editor.BlockType.Story) {
-                  dataTranser.setData(
-                    TELLERY_MIME_TYPES.BLOCK_REF,
-                    JSON.stringify({ blockId: block.id, storyId: block.storyId })
-                  )
-                  dataTranser.setData(
-                    'text/plain',
-                    `${window.location.protocol}//${window.location.host}/story/${block?.storyId}#${block?.id}`
-                  )
-                } else if (storyBlock.type === Editor.BlockType.Thought) {
-                  dataTranser.setData(
-                    'text/plain',
-                    `${window.location.protocol}//${window.location.host}/thought/${block?.storyId}#${block?.id}`
-                  )
-                }
+                dataTranser.setData(
+                  TELLERY_MIME_TYPES.BLOCK_REF,
+                  JSON.stringify({ blockId: block.id, storyId: block.storyId })
+                )
+                dataTranser.setData(
+                  'text/plain',
+                  `${window.location.protocol}//${window.location.host}/story/${block?.storyId}#${block?.id}`
+                )
               }
             })
             toast('Link Copied')

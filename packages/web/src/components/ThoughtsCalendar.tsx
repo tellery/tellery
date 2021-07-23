@@ -2,11 +2,11 @@ import { IconCommonCalendar } from '@app/assets/icons'
 import { BlockPopover } from '@app/components/BlockPopover'
 import { Calendar } from '@app/components/Calendar'
 import { SmallStory } from '@app/components/SmallStory'
+import { useOpenStory } from '@app/hooks'
 import { ThemingVariables } from '@app/styles'
 import { css } from '@emotion/css'
 import React, { useEffect, useRef, useState } from 'react'
 import { usePopper } from 'react-popper'
-import { useHistory } from 'react-router-dom'
 
 export const ThoughtsCalendar: React.FC = () => {
   const referenceElement = useRef<HTMLDivElement>(null)
@@ -14,8 +14,8 @@ export const ThoughtsCalendar: React.FC = () => {
   const [reference, setReference] = useState<HTMLDivElement | null>(null)
   const [currentThoughtId, setCurrentThoughtId] = useState<string>()
   const [date, setDate] = useState(new Date())
-  const router = useHistory()
   const [open, setOpen] = useState(false)
+  const openStory = useOpenStory()
 
   const pop = usePopper(reference, modalRef, {
     placement: 'auto-start',
@@ -62,7 +62,7 @@ export const ThoughtsCalendar: React.FC = () => {
           onChange={(_date, id) => {
             setDate(_date)
             if (id) {
-              router.push(`/thought/${id}`)
+              openStory(id, {})
               setOpen(false)
             }
           }}
