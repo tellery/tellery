@@ -192,8 +192,7 @@ export const StoryRefs = (props: { refs: Ref[]; storyId: string; isSQLEditor?: b
                             e.stopPropagation()
                             openStory(block.storyId!, {
                               blockId: block.id,
-                              isAltKeyPressed: e.altKey,
-                              pageType: story.type
+                              isAltKeyPressed: e.altKey
                             })
                             if (props.isSQLEditor) {
                               openQuestion({ mode: 'SQL', storyId: block.storyId!, blockId: block.id, readonly: false })
