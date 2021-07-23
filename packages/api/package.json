@@ -20,7 +20,8 @@
     "coverage": "nyc ava",
     "create:user": "node dist/src/scripts/createUser.js",
     "create:workspace": "node dist/src/scripts/createWorkspace.js",
-    "create:initStory": "node dist/src/scripts/createInitialStory.js"
+    "create:initStory": "node dist/src/scripts/createInitialStory.js",
+    "configure:metabase": "node dist/src/scripts/appendMetabaseConfig.js"
   },
   "author": "iftech",
   "license": "ISC",
