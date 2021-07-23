@@ -1,7 +1,7 @@
 import { ReactNode, useCallback, useMemo } from 'react'
-import { SortableItem } from './SortableItem'
 import { closestCenter, DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { arrayMove, SortableContext } from '@dnd-kit/sortable'
+import { SortableItem } from './SortableItem'
 
 function getKey<T extends string | { key: string }>(item: T): string {
   return typeof item === 'string' ? item : (item as { key: string }).key
@@ -34,17 +34,19 @@ export function SortableList<T extends string | { key: string }>(props: {
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <SortableContext items={items}>
-        {props.value.map((item) => {
-          const key = getKey(item)
-          return (
-            <SortableItem key={key} id={key}>
-              {props.renderItem(item)}
-            </SortableItem>
-          )
-        })}
-      </SortableContext>
-      {props.footer}
+      <div className={props.className}>
+        <SortableContext items={items}>
+          {props.value.map((item) => {
+            const key = getKey(item)
+            return (
+              <SortableItem key={key} id={key}>
+                {props.renderItem(item)}
+              </SortableItem>
+            )
+          })}
+        </SortableContext>
+        {props.footer}
+      </div>
     </DndContext>
   )
 }
