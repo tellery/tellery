@@ -1324,6 +1324,8 @@ const _StoryEditor: React.FC<{
                   css`
                     width: 100%;
                     flex: 1;
+                    display: flex;
+                    flex-direction: column;
                   `
                 )}
                 onMouseMove={onMouseMove}
