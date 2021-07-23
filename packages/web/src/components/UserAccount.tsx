@@ -31,7 +31,7 @@ export default function UserAccount(props: { onClose(): void }) {
     handleSubmit
   } = useForm<User & { currentPassword?: string; newPassword?: string; repeatPassword?: string }>({
     defaultValues: user,
-    mode: 'all'
+    mode: 'onBlur'
   })
   useEffect(() => {
     reset(user)

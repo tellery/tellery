@@ -50,7 +50,7 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
   const profileConfig = profileConfigs?.[0]
   const { register, reset, handleSubmit, watch, setValue } = useForm<ProfileConfig>({
     defaultValues: profileConfig,
-    mode: 'all'
+    mode: 'onBlur'
   })
   const type = watch('type')
   useEffect(() => {

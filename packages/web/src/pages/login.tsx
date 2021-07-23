@@ -18,7 +18,7 @@ export default function Login() {
     formState: { errors },
     handleSubmit,
     watch
-  } = useForm<{ email?: string; password?: string }>({})
+  } = useForm<{ email?: string; password?: string }>({ mode: 'onBlur' })
   const auth = useAuth()
   const handleUserLogin = useAsync(auth.login)
   const history = useHistory()
@@ -52,13 +52,14 @@ export default function Login() {
             `}
           >
             <div>
-              <FormLabel>E-mail</FormLabel>
+              <FormLabel>Email</FormLabel>
               <FormInput
-                type="text"
+                type="email"
                 {...register('email', {
                   required: 'required',
                   validate: (v) => (v && isEmail(v) ? true : 'email format error')
                 })}
+                autoFocus={true}
                 error={errors.email}
               />
               <ErrorMessage errors={errors} name="email" render={FormError} />

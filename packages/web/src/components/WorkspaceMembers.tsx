@@ -93,7 +93,7 @@ export function WorkspaceMembers(props: { onClose(): void }) {
             Invite team member
           </h2>
         </div>
-        <FormLabel>E-mails</FormLabel>
+        <FormLabel>Emails</FormLabel>
         <FormInput placeholder="split by comma" value={email} onChange={(e) => setEmail(e.target.value)} />
         <FormLabel
           className={css`

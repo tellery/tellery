@@ -18,7 +18,7 @@ export function WorkspacePreferences(props: { onClose(): void }) {
   const { data: workspace, refetch } = useWorkspaceDetail()
   const { register, reset, watch, setValue, handleSubmit } = useForm<Pick<Workspace, 'avatar' | 'name'>>({
     defaultValues: pick(workspace, ['avatar', 'name']),
-    mode: 'all'
+    mode: 'onBlur'
   })
   useEffect(() => {
     reset(pick(workspace, ['avatar', 'name']))
