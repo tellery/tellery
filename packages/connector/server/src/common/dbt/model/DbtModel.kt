@@ -10,9 +10,9 @@ data class DbtModel(
     @JsonProperty("compiled_sql") val compiledSql: String?,
     @JsonProperty("resource_type") val resourceType: String,
     @JsonProperty("relation_name") val relationName: String?,
+    @JsonProperty("unique_id") val uniqueId: String,
     val database: String,
     val schema: String,
-    val unique_id: String,
     val description: String,
     val config: Config,
 ) {
@@ -25,7 +25,7 @@ data class DbtModel(
     fun toDbtBlock(): DbtBlock {
         val builder = DbtBlock.newBuilder()
             .setType(if (resourceType == "model") DbtBlock.Type.MODEL else DbtBlock.Type.SOURCE)
-            .setName(unique_id)
+            .setName(uniqueId)
             .setDescription(description)
             .setRelationName(relationName)
 
