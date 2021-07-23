@@ -3,11 +3,9 @@ package io.tellery.common.dbt
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.google.common.base.Strings
 import io.tellery.common.dbt.profile.*
 import io.tellery.common.dbt.profile.Entity.Output
 import io.tellery.entities.Profile
-import io.tellery.services.Utils.assertInternalError
 
 object ProfileManager {
 
@@ -21,46 +19,38 @@ object ProfileManager {
     }
 
     private fun toDbtProfile(profile: Profile): BaseProfile {
-        val config = profile.configs
-        val auth = profile.auth!!
-
-        return when (profile.type) {
+        when (profile.type) {
             "PostgreSQL" -> {
-                assertConfigField(config, Constants.PG_ENDPOINT_FIELD)
-                assertConfigField(config, Constants.PG_PORT_FIELD)
-                assertConfigField(config, Constants.PG_DATABASE_FIELD)
                 return PostgresqlProfile(
-                    host = config[Constants.PG_ENDPOINT_FIELD]!!,
-                    port = config[Constants.PG_PORT_FIELD]!!,
-                    user = auth.username,
-                    password = auth.password!!
+                    host = getValueOrThrowException(profile, Constants.PG_ENDPOINT_FIELD),
+                    port = getValueOrThrowException(profile, Constants.PG_PORT_FIELD),
+                    user = getValueOrThrowException(profile, Constants.PG_USERNAME_FIELD),
+                    password = getValueOrThrowException(profile, Constants.PG_PASSWORD_FIELD)
                 )
             }
             "Redshift" -> {
-                assertConfigField(config, Constants.RS_ENDPOINT_FIELD)
-                assertConfigField(config, Constants.RS_PORT_FIELD)
-                assertConfigField(config, Constants.RS_DATABASE_FIELD)
                 return RedshiftProfile(
-                    host = config[Constants.RS_ENDPOINT_FIELD]!!,
-                    port = config[Constants.RS_PORT_FIELD]!!,
-                    user = auth.username,
-                    password = auth.password!!
+                    host = getValueOrThrowException(profile, Constants.RS_ENDPOINT_FIELD),
+                    port = getValueOrThrowException(profile, Constants.RS_PORT_FIELD),
+                    user = getValueOrThrowException(profile, Constants.RS_USERNAME_FIELD),
+                    password = getValueOrThrowException(profile, Constants.RS_PASSWORD_FIELD)
                 )
             }
             "Snowflake" -> {
-                assertConfigField(config, Constants.SF_ACCOUNT_FIELD)
-                assertConfigField(config, Constants.SF_REGION_FIELD)
+                val account = getValueOrThrowException(profile, Constants.SF_ACCOUNT_FIELD)
+                val region = getValueOrThrowException(profile, Constants.SF_REGION_FIELD)
                 return SnowflakeProfile(
-                    account = "${config[Constants.SF_ACCOUNT_FIELD]}.${config[Constants.SF_REGION_FIELD]}",
-                    user = auth.username,
-                    password = auth.password!!
+                    account = "$account.$region",
+                    user = getValueOrThrowException(profile, Constants.SF_USERNAME_FIELD),
+                    password = getValueOrThrowException(profile, Constants.SF_PASSWORD_FIELD)
                 )
             }
             else -> throw RuntimeException("The type is not supported now.")
         }
     }
 
-    private fun assertConfigField(config: Map<String, String>, field: String) {
-        assertInternalError(!Strings.isNullOrEmpty(config[field])) { "Required key $field is not in profile." }
+    private fun getValueOrThrowException(profile: Profile, key: String): String {
+        return profile.configs[key]
+            ?: throw RuntimeException("Required key $key is not in ${profile.type} dataset profile.")
     }
 }

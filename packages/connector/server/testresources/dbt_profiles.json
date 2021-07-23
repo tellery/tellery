@@ -2,39 +2,36 @@
   {
     "type": "Snowflake",
     "name": "profileA",
-    "auth": {
-      "username": "abc",
-      "password": "def"
-    },
     "configs": {
       "Account Name": "xy12345",
-      "Region Id": "us-ease-2.aws"
+      "Region Id": "us-ease-2.aws",
+      "Username": "abc",
+      "Password": "def",
+      "DbtProjectName": "projectA"
     }
   },
   {
     "type": "Redshift",
     "name": "profileB",
-    "auth": {
-      "username": "abc",
-      "password": "def"
-    },
     "configs": {
       "Endpoint": "examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com",
       "Port": "5439",
-      "Database": "my_db"
+      "Database": "my_db",
+      "Username": "abc",
+      "Password": "def",
+      "DbtProjectName": "projectB"
     }
   },
   {
     "type": "PostgreSQL",
     "name": "profileC",
-    "auth": {
-      "username": "abc",
-      "password": "def"
-    },
     "configs": {
       "Endpoint": "127.0.0.1",
       "Port": "5432",
-      "Database": "my_db"
+      "Database": "my_db",
+      "Username": "abc",
+      "Password": "def",
+      "DbtProjectName": "projectC"
     }
   }
 ]

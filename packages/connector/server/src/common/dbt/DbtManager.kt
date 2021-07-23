@@ -246,8 +246,8 @@ object DbtManager {
     }
 
     private fun getBlockName(block: Block, storyBlock: Block?): String {
-        val storyPrefix = storyBlock?.content?.getTitle(0)?.replace(" ", "_")?.toLowerCase() ?: ""
-        return storyPrefix + "-" + block.content.getTitle(0).replace(" ", "_").toLowerCase()
+        val storyPrefix = storyBlock?.content?.getTitle(0)?.replace(" ", "_")?.lowercase() ?: ""
+        return storyPrefix + "-" + block.content.getTitle(0).replace(" ", "_").lowercase()
     }
 
     private fun getProfileByName(name: String): Profile {

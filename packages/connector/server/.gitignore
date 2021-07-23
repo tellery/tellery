@@ -7,3 +7,4 @@
 *.iws
 
 /drivers
+/profiles.json

@@ -1,5 +1,5 @@
 ---
-profileA:
+projectA:
   output:
     dev:
       account: "xy12345.us-ease-2.aws"
@@ -10,7 +10,7 @@ profileA:
       database: "tellery_database"
       warehouse: "tellery_warehouse"
   target: "dev"
-profileB:
+projectB:
   output:
     dev:
       host: "examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com"
@@ -21,7 +21,7 @@ profileB:
       schema: "tellery_schema"
       dbname: "tellery_dbname"
   target: "dev"
-profileC:
+projectC:
   output:
     dev:
       host: "127.0.0.1"
