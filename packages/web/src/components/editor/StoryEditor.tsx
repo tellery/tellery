@@ -37,7 +37,6 @@ import {
 } from '.'
 import { StoryQuestionsSnapshotManagerProvider } from '../StoryQuestionsSnapshotManagerProvider'
 import { ThoughtItemHeader } from '../ThoughtItem'
-import { OperatorsContext, useStoryOperators } from './BlockOperators'
 import { ContentBlocks } from './ContentBlock'
 import {
   createTranscation,
@@ -73,6 +72,7 @@ import { useDebouncedDimension } from './hooks/useDebouncedDimensions'
 import { useSetUploadResource } from './hooks/useUploadResource'
 import { BlockTextOperationMenu } from './Popovers/BlockTextOperationMenu'
 import { TelleryStorySelection } from './store/selection'
+import { StoryBlockOperatorsProvider } from './StoryBlockOperatorsProvider'
 import type { SetBlock } from './types'
 
 const logger = debug('tellery:editor')
@@ -122,7 +122,6 @@ const _StoryEditor: React.FC<{
   }, [selectionState])
 
   useMouseMoveInEmitter(storyId, focusingBlockId ?? hoverBlockId)
-  const storyOperators = useStoryOperators(storyId)
 
   useEffect(() => {
     tellerySelectionRef.current = selectionState
@@ -1309,7 +1308,7 @@ const _StoryEditor: React.FC<{
   return (
     <>
       <BlockAdminContext.Provider value={blockAdminValue}>
-        <OperatorsContext.Provider value={storyOperators}>
+        <StoryBlockOperatorsProvider storyId={storyId}>
           <EditorContext.Provider value={editorContext}>
             <StoryQuestionsSnapshotManagerProvider storyId={storyId}>
               {props.top}
@@ -1469,7 +1468,7 @@ const _StoryEditor: React.FC<{
               </div>
             </StoryQuestionsSnapshotManagerProvider>
           </EditorContext.Provider>
-        </OperatorsContext.Provider>
+        </StoryBlockOperatorsProvider>
       </BlockAdminContext.Provider>
     </>
   )

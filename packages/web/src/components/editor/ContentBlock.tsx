@@ -1,14 +1,13 @@
-import { css, cx } from '@emotion/css'
-import { motion } from 'framer-motion'
 import { useBlockSuspense } from '@app/hooks/api'
-import React, { memo, useEffect, useMemo, useRef, useState } from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
+import { css, cx } from '@emotion/css'
+import { AnimateSharedLayout, motion } from 'framer-motion'
+import React, { memo, useEffect, useMemo, useRef, useState } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
 import { BlockOperations } from './BlockOperations'
 import { OperatorsAvatar } from './BlockOperators'
 import { BlockInner } from './Blocks'
-// import { GridBlock } from './Blocks/GridBlock'
 import { TitleBlock } from './Blocks/TitleBlock'
 import { DroppingAreaIndicator } from './DroppingAreaIndicator'
 import { DroppleableOverlay } from './DroppleableOverlay'
@@ -60,13 +59,15 @@ export const ContentBlocks: React.FC<{
   }, [small, readonly, draggable])
 
   return (
-    <BlockBehaviorConext.Provider value={behavior}>
-      {props.blockIds.map((blockId) => (
-        <React.Suspense key={blockId} fallback={<div>loading...</div>}>
-          <ContentBlockPure key={blockId} id={blockId} parentType={props.parentType} />
-        </React.Suspense>
-      ))}
-    </BlockBehaviorConext.Provider>
+    <AnimateSharedLayout>
+      <BlockBehaviorConext.Provider value={behavior}>
+        {props.blockIds.map((blockId) => (
+          <React.Suspense key={blockId} fallback={<div>loading...</div>}>
+            <ContentBlockPure key={blockId} id={blockId} parentType={props.parentType} />
+          </React.Suspense>
+        ))}
+      </BlockBehaviorConext.Provider>
+    </AnimateSharedLayout>
   )
 }
 
