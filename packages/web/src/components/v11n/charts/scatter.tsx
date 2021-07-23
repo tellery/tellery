@@ -105,6 +105,7 @@ export const scatter: Chart<Type.SCATTER> = {
         className={css`
           height: 100%;
           display: flex;
+          width: calc(150px + 225px);
         `}
       >
         <div

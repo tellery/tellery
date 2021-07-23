@@ -35,6 +35,7 @@ export const table: Chart<Type.TABLE> = {
           height: 100%;
           padding: 20px;
           overflow-y: auto;
+          width: 225px;
         `}
       >
         <ConfigLabel top={0}>Columns</ConfigLabel>

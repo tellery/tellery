@@ -343,6 +343,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
         className={css`
           display: flex;
           height: 100%;
+          width: calc(150px + 225px);
         `}
       >
         <div

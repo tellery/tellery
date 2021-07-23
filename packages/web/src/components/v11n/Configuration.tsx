@@ -122,7 +122,6 @@ export function Configuration<T extends Type = Type>(props: {
       <div
         className={css`
           flex-shrink: 0;
-          width: 560px;
           height: 100%;
           box-shadow: -1px 0px 0px ${ThemingVariables.colors.gray[1]};
         `}
