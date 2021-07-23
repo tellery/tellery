@@ -13,6 +13,7 @@ import com.google.common.annotations.VisibleForTesting
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.KeyPair
 import io.tellery.common.ConfigManager
+import io.tellery.common.Utils.assertInternalError
 import io.tellery.common.dbt.Constants.EXTERNAL_CONFIG_FIELDS
 import io.tellery.common.dbt.GitUtils.checkoutMasterAndPull
 import io.tellery.common.dbt.GitUtils.checkoutNewBranchAndCommitAndPush
@@ -23,7 +24,6 @@ import io.tellery.common.dbt.model.Manifest
 import io.tellery.entities.Profile
 import io.tellery.grpc.Block
 import io.tellery.grpc.DbtBlock
-import io.tellery.services.Utils.assertInternalError
 import io.tellery.utils.logger
 import org.apache.commons.io.FileUtils
 import java.io.BufferedReader

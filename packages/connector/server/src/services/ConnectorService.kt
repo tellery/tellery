@@ -7,6 +7,8 @@ import com.google.protobuf.Empty
 import io.tellery.annotations.Config
 import io.tellery.common.ConfigManager
 import io.tellery.common.ConnectorManager
+import io.tellery.common.Utils.errorWrapper
+import io.tellery.common.Utils.withErrorWrapper
 import io.tellery.common.dbt.Constants.EXTERNAL_CONFIG_FIELDS
 import io.tellery.common.dbt.DbtManager
 import io.tellery.configs.AvailableConfig
@@ -14,8 +16,6 @@ import io.tellery.configs.AvailableConfigs
 import io.tellery.configs.ConfigField
 import io.tellery.entities.*
 import io.tellery.grpc.*
-import io.tellery.services.Utils.errorWrapper
-import io.tellery.services.Utils.withErrorWrapper
 import io.tellery.types.SQLType
 import io.tellery.utils.DateAsTimestampSerializer
 import io.tellery.utils.toDisplayType

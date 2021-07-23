@@ -1,12 +1,13 @@
 package io.tellery.common
 
-import com.google.gson.*
-import com.google.gson.reflect.*
-import com.typesafe.config.*
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import com.typesafe.config.ConfigFactory
 import io.tellery.entities.*
 import kotlinx.coroutines.*
-import java.io.*
-import java.nio.channels.*
+import java.io.File
+import java.nio.channels.FileLock
+import java.nio.channels.OverlappingFileLockException
 
 @OptIn(ExperimentalCoroutinesApi::class)
 object ConfigManager {
@@ -18,7 +19,8 @@ object ConfigManager {
 
     init {
         val appConfig = ConfigFactory.load()
-        dbConfigPath = appConfig.getString("dbProfile.path") ?: throw DBProfileNotConfiguredException()
+        dbConfigPath =
+            appConfig.getString("dbProfile.path") ?: throw DBProfileNotConfiguredException()
         config = loadConfig()
     }
 
@@ -54,7 +56,7 @@ object ConfigManager {
         fchannel.close()
     }
 
-    fun loadConfig(): ConnectorConfig {
+    private fun loadConfig(): ConnectorConfig {
         val gson = Gson()
         val file = File(dbConfigPath)
         return if (!file.exists()) {

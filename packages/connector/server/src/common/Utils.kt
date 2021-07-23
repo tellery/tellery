@@ -1,4 +1,4 @@
-package io.tellery.services
+package io.tellery.common
 
 import io.grpc.Metadata
 import io.grpc.Status

@@ -2,9 +2,9 @@ package io.tellery.services
 
 import com.google.common.base.Strings
 import com.google.protobuf.Empty
+import io.tellery.common.Utils.withErrorWrapper
 import io.tellery.common.dbt.DbtManager
 import io.tellery.grpc.*
-import io.tellery.services.Utils.withErrorWrapper
 
 class DbtService : DbtCoroutineGrpc.DbtImplBase() {
 
@@ -46,7 +46,7 @@ class DbtService : DbtCoroutineGrpc.DbtImplBase() {
     override suspend fun listDbtBlocks(request: ListDbtBlocksRequest): ListDbtBlocksResponse {
         return withErrorWrapper(request) {
             assert(!Strings.isNullOrEmpty(it.profileName))
-            
+
             val blocks = DbtManager.listBlocks(request.profileName)
             ListDbtBlocksResponse.newBuilder().addAllBlocks(blocks).build()
         }
