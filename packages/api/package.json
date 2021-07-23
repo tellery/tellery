@@ -20,7 +20,8 @@
     "coverage": "nyc ava",
     "create:user": "node dist/src/scripts/createUser.js",
     "create:workspace": "node dist/src/scripts/createWorkspace.js",
-    "create:initStory": "node dist/src/scripts/createInitialStory.js"
+    "create:initStory": "node dist/src/scripts/createInitialStory.js",
+    "configure:metabase": "node dist/src/scripts/appendMetabaseConfig.js"
   },
   "author": "iftech",
   "license": "ISC",
@@ -40,6 +41,7 @@
     "grpc": "^1.24.10",
     "http-errors": "^1.8.0",
     "ioredis": "^4.27.6",
+    "jsonwebtoken": "^8.5.1",
     "koa": "^2.13.1",
     "koa-body": "^4.2.0",
     "koa-logger": "^3.2.1",
@@ -65,6 +67,7 @@
     "@types/google-protobuf": "^3.15.3",
     "@types/http-errors": "^1.8.1",
     "@types/ioredis": "^4.26.6",
+    "@types/jsonwebtoken": "^8.5.4",
     "@types/koa": "^2.13.4",
     "@types/koa-logger": "^3.1.1",
     "@types/koa-mount": "^4.0.0",

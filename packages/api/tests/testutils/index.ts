@@ -9,6 +9,7 @@ import BlockEntity from '../../src/entities/block'
 import { BlockParentType, BlockType } from '../../src/types/block'
 import { UserEntity } from '../../src/entities/user'
 import { AccountStatus } from '../../src/types/user'
+import { ThirdPartyConfigurationEntity } from '../../src/entities/thirdParty'
 
 export function uuid(): string {
   const prefix = '942194da-d7db-4fbe-9887-3db5ef8c'
@@ -215,4 +216,17 @@ export async function updateIndex(
   const obj = await operation.entity(id)
   const res = await operation.updateIndex(obj, operatorId, path, flag, targetId)
   await operation.save(res, await operation.findInDB(id))
+}
+
+export async function createMetabaseSecret(host: string) {
+  let tpc = await getRepository(ThirdPartyConfigurationEntity).findOne({ type: 'metabase' })
+  if (!tpc) {
+    tpc = new ThirdPartyConfigurationEntity()
+    tpc.type = 'metabase'
+    tpc.config = { secretMap: {} }
+  }
+
+  _.set(tpc, ['config', 'secretMap', host], nanoid())
+
+  await tpc.save()
 }
