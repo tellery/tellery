@@ -76,7 +76,7 @@ export const ThoughtItem: React.FC<{ id: string; date: string; isFirst: boolean;
             fullWidth
             defaultOverflowY="visible"
             className={css`
-              padding: 0 80px;
+              padding: 0 120px;
               min-height: 100%;
             `}
           />

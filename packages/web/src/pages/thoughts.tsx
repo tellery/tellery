@@ -142,6 +142,7 @@ function Thoughts() {
                   onClick={createTodaysNotes}
                   className={css`
                     cursor: pointer;
+                    padding: 10px 80px;
                   `}
                 >
                   <Icon

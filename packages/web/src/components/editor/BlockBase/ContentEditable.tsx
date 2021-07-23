@@ -397,20 +397,6 @@ const _ContentEditable: React.ForwardRefRenderFunction<
         onKeyDown={(e) => {
           if (!isFocusing) return
           if (!localSelection) return
-          // logger('key down')
-          if (e.ctrlKey || e.metaKey) {
-            switch (e.key) {
-              case 'B': // ctrl+B or ctrl+b
-              case 'b':
-              case 'I': // ctrl+I or ctrl+i
-              case 'i':
-              case 'U': // ctrl+U or ctrl+u
-              case 'u':
-                e.preventDefault()
-                break
-            }
-          }
-
           if (e.key === '{') {
             if (innerTextRef.current && innerTextRef.current[innerTextRef.current.length - 1] === '{') {
               return

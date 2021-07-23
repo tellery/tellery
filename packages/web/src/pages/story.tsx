@@ -101,7 +101,7 @@ const _Page: React.FC = () => {
                     }
                     fullWidth
                     className={css`
-                      padding: 0 80px;
+                      padding: 0 120px;
                     `}
                   />
                 </>

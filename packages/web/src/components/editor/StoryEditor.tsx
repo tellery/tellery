@@ -1335,24 +1335,10 @@ const _StoryEditor: React.FC<{
                 onCut={cutHandler}
                 onCopy={copyHandler}
               >
-                <div
+                <motion.div
                   onKeyDown={keyDownHandler}
                   tabIndex={1}
                   className={cx(
-                    css`
-                      display: flex;
-                      outline: none;
-                      flex-direction: column;
-                      align-items: center;
-                      padding: 0;
-                      *::selection {
-                        background-color: ${ThemingVariables.colors.selection[0]};
-                      }
-                      cursor: text;
-                      width: 100%;
-                      flex: 1;
-                      user-select: none;
-                    `,
                     css`
                       max-width: 100%;
                       width: 900px;
@@ -1364,6 +1350,13 @@ const _StoryEditor: React.FC<{
                       align-items: center;
                       font-size: 16px;
                       transition: width 250ms ease;
+                      padding: 0;
+                      *::selection {
+                        background-color: ${ThemingVariables.colors.selection[0]};
+                      }
+                      cursor: text;
+                      flex: 1;
+                      user-select: none;
                     `,
                     ((rootBlock as Story).format?.fullWidth || props.fullWidth) &&
                       css`
@@ -1390,7 +1383,6 @@ const _StoryEditor: React.FC<{
                       className={css`
                         width: 100%;
                       `}
-                      // onClick={(e) => e.stopPropagation()}
                     >
                       {rootBlock.type === Editor.BlockType.Thought && (
                         <ThoughtItemHeader
@@ -1399,6 +1391,7 @@ const _StoryEditor: React.FC<{
                           className={css`
                             margin-top: 20px;
                             padding: 0;
+                            margin-left: -30px;
                           `}
                         />
                       )}
@@ -1423,6 +1416,13 @@ const _StoryEditor: React.FC<{
                       className={cx(
                         css`
                           width: 100%;
+                          display: flex;
+                          outline: none;
+                          flex-direction: column;
+                          align-items: center;
+                          padding: 0;
+                          width: 100%;
+                          flex: 1;
                         `,
                         (rootBlock as Story)?.format?.showBorder &&
                           css`
@@ -1464,7 +1464,7 @@ const _StoryEditor: React.FC<{
                       )}
                     </motion.div>
                   )}
-                </div>
+                </motion.div>
               </div>
             </StoryQuestionsSnapshotManagerProvider>
           </EditorContext.Provider>
