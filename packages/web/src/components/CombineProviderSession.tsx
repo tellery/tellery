@@ -1,4 +1,4 @@
-// import { DebugObserver } from 'store'
+// import { DebugObserver } from '@app/store'
 import { CommitContextProvider } from '@app/components/CommitContextProvider'
 import { SocketContextProvider } from '@app/components/SocketContextProvider'
 import React from 'react'

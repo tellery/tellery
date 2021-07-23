@@ -1,5 +1,5 @@
 import { css } from '@emotion/css'
-import { ThemingVariables } from 'styles'
+import { ThemingVariables } from '@app/styles'
 
 export function ConfigLabel(props: { children: string; top?: number; bottom?: number }) {
   return (

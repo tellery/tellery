@@ -1,5 +1,5 @@
 import invariant from 'invariant'
-import { Editor } from 'types'
+import { Editor } from '@app/types'
 
 export const saveSelection = function (containerEl: HTMLElement) {
   // const doc = containerEl.ownerDocument

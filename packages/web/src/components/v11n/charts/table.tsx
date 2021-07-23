@@ -1,15 +1,15 @@
 import { css, cx } from '@emotion/css'
 import { slice } from 'lodash'
 import React, { useMemo, useState } from 'react'
-import { IconCommonArrowDropDown, IconMenuHide, IconMenuShow } from 'assets/icons'
-import { ThemingVariables } from 'styles'
+import { IconCommonArrowDropDown, IconMenuHide, IconMenuShow } from '@app/assets/icons'
+import { ThemingVariables } from '@app/styles'
 import { ConfigLabel } from '../components/ConfigLabel'
 import { SortableList } from '../components/SortableList'
 import { Type } from '../types'
 import { formatRecord, isNumeric } from '../utils'
 import type { Chart } from './base'
-import { useDataFieldsDisplayType } from 'hooks/useDataFieldsDisplayType'
-import IconButton from 'components/kit/IconButton'
+import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
+import IconButton from '@app/components/kit/IconButton'
 import Tippy from '@tippyjs/react'
 
 const TABLE_ROW_HEIGHT_MIN = 30
@@ -35,6 +35,7 @@ export const table: Chart<Type.TABLE> = {
           height: 100%;
           padding: 20px;
           overflow-y: auto;
+          width: 225px;
         `}
       >
         <ConfigLabel top={0}>Columns</ConfigLabel>

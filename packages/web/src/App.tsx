@@ -8,7 +8,7 @@ import { RecoilRoot } from 'recoil'
 import 'tippy.js/animations/scale.css'
 import 'tippy.js/dist/tippy.css'
 import { AuthProvider } from './components/AuthProvider'
-import { Routes } from './components/Routes'
+import { Routes } from './routes'
 import { ThemeProvider } from './components/ThemeProvider'
 import { queryClient } from './utils'
 

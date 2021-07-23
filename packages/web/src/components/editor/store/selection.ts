@@ -1,5 +1,5 @@
 import { atomFamily, selectorFamily } from 'recoil'
-import type { TelleryBlockSelection, TelleryInlineSelection, TellerySelection } from 'types'
+import type { TelleryBlockSelection, TelleryInlineSelection, TellerySelection } from '../helpers'
 
 export const TelleryStorySelectionAtom = atomFamily<TellerySelection | null, string>({
   key: 'TelleryGlobalSelection', // unique ID (with respect to other atoms/selectors)

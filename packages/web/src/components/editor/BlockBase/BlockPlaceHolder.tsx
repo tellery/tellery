@@ -1,6 +1,6 @@
 import { css } from '@emotion/css'
 import React from 'react'
-import { ThemingVariables } from 'styles'
+import { ThemingVariables } from '@app/styles'
 import { CircularLoading } from '../../CircularLoading'
 
 export const BlockPlaceHolder = (props: { onClick?: () => void; loading: boolean; text: string }) => {

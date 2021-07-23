@@ -9,7 +9,7 @@ import type {
 import type { Coordinates } from '@dnd-kit/core/dist/types'
 import { subtract as getCoordinatesDelta } from '@dnd-kit/utilities'
 import type { MouseEvent } from 'react'
-import { getOwnerDocument } from 'utils'
+import { getOwnerDocument } from '@app/utils'
 
 export class Listeners {
   private listeners: {

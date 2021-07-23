@@ -4,7 +4,6 @@ export const BlockBehaviorConext = React.createContext<{
   readonly: boolean
   small: boolean
   draggable: boolean
-  highlightedBlock?: string
   // BlockComponent:
   //   | React.NamedExoticComponent<{
   //       block: Editor.Block
@@ -18,7 +17,6 @@ export const BlockBehaviorConext = React.createContext<{
   //   | null
 }>({
   readonly: false,
-  highlightedBlock: undefined,
   small: false,
   draggable: false
 })

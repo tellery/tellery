@@ -12,30 +12,30 @@ import {
   IconMenuDownload,
   IconMiscNoResult,
   IconVisualizationSetting
-} from 'assets/icons'
-import { BlockingUI } from 'components/editor/BlockBase/BlockingUIBlock'
-import Icon from 'components/kit/Icon'
-import IconButton from 'components/kit/IconButton'
-import { MenuItem } from 'components/MenuItem'
-import { RefreshButton } from 'components/RefreshButton'
-import { useQuestionEditor } from 'components/StoryQuestionsEditor'
-import { charts } from 'components/v11n/charts'
-import { Config, Data, Type } from 'components/v11n/types'
+} from '@app/assets/icons'
+import { BlockingUI } from '@app/components/editor/BlockBase/BlockingUIBlock'
+import Icon from '@app/components/kit/Icon'
+import IconButton from '@app/components/kit/IconButton'
+import { MenuItem } from '@app/components/MenuItem'
+import { RefreshButton } from '@app/components/RefreshButton'
+import { useQuestionEditor } from '@app/components/StoryQuestionsEditor'
+import { charts } from '@app/components/v11n/charts'
+import { Config, Data, Type } from '@app/components/v11n/types'
 import copy from 'copy-to-clipboard'
 import dayjs from 'dayjs'
 import download from 'downloadjs'
 import { useSelect } from 'downshift'
 import { AnimatePresence, motion, usePresence } from 'framer-motion'
-import { useOnClickOutside, useOnScreen } from 'hooks'
-import { useBlockSuspense, useSnapshot, useUser } from 'hooks/api'
-import { useInterval } from 'hooks/useInterval'
-import { useRefreshSnapshot, useSnapshotMutating } from 'hooks/useStorySnapshotManager'
+import { useOnClickOutside, useOnScreen } from '@app/hooks'
+import { useBlockSuspense, useSnapshot, useUser } from '@app/hooks/api'
+import { useInterval } from '@app/hooks/useInterval'
+import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
 import html2canvas from 'html2canvas'
 import invariant from 'invariant'
-import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ThemingVariables } from 'styles'
-import { Editor, Snapshot } from 'types'
-import { DEFAULT_TITLE, snapshotToCSV } from 'utils'
+import React, { ReactNode, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
+import { ThemingVariables } from '@app/styles'
+import { Editor, Snapshot } from '@app/types'
+import { DEFAULT_TITLE, snapshotToCSV } from '@app/utils'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
 import { BlockResizer } from '../BlockBase/BlockResizer'
 import { ContentEditable } from '../BlockBase/ContentEditable'
@@ -60,18 +60,17 @@ const rotateAnimation = keyframes`
   }
 `
 
-export const QuestionBlock: BlockComponent<
-  React.FC<{
-    block: Editor.QuestionBlock
-    blockFormat: BlockFormatInterface
-    parentType: Editor.BlockType
-  }>
-> = (props) => {
+interface QuestionBlockProps {
+  block: Editor.QuestionBlock
+  blockFormat: BlockFormatInterface
+  parentType: Editor.BlockType
+}
+
+const _QuestionBlock: React.ForwardRefRenderFunction<any, QuestionBlockProps> = (props, ref) => {
   const editor = useEditor<Editor.QuestionBlock>()
   const { block } = props
   const { readonly } = useBlockBehavior()
-
-  const ref = useRef<HTMLDivElement | null>(null)
+  const elementRef = useRef<HTMLDivElement | null>(null)
   const contentRef = useRef<HTMLDivElement | null>(null)
   const originalBlock = useBlockSuspense<Editor.QuestionBlock>(block.id)
   const questionEditor = useQuestionEditor()
@@ -80,26 +79,21 @@ export const QuestionBlock: BlockComponent<
   const localSelection = useLocalSelection(block.id)
   const isInputFocusing = !!localSelection
 
-  useEffect(() => {
-    editor?.registerOrUnregisterBlockInstance(block.id, {
+  useImperativeHandle(
+    ref,
+    () => ({
       openMenu: () => {
         questionEditor.open({ mode: 'SQL', readonly, blockId: block.id, storyId: block.storyId! })
-        // setIsPopoverOpen(true)
       }
-      // afterDuplicate: () => {
-      //   questionEditor.open({ mode: 'SQL', readonly, blockId: block.id, storyId: block.storyId! })
-      // }
-    })
-    return () => {
-      editor?.registerOrUnregisterBlockInstance(block.id, undefined)
-    }
-  }, [block.id, block.storyId, editor, questionEditor, readonly])
+    }),
+    [block.id, block.storyId, questionEditor, readonly]
+  )
 
   const onClickOutSide = useCallback(() => {
     setTitleEditing(false)
   }, [])
 
-  useOnClickOutside(ref, onClickOutSide)
+  useOnClickOutside(elementRef, onClickOutSide)
 
   useEffect(() => {
     if (!block.content) {
@@ -134,7 +128,7 @@ export const QuestionBlock: BlockComponent<
 
   return (
     <div
-      ref={ref}
+      ref={elementRef}
       className={QuestionsBlockContainer}
       tabIndex={-1}
       onFocus={() => setBlockFocusing(true)}
@@ -198,9 +192,13 @@ export const QuestionBlock: BlockComponent<
     </div>
   )
 }
+const QuestionBlock = React.forwardRef(_QuestionBlock) as BlockComponent<
+  React.ForwardRefExoticComponent<QuestionBlockProps & React.RefAttributes<any>>
+>
 
 QuestionBlock.meta = {
   isText: true,
+  forwardRef: true,
   hasChildren: false
 }
 
@@ -501,8 +499,8 @@ const QuestionBlockStatus: React.FC<{
         >
           {loading
             ? dayjs(nowTimeStamp).subtract(mutatingStartTimeStamp).format('mm:ss')
-            : snapshot?.createdAt
-            ? dayjs(snapshot?.createdAt).fromNow()
+            : snapshot?.createdAt || block.content?.lastRunAt
+            ? dayjs(block.content?.lastRunAt ?? snapshot?.createdAt).fromNow()
             : ''}
         </div>
       </div>
@@ -819,5 +817,6 @@ const QuestionsBlockContainer = css`
   border: 4px solid transparent;
   :focus-within {
     border-color: ${ThemingVariables.colors.primary[3]};
+    outline: none;
   }
 `

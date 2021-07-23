@@ -51,12 +51,10 @@ export class TextIndexSearch implements ISearch {
     const models = (await executor.execute()) as UserEntity[]
 
     return _(models)
-      .map(
-        (model): HintData => {
-          const hint = User.fromEntity(model)
-          return { hint, highlight: hint.username }
-        },
-      )
+      .map((model): HintData => {
+        const hint = User.fromEntity(model)
+        return { hint, highlight: hint.username }
+      })
       .value()
   }
 

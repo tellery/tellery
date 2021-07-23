@@ -1,6 +1,6 @@
 import { css, cx } from '@emotion/css'
 import React, { useCallback } from 'react'
-import { IconCommonArrowUnfold } from 'assets/icons'
+import { IconCommonArrowUnfold } from '@app/assets/icons'
 import IconButton from './kit/IconButton'
 
 export const ToggleControl: React.FC<{

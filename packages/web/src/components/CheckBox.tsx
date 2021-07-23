@@ -1,7 +1,7 @@
 import { css, cx } from '@emotion/css'
 import { useCallback } from 'react'
-import { IconCommonCheckboxBlank, IconCommonCheckboxFill } from 'assets/icons'
-import { ThemingVariables } from 'styles'
+import { IconCommonCheckboxBlank, IconCommonCheckboxFill } from '@app/assets/icons'
+import { ThemingVariables } from '@app/styles'
 
 export function CheckBox(props: {
   disabled?: boolean

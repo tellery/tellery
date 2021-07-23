@@ -1,9 +1,9 @@
 import { css } from '@emotion/css'
 
-import { ThemingVariables } from 'styles'
-import { SVG2DataURI } from 'lib/svg'
-import { IconCommonArrowDropDown, IconCommonClose } from 'assets/icons'
-import Icon from 'components/kit/Icon'
+import { ThemingVariables } from '@app/styles'
+import { SVG2DataURI } from '@app/lib/svg'
+import { IconCommonArrowDropDown, IconCommonClose } from '@app/assets/icons'
+import Icon from '@app/components/kit/Icon'
 
 export function ConfigSelectWithClear(props: {
   className?: string

@@ -1,14 +1,13 @@
+import { useBlockHovering } from '@app/hooks/useBlockHovering'
 import { css, cx } from '@emotion/css'
-import { MenuItem } from 'components/MenuItem'
+import { MenuItem } from '@app/components/MenuItem'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { useRecoilValue } from 'recoil'
 import scrollIntoView from 'scroll-into-view-if-needed'
-import { ThemingVariables } from 'styles'
-import { CodeBlockLang, CodeBlockLangDisplayName, Editor } from 'types'
+import { ThemingVariables } from '@app/styles'
+import { CodeBlockLang, CodeBlockLangDisplayName, Editor } from '@app/types'
 import { ContentEditable } from '../BlockBase/ContentEditable'
 import { EditorPopover } from '../EditorPopover'
 import { useEditor } from '../hooks'
-import { IsBlockHovering } from '../store'
 import { BlockComponent, registerBlock } from './utils'
 
 const CodeBlock: BlockComponent<
@@ -59,7 +58,7 @@ const CodeBlockOperation = (props: {
   const ref = useRef<HTMLDivElement>(null)
   const [index, setIndex] = useState(0)
 
-  const show = useRecoilValue(IsBlockHovering(block.id))
+  const show = useBlockHovering(block.id)
 
   const toggleCodeBlockLangHandler = useCallback(
     (lang: CodeBlockLang) => {

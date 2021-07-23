@@ -1,6 +1,6 @@
 import { css, cx } from '@emotion/css'
 import type { ButtonHTMLAttributes } from 'react'
-import { ThemingVariables } from 'styles'
+import { ThemingVariables } from '@app/styles'
 
 export function FormButton(
   props: ButtonHTMLAttributes<HTMLButtonElement> & {

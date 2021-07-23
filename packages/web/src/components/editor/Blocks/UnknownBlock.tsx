@@ -1,7 +1,7 @@
 import { ThemingVariables } from '@app/styles'
 import { css } from '@emotion/css'
 import React from 'react'
-import type { Editor } from 'types'
+import type { Editor } from '@app/types'
 
 export const UnknownBlock: React.FC<{
   block: Editor.Block

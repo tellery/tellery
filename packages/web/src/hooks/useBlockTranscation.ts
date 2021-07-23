@@ -1,4 +1,4 @@
-import saveTranscations from '@app/api'
+import { saveTranscations } from '@app/api'
 import {
   createTranscation,
   duplicateStoryTranscation,

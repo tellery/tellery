@@ -36,19 +36,6 @@ export default defineConfig(({ command, mode }: { command: string; mode: string 
   return {
     resolve: {
       alias: {
-        api: '/src/api',
-        assets: '/src/assets',
-        context: '/src/context',
-        pages: '/src/pages',
-        layouts: '/src/layouts',
-        lib: '/src/lib',
-        hooks: '/src/hooks',
-        public: '/src/public',
-        components: '/src/components',
-        store: '/src/store',
-        styles: '/src/styles',
-        types: '/src/types',
-        utils: '/src/utils',
         '@app': '/src'
       }
     },

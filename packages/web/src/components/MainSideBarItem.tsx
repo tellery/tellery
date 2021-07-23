@@ -1,9 +1,9 @@
 import { css, cx } from '@emotion/css'
 // import { useHistory } from "react-router-dom"
 import React, { FunctionComponent, SVGAttributes } from 'react'
-import { ThemingVariables } from 'styles'
+import { ThemingVariables } from '@app/styles'
 import { useHistory } from 'react-router-dom'
-import Icon from 'components/kit/Icon'
+import Icon from '@app/components/kit/Icon'
 
 export function MainSideBarItem(props: {
   icon?: FunctionComponent<SVGAttributes<SVGElement>>

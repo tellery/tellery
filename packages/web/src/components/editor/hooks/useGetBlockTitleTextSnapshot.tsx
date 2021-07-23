@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
-import { useBlockSnapshot } from 'store/block'
-import type { Editor } from 'types'
+import { useBlockSnapshot } from '@app/store/block'
+import type { Editor } from '@app/types'
 import { blockTitleToText } from '../helpers'
 
 export const useGetBlockTitleTextSnapshot = () => {

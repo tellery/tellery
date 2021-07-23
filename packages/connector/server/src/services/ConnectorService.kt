@@ -77,18 +77,8 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
                 val secretConfigs =
                     connectorMeta.configs.filter { it.secret }.map { it.name }.toSet()
                 ProfileBody {
-
                     type = it.type
                     name = it.name
-                    it.auth?.let {
-                        auth = Auth {
-                            username = it.username
-                            if (it.password != null) {
-                                password = secretMask
-                            }
-                        }
-                    }
-
                     putAllConfigs(it.configs.entries.associate { (k, v) ->
                         if (secretConfigs.contains(k)) {
                             k to secretMask
@@ -134,16 +124,6 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
             val newProfile = Profile(
                 req.type,
                 req.name,
-                if (req.hasAuth()) {
-                    ConnectionAuth(
-                        req.auth.username,
-                        handleSecretField(
-                            req.auth.password,
-                            originalProfile?.auth?.password
-                        ).ifBlank { null }
-                    )
-                } else null,
-                null,
                 configs.entries.associate { (k, v) ->
                     k to handleSecretField(v, originalProfile?.configs?.get(k))
                 }.filterValues { it.isNotBlank() }

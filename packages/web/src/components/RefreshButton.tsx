@@ -1,5 +1,5 @@
 import { css, cx } from '@emotion/css'
-import { IconCommonRefresh } from 'assets/icons'
+import { IconCommonRefresh } from '@app/assets/icons'
 import { motion, useAnimation } from 'framer-motion'
 import React, { ReactNode, useEffect } from 'react'
 import IconButton from './kit/IconButton'

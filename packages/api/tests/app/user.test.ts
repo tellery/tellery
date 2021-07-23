@@ -102,6 +102,40 @@ test.serial('post login', async (t: ExecutionContext<any>) => {
   t.not(cookieToken, undefined)
 })
 
+test.serial('post login with invalid x-user-token', async (t: ExecutionContext<any>) => {
+  const email = `${nanoid()}@test.com`
+  const password = 'Aaa1234567'
+
+  let user = await getRepository(UserEntity)
+    .create({
+      username: nanoid(),
+      avatar: 'https://tellery.io/avatar',
+      password: '',
+      email,
+      status: AccountStatus.ACTIVE,
+    })
+    .save()
+  user.password = userService.getConvertedPassword(password, user.id)
+  user = await user.save()
+
+  const resp: any = await got<any>('api/users/login?param=param#part1', {
+    prefixUrl: t.context.prefixUrl,
+    method: 'POST',
+    headers: { [USER_TOKEN_HEADER_KEY]: 'invalidToken' },
+    json: {
+      email,
+      password,
+    },
+  })
+  const headerToken = resp.headers[USER_TOKEN_HEADER_KEY]
+  const cookieToken = resp.headers['set-cookie']
+  const { id } = JSON.parse(resp.body)
+
+  t.is(id, user.id)
+  t.not(headerToken, undefined)
+  t.not(cookieToken, undefined)
+})
+
 test.serial('post logout', async (t: ExecutionContext<any>) => {
   const resp: any = await got<any>('api/users/logout', {
     prefixUrl: t.context.prefixUrl,

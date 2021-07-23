@@ -1,2 +1,17 @@
 #!/bin/sh
-echo "{ \"profiles\": [{ \"type\": \"PostgreSQL\", \"name\": \"default\", \"auth\": { \"username\": \"${POSTGRES_USERNAME}\", \"password\": \"${POSTGRES_PASSWORD}\" }, \"configs\": { \"Endpoint\": \"postgresql\", \"Port\": \"5432\", \"Database\": \"sample\" }}]}" > /usr/app/profiles.json
+cat <<EOF > /usr/app/profiles.json
+{
+    "profiles": [{
+    "type": "PostgreSQL",
+    "name": "default",
+    "configs": {
+        "Endpoint": "postgresql",
+        "Port": "5432",
+        "Database": "sample",
+        "Username": "${POSTGRES_USERNAME}",
+        "Password": "${POSTGRES_PASSWORD}"
+      }
+    }
+  ]
+}
+EOF

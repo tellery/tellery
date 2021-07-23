@@ -1,14 +1,15 @@
 import { css, cx } from '@emotion/css'
-import { ToggleControl } from 'components/ToggleControl'
-import { useLocalStorage } from 'hooks/useLocalStorage'
+import { ToggleControl } from '@app/components/ToggleControl'
+import { useLocalStorage } from '@app/hooks/useLocalStorage'
 import invariant from 'invariant'
 import React, { ReactNode, useCallback, useMemo } from 'react'
-import { ThemingVariables } from 'styles'
-import { Editor, TellerySelectionType } from 'types'
+import { ThemingVariables } from '@app/styles'
+import { Editor } from '@app/types'
 import { ContentEditable } from '../BlockBase/ContentEditable'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import { useEditor } from '../hooks'
 import { BlockComponent, registerBlock } from './utils'
+import { TellerySelectionType } from '../helpers/tellerySelection'
 
 export const ToggleListBlock: BlockComponent<
   React.FC<{
@@ -31,12 +32,6 @@ export const ToggleListBlock: BlockComponent<
       focus: { blockId: newBlock.id, nodeIndex: 0, offset: 0 },
       storyId: block.storyId!
     })
-    // editor?.execOnNextFlush(() => {
-    //   console.log('exec on flush')
-    //   console.log(editor?.getBlockInstanceById(newBlock.id))
-    //   editor?.getBlockInstanceById(newBlock.id)?.openMenu()
-    // })
-    // editor?.setFocusingBlockId(newBlock.id)
   }, [block.id, block.storyId, editor])
 
   return (

@@ -1,7 +1,7 @@
 import { MotionValue, PanInfo, useMotionValue, useTransform } from 'framer-motion'
 import invariant from 'invariant'
 import { useCallback, useMemo, useRef, useState } from 'react'
-import type { Editor } from 'types'
+import type { Editor } from '@app/types'
 import { useEditor } from '../hooks'
 import { stripUnit } from 'polished'
 import debug from 'debug'
@@ -20,7 +20,7 @@ export type BlockFormatResizerDragEvent = (
       height: number
     }
     keepAspectRatio?: boolean
-    contentRef?: HTMLDivElement
+    contentRef?: HTMLElement
   }
 ) => void
 

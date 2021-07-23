@@ -4,6 +4,8 @@ import _ from 'lodash'
 import userService from '../services/user'
 import { USER_TOKEN_HEADER_KEY } from '../utils/user'
 
+const ignorePaths = ['/api/users/login']
+
 // 15 days
 const d15 = 3600 * 24 * 15
 
@@ -11,7 +13,7 @@ export default async function user(ctx: Context, next: Next) {
   const token = ctx.headers[USER_TOKEN_HEADER_KEY] || ctx.cookies.get(USER_TOKEN_HEADER_KEY)
   let payload: { userId: string; expiresAt: number } | undefined
 
-  if (token && _.isString(token)) {
+  if (token && _.isString(token) && !ignorePaths.includes(ctx.path)) {
     payload = await userService.verifyToken(token)
     ctx.state.user = { id: payload.userId }
   }

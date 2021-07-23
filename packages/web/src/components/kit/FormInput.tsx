@@ -1,7 +1,7 @@
 import { cx, css } from '@emotion/css'
 import type { InputHTMLAttributes } from 'react'
 import { forwardRef } from 'react'
-import { ThemingVariables } from 'styles'
+import { ThemingVariables } from '@app/styles'
 
 export default forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement> & { error?: unknown }>(
   function FormInput(props, ref) {

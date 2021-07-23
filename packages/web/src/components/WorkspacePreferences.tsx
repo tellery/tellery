@@ -6,23 +6,23 @@ import { fileLoader } from '@app/utils'
 import { uploadFile } from '@app/utils/upload'
 import { css } from '@emotion/css'
 import { pick } from 'lodash'
-import { useRef, useEffect, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { FormButton } from './kit/FormButton'
 import FormError from './kit/FormError'
+import FormFileButton from './kit/FormFileButton'
 import FormInput from './kit/FormInput'
 import FormLabel from './kit/FormLabel'
 
 export function WorkspacePreferences(props: { onClose(): void }) {
   const { data: workspace, refetch } = useWorkspaceDetail()
-  const { register, reset, getValues, setValue, handleSubmit } = useForm<Pick<Workspace, 'avatar' | 'name'>>({
+  const { register, reset, watch, setValue, handleSubmit } = useForm<Pick<Workspace, 'avatar' | 'name'>>({
     defaultValues: pick(workspace, ['avatar', 'name']),
-    mode: 'all'
+    mode: 'onBlur'
   })
   useEffect(() => {
     reset(pick(workspace, ['avatar', 'name']))
   }, [workspace, reset])
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const handleWorkspaceUpdate = useWorkspaceUpdate()
   const { onClose } = props
   useEffect(() => {
@@ -33,6 +33,7 @@ export function WorkspacePreferences(props: { onClose(): void }) {
   }, [handleWorkspaceUpdate.status, onClose, refetch])
   const user = useLoggedUser()
   const me = useMemo(() => workspace?.members.find(({ userId }) => userId === user.id), [user.id, workspace?.members])
+  const avatar = watch('avatar')
   const disabled = me?.role !== 'admin'
 
   return (
@@ -68,7 +69,7 @@ export function WorkspacePreferences(props: { onClose(): void }) {
         `}
       >
         <img
-          src={getValues().avatar}
+          src={avatar}
           className={css`
             width: 70px;
             height: 70px;
@@ -76,32 +77,20 @@ export function WorkspacePreferences(props: { onClose(): void }) {
             border-radius: 16px;
           `}
         />
-        <input
-          type="file"
-          className={css`
-            display: none;
-          `}
+        <FormFileButton
           accept="image/*"
-          ref={fileInputRef}
-          onChange={async (e) => {
-            const file = e.target.files?.item(0)
+          variant="secondary"
+          onChange={async (file) => {
             if (!file || !workspace) {
               return
             }
             const { key } = await uploadFile(file, workspace.id)
             setValue('avatar', fileLoader({ src: key, workspaceId: workspace.id }))
           }}
-        />
-        <FormButton
-          type="button"
-          variant="secondary"
-          onClick={() => {
-            fileInputRef.current?.click()
-          }}
           disabled={disabled}
         >
           Upload Photo
-        </FormButton>
+        </FormFileButton>
       </div>
       <FormLabel>Name</FormLabel>
       <FormInput {...register('name')} disabled={disabled} />

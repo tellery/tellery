@@ -1,5 +1,5 @@
 import React from 'react'
-import { Editor } from 'types'
+import { Editor } from '@app/types'
 import { registerBlock, BlockComponent } from './utils'
 import { UploadFilePlaceHolder } from '../BlockBase/UploadFilePlaceHolder'
 

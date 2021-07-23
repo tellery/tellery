@@ -3,6 +3,7 @@ import { useHover } from '@app/hooks'
 import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { css, cx } from '@emotion/css'
 import {
+  IconCommonLink,
   IconMenuBulletedList,
   IconMenuCode,
   IconMenuDivider,
@@ -15,17 +16,17 @@ import {
   IconMenuToDo,
   IconMenuToggleList,
   IconMenuUpload
-} from 'assets/icons'
+} from '@app/assets/icons'
 import debug from 'debug'
-import { useBlockSuspense } from 'hooks/api'
+import { useBlockSuspense } from '@app/hooks/api'
 import invariant from 'invariant'
 import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
-import { ThemingVariables } from 'styles'
-import { Editor, TellerySelection, TellerySelectionType } from 'types'
+import { ThemingVariables } from '@app/styles'
+import { Editor } from '@app/types'
 import { mergeTokens, splitToken, tokenPosition2SplitedTokenPosition } from '..'
 import { EditorPopover } from '../EditorPopover'
-import { tellerySelection2Native } from '../helpers/tellerySelection'
+import { TellerySelection, tellerySelection2Native, TellerySelectionType } from '../helpers/tellerySelection'
 import { useEditableContextMenu, useEditor } from '../hooks'
 
 const logger = debug('tellery:slashCommand')
@@ -130,8 +131,8 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
       invariant(editor, 'editor is null')
       let blockId = ''
       if (isEmptyTitleBlock(block)) {
-        editor.toggleBlockType(id, blockType, 0)
         blockId = block.id
+        editor.toggleBlockType(id, blockType, 0)
       } else {
         const newBlock = editor.insertNewEmptyBlock(blockType, id, 'bottom')
         blockId = newBlock.id
@@ -142,8 +143,7 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
           focus: { blockId, offset: 0, nodeIndex: 0 }
         })
       }
-
-      editor?.focusBlockHandler(id, blockType)
+      editor?.focusBlockHandler(blockId, blockType === Editor.BlockType.Question)
 
       setOpen(false)
     },
@@ -216,6 +216,16 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
         title: 'Quote',
         action: createOrToggleBlock(Editor.BlockType.Quote),
         icon: <Icon icon={IconMenuQuote} color={'#000'} />
+      },
+      {
+        title: 'Embed',
+        action: createOrToggleBlock(Editor.BlockType.Embed),
+        icon: <Icon icon={IconCommonLink} color={'#000'} />
+      },
+      {
+        title: 'Metabase (Beta)',
+        action: createOrToggleBlock(Editor.BlockType.Metabase),
+        icon: <Icon icon={IconCommonLink} color={'#000'} />
       },
       {
         title: 'Line Divider',

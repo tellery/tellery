@@ -92,7 +92,7 @@ export class FakePermission implements IPermission {
     return { query: () => '1=1', parameters: {} }
   }
 
-  async getListWorkspacesQuery(): Promise<{ [k: string]: any }> {
+  async getListWorkspacesQuery(_operatorId: string): Promise<{ [k: string]: any }> {
     return {}
   }
 }

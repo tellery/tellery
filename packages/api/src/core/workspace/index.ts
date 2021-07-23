@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import { WorkspaceEntity } from '../../entities/workspace'
+import { InvalidArgumentError, NoPermissionsError } from '../../error/error'
 import { PermissionWorkspaceRole } from '../../types/permission'
 import { WorkspaceDTO } from '../../types/workspace'
 import { absoluteURI, string2Hex } from '../../utils/common'
@@ -52,13 +53,23 @@ export class Workspace extends Common {
   }
 
   toDTO(userId: string): WorkspaceDTO {
-    const isAdmin =
-      _(this.members).find((m) => m.userId === userId)?.role === PermissionWorkspaceRole.ADMIN
+    const me = _(this.members).find((m) => m.userId === userId)
+    if (!me) {
+      throw NoPermissionsError.new()
+    }
+    const isAdmin = me.role === PermissionWorkspaceRole.ADMIN
+    // sort by joinAt desc
+    const sortedMembers = _(this.members)
+      .filter((m) => m.userId !== userId)
+      .orderBy('joinAt', 'desc')
+      .value()
+    // push current user to the first
+    sortedMembers.unshift(me)
     return {
       id: this.id,
       name: this.name,
       avatar: this.avatar,
-      members: this.members,
+      members: sortedMembers,
       memberNum: this.members.length,
       inviteLink: isAdmin ? this.getInviteLink(userId) : undefined,
       preferences: this.preferences,

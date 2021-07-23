@@ -1,6 +1,6 @@
 import { css } from '@emotion/css'
 import React, { ReactNode } from 'react'
-import { ThemingVariables } from 'styles'
+import { ThemingVariables } from '@app/styles'
 import { CircularLoading } from '../../CircularLoading'
 
 export const BlockingUI = (props: { blocking: boolean; children?: ReactNode }) => {

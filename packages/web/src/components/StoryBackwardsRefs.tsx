@@ -1,13 +1,13 @@
 import { css } from '@emotion/css'
-import { BlockTitle } from 'components/editor'
+import { BlockTitle } from '@app/components/editor'
 import { motion } from 'framer-motion'
-import { useOpenStory } from 'hooks'
-import { useBlockSuspense, useMgetBlocksSuspense } from 'hooks/api'
+import { useOpenStory } from '@app/hooks'
+import { useBlockSuspense, useMgetBlocksSuspense } from '@app/hooks/api'
 import React, { useMemo, useState } from 'react'
 import { usePopper } from 'react-popper'
 import { Link } from 'react-router-dom'
-import { ThemingVariables } from 'styles'
-import type { Ref, Story } from 'types'
+import { ThemingVariables } from '@app/styles'
+import type { Ref, Story } from '@app/types'
 import { CircularLoading } from './CircularLoading'
 import { BlockContentOverview } from './editor/BlockContentOverview'
 import { SmallStory } from './SmallStory'
@@ -192,8 +192,7 @@ export const StoryRefs = (props: { refs: Ref[]; storyId: string; isSQLEditor?: b
                             e.stopPropagation()
                             openStory(block.storyId!, {
                               blockId: block.id,
-                              isAltKeyPressed: e.altKey,
-                              pageType: story.type
+                              isAltKeyPressed: e.altKey
                             })
                             if (props.isSQLEditor) {
                               openQuestion({ mode: 'SQL', storyId: block.storyId!, blockId: block.id, readonly: false })

@@ -27,10 +27,10 @@ import { CustomTooltip } from '../components/CustomTooltip'
 import { formatNumber, formatRecord, isContinuous, isNumeric } from '../utils'
 import { LegendContent } from '../components/LegendContent'
 import { ColorSelector } from '../components/ColorSelector'
-import { ThemingVariables } from 'styles'
+import { ThemingVariables } from '@app/styles'
 import { ConfigNumericInput } from '../components/ConfigNumericInput'
 import { fontFamily } from '../constants'
-import { useDataFieldsDisplayType } from 'hooks/useDataFieldsDisplayType'
+import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 import { ConfigInput } from '../components/ConfigInput'
 import { useDataRecords } from '@app/hooks/useDataRecords'
 
@@ -105,6 +105,7 @@ export const scatter: Chart<Type.SCATTER> = {
         className={css`
           height: 100%;
           display: flex;
+          width: calc(150px + 225px);
         `}
       >
         <div

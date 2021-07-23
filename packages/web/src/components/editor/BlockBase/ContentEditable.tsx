@@ -1,6 +1,11 @@
 import { css, cx } from '@emotion/css'
-import { deserialize, restoreRange, saveSelection } from 'components/editor/helpers/contentEditable'
-import { nativeSelection2Tellery, tellerySelection2Native } from 'components/editor/helpers/tellerySelection'
+import { deserialize, restoreRange, saveSelection } from '@app/components/editor/helpers/contentEditable'
+import {
+  nativeSelection2Tellery,
+  TellerySelection,
+  tellerySelection2Native,
+  TellerySelectionType
+} from '../helpers/tellerySelection'
 import {
   extractEntitiesFromToken,
   getTokensLength,
@@ -9,16 +14,16 @@ import {
   splitToken,
   toggleMark,
   tokenPosition2SplitedTokenPosition
-} from 'components/editor/helpers/tokenManipulation'
+} from '../helpers/tokenManipulation'
 import debug from 'debug'
 import { dequal } from 'dequal'
-import { useOpenStory, usePrevious } from 'hooks'
-import { useMgetBlocksAny } from 'hooks/api'
+import { useOpenStory, usePrevious } from '@app/hooks'
+import { useMgetBlocksAny } from '@app/hooks/api'
 import produce from 'immer'
 import invariant from 'invariant'
 import React, { useCallback, useDebugValue, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
-import { ThemingVariables } from 'styles'
-import { Editor, TellerySelection, TellerySelectionType } from 'types'
+import { ThemingVariables } from '@app/styles'
+import { Editor } from '@app/types'
 import { useEditor, useLocalSelection } from '../hooks'
 import { BlockReferenceDropdown } from '../Popovers/BlockReferenceDropdown'
 import { SlashCommandDropdown } from '../Popovers/SlashCommandDropdown'
@@ -104,28 +109,25 @@ const _ContentEditable: React.ForwardRefRenderFunction<
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey) {
         switch (e.key) {
-          case 'B': // ctrl+B or ctrl+b
+          case 'B':
           case 'b':
             currentMarksRef.current = toggleMark(currentMarksRef.current, Editor.InlineType.Bold)
             break
-          case 'I': // ctrl+I or ctrl+i
+          case 'I':
           case 'i':
             currentMarksRef.current = toggleMark(currentMarksRef.current, Editor.InlineType.Italic)
             break
-          case 'U': // ctrl+U or ctrl+u
+          case 'U':
           case 'u':
             currentMarksRef.current = toggleMark(currentMarksRef.current, Editor.InlineType.Underline)
-            e.preventDefault()
             break
-          case 'E': // ctrl+U or ctrl+u
+          case 'E':
           case 'e':
             currentMarksRef.current = toggleMark(currentMarksRef.current, Editor.InlineType.Code)
-            e.preventDefault()
             break
-          case 'H': // ctrl+U or ctrl+u
+          case 'H':
           case 'h':
             currentMarksRef.current = toggleMark(currentMarksRef.current, Editor.InlineType.Hightlighted)
-            e.preventDefault()
             break
         }
       }

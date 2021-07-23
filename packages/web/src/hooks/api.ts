@@ -13,16 +13,16 @@ import {
   SearchBlockResult,
   searchBlocks,
   sqlRequest
-} from 'api'
-import { useAsync } from 'hooks'
+} from '@app/api'
+import { useAsync } from '@app/hooks'
 import invariant from 'invariant'
 import { compact } from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { QueryObserverResult, useInfiniteQuery, useMutation, useQuery, UseQueryOptions } from 'react-query'
 import { useRecoilCallback, useRecoilValue, useRecoilValueLoadable, waitForAll, waitForAny } from 'recoil'
-import { AvailableConfig, BackLinks, Editor, ProfileConfig, Snapshot, Story, UserInfo, Workspace } from 'types'
-import { queryClient } from 'utils'
-import { emitBlockUpdate } from 'utils/remoteStoreObserver'
+import { AvailableConfig, BackLinks, Editor, ProfileConfig, Snapshot, Story, UserInfo, Workspace } from '@app/types'
+import { queryClient } from '@app/utils'
+import { emitBlockUpdate } from '@app/utils/remoteStoreObserver'
 import { TelleryBlockAtom, TelleryUserAtom } from '../store/block'
 import { useBatchQueries } from './useBatchQueries'
 
@@ -39,7 +39,7 @@ export const useStory = (id: string) => {
   return result
 }
 
-export const useFetchStoryChunk = <T extends Editor.BaseBlock = Story>(id: string): T => {
+export const useFetchStoryChunk = <T extends Editor.BaseBlock = Story>(id: string, suspense: boolean = true): T => {
   const updateBlocks = useRecoilCallback((recoilInterface) => (blocks: Record<string, Editor.Block>) => {
     Object.values(blocks).forEach((block) => {
       recoilInterface.set(TelleryBlockAtom(block.id), block)
@@ -65,7 +65,7 @@ export const useFetchStoryChunk = <T extends Editor.BaseBlock = Story>(id: strin
           // })
           return blocks
         }),
-    { suspense: true }
+    { suspense: suspense }
   )
 
   // console.log('useFetchStoryChunk useBlockSuspense', id)
@@ -411,7 +411,6 @@ export const useBlock = <T extends Editor.BaseBlock = Editor.Block>(
   const [state, setState] = useState({})
 
   useEffect(() => {
-    console.log(atom.contents, id, 'use block', atom.state)
     if (!id) {
       setState({})
       return

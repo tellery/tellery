@@ -7,8 +7,8 @@ import { Type } from '../types'
 import { formatRecord, isNumeric } from '../utils'
 import { ConfigLabel } from '../components/ConfigLabel'
 import { ConfigSelect } from '../components/ConfigSelect'
-import { ThemingVariables } from 'styles'
-import { useDataFieldsDisplayType } from 'hooks/useDataFieldsDisplayType'
+import { ThemingVariables } from '@app/styles'
+import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 import { useDataRecords } from '@app/hooks/useDataRecords'
 
 export const number: Chart<Type.NUMBER> = {
@@ -36,6 +36,7 @@ export const number: Chart<Type.NUMBER> = {
         className={css`
           padding: 20px;
           overflow-y: auto;
+          width: 225px;
         `}
       >
         <ConfigLabel top={0}>Value</ConfigLabel>

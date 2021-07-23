@@ -1,10 +1,10 @@
 import { css } from '@emotion/css'
 import React, { ReactNode } from 'react'
-import { ThemingVariables } from 'styles'
+import { ThemingVariables } from '@app/styles'
 import { CircularLoading } from './CircularLoading'
 
-export const BlockingUI = (props: { blocking: boolean; children?: ReactNode }) => {
-  const { blocking } = props
+export const BlockingUI = (props: { blocking: boolean; children?: ReactNode; size?: number }) => {
+  const { blocking, size = 80 } = props
   return (
     <>
       {blocking ? (
@@ -24,7 +24,7 @@ export const BlockingUI = (props: { blocking: boolean; children?: ReactNode }) =
             justify-content: center;
           `}
         >
-          <CircularLoading size={80} color={ThemingVariables.colors.gray[0]} />
+          <CircularLoading size={size} color={ThemingVariables.colors.gray[0]} />
         </div>
       ) : null}
       {props.children}

@@ -1,6 +1,6 @@
 import { css, cx } from '@emotion/css'
 import type { ReactNode } from 'react'
-import { ThemingVariables } from 'styles'
+import { ThemingVariables } from '@app/styles'
 
 export function ConfigButton(props: { className?: string; children: ReactNode; active?: boolean; onClick(): void }) {
   return (

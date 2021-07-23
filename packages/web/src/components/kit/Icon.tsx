@@ -1,5 +1,5 @@
 import { css, cx } from '@emotion/css'
-import { svgColorClassName } from 'lib/svg'
+import { svgColorClassName } from '@app/lib/svg'
 import { isNil, omitBy } from 'lodash'
 import { FunctionComponent, SVGAttributes, useMemo, forwardRef, HTMLAttributes } from 'react'
 

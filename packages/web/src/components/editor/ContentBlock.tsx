@@ -1,12 +1,10 @@
 import { css, cx } from '@emotion/css'
-import { TelleryBlockSelectedAtom } from 'components/editor/store/selection'
 import { motion } from 'framer-motion'
-import { useBlockSuspense } from 'hooks/api'
-import React, { memo, useEffect, useMemo, useRef } from 'react'
+import { useBlockSuspense } from '@app/hooks/api'
+import React, { memo, useEffect, useMemo, useRef, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
-import { useRecoilValue } from 'recoil'
-import { ThemingVariables } from 'styles'
-import { Editor } from 'types'
+import { ThemingVariables } from '@app/styles'
+import { Editor } from '@app/types'
 import { BlockOperations } from './BlockOperations'
 import { OperatorsAvatar } from './BlockOperators'
 import { BlockInner } from './Blocks'
@@ -14,9 +12,10 @@ import { BlockInner } from './Blocks'
 import { TitleBlock } from './Blocks/TitleBlock'
 import { DroppingAreaIndicator } from './DroppingAreaIndicator'
 import { DroppleableOverlay } from './DroppleableOverlay'
-import { emitBlockMounted } from './helpers/blockObserver'
+import { useBlockAdmin } from './hooks/useBlockAdminProvider'
 import { BlockBehaviorConext, useBlockBehavior } from './hooks/useBlockBehavior'
 import { useBlockFormat } from './hooks/useBlockFormat'
+import { useBlockSelected } from './hooks/useBlockSelected'
 
 function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   return (
@@ -49,18 +48,16 @@ export const ContentBlocks: React.FC<{
   parentType: Editor.BlockType
   readonly?: boolean
   draggable?: boolean
-  highlightedBlock?: string
 }> = (props) => {
-  const { small = false, readonly = false, draggable = true, highlightedBlock = undefined } = props
+  const { small = false, readonly = false, draggable = true } = props
 
   const behavior = useMemo(() => {
     return {
       small,
       readonly,
-      highlightedBlock,
       draggable
     }
-  }, [small, readonly, draggable, highlightedBlock])
+  }, [small, readonly, draggable])
 
   return (
     <BlockBehaviorConext.Provider value={behavior}>
@@ -96,15 +93,30 @@ export const ContentBlockInner: React.FC<{
   parentType: Editor.BlockType
 }> = ({ block, parentType = Editor.BlockType.Story }) => {
   const blockFormat = useBlockFormat(block)
-  const { small, readonly, highlightedBlock } = useBlockBehavior()
-  const isHighlighted = highlightedBlock === block.id
+  const blockRef = useRef(null)
+  const { small, readonly } = useBlockBehavior()
   const ref = useRef<HTMLDivElement | null>(null)
+  const blockAdmin = useBlockAdmin()
+  const [hightlighted, setHighlighted] = useState(false)
 
   useEffect(() => {
     if (ref.current) {
-      emitBlockMounted(block, ref.current)
+      blockAdmin?.registerBlockInstance(block.id, {
+        blockRef: blockRef,
+        wrapperElement: ref.current,
+        setHighlighted
+      })
     }
-  }, [block])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [block.type])
+
+  useEffect(() => {
+    if (!small) {
+      setTimeout(() => {
+        setHighlighted(false)
+      }, 2000)
+    }
+  }, [hightlighted, small])
 
   if (block.type === Editor.BlockType.Row) {
     return <BlockInner block={block} />
@@ -151,14 +163,14 @@ export const ContentBlockInner: React.FC<{
             <DroppingAreaIndicator blockId={block.id} />
           </>
         )}
-        <BlockSelectedOverlay blockId={block.id} selected={isHighlighted} />
+        <BlockSelectedOverlay blockId={block.id} selected={hightlighted} />
         <ErrorBoundary
           FallbackComponent={ErrorFallback}
           onReset={() => {
             // reset the state of your app so the error doesn't happen again
           }}
         >
-          <BlockInner block={block} blockFormat={blockFormat} parentType={parentType}>
+          <BlockInner ref={blockRef} block={block} blockFormat={blockFormat} parentType={parentType}>
             {block.children && block.children.length > 0 && (
               <BlockChildren
                 parentType={block.type}
@@ -230,9 +242,12 @@ export const BlockSelectedOverlay: React.FC<{ blockId: string; selected?: boolea
   blockId,
   selected = false
 }) => {
-  const blockSelected = useRecoilValue(TelleryBlockSelectedAtom(blockId))
-  return blockSelected || selected ? (
+  const blockSelected = useBlockSelected(blockId)
+  return (
     <div
+      style={{
+        opacity: blockSelected || selected ? 1 : 0
+      }}
       className={css`
         height: 100%;
         width: 100%;
@@ -241,10 +256,11 @@ export const BlockSelectedOverlay: React.FC<{ blockId: string; selected?: boolea
         position: absolute;
         z-index: 999;
         background: rgba(46, 115, 252, 0.2);
+        transition: opacity 250ms;
         pointer-events: none;
       `}
     ></div>
-  ) : null
+  )
 }
 
 export const BlockChildren: React.FC<{

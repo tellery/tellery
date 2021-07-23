@@ -1,5 +1,6 @@
 import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
+import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { TELLERY_MIME_TYPES } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import type { FlipModifier } from '@popperjs/core/lib/modifiers/flip'
@@ -11,23 +12,23 @@ import {
   IconMenuDuplicate,
   IconMenuInsertAfter,
   IconMenuInsertBefore
-} from 'assets/icons'
-import { getBlockWrapElementById } from 'components/editor/helpers/contentEditable'
-import FormSwitch from 'components/kit/FormSwitch'
-import Icon from 'components/kit/Icon'
+} from '@app/assets/icons'
+import { getBlockWrapElementById } from '@app/components/editor/helpers/contentEditable'
+import FormSwitch from '@app/components/kit/FormSwitch'
+import Icon from '@app/components/kit/Icon'
 import copy from 'copy-to-clipboard'
 import dayjs from 'dayjs'
-import { useBlockSuspense, useUser } from 'hooks/api'
+import { useBlockSuspense, useUser } from '@app/hooks/api'
 import invariant from 'invariant'
 import { useAtom } from 'jotai'
 import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
-import { editorTransformBlockPopoverState } from 'store'
-import { ThemingVariables } from 'styles'
-import { Editor, TellerySelectionType } from 'types'
+import { editorTransformBlockPopoverState } from '@app/store'
+import { ThemingVariables } from '@app/styles'
+import { Editor } from '@app/types'
 import { MenuItem } from '../../MenuItem'
 import { EditorPopover } from '../EditorPopover'
-import { subscribeBlockMountedOnce } from '../helpers/blockObserver'
+import { TellerySelectionType } from '../helpers'
 import { useEditor } from '../hooks'
 
 export interface OperationInterface {
@@ -124,6 +125,8 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
               onCopy: (clipboardData) => {
                 invariant(block, 'block is null')
                 const dataTranser = clipboardData as DataTransfer
+                if (!block.storyId) return
+
                 dataTranser.setData(
                   TELLERY_MIME_TYPES.BLOCK_REF,
                   JSON.stringify({ blockId: block.id, storyId: block.storyId })
@@ -167,9 +170,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
               focus: { blockId: newBlock.id, nodeIndex: 0, offset: 0 },
               storyId: newBlock.storyId!
             })
-            subscribeBlockMountedOnce(newBlock.id, () => {
-              editor?.getBlockInstanceById(newBlock.id)?.openMenu()
-            })
+            editor?.focusBlockHandler(newBlock.id, true)
           }
         },
         {
@@ -190,9 +191,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
               focus: { blockId: newBlock.id, nodeIndex: 0, offset: 0 },
               storyId: newBlock.storyId!
             })
-            subscribeBlockMountedOnce(newBlock.id, () => {
-              editor?.getBlockInstanceById(newBlock.id)?.openMenu()
-            })
+            editor?.focusBlockHandler(newBlock.id, true)
           }
         },
         {

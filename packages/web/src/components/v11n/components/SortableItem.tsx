@@ -2,9 +2,9 @@ import { css } from '@emotion/css'
 import type { ReactNode } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { IconCommonDrag } from 'assets/icons'
-import { ThemingVariables } from 'styles'
-import Icon from 'components/kit/Icon'
+import { IconCommonDrag } from '@app/assets/icons'
+import { ThemingVariables } from '@app/styles'
+import Icon from '@app/components/kit/Icon'
 import { useMemo } from 'react'
 
 export function SortableItem(props: { id: string; children: ReactNode }) {

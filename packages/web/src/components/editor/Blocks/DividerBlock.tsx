@@ -1,7 +1,7 @@
 import { css } from '@emotion/css'
 import React from 'react'
-import { ThemingVariables } from 'styles'
-import { Editor } from 'types'
+import { ThemingVariables } from '@app/styles'
+import { Editor } from '@app/types'
 import { BlockComponent, registerBlock } from './utils'
 
 export const DividerBlock: BlockComponent<
@@ -36,4 +36,4 @@ DividerBlock.meta = {
   hasChildren: false
 }
 
-registerBlock(Editor.BlockType.Code, DividerBlock)
+registerBlock(Editor.BlockType.Divider, DividerBlock)

@@ -1,20 +1,20 @@
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { DEFAULT_TITLE } from '@app/utils'
 import { css, cx } from '@emotion/css'
-import { IconCommonSearch } from 'assets/icons'
-import { useGetBlockTitleTextSnapshot } from 'components/editor'
-import { StoryListItem, StoryListItemValue } from 'components/StoryListItem'
+import { IconCommonSearch } from '@app/assets/icons'
+import { useGetBlockTitleTextSnapshot } from '@app/components/editor'
+import { StoryListItem, StoryListItemValue } from '@app/components/StoryListItem'
 import { AnimateSharedLayout, motion } from 'framer-motion'
-import { useSearchParams } from 'hooks'
-import { useStoriesSearch, useWorkspaceView } from 'hooks/api'
-import { SVG2DataURI } from 'lib/svg'
+import { useSearchParams } from '@app/hooks'
+import { useStoriesSearch, useWorkspaceView } from '@app/hooks/api'
+import { SVG2DataURI } from '@app/lib/svg'
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Helmet } from 'react-helmet'
 import mergeRefs from 'react-merge-refs'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import { areEqual, ListChildComponentProps, ListOnScrollProps, VariableSizeList } from 'react-window'
 import InfiniteLoader from 'react-window-infinite-loader'
-import { ThemingVariables } from 'styles'
+import { ThemingVariables } from '@app/styles'
 
 const RenderItem = memo(function Item({ index, style, data }: ListChildComponentProps) {
   const { isItemLoaded, isFooter, items, workspaceView, refetch, refetchWorkspaceView, large, width } = data
@@ -84,6 +84,9 @@ const Page = () => {
           results.searchResults.map((storyId) => {
             const story = results.blocks[storyId]
             const block = story.children?.find((id) => results.highlights[id])
+            const highlight = Object.entries(results.highlights).find(
+              ([id]) => results.blocks[id].storyId === storyId && id !== storyId
+            )
             return {
               id: story.id,
               title: results.highlights[story.id].trim().length ? results.highlights[story.id] : DEFAULT_TITLE,
@@ -94,6 +97,12 @@ const Page = () => {
                     id: block,
                     text: results.highlights[block],
                     originText: getBlockTitle(results.blocks[block])
+                  }
+                : highlight
+                ? {
+                    id: highlight[0],
+                    text: highlight[1],
+                    originText: getBlockTitle(results.blocks[highlight[0]])
                   }
                 : undefined,
               user: results.users[story.createdById!],

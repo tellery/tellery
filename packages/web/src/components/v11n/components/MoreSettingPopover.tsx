@@ -8,13 +8,13 @@ import {
   IconVisualizationLine,
   IconVisualizationBar,
   IconVisualizationArea
-} from 'assets/icons'
-import { BlockPopover } from 'components/BlockPopover'
-import { ThemingVariables } from 'styles'
+} from '@app/assets/icons'
+import { BlockPopover } from '@app/components/BlockPopover'
+import { ThemingVariables } from '@app/styles'
 import { ComboShape, ComboStack, Config, Type } from '../types'
 import { ConfigSelect } from './ConfigSelect'
 import { ConfigSwitch } from './ConfigSwitch'
-import Icon from 'components/kit/Icon'
+import Icon from '@app/components/kit/Icon'
 
 const lineTypes: Config<Type.COMBO>['groups'][0]['type'][] = ['linear', 'monotone', 'step']
 

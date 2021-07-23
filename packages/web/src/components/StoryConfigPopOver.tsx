@@ -9,22 +9,23 @@ import {
   IconMenuDelete,
   IconMenuDuplicate,
   IconMenuShow
-} from 'assets/icons'
-import FormSwitch from 'components/kit/FormSwitch'
-import { MenuItem } from 'components/MenuItem'
-import { MenuItemDivider } from 'components/MenuItemDivider'
-import { createTranscation } from 'context/editorTranscations'
+} from '@app/assets/icons'
+import FormSwitch from '@app/components/kit/FormSwitch'
+import { MenuItem } from '@app/components/MenuItem'
+import { MenuItemDivider } from '@app/components/MenuItemDivider'
+import { createTranscation } from '@app/context/editorTranscations'
 import copy from 'copy-to-clipboard'
 import dayjs from 'dayjs'
-import { useOpenStory } from 'hooks'
-import { useUser } from 'hooks/api'
+import { useOpenStory } from '@app/hooks'
+import { useUser } from '@app/hooks/api'
 import { nanoid } from 'nanoid'
 import React, { useCallback } from 'react'
 import { useHistory } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { ThemingVariables } from 'styles'
-import type { Permission, PermissionEntityRole, Story } from 'types'
+import { ThemingVariables } from '@app/styles'
+import type { Permission, PermissionEntityRole, Story } from '@app/types'
 import Icon from './kit/Icon'
+import { env } from '@app/env'
 
 const upsertPermission = (permissions: Permission[], permission: Permission): Permission[] => {
   const filteredPermission = permissions.filter(
@@ -150,7 +151,7 @@ export const StoryConfigPopOver: React.FC<{
         }}
         side={<FormSwitch checked={readOnlyStatus} readOnly />}
       />
-      {import.meta.env.DEV && (
+      {env.DEV && (
         <MenuItem
           icon={<Icon icon={IconMenuShow} color={ThemingVariables.colors.text[0]} />}
           title="Show border"

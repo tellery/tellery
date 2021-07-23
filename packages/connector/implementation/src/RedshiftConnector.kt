@@ -38,30 +38,45 @@ import java.sql.Connection
             required = true
         ),
         Config(
-            name = "S3AccessKey",
+            name = "Username",
+            type = ConfigType.STRING,
+            description = "The username (role) you used to connect to your Redshift cluster (created when initializing Redshift cluster)",
+            hint = "your_username",
+            required = true,
+        ),
+        Config(
+            name = "Password",
+            type = ConfigType.STRING,
+            description = "",
+            hint = "",
+            required = true,
+            secret = true,
+        ),
+        Config(
+            name = "S3 Access Key",
             type = ConfigType.STRING,
             description = "S3 Access Key ID(for uploading csv)"
         ),
         Config(
-            name = "S3SecretKey",
+            name = "S3 Secret Key",
             type = ConfigType.STRING,
             description = "S3 Secret Access Key (for uploading csv)",
             secret = true
         ),
         Config(
-            name = "S3Region",
+            name = "S3 Region",
             type = ConfigType.STRING,
             description = "S3 region (be the same as your Redshift cluster",
             hint = "us-east-1"
         ),
         Config(
-            name = "S3Bucket",
+            name = "S3 Bucket",
             type = ConfigType.STRING,
             description = "S3 bucket (where uploaded csv stores)",
             hint = "tellery"
         ),
         Config(
-            name = "S3KeyPrefix",
+            name = "S3 Key Prefix",
             type = ConfigType.STRING,
             description = "S3 key prefix prepends to uploaded csv"
         ),
@@ -105,7 +120,7 @@ class RedshiftConnector : JDBCConnector() {
                         type,
                     ),
                 ->
-                "${name.toUpperCase()} ${toSQLType(type)}"
+                "${name.uppercase()} ${toSQLType(type)}"
             }
 
             val createTableSQL = """

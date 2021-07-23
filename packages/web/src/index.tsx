@@ -7,16 +7,17 @@ import debug from 'debug'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import App from './App'
+import { env } from './env'
 
-import.meta.env.DEV && debug.enable('tellery:*')
+env.DEV && debug.enable('tellery:*')
 
 dayjs.extend(relativeTime)
 Sentry.init({
-  dsn: import.meta.env.VITE_SENTRY_DSN as string,
+  dsn: env.SENTRY_DSN,
   beforeSend(event) {
     return event
   },
-  enabled: import.meta.env.PROD,
+  enabled: env.PROD,
   autoSessionTracking: true,
   integrations: [
     new Integrations.BrowserTracing({

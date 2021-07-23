@@ -2,11 +2,11 @@ import { useAsync } from '@app/hooks'
 import { useAuth } from '@app/hooks/useAuth'
 import { css } from '@emotion/css'
 import { ErrorMessage } from '@hookform/error-message'
-import { FormButton } from 'components/kit/FormButton'
-import FormError from 'components/kit/FormError'
-import FormInput from 'components/kit/FormInput'
-import FormLabel from 'components/kit/FormLabel'
-import FormModal from 'components/kit/FormModal'
+import { FormButton } from '@app/components/kit/FormButton'
+import FormError from '@app/components/kit/FormError'
+import FormInput from '@app/components/kit/FormInput'
+import FormLabel from '@app/components/kit/FormLabel'
+import FormModal from '@app/components/kit/FormModal'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useHistory } from 'react-router-dom'
@@ -18,7 +18,7 @@ export default function Login() {
     formState: { errors },
     handleSubmit,
     watch
-  } = useForm<{ email?: string; password?: string }>({})
+  } = useForm<{ email?: string; password?: string }>({ mode: 'onBlur' })
   const auth = useAuth()
   const handleUserLogin = useAsync(auth.login)
   const history = useHistory()
@@ -52,13 +52,14 @@ export default function Login() {
             `}
           >
             <div>
-              <FormLabel>E-mail</FormLabel>
+              <FormLabel>Email</FormLabel>
               <FormInput
-                type="text"
+                type="email"
                 {...register('email', {
                   required: 'required',
                   validate: (v) => (v && isEmail(v) ? true : 'email format error')
                 })}
+                autoFocus={true}
                 error={errors.email}
               />
               <ErrorMessage errors={errors} name="email" render={FormError} />

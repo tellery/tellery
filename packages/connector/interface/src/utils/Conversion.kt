@@ -50,7 +50,7 @@ fun castToDouble(s: String): Double {
 }
 
 fun castToBoolean(s: String): Boolean {
-    return s.toLowerCase() == "true"
+    return s.lowercase() == "true"
 }
 
 fun castToBigDecimal(s: String): BigDecimal {
