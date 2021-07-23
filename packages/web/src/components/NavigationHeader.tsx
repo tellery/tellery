@@ -201,23 +201,16 @@ export const RefreshAllQuestionBlockButton: React.FC<{ storyId: string }> = () =
         justify-content: center;
       `}
     >
-      <Tippy
-        content={
+      <RefreshButton
+        hoverContent={
           storySnapshotManger.mutating !== 0
             ? `Refreshing... ${storySnapshotManger.mutating}/${storySnapshotManger.total}, click to stop`
             : `Refresh ${storySnapshotManger.total} Questions`
         }
-        hideOnClick={false}
-        animation="fade"
-        duration={150}
-        arrow={false}
-      >
-        <RefreshButton
-          color={ThemingVariables.colors.text[0]}
-          loading={storySnapshotManger.mutating !== 0}
-          onClick={storySnapshotManger.mutating !== 0 ? storySnapshotManger.cancelAll : storySnapshotManger.runAll}
-        />
-      </Tippy>
+        color={ThemingVariables.colors.text[0]}
+        loading={storySnapshotManger.mutating !== 0}
+        onClick={storySnapshotManger.mutating !== 0 ? storySnapshotManger.cancelAll : storySnapshotManger.runAll}
+      />
     </div>
   )
 }

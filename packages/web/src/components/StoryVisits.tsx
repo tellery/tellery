@@ -4,6 +4,9 @@ import { SocketContext } from '@app/context/socketio'
 import { useMgetUsers, useStoryVisits } from '@app/hooks/api'
 import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { ThemingVariables } from '@app/styles'
+import styled from '@emotion/styled'
+import Tippy from '@tippyjs/react'
+import dayjs from 'dayjs'
 
 export function StoryVisits(props: { storyId: string; className?: string }) {
   const { storyId } = props
@@ -29,6 +32,7 @@ export function StoryVisits(props: { storyId: string; className?: string }) {
       ]
     }
   }, [storyId, user.id, visits])
+
   useEffect(() => {
     if (!socket) return
     const onNoti = (data: {
@@ -56,15 +60,7 @@ export function StoryVisits(props: { storyId: string; className?: string }) {
   }, [socket, storyId, setActiveIds, refetch])
 
   return (
-    <div
-      className={cx(
-        css`
-          display: inline-flex;
-          flex-direction: row-reverse;
-        `,
-        props.className
-      )}
-    >
+    <Container className={props.className}>
       {sortedVisits &&
         sortedVisits.length > 1 &&
         sortedVisits.map((_visit, index) => {
@@ -73,31 +69,46 @@ export function StoryVisits(props: { storyId: string; className?: string }) {
           if (!user) return null
           const isActive = activeIds.findIndex((id) => id === user.id) !== -1
           return (
-            <div
+            <Tippy
+              content={
+                <div>
+                  {user.name}
+                  <br />
+                  {isActive ? null : `Last Viewed ${dayjs(visit.lastVisitTimestamp).fromNow()}`}
+                </div>
+              }
+              arrow={false}
               key={visit.userId}
-              className={css`
-                height: 36px;
-                width: 36px;
-                margin-left: -12px;
-                border-radius: 100%;
-                overflow: hidden;
-                border: 2px solid ${ThemingVariables.colors.gray[5]};
-                background-color: ${ThemingVariables.colors.gray[5]};
-                z-index: ${index};
-              `}
             >
-              <img
-                src={user.avatar}
-                className={css`
-                  height: 32px;
-                  width: 32px;
-                  border-radius: 100%;
-                  opacity: ${isActive ? 1 : 0.3};
-                `}
-              />
-            </div>
+              <AvatarWrapper index={index} key={visit.userId}>
+                <Avatar src={user.avatar} opacity={isActive ? 1 : 0.3} />
+              </AvatarWrapper>
+            </Tippy>
           )
         })}
-    </div>
+    </Container>
   )
 }
+
+const Container = styled.div`
+  display: inline-flex;
+  flex-direction: row-reverse;
+`
+
+const AvatarWrapper = styled.div<{ index: number }>`
+  height: 36px;
+  width: 36px;
+  margin-left: -12px;
+  border-radius: 100%;
+  overflow: hidden;
+  border: 2px solid ${ThemingVariables.colors.gray[5]};
+  background-color: ${ThemingVariables.colors.gray[5]};
+  z-index: ${(props) => props.index};
+`
+
+const Avatar = styled.img<{ opacity: number }>`
+  height: 32px;
+  width: 32px;
+  border-radius: 100%;
+  opacity: ${({ opacity }) => opacity};
+`

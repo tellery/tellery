@@ -57,7 +57,7 @@ export default forwardRef<
   if (!hoverContent) return button
 
   return (
-    <Tippy content={hoverContent ?? null} hideOnClick={false} animation="fade" duration={150} arrow={false}>
+    <Tippy content={hoverContent ?? null} hideOnClick={false} arrow={false}>
       {button}
     </Tippy>
   )
