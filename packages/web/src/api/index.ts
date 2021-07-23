@@ -325,3 +325,7 @@ export function saveTranscations(transcations: Transcation[]) {
     transactions: transcations
   })
 }
+
+export const getMetabaseToken = (params: { siteUrl: string; payload: object }) => {
+  return request.post('/api/thirdParty/metabase/token', params)
+}

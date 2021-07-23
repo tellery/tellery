@@ -1,11 +1,45 @@
-import IframeResizer from 'iframe-resizer-react'
-import React, { useCallback, useRef, useState, useMemo } from 'react'
-
+import { getMetabaseToken } from '@app/api'
 import { Editor } from '@app/types'
+import IframeResizer from 'iframe-resizer-react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
+import { useQuery } from 'react-query'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
 import { EmbedBlockPopover } from '../BlockBase/EmbedBlockPopover'
 import { BlockFormatInterface, useEditor } from '../hooks'
 import { BlockComponent, registerBlock } from './utils'
+
+const useMetabaseToken = (block: Editor.MetabaseBlock) => {
+  const { data: token } = useQuery({
+    queryKey: [
+      'metabasetoken',
+      block.content.siteUrl,
+      block.content.publicToken,
+      block.content.resourceType,
+      block.content.resourceId
+    ],
+    queryFn: () => {
+      if (!block.content.resourceType || !block.content.resourceType || !block.content.siteUrl) {
+        return
+      }
+      return getMetabaseToken({
+        siteUrl: block.content.siteUrl,
+        payload: {
+          resource: {
+            [block.content.resourceType]: block.content.resourceId
+          },
+          params: {}
+        }
+      }).then((res) => res.data.token as string)
+    },
+    enabled: !!(block.content.siteUrl && block.content.publicToken === undefined)
+  })
+
+  if (block.content.publicToken) {
+    return block.content.publicToken
+  }
+
+  return token
+}
 
 const MetabaseBlock: BlockComponent<
   React.FC<{
@@ -19,9 +53,7 @@ const MetabaseBlock: BlockComponent<
   const editor = useEditor<Editor.MetabaseBlock>()
   const [showPopover, setShowPopover] = useState(false)
 
-  const token = useMemo(() => {
-    return block.content?.publicToken
-  }, [block.content?.publicToken])
+  const token = useMetabaseToken(block)
 
   const iframeUrl = useMemo(() => {
     return `${block.content.siteUrl}/${block.content.publicToken ? 'public' : 'embed'}/${
@@ -56,15 +88,21 @@ const MetabaseBlock: BlockComponent<
                 oldValue.content.siteUrl = `${url.protocol}//${url.host}`
                 const pathParts = url.pathname.split('/').slice(1)
                 console.log(pathParts)
-                if (pathParts[0] === 'public') {
-                  oldValue.content.resourceType = pathParts[1]
-                  oldValue.content.publicToken = pathParts[2]
-                } else if (pathParts[0] === 'embed') {
-                  oldValue.content.resourceType = pathParts[1]
-                  oldValue.content.resourceId = parseInt(pathParts[2], 10)
+                if (pathParts.length === 3) {
+                  if (pathParts[0] === 'public') {
+                    oldValue.content.resourceType = pathParts[1]
+                    oldValue.content.publicToken = pathParts[2]
+                  } else if (pathParts[0] === 'embed') {
+                    oldValue.content.resourceType = pathParts[1]
+                    oldValue.content.resourceId = parseInt(pathParts[2], 10)
+                    oldValue.content.params = {}
+                  } else {
+                    return
+                  }
+                } else if (pathParts.length === 2) {
+                  oldValue.content.resourceType = pathParts[0]
+                  oldValue.content.resourceId = parseInt(pathParts[1], 10)
                   oldValue.content.params = {}
-                } else {
-                  return
                 }
                 setShowPopover(false)
               })
