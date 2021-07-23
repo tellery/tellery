@@ -1,26 +1,27 @@
+import { useBlockDndContext } from '@app/context/blockDnd'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
+import { useOnClickOutside } from '@app/hooks'
+import { useFetchStoryChunk } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { Operation, useCommit, useCommitHistory } from '@app/hooks/useCommit'
 import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
+import { BlockSnapshot, getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
+import { ThemingVariables } from '@app/styles'
+import { Editor, Story, Thought } from '@app/types'
+import { isUrl, TELLERY_MIME_TYPES } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import computeScrollIntoView from 'compute-scroll-into-view'
-import { useBlockDndContext } from '@app/context/blockDnd'
 import copy from 'copy-to-clipboard'
 import debug from 'debug'
 import { dequal } from 'dequal'
 import { motion } from 'framer-motion'
-import { useOnClickOutside } from '@app/hooks'
-import { useFetchStoryChunk } from '@app/hooks/api'
 import produce from 'immer'
 import invariant from 'invariant'
 import isHotkey from 'is-hotkey'
 import React, { CSSProperties, memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRecoilState } from 'recoil'
-import { BlockSnapshot, getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
-import { ThemingVariables } from '@app/styles'
-import { Editor, Story, Thought } from '@app/types'
-import { isUrl, TELLERY_MIME_TYPES } from '@app/utils'
+import scrollIntoView from 'scroll-into-view-if-needed'
 import {
   addMark,
   applyTransformOnTokensFromSelectionState,
@@ -35,8 +36,8 @@ import {
   tokenPosition2SplitedTokenPosition
 } from '.'
 import { StoryQuestionsSnapshotManagerProvider } from '../StoryQuestionsSnapshotManagerProvider'
+import { ThoughtItemHeader } from '../ThoughtItem'
 import { OperatorsContext, useStoryOperators } from './BlockOperators'
-import { ThoughtTitleBlock } from './Blocks/ThoughtTitleBlock'
 import { ContentBlocks } from './ContentBlock'
 import {
   createTranscation,
@@ -66,15 +67,13 @@ import {
   TellerySelectionType
 } from './helpers'
 import { EditorContext, EditorContextInterface, useMouseMoveInEmitter } from './hooks'
+import { BlockAdminContext, useBlockAdminProvider } from './hooks/useBlockAdminProvider'
 import { useBlockHoveringState } from './hooks/useBlockHoveringState'
 import { useDebouncedDimension } from './hooks/useDebouncedDimensions'
-import { useBlockAdminProvider, BlockAdminContext } from './hooks/useBlockAdminProvider'
 import { useSetUploadResource } from './hooks/useUploadResource'
 import { BlockTextOperationMenu } from './Popovers/BlockTextOperationMenu'
 import { TelleryStorySelection } from './store/selection'
 import type { SetBlock } from './types'
-import scrollIntoView from 'scroll-into-view-if-needed'
-import { ThoughtItemHeader } from '../ThoughtItem'
 
 const logger = debug('tellery:editor')
 

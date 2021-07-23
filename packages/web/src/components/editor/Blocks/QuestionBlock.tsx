@@ -342,7 +342,6 @@ const QuestionBlockHeader: React.FC<{
           align-items: center;
           justify-content: flex-start;
           align-self: stretch;
-          height: 40px;
           padding: 20px 20px 0 20px;
         `}
       >
