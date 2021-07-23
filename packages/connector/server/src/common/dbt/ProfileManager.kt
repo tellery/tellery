@@ -7,6 +7,7 @@ import com.google.common.base.Strings
 import io.tellery.common.dbt.profile.*
 import io.tellery.common.dbt.profile.Entity.Output
 import io.tellery.entities.Profile
+import io.tellery.services.Utils.assertInternalError
 
 object ProfileManager {
 
@@ -21,40 +22,45 @@ object ProfileManager {
 
     private fun toDbtProfile(profile: Profile): BaseProfile {
         val config = profile.configs
+        val auth = profile.auth!!
 
         return when (profile.type) {
             "PostgreSQL" -> {
-                assert(!Strings.isNullOrEmpty(config[Constants.PG_ENDPOINT_FIELD]))
-                assert(!Strings.isNullOrEmpty(config[Constants.PG_PORT_FIELD]))
-                assert(!Strings.isNullOrEmpty(config[Constants.PG_DATABASE_FIELD]))
+                assertConfigField(config, Constants.PG_ENDPOINT_FIELD)
+                assertConfigField(config, Constants.PG_PORT_FIELD)
+                assertConfigField(config, Constants.PG_DATABASE_FIELD)
                 return PostgresqlProfile(
                     host = config[Constants.PG_ENDPOINT_FIELD]!!,
                     port = config[Constants.PG_PORT_FIELD]!!,
-                    user = profile.auth!!.username,
-                    password = profile.auth!!.password!!
+                    user = auth.username,
+                    password = auth.password!!
                 )
             }
             "Redshift" -> {
-                assert(!Strings.isNullOrEmpty(config[Constants.RS_ENDPOINT_FIELD]))
-                assert(!Strings.isNullOrEmpty(config[Constants.RS_PORT_FIELD]))
-                assert(!Strings.isNullOrEmpty(config[Constants.RS_DATABASE_FIELD]))
+                assertConfigField(config, Constants.RS_ENDPOINT_FIELD)
+                assertConfigField(config, Constants.RS_PORT_FIELD)
+                assertConfigField(config, Constants.RS_DATABASE_FIELD)
                 return RedshiftProfile(
                     host = config[Constants.RS_ENDPOINT_FIELD]!!,
                     port = config[Constants.RS_PORT_FIELD]!!,
-                    user = profile.auth!!.username,
-                    password = profile.auth!!.password!!
+                    user = auth.username,
+                    password = auth.password!!
                 )
             }
             "Snowflake" -> {
-                assert(!Strings.isNullOrEmpty(config[Constants.SF_ACCOUNT_FIELD]))
-                assert(!Strings.isNullOrEmpty(config[Constants.SF_REGION_FIELD]))
+                assertConfigField(config, Constants.SF_ACCOUNT_FIELD)
+                assertConfigField(config, Constants.SF_REGION_FIELD)
                 return SnowflakeProfile(
                     account = "${config[Constants.SF_ACCOUNT_FIELD]}.${config[Constants.SF_REGION_FIELD]}",
-                    user = profile.auth!!.username,
-                    password = profile.auth!!.password!!
+                    user = auth.username,
+                    password = auth.password!!
                 )
             }
             else -> throw RuntimeException("The type is not supported now.")
         }
+    }
+
+    private fun assertConfigField(config: Map<String, String>, field: String) {
+        assertInternalError(!Strings.isNullOrEmpty(config[field])) { "Required key $field is not in profile." }
     }
 }

@@ -40,4 +40,15 @@ object Utils {
             }
         }
     }
+
+    fun assertInternalError(value: Boolean) {
+        assertInternalError(value) { "Assertion failed" }
+    }
+
+    fun assertInternalError(value: Boolean, lazyMessage: () -> String) {
+        if (!value) {
+            val message = lazyMessage()
+            throw RuntimeException(message)
+        }
+    }
 }

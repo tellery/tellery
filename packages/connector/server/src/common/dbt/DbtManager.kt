@@ -23,6 +23,7 @@ import io.tellery.common.dbt.model.Manifest
 import io.tellery.entities.Profile
 import io.tellery.grpc.Block
 import io.tellery.grpc.DbtBlock
+import io.tellery.services.Utils.assertInternalError
 import io.tellery.utils.logger
 import org.apache.commons.io.FileUtils
 import java.io.BufferedReader
@@ -105,7 +106,7 @@ object DbtManager {
         val streamGobbler = StreamGobbler(process.inputStream) { logger.info(it) }
         Executors.newSingleThreadExecutor().submit(streamGobbler)
         val exitCode = process.waitFor()
-        assert(exitCode == 0)
+        assertInternalError(exitCode == 0) { "The dbt command execution failed: dbt compile." }
 
         val manifestFile = File(repo.gitRepoFolder.absolutePath + "/target/manifest.json")
         return parseDbtBlocks(manifestFile)
@@ -134,8 +135,13 @@ object DbtManager {
 
     @VisibleForTesting
     fun updateProjectConfig(projectConfig: JsonNode, name: String) {
-        assert(projectConfig.has("models"))
-        assert(projectConfig.get("models").has(name))
+        assertInternalError(
+            projectConfig.has("models")
+        ) { "The models field is not in project config." }
+
+        assertInternalError(
+            projectConfig.get("models").has(name)
+        ) { "The $name module is not in models folder." }
 
         val projectModelNode = projectConfig.get("models").get(name) as ObjectNode
         val materializedNode = ObjectNode(
@@ -248,8 +254,7 @@ object DbtManager {
         val profile = ConfigManager.profiles.map { it.name to it }.toMap()[name]
             ?: throw RuntimeException("The profile is not exists, name: $name")
 
-        assert(isDbtProfile(profile)) { "The profile is not a dbt profile" }
-
+        assertInternalError(isDbtProfile(profile)) { "The profile is not a dbt profile." }
         return profile
     }
 
