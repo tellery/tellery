@@ -101,7 +101,6 @@ const _StoryEditor: React.FC<{
   const mouseDownEventRef = useRef<MouseEvent | null>(null)
   const blockDnd = useBlockDndContext()
   const [lastInputChar, setLastInputChar] = useState<string | null>(null)
-
   const blockAdminValue = useBlockAdminProvider()
 
   const lockOrUnlockScroll = useCallback((lock: boolean) => {
@@ -143,7 +142,7 @@ const _StoryEditor: React.FC<{
             storyId: storyId
           })
         } else {
-          blockDnd.setSelectingBlockIds([])
+          blockDnd.setSelectingBlockIds(null)
           setSelectionState(null)
         }
       },

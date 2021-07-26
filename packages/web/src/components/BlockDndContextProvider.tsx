@@ -1,6 +1,9 @@
+import { ContentBlocks } from '@app/components/editor/ContentBlock'
 import { getDuplicatedBlocks } from '@app/context/editorTranscations'
 import { useCreateEmptyBlock } from '@app/helpers/blockFactory'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
+import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
+import { Direction, DnDItemTypes, DropItem, Editor } from '@app/types'
 import {
   DndContext,
   DragEndEvent,
@@ -12,13 +15,9 @@ import {
   useSensors
 } from '@dnd-kit/core'
 import { css } from '@emotion/css'
-import { ContentBlocks } from '@app/components/editor/ContentBlock'
-import { useSelectionArea } from '@app/hooks/useSelectionArea'
 import invariant from 'invariant'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import ReactTestUtils from 'react-dom/test-utils'
-import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
-import { Direction, DnDItemTypes, DropItem, Editor } from '@app/types'
 import {
   BlockDndContext,
   closetBorder,
@@ -29,9 +28,9 @@ import {
   logger,
   MouseSensorOptions
 } from '../context/blockDnd'
+import { useDroppingArea } from '../hooks/useDroppingArea'
 import { DndSensor } from '../lib/dnd-kit/dndSensor'
 import { useSetUploadResource } from './editor/hooks/useUploadResource'
-import { useDroppingArea } from '../hooks/useDroppingArea'
 
 export const BlockDndContextProvider: React.FC = ({ children }) => {
   const [selectingBlockIds, setSelectingBlockIds] = useState<string[] | null>(null)
@@ -191,7 +190,10 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
 
   const blockDndContext = useMemo(() => {
     return {
-      setSelectingBlockIds
+      setSelectingBlockIds: (blockIds: string[] | null) => {
+        setSelectingBlockIds(blockIds)
+        selectingBlockIdsRef.current = blockIds
+      }
     }
   }, [setSelectingBlockIds])
 
