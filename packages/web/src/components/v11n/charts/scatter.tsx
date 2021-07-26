@@ -134,248 +134,248 @@ export const scatter: Chart<Type.SCATTER> = {
             </ConfigButton>
           ))}
         </div>
-        <div
+
+        <PerfectScrollbar
           className={css`
             padding: 20px;
             flex: 1;
           `}
+          options={{ suppressScrollX: true }}
         >
-          <PerfectScrollbar>
-            {tab === Tab.DATA ? (
-              <>
-                <ConfigLabel top={0}>X axis</ConfigLabel>
-                <ConfigSelect
-                  options={props.config.keys}
-                  value={props.config.xAxis}
-                  onChange={(xAxis) => {
-                    onConfigChange('xAxis', xAxis, 'xLabel', xAxis)
-                    if (!isNumeric(props.data.fields.find((field) => field.name === props.config.xAxis)?.displayType)) {
-                      onConfigChange('referenceXLabel', '', 'referenceXValue', undefined)
-                    }
-                  }}
-                  placeholder="Please select"
-                />
-                <ConfigLabel>Y axis</ConfigLabel>
-                <ConfigSelect
-                  options={props.config.keys}
-                  value={props.config.yAxis}
-                  onChange={(yAxis) => {
-                    onConfigChange('yAxis', yAxis, 'yLabel', yAxis)
-                  }}
-                  placeholder="Please select"
-                />
-                <ConfigLabel>Color</ConfigLabel>
-                <ConfigSelectWithClear
-                  options={props.config.keys}
-                  value={props.config.color}
-                  onChange={(color) => {
-                    onConfigChange(
-                      'color',
-                      color,
-                      'colors',
-                      color
-                        ? Object.keys(groupBy(records, color)).map((c, index) => ({
-                            key: c,
-                            color: index % ThemingVariables.colors.visualization.length
-                          }))
-                        : []
-                    )
-                  }}
-                  placeholder="Please select"
-                />
-                <ConfigLabel>Size</ConfigLabel>
-                <ConfigSelectWithClear
-                  options={props.config.keys}
-                  value={props.config.size}
-                  onChange={(size) => {
-                    onConfigChange('size', size)
-                  }}
-                  placeholder="Please select"
-                />
-              </>
-            ) : null}
-            {tab === Tab.DISPLAY ? (
-              <>
-                <ConfigLabel top={0}>Colors</ConfigLabel>
-                {props.config.colors.length === 0 ? (
-                  <span
-                    className={css`
-                      margin-top: 10px;
-                      font-size: 14px;
-                      font-weight: 400;
-                      opacity: 0.3;
-                      cursor: pointer;
+          {tab === Tab.DATA ? (
+            <>
+              <ConfigLabel top={0}>X axis</ConfigLabel>
+              <ConfigSelect
+                options={props.config.keys}
+                value={props.config.xAxis}
+                onChange={(xAxis) => {
+                  onConfigChange('xAxis', xAxis, 'xLabel', xAxis)
+                  if (!isNumeric(props.data.fields.find((field) => field.name === props.config.xAxis)?.displayType)) {
+                    onConfigChange('referenceXLabel', '', 'referenceXValue', undefined)
+                  }
+                }}
+                placeholder="Please select"
+              />
+              <ConfigLabel>Y axis</ConfigLabel>
+              <ConfigSelect
+                options={props.config.keys}
+                value={props.config.yAxis}
+                onChange={(yAxis) => {
+                  onConfigChange('yAxis', yAxis, 'yLabel', yAxis)
+                }}
+                placeholder="Please select"
+              />
+              <ConfigLabel>Color</ConfigLabel>
+              <ConfigSelectWithClear
+                options={props.config.keys}
+                value={props.config.color}
+                onChange={(color) => {
+                  onConfigChange(
+                    'color',
+                    color,
+                    'colors',
+                    color
+                      ? Object.keys(groupBy(records, color)).map((c, index) => ({
+                          key: c,
+                          color: index % ThemingVariables.colors.visualization.length
+                        }))
+                      : []
+                  )
+                }}
+                placeholder="Please select"
+              />
+              <ConfigLabel>Size</ConfigLabel>
+              <ConfigSelectWithClear
+                options={props.config.keys}
+                value={props.config.size}
+                onChange={(size) => {
+                  onConfigChange('size', size)
+                }}
+                placeholder="Please select"
+              />
+            </>
+          ) : null}
+          {tab === Tab.DISPLAY ? (
+            <>
+              <ConfigLabel top={0}>Colors</ConfigLabel>
+              {props.config.colors.length === 0 ? (
+                <span
+                  className={css`
+                    margin-top: 10px;
+                    font-size: 14px;
+                    font-weight: 400;
+                    opacity: 0.3;
+                    cursor: pointer;
 
-                      &:hover {
-                        text-decoration: underline;
-                      }
+                    &:hover {
+                      text-decoration: underline;
+                    }
+                  `}
+                  onClick={() => {
+                    setTab(Tab.DATA)
+                  }}
+                >
+                  No colors. Click to configure data
+                </span>
+              ) : null}
+              <div
+                className={css`
+                  margin: -5px;
+                `}
+              >
+                {props.config.colors.map((color) => (
+                  <ColorSelector
+                    key={color.key}
+                    className={css`
+                      margin: 5px;
                     `}
-                    onClick={() => {
-                      setTab(Tab.DATA)
+                    value={color}
+                    onChange={(value) => {
+                      onConfigChange(
+                        'colors',
+                        props.config.colors.map((c) => (c.key === color.key ? value : c))
+                      )
                     }}
+                  />
+                ))}
+              </div>
+              {isNumeric(props.data.fields.find((field) => field.name === props.config.xAxis)?.displayType) ? (
+                <>
+                  <ConfigLabel>X reference line</ConfigLabel>
+                  <div
+                    className={css`
+                      margin: -5px;
+                    `}
                   >
-                    No colors. Click to configure data
-                  </span>
-                ) : null}
-                <div
-                  className={css`
-                    margin: -5px;
-                  `}
-                >
-                  {props.config.colors.map((color) => (
-                    <ColorSelector
-                      key={color.key}
-                      className={css`
-                        margin: 5px;
-                      `}
-                      value={color}
-                      onChange={(value) => {
-                        onConfigChange(
-                          'colors',
-                          props.config.colors.map((c) => (c.key === color.key ? value : c))
-                        )
-                      }}
-                    />
-                  ))}
-                </div>
-                {isNumeric(props.data.fields.find((field) => field.name === props.config.xAxis)?.displayType) ? (
-                  <>
-                    <ConfigLabel>X reference line</ConfigLabel>
-                    <div
-                      className={css`
-                        margin: -5px;
-                      `}
-                    >
-                      <AxisFormItem label="Label">
-                        <ConfigInput
-                          value={props.config.referenceXLabel}
-                          onChange={(value) => {
-                            onConfigChange('referenceXLabel', value)
-                          }}
-                        />
-                      </AxisFormItem>
-                      <AxisFormItem label="Value">
-                        <ConfigNumericInput
-                          value={props.config.referenceXValue}
-                          onChange={(value) => {
-                            onConfigChange('referenceXValue', value)
-                          }}
-                        />
-                      </AxisFormItem>
-                    </div>
-                  </>
-                ) : null}
-                <ConfigLabel>Y reference line</ConfigLabel>
-                <div
-                  className={css`
-                    margin: -5px;
-                  `}
-                >
-                  <AxisFormItem label="Label">
-                    <ConfigInput
-                      value={props.config.referenceYLabel}
-                      onChange={(value) => {
-                        onConfigChange('referenceYLabel', value)
-                      }}
-                    />
-                  </AxisFormItem>
-                  <AxisFormItem label="Value">
+                    <AxisFormItem label="Label">
+                      <ConfigInput
+                        value={props.config.referenceXLabel}
+                        onChange={(value) => {
+                          onConfigChange('referenceXLabel', value)
+                        }}
+                      />
+                    </AxisFormItem>
+                    <AxisFormItem label="Value">
+                      <ConfigNumericInput
+                        value={props.config.referenceXValue}
+                        onChange={(value) => {
+                          onConfigChange('referenceXValue', value)
+                        }}
+                      />
+                    </AxisFormItem>
+                  </div>
+                </>
+              ) : null}
+              <ConfigLabel>Y reference line</ConfigLabel>
+              <div
+                className={css`
+                  margin: -5px;
+                `}
+              >
+                <AxisFormItem label="Label">
+                  <ConfigInput
+                    value={props.config.referenceYLabel}
+                    onChange={(value) => {
+                      onConfigChange('referenceYLabel', value)
+                    }}
+                  />
+                </AxisFormItem>
+                <AxisFormItem label="Value">
+                  <ConfigNumericInput
+                    value={props.config.referenceYValue}
+                    onChange={(value) => {
+                      onConfigChange('referenceYValue', value)
+                    }}
+                  />
+                </AxisFormItem>
+              </div>
+            </>
+          ) : null}
+          {tab === Tab.AXIS ? (
+            <>
+              <ConfigLabel top={0}>X axis</ConfigLabel>
+              <div
+                className={css`
+                  margin: -5px;
+                `}
+              >
+                <AxisFormItem label="Label">
+                  <ConfigInput
+                    value={props.config.xLabel}
+                    onChange={(value) => {
+                      onConfigChange('xLabel', value)
+                    }}
+                  />
+                </AxisFormItem>
+              </div>
+              <ConfigLabel>Y axis</ConfigLabel>
+              <div
+                className={css`
+                  margin: -5px;
+                `}
+              >
+                <AxisFormItem label="Label">
+                  <ConfigInput
+                    value={props.config.yLabel}
+                    onChange={(value) => {
+                      onConfigChange('yLabel', value)
+                    }}
+                  />
+                </AxisFormItem>
+                <AxisFormItem label="Scale">
+                  <ConfigSelect
+                    options={scaleTypes}
+                    value={props.config.yScale}
+                    onChange={(value) => {
+                      onConfigChange('yScale', value, 'yRangeMin', value === 'log' ? undefined : 0)
+                    }}
+                  />
+                </AxisFormItem>
+                <AxisFormItem label="Range">
+                  <div
+                    className={css`
+                      display: flex;
+                      align-items: center;
+                      width: 185px;
+                    `}
+                  >
                     <ConfigNumericInput
-                      value={props.config.referenceYValue}
+                      className={css`
+                        width: 0;
+                        flex: 1;
+                      `}
+                      placeholder="min"
+                      value={props.config.yRangeMin}
                       onChange={(value) => {
-                        onConfigChange('referenceYValue', value)
+                        onConfigChange('yRangeMin', value)
                       }}
                     />
-                  </AxisFormItem>
-                </div>
-              </>
-            ) : null}
-            {tab === Tab.AXIS ? (
-              <>
-                <ConfigLabel top={0}>X axis</ConfigLabel>
-                <div
-                  className={css`
-                    margin: -5px;
-                  `}
-                >
-                  <AxisFormItem label="Label">
-                    <ConfigInput
-                      value={props.config.xLabel}
-                      onChange={(value) => {
-                        onConfigChange('xLabel', value)
-                      }}
-                    />
-                  </AxisFormItem>
-                </div>
-                <ConfigLabel>Y axis</ConfigLabel>
-                <div
-                  className={css`
-                    margin: -5px;
-                  `}
-                >
-                  <AxisFormItem label="Label">
-                    <ConfigInput
-                      value={props.config.yLabel}
-                      onChange={(value) => {
-                        onConfigChange('yLabel', value)
-                      }}
-                    />
-                  </AxisFormItem>
-                  <AxisFormItem label="Scale">
-                    <ConfigSelect
-                      options={scaleTypes}
-                      value={props.config.yScale}
-                      onChange={(value) => {
-                        onConfigChange('yScale', value, 'yRangeMin', value === 'log' ? undefined : 0)
-                      }}
-                    />
-                  </AxisFormItem>
-                  <AxisFormItem label="Range">
                     <div
                       className={css`
-                        display: flex;
-                        align-items: center;
-                        width: 185px;
+                        width: 8px;
+                        height: 0px;
+                        border-top: 1px solid ${ThemingVariables.colors.gray[1]};
+                        margin: 0 8px;
+                        flex-shrink: 0;
                       `}
-                    >
-                      <ConfigNumericInput
-                        className={css`
-                          width: 0;
-                          flex: 1;
-                        `}
-                        placeholder="min"
-                        value={props.config.yRangeMin}
-                        onChange={(value) => {
-                          onConfigChange('yRangeMin', value)
-                        }}
-                      />
-                      <div
-                        className={css`
-                          width: 8px;
-                          height: 0px;
-                          border-top: 1px solid ${ThemingVariables.colors.gray[1]};
-                          margin: 0 8px;
-                          flex-shrink: 0;
-                        `}
-                      />
-                      <ConfigNumericInput
-                        className={css`
-                          width: 0;
-                          flex: 1;
-                        `}
-                        placeholder="max"
-                        value={props.config.yRangeMax}
-                        onChange={(value) => {
-                          onConfigChange('yRangeMax', value)
-                        }}
-                      />
-                    </div>
-                  </AxisFormItem>
-                </div>
-              </>
-            ) : null}
-          </PerfectScrollbar>
-        </div>
+                    />
+                    <ConfigNumericInput
+                      className={css`
+                        width: 0;
+                        flex: 1;
+                      `}
+                      placeholder="max"
+                      value={props.config.yRangeMax}
+                      onChange={(value) => {
+                        onConfigChange('yRangeMax', value)
+                      }}
+                    />
+                  </div>
+                </AxisFormItem>
+              </div>
+            </>
+          ) : null}
+        </PerfectScrollbar>
       </div>
     )
   },

@@ -148,105 +148,104 @@ export const pie: Chart<Type.PIE> = {
             </ConfigButton>
           ))}
         </div>
-        <PerfectScrollbar options={{ suppressScrollX: true }}>
-          <div
-            className={css`
-              padding: 20px;
-              flex: 1;
-            `}
-          >
-            {tab === Tab.DATA ? (
-              <>
-                <ConfigLabel top={0}>Dimension</ConfigLabel>
-                <ConfigSelect
-                  options={props.config.keys}
-                  value={props.config.dimension}
-                  onChange={(dimension) => {
-                    onConfigChange('dimension', dimension)
-                  }}
-                  placeholder="Please select"
-                />
-                <ConfigLabel>Value</ConfigLabel>
-                <ConfigSelect
-                  options={props.config.keys}
-                  value={props.config.measurement}
-                  onChange={(measurement) => {
-                    onConfigChange('measurement', measurement)
-                  }}
-                  placeholder="Please select"
-                />
-                <ConfigLabel>Min percentage of slices</ConfigLabel>
-                <ConfigNumericInput
-                  placeholder="%"
-                  min={0}
-                  value={props.config.minPercentage}
-                  onChange={(minPercentage) => {
-                    onConfigChange('minPercentage', minPercentage)
-                  }}
-                />
-              </>
-            ) : null}
-            {tab === Tab.DISPLAY ? (
-              <>
-                <ConfigLabel top={0}>Show total</ConfigLabel>
-                <ConfigSwitch
-                  value={props.config.showTotal}
-                  onChange={(showTotal) => {
-                    onConfigChange('showTotal', showTotal)
-                  }}
-                />
-                <ConfigLabel>Show legend</ConfigLabel>
-                <ConfigSwitch
-                  value={props.config.showLegend}
-                  onChange={(showLegend) => {
-                    onConfigChange('showLegend', showLegend)
-                  }}
-                />
-                <ConfigLabel>Slices</ConfigLabel>
-                <div
-                  className={css`
-                    margin: -5px;
-                  `}
-                >
-                  {props.config.slices.map((item) => (
-                    <SliceSelector
-                      key={item.key}
-                      className={css`
-                        margin: 5px;
-                      `}
-                      value={item}
-                      onChange={(value) => {
-                        onConfigChange(
-                          'slices',
-                          props.config.slices.map((slice) => (slice.key === item.key ? { ...item, ...value } : slice))
-                        )
-                      }}
-                    />
-                  ))}
-                </div>
-                {props.config.slices.length === 0 ? (
-                  <span
+        <PerfectScrollbar
+          className={css`
+            padding: 20px;
+            flex: 1;
+          `}
+          options={{ suppressScrollX: true }}
+        >
+          {tab === Tab.DATA ? (
+            <>
+              <ConfigLabel top={0}>Dimension</ConfigLabel>
+              <ConfigSelect
+                options={props.config.keys}
+                value={props.config.dimension}
+                onChange={(dimension) => {
+                  onConfigChange('dimension', dimension)
+                }}
+                placeholder="Please select"
+              />
+              <ConfigLabel>Value</ConfigLabel>
+              <ConfigSelect
+                options={props.config.keys}
+                value={props.config.measurement}
+                onChange={(measurement) => {
+                  onConfigChange('measurement', measurement)
+                }}
+                placeholder="Please select"
+              />
+              <ConfigLabel>Min percentage of slices</ConfigLabel>
+              <ConfigNumericInput
+                placeholder="%"
+                min={0}
+                value={props.config.minPercentage}
+                onChange={(minPercentage) => {
+                  onConfigChange('minPercentage', minPercentage)
+                }}
+              />
+            </>
+          ) : null}
+          {tab === Tab.DISPLAY ? (
+            <>
+              <ConfigLabel top={0}>Show total</ConfigLabel>
+              <ConfigSwitch
+                value={props.config.showTotal}
+                onChange={(showTotal) => {
+                  onConfigChange('showTotal', showTotal)
+                }}
+              />
+              <ConfigLabel>Show legend</ConfigLabel>
+              <ConfigSwitch
+                value={props.config.showLegend}
+                onChange={(showLegend) => {
+                  onConfigChange('showLegend', showLegend)
+                }}
+              />
+              <ConfigLabel>Slices</ConfigLabel>
+              <div
+                className={css`
+                  margin: -5px;
+                `}
+              >
+                {props.config.slices.map((item) => (
+                  <SliceSelector
+                    key={item.key}
                     className={css`
-                      margin-top: 10px;
-                      font-size: 14px;
-                      font-weight: 400;
-                      opacity: 0.3;
-                      cursor: pointer;
-
-                      &:hover {
-                        text-decoration: underline;
-                      }
+                      margin: 5px;
                     `}
-                    onClick={() => {
-                      setTab(Tab.DATA)
+                    value={item}
+                    onChange={(value) => {
+                      onConfigChange(
+                        'slices',
+                        props.config.slices.map((slice) => (slice.key === item.key ? { ...item, ...value } : slice))
+                      )
                     }}
-                  >
-                    No slices. Click to configure data
-                  </span>
-                ) : null}
-              </>
-            ) : null}
-          </div>
+                  />
+                ))}
+              </div>
+              {props.config.slices.length === 0 ? (
+                <span
+                  className={css`
+                    margin-top: 10px;
+                    font-size: 14px;
+                    font-weight: 400;
+                    opacity: 0.3;
+                    cursor: pointer;
+
+                    &:hover {
+                      text-decoration: underline;
+                    }
+                  `}
+                  onClick={() => {
+                    setTab(Tab.DATA)
+                  }}
+                >
+                  No slices. Click to configure data
+                </span>
+              ) : null}
+            </>
+          ) : null}
         </PerfectScrollbar>
       </div>
     )

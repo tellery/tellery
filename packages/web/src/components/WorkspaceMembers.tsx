@@ -240,14 +240,18 @@ export function WorkspaceMembers(props: { onClose(): void }) {
           Members & Permissions
         </h2>
       </div>
-      <PerfectScrollbar options={{ suppressScrollX: true }}>
+      <PerfectScrollbar
+        className={css`
+          margin: 5px 0 0 0;
+          flex: 1;
+          height: 0;
+        `}
+        options={{ suppressScrollX: true }}
+      >
         <ul
           className={css`
             list-style-type: none;
             padding-inline-start: 0;
-            margin: 5px 0 0 0;
-            flex: 1;
-            height: 0;
           `}
         >
           {workspace?.members.map(({ userId, role }) =>

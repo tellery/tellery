@@ -85,13 +85,14 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
       >
         Database Profile
       </h2>
-      <PerfectScrollbar options={{ suppressScrollX: true }}>
-        <form
-          className={css`
-            flex: 1;
-            margin-top: 20px;
-          `}
-        >
+      <PerfectScrollbar
+        className={css`
+          flex: 1;
+          margin-top: 20px;
+        `}
+        options={{ suppressScrollX: true }}
+      >
+        <form>
           <FormLabel required={true}>Type</FormLabel>
           <FormSelect
             className={css`
