@@ -7,13 +7,14 @@ import { QuestionBlock } from '../../../src/core/block/question'
 import { translate } from '../../../src/core/translator/dbt'
 import { BlockParentType } from '../../../src/types/block'
 
-test('dbt translate', async (t) => {
+test('dbt translate (ephemeral)', async (t) => {
+  const compiledSql = 'select col from arbitrary_table'
   const dbtBlock = new QuestionBlock(
     'id',
     'parentId',
     BlockParentType.BLOCK,
     'storyId',
-    { type: 'source' },
+    { materialization: 'ephemeral', compiledSql },
     true,
     0,
   )
@@ -21,5 +22,22 @@ test('dbt translate', async (t) => {
   _.set(dbtBlock, 'type', 'dbt')
 
   const sql = translate(dbtBlock)
-  t.is(sql, "source('id')")
+  t.is(sql, compiledSql)
+})
+
+test('dbt translate (other)', async (t) => {
+  const dbtBlock = new QuestionBlock(
+    'id',
+    'parentId',
+    BlockParentType.BLOCK,
+    'storyId',
+    { materialization: 'table', relationName: 'dbname.event' },
+    true,
+    0,
+  )
+  // hack
+  _.set(dbtBlock, 'type', 'dbt')
+
+  const sql = translate(dbtBlock)
+  t.is(sql, 'select * from dbname.event')
 })
