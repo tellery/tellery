@@ -10,11 +10,12 @@ import { CircularLoading } from './CircularLoading'
 import { useGetBlockTitleTextSnapshot } from './editor'
 import { SideBarContentLayout } from './SideBarContentLayout'
 import type { StoryListItemValue } from './StoryListItem'
+import PerfectScrollbar from 'react-perfect-scrollbar'
 
 export const SideBarAllStoriesSection = () => {
   const { data: workspaceView } = useWorkspaceView()
   const [keyword, setKeyword] = useState('')
-  const { data, fetchNextPage, refetch, status, hasNextPage, isLoading } = useStoriesSearch(keyword)
+  const { data, fetchNextPage, refetch, status, hasNextPage, isLoading, isFetchingNextPage } = useStoriesSearch(keyword)
   const getBlockTitle = useGetBlockTitleTextSnapshot()
 
   const items = useMemo<StoryListItemValue[]>(
@@ -70,11 +71,14 @@ export const SideBarAllStoriesSection = () => {
             setKeyword(e.target.value)
           }}
         />
-        <div
+        <PerfectScrollbar
           className={css`
+            flex: 1;
+            margin-top: 20px;
             overflow-y: auto;
             min-height: 40%;
           `}
+          options={{ suppressScrollX: true }}
           onScroll={(e) => {
             if (
               hasNextPage &&
@@ -94,9 +98,11 @@ export const SideBarAllStoriesSection = () => {
               text-align: center;
             `}
           >
-            {isLoading && <CircularLoading size={20} color={ThemingVariables.colors.primary[0]} />}
+            {(isLoading || isFetchingNextPage) && (
+              <CircularLoading size={20} color={ThemingVariables.colors.primary[0]} />
+            )}
           </div>
-        </div>
+        </PerfectScrollbar>
       </div>
     </SideBarContentLayout>
   )
@@ -162,14 +168,17 @@ export const StoryCard: React.FC<{ data: StoryListItemValue }> = ({ data }) => {
           display: flex;
           align-items: center;
           margin-top: 10px;
+          overflow: hidden;
         `}
       >
         {data.user && (
           <div
             className={css`
-              flex-shrink: 0;
+              flex-shrink: 1;
               display: flex;
               align-items: center;
+              margin-right: 5px;
+              overflow: hidden;
             `}
           >
             <img
@@ -188,6 +197,8 @@ export const StoryCard: React.FC<{ data: StoryListItemValue }> = ({ data }) => {
                 line-height: 14px;
                 text-align: center;
                 color: ${ThemingVariables.colors.text[1]};
+                text-overflow: ellipsis;
+                overflow: hidden;
               `}
             >
               {data.user?.name}
