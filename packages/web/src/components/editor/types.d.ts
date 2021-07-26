@@ -6,5 +6,4 @@ export type SetBlock<BlockType> = (id: string, update: (block: WritableDraft<Blo
 export interface BlockInstanceInterface {
   blockRef: MutableRefObject<any>
   wrapperElement: HTMLElement
-  setHighlighted: (value: boolean) => void
 }

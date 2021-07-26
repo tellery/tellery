@@ -1,85 +1,78 @@
-import { css, cx } from '@emotion/css'
-// import { useHistory } from "react-router-dom"
-import React, { FunctionComponent, SVGAttributes } from 'react'
 import { ThemingVariables } from '@app/styles'
-import { useHistory } from 'react-router-dom'
-import Icon from '@app/components/kit/Icon'
+import { css, cx } from '@emotion/css'
+import Tippy from '@tippyjs/react'
+import React, { FunctionComponent, SVGAttributes } from 'react'
 
 export function MainSideBarItem(props: {
   icon?: FunctionComponent<SVGAttributes<SVGElement>>
   active?: boolean
-  title: string
-  folded: boolean
-  onClick: string | ((event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => void)
+  title?: string
+  hoverTitle?: string
+  showTitle?: boolean
+  onClick: (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => void
 }) {
-  const history = useHistory()
-
+  const Icon = props.icon
   return (
-    <a
-      data-active={props.active}
-      className={cx(
-        sideBarContainerStyle,
-        css`
-          &:hover {
-            background: ${ThemingVariables.colors.primary[3]};
-          }
-          &:active {
-            background: ${ThemingVariables.colors.primary[2]};
-          }
-          &[data-active='true'] {
-            cursor: default;
-            background: ${ThemingVariables.colors.primary[1]};
-            color: ${ThemingVariables.colors.gray[5]};
-          }
-        `
-      )}
-      title={props.title}
-      onClick={
-        typeof props.onClick === 'function'
-          ? props.onClick
-          : () => {
-              history.push(props.onClick as string)
-            }
-      }
+    <Tippy
+      disabled={!props.hoverTitle}
+      delay={250}
+      content={props.hoverTitle ?? null}
+      hideOnClick={false}
+      arrow={false}
+      placement="right"
     >
-      {(props.icon && (
-        <div
-          className={css`
-            width: 20px;
-            align-items: center;
-            display: flex;
-            justify-content: center;
-          `}
-        >
-          <Icon
-            icon={props.icon}
-            color={props.active ? ThemingVariables.colors.gray[5] : ThemingVariables.colors.text[0]}
+      <a
+        data-active={props.active}
+        className={cx(
+          sideBarContainerStyle,
+          css`
+            &:hover {
+              background: ${ThemingVariables.colors.primary[3]};
+            }
+            &:active {
+              background: ${ThemingVariables.colors.primary[2]};
+            }
+            &[data-active='true'] {
+              cursor: default;
+              background: ${ThemingVariables.colors.primary[1]};
+              color: ${ThemingVariables.colors.gray[5]};
+            }
+          `
+        )}
+        title={props.title}
+        onClick={props.onClick}
+      >
+        {Icon && (
+          <div
             className={css`
-              flex-shrink: 0;
+              width: 20px;
+              align-items: center;
+              display: flex;
+              justify-content: center;
             `}
-          />
-        </div>
-      )) ?? (
-        <div
-          className={css`
-            width: 20px;
-            flex-shrink: 0;
-          `}
-        />
-      )}
-      {!props.folded && (
-        <span
-          className={css`
-            margin-left: 5px;
-            width: 100%;
-            text-overflow: ellipsis;
-            overflow: hidden;
-          `}
-        >
-          {props.title}
-        </span>
-      )}
-    </a>
+          >
+            <Icon
+              color={props.active ? ThemingVariables.colors.gray[5] : ThemingVariables.colors.text[0]}
+              className={css`
+                flex-shrink: 0;
+              `}
+            />
+          </div>
+        )}
+        {props.showTitle && (
+          <span
+            className={css`
+              margin-left: 5px;
+              width: 100%;
+              text-overflow: ellipsis;
+              overflow: hidden;
+            `}
+          >
+            {props.title}
+          </span>
+        )}
+      </a>
+    </Tippy>
   )
 }
 
@@ -100,5 +93,5 @@ export const sideBarContainerStyle = css`
   display: flex;
   align-items: center;
   margin-bottom: 10px;
-  justify-content: flex-start;
+  justify-content: center;
 `

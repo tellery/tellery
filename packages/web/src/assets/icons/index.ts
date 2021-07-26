@@ -27,7 +27,9 @@ import IconCommonLike from './common/like.svg?component'
 import IconCommonLink from './common/link.svg?component'
 import IconCommonLock from './common/lock.svg?component'
 import IconCommonMenu from './common/menu.svg?component'
+import IconCommonMetrics from './common/metrics.svg?component'
 import IconCommonMore from './common/more.svg?component'
+import IconCommonQuestion from './common/question.svg?component'
 import IconCommonRead from './common/read.svg?component'
 import IconCommonRefresh from './common/refresh.svg?component'
 import IconCommonRun from './common/run.svg?component'
@@ -128,7 +130,9 @@ export {
   IconCommonLink,
   IconCommonLock,
   IconCommonMenu,
+  IconCommonMetrics,
   IconCommonMore,
+  IconCommonQuestion,
   IconCommonRead,
   IconCommonRefresh,
   IconCommonRun,

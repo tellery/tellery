@@ -24,7 +24,6 @@ export function SmallStory(props: { storyId: string; blockId?: string; className
   useEffect(() => {
     if (!props.blockId) return
     blockAdminValue.getBlockInstanceById(props.blockId).then((res) => {
-      res.setHighlighted(true)
       scrollIntoView(res.wrapperElement, {
         scrollMode: 'if-needed',
         block: 'center',
@@ -121,7 +120,13 @@ const StoryContent: React.FC<{ storyId: string; blockId?: string }> = ({ storyId
         `}
       >
         {story?.children && (
-          <ContentBlocks blockIds={story?.children} readonly parentType={Editor.BlockType.Story} small />
+          <ContentBlocks
+            blockIds={story?.children}
+            readonly
+            parentType={Editor.BlockType.Story}
+            small
+            highlightedBlockId={blockId}
+          />
         )}
       </div>
     </>

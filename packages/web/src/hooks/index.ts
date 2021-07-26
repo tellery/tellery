@@ -62,8 +62,8 @@ export const useOpenStory = () => {
   const [secondaryStoryId, setSecondaryStoryId] = useAtom(secondaryStoryIdState)
   const [isPressed] = useKeyPress('Alt')
   const handler = useCallback(
-    (storyId: string, options: OpenStoryOpetions) => {
-      const { blockId, _currentStoryId, isAltKeyPressed = isPressed } = options
+    (storyId: string, options?: OpenStoryOpetions) => {
+      const { blockId, _currentStoryId, isAltKeyPressed = isPressed } = options ?? {}
       const targetUrl = `/story/${storyId}${blockId ? `#${blockId}` : ''}`
 
       const mainEditorStoryId = matchStoryPattern && matchStoryPattern.params.id

@@ -46,9 +46,7 @@ export const DroppingArea = selector<BlockAreaInterface | null>({
 })
 
 export const BlockDndContext = React.createContext<{
-  // selectBlockIds: (blockIds: string[]) => void
-  selectedBlockIds: string[] | null
-  triggerSelection: (event: globalThis.MouseEvent | globalThis.TouchEvent) => void
+  setSelectingBlockIds: (blockIds: string[]) => void
 } | null>(null)
 
 export const useBlockDndContext = () => {

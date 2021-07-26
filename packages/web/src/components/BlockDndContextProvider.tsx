@@ -177,23 +177,6 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
     [setDroppingArea, snapshot]
   )
 
-  const { selectionRef } = useSelectionArea(
-    useCallback((blockIds) => {
-      setSelectingBlockIds(blockIds)
-      selectingBlockIdsRef.current = blockIds
-    }, [])
-  )
-
-  const triggerSelection = useCallback(
-    (event: globalThis.MouseEvent | globalThis.TouchEvent) => {
-      if (!selectionRef.current) {
-        return
-      }
-      selectionRef.current.trigger(event, true)
-    },
-    [selectionRef]
-  )
-
   const handleDragStart = useCallback((event: DragStartEvent) => {
     setIsDragging(true)
     const data = event.active.data.current
@@ -208,10 +191,9 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
 
   const blockDndContext = useMemo(() => {
     return {
-      selectedBlockIds: selectingBlockIds,
-      triggerSelection
+      setSelectingBlockIds
     }
-  }, [selectingBlockIds, triggerSelection])
+  }, [setSelectingBlockIds])
 
   return (
     <div

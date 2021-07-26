@@ -79,6 +79,7 @@ const _Page: React.FC = () => {
                 <>
                   <StoryEditor
                     storyId={id}
+                    scrollToBlockId={scrollToBlockId}
                     top={
                       <>
                         <div
