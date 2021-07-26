@@ -7,10 +7,10 @@ import com.google.protobuf.Empty
 import io.tellery.annotations.Config
 import io.tellery.common.ConfigManager
 import io.tellery.common.ConnectorManager
-import io.tellery.common.Utils.errorWrapper
-import io.tellery.common.Utils.withErrorWrapper
 import io.tellery.common.dbt.Constants.EXTERNAL_CONFIG_FIELDS
 import io.tellery.common.dbt.DbtManager
+import io.tellery.common.errorWrapper
+import io.tellery.common.withErrorWrapper
 import io.tellery.configs.AvailableConfig
 import io.tellery.configs.AvailableConfigs
 import io.tellery.configs.ConfigField

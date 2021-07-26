@@ -8,8 +8,8 @@ val grpcVersion: String by project
 val protobufVersion: String by project
 val nattytcnativeVersion: String by project
 val coroutinesVersion: String by project
-val jacksonVersion: String = "2.12.3"
-val jgitVersion: String = "5.12.0.202106070339-r"
+val jacksonVersion: String by project
+val jgitVersion: String by project
 
 repositories {
     jcenter()
@@ -51,6 +51,7 @@ dependencies {
     implementation("io.grpc:grpc-protobuf:$grpcVersion")
     implementation("io.grpc:grpc-stub:$grpcVersion")
     implementation("io.grpc:grpc-netty-shaded:$grpcVersion")
+    implementation("io.grpc:grpc-services:$grpcVersion")
 
     runtimeOnly("io.netty:netty-tcnative-boringssl-static:$nattytcnativeVersion")
 
@@ -66,8 +67,6 @@ dependencies {
 
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
-
-    implementation("io.grpc:grpc-services:1.39.0")
 
     testImplementation(platform("org.junit:junit-bom:5.7.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")

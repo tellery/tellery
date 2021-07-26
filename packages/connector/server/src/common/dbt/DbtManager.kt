@@ -12,8 +12,9 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.common.annotations.VisibleForTesting
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.KeyPair
+import com.typesafe.config.ConfigFactory
 import io.tellery.common.ConfigManager
-import io.tellery.common.Utils.assertInternalError
+import io.tellery.common.assertInternalError
 import io.tellery.common.dbt.Constants.EXTERNAL_CONFIG_FIELDS
 import io.tellery.common.dbt.GitUtils.checkoutMasterAndPull
 import io.tellery.common.dbt.GitUtils.checkoutNewBranchAndCommitAndPush
@@ -21,6 +22,8 @@ import io.tellery.common.dbt.GitUtils.cloneRemoteRepo
 import io.tellery.common.dbt.GitUtils.commitAndPush
 import io.tellery.common.dbt.ProfileManager.batchToDbtProfile
 import io.tellery.common.dbt.model.Manifest
+import io.tellery.entities.DBTProfileNotConfiguredException
+import io.tellery.entities.DBTRepositoryNotExistsException
 import io.tellery.entities.Profile
 import io.tellery.grpc.Block
 import io.tellery.grpc.DbtBlock
@@ -37,13 +40,23 @@ import java.util.function.Consumer
 
 object DbtManager {
 
-    private val rootFolder: File = File("dbt")
-    private val keyFolder: File = File("dbt_key")
+    private val rootFolder: File
+    private val keyFolder: File
     private val profileFile: File = File(System.getProperty("user.home") + "/.dbt/profiles.yml")
     private val mapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule())
     private val jsonMapper = jacksonObjectMapper()
 
     init {
+        val appConfig = ConfigFactory.load()
+        rootFolder = File(
+            appConfig.getString("dbt.repoFolderPath")
+                ?: throw DBTProfileNotConfiguredException()
+        )
+        keyFolder = File(
+            appConfig.getString("dbt.keyFolderPath")
+                ?: throw DBTProfileNotConfiguredException()
+        )
+
         initDbtWorkspace()
     }
 
@@ -73,7 +86,7 @@ object DbtManager {
 
     fun pullRepo(name: String) {
         if (!repoIsAlreadyExists(name)) {
-            throw RuntimeException("$name repository is not exists.")
+            throw DBTRepositoryNotExistsException(name)
         }
 
         val repo = DbtRepository(rootFolder, keyFolder, getProfileByName(name))
@@ -82,7 +95,7 @@ object DbtManager {
 
     fun pushRepo(name: String, id2Block: Map<String, Block>) {
         if (!repoIsAlreadyExists(name)) {
-            throw RuntimeException("$name repository is not exists.")
+            throw DBTRepositoryNotExistsException(name)
         }
 
         if (id2Block.isEmpty()) {
@@ -97,7 +110,7 @@ object DbtManager {
 
     fun listBlocks(name: String): List<DbtBlock> {
         if (!repoIsAlreadyExists(name)) {
-            throw RuntimeException("$name repository is not exists.")
+            throw DBTRepositoryNotExistsException(name)
         }
 
         val repo = DbtRepository(rootFolder, keyFolder, getProfileByName(name))

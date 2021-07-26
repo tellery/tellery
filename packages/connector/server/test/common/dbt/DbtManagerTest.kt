@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.TextNode
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.tellery.common.dbt.DbtManager
+import io.tellery.grpc.DbtBlock
 import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals
@@ -60,12 +61,12 @@ class DbtManagerTest {
 
         val model = blockMap["model.jaffle_shop.my_second_dbt_model"]!!
         assertEquals("`mythic-hulling-307909`.`dbt_bob`.`my_second_dbt_model`", model.relationName)
-        assertEquals("view", model.materialized)
+        assertEquals(DbtBlock.Materialization.VIEW, model.materialized)
         assertEquals("A starter dbt model", model.description)
 
         val source = blockMap["source.jaffle_shop.jaffle_shop.orders"]!!
         assertEquals("raw.public.Orders_", source.relationName)
-        assertEquals("", source.materialized)
+        assertEquals(DbtBlock.Materialization.UNKNOWN, source.materialized)
         assertEquals("", source.description)
     }
 }

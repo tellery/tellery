@@ -2,8 +2,8 @@ package io.tellery.services
 
 import com.google.common.base.Strings
 import com.google.protobuf.Empty
-import io.tellery.common.Utils.withErrorWrapper
 import io.tellery.common.dbt.DbtManager
+import io.tellery.common.withErrorWrapper
 import io.tellery.grpc.*
 
 class DbtService : DbtCoroutineGrpc.DbtImplBase() {

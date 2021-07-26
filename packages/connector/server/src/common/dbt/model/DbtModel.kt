@@ -31,7 +31,13 @@ data class DbtModel(
 
         if (rawSql != null) builder.rawSql = rawSql
         if (compiledSql != null) builder.compiledSql = compiledSql
-        if (config.materialized != null) builder.materialized = config.materialized
+        if (config.materialized != null) builder.materialized = when (config.materialized) {
+            "view" -> DbtBlock.Materialization.VIEW
+            "table" -> DbtBlock.Materialization.TABLE
+            "incremental" -> DbtBlock.Materialization.INCREMENTAL
+            "ephemeral" -> DbtBlock.Materialization.EPHEMERAL
+            else -> DbtBlock.Materialization.UNKNOWN
+        }
 
         return builder.build()
     }

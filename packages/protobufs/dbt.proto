@@ -42,9 +42,19 @@ message ListDbtBlocksResponse {
 
 message DbtBlock {
   enum Type {
-    SOURCE = 0;
-    MODEL = 1;
+    UNSPECIFIED = 0;
+    SOURCE = 1;
+    MODEL = 2;
   }
+
+  enum Materialization {
+    UNKNOWN = 0;
+    VIEW = 1;
+    TABLE = 2;
+    INCREMENTAL = 3;
+    EPHEMERAL = 4;
+  }
+
   Type type = 1;
   string name = 2;
   string description = 3;
@@ -52,7 +62,7 @@ message DbtBlock {
   // Only for model
   string rawSql = 5;
   string compiledSql = 6;
-  string materialized = 7;
+  Materialization materialized = 7;
 }
 
 message Block {

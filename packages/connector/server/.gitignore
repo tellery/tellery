@@ -8,3 +8,5 @@
 
 /drivers
 /profiles.json
+/dbt
+/dbt_key

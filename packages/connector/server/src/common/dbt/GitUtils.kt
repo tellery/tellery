@@ -66,7 +66,7 @@ object GitUtils {
 
             it.commit()
                 .setAll(true)
-                .setMessage(message ?: "Sync all query block by tellery.")
+                .setMessage(message ?: "Sync all query blocks by tellery.")
                 .call()
 
             it.push()

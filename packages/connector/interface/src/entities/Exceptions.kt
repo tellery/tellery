@@ -1,7 +1,7 @@
 package io.tellery.entities
 
-import io.grpc.Status
 import io.grpc.Metadata
+import io.grpc.Status
 import io.grpc.StatusRuntimeException
 
 
@@ -42,3 +42,9 @@ class ImportNotSupportedException(contentType: String) :
 
 class DownloadFailedException :
     ImportFailureException("failed to download file")
+
+class DBTProfileNotConfiguredException :
+    Exception("DBT Profile not configured correctly! Please specify its path in application.conf")
+
+class DBTRepositoryNotExistsException(repoName: String) :
+    RuntimeException("$repoName dbt repository is not exists.")
