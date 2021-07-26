@@ -156,7 +156,7 @@ const SideBarContents = {
 
 const SideBarContent: React.FC<{ folded: boolean; toggleFoldStatus: () => void }> = ({ folded, toggleFoldStatus }) => {
   const [modalContent, setModalContent] = useState<ReactNode>(null)
-  const [activeSideBarTab, setActiveSideBarTab] = useState<keyof typeof SideBarContents | null>('ALL_STORIES')
+  const [activeSideBarTab, setActiveSideBarTab] = useState<keyof typeof SideBarContents | null>('PINNED')
 
   const history = useHistory()
   const workspace = useWorkspace()
