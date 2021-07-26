@@ -53,7 +53,8 @@ test('translate', async (t) => {
     parentTable: BlockParentType.BLOCK,
     storyId,
     content: {
-      type: 'ref',
+      materialized: 'table',
+      relationName: 'table2',
     },
     type: 'dbt' as BlockType,
     children: [],
@@ -66,7 +67,7 @@ test('translate', async (t) => {
   stringCompare(
     t,
     sqlBody,
-    `WITH t1 AS ( select * from order_x ), t2 AS ( ref('${dbtBlockId}') ) select * from t1 left join t2`,
+    `WITH t1 AS ( select * from order_x ), t2 AS ( select * from table2 ) select * from t1 left join t2`,
   )
   await getRepository(BlockEntity).delete([questionBlockId, dbtBlockId])
 })

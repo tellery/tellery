@@ -14,7 +14,7 @@ test('dbt translate (ephemeral)', async (t) => {
     'parentId',
     BlockParentType.BLOCK,
     'storyId',
-    { materialization: 'ephemeral', compiledSql },
+    { materialized: 'ephemeral', compiledSql },
     true,
     0,
   )
@@ -31,7 +31,7 @@ test('dbt translate (other)', async (t) => {
     'parentId',
     BlockParentType.BLOCK,
     'storyId',
-    { materialization: 'table', relationName: 'dbname.event' },
+    { materialized: 'table', relationName: 'dbname.event' },
     true,
     0,
   )
