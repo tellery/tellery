@@ -142,6 +142,10 @@ export const StoryRefs = (props: { refs: Ref[]; storyId: string; isSQLEditor?: b
               <ToggleControl value={toggleControl} onChange={setToggleControl} />
               <Link
                 to={`/story/${storyId}`}
+                onClick={(e) => {
+                  e.preventDefault()
+                  openStory(storyId)
+                }}
                 className={css`
                   text-decoration: none;
                   font-size: 14px;

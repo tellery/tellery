@@ -41,7 +41,6 @@ const _Page: React.FC = () => {
   const getBlockTitle = useGetBlockTitleTextSnapshot()
 
   const title = useMemo(() => storyBlock && getBlockTitle(storyBlock), [getBlockTitle, storyBlock])
-  const storyBottom = useMemo(() => id && <StoryBackLinks storyId={id} />, [id])
 
   return (
     <>
@@ -72,7 +71,7 @@ const _Page: React.FC = () => {
                     padding: 100px 100px 0 100px;
                   `}
                   scrollToBlockId={scrollToBlockId}
-                  bottom={storyBottom}
+                  bottom={<StoryBackLinks storyId={id} />}
                 ></StoryEditor>
               )}
               {storyBlock.type === Editor.BlockType.Thought && (

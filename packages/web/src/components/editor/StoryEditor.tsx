@@ -21,6 +21,7 @@ import produce from 'immer'
 import invariant from 'invariant'
 import isHotkey from 'is-hotkey'
 import React, { CSSProperties, memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEvent } from 'react-use'
 import { useRecoilState } from 'recoil'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import {
@@ -75,7 +76,6 @@ import { BlockTextOperationMenu } from './Popovers/BlockTextOperationMenu'
 import { TelleryStorySelection } from './store/selection'
 import { StoryBlockOperatorsProvider } from './StoryBlockOperatorsProvider'
 import type { SetBlock } from './types'
-
 const logger = debug('tellery:editor')
 
 const _StoryEditor: React.FC<{
@@ -190,17 +190,6 @@ const _StoryEditor: React.FC<{
       setSelectedBlocks([props.scrollToBlockId as string])
     })
   }, [blockAdminValue, props.scrollToBlockId, setSelectedBlocks])
-
-  const selectBlocks = useCallback(
-    (blockIds: string[]) => {
-      // blockIds.length && blockDnd?.selectBlockIds(blockIds)
-      setSelectedBlocks(blockIds)
-      if (blockIds.length) {
-        editorTextAreaRef.current?.focus()
-      }
-    },
-    [setSelectedBlocks]
-  )
 
   const blurEditor = useCallback(() => {
     setSelectionState(null)
@@ -730,6 +719,92 @@ const _StoryEditor: React.FC<{
     [blockTranscations, focusBlockHandler, setSelectedBlocks, snapshot, storyId]
   )
 
+  const globalKeyDownHandler = useCallback(
+    (e: KeyboardEvent) => {
+      if (selectionState === null || locked) {
+        return
+      }
+      const handlers: { hotkeys: string[]; handler: (e: KeyboardEvent) => void }[] = [
+        {
+          hotkeys: ['backspace'],
+          handler: (e) => {
+            if (isSelectionCollapsed(selectionState) && selectionState.type === TellerySelectionType.Inline) {
+              if (isSelectionAtStart(selectionState)) {
+                e.preventDefault()
+                deleteBackward('character', { selection: selectionState })
+              }
+            } else {
+              if (selectionState.type === TellerySelectionType.Block) {
+                e.preventDefault()
+                blockTranscations.removeBlocks(storyId, selectionState.selectedBlocks)
+              }
+            }
+          }
+        },
+
+        {
+          hotkeys: ['mod+x'],
+          handler: (e) => {
+            e.preventDefault()
+            doCut()
+          }
+        },
+        {
+          hotkeys: ['mod+d'],
+          handler: (e) => {
+            e.preventDefault()
+            let blockIds: string[] = []
+            if (selectionState?.type === TellerySelectionType.Block) {
+              blockIds = selectionState.selectedBlocks
+            } else if (selectionState?.focus.blockId) {
+              blockIds = [selectionState?.focus.blockId]
+            }
+            duplicateHandler(blockIds)
+          }
+        },
+        {
+          hotkeys: ['mod+c'],
+          handler: (e) => {
+            e.preventDefault()
+            doCopy()
+          }
+        },
+        {
+          hotkeys: ['mod+z'],
+          handler: async (e) => {
+            e.preventDefault()
+            const env = await commitHistory.undo()
+            env?.selection && setSelectionState(env.selection)
+          }
+        },
+        {
+          hotkeys: ['mod+shift+z'],
+          handler: async (e) => {
+            e.preventDefault()
+            const env = await commitHistory.redo()
+            env?.selection && setSelectionState(env.selection)
+          }
+        }
+      ]
+      const matchingHandler = handlers.find((handler) =>
+        handler.hotkeys.some((hotkey) => isHotkey(hotkey, { byKey: true }, e))
+      )
+      matchingHandler?.handler(e)
+    },
+    [
+      blockTranscations,
+      commitHistory,
+      deleteBackward,
+      doCopy,
+      doCut,
+      duplicateHandler,
+      locked,
+      selectionState,
+      setSelectionState,
+      storyId
+    ]
+  )
+
   const keyDownHandler = useCallback(
     (e: React.KeyboardEvent) => {
       logger('key down', e)
@@ -957,49 +1032,7 @@ const _StoryEditor: React.FC<{
             }
           }
         },
-        {
-          hotkeys: ['mod+x'],
-          handler: (e) => {
-            e.preventDefault()
-            doCut()
-          }
-        },
-        {
-          hotkeys: ['mod+d'],
-          handler: (e) => {
-            e.preventDefault()
-            let blockIds: string[] = []
-            if (selectionState?.type === TellerySelectionType.Block) {
-              blockIds = selectionState.selectedBlocks
-            } else if (selectionState?.focus.blockId) {
-              blockIds = [selectionState?.focus.blockId]
-            }
-            duplicateHandler(blockIds)
-          }
-        },
-        {
-          hotkeys: ['mod+c'],
-          handler: (e) => {
-            e.preventDefault()
-            doCopy()
-          }
-        },
-        {
-          hotkeys: ['mod+z'],
-          handler: async (e) => {
-            e.preventDefault()
-            const env = await commitHistory.undo()
-            env?.selection && setSelectionState(env.selection)
-          }
-        },
-        {
-          hotkeys: ['mod+shift+z'],
-          handler: async (e) => {
-            e.preventDefault()
-            const env = await commitHistory.redo()
-            env?.selection && setSelectionState(env.selection)
-          }
-        },
+
         {
           hotkeys: ['tab'],
           handler: (e) => {
@@ -1034,19 +1067,14 @@ const _StoryEditor: React.FC<{
       commit,
       setHoverBlockId,
       selectionState,
-      commitHistory,
       storyId,
       setSelectionAtBlockStart,
       locked,
       deleteBackward,
-      doCut,
       createFirstOrLastBlockHandler,
-      doCopy,
       snapshot,
       toggleBlocksIndention,
-      setSelectionState,
-      blockTranscations,
-      duplicateHandler
+      blockTranscations
     ]
   )
 
@@ -1115,7 +1143,7 @@ const _StoryEditor: React.FC<{
   const pasteHandler = useCallback(
     (e: React.ClipboardEvent<HTMLElement>) => {
       if (locked) return
-      if (e.defaultPrevented) {
+      if (e.defaultPrevented || !selectionState) {
         return
       }
       if (e.clipboardData.files.length) {
@@ -1241,6 +1269,9 @@ const _StoryEditor: React.FC<{
     ]
   )
 
+  useEvent('paste', pasteHandler)
+  useEvent('keydown', globalKeyDownHandler)
+
   const editorContext = useMemo(() => {
     return {
       setBlockValue,
@@ -1253,7 +1284,7 @@ const _StoryEditor: React.FC<{
       insertNewEmptyBlock,
       storyId,
       lockOrUnlockScroll,
-      selectBlocks,
+      selectBlocks: setSelectedBlocks,
       duplicateHandler,
       focusBlockHandler
     } as EditorContextInterface<Editor.BaseBlock>
@@ -1270,12 +1301,12 @@ const _StoryEditor: React.FC<{
     storyId,
     duplicateHandler,
     focusBlockHandler,
-    selectBlocks
+    setSelectedBlocks
   ])
 
   const editorClickHandler = useCallback<React.MouseEventHandler<HTMLDivElement>>(
     (e) => {
-      // e.preventDefault()
+      e.preventDefault()
       const contentRect = editorRef.current!.getBoundingClientRect()
       const x = e.clientX < contentRect.x + 100 ? contentRect.x + 101 : e.clientX
       const container = getEndContainerFromPoint(x, e.clientY)
@@ -1301,7 +1332,7 @@ const _StoryEditor: React.FC<{
         }
       }
     },
-    [selectionState]
+    [selectionState?.type]
   )
 
   const [dimensions] = useDebouncedDimension(editorRef, 100, true)
@@ -1329,13 +1360,14 @@ const _StoryEditor: React.FC<{
                     flex: 1;
                     display: flex;
                     flex-direction: column;
+                    user-select: none;
                   `
                 )}
                 onMouseMove={onMouseMove}
                 onMouseDown={onMouseDown}
                 onMouseUp={onMouseUp}
                 onClick={editorClickHandler}
-                onPaste={pasteHandler}
+                // onPaste={pasteHandler}
                 // onKeyDown={keyDownHandler}
                 onCut={cutHandler}
                 onCopy={copyHandler}
@@ -1373,7 +1405,7 @@ const _StoryEditor: React.FC<{
                   ref={editorRef}
                 >
                   <textarea
-                    onPaste={pasteHandler}
+                    // onPaste={pasteHandler}
                     ref={editorTextAreaRef}
                     className={css`
                       position: fixed;
@@ -1428,6 +1460,7 @@ const _StoryEditor: React.FC<{
                           padding: 0;
                           width: 100%;
                           flex: 1;
+                          user-select: none;
                         `,
                         (rootBlock as Story)?.format?.showBorder &&
                           css`
