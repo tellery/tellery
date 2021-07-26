@@ -1,0 +1,33 @@
+---
+projectA:
+  output:
+    dev:
+      account: "xy12345.us-ease-2.aws"
+      user: "abc"
+      password: "def"
+      type: "snowflake"
+      schema: "tellery_schema"
+      database: "tellery_database"
+      warehouse: "tellery_warehouse"
+  target: "dev"
+projectB:
+  output:
+    dev:
+      host: "examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com"
+      user: "abc"
+      password: "def"
+      port: "5439"
+      type: "redshift"
+      schema: "tellery_schema"
+      dbname: "tellery_dbname"
+  target: "dev"
+projectC:
+  output:
+    dev:
+      host: "127.0.0.1"
+      user: "abc"
+      password: "def"
+      port: "5432"
+      type: "postgres"
+      schema: "tellery_schema"
+  target: "dev"

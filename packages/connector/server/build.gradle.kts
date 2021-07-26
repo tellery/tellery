@@ -1,5 +1,5 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import com.google.protobuf.gradle.*
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val className = "io.tellery.MainKt"
 
@@ -8,6 +8,8 @@ val grpcVersion: String by project
 val protobufVersion: String by project
 val nattytcnativeVersion: String by project
 val coroutinesVersion: String by project
+val jacksonVersion: String by project
+val jgitVersion: String by project
 
 repositories {
     jcenter()
@@ -15,7 +17,7 @@ repositories {
 }
 
 plugins {
-	application
+    application
     kotlin("jvm")
     id("com.google.protobuf") version "0.8.17"
     id("com.github.marcoferrer.kroto-plus") version "0.6.1"
@@ -38,8 +40,8 @@ sourceSets.test {
 }
 
 dependencies {
-	implementation(project(":interface"))
-	implementation(project(":implementation"))
+    implementation(project(":interface"))
+    implementation(project(":implementation"))
 
     implementation("org.reflections:reflections:0.9.12")
     implementation("com.typesafe:config:1.4.1")
@@ -49,6 +51,7 @@ dependencies {
     implementation("io.grpc:grpc-protobuf:$grpcVersion")
     implementation("io.grpc:grpc-stub:$grpcVersion")
     implementation("io.grpc:grpc-netty-shaded:$grpcVersion")
+    implementation("io.grpc:grpc-services:$grpcVersion")
 
     runtimeOnly("io.netty:netty-tcnative-boringssl-static:$nattytcnativeVersion")
 
@@ -56,6 +59,18 @@ dependencies {
     implementation("com.github.marcoferrer.krotoplus:kroto-plus-message:$krotoplusVersion")
     implementation("com.github.marcoferrer.krotoplus:kroto-plus-test:$krotoplusVersion")
     implementation("com.google.protobuf:protobuf-java:$protobufVersion")
+    implementation("org.eclipse.jgit:org.eclipse.jgit:$jgitVersion")
+    implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:$jgitVersion")
+    implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:$jgitVersion")
+    implementation("com.jcraft:jsch:0.1.53")
+    implementation("commons-io:commons-io:2.11.0")
+
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
+
+    testImplementation(platform("org.junit:junit-bom:5.7.2"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation(kotlin("test"))
 }
 
 
@@ -110,6 +125,13 @@ tasks.withType<Jar> {
                 "Main-Class" to className
             )
         )
+    }
+}
+
+tasks.test {
+    useJUnitPlatform()
+    testLogging {
+        events("passed", "skipped", "failed")
     }
 }
 

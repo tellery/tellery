@@ -1,6 +1,7 @@
 package io.tellery
 
 import io.grpc.*
+import io.grpc.protobuf.services.ProtoReflectionService
 import io.grpc.util.*
 import io.tellery.common.*
 import io.tellery.services.*
@@ -23,9 +24,13 @@ class ConnectorServer(
             val credKeyPath = ConfigManager.credential!!.key
             try {
                 logger.info("Starting server in secure mode")
-                partialBuilder = partialBuilder.useTransportSecurity(File(credCertPath), File(credKeyPath))
+                partialBuilder =
+                    partialBuilder.useTransportSecurity(File(credCertPath), File(credKeyPath))
             } catch (e: Exception) {
-                logger.info("Error happens on loading credentials: {}, Starting server in insecure mode", e.message)
+                logger.info(
+                    "Error happens on loading credentials: {}, Starting server in insecure mode",
+                    e.message
+                )
                 e.printStackTrace()
             }
         } else {
@@ -33,10 +38,11 @@ class ConnectorServer(
         }
         server = partialBuilder
             .addService(ConnectorService())
+            .addService(DbtService())
+            .addService(ProtoReflectionService.newInstance())
             .intercept(TransmitStatusRuntimeExceptionInterceptor.instance())
             .build()
     }
-
 
     fun start() {
         server.start()
