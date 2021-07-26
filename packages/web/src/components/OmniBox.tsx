@@ -17,6 +17,7 @@ import { CircularLoading } from './CircularLoading'
 import Icon from './kit/Icon'
 import { OmniBoxItem, ResultType } from './OmniBoxItem'
 import { SmallStory } from './SmallStory'
+import PerfectScrollbar from 'react-perfect-scrollbar'
 
 const PAGE_LIMIT = 51
 
@@ -255,14 +256,14 @@ export function OmniBox() {
               display: flex;
             `}
           >
-            <div
+            <PerfectScrollbar
               className={css`
                 flex: 1;
                 width: 0;
                 padding: 12px 12px 4px 12px;
                 height: 100%;
-                overflow-y: auto;
               `}
+              options={{ suppressScrollX: true }}
             >
               {items?.length ? (
                 items.map((item, index) =>
@@ -322,7 +323,7 @@ export function OmniBox() {
                   </span>
                 </div>
               )}
-            </div>
+            </PerfectScrollbar>
             {items?.length ? (
               <div
                 className={css`

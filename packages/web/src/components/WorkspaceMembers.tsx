@@ -24,6 +24,7 @@ import Icon from './kit/Icon'
 import IconButton from './kit/IconButton'
 import { MenuItem } from './MenuItem'
 import { MenuItemDivider } from './MenuItemDivider'
+import PerfectScrollbar from 'react-perfect-scrollbar'
 
 type Role = Workspace['members'][0]['role']
 
@@ -239,30 +240,31 @@ export function WorkspaceMembers(props: { onClose(): void }) {
           Members & Permissions
         </h2>
       </div>
-      <ul
-        className={css`
-          list-style-type: none;
-          padding-inline-start: 0;
-          margin: 5px 0 0 0;
-          flex: 1;
-          height: 0;
-          overflow-y: auto;
-        `}
-      >
-        {workspace?.members.map(({ userId, role }) =>
-          users?.[userId] ? (
-            <WorkspaceMember
-              key={userId}
-              userId={userId}
-              role={role}
-              user={users?.[userId]}
-              disabled={disabled}
-              isMe={me?.userId === userId}
-              onClick={refetch}
-            />
-          ) : null
-        )}
-      </ul>
+      <PerfectScrollbar options={{ suppressScrollX: true }}>
+        <ul
+          className={css`
+            list-style-type: none;
+            padding-inline-start: 0;
+            margin: 5px 0 0 0;
+            flex: 1;
+            height: 0;
+          `}
+        >
+          {workspace?.members.map(({ userId, role }) =>
+            users?.[userId] ? (
+              <WorkspaceMember
+                key={userId}
+                userId={userId}
+                role={role}
+                user={users?.[userId]}
+                disabled={disabled}
+                isMe={me?.userId === userId}
+                onClick={refetch}
+              />
+            ) : null
+          )}
+        </ul>
+      </PerfectScrollbar>
     </div>
   )
 }

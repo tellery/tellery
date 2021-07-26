@@ -17,6 +17,7 @@ import { FormButton } from './kit/FormButton'
 import { ThemingVariables } from '@app/styles'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import FormFileButton from './kit/FormFileButton'
+import PerfectScrollbar from 'react-perfect-scrollbar'
 
 export function WorkspaceDatabases(props: { onClose(): void }) {
   const { data: connectors, refetch } = useConnectorsList()
@@ -84,36 +85,36 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
       >
         Database Profile
       </h2>
-      <form
-        className={css`
-          flex: 1;
-          margin-top: 20px;
-          overflow-y: auto;
-        `}
-      >
-        <FormLabel required={true}>Type</FormLabel>
-        <FormSelect
+      <PerfectScrollbar options={{ suppressScrollX: true }}>
+        <form
           className={css`
-            width: 100%;
+            flex: 1;
+            margin-top: 20px;
           `}
-          value={type}
-          {...(disabled ? {} : register('type'))}
-          onChange={(e) => {
-            reset({
-              type: e.target.value,
-              name: profileConfig?.name,
-              ...(profileConfig?.type === e.target.value ? profileConfig : {})
-            })
-          }}
-          disabled={disabled}
         >
-          {availableConfigs?.map((availableConfig) => (
-            <option key={availableConfig.type} value={availableConfig.type}>
-              {availableConfig.type}
-            </option>
-          ))}
-        </FormSelect>
-        {/* <FormLabel
+          <FormLabel required={true}>Type</FormLabel>
+          <FormSelect
+            className={css`
+              width: 100%;
+            `}
+            value={type}
+            {...(disabled ? {} : register('type'))}
+            onChange={(e) => {
+              reset({
+                type: e.target.value,
+                name: profileConfig?.name,
+                ...(profileConfig?.type === e.target.value ? profileConfig : {})
+              })
+            }}
+            disabled={disabled}
+          >
+            {availableConfigs?.map((availableConfig) => (
+              <option key={availableConfig.type} value={availableConfig.type}>
+                {availableConfig.type}
+              </option>
+            ))}
+          </FormSelect>
+          {/* <FormLabel
           required={true}
           className={css`
             margin-top: 20px;
@@ -122,21 +123,22 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
           Name
         </FormLabel>
         <FormInput {...register('name')} /> */}
-        {availableConfig?.configs.map((config) =>
-          config.type === 'FILE' ? (
-            <FileConfig
-              key={config.name}
-              value={config}
-              setValue={(value) => {
-                setValue(`configs.${config.name}`, value)
-              }}
-              disabled={disabled}
-            />
-          ) : (
-            <Config key={config.name} value={config} register={register} disabled={disabled} />
-          )
-        )}
-      </form>
+          {availableConfig?.configs.map((config) =>
+            config.type === 'FILE' ? (
+              <FileConfig
+                key={config.name}
+                value={config}
+                setValue={(value) => {
+                  setValue(`configs.${config.name}`, value)
+                }}
+                disabled={disabled}
+              />
+            ) : (
+              <Config key={config.name} value={config} register={register} disabled={disabled} />
+            )
+          )}
+        </form>
+      </PerfectScrollbar>
       <FormButton
         className={css`
           margin-top: 20px;
