@@ -1,34 +1,33 @@
-import { useLoggedUser } from '@app/hooks/useAuth'
-import { css, cx } from '@emotion/css'
 import {
   IconCommonAdd,
   IconCommonAllQuestion,
-  IconCommonFold,
   IconCommonMenu,
   IconCommonSearch,
   IconCommonSetting,
+  IconCommonStar,
   IconCommonThoughts
 } from '@app/assets/icons'
-import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useGetBlockTitleTextSnapshot } from '@app/components/editor'
 import { MainSideBarItem, sideBarContainerStyle } from '@app/components/MainSideBarItem'
-import { motion, useAnimation, useMotionValue, useTransform } from 'framer-motion'
+import { useWorkspace } from '@app/context/workspace'
 import { useOpenStory } from '@app/hooks'
 import { useBlockSuspense, useConnectorsListProfiles, useWorkspaceView } from '@app/hooks/api'
+import { useLoggedUser } from '@app/hooks/useAuth'
+import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useLocalStorage } from '@app/hooks/useLocalStorage'
-import { useUpdateAtom } from 'jotai/utils'
-import { nanoid } from 'nanoid'
-import React, { useCallback, useEffect, useState } from 'react'
-import ContentLoader from 'react-content-loader'
-import { useHistory, useLocation, useRouteMatch } from 'react-router-dom'
 import { omniboxShowState } from '@app/store'
 import { ThemingVariables } from '@app/styles'
 import { DRAG_HANDLE_WIDTH } from '@app/utils'
+import { css, cx } from '@emotion/css'
+import { AnimatePresence, motion, useAnimation, useMotionValue, useTransform } from 'framer-motion'
+import { useUpdateAtom } from 'jotai/utils'
+import { nanoid } from 'nanoid'
+import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import ContentLoader from 'react-content-loader'
+import { useHistory, useLocation, useRouteMatch } from 'react-router-dom'
 import Icon from './kit/Icon'
-import IconButton from './kit/IconButton'
-import WorkspaceModal from './WorkspaceModal'
-import UserModal from './UserModal'
-import { useWorkspace } from '@app/context/workspace'
+import { UserModal } from './UserModal'
+import { WorkspaceModal } from './WorkspaceModal'
 
 const SideBarLoader: React.FC = () => {
   return (
@@ -148,51 +147,59 @@ const _SideBar = () => {
 }
 
 const SideBarContent: React.FC<{ folded: boolean; toggleFoldStatus: () => void }> = ({ folded, toggleFoldStatus }) => {
-  const setOmniboxShow = useUpdateAtom(omniboxShowState)
+  const sideBarContentRef = useRef<HTMLDivElement>(null)
+  const [sideBarContent, setSideBarContent] = useState<ReactNode>(null)
+  const [modalContent, setModalContent] = useState<ReactNode>(null)
+
   const location = useLocation()
   const history = useHistory()
+  const workspace = useWorkspace()
+  const { data: profiles } = useConnectorsListProfiles(workspace.preferences.connectorId)
   const blockTranscations = useBlockTranscations()
+  const setOmniboxShow = useUpdateAtom(omniboxShowState)
+
+  const hasNoProfile = profiles?.length === 0
+
+  const showSettingsModal = useCallback(() => {
+    setModalContent(
+      <WorkspaceModal
+        onClose={() => {
+          setModalContent(null)
+        }}
+      />
+    )
+  }, [])
+
+  useEffect(() => {
+    if (hasNoProfile) {
+      showSettingsModal()
+    }
+  }, [hasNoProfile, showSettingsModal])
+
   const handleCreateNewSotry = useCallback(async () => {
     const id = nanoid()
     await blockTranscations.createNewStory({ id: id })
     history.push(`/story/${id}`)
   }, [blockTranscations, history])
-  const [showUser, setShowUser] = useState(false)
-  const [showSetting, setShowSetting] = useState(false)
-  const workspace = useWorkspace()
-  const { data: profiles } = useConnectorsListProfiles(workspace.preferences.connectorId)
-  const hasNoProfile = profiles?.length === 0
-  useEffect(() => {
-    if (hasNoProfile) {
-      setShowSetting(true)
-    }
-  }, [hasNoProfile])
 
   return (
     <div
       className={css`
         display: flex;
-        flex-direction: column;
-        background: ${ThemingVariables.colors.gray[2]};
         height: 100%;
-        transition: all 250ms ease-in-out;
-        position: relative;
+        overflow: hidden;
       `}
     >
-      <UserModal
-        onClose={() => {
-          setShowUser(false)
-        }}
-        open={showUser}
-      />
-      <WorkspaceModal
-        openForProfiles={hasNoProfile}
-        onClose={() => {
-          setShowSetting(false)
-        }}
-        open={showSetting}
-      />
-      {folded === true && (
+      <div
+        className={css`
+          display: flex;
+          flex-direction: column;
+          background: ${ThemingVariables.colors.gray[2]};
+          height: 100%;
+          transition: all 250ms ease-in-out;
+          position: relative;
+        `}
+      >
         <div
           className={css`
             cursor: pointer;
@@ -202,112 +209,85 @@ const SideBarContent: React.FC<{ folded: boolean; toggleFoldStatus: () => void }
         >
           <Icon icon={IconCommonMenu} color={ThemingVariables.colors.gray[0]} />
         </div>
-      )}
-      <div
-        className={css`
-          display: flex;
-          align-items: center;
-        `}
-      >
+
         <UserSection
-          hideName={folded}
           onClick={() => {
-            setShowUser(true)
+            setModalContent(
+              <UserModal
+                onClose={() => {
+                  setModalContent(null)
+                }}
+              />
+            )
           }}
         />
-        {folded === false && (
-          <div
-            className={css`
-              cursor: pointer;
-              margin-left: auto;
-              margin-right: 16px;
-              line-height: 0;
-            `}
-            onClick={toggleFoldStatus}
-          >
-            <Icon icon={IconCommonFold} color={ThemingVariables.colors.gray[0]} />
-          </div>
-        )}
+
+        <div
+          className={css`
+            padding: 0 16px;
+          `}
+        >
+          <MainSideBarItem
+            icon={IconCommonSearch}
+            hoverTitle="Search"
+            onClick={() => {
+              setOmniboxShow(true)
+            }}
+          />
+          <MainSideBarItem
+            icon={IconCommonStar}
+            hoverTitle="Pinned Stories"
+            onClick={() => {
+              console.log('on click')
+              setSideBarContent(<WorkspaceSection />)
+            }}
+            active={location.pathname === '/thoughts'}
+          />
+          <MainSideBarItem
+            icon={IconCommonAllQuestion}
+            hoverTitle="All Stories"
+            onClick={() => {
+              setSideBarContent(<WorkspaceSection />)
+            }}
+            active={location.pathname === '/stories'}
+          />
+          <MainSideBarItem
+            icon={IconCommonThoughts}
+            hoverTitle="My Thoughts"
+            // onClick="/thoughts"
+            onClick={() => {
+              console.log('on click')
+              setSideBarContent(<WorkspaceSection />)
+            }}
+            active={location.pathname === '/thoughts'}
+          />
+        </div>
+
+        <div
+          className={css`
+            padding: 0 16px;
+            margin-top: auto;
+          `}
+        >
+          <MainSideBarItem icon={IconCommonAdd} hoverTitle="Create a new story" onClick={handleCreateNewSotry} />
+          <MainSideBarItem icon={IconCommonSetting} hoverTitle="Settings" onClick={showSettingsModal} />
+        </div>
       </div>
       <div
+        ref={sideBarContentRef}
+        style={{
+          display: folded ? 'none' : 'initial'
+        }}
         className={css`
-          padding: 0 16px;
+          flex-grow: 1;
+          flex-shrink: 0;
+          background-color: ${ThemingVariables.colors.gray[3]};
         `}
       >
-        <MainSideBarItem
-          icon={IconCommonSearch}
-          folded={folded}
-          title="Search"
-          onClick={() => {
-            setOmniboxShow(true)
-          }}
-        />
-        <MainSideBarItem
-          icon={IconCommonAllQuestion}
-          title="All Stories"
-          onClick="/stories"
-          active={location.pathname === '/stories'}
-          folded={folded}
-        />
-        <MainSideBarItem
-          icon={IconCommonThoughts}
-          title="My Thoughts"
-          onClick="/thoughts"
-          active={location.pathname === '/thoughts'}
-          folded={folded}
-        />
-        <MainSideBarItem
-          icon={IconCommonSetting}
-          title="Settings"
-          onClick={() => {
-            setShowSetting(true)
-          }}
-          folded={folded}
-        />
+        {sideBarContent}
       </div>
-      {folded ? (
-        <div
-          className={css`
-            flex: 1;
-          `}
-        />
-      ) : (
-        <WorkspaceSection />
-      )}
-      {folded ? (
-        <IconButton
-          icon={IconCommonAdd}
-          color={ThemingVariables.colors.gray[0]}
-          className={css`
-            margin-bottom: 16px;
-          `}
-          onClick={handleCreateNewSotry}
-        />
-      ) : (
-        <div
-          className={css`
-            height: 50px;
-            padding: 15px 16px;
-            border-top: 1px solid ${ThemingVariables.colors.gray[1]};
-            font-size: 14px;
-            line-height: 16px;
-            color: ${ThemingVariables.colors.text[1]};
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-          `}
-          onClick={handleCreateNewSotry}
-        >
-          <Icon
-            icon={IconCommonAdd}
-            color={ThemingVariables.colors.gray[0]}
-            className={css`
-              margin-right: 10px;
-            `}
-          />
-          Create new story
-        </div>
-      )}
+
+      <AnimatePresence>{modalContent}</AnimatePresence>
     </div>
   )
 }
@@ -368,49 +348,37 @@ const WorkspaceStoryItem: React.FC<{ blockId: string }> = ({ blockId }) => {
         openStory(block.id, { isAltKeyPressed: e.altKey })
       }}
       active={matchStory?.params.id === block.id}
-      folded={false}
     />
   )
 }
 
-const UserSection: React.FC<{ onClick(): void; hideName: boolean }> = ({ onClick, hideName = false }) => {
+const UserSection: React.FC<{ onClick(): void }> = ({ onClick }) => {
   const user = useLoggedUser()
 
   return (
-    <div
-      className={css`
-        display: flex;
-        align-items: center;
-        text-decoration: none;
-        padding: 10px;
-        margin: 14px 6px;
-        cursor: pointer;
-      `}
-      onClick={onClick}
-    >
-      <img
-        src={user.avatar}
+    <>
+      <div
         className={css`
-          width: 36px;
-          height: 36px;
-          border-radius: 50%;
-          margin-right: 10px;
-          background: ${ThemingVariables.colors.gray[0]};
+          display: flex;
+          justify-content: center;
+          text-decoration: none;
+          padding: 10px;
+          margin: 14px 0px;
+          cursor: pointer;
         `}
-      />
-      {!hideName && (
-        <div
+        onClick={onClick}
+      >
+        <img
+          src={user.avatar}
           className={css`
-            font-weight: 600;
-            font-size: 14px;
-            line-height: 17px;
-            color: ${ThemingVariables.colors.text[0]};
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: ${ThemingVariables.colors.gray[0]};
           `}
-        >
-          {user.name}
-        </div>
-      )}
-    </div>
+        />
+      </div>
+    </>
   )
 }
 

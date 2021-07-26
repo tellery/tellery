@@ -1,16 +1,16 @@
-import { css, cx } from '@emotion/css'
-import { ThemingVariables } from '@app/styles'
 import UserAccount from '@app/components/UserAccount'
-import { useState, useRef } from 'react'
-import { useLoggedUser } from '@app/hooks/useAuth'
 import { useOnClickOutside } from '@app/hooks'
-import { AnimatePresence, motion } from 'framer-motion'
+import { useLoggedUser } from '@app/hooks/useAuth'
+import { ThemingVariables } from '@app/styles'
+import { css, cx } from '@emotion/css'
+import { motion } from 'framer-motion'
+import { useRef, useState } from 'react'
 
 enum Tabs {
   Account = 'Account'
 }
 
-function UserModalContent(props: { onClose(): void }) {
+export function UserModal(props: { onClose(): void }) {
   const user = useLoggedUser()
   const [tab, setTab] = useState(Tabs.Account)
   const ref = useRef(null)
@@ -113,8 +113,4 @@ function UserModalContent(props: { onClose(): void }) {
       </div>
     </motion.div>
   )
-}
-
-export default function UserModal(props: { onClose(): void; open: boolean }) {
-  return <AnimatePresence>{props.open && <UserModalContent onClose={props.onClose} />}</AnimatePresence>
 }

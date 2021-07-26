@@ -1,11 +1,11 @@
-import { WorkspacePreferences } from '@app/components/WorkspacePreferences'
-import { WorkspaceMembers } from '@app/components/WorkspaceMembers'
 import { WorkspaceDatabases } from '@app/components/WorkspaceDatabases'
-import { css, cx } from '@emotion/css'
-import React, { useState, useRef } from 'react'
-import { ThemingVariables } from '@app/styles'
+import { WorkspaceMembers } from '@app/components/WorkspaceMembers'
+import { WorkspacePreferences } from '@app/components/WorkspacePreferences'
 import { useOnClickOutside } from '@app/hooks'
-import { AnimatePresence, motion } from 'framer-motion'
+import { ThemingVariables } from '@app/styles'
+import { css, cx } from '@emotion/css'
+import { motion } from 'framer-motion'
+import React, { useRef, useState } from 'react'
 
 enum Tabs {
   Preferences = 'Preferences',
@@ -18,7 +18,7 @@ interface ModalProps {
   onClose(): void
 }
 
-function WorkspaceModalContent(props: ModalProps) {
+export function WorkspaceModal(props: ModalProps) {
   const [tab, setTab] = useState(props.openForProfiles ? Tabs.Databases : Tabs.Preferences)
   const ref = useRef(null)
   useOnClickOutside(ref, props.onClose)
@@ -122,9 +122,4 @@ function WorkspaceModalContent(props: ModalProps) {
       </div>
     </motion.div>
   )
-}
-
-export default function WorkspaceModal(props: ModalProps & { open: boolean }) {
-  const { open, ...rest } = props
-  return <AnimatePresence>{open && <WorkspaceModalContent {...rest} />}</AnimatePresence>
 }

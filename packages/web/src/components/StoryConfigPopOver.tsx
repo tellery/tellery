@@ -45,6 +45,7 @@ export const StoryConfigPopOver: React.FC<{
   const { data: lastEditedBy } = useUser(story?.lastEditedById ?? null)
   const user = useLoggedUser()
   const history = useHistory()
+
   const setWorkspacePermission = useCallback(
     async (role: PermissionEntityRole) => {
       if (!user) return
