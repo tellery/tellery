@@ -66,6 +66,7 @@
     "react-helmet": "^6.1.0",
     "react-hook-form": "^7.11.1",
     "react-merge-refs": "^1.1.0",
+    "react-perfect-scrollbar": "^1.5.8",
     "react-popper": "^2.2.5",
     "react-query": "^3.19.0",
     "react-router-dom": "^5.2.0",

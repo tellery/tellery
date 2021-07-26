@@ -35,7 +35,6 @@ export const number: Chart<Type.NUMBER> = {
       <div
         className={css`
           padding: 20px;
-          overflow-y: auto;
           width: 225px;
         `}
       >

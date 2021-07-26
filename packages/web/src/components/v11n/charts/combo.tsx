@@ -18,7 +18,7 @@ import {
 } from '@tellery/recharts'
 import type { Path } from 'd3-path'
 import type { CurveGenerator } from 'd3-shape'
-
+import PerfectScrollbar from 'react-perfect-scrollbar'
 import { ComboShape, ComboStack, Config, DisplayType, Type } from '../types'
 import type { Chart } from './base'
 import { ConfigLabel } from '../components/ConfigLabel'
@@ -373,249 +373,185 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
             </ConfigButton>
           ))}
         </div>
-        <div
-          className={css`
-            overflow-y: auto;
-            padding: 20px;
-            flex: 1;
-          `}
-        >
-          {tab === Tab.DATA ? (
-            <>
-              {renderAxisSelect('X axis', 'xAxises', false, true)}
-              {renderAxisSelect('Dimension', 'dimensions', yAxises.length > 0 && y2Axises.length > 0)}
-              {renderAxisSelect(
-                'Y axis (Left)',
-                'yAxises',
-                dimensions.length > 0 && (yAxises.length > 0 || y2Axises.length > 0)
-              )}
-              {renderAxisSelect(
-                'Y axis (Right)',
-                'y2Axises',
-                dimensions.length > 0 && (yAxises.length > 0 || y2Axises.length > 0)
-              )}
-            </>
-          ) : null}
-          {tab === Tab.DISPLAY ? (
-            <>
-              <ConfigLabel top={0}>Shapes</ConfigLabel>
-              {props.config.groups.map((item) => (
-                <div
-                  key={item.key}
-                  className={css`
-                    margin-bottom: 20px;
-                  `}
-                >
+        <PerfectScrollbar options={{ suppressScrollX: true }}>
+          <div
+            className={css`
+              padding: 20px;
+              flex: 1;
+            `}
+          >
+            {tab === Tab.DATA ? (
+              <>
+                {renderAxisSelect('X axis', 'xAxises', false, true)}
+                {renderAxisSelect('Dimension', 'dimensions', yAxises.length > 0 && y2Axises.length > 0)}
+                {renderAxisSelect(
+                  'Y axis (Left)',
+                  'yAxises',
+                  dimensions.length > 0 && (yAxises.length > 0 || y2Axises.length > 0)
+                )}
+                {renderAxisSelect(
+                  'Y axis (Right)',
+                  'y2Axises',
+                  dimensions.length > 0 && (yAxises.length > 0 || y2Axises.length > 0)
+                )}
+              </>
+            ) : null}
+            {tab === Tab.DISPLAY ? (
+              <>
+                <ConfigLabel top={0}>Shapes</ConfigLabel>
+                {props.config.groups.map((item) => (
                   <div
+                    key={item.key}
                     className={css`
-                      display: flex;
-                      align-items: center;
-                      justify-content: space-between;
-                      font-size: 12px;
-                      margin-bottom: 5px;
+                      margin-bottom: 20px;
                     `}
                   >
-                    <span
+                    <div
                       className={css`
-                        color: ${ThemingVariables.colors.text[1]};
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        font-size: 12px;
+                        margin-bottom: 5px;
                       `}
                     >
-                      Y axis ({upperFirst(item.key)})
-                    </span>
-                    <MoreSettingPopover
-                      shapes={props.config.shapes.filter(({ groupId }) => groupId === item.key).length}
-                      value={item}
-                      onChange={(value) => {
-                        onConfigChange(
-                          'groups',
-                          props.config.groups.map((group) => (group.key === item.key ? { ...item, ...value } : group))
-                        )
-                      }}
-                    />
-                  </div>
-                  <SortableList
-                    value={props.config.shapes.filter(({ groupId }) => groupId === item.key)}
-                    onChange={(value) => {
-                      onConfigChange('shapes', value)
-                    }}
-                    renderItem={(item) => (
-                      <ShapeSelector
-                        key={item.key}
+                      <span
+                        className={css`
+                          color: ${ThemingVariables.colors.text[1]};
+                        `}
+                      >
+                        Y axis ({upperFirst(item.key)})
+                      </span>
+                      <MoreSettingPopover
+                        shapes={props.config.shapes.filter(({ groupId }) => groupId === item.key).length}
                         value={item}
                         onChange={(value) => {
                           onConfigChange(
-                            'shapes',
-                            props.config.shapes.map((shape) => (shape.key === item.key ? { ...item, ...value } : shape))
+                            'groups',
+                            props.config.groups.map((group) => (group.key === item.key ? { ...item, ...value } : group))
                           )
                         }}
                       />
-                    )}
-                    className={css`
-                      margin: -5px;
-                    `}
-                  />
-                </div>
-              ))}
-
-              {props.config.shapes.length === 0 ? (
-                <span
-                  className={css`
-                    margin-top: 10px;
-                    font-size: 14px;
-                    font-weight: 400;
-                    opacity: 0.3;
-                    cursor: pointer;
-
-                    &:hover {
-                      text-decoration: underline;
-                    }
-                  `}
-                  onClick={() => {
-                    setTab(Tab.DATA)
-                  }}
-                >
-                  No shapes. Click to configure data
-                </span>
-              ) : null}
-              <ConfigLabel>Y reference line</ConfigLabel>
-              <div
-                className={css`
-                  margin: -5px;
-                `}
-              >
-                <AxisFormItem label="Label">
-                  <ConfigInput
-                    value={props.config.referenceYLabel}
-                    onChange={(value) => {
-                      onConfigChange('referenceYLabel', value)
-                    }}
-                  />
-                </AxisFormItem>
-                <AxisFormItem label="Value">
-                  <ConfigNumericInput
-                    value={props.config.referenceYValue}
-                    onChange={(value) => {
-                      onConfigChange('referenceYValue', value)
-                    }}
-                  />
-                </AxisFormItem>
-                {props.config.yAxises.length && props.config.y2Axises.length ? (
-                  <AxisFormItem label="Y axis">
-                    <ConfigSelect
-                      options={['left', 'right']}
-                      value={props.config.referenceYAxis}
+                    </div>
+                    <SortableList
+                      value={props.config.shapes.filter(({ groupId }) => groupId === item.key)}
                       onChange={(value) => {
-                        onConfigChange('referenceYAxis', value)
+                        onConfigChange('shapes', value)
                       }}
-                    />
-                  </AxisFormItem>
-                ) : null}
-              </div>
-            </>
-          ) : null}
-          {tab === Tab.AXIS ? (
-            <>
-              <ConfigLabel top={0}>X axis</ConfigLabel>
-              <div
-                className={css`
-                  margin: -5px;
-                `}
-              >
-                <AxisFormItem label="Label">
-                  <ConfigInput
-                    value={props.config.xLabel}
-                    onChange={(value) => {
-                      onConfigChange('xLabel', value)
-                    }}
-                  />
-                </AxisFormItem>
-              </div>
-              <ConfigLabel>Y axis (Left)</ConfigLabel>
-              <div
-                className={css`
-                  margin: -5px;
-                `}
-              >
-                <AxisFormItem label="Label">
-                  <ConfigInput
-                    value={props.config.yLabel}
-                    onChange={(value) => {
-                      onConfigChange('yLabel', value)
-                    }}
-                  />
-                </AxisFormItem>
-                <AxisFormItem label="Scale">
-                  <ConfigSelect
-                    options={scaleTypes}
-                    value={props.config.yScale}
-                    onChange={(value) => {
-                      onConfigChange('yScale', value, 'yRangeMin', value === 'log' ? undefined : 0)
-                    }}
-                  />
-                </AxisFormItem>
-                <AxisFormItem label="Range">
-                  <div
-                    className={css`
-                      display: flex;
-                      align-items: center;
-                      width: 185px;
-                    `}
-                  >
-                    <ConfigNumericInput
+                      renderItem={(item) => (
+                        <ShapeSelector
+                          key={item.key}
+                          value={item}
+                          onChange={(value) => {
+                            onConfigChange(
+                              'shapes',
+                              props.config.shapes.map((shape) =>
+                                shape.key === item.key ? { ...item, ...value } : shape
+                              )
+                            )
+                          }}
+                        />
+                      )}
                       className={css`
-                        width: 0;
-                        flex: 1;
+                        margin: -5px;
                       `}
-                      placeholder="min"
-                      value={props.config.yRangeMin}
-                      onChange={(value) => {
-                        onConfigChange('yRangeMin', value)
-                      }}
-                    />
-                    <div
-                      className={css`
-                        width: 8px;
-                        height: 0px;
-                        border-top: 1px solid ${ThemingVariables.colors.gray[1]};
-                        margin: 0 8px;
-                        flex-shrink: 0;
-                      `}
-                    />
-                    <ConfigNumericInput
-                      className={css`
-                        width: 0;
-                        flex: 1;
-                      `}
-                      placeholder="max"
-                      value={props.config.yRangeMax}
-                      onChange={(value) => {
-                        onConfigChange('yRangeMax', value)
-                      }}
                     />
                   </div>
-                </AxisFormItem>
-              </div>
-              {props.config.y2Axises.length ? (
+                ))}
+
+                {props.config.shapes.length === 0 ? (
+                  <span
+                    className={css`
+                      margin-top: 10px;
+                      font-size: 14px;
+                      font-weight: 400;
+                      opacity: 0.3;
+                      cursor: pointer;
+
+                      &:hover {
+                        text-decoration: underline;
+                      }
+                    `}
+                    onClick={() => {
+                      setTab(Tab.DATA)
+                    }}
+                  >
+                    No shapes. Click to configure data
+                  </span>
+                ) : null}
+                <ConfigLabel>Y reference line</ConfigLabel>
                 <div
                   className={css`
                     margin: -5px;
                   `}
                 >
-                  <ConfigLabel>Y axis (Right)</ConfigLabel>
                   <AxisFormItem label="Label">
                     <ConfigInput
-                      value={props.config.y2Label}
+                      value={props.config.referenceYLabel}
                       onChange={(value) => {
-                        onConfigChange('y2Label', value)
+                        onConfigChange('referenceYLabel', value)
+                      }}
+                    />
+                  </AxisFormItem>
+                  <AxisFormItem label="Value">
+                    <ConfigNumericInput
+                      value={props.config.referenceYValue}
+                      onChange={(value) => {
+                        onConfigChange('referenceYValue', value)
+                      }}
+                    />
+                  </AxisFormItem>
+                  {props.config.yAxises.length && props.config.y2Axises.length ? (
+                    <AxisFormItem label="Y axis">
+                      <ConfigSelect
+                        options={['left', 'right']}
+                        value={props.config.referenceYAxis}
+                        onChange={(value) => {
+                          onConfigChange('referenceYAxis', value)
+                        }}
+                      />
+                    </AxisFormItem>
+                  ) : null}
+                </div>
+              </>
+            ) : null}
+            {tab === Tab.AXIS ? (
+              <>
+                <ConfigLabel top={0}>X axis</ConfigLabel>
+                <div
+                  className={css`
+                    margin: -5px;
+                  `}
+                >
+                  <AxisFormItem label="Label">
+                    <ConfigInput
+                      value={props.config.xLabel}
+                      onChange={(value) => {
+                        onConfigChange('xLabel', value)
+                      }}
+                    />
+                  </AxisFormItem>
+                </div>
+                <ConfigLabel>Y axis (Left)</ConfigLabel>
+                <div
+                  className={css`
+                    margin: -5px;
+                  `}
+                >
+                  <AxisFormItem label="Label">
+                    <ConfigInput
+                      value={props.config.yLabel}
+                      onChange={(value) => {
+                        onConfigChange('yLabel', value)
                       }}
                     />
                   </AxisFormItem>
                   <AxisFormItem label="Scale">
                     <ConfigSelect
                       options={scaleTypes}
-                      value={props.config.y2Scale}
+                      value={props.config.yScale}
                       onChange={(value) => {
-                        onConfigChange('y2Scale', value, 'y2RangeMin', value === 'log' ? undefined : 0)
+                        onConfigChange('yScale', value, 'yRangeMin', value === 'log' ? undefined : 0)
                       }}
                     />
                   </AxisFormItem>
@@ -633,9 +569,9 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                           flex: 1;
                         `}
                         placeholder="min"
-                        value={props.config.y2RangeMin}
+                        value={props.config.yRangeMin}
                         onChange={(value) => {
-                          onConfigChange('y2RangeMin', value)
+                          onConfigChange('yRangeMin', value)
                         }}
                       />
                       <div
@@ -653,18 +589,85 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                           flex: 1;
                         `}
                         placeholder="max"
-                        value={props.config.y2RangeMax}
+                        value={props.config.yRangeMax}
                         onChange={(value) => {
-                          onConfigChange('y2RangeMax', value)
+                          onConfigChange('yRangeMax', value)
                         }}
                       />
                     </div>
                   </AxisFormItem>
                 </div>
-              ) : null}
-            </>
-          ) : null}
-        </div>
+                {props.config.y2Axises.length ? (
+                  <div
+                    className={css`
+                      margin: -5px;
+                    `}
+                  >
+                    <ConfigLabel>Y axis (Right)</ConfigLabel>
+                    <AxisFormItem label="Label">
+                      <ConfigInput
+                        value={props.config.y2Label}
+                        onChange={(value) => {
+                          onConfigChange('y2Label', value)
+                        }}
+                      />
+                    </AxisFormItem>
+                    <AxisFormItem label="Scale">
+                      <ConfigSelect
+                        options={scaleTypes}
+                        value={props.config.y2Scale}
+                        onChange={(value) => {
+                          onConfigChange('y2Scale', value, 'y2RangeMin', value === 'log' ? undefined : 0)
+                        }}
+                      />
+                    </AxisFormItem>
+                    <AxisFormItem label="Range">
+                      <div
+                        className={css`
+                          display: flex;
+                          align-items: center;
+                          width: 185px;
+                        `}
+                      >
+                        <ConfigNumericInput
+                          className={css`
+                            width: 0;
+                            flex: 1;
+                          `}
+                          placeholder="min"
+                          value={props.config.y2RangeMin}
+                          onChange={(value) => {
+                            onConfigChange('y2RangeMin', value)
+                          }}
+                        />
+                        <div
+                          className={css`
+                            width: 8px;
+                            height: 0px;
+                            border-top: 1px solid ${ThemingVariables.colors.gray[1]};
+                            margin: 0 8px;
+                            flex-shrink: 0;
+                          `}
+                        />
+                        <ConfigNumericInput
+                          className={css`
+                            width: 0;
+                            flex: 1;
+                          `}
+                          placeholder="max"
+                          value={props.config.y2RangeMax}
+                          onChange={(value) => {
+                            onConfigChange('y2RangeMax', value)
+                          }}
+                        />
+                      </div>
+                    </AxisFormItem>
+                  </div>
+                ) : null}
+              </>
+            ) : null}
+          </div>
+        </PerfectScrollbar>
       </div>
     )
   },

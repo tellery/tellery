@@ -11,6 +11,7 @@ import type { Chart } from './base'
 import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 import IconButton from '@app/components/kit/IconButton'
 import Tippy from '@tippyjs/react'
+import PerfectScrollbar from 'react-perfect-scrollbar'
 
 const TABLE_ROW_HEIGHT_MIN = 30
 
@@ -30,83 +31,83 @@ export const table: Chart<Type.TABLE> = {
 
   Configuration(props) {
     return (
-      <div
-        className={css`
-          height: 100%;
-          padding: 20px;
-          overflow-y: auto;
-          width: 225px;
-        `}
-      >
-        <ConfigLabel top={0}>Columns</ConfigLabel>
-        <h4
+      <PerfectScrollbar options={{ suppressScrollX: true }}>
+        <div
           className={css`
-            font-style: normal;
-            font-weight: 400;
-            font-size: 14px;
-            line-height: 17px;
-            margin-top: 5px;
-            margin-bottom: 5px;
-            opacity: 0.3;
+            padding: 20px;
+            width: 225px;
           `}
         >
-          Drag to reorder columns
-        </h4>
-        <SortableList
-          className={css`
-            margin: 0 -5px;
-          `}
-          value={props.config.columnOrder}
-          onChange={(value) => {
-            props.onConfigChange('columnOrder', value)
-          }}
-          renderItem={(item) => (
-            <div
-              className={css`
-                flex: 1;
-                width: 0;
-                padding-right: 10px;
-                font-size: 14px;
-                font-weight: 400;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-              `}
-            >
-              {item}
-              {props.config.columnVisibility[item] === false ? (
-                <IconButton
-                  icon={IconMenuHide}
-                  color={ThemingVariables.colors.text[0]}
-                  className={css`
-                    cursor: pointer;
-                  `}
-                  onClick={() => {
-                    props.onConfigChange('columnVisibility', {
-                      ...props.config.columnVisibility,
-                      [item]: true
-                    })
-                  }}
-                />
-              ) : (
-                <IconButton
-                  icon={IconMenuShow}
-                  color={ThemingVariables.colors.text[0]}
-                  className={css`
-                    cursor: pointer;
-                  `}
-                  onClick={() => {
-                    props.onConfigChange('columnVisibility', {
-                      ...props.config.columnVisibility,
-                      [item]: false
-                    })
-                  }}
-                />
-              )}
-            </div>
-          )}
-        />
-      </div>
+          <ConfigLabel top={0}>Columns</ConfigLabel>
+          <h4
+            className={css`
+              font-style: normal;
+              font-weight: 400;
+              font-size: 14px;
+              line-height: 17px;
+              margin-top: 5px;
+              margin-bottom: 5px;
+              opacity: 0.3;
+            `}
+          >
+            Drag to reorder columns
+          </h4>
+          <SortableList
+            className={css`
+              margin: 0 -5px;
+            `}
+            value={props.config.columnOrder}
+            onChange={(value) => {
+              props.onConfigChange('columnOrder', value)
+            }}
+            renderItem={(item) => (
+              <div
+                className={css`
+                  flex: 1;
+                  width: 0;
+                  padding-right: 10px;
+                  font-size: 14px;
+                  font-weight: 400;
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                `}
+              >
+                {item}
+                {props.config.columnVisibility[item] === false ? (
+                  <IconButton
+                    icon={IconMenuHide}
+                    color={ThemingVariables.colors.text[0]}
+                    className={css`
+                      cursor: pointer;
+                    `}
+                    onClick={() => {
+                      props.onConfigChange('columnVisibility', {
+                        ...props.config.columnVisibility,
+                        [item]: true
+                      })
+                    }}
+                  />
+                ) : (
+                  <IconButton
+                    icon={IconMenuShow}
+                    color={ThemingVariables.colors.text[0]}
+                    className={css`
+                      cursor: pointer;
+                    `}
+                    onClick={() => {
+                      props.onConfigChange('columnVisibility', {
+                        ...props.config.columnVisibility,
+                        [item]: false
+                      })
+                    }}
+                  />
+                )}
+              </div>
+            )}
+          />
+        </div>
+      </PerfectScrollbar>
     )
   },
 
@@ -163,88 +164,86 @@ export const table: Chart<Type.TABLE> = {
           className={css`
             flex: 1;
             width: 100%;
-            overflow: hidden;
-            &:hover {
-              overflow-x: auto;
-            }
           `}
         >
-          <table
-            className={css`
-              min-width: 100%;
-              max-height: 100%;
-              border-collapse: collapse;
-              border: none;
-              td,
-              th {
-                border: 1px solid ${ThemingVariables.colors.gray[1]};
-              }
-              tr:first-child td,
-              th {
-                border-top: none;
-              }
-              tr td:first-child,
-              th:first-child {
-                border-left: none;
-              }
-              tr td:last-child,
-              th:last-child {
-                border-right: none;
-              }
-            `}
-          >
-            <thead>
-              <tr>
-                {columns.map((column) => (
-                  <th
-                    key={column.name}
-                    className={css`
-                      height: ${tableRowHeight}px;
-                      padding: 0 10px;
-                      font-weight: 600;
-                      background: ${ThemingVariables.colors.primary[4]};
-                      white-space: nowrap;
-                    `}
-                    align={isNumeric(column.displayType) ? 'right' : 'left'}
-                  >
-                    <Tippy content={column.sqlType}>
-                      <span>{column.name}</span>
-                    </Tippy>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((record, index) => (
-                <tr key={index.toString()}>
+          <PerfectScrollbar options={{ suppressScrollY: true }}>
+            <table
+              className={css`
+                min-width: 100%;
+                max-height: 100%;
+                border-collapse: collapse;
+                border: none;
+                td,
+                th {
+                  border: 1px solid ${ThemingVariables.colors.gray[1]};
+                }
+                tr:first-child td,
+                th {
+                  border-top: none;
+                }
+                tr td:first-child,
+                th:first-child {
+                  border-left: none;
+                }
+                tr td:last-child,
+                th:last-child {
+                  border-right: none;
+                }
+              `}
+            >
+              <thead>
+                <tr>
                   {columns.map((column) => (
-                    <td
+                    <th
                       key={column.name}
-                      className={cx(
-                        css`
-                          height: ${tableRowHeight}px;
-                          padding: 0 10px;
-                          font-weight: normal;
-                          white-space: nowrap;
-                          text-overflow: ellipsis;
-                          overflow: hidden;
-                          max-width: 400px;
-                        `,
-                        record[column.order] === null
-                          ? css`
-                              color: ${ThemingVariables.colors.text[2]};
-                            `
-                          : undefined
-                      )}
+                      className={css`
+                        height: ${tableRowHeight}px;
+                        padding: 0 10px;
+                        font-weight: 600;
+                        background: ${ThemingVariables.colors.primary[4]};
+                        white-space: nowrap;
+                      `}
                       align={isNumeric(column.displayType) ? 'right' : 'left'}
                     >
-                      {formatRecord(record[column.order], displayTypes[column.name])}
-                    </td>
+                      <Tippy content={column.sqlType}>
+                        <span>{column.name}</span>
+                      </Tippy>
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.map((record, index) => (
+                  <tr key={index.toString()}>
+                    {columns.map((column) => (
+                      <td
+                        key={column.name}
+                        className={cx(
+                          css`
+                            height: ${tableRowHeight}px;
+                            padding: 0 10px;
+                            font-weight: normal;
+                            white-space: nowrap;
+                            text-overflow: ellipsis;
+                            overflow: hidden;
+                            max-width: 400px;
+                          `,
+                          record[column.order] === null
+                            ? css`
+                                color: ${ThemingVariables.colors.text[2]};
+                              `
+                            : undefined
+                        )}
+                        align={isNumeric(column.displayType) ? 'right' : 'left'}
+                      >
+                        {formatRecord(record[column.order], displayTypes[column.name])}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </PerfectScrollbar>
         </div>
         <div
           className={css`
