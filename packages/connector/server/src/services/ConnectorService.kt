@@ -4,15 +4,18 @@ import arrow.core.Either
 import com.google.gson.GsonBuilder
 import com.google.protobuf.ByteString
 import com.google.protobuf.Empty
-import io.grpc.Status
-import io.grpc.Metadata
-import io.grpc.StatusRuntimeException
 import io.tellery.annotations.Config
 import io.tellery.common.ConfigManager
 import io.tellery.common.ConnectorManager
+import io.tellery.common.dbt.Constants.EXTERNAL_CONFIG_FIELDS
+import io.tellery.common.dbt.DbtManager
+import io.tellery.common.errorWrapper
+import io.tellery.common.withErrorWrapper
+import io.tellery.configs.AvailableConfig
+import io.tellery.configs.AvailableConfigs
+import io.tellery.configs.ConfigField
 import io.tellery.entities.*
 import io.tellery.grpc.*
-import io.tellery.configs.*
 import io.tellery.types.SQLType
 import io.tellery.utils.DateAsTimestampSerializer
 import io.tellery.utils.toDisplayType
@@ -22,16 +25,12 @@ import kotlinx.coroutines.asContextElement
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.consumeEach
-import mu.KotlinLogging
 import java.nio.charset.StandardCharsets.UTF_8
 import java.sql.Date
-import java.sql.SQLException
 import java.sql.Timestamp
 import kotlin.coroutines.CoroutineContext
 
 class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
-
-    private val logger = KotlinLogging.logger { }
 
     private val currThreadLocal = ThreadLocal<String>().asContextElement()
 
@@ -46,30 +45,7 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
 
     private val secretMask = "**TellerySecretField**"
 
-    private fun errorWrapper(e: Exception, decoratedName: String): StatusRuntimeException {
-        return when (e) {
-            is StatusRuntimeException -> e
-            is SQLException -> {
-                StatusRuntimeException(Status.UNAVAILABLE.withCause(e).withDescription("SQL Error: ${e.message}"),
-                    Metadata())
-            }
-            else -> {
-                logger.error("Error when handling $decoratedName", e)
-                StatusRuntimeException(Status.INTERNAL.withCause(e).withDescription("Internal Error: ${e.message}"),
-                    Metadata())
-            }
-        }
-    }
-
-    private suspend fun <S, T> withErrorWrapper(request: S, handler: suspend (request: S) -> T): T {
-        try {
-            return handler(request)
-        } catch (e: Exception) {
-            throw errorWrapper(e, handler.javaClass.enclosingMethod.name)
-        }
-    }
-
-    private fun buildConfigFieldFromAnnotation(confAnnotation: Config): ConfigField{
+    private fun buildConfigFieldFromAnnotation(confAnnotation: Config): ConfigField {
         return ConfigField {
             name = confAnnotation.name
             type = confAnnotation.type.name
@@ -96,23 +72,15 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
     private val loadedProfiles: Profiles
         get() = Profiles {
             addAllProfiles(ConnectorManager.getCurrentProfiles().values.map {
-                val connectorMeta = ConnectorManager.getAvailableConfigs().find{cfg -> cfg.type == it.type}!!
-                val secretConfigs = connectorMeta.configs.filter{it.secret}.map{it.name}.toSet()
+                val connectorMeta =
+                    ConnectorManager.getAvailableConfigs().find { cfg -> cfg.type == it.type }!!
+                val secretConfigs =
+                    connectorMeta.configs.filter { it.secret }.map { it.name }.toSet()
                 ProfileBody {
-
                     type = it.type
                     name = it.name
-                    it.auth?.let {
-                        auth = Auth {
-                            username = it.username
-                            if (it.password != null) {
-                                password = secretMask
-                            }
-                        }
-                    }
-
-                    putAllConfigs(it.configs.entries.associate{ (k, v) ->
-                        if (secretConfigs.contains(k)){
+                    putAllConfigs(it.configs.entries.associate { (k, v) ->
+                        if (secretConfigs.contains(k)) {
                             k to secretMask
                         } else {
                             k to v
@@ -123,14 +91,13 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
         }
 
 
-    private fun handleSecretField(requestField: String, originalField: String?): String{
-        return if (originalField != null && requestField == secretMask){
+    private fun handleSecretField(requestField: String, originalField: String?): String {
+        return if (originalField != null && requestField == secretMask) {
             originalField
         } else {
             requestField
         }
     }
-
 
     override suspend fun upsertProfile(request: UpsertProfileRequest): Profiles {
         return withErrorWrapper(request) { req ->
@@ -139,35 +106,33 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
             }
             val originalProfile = ConfigManager.profiles.find { it.name == req.name }
 
-            val connectorMeta = ConnectorManager.getAvailableConfigs().find{cfg -> cfg.type == req.type} ?: throw CustomizedException("invalid db type or invalid params")
+            val connectorMeta =
+                ConnectorManager.getAvailableConfigs().find { cfg -> cfg.type == req.type }
+                    ?: throw CustomizedException("invalid db type or invalid params")
             val configFields = connectorMeta.configs.associateBy { it.name }
             val configs =
-                req.configsList.filter { configFields.contains(it.key) }.associate { it.key to it.value }
+                req.configsList
+                    .filter { configFields.contains(it.key) || EXTERNAL_CONFIG_FIELDS.contains(it.key) }
+                    .associate { it.key to it.value }
 
-            val requiredKeys = configFields.filterValues{it.required}.map{it.key}
+            val requiredKeys = configFields.filterValues { it.required }.map { it.key }
             // check if required fields appears non-blank
-            if (!configs.filterValues { it.isNotBlank() }.keys.containsAll(requiredKeys)){
+            if (!configs.filterValues { it.isNotBlank() }.keys.containsAll(requiredKeys)) {
                 throw InvalidParamException()
             }
 
             val newProfile = Profile(
                 req.type,
                 req.name,
-                if(req.hasAuth()) {
-                    ConnectionAuth(
-                        req.auth.username,
-                        handleSecretField(req.auth.password, originalProfile?.auth?.password).ifBlank { null }
-                    )
-                } else null,
-                null,
-                configs.entries.associate{(k, v) ->
+                configs.entries.associate { (k, v) ->
                     k to handleSecretField(v, originalProfile?.configs?.get(k))
-                }.filterValues{it.isNotBlank()}
+                }.filterValues { it.isNotBlank() }
             )
 
             val newProfiles = ConfigManager.profiles.filter { it.name != req.name } + newProfile
             ConfigManager.saveProfiles(newProfiles)
             ConnectorManager.initializeProfile(newProfile)
+            DbtManager.reloadDbtProfiles(newProfiles)
             loadedProfiles
         }
     }
@@ -176,6 +141,7 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
         return withErrorWrapper(request) { req ->
             ConfigManager.saveProfiles(ConfigManager.profiles.filter { it.name != req.name })
             ConnectorManager.offloadProfile(req.name)
+            DbtManager.removeRepo(req.name)
             loadedProfiles
         }
     }
@@ -198,14 +164,15 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
         return withErrorWrapper(request) { req ->
             Collections {
                 addAllCollections(
-                    ConnectorManager.getDBConnector(req.profile).getCachedCollections(req.database).map {
-                        CollectionField {
-                            collection = it.collection
-                            it.schema?.let {
-                                schema = it
+                    ConnectorManager.getDBConnector(req.profile).getCachedCollections(req.database)
+                        .map {
+                            CollectionField {
+                                collection = it.collection
+                                it.schema?.let {
+                                    schema = it
+                                }
                             }
                         }
-                    }
                 )
             }
         }
@@ -229,7 +196,10 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    override suspend fun query(request: SubmitQueryRequest, responseChannel: SendChannel<QueryResult>) {
+    override suspend fun query(
+        request: SubmitQueryRequest,
+        responseChannel: SendChannel<QueryResult>
+    ) {
         val currentQueryChannel = Channel<Either<Exception, QueryResultWrapper>>()
         val queryContext = QueryContext(request.sql, request.questionId, request.maxRow)
         val connector = ConnectorManager.getDBConnector(request.profile)
@@ -276,10 +246,12 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
         return withErrorWrapper(request) { req ->
             val connector = ConnectorManager.getDBConnector(req.profile)
 
-            connector.import(req.database,
+            connector.import(
+                req.database,
                 req.collection,
                 req.schema.ifBlank { null },
-                req.url)
+                req.url
+            )
 
             ImportResult {
                 database = req.database

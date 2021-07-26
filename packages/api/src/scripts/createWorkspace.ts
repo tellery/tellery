@@ -42,14 +42,12 @@ async function main() {
   await newConnector.upsertProfile({
     type: 'PostgreSQL',
     name: 'default',
-    auth: {
-      username: config.get<string>('postgres.username'),
-      password: config.get<string>('postgres.password'),
-    },
     configs: {
       Endpoint: config.get<string>('postgres.host'),
       Port: config.get<number>('postgres.port').toString(),
       Database: 'sample',
+      Username: config.get<string>('postgres.username'),
+      Password: config.get<string>('postgres.password'),
     },
   })
 

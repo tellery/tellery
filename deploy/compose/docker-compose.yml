@@ -1,18 +1,15 @@
 version: "3.6"
+
 x-connector-volume: &connector_volume
   type: bind
   source: ./tellery-connector/profiles.json
   target: /usr/app/profiles.json
+
 x-restart-policy: &restart_policy
   restart: unless-stopped
+
 x-tellery-defaults: &tellery_defaults
   restart: on-failure
-  build:
-    context: .
-    dockerfile: tellery-server/Dockerfile
-    args:
-      BASE_IMAGE: ${TELLERY_SERVER_IMAGE}
-  # image: ${tellery_API_IMAGE}
   depends_on:
     - redis
     - postgresql
@@ -45,6 +42,7 @@ x-tellery-defaults: &tellery_defaults
     CREATE_USER_NAME: ${CREATE_USER_NAME}
     CREATE_USER_PASSWORD: ${CREATE_USER_PASSWORD}
     CREATE_CONNECTOR_URL: ${CREATE_CONNECTOR_URL}
+
 services:
   postgresql:
     <<: *restart_policy
@@ -63,6 +61,7 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql
       - ./assets:/docker-entrypoint-initdb.d/
+
   redis:
     <<: *restart_policy
     image: redis:6.2.4
@@ -74,15 +73,30 @@ services:
       timeout: 3s
       retries: 30
       start_period: 3s
-  # tellery-init:
-  #   <<: *tellery_defaults
-  #   restart_policy: none
-  #   command:
-  #     - sleep 10 && npm run typeorm schema:sync && npm run typeorm migration:run && npm run create:user && npm run create:workspace
+
+  tellery-init:
+    <<: *tellery_defaults
+    restart: "no"
+    build:
+      context: .
+      dockerfile: tellery-server/Dockerfile
+      args:
+        BASE_IMAGE: ${TELLERY_SERVER_IMAGE}
+    command:
+      - >-
+        until pg_isready -U ${POSTGRES_USER:-postgres} -h postgresql; do sleep 1; done &&
+        npm run typeorm schema:sync &&
+        npm run typeorm migration:run &&
+        npm run create:user &&
+        npm run create:workspace &&
+        npm run create:initStory
+
   tellery-server:
     <<: *tellery_defaults
+    image: ${TELLERY_SERVER_IMAGE}
     ports:
       - 8000:8000
+
   tellery-connector:
     <<: *restart_policy
     image: ${TELLERY_CONNECTOR_IMAGE}
@@ -103,6 +117,7 @@ services:
     volumes:
       - <<: *connector_volume
       - ./echo-profiles.sh:/usr/app/echo-profiles.sh
+
 volumes:
   pg_data: {}
   redis_data: {}

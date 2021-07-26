@@ -1,6 +1,6 @@
 import crossfilter from 'crossfilter2'
 import { useMemo } from 'react'
-import type { Data } from 'components/v11n/types'
+import type { Data } from '@app/components/v11n/types'
 
 export function useDataRecords(data: Data) {
   return useMemo(

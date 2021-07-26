@@ -32,7 +32,6 @@ message KVEntry{
 message UpsertProfileRequest {
   string type = 1;
   string name = 2;
-  Auth auth = 3;
   repeated KVEntry configs = 4;
   repeated KVEntry optionals = 5;
 }
@@ -41,16 +40,10 @@ message DeleteProfileRequest {
   string name = 1;
 }
 
-// Profile Management
-message Auth {
-  string username = 1;
-  string password = 2;
-}
 
 message ProfileBody {
   string type = 1;
   string name = 2;
-  Auth auth = 3;
   map<string, string> configs = 4;
   map<string, string> optionals = 5;
 }

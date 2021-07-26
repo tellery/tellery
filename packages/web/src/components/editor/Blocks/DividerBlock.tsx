@@ -1,11 +1,14 @@
 import { css } from '@emotion/css'
 import React from 'react'
-import { ThemingVariables } from 'styles'
-import type { Editor } from 'types'
+import { ThemingVariables } from '@app/styles'
+import { Editor } from '@app/types'
+import { BlockComponent, registerBlock } from './utils'
 
-export const DividerBlock: React.FC<{
-  block: Editor.Block
-}> = ({ children }) => {
+export const DividerBlock: BlockComponent<
+  React.FC<{
+    block: Editor.Block
+  }>
+> = ({ children }) => {
   return (
     <>
       <div
@@ -27,3 +30,10 @@ export const DividerBlock: React.FC<{
     </>
   )
 }
+
+DividerBlock.meta = {
+  isText: false,
+  hasChildren: false
+}
+
+registerBlock(Editor.BlockType.Divider, DividerBlock)

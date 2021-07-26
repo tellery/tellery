@@ -1,4 +1,4 @@
-import Confirm from 'pages/confirm'
+import Confirm from '@app/pages/confirm'
 import Login from '@app/pages/login'
 import React from 'react'
 import { Route } from 'react-router-dom'

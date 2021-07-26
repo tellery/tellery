@@ -14,5 +14,6 @@ annotation class Config(
         STRING,
         NUMBER,
         BOOLEAN,
+        FILE,         // Content will be encoded by base64
     }
 }

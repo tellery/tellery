@@ -1,3 +1,4 @@
+import { getDuplicatedBlocks } from '@app/context/editorTranscations'
 import { useCreateEmptyBlock } from '@app/helpers/blockFactory'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import {
@@ -11,18 +12,16 @@ import {
   useSensors
 } from '@dnd-kit/core'
 import { css } from '@emotion/css'
-import { ContentBlocks } from 'components/editor/ContentBlock'
-import { useSelectionArea } from 'hooks/useSelectionArea'
+import { ContentBlocks } from '@app/components/editor/ContentBlock'
+import { useSelectionArea } from '@app/hooks/useSelectionArea'
 import invariant from 'invariant'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import ReactTestUtils from 'react-dom/test-utils'
-import { useRecoilState } from 'recoil'
-import { useBlockSnapshot } from 'store/block'
-import { Direction, DnDItemTypes, DropItem, Editor } from 'types'
+import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
+import { Direction, DnDItemTypes, DropItem, Editor } from '@app/types'
 import {
   BlockDndContext,
   closetBorder,
-  DroppingArea,
   DroppingAreaContext,
   FileDraggble,
   findDroppbleBlockIdAndDirection,
@@ -32,12 +31,13 @@ import {
 } from '../context/blockDnd'
 import { DndSensor } from '../lib/dnd-kit/dndSensor'
 import { useSetUploadResource } from './editor/hooks/useUploadResource'
+import { useDroppingArea } from '../hooks/useDroppingArea'
 
 export const BlockDndContextProvider: React.FC = ({ children }) => {
   const [selectingBlockIds, setSelectingBlockIds] = useState<string[] | null>(null)
   const selectingBlockIdsRef = useRef<string[] | null>(null)
   const [isDragging, setIsDragging] = useState(false)
-  const [droppingArea, setDroppingArea] = useRecoilState(DroppingArea)
+  const [droppingArea, setDroppingArea] = useDroppingArea()
   const droppingAreaRef = useRef<{ blockId: string; direction: Direction } | null>(null)
   const mouseSensor = useSensor(MouseSensor, MouseSensorOptions)
   const dragSensor = useSensor(DndSensor)
@@ -57,6 +57,8 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
 
   const setUploadResource = useSetUploadResource()
 
+  const snapshot = useBlockSnapshot()
+
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       logger('drag end', event)
@@ -75,11 +77,13 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
           const overStoryId = overData?.storyId
           invariant(overData?.storyId, 'overing story id is null')
           if (item.storyId !== overStoryId) {
-            blockTranscations.duplicateBlocks(overStoryId, {
-              blockIds,
+            blockTranscations.insertBlocks(overStoryId, {
+              blocks: getDuplicatedBlocks(
+                blockIds.map((blockId) => getBlockFromSnapshot(blockId, snapshot)),
+                overStoryId
+              ),
               targetBlockId: id,
-              direction: droppingAreaRef.current.direction,
-              duplicate: true
+              direction: droppingAreaRef.current.direction
             })
           } else {
             blockTranscations.moveBlocks(overStoryId, {
@@ -121,10 +125,8 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
       setDroppingArea(null)
       droppingAreaRef.current = null
     },
-    [setDroppingArea, blockTranscations, createEmptyBlock, setUploadResource]
+    [setDroppingArea, blockTranscations, snapshot, createEmptyBlock, setUploadResource]
   )
-
-  const snapshot = useBlockSnapshot()
 
   const handleDragMove = useCallback(
     (event: DragMoveEvent) => {

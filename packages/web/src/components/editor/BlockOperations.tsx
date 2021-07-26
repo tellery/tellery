@@ -1,18 +1,17 @@
 import { useDraggable } from '@dnd-kit/core'
 import { css, cx } from '@emotion/css'
-import { IconCommonDrag } from 'assets/icons'
+import { IconCommonDrag } from '@app/assets/icons'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAtom } from 'jotai'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useRecoilValue } from 'recoil'
-import { editorTransformBlockPopoverState } from 'store'
-import { ThemingVariables } from 'styles'
-import { DnDItemTypes } from 'types'
+import { editorTransformBlockPopoverState } from '@app/store'
+import { ThemingVariables } from '@app/styles'
+import { DnDItemTypes } from '@app/types'
 import { BlockOperation } from './BlockOperation'
 import { useEditor } from './hooks'
 import { BlockOperationPopover } from './Popovers/BlockOperationPopover'
-import { IsBlockHovering } from './store'
-import Icon from 'components/kit/Icon'
+import Icon from '@app/components/kit/Icon'
+import { useBlockHovering } from '../../hooks/useBlockHovering'
 
 const BlockDragOperation: React.FC<{
   blockId: string
@@ -91,7 +90,7 @@ export const _BlockOperations: React.FC<{
   dragRef: React.MutableRefObject<HTMLDivElement | null>
 }> = (props) => {
   const { blockId } = props
-  const blockHovring = useRecoilValue(IsBlockHovering(blockId))
+  const blockHovring = useBlockHovering(blockId)
   const [isDragging, setIsDragging] = useState(false)
 
   // console.log('block operations', blockHovring, isDragging)

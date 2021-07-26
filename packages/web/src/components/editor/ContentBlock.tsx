@@ -1,34 +1,20 @@
+import { useBlockSuspense } from '@app/hooks/api'
+import { ThemingVariables } from '@app/styles'
+import { Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
-import { TelleryBlockSelectedAtom } from 'components/editor/store/selection'
-import { motion } from 'framer-motion'
-import { useBlockSuspense } from 'hooks/api'
-import React, { memo, ReactNode, useMemo, useRef } from 'react'
-import { useRecoilValue } from 'recoil'
-import { ThemingVariables } from 'styles'
-import { Editor } from 'types'
+import { AnimateSharedLayout, motion } from 'framer-motion'
+import React, { memo, useEffect, useMemo, useRef, useState } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
 import { BlockOperations } from './BlockOperations'
 import { OperatorsAvatar } from './BlockOperators'
-import { BulletListBlock } from './Blocks/BulletListBlock'
-import { CodeBlock } from './Blocks/CodeBlock'
-import { DeletedBlock } from './Blocks/DeletedBlock'
-import { DividerBlock } from './Blocks/DividerBlock'
-import { FileBlock } from './Blocks/FileBlock'
-import { GridBlock } from './Blocks/GridBlock'
-import { ImageBlock } from './Blocks/ImageBlock'
-import { EmbedBlock } from './Blocks/EmbedBlock'
-import { NoPermissionBlock } from './Blocks/NoPermisionBlock'
-import { NumberedListBlock } from './Blocks/NumberedListBlock'
-import { QuestionBlock } from './Blocks/QuestionBlock'
-import { QuoteBlock } from './Blocks/QuoteBlock'
-import { TextBlock } from './Blocks/TextBlock'
+import { BlockInner } from './Blocks'
 import { TitleBlock } from './Blocks/TitleBlock'
-import { TodoBlock } from './Blocks/TodoBlock'
-import { ToggleListBlock } from './Blocks/ToggleListBlock'
 import { DroppingAreaIndicator } from './DroppingAreaIndicator'
 import { DroppleableOverlay } from './DroppleableOverlay'
-import { BlockFormatInterface, useBlockFormat } from './hooks/useBlockFormat'
-import { ErrorBoundary } from 'react-error-boundary'
+import { useBlockAdmin } from './hooks/useBlockAdminProvider'
 import { BlockBehaviorConext, useBlockBehavior } from './hooks/useBlockBehavior'
+import { useBlockFormat } from './hooks/useBlockFormat'
+import { useBlockSelected } from './hooks/useBlockSelected'
 
 function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   return (
@@ -53,66 +39,6 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetError
   )
 }
 
-const _BlockInner: React.FC<{
-  block: Editor.Block
-  children: ReactNode
-  blockFormat: BlockFormatInterface
-  parentType: Editor.BlockType
-}> = ({ block, children, blockFormat, parentType }) => {
-  if (block.alive === false) {
-    return <DeletedBlock block={block}></DeletedBlock>
-  }
-  if (block.permissions.length === 0) {
-    return <NoPermissionBlock block={block} />
-  }
-  switch (block.type) {
-    case Editor.BlockType.Text:
-      return <TextBlock block={block}>{children}</TextBlock>
-    case Editor.BlockType.Todo:
-      return <TodoBlock block={block}>{children}</TodoBlock>
-    case Editor.BlockType.Toggle:
-      return <ToggleListBlock block={block}>{children}</ToggleListBlock>
-    case Editor.BlockType.Code:
-      return <CodeBlock block={block}>{children}</CodeBlock>
-    case Editor.BlockType.Quote:
-      return <QuoteBlock block={block}>{children}</QuoteBlock>
-    case Editor.BlockType.Divider:
-      return <DividerBlock block={block}>{children}</DividerBlock>
-    case Editor.BlockType.Image:
-      return (
-        <ImageBlock block={block as Editor.ImageBlock} blockFormat={blockFormat} parentType={parentType}>
-          {children}
-        </ImageBlock>
-      )
-    case Editor.BlockType.File:
-      return <FileBlock block={block as Editor.ImageBlock}>{children}</FileBlock>
-    case Editor.BlockType.Embed:
-      return <EmbedBlock block={block as Editor.ImageBlock}>{children}</EmbedBlock>
-    case Editor.BlockType.BulletList:
-      return <BulletListBlock block={block}>{children}</BulletListBlock>
-    case Editor.BlockType.NumberedList:
-      return <NumberedListBlock block={block}>{children}</NumberedListBlock>
-    case Editor.BlockType.Story:
-      return <TitleBlock block={block}></TitleBlock>
-    case Editor.BlockType.Question:
-      return (
-        <QuestionBlock block={block} blockFormat={blockFormat} parentType={parentType}>
-          {children}
-        </QuestionBlock>
-      )
-    default:
-      return <TextBlock block={block}>{children}</TextBlock>
-  }
-}
-
-const BlockInner = memo(_BlockInner, (prev, next) => {
-  return (
-    prev.block.version === next.block.version &&
-    prev.blockFormat === next.blockFormat &&
-    prev.parentType === next.parentType
-  )
-})
-
 // const BlockInner = _BlockInner
 
 export const ContentBlocks: React.FC<{
@@ -121,27 +47,27 @@ export const ContentBlocks: React.FC<{
   parentType: Editor.BlockType
   readonly?: boolean
   draggable?: boolean
-  highlightedBlock?: string
 }> = (props) => {
-  const { small = false, readonly = false, draggable = true, highlightedBlock = undefined } = props
+  const { small = false, readonly = false, draggable = true } = props
 
   const behavior = useMemo(() => {
     return {
       small,
       readonly,
-      highlightedBlock,
       draggable
     }
-  }, [small, readonly, draggable, highlightedBlock])
+  }, [small, readonly, draggable])
 
   return (
-    <BlockBehaviorConext.Provider value={behavior}>
-      {props.blockIds.map((blockId) => (
-        <React.Suspense key={blockId} fallback={<div>loading...</div>}>
-          <ContentBlockPure key={blockId} id={blockId} parentType={props.parentType} />
-        </React.Suspense>
-      ))}
-    </BlockBehaviorConext.Provider>
+    <AnimateSharedLayout>
+      <BlockBehaviorConext.Provider value={behavior}>
+        {props.blockIds.map((blockId) => (
+          <React.Suspense key={blockId} fallback={<div>loading...</div>}>
+            <ContentBlockPure key={blockId} id={blockId} parentType={props.parentType} />
+          </React.Suspense>
+        ))}
+      </BlockBehaviorConext.Provider>
+    </AnimateSharedLayout>
   )
 }
 
@@ -168,12 +94,33 @@ export const ContentBlockInner: React.FC<{
   parentType: Editor.BlockType
 }> = ({ block, parentType = Editor.BlockType.Story }) => {
   const blockFormat = useBlockFormat(block)
-  const { small, readonly, highlightedBlock } = useBlockBehavior()
-  const isHighlighted = highlightedBlock === block.id
+  const blockRef = useRef(null)
+  const { small, readonly } = useBlockBehavior()
   const ref = useRef<HTMLDivElement | null>(null)
+  const blockAdmin = useBlockAdmin()
+  const [hightlighted, setHighlighted] = useState(false)
+
+  useEffect(() => {
+    if (ref.current) {
+      blockAdmin?.registerBlockInstance(block.id, {
+        blockRef: blockRef,
+        wrapperElement: ref.current,
+        setHighlighted
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [block.type])
+
+  useEffect(() => {
+    if (!small) {
+      setTimeout(() => {
+        setHighlighted(false)
+      }, 2000)
+    }
+  }, [hightlighted, small])
 
   if (block.type === Editor.BlockType.Row) {
-    return <GridBlock block={block} />
+    return <BlockInner block={block} />
   }
 
   if (block.type === Editor.BlockType.Story) {
@@ -217,14 +164,14 @@ export const ContentBlockInner: React.FC<{
             <DroppingAreaIndicator blockId={block.id} />
           </>
         )}
-        <BlockSelectedOverlay blockId={block.id} selected={isHighlighted} />
+        <BlockSelectedOverlay blockId={block.id} selected={hightlighted} />
         <ErrorBoundary
           FallbackComponent={ErrorFallback}
           onReset={() => {
             // reset the state of your app so the error doesn't happen again
           }}
         >
-          <BlockInner block={block} blockFormat={blockFormat} parentType={parentType}>
+          <BlockInner ref={blockRef} block={block} blockFormat={blockFormat} parentType={parentType}>
             {block.children && block.children.length > 0 && (
               <BlockChildren
                 parentType={block.type}
@@ -296,9 +243,12 @@ export const BlockSelectedOverlay: React.FC<{ blockId: string; selected?: boolea
   blockId,
   selected = false
 }) => {
-  const blockSelected = useRecoilValue(TelleryBlockSelectedAtom(blockId))
-  return blockSelected || selected ? (
+  const blockSelected = useBlockSelected(blockId)
+  return (
     <div
+      style={{
+        opacity: blockSelected || selected ? 1 : 0
+      }}
       className={css`
         height: 100%;
         width: 100%;
@@ -307,10 +257,11 @@ export const BlockSelectedOverlay: React.FC<{ blockId: string; selected?: boolea
         position: absolute;
         z-index: 999;
         background: rgba(46, 115, 252, 0.2);
+        transition: opacity 250ms;
         pointer-events: none;
       `}
     ></div>
-  ) : null
+  )
 }
 
 export const BlockChildren: React.FC<{

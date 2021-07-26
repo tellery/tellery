@@ -1,5 +1,5 @@
 import { plainToClass } from 'class-transformer'
-import { IsDefined, IsEmail, IsOptional, IsUrl, Matches, MaxLength } from 'class-validator'
+import { IsDefined, IsEmail, IsOptional, Matches, MaxLength } from 'class-validator'
 import { Context } from 'koa'
 import Router from 'koa-router'
 
@@ -8,7 +8,6 @@ import { validate } from '../utils/http'
 import { mustGetUser } from '../utils/user'
 
 class UpdateUserInfoRequest {
-  @IsUrl()
   @IsOptional()
   avatar?: string
 

@@ -80,9 +80,10 @@ export class WorkspaceService {
       workspace.inviteCode = this.generateInviteCode()
     }
 
-    const newWorkspace = await workspace.save()
+    await workspace.save()
+    const newWorkspace = await this.mustFindOneWithMembers(workspaceId)
 
-    return Workspace.fromEntity(newWorkspace).toDTO(operatorId)
+    return newWorkspace.toDTO(operatorId)
   }
 
   async list(
@@ -103,7 +104,9 @@ export class WorkspaceService {
       take: limit,
     })
     const dtos = _(models)
-      .map((m) => Workspace.fromEntity(m).toDTO(operatorId))
+      .map((m) => {
+        return Workspace.fromEntity(m).toDTO(operatorId)
+      })
       .value()
 
     const { data: workspaces, next: nextNext } = loadMore(dtos, limit, (q) => q.createdAt)
@@ -118,7 +121,7 @@ export class WorkspaceService {
     return getConnection().transaction(async (t) => {
       const model = await t.getRepository(WorkspaceEntity).save({
         name,
-        avatar: avatar || absoluteURI('/api/static/avatars/workspace-default.png'),
+        avatar: avatar || '/api/static/avatars/workspace-default.png',
         inviteCode: this.generateInviteCode(),
       })
 

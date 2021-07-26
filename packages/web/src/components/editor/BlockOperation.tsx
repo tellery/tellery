@@ -1,5 +1,5 @@
 import styled from '@emotion/styled'
-import { ThemingVariables } from 'styles'
+import { ThemingVariables } from '@app/styles'
 
 export const BlockOperation = styled.div<{ padding: number }>`
   display: flex;

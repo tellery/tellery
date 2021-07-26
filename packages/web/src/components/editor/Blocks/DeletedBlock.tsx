@@ -3,7 +3,7 @@ import { useCommit } from '@app/hooks/useCommit'
 import { ThemingVariables } from '@app/styles'
 import { css } from '@emotion/css'
 import React, { useRef } from 'react'
-import type { Editor } from 'types'
+import type { Editor } from '@app/types'
 import { useEditor } from '../hooks'
 
 export const DeletedBlock: React.FC<{

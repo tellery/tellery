@@ -1,37 +1,27 @@
 package io.tellery.common
 
-import com.google.gson.*
-import com.google.gson.reflect.*
-import com.typesafe.config.*
-import dev.vishna.watchservice.*
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import com.typesafe.config.ConfigFactory
 import io.tellery.entities.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.*
-import java.io.*
-import java.nio.channels.*
+import java.io.File
+import java.nio.channels.FileLock
+import java.nio.channels.OverlappingFileLockException
 
 @OptIn(ExperimentalCoroutinesApi::class)
 object ConfigManager {
 
     private val dbConfigPath: String
     private var config: ConnectorConfig
-    private val fileWatcher: KWatchChannel
     private val registeredUpdateHandler: MutableList<suspend (Profile) -> Unit> = mutableListOf()
     private val registeredDeleteHandler: MutableList<suspend (String) -> Unit> = mutableListOf()
 
     init {
         val appConfig = ConfigFactory.load()
-        dbConfigPath = appConfig.getString("dbProfile.path") ?: throw DBProfileNotConfiguredException()
+        dbConfigPath =
+            appConfig.getString("dbProfile.path") ?: throw DBProfileNotConfiguredException()
         config = loadConfig()
-        // ensure that the parent path exists
-        fileWatcher = File(dbConfigPath).absoluteFile.asWatchChannel(mode = KWatchChannel.Mode.SingleFile)
-        GlobalScope.launch {
-            fileWatcher.consumeEach {
-                if (it.kind == KWatchEvent.Kind.Modified) {
-                    reloadProfiles()
-                }
-            }
-        }
     }
 
     val profiles: List<Profile>
@@ -46,7 +36,6 @@ object ConfigManager {
         }
 
     fun close() {
-        this.fileWatcher.close()
     }
 
     fun saveProfiles(newProfiles: List<Profile>) {

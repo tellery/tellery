@@ -7,11 +7,12 @@ import { fileLoader } from '@app/utils'
 import { uploadFile } from '@app/utils/upload'
 import { css } from '@emotion/css'
 import { ErrorMessage } from '@hookform/error-message'
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useHistory } from 'react-router-dom'
 import { FormButton } from './kit/FormButton'
 import FormError from './kit/FormError'
+import FormFileButton from './kit/FormFileButton'
 import FormInput from './kit/FormInput'
 import FormLabel from './kit/FormLabel'
 
@@ -24,13 +25,13 @@ export default function UserAccount(props: { onClose(): void }) {
   const {
     register,
     reset,
-    getValues,
+    watch,
     setValue,
     formState: { errors },
     handleSubmit
   } = useForm<User & { currentPassword?: string; newPassword?: string; repeatPassword?: string }>({
     defaultValues: user,
-    mode: 'all'
+    mode: 'onBlur'
   })
   useEffect(() => {
     reset(user)
@@ -47,7 +48,8 @@ export default function UserAccount(props: { onClose(): void }) {
       history.push('/login')
     }
   }, [handleLogoutUser.status, history])
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const avatar = watch('avatar')
+  const newPassword = watch('newPassword')
 
   return (
     <form
@@ -78,7 +80,7 @@ export default function UserAccount(props: { onClose(): void }) {
         `}
       >
         <img
-          src={getValues().avatar}
+          src={avatar}
           className={css`
             width: 70px;
             height: 70px;
@@ -86,31 +88,19 @@ export default function UserAccount(props: { onClose(): void }) {
             border-radius: 50%;
           `}
         />
-        <input
-          type="file"
-          className={css`
-            display: none;
-          `}
+        <FormFileButton
           accept="image/*"
-          ref={fileInputRef}
-          onChange={async (e) => {
-            const file = e.target.files?.item(0)
+          variant="secondary"
+          onChange={async (file) => {
             if (!file) {
               return
             }
             const { key } = await uploadFile(file, workspace.id)
             setValue('avatar', fileLoader({ src: key, workspaceId: workspace.id }))
           }}
-        />
-        <FormButton
-          type="button"
-          variant="secondary"
-          onClick={() => {
-            fileInputRef.current?.click()
-          }}
         >
           Upload Photo
-        </FormButton>
+        </FormFileButton>
       </div>
       <div
         className={css`
@@ -128,7 +118,12 @@ export default function UserAccount(props: { onClose(): void }) {
           `}
         >
           <FormLabel>Current password</FormLabel>
-          <FormInput {...register('currentPassword')} type="password" error={errors.currentPassword} />
+          <FormInput
+            {...register('currentPassword')}
+            type="password"
+            autoComplete="current-password"
+            error={errors.currentPassword}
+          />
           <ErrorMessage errors={errors} name="currentPassword" render={FormError} />
         </div>
       ) : null}
@@ -153,6 +148,7 @@ export default function UserAccount(props: { onClose(): void }) {
                   : 'at least a lowercase char'
                 : true
           })}
+          autoComplete="new-password"
           type="password"
           error={errors.newPassword}
         />
@@ -166,7 +162,7 @@ export default function UserAccount(props: { onClose(): void }) {
         <FormLabel>Repeat password</FormLabel>
         <FormInput
           {...register('repeatPassword', {
-            validate: (v) => (v === getValues().newPassword ? true : 'password mismatch')
+            validate: (v) => (v === newPassword ? true : 'password mismatch')
           })}
           type="password"
           error={errors.repeatPassword}

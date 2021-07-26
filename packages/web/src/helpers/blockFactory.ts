@@ -1,7 +1,7 @@
 import { DEFAULT_QUESTION_BLOCK_ASPECT_RATIO, DEFAULT_QUESTION_BLOCK_WIDTH } from '@app/components/editor/utils'
 import { cloneDeep } from 'lodash'
 import { nanoid } from 'nanoid'
-import { Editor } from 'types'
+import { Editor } from '@app/types'
 
 export const useCreateEmptyBlock = () => {
   return <T extends Editor.BaseBlock = Editor.BaseBlock>(args: Partial<T>) => {

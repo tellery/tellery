@@ -1,25 +1,28 @@
 import { css } from '@emotion/css'
-import React, { ReactNode, useEffect, useRef } from 'react'
-import { Editor } from 'types'
+import React, { ReactNode, useImperativeHandle, useRef } from 'react'
+import { Editor } from '@app/types'
 import { ContentEditable, EditableRef } from '../BlockBase/ContentEditable'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
-import { useEditor } from '../hooks'
+import { BlockComponent, registerBlock } from './utils'
 
-export const TextBlock: React.FC<{
+interface TextBlockProps {
   block: Editor.Block
   children: ReactNode
-}> = ({ block, children }) => {
-  const editor = useEditor()
+}
+
+const _TextBlock: React.ForwardRefRenderFunction<any, TextBlockProps> = ({ block, children }, ref) => {
   const editableRef = useRef<EditableRef>(null)
   const { readonly } = useBlockBehavior()
 
-  useEffect(() => {
-    editor?.registerOrUnregisterBlockInstance(block.id, {
+  useImperativeHandle(
+    ref,
+    () => ({
       openMenu: () => {
         editableRef?.current?.openSlashCommandMenu()
       }
-    })
-  }, [block.id, editor])
+    }),
+    []
+  )
 
   return (
     <>
@@ -34,7 +37,17 @@ export const TextBlock: React.FC<{
   )
 }
 
-export const TEXT_BLOCK_CLASS = new Map([
+const TextBlock = React.forwardRef(_TextBlock) as BlockComponent<
+  React.ForwardRefExoticComponent<TextBlockProps & React.RefAttributes<any>>
+>
+
+TextBlock.meta = {
+  isText: true,
+  hasChildren: true,
+  forwardRef: true
+}
+
+const TEXT_BLOCK_CLASS = new Map([
   [
     Editor.BlockType.Header,
     css`
@@ -72,3 +85,8 @@ export const TEXT_BLOCK_CLASS = new Map([
     `
   ]
 ])
+
+registerBlock(Editor.BlockType.Text, TextBlock)
+registerBlock(Editor.BlockType.Header, TextBlock)
+registerBlock(Editor.BlockType.SubHeader, TextBlock)
+registerBlock(Editor.BlockType.SubSubHeader, TextBlock)

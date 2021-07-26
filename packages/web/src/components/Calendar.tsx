@@ -1,12 +1,12 @@
 import { css, cx } from '@emotion/css'
 import ReactCalendar from 'react-calendar'
 import dayjs from 'dayjs'
-import { useMemo, useState, forwardRef } from 'react'
+import { useMemo, useState, forwardRef, useCallback } from 'react'
 
-import { IconCommonArrowDouble, IconCommonArrowDropDown } from 'assets/icons'
-import { useAllThoughts, useMgetBlocks } from 'hooks/api'
-import type { Thought } from 'types'
-import { ThemingVariables } from 'styles'
+import { IconCommonArrowDouble, IconCommonArrowDropDown } from '@app/assets/icons'
+import { useAllThoughts, useMgetBlocks } from '@app/hooks/api'
+import type { Thought } from '@app/types'
+import { ThemingVariables } from '@app/styles'
 import Icon from './kit/Icon'
 
 export const Calendar = forwardRef<
@@ -47,15 +47,19 @@ export const Calendar = forwardRef<
       }, {}),
     [blocks]
   )
+  const handleDateChange = useCallback(
+    (date: Date) => {
+      props.onChange(date as Date, map[dayjs(date as Date).format('YYYY-MM-DD')])
+    },
+    [map, props]
+  )
 
   return (
     <div ref={ref}>
       <ReactCalendar
         view="month"
         value={props.value}
-        onChange={(date) => {
-          props.onChange(date as Date, map[dayjs(date as Date).format('YYYY-MM-DD')])
-        }}
+        onChange={handleDateChange}
         calendarType="US"
         locale="en"
         tileDisabled={({ date }) => date > new Date()}

@@ -1,6 +1,6 @@
 import { css } from '@emotion/css'
 import React, { useEffect } from 'react'
-import { DnDItemTypes } from 'types'
+import { DnDItemTypes } from '@app/types'
 import { useDroppable } from '@dnd-kit/core'
 
 export const DroppleableOverlay: React.FC<{

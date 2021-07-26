@@ -18,11 +18,11 @@ import {
 } from '@tellery/recharts'
 import type { Path } from 'd3-path'
 import type { CurveGenerator } from 'd3-shape'
-
+import PerfectScrollbar from 'react-perfect-scrollbar'
 import { ComboShape, ComboStack, Config, DisplayType, Type } from '../types'
 import type { Chart } from './base'
 import { ConfigLabel } from '../components/ConfigLabel'
-import { DragableList } from '../components/DragableList'
+import { SortableList } from '../components/SortableList'
 import { ConfigNumericInput } from '../components/ConfigNumericInput'
 import { ConfigButton } from '../components/ConfigButton'
 import { ShapeSelector } from '../components/ShapeSelector'
@@ -32,13 +32,13 @@ import { LegendContent } from '../components/LegendContent'
 import { fontFamily } from '../constants'
 import { createTrend, formatNumber, formatRecord, isContinuous, isNumeric } from '../utils'
 import { MoreSettingPopover } from '../components/MoreSettingPopover'
-import { ThemingVariables } from 'styles'
-import { SVG2DataURI } from 'lib/svg'
-import { IconCommonArrowDropDown, IconCommonClose, IconCommonAdd } from 'assets/icons'
+import { ThemingVariables } from '@app/styles'
+import { SVG2DataURI } from '@app/lib/svg'
+import { IconCommonArrowDropDown, IconCommonClose, IconCommonAdd } from '@app/assets/icons'
 import { CustomTooltip } from '../components/CustomTooltip'
-import { useCrossFilter, useDataRecords } from 'hooks/useDataRecords'
-import { useDataFieldsDisplayType } from 'hooks/useDataFieldsDisplayType'
-import Icon from 'components/kit/Icon'
+import { useCrossFilter, useDataRecords } from '@app/hooks/useDataRecords'
+import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
+import Icon from '@app/components/kit/Icon'
 
 const splitter = ', '
 
@@ -202,8 +202,12 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
     }, [yAxises, y2Axises, props.config.type, onConfigChange, props.config.groups])
     useEffect(() => {
       if (
-        props.config.shapes.map(({ key, groupId }) => key + groupId).join() ===
-        shapes.map(({ key, groupId }) => key + groupId).join()
+        sortBy(props.config.shapes, 'key')
+          .map(({ key, groupId }) => key + groupId)
+          .join() ===
+        sortBy(shapes, 'key')
+          .map(({ key, groupId }) => key + groupId)
+          .join()
       ) {
         return
       }
@@ -230,7 +234,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
         return (
           <>
             <ConfigLabel top={first ? 0 : undefined}>{title}</ConfigLabel>
-            <DragableList
+            <SortableList
               className={css`
                 margin: -5px;
               `}
@@ -339,6 +343,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
         className={css`
           display: flex;
           height: 100%;
+          width: calc(150px + 225px);
         `}
       >
         <div
@@ -368,12 +373,12 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
             </ConfigButton>
           ))}
         </div>
-        <div
+        <PerfectScrollbar
           className={css`
-            overflow-y: auto;
             padding: 20px;
             flex: 1;
           `}
+          options={{ suppressScrollX: true }}
         >
           {tab === Tab.DATA ? (
             <>
@@ -428,31 +433,27 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                       }}
                     />
                   </div>
-                  <div
+                  <SortableList
+                    value={props.config.shapes.filter(({ groupId }) => groupId === item.key)}
+                    onChange={(value) => {
+                      onConfigChange('shapes', value)
+                    }}
+                    renderItem={(item) => (
+                      <ShapeSelector
+                        key={item.key}
+                        value={item}
+                        onChange={(value) => {
+                          onConfigChange(
+                            'shapes',
+                            props.config.shapes.map((shape) => (shape.key === item.key ? { ...item, ...value } : shape))
+                          )
+                        }}
+                      />
+                    )}
                     className={css`
                       margin: -5px;
                     `}
-                  >
-                    {props.config.shapes
-                      .filter(({ groupId }) => groupId === item.key)
-                      .map((item) => (
-                        <ShapeSelector
-                          key={item.key}
-                          className={css`
-                            margin: 5px;
-                          `}
-                          value={item}
-                          onChange={(value) => {
-                            onConfigChange(
-                              'shapes',
-                              props.config.shapes.map((shape) =>
-                                shape.key === item.key ? { ...item, ...value } : shape
-                              )
-                            )
-                          }}
-                        />
-                      ))}
-                  </div>
+                  />
                 </div>
               ))}
 
@@ -663,7 +664,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
               ) : null}
             </>
           ) : null}
-        </div>
+        </PerfectScrollbar>
       </div>
     )
   },

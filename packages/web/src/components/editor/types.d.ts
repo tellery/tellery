@@ -1,8 +1,10 @@
 import type { WritableDraft } from 'immer/dist/internal'
+import type { MutableRefObject } from 'react'
 
 export type SetBlock<BlockType> = (id: string, update: (block: WritableDraft<BlockType>) => void) => void
 
 export interface BlockInstanceInterface {
-  openMenu: () => void
-  afterDuplicate?: () => void
+  blockRef: MutableRefObject<any>
+  wrapperElement: HTMLElement
+  setHighlighted: (value: boolean) => void
 }

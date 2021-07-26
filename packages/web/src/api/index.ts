@@ -1,15 +1,14 @@
-import type { DisplayType } from '@app/components/v11n/types'
+import type { DisplayType, Data } from '@app/components/v11n/types'
 import { createDeletedBlock } from '@app/helpers/blockFactory'
 import axios from 'axios'
-import type { User } from 'hooks/api'
+import type { User } from '@app/hooks/api'
 import { debounce, isEmpty, omitBy } from 'lodash'
 import { toast } from 'react-toastify'
-import type { BackLinks, Editor, Snapshot, Story, Thought } from 'types'
-import { emitBlockUpdate } from 'utils/remoteStoreObserver'
+import type { BackLinks, Editor, Snapshot, Story, Thought } from '@app/types'
+import { emitBlockUpdate } from '@app/utils/remoteStoreObserver'
 import JSON5 from 'json5'
-import type { Data } from 'components/v11n/types'
+
 import { wrapAuth } from './auth'
-import { nanoid } from 'nanoid'
 import type { Transcation } from '@app/hooks/useCommit'
 
 export const request = wrapAuth(axios.create({ baseURL: '', withCredentials: true }))
@@ -321,8 +320,12 @@ export type ResourceType = 'block' | 'user' | 'link'
 
 export type Entity = (User | Editor.Block | Story | Thought) & { resourceType: string }
 
-export default function saveTranscations(transcations: Transcation[]) {
+export function saveTranscations(transcations: Transcation[]) {
   return request.post('/api/operations/saveTransactions', {
     transactions: transcations
   })
+}
+
+export const getMetabaseToken = (params: { siteUrl: string; payload: object }) => {
+  return request.post('/api/thirdParty/metabase/token', params)
 }

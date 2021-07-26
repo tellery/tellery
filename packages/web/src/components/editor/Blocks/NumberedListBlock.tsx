@@ -1,9 +1,10 @@
 import { css, cx } from '@emotion/css'
-import { useBlockSuspense, useMgetBlocks } from 'hooks/api'
+import { useBlockSuspense, useMgetBlocks } from '@app/hooks/api'
 import React, { ReactNode, useMemo } from 'react'
-import { Editor } from 'types'
+import { Editor } from '@app/types'
 import { ContentEditable } from '../BlockBase/ContentEditable'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
+import { registerBlock, BlockComponent } from './utils'
 
 const OrderOfBlock: React.FC<{ blockId: string; parentId: string }> = ({ blockId, parentId }) => {
   const parentBlock = useBlockSuspense(parentId)
@@ -45,10 +46,12 @@ const OrderOfBlock: React.FC<{ blockId: string; parentId: string }> = ({ blockId
   )
 }
 
-export const NumberedListBlock: React.FC<{
-  block: Editor.Block
-  children: ReactNode
-}> = ({ block, children }) => {
+export const NumberedListBlock: BlockComponent<
+  React.FC<{
+    block: Editor.Block
+    children: ReactNode
+  }>
+> = ({ block, children }) => {
   const { readonly } = useBlockBehavior()
 
   return (
@@ -78,3 +81,10 @@ export const NumberedListBlock: React.FC<{
     </>
   )
 }
+
+NumberedListBlock.meta = {
+  hasChildren: true,
+  isText: true
+}
+
+registerBlock(Editor.BlockType.NumberedList, NumberedListBlock)

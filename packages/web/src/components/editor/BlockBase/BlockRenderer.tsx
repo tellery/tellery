@@ -1,9 +1,10 @@
+import { IconCommonLink } from '@app/assets/icons'
 import { css } from '@emotion/css'
 import React, { CSSProperties, useEffect, useRef } from 'react'
 import ReactDOMServer from 'react-dom/server'
-import { useBlockSnapshot } from 'store/block'
-import { ThemingVariables } from 'styles'
-import { Editor, Story } from 'types'
+import { useBlockSnapshot } from '@app/store/block'
+import { ThemingVariables } from '@app/styles'
+import { Editor, Story } from '@app/types'
 import { blockTitleToText, extractEntitiesFromToken } from '../helpers/tokenManipulation'
 
 export const COLORS = {
@@ -65,7 +66,20 @@ export const INLINE_STYLES = new Map([
       cursor: 'pointer',
       color: ThemingVariables.colors.primary[1],
       wordWrap: 'break-word',
-      fontWeight: 500,
+      textDecoration: 'inherit',
+      userSelect: 'text',
+      borderBottom: 'solid 1px currentColor'
+    })
+  ]
+])
+
+export const INLINE_WRAPPER_STYLE = new Map([
+  [
+    Editor.InlineType.Link,
+    (...args: string[]): CSSProperties => ({
+      cursor: 'pointer',
+      color: ThemingVariables.colors.primary[1],
+      wordWrap: 'break-word',
       textDecoration: 'inherit',
       userSelect: 'text'
     })
@@ -114,12 +128,12 @@ export const Token = ({
   const snapshot = useBlockSnapshot()
   const { link: linkEntity, reference: referenceEntity } = extractEntitiesFromToken(token)
   if (linkEntity) {
-    const styleGen = INLINE_STYLES.get(Editor.InlineType.Link)!
+    const styleGen = INLINE_WRAPPER_STYLE.get(Editor.InlineType.Link)!
 
     return (
       <>
         <a href={linkEntity[1]} data-token-index={index} target="_blank" rel="noopener noreferrer" style={styleGen()}>
-          <span style={{ whiteSpace: 'nowrap' }}></span>
+          <IconCommonLink height="1em" width="1em" viewBox="0 0 20 20" style={{ verticalAlign: 'middle' }} />
           {getTextElement(token, index)}
           <span style={{ whiteSpace: 'nowrap' }}></span>
         </a>

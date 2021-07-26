@@ -1,15 +1,8 @@
 import { css, cx } from '@emotion/css'
 import type { ReactNode } from 'react'
+import { ThemingVariables } from '@app/styles'
 
-import { ThemingVariables } from 'styles'
-
-export function ConfigButton(props: {
-  className?: string
-  children: ReactNode
-  active?: boolean
-  onClick(): void
-  title?: string
-}) {
+export function ConfigButton(props: { className?: string; children: ReactNode; active?: boolean; onClick(): void }) {
   return (
     <button
       className={cx(
@@ -39,7 +32,6 @@ export function ConfigButton(props: {
           : {}
       }
       onClick={props.onClick}
-      title={props.title}
     >
       {props.children}
     </button>

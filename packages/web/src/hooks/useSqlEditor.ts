@@ -1,10 +1,10 @@
 import { Monaco, useMonaco } from '@monaco-editor/react'
-import { getCollectionSchema, searchBlocks } from 'api'
-import { useGetBlockTitleTextSnapshot } from 'components/editor'
+import { getCollectionSchema, searchBlocks } from '@app/api'
+import { useGetBlockTitleTextSnapshot } from '@app/components/editor'
 import { compact, padStart } from 'lodash'
 import type { editor, languages } from 'monaco-editor'
 import { useEffect, useMemo, useState } from 'react'
-import { Editor } from 'types'
+import { Editor } from '@app/types'
 import { useGetCollectionSchema, useListCollections, useListDatabases } from './api'
 import { useWorkspace } from '@app/context/workspace'
 
@@ -70,7 +70,7 @@ function useSqlEditorLanguage(languageId?: string, monaco?: Monaco) {
   >()
   useEffect(() => {
     // see: https://github.com/rollup/plugins/tree/master/packages/dynamic-import-vars#limitations
-    console.log(`../lib/monarch/${languageId?.replace('/', '-')}.ts`)
+    if (!languageId) return
     import(`../lib/monarch/${languageId?.replace('/', '-')}.ts`)
       .then(({ default: _monarch }) => {
         setMonarch(_monarch)
@@ -215,7 +215,7 @@ function useSqlEditorLanguage(languageId?: string, monaco?: Monaco) {
               range
             })),
             ...schemas.map((schema, index) => ({
-              label: schema,
+              label: schema.name,
               kind: monaco.languages.CompletionItemKind.Variable,
               insertText: schema.name.startsWith('$') ? `\`${schema.name}\`` : schema.name,
               sortText: padStart(index.toString(), 5, '0'),
@@ -307,10 +307,8 @@ function useSqlEditorTransclusion(languageId?: string, monaco?: Monaco) {
           return {
             suggestions: questionSearchResults.map((question) => ({
               range: current.range,
-              label: {
-                name: getBlockTitle(question),
-                type: question.storyId ? getBlockTitle(data?.blocks[question.storyId]) : undefined
-              },
+              label: getBlockTitle(question) || '',
+              detail: question.storyId ? getBlockTitle(data?.blocks[question.storyId]) : undefined,
               kind: monaco.languages.CompletionItemKind.Function,
               insertText: `{{${question.id}}}`,
               filterText: `{{${keyword}}}`

@@ -36,12 +36,12 @@ class S3Storage(
     companion object {
         fun buildFromConfigs(configs: Map<String, String>): S3Storage? {
             var s3Client: S3Storage? = null
-            val accessKey = configs["S3AccessKey"]
-            val secretKey = configs["S3SecretKey"]
-            val region = configs["S3Region"]
-            val bucket = configs["S3Bucket"]
-            val endpoint = configs["S3Endpoint"]
-            val keyPrefix = configs["S3KeyPrefix"]
+            val accessKey = configs["S3 Access Key"]
+            val secretKey = configs["S3 Secret Key"]
+            val region = configs["S3 Region"]
+            val bucket = configs["S3 Bucket"]
+            val endpoint = configs["S3 Endpoint"]
+            val keyPrefix = configs["S3 Key Prefix"]
             if (accessKey != null && secretKey != null && region != null && bucket != null) {
                 s3Client = S3Storage(accessKey, secretKey, region, bucket, endpoint, keyPrefix)
             }

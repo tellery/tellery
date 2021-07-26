@@ -1,5 +1,5 @@
 import { css } from '@emotion/css'
-import { ThemingVariables } from 'styles'
+import { ThemingVariables } from '@app/styles'
 
 export function ConfigSwitch(props: { value: boolean; onChange(value: boolean): void }) {
   return (

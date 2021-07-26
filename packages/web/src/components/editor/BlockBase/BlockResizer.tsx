@@ -1,19 +1,17 @@
+import { useBlockHovering } from '@app/hooks/useBlockHovering'
 import { css } from '@emotion/css'
 import { motion, PanInfo } from 'framer-motion'
 import invariant from 'invariant'
 import React, { useCallback } from 'react'
-import { useRecoilValue } from 'recoil'
-import { Editor } from 'types'
+import { Editor } from '@app/types'
 import type { BlockFormatInterface } from '../hooks'
-import { IsBlockHovering } from '../store'
-
 const HANDLE_WIDTH = 10
 
 export const BlockResizer: React.FC<{
   blockFormat: BlockFormatInterface
   parentType: Editor.BlockType
   blockId: string
-  contentRef: React.MutableRefObject<HTMLDivElement | null>
+  contentRef: React.MutableRefObject<HTMLElement | null>
   disableY?: boolean
   keepAspectRatio?: boolean
   offsetY?: number
@@ -38,7 +36,7 @@ export const BlockResizer: React.FC<{
     [blockFormat, contentRef]
   )
 
-  const isHovering = useRecoilValue(IsBlockHovering(blockId))
+  const isHovering = useBlockHovering(blockId)
   return (
     <>
       {!disableY && (

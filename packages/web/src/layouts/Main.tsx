@@ -1,6 +1,6 @@
 import { css } from '@emotion/css'
-import { SideBar } from 'components/SideBar'
-import { useMediaQuery } from 'hooks'
+import { SideBar } from '@app/components/SideBar'
+import { useMediaQuery } from '@app/hooks'
 import type { ReactNode } from 'react'
 
 export const Page = (props: { children: ReactNode }) => {

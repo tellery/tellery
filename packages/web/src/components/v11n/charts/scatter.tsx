@@ -14,9 +14,8 @@ import {
   ZAxis
 } from '@tellery/recharts'
 import { groupBy, orderBy } from 'lodash'
-
+import PerfectScrollbar from 'react-perfect-scrollbar'
 import { useTextWidth } from '@imagemarker/use-text-width'
-
 import { DisplayType, Type } from '../types'
 import type { Chart } from './base'
 import { ConfigButton } from '../components/ConfigButton'
@@ -27,10 +26,10 @@ import { CustomTooltip } from '../components/CustomTooltip'
 import { formatNumber, formatRecord, isContinuous, isNumeric } from '../utils'
 import { LegendContent } from '../components/LegendContent'
 import { ColorSelector } from '../components/ColorSelector'
-import { ThemingVariables } from 'styles'
+import { ThemingVariables } from '@app/styles'
 import { ConfigNumericInput } from '../components/ConfigNumericInput'
 import { fontFamily } from '../constants'
-import { useDataFieldsDisplayType } from 'hooks/useDataFieldsDisplayType'
+import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 import { ConfigInput } from '../components/ConfigInput'
 import { useDataRecords } from '@app/hooks/useDataRecords'
 
@@ -105,6 +104,7 @@ export const scatter: Chart<Type.SCATTER> = {
         className={css`
           height: 100%;
           display: flex;
+          width: calc(150px + 225px);
         `}
       >
         <div
@@ -134,12 +134,13 @@ export const scatter: Chart<Type.SCATTER> = {
             </ConfigButton>
           ))}
         </div>
-        <div
+
+        <PerfectScrollbar
           className={css`
-            overflow-y: auto;
             padding: 20px;
             flex: 1;
           `}
+          options={{ suppressScrollX: true }}
         >
           {tab === Tab.DATA ? (
             <>
@@ -173,7 +174,12 @@ export const scatter: Chart<Type.SCATTER> = {
                     'color',
                     color,
                     'colors',
-                    color ? Object.keys(groupBy(records, color)).map((c, index) => ({ key: c, color: index })) : []
+                    color
+                      ? Object.keys(groupBy(records, color)).map((c, index) => ({
+                          key: c,
+                          color: index % ThemingVariables.colors.visualization.length
+                        }))
+                      : []
                   )
                 }}
                 placeholder="Please select"
@@ -369,7 +375,7 @@ export const scatter: Chart<Type.SCATTER> = {
               </div>
             </>
           ) : null}
-        </div>
+        </PerfectScrollbar>
       </div>
     )
   },

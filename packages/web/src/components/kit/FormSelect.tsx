@@ -1,7 +1,7 @@
 import { css, cx } from '@emotion/css'
-import { ThemingVariables } from 'styles'
-import { SVG2DataURI } from 'lib/svg'
-import { IconCommonArrowDropDown } from 'assets/icons'
+import { ThemingVariables } from '@app/styles'
+import { SVG2DataURI } from '@app/lib/svg'
+import { IconCommonArrowDropDown } from '@app/assets/icons'
 import { forwardRef, SelectHTMLAttributes } from 'react'
 
 export default forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(function FormSelect(props, ref) {
@@ -27,6 +27,12 @@ export default forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElem
           display: block;
           background-image: ${SVG2DataURI(IconCommonArrowDropDown)};
           color: ${ThemingVariables.colors.text[0]};
+          &:disabled {
+            opacity: 1;
+            color: ${ThemingVariables.colors.text[1]};
+            background-color: ${ThemingVariables.colors.gray[3]};
+            cursor: not-allowed;
+          }
         `,
         props.className
       )}

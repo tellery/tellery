@@ -2,14 +2,15 @@ import { css } from '@emotion/css'
 import styled from '@emotion/styled'
 import { motion } from 'framer-motion'
 import React, { useEffect, useRef } from 'react'
-import type { Editor } from 'types'
-import { fileLoader } from 'utils'
+import { Editor } from '@app/types'
+import { fileLoader } from '@app/utils'
 import { BlockResizer } from '../BlockBase/BlockResizer'
 import { useEditor } from '../hooks'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
 import { UploadFilePlaceHolder } from '../BlockBase/UploadFilePlaceHolder'
 import { useWorkspace } from '@app/context/workspace'
+import { registerBlock, BlockComponent } from './utils'
 
 const Image = styled.img`
   width: 100%;
@@ -20,11 +21,13 @@ const Image = styled.img`
   top: 0;
 `
 
-export const ImageBlock: React.FC<{
-  block: Editor.ImageBlock
-  blockFormat: BlockFormatInterface
-  parentType: Editor.BlockType
-}> = ({ block, blockFormat, parentType }) => {
+const ImageBlock: BlockComponent<
+  React.FC<{
+    block: Editor.ImageBlock
+    blockFormat: BlockFormatInterface
+    parentType: Editor.BlockType
+  }>
+> = ({ block, blockFormat, parentType }) => {
   const editor = useEditor<Editor.ImageBlock>()
   const contentRef = useRef<HTMLDivElement | null>(null)
   const { readonly } = useBlockBehavior()
@@ -90,3 +93,10 @@ export const ImageBlock: React.FC<{
     </div>
   )
 }
+
+ImageBlock.meta = {
+  isText: false,
+  hasChildren: false
+}
+
+registerBlock(Editor.BlockType.Image, ImageBlock)

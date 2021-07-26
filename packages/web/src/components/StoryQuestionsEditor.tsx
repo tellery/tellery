@@ -10,22 +10,22 @@ import {
   IconCommonSave,
   IconCommonSql,
   IconVisualizationSetting
-} from 'assets/icons'
-import { getBlockWrapElementById } from 'components/editor/helpers/contentEditable'
-import { SQLEditor } from 'components/SQLEditor'
-import { Configuration } from 'components/v11n'
+} from '@app/assets/icons'
+import { getBlockWrapElementById } from '@app/components/editor/helpers/contentEditable'
+import { SQLEditor } from '@app/components/SQLEditor'
+import { Configuration } from '@app/components/v11n'
 import { dequal } from 'dequal'
 import { motion, useMotionValue, useTransform } from 'framer-motion'
-import { useHover, useOpenStory, usePrevious } from 'hooks'
+import { useHover, useOpenStory, usePrevious } from '@app/hooks'
 import {
   useBlockSuspense,
   useConnectorsListProfiles,
   useExecuteSQL,
   useQuestionDownstreams,
   useSnapshot
-} from 'hooks/api'
-import { useLocalStorage } from 'hooks/useLocalStorage'
-import { useSqlEditor } from 'hooks/useSqlEditor'
+} from '@app/hooks/api'
+import { useLocalStorage } from '@app/hooks/useLocalStorage'
+import { useSqlEditor } from '@app/hooks/useSqlEditor'
 import { produce } from 'immer'
 import invariant from 'invariant'
 import isHotkey from 'is-hotkey'
@@ -36,10 +36,10 @@ import { toast } from 'react-toastify'
 import { Tab, TabList, TabPanel, TabStateReturn, useTabState } from 'reakit/Tab'
 import { atom, useRecoilCallback, useRecoilState } from 'recoil'
 import scrollIntoView from 'scroll-into-view-if-needed'
-import { applyCreateSnapshotOperation } from 'store/block'
-import { ThemingVariables } from 'styles'
-import type { Editor, Story } from 'types'
-import { DRAG_HANDLE_WIDTH, queryClient } from 'utils'
+import { applyCreateSnapshotOperation } from '@app/store/block'
+import { ThemingVariables } from '@app/styles'
+import type { Editor, Story } from '@app/types'
+import { DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
 import { setBlockTranscation } from '../context/editorTranscations'
 import { CircularLoading } from './CircularLoading'
 import { BlockTitle, useGetBlockTitleTextSnapshot } from './editor'
@@ -605,6 +605,8 @@ export const StoryQuestionEditor: React.FC<{
       draftBlock.content!.sql = sql
       draftBlock.content!.snapshotId = snapShotId
       draftBlock.content!.visualization = visualizationConfig
+      draftBlock.content!.error = null
+      draftBlock.content!.lastRunAt = Date.now()
     })
   }, [block, isDraft, readonly, sql, setBlock, snapShotId, visualizationConfig])
 
@@ -721,7 +723,7 @@ export const StoryQuestionEditor: React.FC<{
         }
       ]
       const matchingHandler = handlers.find((handler) =>
-        handler.hotkeys.some((hotkey) => isHotkey(hotkey, e.nativeEvent))
+        handler.hotkeys.some((hotkey) => isHotkey(hotkey, { byKey: true }, e.nativeEvent))
       )
       matchingHandler?.handler(e.nativeEvent)
     },

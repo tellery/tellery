@@ -12,10 +12,10 @@ import {
   IconVisualizationPie,
   IconVisualizationScatter,
   IconVisualizationNumber
-} from 'assets/icons'
+} from '@app/assets/icons'
 import { Diagram } from './Diagram'
-import { ThemingVariables } from 'styles'
-import IconButton from 'components/kit/IconButton'
+import { ThemingVariables } from '@app/styles'
+import IconButton from '@app/components/kit/IconButton'
 
 const icons = {
   [Type.TABLE]: IconVisualizationTable,
@@ -122,7 +122,6 @@ export function Configuration<T extends Type = Type>(props: {
       <div
         className={css`
           flex-shrink: 0;
-          width: 560px;
           height: 100%;
           box-shadow: -1px 0px 0px ${ThemingVariables.colors.gray[1]};
         `}

@@ -1,5 +1,4 @@
 /// <reference types="resize-observer-browser" />
-
 import type { Config, Type, Data } from '../components/v11n/types'
 import type { MotionValue } from 'framer-motion'
 
@@ -90,7 +89,22 @@ export namespace Editor {
     Row = 'row',
     Column = 'column',
     Thought = 'thought',
-    Embed = 'embed'
+    Bookmark = 'bookmark',
+    StoryLink = 'story_link',
+    QuestionReference = 'question_reference',
+
+    // embeds
+    Embed = 'embed',
+    Metabase = 'metabse',
+    ModeAnalytics = 'mode_analytics',
+    Figma = 'figma',
+    Gist = 'gist',
+    GoogleDrive = 'google_drive',
+    Excalidraw = 'excalidraw',
+    Codepen = 'codepen',
+    Tweet = 'tweet',
+    Observeablehq = 'observablehq',
+    YouTube = 'youtube'
   }
 
   export enum BlockParentType {
@@ -111,6 +125,8 @@ export namespace Editor {
     snapshotId?: string
     visualization?: Config<Type>
     sql?: string
+    lastRunAt?: number
+    error?: string | null
   }
 
   export type CodeBlockContent = {
@@ -172,6 +188,22 @@ export namespace Editor {
     }
   }
 
+  export interface EmbedBlock extends ContentBlock {
+    content: ContentBlock['content'] & {
+      src?: string
+    }
+  }
+
+  export interface MetabaseBlock extends ContentBlock {
+    content: ContentBlock['content'] & {
+      siteUrl?: string
+      resourceType?: string
+      resourceId?: number
+      params?: object
+      publicToken?: string
+    }
+  }
+
   export type Block = ImageBlock | QuestionBlock | ContentBlock
 }
 
@@ -195,6 +227,7 @@ export interface Story extends Editor.BaseBlock {
   format?: {
     fullWidth?: boolean
     locked?: boolean
+    refreshOnOpen?: boolean
     smallText?: boolean
     fontFamily?: string
     showBorder?: boolean
@@ -212,30 +245,6 @@ export interface Thought extends Editor.BaseBlock {
 export type Ref = { blockId: string; storyId: string }
 
 export type Asset = Story | Editor.Block
-
-export type TellerySelectionNode = {
-  blockId: string
-  nodeIndex: number
-  offset: number
-}
-
-export enum TellerySelectionType {
-  Inline,
-  Block
-}
-
-export type TelleryBlockSelection = {
-  type: TellerySelectionType.Block
-  selectedBlocks: string[]
-}
-
-export type TelleryInlineSelection = {
-  type: TellerySelectionType.Inline
-  focus: TellerySelectionNode
-  anchor: TellerySelectionNode
-}
-
-export type TellerySelection = (TelleryBlockSelection | TelleryInlineSelection) & { storyId: string }
 
 export type BackLinks = {
   forwardRefs: Ref[]
@@ -286,15 +295,11 @@ export type Workspace = {
 export type ProfileConfig = {
   type: string
   name: string
-  auth?: {
-    username: string
-    password?: string
-  }
   configs: Record<string, string | number | boolean>
 }
 
 export type AvailableConfig = {
-  type: 'STRING' | 'NUMBER' | 'BOOLEAN'
+  type: 'STRING' | 'NUMBER' | 'BOOLEAN' | 'FILE'
   name: string
   hint: string
   description: string

@@ -1,12 +1,13 @@
 import { applyTransactionsAsync, Operation, Transcation } from '@app/hooks/useCommit'
-import { fetchBlock, fetchUser } from 'api'
+import { fetchBlock, fetchUser } from '@app/api'
 import debug from 'debug'
 import invariant from 'invariant'
 import { cloneDeep } from 'lodash'
 import { nanoid } from 'nanoid'
-import { atom, atomFamily, DefaultValue, selectorFamily, Snapshot, useRecoilState } from 'recoil'
-import type { Editor } from 'types'
-import { subscribeBlockUpdate } from 'utils/remoteStoreObserver'
+import { atomFamily, DefaultValue, selectorFamily, Snapshot } from 'recoil'
+import type { Editor } from '@app/types'
+import { subscribeBlockUpdate } from '@app/utils/remoteStoreObserver'
+import { WorkspaceIdAtom } from '../hooks/useWorkspaceIdAtom'
 
 export type BlockSnapshot = Map<string, Editor.BaseBlock>
 export const TelleryBlockMap: BlockSnapshot = new Map()
@@ -23,12 +24,6 @@ const blockUpdater = (newValue: Editor.BaseBlock | DefaultValue, oldValue: Edito
       return oldValue
     }
   }
-}
-
-export const WorkspaceIdAtom = atom<string | null>({ key: 'workspaceId', default: null })
-
-export const useWorkspaceIdState = () => {
-  return useRecoilState(WorkspaceIdAtom)
 }
 
 export const TelleryBlockAtom = atomFamily<Editor.BaseBlock, string>({
@@ -64,6 +59,27 @@ export const TelleryBlockAtom = atomFamily<Editor.BaseBlock, string>({
       }
     }
   ]
+})
+
+export const TelleryStoryBlocks = selectorFamily<Record<string, Editor.BaseBlock>, string>({
+  key: 'TelleryStoryBlocks',
+  get:
+    (storyId) =>
+    ({ get }) => {
+      const result: Record<string, Editor.BaseBlock> = {}
+      const nodeStack = [storyId]
+
+      while (nodeStack.length !== 0) {
+        const currentNodeId = nodeStack.pop()
+        invariant(currentNodeId, 'currentNodeId is null')
+        const currentNode = get(TelleryBlockAtom(currentNodeId))
+        result[currentNodeId] = currentNode
+        const children = currentNode.children ?? []
+        nodeStack.push(...children)
+      }
+
+      return result
+    }
 })
 
 export const TelleryUserAtom = atomFamily({

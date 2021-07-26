@@ -15,10 +15,44 @@ import java.sql.Connection
 @Connector(
     type = "PostgreSQL",
     configs = [
-        Config(name="Endpoint", type= ConfigType.STRING, description="The endpoint of your postgreSQL", hint="your-db-hostname-or-ip",required=true),
-        Config(name="Port", type= ConfigType.NUMBER, description="The port number of your database. If you have a firewall, make sure that this port is open for you to use", hint="5432",required=true),
-        Config(name="Database", type= ConfigType.STRING, description="The logical database to connect to and run queries against", hint="my_db",required=true),
-])
+        Config(
+            name = "Endpoint",
+            type = ConfigType.STRING,
+            description = "The endpoint of your postgreSQL",
+            hint = "your-db-hostname-or-ip",
+            required = true
+        ),
+        Config(
+            name = "Port",
+            type = ConfigType.NUMBER,
+            description = "The port number of your database. If you have a firewall, make sure that this port is open for you to use",
+            hint = "5432",
+            required = true
+        ),
+        Config(
+            name = "Database",
+            type = ConfigType.STRING,
+            description = "The logical database to connect to and run queries against",
+            hint = "my_db",
+            required = true
+        ),
+        Config(
+            name = "Username",
+            type = ConfigType.STRING,
+            description = "The username (role) you used to connect to your database",
+            hint = "postgres",
+            required = true,
+        ),
+        Config(
+            name = "Password",
+            type = ConfigType.STRING,
+            description = "",
+            hint = "",
+            required = true,
+            secret = true,
+        )
+    ]
+)
 class PostgreSQLConnector : JDBCConnector() {
 
     override val driverClassName = "org.postgresql.Driver"
@@ -49,7 +83,7 @@ class PostgreSQLConnector : JDBCConnector() {
                         type,
                     ),
                 ->
-                "${name.toUpperCase()} ${toSQLType(type)},"
+                "${name.uppercase()} ${toSQLType(type)},"
             }
             val tableName = if (schema != null) "$schema.$collection" else collection
 
@@ -116,7 +150,12 @@ class PostgreSQLConnector : JDBCConnector() {
     }
 
     @HandleImport("text/csv")
-    suspend fun importFromCSV(database: String, collection: String, schema: String?, content: ByteArray) {
+    suspend fun importFromCSV(
+        database: String,
+        collection: String,
+        schema: String?,
+        content: ByteArray
+    ) {
         val csvData = readCSV(content)
         createTableAndWrite(database, collection, schema, csvData.fields, csvData.records)
     }

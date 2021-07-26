@@ -1,9 +1,9 @@
 import { useAsync } from '@app/hooks'
 import { useAuth } from '@app/hooks/useAuth'
 import { css } from '@emotion/css'
-import { FormButton } from 'components/kit/FormButton'
-import FormError from 'components/kit/FormError'
-import FormModal from 'components/kit/FormModal'
+import { FormButton } from '@app/components/kit/FormButton'
+import FormError from '@app/components/kit/FormError'
+import FormModal from '@app/components/kit/FormModal'
 import { useEffect, useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
 

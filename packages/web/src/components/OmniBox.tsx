@@ -1,22 +1,23 @@
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { css, cx } from '@emotion/css'
-import { IconCommonAdd, IconCommonSearch, IconMiscNoResult } from 'assets/icons'
-import { useGetBlockTitleTextSnapshot } from 'components/editor'
+import { IconCommonAdd, IconCommonSearch, IconMiscNoResult } from '@app/assets/icons'
+import { useGetBlockTitleTextSnapshot } from '@app/components/editor'
 import dayjs from 'dayjs'
-import { useOpenStory } from 'hooks'
-import { useSearchBlocks } from 'hooks/api'
+import { useOpenStory } from '@app/hooks'
+import { useSearchBlocks } from '@app/hooks/api'
 import { useAtom } from 'jotai'
 import { compact } from 'lodash'
 import { nanoid } from 'nanoid'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { omniboxShowState } from 'store'
-import { ThemingVariables } from 'styles'
-import { Editor } from 'types'
+import { omniboxShowState } from '@app/store'
+import { ThemingVariables } from '@app/styles'
+import { Editor } from '@app/types'
 import { CircularLoading } from './CircularLoading'
 import Icon from './kit/Icon'
 import { OmniBoxItem, ResultType } from './OmniBoxItem'
 import { SmallStory } from './SmallStory'
+import PerfectScrollbar from 'react-perfect-scrollbar'
 
 const PAGE_LIMIT = 51
 
@@ -255,14 +256,14 @@ export function OmniBox() {
               display: flex;
             `}
           >
-            <div
+            <PerfectScrollbar
               className={css`
                 flex: 1;
                 width: 0;
                 padding: 12px 12px 4px 12px;
                 height: 100%;
-                overflow-y: auto;
               `}
+              options={{ suppressScrollX: true }}
             >
               {items?.length ? (
                 items.map((item, index) =>
@@ -322,7 +323,7 @@ export function OmniBox() {
                   </span>
                 </div>
               )}
-            </div>
+            </PerfectScrollbar>
             {items?.length ? (
               <div
                 className={css`

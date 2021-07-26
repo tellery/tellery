@@ -8,26 +8,26 @@ import {
   IconCommonSearch,
   IconCommonSetting,
   IconCommonThoughts
-} from 'assets/icons'
+} from '@app/assets/icons'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
-import { useGetBlockTitleTextSnapshot } from 'components/editor'
-import { MainSideBarItem, sideBarContainerStyle } from 'components/MainSideBarItem'
+import { useGetBlockTitleTextSnapshot } from '@app/components/editor'
+import { MainSideBarItem, sideBarContainerStyle } from '@app/components/MainSideBarItem'
 import { motion, useAnimation, useMotionValue, useTransform } from 'framer-motion'
-import { useOpenStory } from 'hooks'
-import { useBlockSuspense, useConnectorsListProfiles, useWorkspaceView } from 'hooks/api'
-import { useLocalStorage } from 'hooks/useLocalStorage'
+import { useOpenStory } from '@app/hooks'
+import { useBlockSuspense, useConnectorsListProfiles, useWorkspaceView } from '@app/hooks/api'
+import { useLocalStorage } from '@app/hooks/useLocalStorage'
 import { useUpdateAtom } from 'jotai/utils'
 import { nanoid } from 'nanoid'
 import React, { useCallback, useEffect, useState } from 'react'
 import ContentLoader from 'react-content-loader'
 import { useHistory, useLocation, useRouteMatch } from 'react-router-dom'
-import { omniboxShowState } from 'store'
-import { ThemingVariables } from 'styles'
-import { DRAG_HANDLE_WIDTH } from 'utils'
+import { omniboxShowState } from '@app/store'
+import { ThemingVariables } from '@app/styles'
+import { DRAG_HANDLE_WIDTH } from '@app/utils'
 import Icon from './kit/Icon'
 import IconButton from './kit/IconButton'
-import Workspace from './Workspace'
-import User from './User'
+import WorkspaceModal from './WorkspaceModal'
+import UserModal from './UserModal'
 import { useWorkspace } from '@app/context/workspace'
 
 const SideBarLoader: React.FC = () => {
@@ -179,21 +179,19 @@ const SideBarContent: React.FC<{ folded: boolean; toggleFoldStatus: () => void }
         position: relative;
       `}
     >
-      {showUser && (
-        <User
-          onClose={() => {
-            setShowUser(false)
-          }}
-        />
-      )}
-      {showSetting && (
-        <Workspace
-          openForProfiles={hasNoProfile}
-          onClose={() => {
-            setShowSetting(false)
-          }}
-        />
-      )}
+      <UserModal
+        onClose={() => {
+          setShowUser(false)
+        }}
+        open={showUser}
+      />
+      <WorkspaceModal
+        openForProfiles={hasNoProfile}
+        onClose={() => {
+          setShowSetting(false)
+        }}
+        open={showSetting}
+      />
       {folded === true && (
         <div
           className={css`
@@ -254,8 +252,8 @@ const SideBarContent: React.FC<{ folded: boolean; toggleFoldStatus: () => void }
         <MainSideBarItem
           icon={IconCommonThoughts}
           title="My Thoughts"
-          onClick="/thought"
-          active={location.pathname === '/thought'}
+          onClick="/thoughts"
+          active={location.pathname === '/thoughts'}
           folded={folded}
         />
         <MainSideBarItem

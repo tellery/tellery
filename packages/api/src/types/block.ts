@@ -24,7 +24,23 @@ enum BlockType {
   DIVIDER = 'divider',
   ROW = 'row',
   COLUMN = 'column',
+  BOOKMARK = 'bookmark',
+  STORY_LINK = 'story_link',
+  QUESTION_REFERENCE = 'question_reference',
+
+  // embeds
   EMBED = 'embed',
+  METABASE = 'metabse',
+  MODE_ANALYTICS = 'mode_analytics',
+  FIGMA = 'figma',
+  GIST = 'gist',
+  GOOGLE_DRIVE = 'google_drive',
+  EXCALIDRAW = 'excalidraw',
+  CODEPEN = 'codepen',
+  TWEET = 'tweet',
+  OBSERVEABLEHQ = 'observablehq',
+  YOUTUBE = 'youtube',
+
   // Deprecated
   DEPRECATED_RICH_TEXT = 'RICH_TEXT',
   DEPRECATED_QUESTION = 'QUESTION',

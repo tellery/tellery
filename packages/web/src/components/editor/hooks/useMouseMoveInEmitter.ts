@@ -1,5 +1,5 @@
 import { useLoggedUser } from '@app/hooks/useAuth'
-import { SocketContext } from 'context/socketio'
+import { SocketContext } from '@app/context/socketio'
 import { throttle } from 'lodash'
 import { useCallback, useContext, useEffect, useRef } from 'react'
 

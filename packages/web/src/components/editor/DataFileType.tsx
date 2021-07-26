@@ -1,10 +1,10 @@
 import type { Transcation } from '@app/hooks/useCommit'
-import { importFromCSV } from 'api'
+import { importFromCSV } from '@app/api'
 import { cloneDeep } from 'lodash'
 import { customAlphabet } from 'nanoid'
 import { toast } from 'react-toastify'
-import { Editor, Workspace } from 'types'
-import { getImageDimension, uploadFile } from 'utils/upload'
+import { Editor, Workspace } from '@app/types'
+import { getImageDimension, uploadFile } from '@app/utils/upload'
 import { setBlockTranscation } from '../../context/editorTranscations'
 
 export enum FileType {

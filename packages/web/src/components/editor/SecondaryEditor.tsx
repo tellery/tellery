@@ -2,12 +2,13 @@ import { css } from '@emotion/css'
 import { motion, useMotionValue, useTransform } from 'framer-motion'
 import { atom, useAtom } from 'jotai'
 import React, { useEffect, useState } from 'react'
-import { IconCommonClose } from 'assets/icons'
-import { useLocalStorage } from 'hooks/useLocalStorage'
-import { ThemingVariables } from 'styles'
+import { IconCommonClose } from '@app/assets/icons'
+import { useLocalStorage } from '@app/hooks/useLocalStorage'
+import { ThemingVariables } from '@app/styles'
 import { DRAG_HANDLE_WIDTH } from '../../utils'
 import { StoryEditor } from './StoryEditor'
 import Icon from '../kit/Icon'
+import { BlockingUI } from '../BlockingUI'
 
 export const secondaryStoryIdState = atom<string | null>(null)
 
@@ -54,7 +55,7 @@ const _SecondaryEditor = () => {
             title="drag to resize"
             dragMomentum={false}
             dragConstraints={{
-              left: -700,
+              left: -800,
               right: -400
             }}
             drag={'x'}
@@ -167,17 +168,21 @@ const _SecondaryEditor = () => {
                       position: relative;
                       height: 100%;
                       overflow: hidden;
+                      display: flex;
+                      flex-direction: column;
                     `}
                   >
-                    {storyId && (
-                      <StoryEditor
-                        storyId={storyId}
-                        key={storyId}
-                        className={css`
-                          padding: 0 50px;
-                        `}
-                      />
-                    )}
+                    <React.Suspense fallback={<BlockingUI blocking />}>
+                      {storyId && (
+                        <StoryEditor
+                          storyId={storyId}
+                          key={storyId}
+                          className={css`
+                            padding: 0 50px;
+                          `}
+                        />
+                      )}
+                    </React.Suspense>
                   </div>
                 </div>
               )}

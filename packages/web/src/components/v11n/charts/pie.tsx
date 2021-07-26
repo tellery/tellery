@@ -3,7 +3,7 @@ import { orderBy, sumBy } from 'lodash'
 import { css } from '@emotion/css'
 import { Pie, Label, PieChart, Tooltip, Legend, Cell } from '@tellery/recharts'
 import { useTextWidth } from '@imagemarker/use-text-width'
-
+import PerfectScrollbar from 'react-perfect-scrollbar'
 import { DisplayType, Type } from '../types'
 import type { Chart } from './base'
 import { LegendContentVertical } from '../components/LegendContentVertical'
@@ -14,11 +14,11 @@ import { ConfigSelect } from '../components/ConfigSelect'
 import { ConfigNumericInput } from '../components/ConfigNumericInput'
 import { ConfigSwitch } from '../components/ConfigSwitch'
 import { SliceSelector } from '../components/SliceSelector'
-import { ThemingVariables } from 'styles'
+import { ThemingVariables } from '@app/styles'
 import { CustomTooltip } from '../components/CustomTooltip'
 import { fontFamily } from '../constants'
-import { useCrossFilter } from 'hooks/useDataRecords'
-import { useDataFieldsDisplayType } from 'hooks/useDataFieldsDisplayType'
+import { useCrossFilter } from '@app/hooks/useDataRecords'
+import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 
 enum Tab {
   DATA = 'Data',
@@ -118,6 +118,7 @@ export const pie: Chart<Type.PIE> = {
         className={css`
           height: 100%;
           display: flex;
+          width: calc(150px + 225px);
         `}
       >
         <div
@@ -147,12 +148,12 @@ export const pie: Chart<Type.PIE> = {
             </ConfigButton>
           ))}
         </div>
-        <div
+        <PerfectScrollbar
           className={css`
-            overflow-y: auto;
             padding: 20px;
             flex: 1;
           `}
+          options={{ suppressScrollX: true }}
         >
           {tab === Tab.DATA ? (
             <>
@@ -245,7 +246,7 @@ export const pie: Chart<Type.PIE> = {
               ) : null}
             </>
           ) : null}
-        </div>
+        </PerfectScrollbar>
       </div>
     )
   },

@@ -1,26 +1,27 @@
-import { useWorkspace } from '@app/context/workspace'
+import { useBlockDndContext } from '@app/context/blockDnd'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
+import { useOnClickOutside } from '@app/hooks'
+import { useFetchStoryChunk } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { Operation, useCommit, useCommitHistory } from '@app/hooks/useCommit'
+import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
+import { BlockSnapshot, getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
+import { ThemingVariables } from '@app/styles'
+import { Editor, Story, Thought } from '@app/types'
+import { isUrl, TELLERY_MIME_TYPES } from '@app/utils'
 import { css, cx } from '@emotion/css'
-import { useBlockDndContext } from 'context/blockDnd'
+import computeScrollIntoView from 'compute-scroll-into-view'
 import copy from 'copy-to-clipboard'
 import debug from 'debug'
 import { dequal } from 'dequal'
 import { motion } from 'framer-motion'
-import { useOnClickOutside } from 'hooks'
-import { useFetchStoryChunk } from 'hooks/api'
-import { useWaitForBlockAndScrollTo } from 'hooks/useWaitForBlockAndScrollTo'
 import produce from 'immer'
 import invariant from 'invariant'
 import isHotkey from 'is-hotkey'
 import React, { CSSProperties, memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRecoilState } from 'recoil'
-import { BlockSnapshot, getBlockFromSnapshot, useBlockSnapshot } from 'store/block'
-import { ThemingVariables } from 'styles'
-import { Editor, Story, TellerySelection, TellerySelectionType, Thought } from 'types'
-import { isUrl, TELLERY_MIME_TYPES } from 'utils'
+import scrollIntoView from 'scroll-into-view-if-needed'
 import {
   addMark,
   applyTransformOnTokensFromSelectionState,
@@ -34,8 +35,8 @@ import {
   splitToken,
   tokenPosition2SplitedTokenPosition
 } from '.'
-import { OperatorsContext, useStoryOperators } from './BlockOperators'
-import { ThoughtTitleBlock } from './Blocks/ThoughtTitleBlock'
+import { StoryQuestionsSnapshotManagerProvider } from '../StoryQuestionsSnapshotManagerProvider'
+import { ThoughtItemHeader } from '../ThoughtItem'
 import { ContentBlocks } from './ContentBlock'
 import {
   createTranscation,
@@ -60,15 +61,19 @@ import {
   restoreRange,
   setBlockTranscation,
   setCaretToEnd,
-  setCaretToStart
+  setCaretToStart,
+  TellerySelection,
+  TellerySelectionType
 } from './helpers'
 import { EditorContext, EditorContextInterface, useMouseMoveInEmitter } from './hooks'
+import { BlockAdminContext, useBlockAdminProvider } from './hooks/useBlockAdminProvider'
+import { useBlockHoveringState } from './hooks/useBlockHoveringState'
 import { useDebouncedDimension } from './hooks/useDebouncedDimensions'
 import { useSetUploadResource } from './hooks/useUploadResource'
 import { BlockTextOperationMenu } from './Popovers/BlockTextOperationMenu'
-import { HovreringBlockId } from './store'
 import { TelleryStorySelection } from './store/selection'
-import type { BlockInstanceInterface, SetBlock } from './types'
+import { StoryBlockOperatorsProvider } from './StoryBlockOperatorsProvider'
+import type { SetBlock } from './types'
 
 const logger = debug('tellery:editor')
 
@@ -80,13 +85,13 @@ const _StoryEditor: React.FC<{
   className?: string
   paddingHorizon?: number
   scrollToBlockId?: string | null
+  top?: ReactNode
+  defaultOverflowY?: 'auto' | 'visible' | 'hidden'
 }> = (props) => {
-  const { storyId } = props
+  const { storyId, defaultOverflowY = 'auto' } = props
   const editorRef = useRef<HTMLDivElement | null>(null)
-  const editorBlocksRef = useRef<HTMLDivElement | null>(null)
-  const [hoverBlockId, setHoverBlockId] = useRecoilState(HovreringBlockId)
-  const blockInstances = useRef<Record<string, BlockInstanceInterface>>({})
-  const afterFlush = useRef<Function[]>([])
+  const editorTextAreaRef = useRef<HTMLTextAreaElement | null>(null)
+  const [hoverBlockId, setHoverBlockId] = useBlockHoveringState()
   const tellerySelectionRef = useRef<TellerySelection | null>(null)
   const [selectionState, setSelectionState] = useRecoilState<TellerySelection | null>(TelleryStorySelection(storyId))
   const [scrollLocked, setScrollLocked] = useState(false)
@@ -96,17 +101,9 @@ const _StoryEditor: React.FC<{
   const blockDnd = useBlockDndContext()
   const [lastInputChar, setLastInputChar] = useState<string | null>(null)
 
-  const registerOrUnregisterBlockInstance = useCallback((id: string, blockInstance?: BlockInstanceInterface) => {
-    if (!blockInstance) {
-      delete blockInstances.current[id]
-    } else {
-      blockInstances.current[id] = blockInstance
-      while (afterFlush.current.length) {
-        const func = afterFlush.current.pop()
-        func!()
-      }
-    }
-  }, [])
+  // const getBlockElementById = useGetBlockElementById(storyId)
+
+  const blockAdminValue = useBlockAdminProvider()
 
   const lockOrUnlockScroll = useCallback((lock: boolean) => {
     setScrollLocked(lock)
@@ -124,17 +121,7 @@ const _StoryEditor: React.FC<{
     }
   }, [selectionState])
 
-  const getBlockInstanceById = useCallback((id: string) => {
-    return blockInstances.current[id]
-  }, [])
-
   useMouseMoveInEmitter(storyId, focusingBlockId ?? hoverBlockId)
-  const storyOperators = useStoryOperators(storyId)
-
-  const execOnNextFlush = useCallback((func: Function) => {
-    logger('exec on next flush push')
-    afterFlush.current.push(func)
-  }, [])
 
   useEffect(() => {
     tellerySelectionRef.current = selectionState
@@ -146,7 +133,26 @@ const _StoryEditor: React.FC<{
 
   const snapshot = useBlockSnapshot()
 
-  useWaitForBlockAndScrollTo(props.scrollToBlockId, editorRef)
+  // useWaitForBlockAndScrollTo(props.scrollToBlockId, editorRef)
+
+  useEffect(() => {
+    if (!props.scrollToBlockId) return
+    blockAdminValue.getBlockInstanceById(props.scrollToBlockId).then((res) => {
+      setTimeout(() => {
+        scrollIntoView(res.wrapperElement, {
+          scrollMode: 'always',
+          block: 'center',
+          behavior: 'smooth',
+          inline: 'nearest',
+          boundary: editorRef.current?.parentElement
+        })
+      }, 750)
+
+      setTimeout(() => {
+        res.setHighlighted(true)
+      }, 1250)
+    })
+  }, [blockAdminValue, props.scrollToBlockId])
 
   const setSelectedBlocks = useCallback(
     (blockIds: string[]) => {
@@ -159,7 +165,7 @@ const _StoryEditor: React.FC<{
           storyId: storyId
         })
         // trap focus state
-        editorRef.current?.focus()
+        editorTextAreaRef.current?.focus()
       }
     },
     [setSelectionState, storyId]
@@ -169,6 +175,9 @@ const _StoryEditor: React.FC<{
     (blockIds: string[]) => {
       // blockIds.length && blockDnd?.selectBlockIds(blockIds)
       setSelectedBlocks(blockIds)
+      if (blockIds.length) {
+        editorTextAreaRef.current?.focus()
+      }
     },
     [setSelectedBlocks]
   )
@@ -192,7 +201,7 @@ const _StoryEditor: React.FC<{
     setSelectionState(null)
   }, [setSelectionState])
 
-  useOnClickOutside(editorBlocksRef, blurEditor)
+  useOnClickOutside(editorRef, blurEditor)
 
   const setSelectionAtBlockStart = useCallback(
     (block: Editor.Block) => {
@@ -294,14 +303,8 @@ const _StoryEditor: React.FC<{
         }
         block.type = type
       })
-      if (type === Editor.BlockType.Question) {
-        logger('open menu')
-        execOnNextFlush(() => {
-          getBlockInstanceById(id)?.openMenu()
-        })
-      }
     },
-    [execOnNextFlush, getBlockInstanceById, setBlockValue]
+    [setBlockValue]
   )
 
   const insertNewEmptyBlock = useCallback(
@@ -339,10 +342,10 @@ const _StoryEditor: React.FC<{
     switch (newType) {
       case Editor.BlockType.Question: {
         toggleBlockType(currentBlock.id, newType, prefixLength)
-        // const newBlock = insertNewEmptyBlock(newType, currentBlock.id)
-        execOnNextFlush(() => {
-          getBlockInstanceById(currentBlock.id)?.openMenu()
+        blockAdminValue.getBlockInstanceById(currentBlock.id).then((instance) => {
+          instance.blockRef.current.openMenu()
         })
+
         break
       }
       case Editor.BlockType.Divider:
@@ -352,15 +355,7 @@ const _StoryEditor: React.FC<{
       default:
         toggleBlockType(currentBlock.id, newType, prefixLength)
     }
-  }, [
-    execOnNextFlush,
-    getBlockInstanceById,
-    insertNewEmptyBlock,
-    lastInputChar,
-    selectionState,
-    snapshot,
-    toggleBlockType
-  ])
+  }, [blockAdminValue, insertNewEmptyBlock, lastInputChar, selectionState, snapshot, toggleBlockType])
 
   useEffect(() => {
     logger('selection state', selectionState)
@@ -659,11 +654,11 @@ const _StoryEditor: React.FC<{
     [commit, snapshot, storyId]
   )
 
-  const rootBlock = useFetchStoryChunk(storyId)
+  const rootBlock = useFetchStoryChunk<Story | Thought>(storyId)
 
   const user = useLoggedUser()
 
-  const commitHistory = useCommitHistory(user.id, storyId)
+  const commitHistory = useCommitHistory<{ selection: TellerySelection }>(user.id, storyId)
 
   const canWrite = useMemo(() => {
     if (!rootBlock) return false
@@ -680,6 +675,55 @@ const _StoryEditor: React.FC<{
   const locked = useMemo(() => {
     return !!(rootBlock as Story)?.format?.locked || canWrite === false
   }, [canWrite, rootBlock])
+
+  const focusBlockHandler = useCallback(
+    (blockId: string, openMenu: boolean) => {
+      const focusBlock = (blockId: string, element: HTMLElement) => {
+        if (openMenu) {
+          blockAdminValue.getBlockInstanceById(blockId).then((instance) => {
+            instance.blockRef.current.openMenu()
+          })
+        }
+        setTimeout(() => {
+          const actions = computeScrollIntoView(element, {
+            scrollMode: 'if-needed',
+            block: 'end',
+            inline: 'nearest',
+            boundary: rootBlock.type === Editor.BlockType.Story ? editorRef.current?.parentElement : undefined
+          })
+          actions.forEach(({ el, top, left }) => {
+            el.scrollTop = top + 100
+            el.scrollLeft = left
+          })
+        }, 100)
+      }
+
+      blockAdminValue.getBlockInstanceById(blockId).then((instance) => {
+        focusBlock(blockId, instance.wrapperElement)
+      })
+    },
+    [blockAdminValue, rootBlock.type]
+  )
+
+  const duplicateHandler = useCallback(
+    (blockIds: string[]) => {
+      if (blockIds.length === 0) return
+
+      const blocks = blockIds.map((blockId) => getBlockFromSnapshot(blockId, snapshot))
+      const duplicatedBlocks = getDuplicatedBlocks(blocks, storyId)
+      blockTranscations.insertBlocks(storyId, {
+        blocks: duplicatedBlocks,
+        targetBlockId: blockIds[blockIds.length - 1],
+        direction: 'bottom'
+      })
+      setSelectedBlocks(duplicatedBlocks.map((block) => block.id))
+      const currentBlock = duplicatedBlocks[duplicatedBlocks.length - 1]
+      const blockId = currentBlock.id
+      focusBlockHandler(blockId, currentBlock.type === Editor.BlockType.Question)
+      return duplicatedBlocks
+    },
+    [blockTranscations, focusBlockHandler, setSelectedBlocks, snapshot, storyId]
+  )
 
   const keyDownHandler = useCallback(
     (e: React.KeyboardEvent) => {
@@ -916,6 +960,19 @@ const _StoryEditor: React.FC<{
           }
         },
         {
+          hotkeys: ['mod+d'],
+          handler: (e) => {
+            e.preventDefault()
+            let blockIds: string[] = []
+            if (selectionState?.type === TellerySelectionType.Block) {
+              blockIds = selectionState.selectedBlocks
+            } else if (selectionState?.focus.blockId) {
+              blockIds = [selectionState?.focus.blockId]
+            }
+            duplicateHandler(blockIds)
+          }
+        },
+        {
           hotkeys: ['mod+c'],
           handler: (e) => {
             e.preventDefault()
@@ -926,20 +983,16 @@ const _StoryEditor: React.FC<{
           hotkeys: ['mod+z'],
           handler: async (e) => {
             e.preventDefault()
-            const selection = await commitHistory.undo()
-            if (selection !== undefined) {
-              setSelectionState(selection)
-            }
+            const env = await commitHistory.undo()
+            env?.selection && setSelectionState(env.selection)
           }
         },
         {
           hotkeys: ['mod+shift+z'],
           handler: async (e) => {
             e.preventDefault()
-            const selection = await commitHistory.redo()
-            if (selection !== undefined) {
-              setSelectionState(selection)
-            }
+            const env = await commitHistory.redo()
+            env?.selection && setSelectionState(env.selection)
           }
         },
         {
@@ -968,7 +1021,7 @@ const _StoryEditor: React.FC<{
         }
       ]
       const matchingHandler = handlers.find((handler) =>
-        handler.hotkeys.some((hotkey) => isHotkey(hotkey, e.nativeEvent))
+        handler.hotkeys.some((hotkey) => isHotkey(hotkey, { byKey: true }, e.nativeEvent))
       )
       matchingHandler?.handler(e.nativeEvent)
     },
@@ -987,7 +1040,8 @@ const _StoryEditor: React.FC<{
       snapshot,
       toggleBlocksIndention,
       setSelectionState,
-      blockTranscations
+      blockTranscations,
+      duplicateHandler
     ]
   )
 
@@ -1019,8 +1073,8 @@ const _StoryEditor: React.FC<{
 
   const onMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      if (!editorBlocksRef.current) return
-      const contentRect = editorBlocksRef.current.getBoundingClientRect()
+      if (!editorRef.current) return
+      const contentRect = editorRef.current.getBoundingClientRect()
       const x = e.clientX < contentRect.x + 100 ? contentRect.x + 101 : e.clientX
       const container = getEndContainerFromPoint(x, e.clientY)
       if (!container) {
@@ -1051,16 +1105,14 @@ const _StoryEditor: React.FC<{
     [blockDnd, setHoverBlockId]
   )
 
-  const workspace = useWorkspace()
   const setUploadResource = useSetUploadResource()
 
   const pasteHandler = useCallback(
-    (e: React.ClipboardEvent<HTMLDivElement>) => {
+    (e: React.ClipboardEvent<HTMLElement>) => {
       if (locked) return
       if (e.defaultPrevented) {
         return
       }
-      // logger('clipboard', e.clipboardData.types, e.clipboardData.getData('vscode-editor-data'))
       if (e.clipboardData.files.length) {
         e.stopPropagation()
         e.preventDefault()
@@ -1087,26 +1139,27 @@ const _StoryEditor: React.FC<{
         const telleryTokenDataStr = e.clipboardData.getData(TELLERY_MIME_TYPES.TOKEN)
         const pureText = e.clipboardData.getData('text/plain')
         if (telleryBlockDataStr) {
-          if (!focusingBlockId) return
+          if (!selectionState) return
           e.preventDefault()
+          const targetBlockId =
+            selectionState.type === TellerySelectionType.Inline
+              ? selectionState.anchor.blockId
+              : selectionState.selectedBlocks[selectionState.selectedBlocks.length - 1]
           const telleryBlocksData: Editor.Block[] = JSON.parse(telleryBlockDataStr)
           const duplicatedBlocks = getDuplicatedBlocks(telleryBlocksData, storyId)
-          if (selectionState && isSelectionCollapsed(selectionState)) {
-            blockTranscations.insertBlocks(storyId, {
-              blocks: duplicatedBlocks,
-              targetBlockId: focusingBlockId,
-              direction: 'bottom'
-            })
-          }
+          blockTranscations.insertBlocks(storyId, {
+            blocks: duplicatedBlocks,
+            targetBlockId: targetBlockId,
+            direction: 'bottom'
+          })
+          setSelectedBlocks(duplicatedBlocks.map((block) => block.id))
         } else if (telleryTokenDataStr) {
-          if (
-            selectionState &&
-            isSelectionCollapsed(selectionState) &&
-            selectionState.type === TellerySelectionType.Inline
-          ) {
+          if (!selectionState) return
+          if (isSelectionCollapsed(selectionState) && selectionState.type === TellerySelectionType.Inline) {
             e.preventDefault()
+            const targetBlockId = selectionState.anchor.blockId
             const telleryTokensData: Editor.Token[] = JSON.parse(telleryTokenDataStr)
-            setBlockValue(selectionState.anchor.blockId, (currentBlock) => {
+            setBlockValue(targetBlockId, (currentBlock) => {
               const [tokens1, tokens2] = splitBlockTokens(currentBlock!.content!.title || [], selectionState)
               const beforeToken = mergeTokens([...tokens1, ...(telleryTokensData || [])])
               const afterToken = tokens2
@@ -1171,7 +1224,16 @@ const _StoryEditor: React.FC<{
         }
       }
     },
-    [locked, selectionState, blockTranscations, storyId, workspace, commit, focusingBlockId, setBlockValue]
+    [
+      locked,
+      selectionState,
+      blockTranscations,
+      storyId,
+      setUploadResource,
+      setSelectedBlocks,
+      setBlockValue,
+      focusingBlockId
+    ]
   )
 
   const editorContext = useMemo(() => {
@@ -1181,15 +1243,14 @@ const _StoryEditor: React.FC<{
       deleteBackward,
       setSelectionState,
       getSelection,
-      registerOrUnregisterBlockInstance,
-      getBlockInstanceById,
-      execOnNextFlush,
       toggleBlockType,
       removeBlocks: (blockIds: string[]) => blockTranscations.removeBlocks(storyId, blockIds),
       insertNewEmptyBlock,
       storyId,
       lockOrUnlockScroll,
-      selectBlocks
+      selectBlocks,
+      duplicateHandler,
+      focusBlockHandler
     } as EditorContextInterface<Editor.BaseBlock>
   }, [
     blurEditor,
@@ -1198,20 +1259,19 @@ const _StoryEditor: React.FC<{
     setSelectionState,
     insertNewEmptyBlock,
     blockTranscations,
-    registerOrUnregisterBlockInstance,
-    getBlockInstanceById,
     getSelection,
     lockOrUnlockScroll,
     toggleBlockType,
-    execOnNextFlush,
     storyId,
+    duplicateHandler,
+    focusBlockHandler,
     selectBlocks
   ])
 
   const editorClickHandler = useCallback<React.MouseEventHandler<HTMLDivElement>>(
     (e) => {
       // e.preventDefault()
-      const contentRect = editorBlocksRef.current!.getBoundingClientRect()
+      const contentRect = editorRef.current!.getBoundingClientRect()
       const x = e.clientX < contentRect.x + 100 ? contentRect.x + 101 : e.clientX
       const container = getEndContainerFromPoint(x, e.clientY)
       if (!container) return
@@ -1241,129 +1301,175 @@ const _StoryEditor: React.FC<{
 
   const [dimensions] = useDebouncedDimension(editorRef, 100, true)
 
+  // FIX: story won't show at first render
+  // TODO: pass the map to StoryQuestionsSnapshotManagerProvider
+  const storyBlocksMap = useStoryBlocksMap(storyId)
+
   return (
     <>
-      <OperatorsContext.Provider value={storyOperators}>
-        <EditorContext.Provider value={editorContext}>
-          <div
-            style={{
-              overflowY: scrollLocked ? 'hidden' : 'auto',
-              paddingRight: scrollLocked ? `${scrollbarWidth}px` : '0'
-            }}
-            onKeyDown={keyDownHandler}
-            tabIndex={1}
-            className={cx(
-              css`
-                display: flex;
-                outline: none;
-                flex-direction: column;
-                align-items: center;
-                /* margin-bottom: 10px; */
-                padding: 0;
-                *::selection {
-                  background-color: ${ThemingVariables.colors.selection[0]};
-                }
-                cursor: text;
-                width: 100%;
-                flex: 1;
-                user-select: none;
-              `,
-              'editor',
-              locked && 'no-select'
-            )}
-            ref={(ref) => {
-              editorRef.current = ref
-            }}
-            onMouseMove={onMouseMove}
-            onMouseDown={onMouseDown}
-            onMouseUp={onMouseUp}
-            onClick={editorClickHandler}
-            onPaste={pasteHandler}
-            // onKeyDown={keyDownHandler}
-            onCut={cutHandler}
-            onCopy={copyHandler}
-          >
-            {rootBlock && dimensions && (
-              <motion.div
-                // layout
-                data-block-id={rootBlock.id}
-                style={
-                  {
-                    '--max-width': `${dimensions.width}px` ?? '100%'
-                    // paddingLeft: paddingHorizon,
-                    // padddingRight: paddingHorizon,
-                    // paddingTop: paddingTop
-                  } as CSSProperties
-                }
+      <BlockAdminContext.Provider value={blockAdminValue}>
+        <StoryBlockOperatorsProvider storyId={storyId}>
+          <EditorContext.Provider value={editorContext}>
+            <StoryQuestionsSnapshotManagerProvider storyId={storyId}>
+              {props.top}
+              <div
+                style={{
+                  overflowY: scrollLocked ? 'hidden' : defaultOverflowY,
+                  paddingRight: scrollLocked ? `${scrollbarWidth}px` : '0'
+                }}
                 className={cx(
-                  props.className,
+                  'editor',
                   css`
-                    max-width: 100%;
-                    width: 900px;
-                    margin: 0 auto;
+                    width: 100%;
+                    flex: 1;
                     display: flex;
-                    outline: none;
                     flex-direction: column;
-                    align-items: center;
-                    font-size: 16px;
-                    min-height: 100%;
-                    transition: width 250ms ease;
-                  `,
-                  ((rootBlock as Story).format?.fullWidth || props.fullWidth) &&
-                    css`
-                      width: 100%;
-                    `,
-                  (rootBlock as Story)?.format?.showBorder &&
-                    css`
-                      --border: dashed 1px ${ThemingVariables.colors.text[2]};
-                    `,
-                  'editor-content',
-                  'tellery-block'
+                  `
                 )}
-                ref={editorBlocksRef}
+                onMouseMove={onMouseMove}
+                onMouseDown={onMouseDown}
+                onMouseUp={onMouseUp}
+                onClick={editorClickHandler}
+                onPaste={pasteHandler}
+                // onKeyDown={keyDownHandler}
+                onCut={cutHandler}
+                onCopy={copyHandler}
               >
-                {dimensions?.width && (
-                  <>
-                    <React.Suspense fallback={<div>Loading...</div>}>
-                      {props.showTitle !== false && (rootBlock as Editor.Block).type !== Editor.BlockType.Thought && (
+                <motion.div
+                  onKeyDown={keyDownHandler}
+                  tabIndex={1}
+                  className={cx(
+                    css`
+                      max-width: 100%;
+                      width: 900px;
+                      margin: 0 auto;
+                      display: flex;
+                      flex: 1;
+                      outline: none;
+                      flex-direction: column;
+                      align-items: center;
+                      font-size: 16px;
+                      transition: width 250ms ease;
+                      padding: 0;
+                      *::selection {
+                        background-color: ${ThemingVariables.colors.selection[0]};
+                      }
+                      cursor: text;
+                      flex: 1;
+                      user-select: none;
+                    `,
+                    ((rootBlock as Story).format?.fullWidth || props.fullWidth) &&
+                      css`
+                        width: 100%;
+                      `,
+                    locked && 'no-select',
+                    props.className
+                  )}
+                  ref={editorRef}
+                >
+                  <textarea
+                    onPaste={pasteHandler}
+                    ref={editorTextAreaRef}
+                    className={css`
+                      position: fixed;
+                      left: 0;
+                      top: 0;
+                      pointer-events: none;
+                      opacity: 0;
+                    `}
+                  />
+                  {props.showTitle !== false && (
+                    <div
+                      className={css`
+                        width: 100%;
+                      `}
+                    >
+                      {rootBlock.type === Editor.BlockType.Thought && (
+                        <ThoughtItemHeader
+                          id={rootBlock.id}
+                          date={rootBlock.content.date}
+                          className={css`
+                            margin-top: 20px;
+                            padding: 0;
+                            margin-left: -30px;
+                          `}
+                        />
+                      )}
+                      {(rootBlock as Editor.Block).type === Editor.BlockType.Story && (
                         <ContentBlocks
                           blockIds={[storyId]}
                           parentType={rootBlock.type}
                           readonly={locked}
                         ></ContentBlocks>
                       )}
-                      {props.showTitle !== false && (rootBlock as Editor.Block).type === Editor.BlockType.Thought && (
-                        <ThoughtTitleBlock block={rootBlock as unknown as Thought} />
-                      )}
+                    </div>
+                  )}
 
-                      {rootBlock.children?.length === 0 && (
-                        <EditorEmptyStatePlaceHolder onClick={createFirstOrLastBlockHandler} />
-                      )}
-                      {rootBlock.children && (
-                        <ContentBlocks blockIds={rootBlock.children} parentType={rootBlock.type} readonly={locked} />
-                      )}
-                    </React.Suspense>
-                    <EditorEmptyStateEndPlaceHolder
-                      onClick={createFirstOrLastBlockHandler}
-                      height={rootBlock.type === Editor.BlockType.Story ? 272 : 72}
-                    />
-                    {!locked && <BlockTextOperationMenu currentBlockId={focusingBlockId} />}
-                    {props.bottom && (
-                      <div
-                        className={css`
+                  {dimensions && (
+                    <motion.div
+                      data-block-id={rootBlock.id}
+                      style={
+                        {
+                          '--max-width': `${dimensions.width}px` ?? '100%'
+                        } as CSSProperties
+                      }
+                      className={cx(
+                        css`
                           width: 100%;
-                        `}
-                      >
-                        {props.bottom}
-                      </div>
-                    )}
-                  </>
-                )}
-              </motion.div>
-            )}
-          </div>
-        </EditorContext.Provider>
-      </OperatorsContext.Provider>
+                          display: flex;
+                          outline: none;
+                          flex-direction: column;
+                          align-items: center;
+                          padding: 0;
+                          width: 100%;
+                          flex: 1;
+                        `,
+                        (rootBlock as Story)?.format?.showBorder &&
+                          css`
+                            --border: dashed 1px ${ThemingVariables.colors.text[2]};
+                          `,
+                        'editor-content',
+                        'tellery-block'
+                      )}
+                    >
+                      {dimensions && dimensions.width !== 0 && (
+                        <>
+                          <React.Suspense fallback={<div>Loading...</div>}>
+                            {rootBlock.children?.length === 0 && (
+                              <EditorEmptyStatePlaceHolder onClick={createFirstOrLastBlockHandler} />
+                            )}
+                            {rootBlock.children && (
+                              <ContentBlocks
+                                blockIds={rootBlock.children}
+                                parentType={rootBlock.type}
+                                readonly={locked}
+                              />
+                            )}
+                          </React.Suspense>
+                          <EditorEmptyStateEndPlaceHolder
+                            onClick={createFirstOrLastBlockHandler}
+                            height={rootBlock.type === Editor.BlockType.Story ? 272 : 72}
+                          />
+                          {!locked && <BlockTextOperationMenu currentBlockId={focusingBlockId} />}
+                          {props.bottom && (
+                            <div
+                              className={css`
+                                width: 100%;
+                              `}
+                            >
+                              {props.bottom}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </motion.div>
+                  )}
+                </motion.div>
+              </div>
+            </StoryQuestionsSnapshotManagerProvider>
+          </EditorContext.Provider>
+        </StoryBlockOperatorsProvider>
+      </BlockAdminContext.Provider>
     </>
   )
 }

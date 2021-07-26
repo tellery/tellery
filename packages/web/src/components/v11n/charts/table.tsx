@@ -1,15 +1,17 @@
 import { css, cx } from '@emotion/css'
 import { slice } from 'lodash'
 import React, { useMemo, useState } from 'react'
-import { IconCommonArrowDropDown, IconMenuHide, IconMenuShow } from 'assets/icons'
-import { ThemingVariables } from 'styles'
+import { IconCommonArrowDropDown, IconMenuHide, IconMenuShow } from '@app/assets/icons'
+import { ThemingVariables } from '@app/styles'
 import { ConfigLabel } from '../components/ConfigLabel'
-import { DragableList } from '../components/DragableList'
+import { SortableList } from '../components/SortableList'
 import { Type } from '../types'
 import { formatRecord, isNumeric } from '../utils'
 import type { Chart } from './base'
-import { useDataFieldsDisplayType } from 'hooks/useDataFieldsDisplayType'
-import IconButton from 'components/kit/IconButton'
+import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
+import IconButton from '@app/components/kit/IconButton'
+import Tippy from '@tippyjs/react'
+import PerfectScrollbar from 'react-perfect-scrollbar'
 
 const TABLE_ROW_HEIGHT_MIN = 30
 
@@ -29,12 +31,12 @@ export const table: Chart<Type.TABLE> = {
 
   Configuration(props) {
     return (
-      <div
+      <PerfectScrollbar
         className={css`
-          height: 100%;
           padding: 20px;
-          overflow-y: auto;
+          width: 225px;
         `}
+        options={{ suppressScrollX: true }}
       >
         <ConfigLabel top={0}>Columns</ConfigLabel>
         <h4
@@ -50,7 +52,7 @@ export const table: Chart<Type.TABLE> = {
         >
           Drag to reorder columns
         </h4>
-        <DragableList
+        <SortableList
           className={css`
             margin: 0 -5px;
           `}
@@ -104,7 +106,7 @@ export const table: Chart<Type.TABLE> = {
             </div>
           )}
         />
-      </div>
+      </PerfectScrollbar>
     )
   },
 
@@ -161,88 +163,86 @@ export const table: Chart<Type.TABLE> = {
           className={css`
             flex: 1;
             width: 100%;
-            overflow: hidden;
-            &:hover {
-              overflow-x: auto;
-            }
           `}
         >
-          <table
-            className={css`
-              min-width: 100%;
-              max-height: 100%;
-              border-collapse: collapse;
-              border: none;
-              td,
-              th {
-                border: 1px solid ${ThemingVariables.colors.gray[1]};
-              }
-              tr:first-child td,
-              th {
-                border-top: none;
-              }
-              tr td:first-child,
-              th:first-child {
-                border-left: none;
-              }
-              tr td:last-child,
-              th:last-child {
-                border-right: none;
-              }
-            `}
-          >
-            <thead>
-              <tr>
-                {columns.map((column) => (
-                  <th
-                    key={column.name}
-                    className={css`
-                      height: ${tableRowHeight}px;
-                      padding: 0 10px;
-                      font-weight: 600;
-                      background: ${ThemingVariables.colors.primary[4]};
-                      white-space: nowrap;
-                    `}
-                    align={isNumeric(column.displayType) ? 'right' : 'left'}
-                    title={`${column.name}: ${column.sqlType}`}
-                  >
-                    {column.name}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((record, index) => (
-                <tr key={index.toString()}>
+          <PerfectScrollbar options={{ suppressScrollY: true }}>
+            <table
+              className={css`
+                min-width: 100%;
+                max-height: 100%;
+                border-collapse: collapse;
+                border: none;
+                td,
+                th {
+                  border: 1px solid ${ThemingVariables.colors.gray[1]};
+                }
+                tr:first-child td,
+                th {
+                  border-top: none;
+                }
+                tr td:first-child,
+                th:first-child {
+                  border-left: none;
+                }
+                tr td:last-child,
+                th:last-child {
+                  border-right: none;
+                }
+              `}
+            >
+              <thead>
+                <tr>
                   {columns.map((column) => (
-                    <td
+                    <th
                       key={column.name}
-                      className={cx(
-                        css`
-                          height: ${tableRowHeight}px;
-                          padding: 0 10px;
-                          font-weight: normal;
-                          white-space: nowrap;
-                          text-overflow: ellipsis;
-                          overflow: hidden;
-                          max-width: 400px;
-                        `,
-                        record[column.order] === null
-                          ? css`
-                              color: ${ThemingVariables.colors.text[2]};
-                            `
-                          : undefined
-                      )}
+                      className={css`
+                        height: ${tableRowHeight}px;
+                        padding: 0 10px;
+                        font-weight: 600;
+                        background: ${ThemingVariables.colors.primary[4]};
+                        white-space: nowrap;
+                      `}
                       align={isNumeric(column.displayType) ? 'right' : 'left'}
-                      title={formatRecord(record[column.order], displayTypes[column.name])}
                     >
-                      {formatRecord(record[column.order], displayTypes[column.name])}
-                    </td>
+                      <Tippy content={column.sqlType}>
+                        <span>{column.name}</span>
+                      </Tippy>
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.map((record, index) => (
+                  <tr key={index.toString()}>
+                    {columns.map((column) => (
+                      <td
+                        key={column.name}
+                        className={cx(
+                          css`
+                            height: ${tableRowHeight}px;
+                            padding: 0 10px;
+                            font-weight: normal;
+                            white-space: nowrap;
+                            text-overflow: ellipsis;
+                            overflow: hidden;
+                            max-width: 400px;
+                          `,
+                          record[column.order] === null
+                            ? css`
+                                color: ${ThemingVariables.colors.text[2]};
+                              `
+                            : undefined
+                        )}
+                        align={isNumeric(column.displayType) ? 'right' : 'left'}
+                      >
+                        {formatRecord(record[column.order], displayTypes[column.name])}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </PerfectScrollbar>
         </div>
         <div
           className={css`

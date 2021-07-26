@@ -1,5 +1,5 @@
-import { StoryBackwardsRefs } from 'components/StoryBackwardsRefs'
-import { useStoryBackLinks } from 'hooks/api'
+import { StoryBackwardsRefs } from '@app/components/StoryBackwardsRefs'
+import { useStoryBackLinks } from '@app/hooks/api'
 import React, { memo } from 'react'
 
 const _StoryBackLinks = (props: { storyId: string }) => {

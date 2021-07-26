@@ -3,7 +3,7 @@ import { useCommit } from '@app/hooks/useCommit'
 import { css } from '@emotion/css'
 import styled from '@emotion/styled'
 import Tippy from '@tippyjs/react'
-import { getStoriesByTitle } from 'api'
+import { getStoriesByTitle } from '@app/api'
 import {
   IconCommonArrowDropDown,
   IconCommonLink,
@@ -21,10 +21,11 @@ import {
   IconMenuNumberList,
   IconMenuQuote,
   IconMenuText,
-  IconMenuToDo
-} from 'assets/icons'
-import { getBlockElementContentEditbleById, isTextBlock } from 'components/editor/helpers/contentEditable'
-import { nativeSelection2Tellery } from 'components/editor/helpers/tellerySelection'
+  IconMenuToDo,
+  IconMenuToggleList
+} from '@app/assets/icons'
+import { getBlockElementContentEditbleById, isTextBlock } from '@app/components/editor/helpers/contentEditable'
+import { nativeSelection2Tellery, TellerySelectionType } from '@app/components/editor/helpers/tellerySelection'
 import {
   addMark,
   applyTransformOnSplitedTokens,
@@ -34,19 +35,19 @@ import {
   removeMark,
   splitToken,
   tokenPosition2SplitedTokenPosition
-} from 'components/editor/helpers/tokenManipulation'
-import Icon from 'components/kit/Icon'
-import { createTranscation } from 'context/editorTranscations'
+} from '@app/components/editor/helpers/tokenManipulation'
+import Icon from '@app/components/kit/Icon'
+import { createTranscation } from '@app/context/editorTranscations'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useBlockSuspense } from 'hooks/api'
+import { useBlockSuspense } from '@app/hooks/api'
 import invariant from 'invariant'
 import isHotkey from 'is-hotkey'
 import { nanoid } from 'nanoid'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { usePopper } from 'react-popper'
-import { getBlockFromSnapshot, useBlockSnapshot } from 'store/block'
-import { ThemingVariables } from 'styles'
-import { Editor, Story, TellerySelectionType } from 'types'
+import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
+import { ThemingVariables } from '@app/styles'
+import { Editor, Story } from '@app/types'
 import { EditorPopover } from '../EditorPopover'
 import { useEditor, useGetBlockTitleTextSnapshot } from '../hooks'
 const MARK_TYPES = Object.values(Editor.InlineType)
@@ -348,7 +349,9 @@ export const BlockTextOperationMenuInner = ({
         }
       ]
 
-      const matchingHandler = handlers.find((handler) => handler.hotkeys.some((hotkey) => isHotkey(hotkey, e)))
+      const matchingHandler = handlers.find((handler) =>
+        handler.hotkeys.some((hotkey) => isHotkey(hotkey, { byKey: true }, e))
+      )
       if (matchingHandler) {
         e.preventDefault()
         matchingHandler?.handler()
@@ -531,6 +534,11 @@ const TEXT_TYPES = [
     type: Editor.BlockType.Todo,
     text: 'Todo',
     icon: <Icon icon={IconMenuToDo} color={ThemingVariables.colors.text[0]} />
+  },
+  {
+    type: Editor.BlockType.Toggle,
+    text: 'Toggle',
+    icon: <Icon icon={IconMenuToggleList} color={ThemingVariables.colors.text[0]} />
   }
 ]
 

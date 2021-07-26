@@ -1,14 +1,17 @@
 import { css, cx } from '@emotion/css'
 import React, { ReactNode } from 'react'
-import { IconCommonDot } from 'assets/icons'
-import type { Editor } from 'types'
+import { IconCommonDot } from '@app/assets/icons'
+import { Editor } from '@app/types'
 import { ContentEditable } from '../BlockBase/ContentEditable'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
+import { BlockComponent, registerBlock } from './utils'
 
-export const BulletListBlock: React.FC<{
-  block: Editor.Block
-  children: ReactNode
-}> = ({ block, children }) => {
+export const BulletListBlock: BlockComponent<
+  React.FC<{
+    block: Editor.Block
+    children: ReactNode
+  }>
+> = ({ block, children }) => {
   const { readonly } = useBlockBehavior()
 
   return (
@@ -45,3 +48,10 @@ export const BulletListBlock: React.FC<{
     </>
   )
 }
+
+BulletListBlock.meta = {
+  isText: true,
+  hasChildren: true
+}
+
+registerBlock(Editor.BlockType.BulletList, BulletListBlock)

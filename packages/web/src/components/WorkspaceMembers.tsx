@@ -14,7 +14,7 @@ import type { Workspace } from '@app/types'
 import { css, cx } from '@emotion/css'
 import Tippy from '@tippyjs/react'
 import copy from 'copy-to-clipboard'
-import { compact, map, sortBy } from 'lodash'
+import { compact, map } from 'lodash'
 import React, { useEffect, useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import { FormButton } from './kit/FormButton'
@@ -24,6 +24,7 @@ import Icon from './kit/Icon'
 import IconButton from './kit/IconButton'
 import { MenuItem } from './MenuItem'
 import { MenuItemDivider } from './MenuItemDivider'
+import PerfectScrollbar from 'react-perfect-scrollbar'
 
 type Role = Workspace['members'][0]['role']
 
@@ -31,14 +32,6 @@ export function WorkspaceMembers(props: { onClose(): void }) {
   const user = useLoggedUser()
   const { data: workspace, refetch } = useWorkspaceDetail()
   const { data: users } = useMgetUsers(workspace?.members.map(({ userId }) => userId))
-  const sortedMembers = useMemo(
-    () =>
-      compact([
-        workspace?.members.find(({ userId }) => userId === user.id),
-        ...sortBy(workspace?.members, 'joinAt').filter(({ userId }) => userId !== user.id)
-      ]),
-    [user.id, workspace?.members]
-  )
   const [invite, setInvite] = useState(false)
   const [visible, setVisible] = useState(false)
   const [role, setRole] = useState<Role>('member')
@@ -61,6 +54,7 @@ export function WorkspaceMembers(props: { onClose(): void }) {
       }
     }
   }, [handleInviteMembers.value, workspace?.preferences.emailConfig])
+  const disabled = me?.role !== 'admin'
 
   if (invite) {
     return (
@@ -100,7 +94,7 @@ export function WorkspaceMembers(props: { onClose(): void }) {
             Invite team member
           </h2>
         </div>
-        <FormLabel>E-mails</FormLabel>
+        <FormLabel>Emails</FormLabel>
         <FormInput placeholder="split by comma" value={email} onChange={(e) => setEmail(e.target.value)} />
         <FormLabel
           className={css`
@@ -246,30 +240,35 @@ export function WorkspaceMembers(props: { onClose(): void }) {
           Members & Permissions
         </h2>
       </div>
-      <ul
+      <PerfectScrollbar
         className={css`
-          list-style-type: none;
-          padding-inline-start: 0;
           margin: 5px 0 0 0;
           flex: 1;
           height: 0;
-          overflow-y: auto;
         `}
+        options={{ suppressScrollX: true }}
       >
-        {sortedMembers.map(({ userId, role }) =>
-          users?.[userId] ? (
-            <WorkspaceMember
-              key={userId}
-              userId={userId}
-              role={role}
-              user={users?.[userId]}
-              isAdmin={me?.role === 'admin'}
-              isMe={me?.userId === userId}
-              onClick={refetch}
-            />
-          ) : null
-        )}
-      </ul>
+        <ul
+          className={css`
+            list-style-type: none;
+            padding-inline-start: 0;
+          `}
+        >
+          {workspace?.members.map(({ userId, role }) =>
+            users?.[userId] ? (
+              <WorkspaceMember
+                key={userId}
+                userId={userId}
+                role={role}
+                user={users?.[userId]}
+                disabled={disabled}
+                isMe={me?.userId === userId}
+                onClick={refetch}
+              />
+            ) : null
+          )}
+        </ul>
+      </PerfectScrollbar>
     </div>
   )
 }
@@ -278,7 +277,7 @@ function WorkspaceMember(props: {
   userId: string
   role: Role
   user: User
-  isAdmin: boolean
+  disabled: boolean
   isMe: boolean
   onClick(): void
 }) {
@@ -445,9 +444,12 @@ function WorkspaceMember(props: {
             cursor: pointer;
             &:disabled {
               cursor: not-allowed;
+              color: ${ThemingVariables.colors.text[1]};
+              background-color: ${ThemingVariables.colors.gray[3]};
+              border: 1px solid ${ThemingVariables.colors.gray[1]};
             }
           `}
-          disabled={!props.isAdmin}
+          disabled={props.disabled}
           onClick={() => {
             setVisible(true)
           }}

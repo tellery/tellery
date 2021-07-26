@@ -1,5 +1,5 @@
 import { css } from '@emotion/css'
-import { ThemingVariables } from 'styles'
+import { ThemingVariables } from '@app/styles'
 
 export default function FormError(props: { message: string }) {
   return (

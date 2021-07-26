@@ -9,12 +9,12 @@ import {
   IconCommonStarFill,
   IconMenuFullWidth,
   IconMenuNormalWidth
-} from 'assets/icons'
-import { createTranscation } from 'context/editorTranscations'
-import { useWorkspaceView } from 'hooks/api'
+} from '@app/assets/icons'
+import { createTranscation } from '@app/context/editorTranscations'
+import { useWorkspaceView } from '@app/hooks/api'
 import React, { memo, useCallback } from 'react'
-import { ThemingVariables } from 'styles'
-import type { Story } from 'types'
+import { ThemingVariables } from '@app/styles'
+import type { Story } from '@app/types'
 import { useStorySnapshotManager } from '../hooks/useStorySnapshotManager'
 import IconButton from './kit/IconButton'
 import { RefreshButton } from './RefreshButton'
@@ -186,8 +186,8 @@ export const _NavigationHeader = (props: {
   )
 }
 
-export const RefreshAllQuestionBlockButton: React.FC<{ storyId: string }> = ({ storyId }) => {
-  const storySnapshotManger = useStorySnapshotManager(storyId)
+export const RefreshAllQuestionBlockButton: React.FC<{ storyId: string }> = () => {
+  const storySnapshotManger = useStorySnapshotManager()
 
   if (storySnapshotManger.total <= 0) return null
   return (
@@ -201,23 +201,16 @@ export const RefreshAllQuestionBlockButton: React.FC<{ storyId: string }> = ({ s
         justify-content: center;
       `}
     >
-      <Tippy
-        content={
+      <RefreshButton
+        hoverContent={
           storySnapshotManger.mutating !== 0
-            ? `Refreshing... ${storySnapshotManger.mutating}/${storySnapshotManger.total}`
+            ? `Refreshing... ${storySnapshotManger.mutating}/${storySnapshotManger.total}, click to stop`
             : `Refresh ${storySnapshotManger.total} Questions`
         }
-        hideOnClick={false}
-        animation="fade"
-        duration={150}
-        arrow={false}
-      >
-        <RefreshButton
-          color={ThemingVariables.colors.text[0]}
-          loading={storySnapshotManger.mutating !== 0}
-          onClick={storySnapshotManger.runAll}
-        />
-      </Tippy>
+        color={ThemingVariables.colors.text[0]}
+        loading={storySnapshotManger.mutating !== 0}
+        onClick={storySnapshotManger.mutating !== 0 ? storySnapshotManger.cancelAll : storySnapshotManger.runAll}
+      />
     </div>
   )
 }

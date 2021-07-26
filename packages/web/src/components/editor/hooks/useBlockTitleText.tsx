@@ -1,7 +1,7 @@
-import { useMgetBlocksSuspense } from 'hooks/api'
+import { useMgetBlocksSuspense } from '@app/hooks/api'
 import { useMemo } from 'react'
-import { useBlockSnapshot } from 'store/block'
-import { Editor } from 'types'
+import { useBlockSnapshot } from '@app/store/block'
+import { Editor } from '@app/types'
 import { blockTitleToText, extractEntitiesFromToken } from '../helpers'
 
 export const useBlockTitleToText = (block: Editor.BaseBlock) => {
@@ -29,7 +29,6 @@ export const useBlockTitleToText = (block: Editor.BaseBlock) => {
   const assets = useMgetBlocksSuspense(dependsAssetsKeys)
 
   return useMemo(() => {
-    console.log('useBlockTitleToText', block)
     return blockTitleToText(block, snapshot)
     // keep assets in deps, trigger rerender after depends changed
     // eslint-disable-next-line react-hooks/exhaustive-deps

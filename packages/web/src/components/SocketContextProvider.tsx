@@ -1,13 +1,13 @@
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useWorkspace } from '@app/context/workspace'
-import { fetchBlock } from 'api'
+import { fetchBlock } from '@app/api'
 import debug from 'debug'
 import { nanoid } from 'nanoid'
 import { ReactNode, useEffect, useState } from 'react'
 import { useQueryClient } from 'react-query'
 import io, { Socket } from 'socket.io-client'
 import type { DefaultEventsMap } from 'socket.io-client/build/typed-events'
-import { WS_URI } from 'utils'
+import { WS_URI } from '@app/utils'
 import { SocketContext } from '../context/socketio'
 
 const logger = debug('tellery:socket')

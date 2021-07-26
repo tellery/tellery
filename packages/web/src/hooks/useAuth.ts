@@ -1,5 +1,5 @@
-import { request, updateUser, userConfirm, userGenerate, userLogin, userLogout } from 'api'
-import type { User } from 'hooks/api'
+import { request, updateUser, userConfirm, userGenerate, userLogin, userLogout } from '@app/api'
+import type { User } from '@app/hooks/api'
 import invariant from 'invariant'
 import { createContext, useCallback, useContext, useState } from 'react'
 import { useQuery } from 'react-query'

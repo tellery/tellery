@@ -1,4 +1,6 @@
-import { TelleryStorySelectionAtom } from '@app/components/editor/store/selection'
+import { request, saveTranscations } from '@app/api'
+import { TelleryStorySelectionAtom } from '@app/components/editor'
+import type { TellerySelection } from '@app/components/editor/helpers'
 import { createTranscation } from '@app/context/editorTranscations'
 import { useWorkspace } from '@app/context/workspace'
 import {
@@ -9,20 +11,24 @@ import {
   TelleryBlockAtom,
   TelleryBlockMap
 } from '@app/store/block'
-import { Editor, TellerySelection } from '@app/types'
+import { Editor } from '@app/types'
+import update from 'immutability-helper'
 import invariant from 'invariant'
 import { cloneDeep, throttle } from 'lodash'
-import { useContext, useMemo, createContext } from 'react'
+import { createContext, useContext, useMemo } from 'react'
 import { toast } from 'react-toastify'
 import { CallbackInterface, useRecoilCallback } from 'recoil'
-import update from 'immutability-helper'
-
 import { useLoggedUser } from './useAuth'
-import saveTranscations, { request } from '@app/api'
 
-const UNDO_STACK: Record<string, { selection: TellerySelection | null; transcation: Transcation }[]> = {}
+type Env = {
+  selection?: TellerySelection
+} | null
 
-const REDO_STACK: Record<string, { selection: TellerySelection | null; transcation: Transcation }[]> = {}
+type OperationRecord = { env: Env; transcation: Transcation }
+
+const UNDO_STACK: Record<string, OperationRecord[]> = {}
+
+const REDO_STACK: Record<string, OperationRecord[]> = {}
 
 export interface Operation {
   cmd: string
@@ -38,7 +44,7 @@ export interface Transcation {
   operations: Operation[]
 }
 
-const undo = ({
+const undo = <T = Env>({
   storyId,
   userId,
   recoilCallback
@@ -46,12 +52,12 @@ const undo = ({
   storyId: string
   userId: string
   recoilCallback: CallbackInterface
-}): TellerySelection | null | undefined => {
+}): T | null => {
   const record = UNDO_STACK[storyId]?.pop()
   if (!record) {
-    return
+    return null
   }
-  const { transcation, selection } = record
+  const { transcation, env } = record
   logger('commit undo transcation ', transcation)
 
   try {
@@ -67,7 +73,7 @@ const undo = ({
       REDO_STACK[storyId] = []
     }
     REDO_STACK[storyId].push({
-      selection: selection,
+      env: env,
       transcation: { ...createTranscation({ operations: reversedOperations }), workspaceId: transcation.workspaceId }
     })
     appendTransaction({ ...transcation, operations: patchedOperations })
@@ -75,16 +81,16 @@ const undo = ({
     endTranscation()
     logger('undo commit transcation end', transcation)
 
-    return selection
+    return env as T
   } catch (err) {
     endTranscation()
     toast.error(`commit failed. reason: ${err}`)
     logger('undo commit transcation end', transcation)
-    return selection
+    return env as T
   }
 }
 
-const redo = ({
+const redo = <T = Env>({
   storyId,
   userId,
   recoilCallback
@@ -92,12 +98,12 @@ const redo = ({
   storyId: string
   recoilCallback: CallbackInterface
   userId: string
-}): TellerySelection | null | undefined => {
+}): T | null => {
   const record = REDO_STACK[storyId]?.pop()
   if (!record) {
-    return
+    return null
   }
-  const { transcation, selection } = record
+  const { transcation, env } = record
   logger('commit redo transcation', transcation)
   startTranscation()
 
@@ -110,15 +116,14 @@ const redo = ({
     UNDO_STACK[storyId] = []
   }
   UNDO_STACK[storyId].push({
-    selection: selection,
+    env: env,
     transcation: { ...createTranscation({ operations: reversedOperations }), workspaceId: transcation.workspaceId }
   })
   appendTransaction({ ...transcation, operations: patchedOperations })
-  recoilCallback.set(TelleryStorySelectionAtom(storyId), selection)
 
   endTranscation()
   logger('redo commit transcation end', transcation)
-  return selection
+  return env as T
 }
 
 const TranscationPromiseMap: Record<string, { resolve: (value: unknown) => void; reject: (value: unknown) => void }> =
@@ -126,6 +131,7 @@ const TranscationPromiseMap: Record<string, { resolve: (value: unknown) => void;
 
 export interface CommitInterface {
   storyId: string
+  env?: Env
   transcation:
     | Omit<Transcation, 'workspaceId'>
     | ((snapshot: typeof TelleryBlockMap) => Omit<Transcation, 'workspaceId'>)
@@ -158,6 +164,7 @@ export const appendOperation = (_operations: Operation[]) => {
 
 // FIXME: commit order
 export const commit = async ({
+  env = null,
   storyId,
   userId,
   transcation: transcationOrGenerator,
@@ -184,7 +191,7 @@ export const commit = async ({
       UNDO_STACK[storyId] = []
     }
     UNDO_STACK[storyId].push({
-      selection: selection,
+      env: env ?? { selection },
       transcation: { ...createTranscation({ operations: reversedOperations }), workspaceId }
     })
     if (REDO_STACK[storyId]?.length) {
@@ -207,17 +214,17 @@ export const commit = async ({
   }
 }
 
-export const useCommitHistory = (userId: string, storyId: string) => {
+export const useCommitHistory = <T = unknown>(userId: string, storyId: string) => {
   const redoCallback = useRecoilCallback(
     (recoilCallback) => () => {
-      return redo({ recoilCallback, storyId, userId: userId })
+      return redo<T>({ recoilCallback, storyId, userId: userId })
     },
     [storyId, userId]
   )
   const undoCallback = useRecoilCallback(
     (recoilCallback) => () => {
       invariant(userId, 'userId is null')
-      return undo({ recoilCallback, storyId, userId: userId })
+      return undo<T>({ recoilCallback, storyId, userId: userId })
     },
     [storyId, userId]
   )
@@ -248,7 +255,8 @@ export const useCommit = () => {
 
   return commit
 }
-export const applyOperations = (
+
+const applyOperations = (
   _operations: Operation[],
   options: { storyId?: string; recoilCallback: CallbackInterface; shouldReformat?: boolean; userId: string }
 ) => {
@@ -275,6 +283,7 @@ export const applyOperations = (
 
     switch (operation.cmd) {
       case 'set':
+      case 'setPermissions':
       case 'update': {
         const getProp = (data: Record<string, any>, path: string[]): any => {
           if (path.length) {
@@ -492,7 +501,7 @@ export const syncStory = throttle(() => {
     })
 }, 450)
 
-export const appendTransaction = (transaction: Transcation) => {
+const appendTransaction = (transaction: Transcation) => {
   console.info('transaction', JSON.stringify(transaction.operations))
   const transactions = JSON.parse(localStorage.getItem(TRANSACTIONS_KEY) || '[]')
   transactions.push(transaction)

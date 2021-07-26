@@ -1,8 +1,8 @@
 import { css, cx } from '@emotion/css'
 import React from 'react'
-import { IconVisualizationTable } from 'assets/icons'
-import { ThemingVariables } from 'styles'
-import type { Editor } from 'types'
+import { IconVisualizationTable } from '@app/assets/icons'
+import { ThemingVariables } from '@app/styles'
+import type { Editor } from '@app/types'
 import { ContentEditable } from './BlockBase/ContentEditable'
 import { BlockTitle } from '.'
 

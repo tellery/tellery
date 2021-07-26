@@ -2,22 +2,30 @@ import { useLoggedUser } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useCommit } from '@app/hooks/useCommit'
 import { css, cx } from '@emotion/css'
-import { IconCommonCopy, IconCommonLock, IconMenuDelete, IconMenuDuplicate, IconMenuShow } from 'assets/icons'
-import FormSwitch from 'components/kit/FormSwitch'
-import { MenuItem } from 'components/MenuItem'
-import { MenuItemDivider } from 'components/MenuItemDivider'
-import { createTranscation } from 'context/editorTranscations'
+import {
+  IconCommonCopy,
+  IconCommonLock,
+  IconCommonRefresh,
+  IconMenuDelete,
+  IconMenuDuplicate,
+  IconMenuShow
+} from '@app/assets/icons'
+import FormSwitch from '@app/components/kit/FormSwitch'
+import { MenuItem } from '@app/components/MenuItem'
+import { MenuItemDivider } from '@app/components/MenuItemDivider'
+import { createTranscation } from '@app/context/editorTranscations'
 import copy from 'copy-to-clipboard'
 import dayjs from 'dayjs'
-import { useOpenStory } from 'hooks'
-import { useUser } from 'hooks/api'
+import { useOpenStory } from '@app/hooks'
+import { useUser } from '@app/hooks/api'
 import { nanoid } from 'nanoid'
 import React, { useCallback } from 'react'
 import { useHistory } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { ThemingVariables } from 'styles'
-import type { Permission, PermissionEntityRole, Story } from 'types'
+import { ThemingVariables } from '@app/styles'
+import type { Permission, PermissionEntityRole, Story } from '@app/types'
 import Icon from './kit/Icon'
+import { env } from '@app/env'
 
 const upsertPermission = (permissions: Permission[], permission: Permission): Permission[] => {
   const filteredPermission = permissions.filter(
@@ -84,6 +92,10 @@ export const StoryConfigPopOver: React.FC<{
     [blockTranscation, openStory, story.id]
   )
 
+  const readOnlyStatus = !!story?.permissions?.some((permission) => {
+    return permission.type === 'workspace' && permission.role === 'commentator'
+  })
+
   return (
     <div
       className={cx(
@@ -99,17 +111,22 @@ export const StoryConfigPopOver: React.FC<{
       )}
     >
       <MenuItem
+        icon={<Icon icon={IconCommonRefresh} color={ThemingVariables.colors.text[0]} />}
+        title="Refresh on open"
+        onClick={(e) => {
+          e.preventDefault()
+          setStoryFormat('refreshOnOpen', !story?.format?.refreshOnOpen)
+        }}
+        side={<FormSwitch checked={!!story?.format?.refreshOnOpen} readOnly />}
+      />
+      <MenuItem
         icon={<Icon icon={IconCommonLock} color={ThemingVariables.colors.text[0]} />}
         title="Lock"
-        onClick={() => {}}
-        side={
-          <FormSwitch
-            checked={!!story?.format?.locked}
-            onChange={(e) => {
-              setStoryFormat('locked', e.target.checked)
-            }}
-          />
-        }
+        onClick={(e) => {
+          e.preventDefault()
+          setStoryFormat('locked', !story?.format?.locked)
+        }}
+        side={<FormSwitch checked={!!story?.format?.locked} readOnly />}
       />
       <MenuItem
         icon={<Icon icon={IconCommonCopy} color={ThemingVariables.colors.text[0]} />}
@@ -128,33 +145,21 @@ export const StoryConfigPopOver: React.FC<{
       <MenuItem
         icon={<Icon icon={IconMenuShow} color={ThemingVariables.colors.text[0]} />}
         title="Readonly"
-        onClick={() => {}}
-        side={
-          <FormSwitch
-            checked={
-              !!story?.permissions?.some((permission) => {
-                return permission.type === 'workspace' && permission.role === 'commentator'
-              })
-            }
-            onChange={(e) => {
-              setWorkspacePermission(e.target.checked ? 'commentator' : 'manager')
-            }}
-          />
-        }
+        onClick={(e) => {
+          e.preventDefault()
+          setWorkspacePermission(readOnlyStatus ? 'manager' : 'commentator')
+        }}
+        side={<FormSwitch checked={readOnlyStatus} readOnly />}
       />
-      {import.meta.env.DEV && (
+      {env.DEV && (
         <MenuItem
           icon={<Icon icon={IconMenuShow} color={ThemingVariables.colors.text[0]} />}
           title="Show border"
-          onClick={() => {}}
-          side={
-            <FormSwitch
-              checked={!!story?.format?.showBorder}
-              onChange={(e) => {
-                setStoryFormat('showBorder', e.target.checked)
-              }}
-            />
-          }
+          onClick={(e) => {
+            e.preventDefault()
+            setStoryFormat('showBorder', !story?.format?.showBorder)
+          }}
+          side={<FormSwitch checked={!!story?.format?.showBorder} readOnly />}
         />
       )}
       <MenuItemDivider />

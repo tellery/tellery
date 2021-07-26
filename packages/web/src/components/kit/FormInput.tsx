@@ -1,7 +1,7 @@
 import { cx, css } from '@emotion/css'
 import type { InputHTMLAttributes } from 'react'
 import { forwardRef } from 'react'
-import { ThemingVariables } from 'styles'
+import { ThemingVariables } from '@app/styles'
 
 export default forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement> & { error?: unknown }>(
   function FormInput(props, ref) {
@@ -23,6 +23,11 @@ export default forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement
             width: 100%;
             background-color: ${ThemingVariables.colors.gray[5]};
             color: ${ThemingVariables.colors.text[0]};
+            &:disabled {
+              color: ${ThemingVariables.colors.text[1]};
+              background-color: ${ThemingVariables.colors.gray[3]};
+              cursor: not-allowed;
+            }
             &::placeholder {
               color: ${ThemingVariables.colors.text[2]};
             }

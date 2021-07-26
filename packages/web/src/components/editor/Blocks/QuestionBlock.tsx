@@ -1,38 +1,41 @@
 import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { Diagram } from '@app/components/v11n'
-import { css, cx } from '@emotion/css'
+import { css, cx, keyframes } from '@emotion/css'
 import styled from '@emotion/styled'
+import Tippy from '@tippyjs/react'
 import {
   IconCommonCopy,
+  IconCommonError,
   IconCommonMore,
+  IconCommonRefresh,
   IconCommonSql,
   IconMenuDownload,
   IconMiscNoResult,
   IconVisualizationSetting
-} from 'assets/icons'
-import { BlockingUI } from 'components/editor/BlockBase/BlockingUIBlock'
-import Icon from 'components/kit/Icon'
-import IconButton from 'components/kit/IconButton'
-import { MenuItem } from 'components/MenuItem'
-import { RefreshButton } from 'components/RefreshButton'
-import { useQuestionEditor } from 'components/StoryQuestionsEditor'
-import { charts } from 'components/v11n/charts'
-import { Config, Data, Type } from 'components/v11n/types'
+} from '@app/assets/icons'
+import { BlockingUI } from '@app/components/editor/BlockBase/BlockingUIBlock'
+import Icon from '@app/components/kit/Icon'
+import IconButton from '@app/components/kit/IconButton'
+import { MenuItem } from '@app/components/MenuItem'
+import { RefreshButton } from '@app/components/RefreshButton'
+import { useQuestionEditor } from '@app/components/StoryQuestionsEditor'
+import { charts } from '@app/components/v11n/charts'
+import { Config, Data, Type } from '@app/components/v11n/types'
 import copy from 'copy-to-clipboard'
 import dayjs from 'dayjs'
 import download from 'downloadjs'
 import { useSelect } from 'downshift'
 import { AnimatePresence, motion, usePresence } from 'framer-motion'
-import { useOnClickOutside, useOnScreen } from 'hooks'
-import { useBlockSuspense, useSnapshot, useUser } from 'hooks/api'
-import { useInterval } from 'hooks/useInterval'
-import { useRefreshSnapshot, useSnapshotMutating } from 'hooks/useStorySnapshotManager'
+import { useOnClickOutside, useOnScreen } from '@app/hooks'
+import { useBlockSuspense, useSnapshot, useUser } from '@app/hooks/api'
+import { useInterval } from '@app/hooks/useInterval'
+import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
 import html2canvas from 'html2canvas'
 import invariant from 'invariant'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ThemingVariables } from 'styles'
-import type { Editor, Snapshot } from 'types'
-import { DEFAULT_TITLE, snapshotToCSV } from 'utils'
+import React, { ReactNode, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
+import { ThemingVariables } from '@app/styles'
+import { Editor, Snapshot } from '@app/types'
+import { DEFAULT_TITLE, snapshotToCSV } from '@app/utils'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
 import { BlockResizer } from '../BlockBase/BlockResizer'
 import { ContentEditable } from '../BlockBase/ContentEditable'
@@ -44,19 +47,30 @@ import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
 import type { OperationInterface } from '../Popovers/BlockOperationPopover'
 import { DEFAULT_QUESTION_BLOCK_ASPECT_RATIO, DEFAULT_QUESTION_BLOCK_WIDTH } from '../utils'
+import { BlockComponent, registerBlock } from './utils'
 
-const FOOTER_HEIGHT = 56
+const FOOTER_HEIGHT = 20
 
-export const QuestionBlock: React.FC<{
+const rotateAnimation = keyframes`
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+`
+
+interface QuestionBlockProps {
   block: Editor.QuestionBlock
   blockFormat: BlockFormatInterface
   parentType: Editor.BlockType
-}> = (props) => {
+}
+
+const _QuestionBlock: React.ForwardRefRenderFunction<any, QuestionBlockProps> = (props, ref) => {
   const editor = useEditor<Editor.QuestionBlock>()
   const { block } = props
   const { readonly } = useBlockBehavior()
-
-  const ref = useRef<HTMLDivElement | null>(null)
+  const elementRef = useRef<HTMLDivElement | null>(null)
   const contentRef = useRef<HTMLDivElement | null>(null)
   const originalBlock = useBlockSuspense<Editor.QuestionBlock>(block.id)
   const questionEditor = useQuestionEditor()
@@ -65,26 +79,21 @@ export const QuestionBlock: React.FC<{
   const localSelection = useLocalSelection(block.id)
   const isInputFocusing = !!localSelection
 
-  useEffect(() => {
-    editor?.registerOrUnregisterBlockInstance(block.id, {
+  useImperativeHandle(
+    ref,
+    () => ({
       openMenu: () => {
         questionEditor.open({ mode: 'SQL', readonly, blockId: block.id, storyId: block.storyId! })
-        // setIsPopoverOpen(true)
-      },
-      afterDuplicate: () => {
-        questionEditor.open({ mode: 'SQL', readonly, blockId: block.id, storyId: block.storyId! })
       }
-    })
-    return () => {
-      editor?.registerOrUnregisterBlockInstance(block.id, undefined)
-    }
-  }, [block.id, block.storyId, editor, questionEditor, readonly])
+    }),
+    [block.id, block.storyId, questionEditor, readonly]
+  )
 
   const onClickOutSide = useCallback(() => {
     setTitleEditing(false)
   }, [])
 
-  useOnClickOutside(ref, onClickOutSide)
+  useOnClickOutside(elementRef, onClickOutSide)
 
   useEffect(() => {
     if (!block.content) {
@@ -107,22 +116,26 @@ export const QuestionBlock: React.FC<{
   const snapshotId = originalBlock?.content?.snapshotId
   const visualization = block.content?.visualization
 
+  const mutateSnapshot = useRefreshSnapshot()
+  const mutatingCount = useSnapshotMutating(originalBlock.id)
+
+  useEffect(() => {
+    if (originalBlock.id === block.id && !snapshotId && originalBlock.content?.sql && mutatingCount === 0) {
+      mutateSnapshot.execute(originalBlock)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
     <div
-      ref={ref}
+      ref={elementRef}
       className={QuestionsBlockContainer}
       tabIndex={-1}
       onFocus={() => setBlockFocusing(true)}
       onBlur={() => setBlockFocusing(false)}
     >
       {isEmptyBlock ? (
-        <BlockPlaceHolder
-          onClick={() => {
-            // setIsPopoverOpen(true)
-          }}
-          loading={false}
-          text="New Question"
-        />
+        <BlockPlaceHolder loading={false} text="New Question" />
       ) : (
         originalBlock && (
           <>
@@ -131,6 +144,7 @@ export const QuestionBlock: React.FC<{
               titleEditing={titleEditing || isInputFocusing}
               block={block}
             />
+            <QuestionBlockStatus snapshotId={snapshotId} block={block} originalBlock={originalBlock} />
             <motion.div
               style={{
                 paddingTop: props.blockFormat.paddingTop
@@ -147,7 +161,6 @@ export const QuestionBlock: React.FC<{
               }}
             >
               <QuestionBlockBody ref={contentRef} snapshotId={snapshotId} visualization={visualization} />
-
               {readonly === false && (
                 <BlockResizer
                   blockFormat={props.blockFormat}
@@ -158,7 +171,11 @@ export const QuestionBlock: React.FC<{
                 />
               )}
             </motion.div>
-            <QuestionBlockFooter snapshotId={snapshotId} block={block} originalBlock={originalBlock} />
+            <div
+              className={css`
+                height: ${FOOTER_HEIGHT}px;
+              `}
+            />
           </>
         )
       )}
@@ -175,14 +192,21 @@ export const QuestionBlock: React.FC<{
     </div>
   )
 }
+const QuestionBlock = React.forwardRef(_QuestionBlock) as BlockComponent<
+  React.ForwardRefExoticComponent<QuestionBlockProps & React.RefAttributes<any>>
+>
+
+QuestionBlock.meta = {
+  isText: true,
+  forwardRef: true,
+  hasChildren: false
+}
+
+registerBlock(Editor.BlockType.Question, QuestionBlock)
 
 export const QuestionBlockButtons: React.FC<{ blockId: string; show: boolean }> = ({ blockId, show }) => {
   const block = useBlockSuspense<Editor.QuestionBlock>(blockId)
-  const {
-    data: snapshot,
-    isFetched: isSnapshotFetched,
-    isIdle: isSnapshotIdle
-  } = useSnapshot(block?.content?.snapshotId)
+  const { data: snapshot } = useSnapshot(block?.content?.snapshotId)
   const { small } = useBlockBehavior()
 
   return (
@@ -226,7 +250,12 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
   HTMLDivElement | null,
   { snapshotId?: string; visualization?: Config<Type> }
 > = ({ snapshotId, visualization }, ref) => {
-  const { data: snapshot, isFetched: isSnapshotFetched, isIdle: isSnapshotIdle } = useSnapshot(snapshotId)
+  const {
+    data: snapshot,
+    isFetched: isSnapshotFetched,
+    isIdle: isSnapshotIdle,
+    isPreviousData
+  } = useSnapshot(snapshotId)
 
   const visualizationConfig = useMemo(() => {
     // ensure snapshot data is valid
@@ -238,7 +267,7 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
   }, [snapshot, visualization])
 
   return (
-    <BlockingUI blocking={isSnapshotIdle === false && isSnapshotFetched === false}>
+    <BlockingUI blocking={isSnapshotIdle === false && isSnapshotFetched === false && isPreviousData === false}>
       <div
         ref={ref}
         onCopy={(e) => {
@@ -313,8 +342,7 @@ const QuestionBlockHeader: React.FC<{
           align-items: center;
           justify-content: flex-start;
           align-self: stretch;
-          height: 60px;
-          padding: 20px;
+          padding: 20px 20px 0 20px;
         `}
       >
         <div
@@ -322,14 +350,13 @@ const QuestionBlockHeader: React.FC<{
             display: flex;
             align-items: center;
             flex: 1;
-            padding: 5px 5px;
           `}
         >
           <div
             className={cx(
               css`
                 font-style: normal;
-                font-weight: 500;
+                font-weight: 600;
                 font-size: 1em;
                 line-height: 1.2;
                 color: ${ThemingVariables.colors.text[0]};
@@ -361,25 +388,16 @@ const QuestionBlockHeader: React.FC<{
   )
 }
 
-const QuestionBlockFooter: React.FC<{
+const QuestionBlockStatus: React.FC<{
   block: Editor.QuestionBlock
   originalBlock: Editor.QuestionBlock
   snapshotId?: string
 }> = ({ block, originalBlock, snapshotId }) => {
   const { data: snapshot } = useSnapshot(snapshotId)
-  const mutateSnapshot = useRefreshSnapshot(originalBlock, block.id, block.storyId!)
   const mutatingCount = useSnapshotMutating(originalBlock.id)
   const [mutatingStartTimeStamp, setMutatingStartTimeStamp] = useState(0)
   const [nowTimeStamp, setNowTimeStamp] = useState(0)
-
   const loading = mutatingCount !== 0
-
-  useEffect(() => {
-    if (originalBlock.id === block.id && !snapshotId && originalBlock.content?.sql && mutatingCount === 0) {
-      mutateSnapshot.execute()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   useEffect(() => {
     if (loading) {
@@ -388,12 +406,9 @@ const QuestionBlockFooter: React.FC<{
     }
   }, [loading])
 
-  useInterval(
-    () => {
-      setNowTimeStamp(Date.now())
-    },
-    loading ? 1000 : null
-  )
+  useInterval(() => {
+    setNowTimeStamp(Date.now())
+  }, 1000)
 
   return (
     <>
@@ -403,22 +418,78 @@ const QuestionBlockFooter: React.FC<{
           align-items: center;
           justify-content: flex-start;
           align-self: stretch;
-          padding: 16px 20px 20px;
-          height: ${FOOTER_HEIGHT}px;
+          padding: 3px 20px 20px;
+          height: 37px;
           overflow: hidden;
         `}
       >
-        <StatusIndicator size={10} status={loading ? 'loading' : 'success'} />
+        <Tippy
+          content={
+            block.content?.error ? (
+              <div
+                className={css`
+                  max-height: 100px;
+                  overflow: auto;
+                `}
+              >
+                {block.content?.error}
+              </div>
+            ) : (
+              'loading...'
+            )
+          }
+          // hideOnClick={true}
+          // theme="tellery"
+          animation="fade"
+          duration={150}
+          arrow={false}
+          interactive
+          // trigger="click"
+          popperOptions={{
+            modifiers: [
+              {
+                name: 'offset',
+                enabled: true,
+                options: {
+                  offset: [10, 20]
+                }
+              }
+            ]
+          }}
+        >
+          <div
+            className={css`
+              margin-right: 5px;
+            `}
+          >
+            {loading ? (
+              <>
+                <IconCommonRefresh
+                  width="12px"
+                  height="12px"
+                  fill={ThemingVariables.colors.warning[0]}
+                  className={css`
+                    animation: ${rotateAnimation} 1.2s linear infinite;
+                  `}
+                />
+              </>
+            ) : block.content?.error ? (
+              <>
+                <IconCommonError width="12px" height="12px" fill={ThemingVariables.colors.negative[0]} />
+              </>
+            ) : null}
+          </div>
+        </Tippy>
 
         <div
           className={css`
             flex-grow: 0;
             flex-shrink: 1;
-            margin-left: 4px;
             overflow: hidden;
             align-items: center;
             font-weight: 600;
             font-size: 12px;
+            line-height: 14px;
             color: ${ThemingVariables.colors.text[2]};
             white-space: nowrap;
             text-overflow: ellipsis;
@@ -427,7 +498,9 @@ const QuestionBlockFooter: React.FC<{
         >
           {loading
             ? dayjs(nowTimeStamp).subtract(mutatingStartTimeStamp).format('mm:ss')
-            : dayjs(snapshot?.createdAt).fromNow()}
+            : snapshot?.createdAt || block.content?.lastRunAt
+            ? dayjs(block.content?.lastRunAt ?? snapshot?.createdAt).fromNow()
+            : ''}
         </div>
       </div>
     </>
@@ -502,9 +575,10 @@ export const MoreDropdownSelect: React.FC<{
   snapshot?: Snapshot
   block: Editor.Block
   sql: string
+  hoverContent: ReactNode
   className?: string
   setIsActive: (active: boolean) => void
-}> = ({ snapshot, block, sql, setIsActive, className }) => {
+}> = ({ snapshot, block, sql, setIsActive, className, hoverContent }) => {
   const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null)
   const { data: user } = useUser(block?.lastEditedById ?? null)
 
@@ -559,6 +633,7 @@ export const MoreDropdownSelect: React.FC<{
   return (
     <div>
       <IconButton
+        hoverContent={hoverContent}
         icon={IconCommonMore}
         color={ThemingVariables.colors.primary[0]}
         {...getToggleButtonProps({ ref: setReferenceElement })}
@@ -644,7 +719,7 @@ const TitleButtonsInner: React.FC<{
   const [isActive, setIsActive] = useState(false)
   const [isPresent, safeToRemove] = usePresence()
   const questionEditor = useQuestionEditor()
-  const mutateSnapshot = useRefreshSnapshot(block, block.id, block.storyId!)
+  const mutateSnapshot = useRefreshSnapshot()
   const mutatingCount = useSnapshotMutating(block.id)
   const loading = mutatingCount !== 0
 
@@ -657,20 +732,24 @@ const TitleButtonsInner: React.FC<{
       <RefreshButton
         color={ThemingVariables.colors.primary[1]}
         loading={loading}
+        hoverContent="Refresh"
         className={QuestionBlockIconButton}
-        onClick={loading ? mutateSnapshot.cancel : mutateSnapshot.execute}
+        onClick={loading ? () => mutateSnapshot.cancel(block.id) : () => mutateSnapshot.execute(block)}
       />
       <IconButton
+        hoverContent="Visualization options"
         icon={IconVisualizationSetting}
         className={QuestionBlockIconButton}
         onClick={() => questionEditor.open({ mode: 'VIS', readonly, blockId: block.id, storyId: block.storyId! })}
       />
       <IconButton
+        hoverContent="Edit SQL"
         className={QuestionBlockIconButton}
         icon={IconCommonSql}
         onClick={() => questionEditor.open({ mode: 'SQL', readonly, blockId: block.id, storyId: block.storyId! })}
       />
       <MoreDropdownSelect
+        hoverContent="More"
         className={QuestionBlockIconButton}
         snapshot={snapshot}
         block={block}
@@ -734,4 +813,9 @@ const QuestionsBlockContainer = css`
   align-self: center;
   background-color: ${ThemingVariables.colors.gray[4]};
   border-radius: 20px;
+  border: 4px solid transparent;
+  :focus-within {
+    border-color: ${ThemingVariables.colors.primary[3]};
+    outline: none;
+  }
 `

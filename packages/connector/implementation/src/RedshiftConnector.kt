@@ -1,9 +1,9 @@
 package io.tellery.connectors
 
-import io.tellery.annotations.Connector
-import io.tellery.annotations.HandleImport
 import io.tellery.annotations.Config
 import io.tellery.annotations.Config.ConfigType
+import io.tellery.annotations.Connector
+import io.tellery.annotations.HandleImport
 import io.tellery.entities.ImportFailureException
 import io.tellery.entities.Profile
 import io.tellery.entities.TypeField
@@ -14,17 +14,74 @@ import java.sql.Connection
 
 
 @Connector(
-    type="Redshift",
+    type = "Redshift",
     configs = [
-        Config(name="Endpoint", type= ConfigType.STRING, description="The endpoint of the Amazon Redshift cluster", hint="examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com",required=true),
-        Config(name="Port", type= ConfigType.NUMBER, description="The port number that you specified when you launched the cluster. If you have a firewall, make sure that this port is open for you to use", hint="5439",required=true),
-        Config(name="Database", type= ConfigType.STRING, description="The logical database to connect to and run queries against", hint="my_db",required=true),
-        Config(name="S3AccessKey", type=ConfigType.STRING, description="S3 Access Key ID(for uploading csv)"),
-        Config(name="S3SecretKey", type=ConfigType.STRING, description="S3 Secret Access Key (for uploading csv)", secret=true),
-        Config(name="S3Region", type=ConfigType.STRING, description="S3 region (be the same as your Redshift cluster", hint="us-east-1"),
-        Config(name="S3Bucket", type=ConfigType.STRING, description="S3 bucket (where uploaded csv stores)", hint="tellery"),
-        Config(name="S3KeyPrefix", type=ConfigType.STRING, description="S3 key prefix prepends to uploaded csv"),
-    ])
+        Config(
+            name = "Endpoint",
+            type = ConfigType.STRING,
+            description = "The endpoint of the Amazon Redshift cluster",
+            hint = "examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com",
+            required = true
+        ),
+        Config(
+            name = "Port",
+            type = ConfigType.NUMBER,
+            description = "The port number that you specified when you launched the cluster. If you have a firewall, make sure that this port is open for you to use",
+            hint = "5439",
+            required = true
+        ),
+        Config(
+            name = "Database",
+            type = ConfigType.STRING,
+            description = "The logical database to connect to and run queries against",
+            hint = "my_db",
+            required = true
+        ),
+        Config(
+            name = "Username",
+            type = ConfigType.STRING,
+            description = "The username (role) you used to connect to your Redshift cluster (created when initializing Redshift cluster)",
+            hint = "your_username",
+            required = true,
+        ),
+        Config(
+            name = "Password",
+            type = ConfigType.STRING,
+            description = "",
+            hint = "",
+            required = true,
+            secret = true,
+        ),
+        Config(
+            name = "S3 Access Key",
+            type = ConfigType.STRING,
+            description = "S3 Access Key ID(for uploading csv)"
+        ),
+        Config(
+            name = "S3 Secret Key",
+            type = ConfigType.STRING,
+            description = "S3 Secret Access Key (for uploading csv)",
+            secret = true
+        ),
+        Config(
+            name = "S3 Region",
+            type = ConfigType.STRING,
+            description = "S3 region (be the same as your Redshift cluster",
+            hint = "us-east-1"
+        ),
+        Config(
+            name = "S3 Bucket",
+            type = ConfigType.STRING,
+            description = "S3 bucket (where uploaded csv stores)",
+            hint = "tellery"
+        ),
+        Config(
+            name = "S3 Key Prefix",
+            type = ConfigType.STRING,
+            description = "S3 key prefix prepends to uploaded csv"
+        ),
+    ]
+)
 class RedshiftConnector : JDBCConnector() {
     override val driverClassName = "com.amazon.redshift.jdbc42.Driver"
     override val transactionIsolationLevel = Connection.TRANSACTION_READ_COMMITTED
@@ -63,7 +120,7 @@ class RedshiftConnector : JDBCConnector() {
                         type,
                     ),
                 ->
-                "${name.toUpperCase()} ${toSQLType(type)}"
+                "${name.uppercase()} ${toSQLType(type)}"
             }
 
             val createTableSQL = """
@@ -79,7 +136,12 @@ class RedshiftConnector : JDBCConnector() {
         }
     }
 
-    private suspend fun copyFromS3(connection: Connection, _database: String, tableName: String, s3Path: String) {
+    private suspend fun copyFromS3(
+        connection: Connection,
+        _database: String,
+        tableName: String,
+        s3Path: String
+    ) {
         connection.createStatement().use { stmt ->
             val copyFromSQL = """
                 |COPY $tableName
@@ -101,7 +163,12 @@ class RedshiftConnector : JDBCConnector() {
     }
 
     @HandleImport("text/csv")
-    suspend fun importFromCSV(database: String, collection: String, schema: String?, content: ByteArray) {
+    suspend fun importFromCSV(
+        database: String,
+        collection: String,
+        schema: String?,
+        content: ByteArray
+    ) {
         val csvData = readCSV(content)
         val filename = "$database/${if (schema != null) "$schema." else ""}$collection.csv"
         val s3Path = this.s3Client!!.uploadFile(filename, content, "text/csv")

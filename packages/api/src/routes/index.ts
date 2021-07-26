@@ -10,6 +10,7 @@ import thought from './thought'
 import upload from './storage'
 import users from './user'
 import workspaces from './workspace'
+import thirdParty from './thirdParty'
 
 const router = new Router({
   prefix: '/api',
@@ -24,6 +25,7 @@ router.use('/workspaces', workspaces.routes(), workspaces.allowedMethods())
 router.use('/activities', activities.routes(), activities.allowedMethods())
 router.use('/storage', upload.routes(), upload.allowedMethods())
 router.use('/thought', thought.routes(), thought.allowedMethods())
+router.use('/thirdParty', thirdParty.routes(), thirdParty.allowedMethods())
 router.use('', global.routes(), global.allowedMethods())
 
 export default router

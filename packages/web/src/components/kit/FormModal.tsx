@@ -1,7 +1,7 @@
 import { css, cx } from '@emotion/css'
 import { forwardRef, FormHTMLAttributes, ReactNode } from 'react'
 
-import { ThemingVariables } from 'styles'
+import { ThemingVariables } from '@app/styles'
 
 export default forwardRef<
   HTMLFormElement,

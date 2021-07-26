@@ -1,10 +1,11 @@
 import { css, cx } from '@emotion/css'
 import React from 'react'
-import type { Editor } from 'types'
+import { Editor } from '@app/types'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import { ContentEditable } from '../BlockBase/ContentEditable'
+import { BlockComponent, registerBlock } from './utils'
 
-export const TitleBlock = (props: { block: Editor.Block }) => {
+export const TitleBlock: BlockComponent<React.FC<{ block: Editor.Block }>> = (props: { block: Editor.Block }) => {
   const { readonly } = useBlockBehavior()
 
   const { block } = props
@@ -45,3 +46,10 @@ export const TitleBlock = (props: { block: Editor.Block }) => {
     </div>
   )
 }
+
+TitleBlock.meta = {
+  isText: true,
+  hasChildren: true
+}
+
+registerBlock(Editor.BlockType.Story, TitleBlock)

@@ -1,22 +1,34 @@
+import { WorkspacePreferences } from '@app/components/WorkspacePreferences'
+import { WorkspaceMembers } from '@app/components/WorkspaceMembers'
+import { WorkspaceDatabases } from '@app/components/WorkspaceDatabases'
 import { css, cx } from '@emotion/css'
-import { ThemingVariables } from 'styles'
-import UserAccount from '@app/components/UserAccount'
-import { useState, useRef } from 'react'
-import { useLoggedUser } from '@app/hooks/useAuth'
-import { useOnClickOutside } from 'hooks'
+import React, { useState, useRef } from 'react'
+import { ThemingVariables } from '@app/styles'
+import { useOnClickOutside } from '@app/hooks'
+import { AnimatePresence, motion } from 'framer-motion'
 
 enum Tabs {
-  Account = 'Account'
+  Preferences = 'Preferences',
+  Members = 'Members',
+  Databases = 'Databases'
 }
 
-export default function User(props: { onClose(): void }) {
-  const user = useLoggedUser()
-  const [tab, setTab] = useState(Tabs.Account)
+interface ModalProps {
+  openForProfiles?: boolean
+  onClose(): void
+}
+
+function WorkspaceModalContent(props: ModalProps) {
+  const [tab, setTab] = useState(props.openForProfiles ? Tabs.Databases : Tabs.Preferences)
   const ref = useRef(null)
   useOnClickOutside(ref, props.onClose)
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.25 }}
+      exit={{ opacity: 0 }}
       className={css`
         position: fixed;
         top: 0;
@@ -63,7 +75,7 @@ export default function User(props: { onClose(): void }) {
               color: ${ThemingVariables.colors.text[1]};
             `}
           >
-            {user.email}
+            Tellery
           </h1>
           <ul
             className={css`
@@ -104,8 +116,15 @@ export default function User(props: { onClose(): void }) {
             ))}
           </ul>
         </div>
-        {tab === Tabs.Account ? <UserAccount onClose={props.onClose} /> : null}
+        {tab === Tabs.Preferences ? <WorkspacePreferences onClose={props.onClose} /> : null}
+        {tab === Tabs.Members ? <WorkspaceMembers onClose={props.onClose} /> : null}
+        {tab === Tabs.Databases ? <WorkspaceDatabases onClose={props.onClose} /> : null}
       </div>
-    </div>
+    </motion.div>
   )
+}
+
+export default function WorkspaceModal(props: ModalProps & { open: boolean }) {
+  const { open, ...rest } = props
+  return <AnimatePresence>{open && <WorkspaceModalContent {...rest} />}</AnimatePresence>
 }
