@@ -24,7 +24,7 @@ function match(block: Block): boolean {
 function translate(block: Block): string {
   const materialization = _(block.content).get('materialized')
   switch (materialization) {
-    // In case of dbt updates a level of materialization
+    // In case of dbt updated a level of materialization
     case 'unknown':
       throw InvalidArgumentError.new(
         `The materialization of ${materialization} is unknown, please check if your connector matches your dbt version`,
