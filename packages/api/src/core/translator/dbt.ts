@@ -1,5 +1,4 @@
 import _ from 'lodash'
-import { InvalidArgumentError } from '../../error/error'
 import { Block } from '../block'
 
 /**
@@ -12,15 +11,21 @@ function match(block: Block): boolean {
 
 /**
  * Assist param to an executable statement
- * There are two references in DBT, which are `ref` and `source`, which are now stored in the content of DBT Block.
- * If something references DBT Block, we convert the {{$dbtBlockId}} to ref('xxx') or source('xxx')
+ *
+ * Here the sql retrieved from dbtBlock depends on its materialization,
+ * that is, if the compiled sql has been executed during transformation and saved into the data warehouse
+ *
+ * For non-ephemeral level, the query result can be referred directly by its relation name (which is a flatten name for adapting different data source)
+ * The select-all clause will be returned for fulfilling CTE in this case.
+ *
+ * For ephemeral, actually this can be considered as a name-based transclusion (though it happens in the level of DBT), just return the compiled SQL.
  */
 function translate(block: Block): string {
-  const type = _(block.content).get('type')
-  if (_(['ref', 'source']).includes(type)) {
-    return `${type}('${block.getInterKey()}')`
+  const materialization = _(block.content).get('materialized')
+  if (materialization === 'ephemeral') {
+    return _(block.content).get('compiledSql')
   }
-  throw InvalidArgumentError.new('invalid type in dbt block content')
+  return `select * from ${_(block.content).get('relationName')}`
 }
 
 export { match, translate }
