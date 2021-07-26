@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import { InvalidArgumentError } from '../../error/error'
 import { Block } from '../block'
 
 /**
@@ -22,10 +23,17 @@ function match(block: Block): boolean {
  */
 function translate(block: Block): string {
   const materialization = _(block.content).get('materialized')
-  if (materialization === 'ephemeral') {
-    return _(block.content).get('compiledSql')
+  switch (materialization) {
+    // In case of dbt updates a level of materialization
+    case 'unknown':
+      throw InvalidArgumentError.new(
+        `The materialization of ${materialization} is unknown, please check if your connector matches your dbt version`,
+      )
+    case 'ephemeral':
+      return _(block.content).get('compiledSql')
+    default:
+      return `select * from ${_(block.content).get('relationName')}`
   }
-  return `select * from ${_(block.content).get('relationName')}`
 }
 
 export { match, translate }
