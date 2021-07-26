@@ -3,7 +3,7 @@ import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
 import { AnimateSharedLayout, motion } from 'framer-motion'
-import React, { memo, useEffect, useMemo, useRef, useState } from 'react'
+import React, { memo, useEffect, useMemo, useRef } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { BlockOperations } from './BlockOperations'
 import { OperatorsAvatar } from './BlockOperators'
@@ -47,16 +47,18 @@ export const ContentBlocks: React.FC<{
   parentType: Editor.BlockType
   readonly?: boolean
   draggable?: boolean
+  highlightedBlockId?: string
 }> = (props) => {
-  const { small = false, readonly = false, draggable = true } = props
+  const { small = false, readonly = false, draggable = true, highlightedBlockId } = props
 
   const behavior = useMemo(() => {
     return {
       small,
       readonly,
-      draggable
+      draggable,
+      highlightedBlockId
     }
-  }, [small, readonly, draggable])
+  }, [small, readonly, draggable, highlightedBlockId])
 
   return (
     <AnimateSharedLayout>
@@ -95,29 +97,19 @@ export const ContentBlockInner: React.FC<{
 }> = ({ block, parentType = Editor.BlockType.Story }) => {
   const blockFormat = useBlockFormat(block)
   const blockRef = useRef(null)
-  const { small, readonly } = useBlockBehavior()
+  const { small, readonly, highlightedBlockId } = useBlockBehavior()
   const ref = useRef<HTMLDivElement | null>(null)
   const blockAdmin = useBlockAdmin()
-  const [hightlighted, setHighlighted] = useState(false)
 
   useEffect(() => {
     if (ref.current) {
       blockAdmin?.registerBlockInstance(block.id, {
         blockRef: blockRef,
-        wrapperElement: ref.current,
-        setHighlighted
+        wrapperElement: ref.current
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [block.type])
-
-  useEffect(() => {
-    if (!small) {
-      setTimeout(() => {
-        setHighlighted(false)
-      }, 2000)
-    }
-  }, [hightlighted, small])
 
   if (block.type === Editor.BlockType.Row) {
     return <BlockInner block={block} />
@@ -164,7 +156,7 @@ export const ContentBlockInner: React.FC<{
             <DroppingAreaIndicator blockId={block.id} />
           </>
         )}
-        <BlockSelectedOverlay blockId={block.id} selected={hightlighted} />
+        <BlockSelectedOverlay blockId={block.id} selected={highlightedBlockId === block.id} />
         <ErrorBoundary
           FallbackComponent={ErrorFallback}
           onReset={() => {

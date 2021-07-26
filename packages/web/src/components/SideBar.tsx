@@ -2,16 +2,15 @@ import {
   IconCommonAdd,
   IconCommonAllQuestion,
   IconCommonMenu,
+  IconCommonMetrics,
   IconCommonSearch,
   IconCommonSetting,
   IconCommonStar,
   IconCommonThoughts
 } from '@app/assets/icons'
-import { useGetBlockTitleTextSnapshot } from '@app/components/editor'
-import { MainSideBarItem, sideBarContainerStyle } from '@app/components/MainSideBarItem'
+import { MainSideBarItem } from '@app/components/MainSideBarItem'
 import { useWorkspace } from '@app/context/workspace'
-import { useOpenStory } from '@app/hooks'
-import { useBlockSuspense, useConnectorsListProfiles, useWorkspaceView } from '@app/hooks/api'
+import { useConnectorsListProfiles } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useLocalStorage } from '@app/hooks/useLocalStorage'
@@ -22,43 +21,35 @@ import { css, cx } from '@emotion/css'
 import { AnimatePresence, motion, useAnimation, useMotionValue, useTransform } from 'framer-motion'
 import { useUpdateAtom } from 'jotai/utils'
 import { nanoid } from 'nanoid'
-import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
-import ContentLoader from 'react-content-loader'
-import { useHistory, useLocation, useRouteMatch } from 'react-router-dom'
-import Icon from './kit/Icon'
+import React, { ReactNode, useCallback, useEffect, useState } from 'react'
+import { useHistory } from 'react-router-dom'
+import { SideBarAllStoriesSection } from './SideBarAllStoriesSection'
+import { SideBarMetricsSection } from './SideBarMetricsSection'
+import { SideBarPinnedStoriesSection } from './SideBarPinnedStoriesSection'
+import { SideBarThoughtsSection } from './SideBarThoughtsSection'
 import { UserModal } from './UserModal'
 import { WorkspaceModal } from './WorkspaceModal'
 
-const SideBarLoader: React.FC = () => {
-  return (
-    <ContentLoader
-      viewBox="0 0 210 36"
-      style={{ width: '100%', height: '36px', padding: '0 8px' }}
-      className={sideBarContainerStyle}
-    >
-      <rect x="0" y="0" rx="5" ry="5" width="210" height="36" />
-    </ContentLoader>
-  )
-}
+const FOLDED_WIDTH = 68
 
 const DragConstraints = {
   left: 200,
   right: 600
 }
 
-const _SideBar = () => {
+export const SideBar = () => {
   const [resizeConfig, setResizeConfig] = useLocalStorage('Tellery:SidebarConfig:1', {
     x: 240,
     folded: false
   })
 
-  const x = useMotionValue(resizeConfig.folded ? 68 : resizeConfig.x + 0.5 * DRAG_HANDLE_WIDTH)
+  const x = useMotionValue(resizeConfig.folded ? FOLDED_WIDTH : resizeConfig.x + 0.5 * DRAG_HANDLE_WIDTH)
 
   const width = useTransform(x, (x) => x)
 
   useEffect(() => {
     if (resizeConfig.folded) {
-      x.set(68)
+      x.set(FOLDED_WIDTH)
       return
     } else {
       x.set(resizeConfig.x)
@@ -84,7 +75,7 @@ const _SideBar = () => {
   useEffect(() => {
     if (resizeConfig.folded) {
       controls.start({
-        width: 68,
+        width: FOLDED_WIDTH,
         transition: { duration: 0.15 }
       })
     } else {
@@ -97,7 +88,6 @@ const _SideBar = () => {
 
   return (
     <motion.nav
-      // transition={{ type: 'just' }}
       style={
         resizeConfig.folded === false
           ? {
@@ -106,17 +96,12 @@ const _SideBar = () => {
           : undefined
       }
       animate={controls}
-      // animate={{
-      //   width: resizeConfig.folded ? 68 : width.get()
-      // }}
-      // layout
       className={cx(
         css`
           user-select: none;
           margin: auto;
           bottom: 0;
           height: 100%;
-          /* transition: width 200ms ease; */
         `
       )}
     >
@@ -146,12 +131,33 @@ const _SideBar = () => {
   )
 }
 
-const SideBarContent: React.FC<{ folded: boolean; toggleFoldStatus: () => void }> = ({ folded, toggleFoldStatus }) => {
-  const sideBarContentRef = useRef<HTMLDivElement>(null)
-  const [sideBarContent, setSideBarContent] = useState<ReactNode>(null)
-  const [modalContent, setModalContent] = useState<ReactNode>(null)
+const SideBarContents = {
+  PINNED: {
+    icon: IconCommonStar,
+    hoverTitle: 'Pinned Stories',
+    content: <SideBarPinnedStoriesSection />
+  },
+  ALL_STORIES: {
+    icon: IconCommonAllQuestion,
+    hoverTitle: 'All Stories',
+    content: <SideBarAllStoriesSection />
+  },
+  THOUGHTS: {
+    icon: IconCommonThoughts,
+    hoverTitle: 'My Thoughts',
+    content: <SideBarThoughtsSection />
+  },
+  METRICS: {
+    icon: IconCommonMetrics,
+    hoverTitle: 'Metrics',
+    content: <SideBarMetricsSection />
+  }
+}
 
-  const location = useLocation()
+const SideBarContent: React.FC<{ folded: boolean; toggleFoldStatus: () => void }> = ({ folded, toggleFoldStatus }) => {
+  const [modalContent, setModalContent] = useState<ReactNode>(null)
+  const [activeSideBarTab, setActiveSideBarTab] = useState<keyof typeof SideBarContents | null>('ALL_STORIES')
+
   const history = useHistory()
   const workspace = useWorkspace()
   const { data: profiles } = useConnectorsListProfiles(workspace.preferences.connectorId)
@@ -207,7 +213,7 @@ const SideBarContent: React.FC<{ folded: boolean; toggleFoldStatus: () => void }
           `}
           onClick={toggleFoldStatus}
         >
-          <Icon icon={IconCommonMenu} color={ThemingVariables.colors.gray[0]} />
+          <IconCommonMenu color={ThemingVariables.colors.gray[0]} />
         </div>
 
         <UserSection
@@ -227,40 +233,21 @@ const SideBarContent: React.FC<{ folded: boolean; toggleFoldStatus: () => void }
             padding: 0 16px;
           `}
         >
-          <MainSideBarItem
-            icon={IconCommonSearch}
-            hoverTitle="Search"
-            onClick={() => {
-              setOmniboxShow(true)
-            }}
-          />
-          <MainSideBarItem
-            icon={IconCommonStar}
-            hoverTitle="Pinned Stories"
-            onClick={() => {
-              console.log('on click')
-              setSideBarContent(<WorkspaceSection />)
-            }}
-            active={location.pathname === '/thoughts'}
-          />
-          <MainSideBarItem
-            icon={IconCommonAllQuestion}
-            hoverTitle="All Stories"
-            onClick={() => {
-              setSideBarContent(<WorkspaceSection />)
-            }}
-            active={location.pathname === '/stories'}
-          />
-          <MainSideBarItem
-            icon={IconCommonThoughts}
-            hoverTitle="My Thoughts"
-            // onClick="/thoughts"
-            onClick={() => {
-              console.log('on click')
-              setSideBarContent(<WorkspaceSection />)
-            }}
-            active={location.pathname === '/thoughts'}
-          />
+          {Object.keys(SideBarContents).map((id) => {
+            const key = id as keyof typeof SideBarContents
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { content: _content, ...rest } = SideBarContents[key]
+            return (
+              <MainSideBarItem
+                key={id}
+                {...rest}
+                onClick={() => {
+                  setActiveSideBarTab(key)
+                }}
+                active={activeSideBarTab === id}
+              />
+            )
+          })}
         </div>
 
         <div
@@ -269,86 +256,33 @@ const SideBarContent: React.FC<{ folded: boolean; toggleFoldStatus: () => void }
             margin-top: auto;
           `}
         >
+          <MainSideBarItem
+            icon={IconCommonSearch}
+            hoverTitle="Search"
+            onClick={() => {
+              setOmniboxShow(true)
+            }}
+          />
           <MainSideBarItem icon={IconCommonAdd} hoverTitle="Create a new story" onClick={handleCreateNewSotry} />
           <MainSideBarItem icon={IconCommonSetting} hoverTitle="Settings" onClick={showSettingsModal} />
         </div>
       </div>
       <div
-        ref={sideBarContentRef}
         style={{
           display: folded ? 'none' : 'initial'
         }}
         className={css`
           flex-grow: 1;
-          flex-shrink: 0;
+          flex-shrink: 1;
           background-color: ${ThemingVariables.colors.gray[3]};
+          overflow: hidden;
         `}
       >
-        {sideBarContent}
+        {activeSideBarTab && SideBarContents[activeSideBarTab].content}
       </div>
 
       <AnimatePresence>{modalContent}</AnimatePresence>
     </div>
-  )
-}
-
-const WorkspaceSection = () => {
-  const { data: workspaceView } = useWorkspaceView()
-
-  return (
-    <div
-      className={css`
-        padding: 0 16px;
-        width: 100%;
-        overflow: auto;
-        flex: 1 1;
-        box-sizing: border-box;
-      `}
-    >
-      <div
-        className={css`
-          font-size: 12px;
-          line-height: 14px;
-          color: ${ThemingVariables.colors.text[1]};
-          margin-top: 14px;
-          margin-bottom: 7px;
-          box-sizing: border-box;
-        `}
-      >
-        PINNED
-      </div>
-
-      {workspaceView?.pinnedList && <WorkspaceItems storyIds={workspaceView?.pinnedList} />}
-    </div>
-  )
-}
-
-const WorkspaceItems: React.FC<{ storyIds: string[] }> = ({ storyIds }) => {
-  return (
-    <>
-      {storyIds.map((storyId) => (
-        <React.Suspense key={storyId} fallback={<SideBarLoader />}>
-          <WorkspaceStoryItem blockId={storyId} />
-        </React.Suspense>
-      ))}
-    </>
-  )
-}
-
-const WorkspaceStoryItem: React.FC<{ blockId: string }> = ({ blockId }) => {
-  const block = useBlockSuspense(blockId)
-  const matchStory = useRouteMatch<{ id: string }>('/story/:id')
-  const openStory = useOpenStory()
-  const getBlockTitle = useGetBlockTitleTextSnapshot()
-
-  return (
-    <MainSideBarItem
-      title={getBlockTitle(block)}
-      onClick={(e) => {
-        openStory(block.id, { isAltKeyPressed: e.altKey })
-      }}
-      active={matchStory?.params.id === block.id}
-    />
   )
 }
 
@@ -381,5 +315,3 @@ const UserSection: React.FC<{ onClick(): void }> = ({ onClick }) => {
     </>
   )
 }
-
-export const SideBar = _SideBar

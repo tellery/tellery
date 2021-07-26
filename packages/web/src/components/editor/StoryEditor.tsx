@@ -5,6 +5,7 @@ import { useFetchStoryChunk } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { Operation, useCommit, useCommitHistory } from '@app/hooks/useCommit'
+import { useSelectionArea } from '@app/hooks/useSelectionArea'
 import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
 import { BlockSnapshot, getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
@@ -101,8 +102,6 @@ const _StoryEditor: React.FC<{
   const blockDnd = useBlockDndContext()
   const [lastInputChar, setLastInputChar] = useState<string | null>(null)
 
-  // const getBlockElementById = useGetBlockElementById(storyId)
-
   const blockAdminValue = useBlockAdminProvider()
 
   const lockOrUnlockScroll = useCallback((lock: boolean) => {
@@ -133,7 +132,48 @@ const _StoryEditor: React.FC<{
 
   const snapshot = useBlockSnapshot()
 
-  // useWaitForBlockAndScrollTo(props.scrollToBlockId, editorRef)
+  const { selectionRef } = useSelectionArea(
+    useCallback(
+      (blockIds) => {
+        if (blockIds) {
+          blockDnd.setSelectingBlockIds(blockIds)
+          setSelectionState({
+            type: TellerySelectionType.Block,
+            selectedBlocks: blockIds,
+            storyId: storyId
+          })
+        } else {
+          blockDnd.setSelectingBlockIds([])
+          setSelectionState(null)
+        }
+      },
+      [blockDnd, setSelectionState, storyId]
+    )
+  )
+
+  const triggerSelection = useCallback(
+    (event: globalThis.MouseEvent | globalThis.TouchEvent) => {
+      if (!selectionRef.current) {
+        return
+      }
+      selectionRef.current.trigger(event, true)
+    },
+    [selectionRef]
+  )
+
+  const setSelectedBlocks = useCallback(
+    (blockIds: string[]) => {
+      if (blockIds.length === 0) {
+        setSelectionState(null)
+      } else {
+        selectionRef.current?.clearSelection()
+        selectionRef.current?.select(blockIds.map((id) => `[data-block-id="${id}"]`))
+        // trap focus state
+        editorTextAreaRef.current?.focus()
+      }
+    },
+    [selectionRef, setSelectionState]
+  )
 
   useEffect(() => {
     if (!props.scrollToBlockId) return
@@ -146,30 +186,10 @@ const _StoryEditor: React.FC<{
           inline: 'nearest',
           boundary: editorRef.current?.parentElement
         })
-      }, 750)
-
-      setTimeout(() => {
-        res.setHighlighted(true)
-      }, 1250)
+      }, 0)
+      setSelectedBlocks([props.scrollToBlockId as string])
     })
-  }, [blockAdminValue, props.scrollToBlockId])
-
-  const setSelectedBlocks = useCallback(
-    (blockIds: string[]) => {
-      if (blockIds.length === 0) {
-        setSelectionState(null)
-      } else {
-        setSelectionState({
-          type: TellerySelectionType.Block,
-          selectedBlocks: blockIds,
-          storyId: storyId
-        })
-        // trap focus state
-        editorTextAreaRef.current?.focus()
-      }
-    },
-    [setSelectionState, storyId]
-  )
+  }, [blockAdminValue, props.scrollToBlockId, setSelectedBlocks])
 
   const selectBlocks = useCallback(
     (blockIds: string[]) => {
@@ -181,21 +201,6 @@ const _StoryEditor: React.FC<{
     },
     [setSelectedBlocks]
   )
-
-  const updateSelectedBlocks = useCallback(() => {
-    if (!blockDnd?.selectedBlockIds) {
-      setSelectedBlocks([])
-      return
-    }
-    const ownedBlockIds = blockDnd.selectedBlockIds.filter((id) => {
-      return getBlockFromSnapshot(id, snapshot).storyId === storyId
-    })
-    setSelectedBlocks(ownedBlockIds)
-  }, [blockDnd.selectedBlockIds, setSelectedBlocks, snapshot, storyId])
-
-  useEffect(() => {
-    updateSelectedBlocks()
-  }, [updateSelectedBlocks])
 
   const blurEditor = useCallback(() => {
     setSelectionState(null)
@@ -1091,7 +1096,7 @@ const _StoryEditor: React.FC<{
             e.clientY > isSelectingRef.current.bottom + THERESHOLD
           ) {
             window.getSelection()?.removeAllRanges()
-            blockDnd?.triggerSelection(mouseDownEventRef.current)
+            triggerSelection(mouseDownEventRef.current)
             mouseDownEventRef.current = null
           }
         }
@@ -1102,7 +1107,7 @@ const _StoryEditor: React.FC<{
         setHoverBlockId(id ?? null)
       }
     },
-    [blockDnd, setHoverBlockId]
+    [setHoverBlockId, triggerSelection]
   )
 
   const setUploadResource = useSetUploadResource()

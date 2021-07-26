@@ -1,4 +1,3 @@
-import Icon from '@app/components/kit/Icon'
 import { ThemingVariables } from '@app/styles'
 import { css, cx } from '@emotion/css'
 import Tippy from '@tippyjs/react'
@@ -9,11 +8,14 @@ export function MainSideBarItem(props: {
   active?: boolean
   title?: string
   hoverTitle?: string
+  showTitle?: boolean
   onClick: (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => void
 }) {
+  const Icon = props.icon
   return (
     <Tippy
       disabled={!props.hoverTitle}
+      delay={250}
       content={props.hoverTitle ?? null}
       hideOnClick={false}
       arrow={false}
@@ -40,7 +42,7 @@ export function MainSideBarItem(props: {
         title={props.title}
         onClick={props.onClick}
       >
-        {(props.icon && (
+        {Icon && (
           <div
             className={css`
               width: 20px;
@@ -50,20 +52,24 @@ export function MainSideBarItem(props: {
             `}
           >
             <Icon
-              icon={props.icon}
               color={props.active ? ThemingVariables.colors.gray[5] : ThemingVariables.colors.text[0]}
               className={css`
                 flex-shrink: 0;
               `}
             />
           </div>
-        )) ?? (
-          <div
+        )}
+        {props.showTitle && (
+          <span
             className={css`
-              width: 20px;
-              flex-shrink: 0;
+              margin-left: 5px;
+              width: 100%;
+              text-overflow: ellipsis;
+              overflow: hidden;
             `}
-          />
+          >
+            {props.title}
+          </span>
         )}
       </a>
     </Tippy>
