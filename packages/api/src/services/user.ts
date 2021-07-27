@@ -217,7 +217,7 @@ export class AnonymousUserService extends UserService {
   }
 
   private randomEmail(): string {
-    return `${nanoid()}@tellery-anonymous.io`
+    return `${nanoid()}@tellery.demo`
   }
 }
 
