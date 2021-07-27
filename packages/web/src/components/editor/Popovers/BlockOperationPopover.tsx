@@ -116,7 +116,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
     return [
       [
         {
-          title: 'Copy block ref',
+          title: 'Copy link',
           icon: <Icon icon={IconCommonLink} color={ThemingVariables.colors.text[0]} />,
           action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault()
@@ -195,7 +195,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
           }
         },
         {
-          title: 'Center Align',
+          title: 'Center align',
           icon: <Icon icon={IconMenuCenterAlign} color={ThemingVariables.colors.text[0]} />,
           side: <FormSwitch checked={block?.format?.textAlign === 'center'} />,
           action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {

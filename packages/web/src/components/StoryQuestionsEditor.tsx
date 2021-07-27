@@ -404,11 +404,27 @@ export const EditorContent = () => {
           padding: 0 10px;
           display: flex;
           height: 40px;
+          position: relative;
+          overflow: hidden;
         `}
       >
-        {opendQuestionBlockIds?.map((id) => {
-          return <QuestionTab id={id} key={id} isActive={id === activeId} tab={tab} onClick={() => setActiveId(id)} />
-        })}
+        <div
+          className={css`
+            flex: 1;
+            height: 100%;
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            ::-webkit-scrollbar {
+              display: none;
+            }
+          `}
+        >
+          {opendQuestionBlockIds?.map((id) => {
+            return <QuestionTab id={id} key={id} isActive={id === activeId} tab={tab} onClick={() => setActiveId(id)} />
+          })}
+        </div>
         <IconButton
           icon={IconCommonClose}
           color={ThemingVariables.colors.text[0]}
@@ -417,6 +433,7 @@ export const EditorContent = () => {
             cursor: pointer;
             align-self: center;
             padding: 0 10px;
+            flex-shrink: 0;
           `}
           onClick={() => {
             if (isDirty) {
