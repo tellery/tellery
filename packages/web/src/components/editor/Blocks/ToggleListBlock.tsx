@@ -21,17 +21,21 @@ export const ToggleListBlock: BlockComponent<
   const [isCollapsedLocalState, setIsCollapsedLocalState] = useBlockLocalPreferences(block.id, 'toggle', true)
 
   const editor = useEditor()
-  const createFirstChild = useCallback(() => {
-    invariant(editor, 'editor context is null')
-    const newBlock = editor?.insertNewEmptyBlock(Editor.BlockType.Text, block.id, 'child')
-    invariant(newBlock, 'block not created')
-    editor?.setSelectionState({
-      type: TellerySelectionType.Inline,
-      anchor: { blockId: newBlock.id, nodeIndex: 0, offset: 0 },
-      focus: { blockId: newBlock.id, nodeIndex: 0, offset: 0 },
-      storyId: block.storyId!
-    })
-  }, [block.id, block.storyId, editor])
+  const createFirstChild = useCallback<React.MouseEventHandler<HTMLDivElement>>(
+    (e) => {
+      e.stopPropagation()
+      invariant(editor, 'editor context is null')
+      const newBlock = editor?.insertNewEmptyBlock(Editor.BlockType.Text, block.id, 'child')
+      invariant(newBlock, 'block not created')
+      editor?.setSelectionState({
+        type: TellerySelectionType.Inline,
+        anchor: { blockId: newBlock.id, nodeIndex: 0, offset: 0 },
+        focus: { blockId: newBlock.id, nodeIndex: 0, offset: 0 },
+        storyId: block.storyId!
+      })
+    },
+    [block.id, block.storyId, editor]
+  )
 
   return (
     <>
