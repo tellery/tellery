@@ -9,7 +9,11 @@ const FileBlock: BlockComponent<
   }>
 > = ({ block }) => {
   return (
-    <>{!block.content?.fileKey && <UploadFilePlaceHolder blockId={block.id} text="Click To Upload" accept="*" />}</>
+    <>
+      {!block.content?.fileKey && (
+        <UploadFilePlaceHolder blockId={block.id} text="Click to upload Image, CSV and Excel" accept="*" />
+      )}
+    </>
   )
 }
 

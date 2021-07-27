@@ -16,3 +16,7 @@ export const Blocks: Record<string, BlockComponent<React.FC | React.ForwardRefRe
 export const registerBlock = (type: Editor.BlockType, component: any) => {
   Blocks[type] = component
 }
+
+export const isTextBlock = (block: Editor.Block) => {
+  return Blocks[block.type].meta.isText
+}

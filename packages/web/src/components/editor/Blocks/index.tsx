@@ -36,7 +36,7 @@ const _BlockInner: React.ForwardRefRenderFunction<
       blockFormat={blockFormat}
       parentType={parentType}
     >
-      {children}
+      {Component.meta.hasChildren && children}
     </Component>
   )
 }

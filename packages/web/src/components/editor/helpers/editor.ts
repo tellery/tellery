@@ -1,4 +1,4 @@
-import { getBlockElementContentEditbleById, isTextBlock } from '@app/components/editor/helpers/contentEditable'
+import { getBlockElementContentEditbleById } from '@app/components/editor/helpers/contentEditable'
 import {
   getTokensLength,
   splitedTokenPosition2TokenPosition,
@@ -8,6 +8,7 @@ import debug from 'debug'
 import { BlockSnapshot, getBlockFromSnapshot } from '@app/store/block'
 import type { Editor } from '@app/types'
 import { TellerySelection, TellerySelectionType } from '.'
+import { isTextBlock } from '../Blocks/utils'
 const logger = debug('tellery:editor:helper')
 
 export const getEndContainerFromPoint = (x: number, y: number) => {
