@@ -411,9 +411,9 @@ export const BlockTextOperationMenuInner = ({
       }
     ]
 
-    return buttons.map((button) => {
+    return buttons.map((button, index) => {
       if (button.type === 'DIVIDER') {
-        return <VerticalDivider />
+        return <VerticalDivider key={index} />
       }
       return (
         <Tippy

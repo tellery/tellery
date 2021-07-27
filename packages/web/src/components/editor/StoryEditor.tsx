@@ -39,10 +39,12 @@ import {
 } from '.'
 import { StoryQuestionsSnapshotManagerProvider } from '../StoryQuestionsSnapshotManagerProvider'
 import { ThoughtItemHeader } from '../ThoughtItem'
-import { isTextBlock } from './Blocks/utils'
+import { isBlockHasChildren, isTextBlock } from './Blocks/utils'
 import { ContentBlocks } from './ContentBlock'
 import {
+  canOutdention,
   createTranscation,
+  findPreviouseBlock,
   findPreviousTextBlock,
   findRootBlock,
   getBlockElementContentEditbleById,
@@ -50,7 +52,9 @@ import {
   getElementEndPoint,
   getElementStartPoint,
   getEndContainerFromPoint,
+  getIndentionOperations,
   getNextTextBlockElement,
+  getOutdentionOperations,
   getPreviousTextBlockElement,
   getRangeFromPoint,
   getTransformedSelection,
@@ -513,136 +517,14 @@ const _StoryEditor: React.FC<{
       const block = getBlockFromSnapshot(blockId, snapshot)
       const parentBlock = getBlockFromSnapshot(block.parentId, snapshot)
 
-      const getIndentionOperations = (previousBlock: Editor.Block) => {
-        const operations: Operation[] = []
-        const previousId = previousBlock.id
-        let parentId = ''
-
-        operations.push({
-          cmd: 'listRemove',
-          table: 'block',
-          id: block.parentId,
-          args: { id: blockId },
-          path: ['children']
-        })
-
-        if (previousBlock.children?.length) {
-          operations.push({
-            cmd: 'listAfter',
-            table: 'block',
-            id: previousId,
-            args: { id: blockId, after: previousBlock.children[previousBlock.children.length - 1] },
-            path: ['children']
-          })
-        } else {
-          operations.push({
-            cmd: 'listBefore',
-            table: 'block',
-            id: previousId,
-            args: { id: blockId },
-            path: ['children']
-          })
-        }
-        parentId = previousId
-
-        // list other blocks after first block
-        let afterId = blockId
-        for (const afterBlockId of blockIds.slice(1)) {
-          operations.push({
-            cmd: 'listRemove',
-            table: 'block',
-            id: parentBlock.id,
-            args: { id: afterBlockId },
-            path: ['children']
-          })
-          operations.push({
-            cmd: 'listAfter',
-            table: 'block',
-            id: parentId,
-            args: { id: afterBlockId, after: afterId },
-            path: ['children']
-          })
-          afterId = afterBlockId
-        }
-
-        return operations
-      }
-
-      const getOutdentionOperations = () => {
-        const operations: Operation[] = []
-        let parentId = ''
-
-        operations.push({
-          cmd: 'listRemove',
-          table: 'block',
-          id: parentBlock.id,
-          args: { id: blockId },
-          path: ['children']
-        })
-        operations.push({
-          cmd: 'listAfter',
-          table: 'block',
-          id: parentBlock.parentId,
-          args: { id: blockId, after: parentBlock.id },
-          path: ['children']
-        })
-
-        parentId = parentBlock.parentId
-
-        // list other blocks after first block
-        let afterId = blockId
-        for (const afterBlockId of blockIds.slice(1)) {
-          operations.push({
-            cmd: 'listRemove',
-            table: 'block',
-            id: parentBlock.id,
-            args: { id: afterBlockId },
-            path: ['children']
-          })
-          operations.push({
-            cmd: 'listAfter',
-            table: 'block',
-            id: parentId,
-            args: { id: afterBlockId, after: afterId },
-            path: ['children']
-          })
-          afterId = afterBlockId
-        }
-
-        return operations
-      }
-
-      const findPreviouseBlock = (blockId: string, parentBlockId: string) => {
-        const parentBlock = getBlockFromSnapshot(parentBlockId, snapshot)
-        const peerBlockIds = parentBlock.children!
-        const sourceIndex = peerBlockIds.findIndex((id) => id === blockId)
-
-        if (
-          sourceIndex !== undefined &&
-          sourceIndex >= 1 &&
-          blockIds.every((id) => parentBlock.children?.includes(id))
-        ) {
-          const previousId = peerBlockIds[sourceIndex - 1]
-          const previousBlock = getBlockFromSnapshot(previousId, snapshot)
-          return previousBlock
-        }
-      }
-
-      const canOutdention = () => {
-        return (
-          blockIds.every((id) => parentBlock.children?.includes(id)) &&
-          (parentBlock.type === Editor.BlockType.Story || parentBlock.type === Editor.BlockType.Thought) === false
-        )
-      }
-
       if (type === 'in') {
-        const previousBlock = findPreviouseBlock(blockId, block.parentId)
-        if (previousBlock && isTextBlock(previousBlock)) {
-          const operations = getIndentionOperations(previousBlock)
+        const previousBlock = findPreviouseBlock(blockId, block.parentId, blockIds, snapshot)
+        if (previousBlock && isBlockHasChildren(previousBlock)) {
+          const operations = getIndentionOperations(block, previousBlock, parentBlock, blockIds)
           commit({ transcation: createTranscation({ operations }), storyId })
         }
-      } else if (type === 'out' && canOutdention()) {
-        const operations = getOutdentionOperations()
+      } else if (type === 'out' && canOutdention(parentBlock, blockIds)) {
+        const operations = getOutdentionOperations(blockId, parentBlock, blockIds)
         commit({ transcation: createTranscation({ operations }), storyId })
       }
     },
@@ -1305,7 +1187,7 @@ const _StoryEditor: React.FC<{
 
   const editorClickHandler = useCallback<React.MouseEventHandler<HTMLDivElement>>(
     (e) => {
-      e.preventDefault()
+      // e.preventDefault()
       const contentRect = editorRef.current!.getBoundingClientRect()
       const x = e.clientX < contentRect.x + 100 ? contentRect.x + 101 : e.clientX
       const container = getEndContainerFromPoint(x, e.clientY)

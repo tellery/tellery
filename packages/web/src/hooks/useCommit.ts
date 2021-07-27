@@ -80,7 +80,12 @@ const undo = <T = Env>({
 
     endTranscation()
     logger('undo commit transcation end', transcation)
-
+    const transcationPromise = new Promise((resolve, reject) => {
+      TranscationPromiseMap[transcation.id] = {
+        resolve,
+        reject
+      }
+    })
     return env as T
   } catch (err) {
     endTranscation()
@@ -123,6 +128,12 @@ const redo = <T = Env>({
 
   endTranscation()
   logger('redo commit transcation end', transcation)
+  const transcationPromise = new Promise((resolve, reject) => {
+    TranscationPromiseMap[transcation.id] = {
+      resolve,
+      reject
+    }
+  })
   return env as T
 }
 
@@ -210,6 +221,7 @@ export const commit = async ({
     })
   } catch (err) {
     endTranscation()
+    console.error(err)
     return Promise.reject(err)
   }
 }
@@ -336,13 +348,23 @@ const applyOperations = (
         invariant(index !== -1, 'child not found')
 
         const beforeId = updatedBlock.children[index - 1]
-        reversedOperations.push({
-          cmd: 'listBefore',
-          path: operation.path,
-          args: { id: (operation.args as any).id, before: beforeId },
-          table: 'block',
-          id: operation.id
-        })
+        if (beforeId) {
+          reversedOperations.push({
+            cmd: 'listAfter',
+            path: operation.path,
+            args: { id: (operation.args as any).id, after: beforeId },
+            table: 'block',
+            id: operation.id
+          })
+        } else {
+          reversedOperations.push({
+            cmd: 'listBefore',
+            path: operation.path,
+            args: { id: (operation.args as any).id },
+            table: 'block',
+            id: operation.id
+          })
+        }
 
         updatedBlock = update(updatedBlock, {
           children: {
@@ -491,6 +513,7 @@ export const syncStory = throttle(() => {
       })
     })
     .catch((err) => {
+      console.error(err)
       parsedTransactions.forEach((transaction) => {
         TranscationPromiseMap[transaction.id].reject(err)
       })

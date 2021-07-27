@@ -18,5 +18,9 @@ export const registerBlock = (type: Editor.BlockType, component: any) => {
 }
 
 export const isTextBlock = (block: Editor.Block) => {
-  return Blocks[block.type].meta.isText
+  return !!Blocks[block.type].meta.isText
+}
+
+export const isBlockHasChildren = (block: Editor.Block) => {
+  return !!Blocks[block.type].meta.hasChildren
 }
