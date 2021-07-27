@@ -1,12 +1,13 @@
 import { randomInt } from 'crypto'
 import _ from 'lodash'
+import { nanoid } from 'nanoid'
 import { EntityManager, getConnection, getRepository, In } from 'typeorm'
 
 import { User } from '../core/user'
 import { UserEntity } from '../entities/user'
 import { InvalidArgumentError, UnauthorizedError } from '../error/error'
 import { AccountStatus, UserInfoDTO } from '../types/user'
-import { absoluteURI, getSecretKey } from '../utils/common'
+import { getSecretKey } from '../utils/common'
 import { decrypt, encrypt } from '../utils/crypto'
 import { md5 } from '../utils/helper'
 import emailService from './email'
@@ -18,7 +19,7 @@ type TokenPayload = {
 }
 
 export class UserService {
-  private secretKey: string
+  protected secretKey: string
 
   private compatible: boolean
 
@@ -188,7 +189,41 @@ export class UserService {
   }
 }
 
-const service = new UserService()
+class AnonymousUserService extends UserService {
+
+  constructor() {
+    super()
+  }
+
+  async verifyToken(token: string): Promise<{ userId: string; expiresAt: number }> {
+    const payload = JSON.parse(decrypt(token, this.secretKey)) as TokenPayload
+    if (payload.expiresAt < _.now()) {
+      throw UnauthorizedError.notLogin()
+    }
+    let model: UserEntity
+    try {
+      model = await getRepository(UserEntity).findOneOrFail(payload.userId)
+    } catch (_err) {
+      throw UnauthorizedError.notExist()
+    }
+    const passHash = this.getConvertedPassword(model.password, model.id)
+    if (passHash !== payload.passHash) {
+      throw UnauthorizedError.notLogin()
+    }
+
+    return payload
+  }
+
+  async generateUserVerification(): Promise<never> {
+    throw new Error('not allowed')
+  }
+
+  private randomEmail(): string {
+    return `${nanoid()}@tellery-anonymous.io`
+  }
+}
+
+const service = process.env.ANONYMOUS ? new AnonymousUserService() : new UserService()
 export default service
 
 /**
