@@ -255,3 +255,39 @@ test('set permissions with invalid args', async (t) => {
     }
   })
 })
+
+test('convert question block to metric block', async (t) => {
+  return getConnection().transaction(async (manager) => {
+    const op = new BlockOperation(uuid(), 'test', manager)
+    const qid = nanoid()
+    const sid = nanoid()
+    // create question block
+    await set(
+      op,
+      qid,
+      {
+        id: qid,
+        workspaceId: 'xxx',
+        type: BlockType.QUESTION,
+        storyId: sid,
+        parentId: 'test',
+        parentTable: 'workspace',
+        content: {
+          title: [[nanoid()]],
+          sql: 'select * from order limit 1',
+        },
+        alive: true,
+      },
+      [],
+    )
+
+    const question = await manager.getRepository(BlockEntity).findOneOrFail(qid)
+
+    // update block type
+    await update(op, qid, 'metric', ['type'])
+
+    const metric = await manager.getRepository(BlockEntity).findOneOrFail(qid)
+    t.is(metric.type, BlockType.METRIC)
+    t.deepEqual(question.content, metric.content)
+  })
+})
