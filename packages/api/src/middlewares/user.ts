@@ -1,7 +1,10 @@
 import { Context, Next } from 'koa'
 import _ from 'lodash'
+import { getRepository } from 'typeorm'
+import { WorkspaceEntity } from '../entities/workspace'
 
 import userService from '../services/user'
+import workspaceService from '../services/workspace'
 import { isAnonymous } from '../utils/env'
 import { USER_TOKEN_HEADER_KEY } from '../utils/user'
 
@@ -20,6 +23,11 @@ export default async function user(ctx: Context, next: Next) {
       payload = await userService.verifyToken(token)
     } else if (isAnonymous()) {
       payload = await userService.verifyToken(token?.toString() ?? '')
+      // invited new user to workspace
+      if (_(payload).get('generated')) {
+        const workspace = await getRepository(WorkspaceEntity).findOneOrFail()
+        await workspaceService.inviteMembers('admin', workspace.id, _(payload).get('email'))
+      }
     }
   }
 

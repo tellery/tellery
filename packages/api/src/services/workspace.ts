@@ -17,7 +17,8 @@ import { PermissionWorkspaceRole } from '../types/permission'
 import { AccountStatus } from '../types/user'
 import { WorkspaceDTO, WorkspaceMemberStatus } from '../types/workspace'
 import { WorkspaceViewDTO } from '../types/workspaceView'
-import { absoluteURI, string2Hex } from '../utils/common'
+import { string2Hex } from '../utils/common'
+import { isAnonymous } from '../utils/env'
 import { loadMore } from '../utils/loadMore'
 import { canGetWorkspaceData, canUpdateWorkspaceData } from '../utils/permission'
 import emailService from './email'
@@ -25,7 +26,7 @@ import userService from './user'
 
 // TODO: record activities
 export class WorkspaceService {
-  private permission: IPermission
+  protected permission: IPermission
 
   constructor(p: IPermission) {
     this.permission = p
@@ -340,6 +341,59 @@ export class WorkspaceService {
   }
 }
 
-const service = new WorkspaceService(getIPermission())
+export class AnonymousWorkspaceService extends WorkspaceService {
+  async leave(): Promise<void> {
+    throw InvalidArgumentError.notSupport('leaving workspace')
+  }
+
+  async create(): Promise<WorkspaceDTO> {
+    throw InvalidArgumentError.notSupport('creating workspace')
+  }
+
+  async inviteMembers(
+    _operatorId: string,
+    workspaceId: string,
+    users: { email: string; role: PermissionWorkspaceRole }[],
+  ): Promise<{ workspace: WorkspaceDTO; linkPairs: { [k: string]: string } }> {
+    const emails = _(users).map('email').value()
+
+    return getConnection().transaction(async (t) => {
+      const userMap = await userService.getByEmails(
+        emails,
+      )
+
+      const entities = _(users)
+        .map((user) =>
+          getRepository(WorkspaceMemberEntity).create({
+            workspaceId,
+            userId: userMap[user.email].id,
+            role: user.role,
+            // NOTE: invited members join workspace automatically
+            status: WorkspaceMemberStatus.ACTIVE,
+          }),
+        )
+        .value()
+
+      await t
+        .createQueryBuilder()
+        .insert()
+        .into(WorkspaceMemberEntity)
+        .values(entities)
+        .onConflict('DO NOTHING')
+        .execute()
+
+      const workspace = await this.mustFindOneWithMembers(workspaceId, t)
+
+      return {
+        workspace: workspace.toDTO(),
+        linkPairs: {},
+      }
+    })
+  }
+}
+
+const service = isAnonymous()
+  ? new AnonymousWorkspaceService(getIPermission())
+  : new WorkspaceService(getIPermission())
 
 export default service
