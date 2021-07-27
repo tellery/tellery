@@ -58,7 +58,6 @@ const _ContentEditable: React.ForwardRefRenderFunction<
   const [showReferenceDropdown, setShowReferenceDropdown] = useState(false)
   const [showSlashCommandDropdown, setShowSlashCommandDropdown] = useState(false)
   const [keywordRange, setKeywordRange] = useState<TellerySelection | null>(null)
-  const [contentWillChange, setContentWillChange] = useState(false)
   const isComposing = useRef(false)
   const [composingState, setComposingState] = useState(false)
   const localSelection = useLocalSelection(block.id)
@@ -92,10 +91,6 @@ const _ContentEditable: React.ForwardRefRenderFunction<
 
   useEffect(() => {
     if (!isComposing.current && titleTokens) {
-      // const result = dependsAssetsResult.reduce((a, c) => {
-      //   a[c.id] = c
-      //   return a
-      // }, {})
       const targetHtml = BlockRenderer(titleTokens, dependsAssetsResult ?? {})
       logger('setLeavesHtml', titleTokens, dependsAssetsResult)
       setLeavesHtml(targetHtml)
@@ -154,8 +149,6 @@ const _ContentEditable: React.ForwardRefRenderFunction<
           setWillFlush(true)
         }
         element.innerHTML = leavesHtml
-      } else {
-        setContentWillChange(false)
       }
     }
   }, [isFocusing, leavesHtml])
@@ -164,7 +157,6 @@ const _ContentEditable: React.ForwardRefRenderFunction<
     if (readonly) return
     if (isFocusing === false) {
       setWillFlush(false)
-      setContentWillChange(false)
       editbleRef.current?.blur()
       return
     }
@@ -179,9 +171,8 @@ const _ContentEditable: React.ForwardRefRenderFunction<
         console.error('selection fail', e)
       }
       setWillFlush(false)
-      setContentWillChange(false)
     }
-  }, [isFocusing, willFlush, contentWillChange, localSelection, block.id, readonly])
+  }, [isFocusing, willFlush, localSelection, block.id, readonly])
 
   const onMutation = useCallback(() => {
     invariant(editor, 'editor context is null,')
@@ -214,7 +205,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
         })
 
         // after toggle block, selection state will change, disable onSelect
-        setContentWillChange(true)
+        // setContentWillChange(true)
       }
     }
   }, [editor, isFocusing, localSelection, block, titleTokens])
@@ -497,8 +488,8 @@ const _ContentEditable: React.ForwardRefRenderFunction<
             return
             // invariant(false, 'range is falsy value')
           }
-          logger('select', willFlush, contentWillChange, e)
-          if (!willFlush && !contentWillChange) {
+          logger('select', willFlush, e)
+          if (!willFlush) {
             editor?.setSelectionState(nativeSelection2Tellery(block))
           }
           if (isComposing.current) return
