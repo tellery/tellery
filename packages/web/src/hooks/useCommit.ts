@@ -13,7 +13,7 @@ import {
 } from '@app/store/block'
 import { Editor } from '@app/types'
 import update from 'immutability-helper'
-import invariant from 'invariant'
+import invariant from 'tiny-invariant'
 import { cloneDeep, throttle } from 'lodash'
 import { createContext, useContext, useMemo } from 'react'
 import { toast } from 'react-toastify'
@@ -251,7 +251,7 @@ export const CommitContext = createContext<ReturnType<typeof useCommitProvider> 
 export const useCommit = () => {
   const commit = useContext(CommitContext)
 
-  invariant(commit, 'useCommit must use in context', commit)
+  invariant(commit, 'useCommit must use in context')
 
   return commit
 }

@@ -19,7 +19,7 @@ import {
 } from '@app/assets/icons'
 import debug from 'debug'
 import { useBlockSuspense } from '@app/hooks/api'
-import invariant from 'invariant'
+import invariant from 'tiny-invariant'
 import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import { ThemingVariables } from '@app/styles'

@@ -1,7 +1,7 @@
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import type { Operation, Transcation } from '@app/hooks/useCommit'
 import { dequal } from 'dequal'
-import invariant from 'invariant'
+import invariant from 'tiny-invariant'
 import { cloneDeep } from 'lodash'
 import { nanoid } from 'nanoid'
 import { toast } from 'react-toastify'

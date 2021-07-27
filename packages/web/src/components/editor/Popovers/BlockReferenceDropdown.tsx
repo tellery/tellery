@@ -11,7 +11,7 @@ import {
 import Icon from '@app/components/kit/Icon'
 import { motion } from 'framer-motion'
 import { useBlockSuspense, useSearchBlocks } from '@app/hooks/api'
-import invariant from 'invariant'
+import invariant from 'tiny-invariant'
 import { nanoid } from 'nanoid'
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'

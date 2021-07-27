@@ -27,7 +27,7 @@ import {
 import { useLocalStorage } from '@app/hooks/useLocalStorage'
 import { useSqlEditor } from '@app/hooks/useSqlEditor'
 import { produce } from 'immer'
-import invariant from 'invariant'
+import invariant from 'tiny-invariant'
 import isHotkey from 'is-hotkey'
 import { nanoid } from 'nanoid'
 import React, { SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react'

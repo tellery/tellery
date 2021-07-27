@@ -1,7 +1,7 @@
 import { useBlockHovering } from '@app/hooks/useBlockHovering'
 import { css } from '@emotion/css'
 import { motion, PanInfo } from 'framer-motion'
-import invariant from 'invariant'
+import invariant from 'tiny-invariant'
 import React, { useCallback } from 'react'
 import { Editor } from '@app/types'
 import type { BlockFormatInterface } from '../hooks'

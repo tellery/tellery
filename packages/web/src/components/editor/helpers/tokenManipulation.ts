@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import { dequal } from 'dequal'
-import invariant from 'invariant'
+import invariant from 'tiny-invariant'
 import { BlockSnapshot, getBlockFromSnapshot } from '@app/store/block'
 import { Editor } from '@app/types'
 import { DEFAULT_TITLE, TELLERY_MIME_TYPES } from '@app/utils'

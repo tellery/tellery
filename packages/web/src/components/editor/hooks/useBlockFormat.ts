@@ -1,5 +1,5 @@
 import { MotionValue, PanInfo, useMotionValue, useTransform } from 'framer-motion'
-import invariant from 'invariant'
+import invariant from 'tiny-invariant'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import type { Editor } from '@app/types'
 import { useEditor } from '../hooks'

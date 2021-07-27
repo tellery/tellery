@@ -1,5 +1,5 @@
 import { Editor } from '@app/types'
-import invariant from 'invariant'
+import invariant from 'tiny-invariant'
 
 export const saveSelection = function (containerEl: HTMLElement) {
   // const doc = containerEl.ownerDocument

@@ -15,7 +15,7 @@ import {
   useSensors
 } from '@dnd-kit/core'
 import { css } from '@emotion/css'
-import invariant from 'invariant'
+import invariant from 'tiny-invariant'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import ReactTestUtils from 'react-dom/test-utils'
 import {

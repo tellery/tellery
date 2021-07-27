@@ -1,6 +1,6 @@
 import { request, updateUser, userConfirm, userGenerate, userLogin, userLogout } from '@app/api'
 import type { User } from '@app/hooks/api'
-import invariant from 'invariant'
+import invariant from 'tiny-invariant'
 import { createContext, useCallback, useContext, useState } from 'react'
 import { useQuery } from 'react-query'
 import { useLocation } from 'react-router-dom'

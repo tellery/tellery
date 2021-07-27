@@ -1,4 +1,4 @@
-import invariant from 'invariant'
+import invariant from 'tiny-invariant'
 import type { Editor } from '@app/types'
 import { FIRST_LINE_OR_LAST_LINE_THERESHOLD } from '@app/utils'
 import {

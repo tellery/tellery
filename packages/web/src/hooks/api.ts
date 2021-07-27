@@ -15,7 +15,7 @@ import {
   sqlRequest
 } from '@app/api'
 import { useAsync } from '@app/hooks'
-import invariant from 'invariant'
+import invariant from 'tiny-invariant'
 import { compact } from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { QueryObserverResult, useInfiniteQuery, useMutation, useQuery, UseQueryOptions } from 'react-query'

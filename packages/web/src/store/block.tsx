@@ -1,7 +1,7 @@
 import { applyTransactionsAsync, Operation, Transcation } from '@app/hooks/useCommit'
 import { fetchBlock, fetchUser } from '@app/api'
 import debug from 'debug'
-import invariant from 'invariant'
+import invariant from 'tiny-invariant'
 import { cloneDeep } from 'lodash'
 import { nanoid } from 'nanoid'
 import { atomFamily, DefaultValue, selectorFamily, Snapshot } from 'recoil'
@@ -141,7 +141,7 @@ export const logger = debug('tellery:api')
 export const getBlockFromSnapshot = (blockId: string, snapshot: BlockSnapshot): Editor.Block => {
   const block = snapshot.get(blockId)
   logger('snapshot', snapshot, snapshot.has(blockId), blockId)
-  invariant(block, `blockLoadable ${blockId} is undefined`, snapshot)
+  invariant(block, `blockLoadable ${blockId} is undefined`)
   return block
 }
 
