@@ -16,6 +16,134 @@ export const createTranscation = ({ operations }: { operations: Operation[] }) =
   }
 }
 
+export const getIndentionOperations = (
+  block: Editor.BaseBlock,
+  previousBlock: Editor.Block,
+  parentBlock: Editor.BaseBlock,
+  blockIds: string[]
+) => {
+  const operations: Operation[] = []
+  const previousId = previousBlock.id
+  let parentId = ''
+
+  operations.push({
+    cmd: 'listRemove',
+    table: 'block',
+    id: block.parentId,
+    args: { id: block.id },
+    path: ['children']
+  })
+
+  if (previousBlock.children?.length) {
+    operations.push({
+      cmd: 'listAfter',
+      table: 'block',
+      id: previousId,
+      args: { id: block.id, after: previousBlock.children[previousBlock.children.length - 1] },
+      path: ['children']
+    })
+  } else {
+    operations.push({
+      cmd: 'listBefore',
+      table: 'block',
+      id: previousId,
+      args: { id: block.id },
+      path: ['children']
+    })
+  }
+  parentId = previousId
+
+  // list other blocks after first block
+  let afterId = block.id
+  for (const afterBlockId of blockIds.slice(1)) {
+    operations.push({
+      cmd: 'listRemove',
+      table: 'block',
+      id: parentBlock.id,
+      args: { id: afterBlockId },
+      path: ['children']
+    })
+    operations.push({
+      cmd: 'listAfter',
+      table: 'block',
+      id: parentId,
+      args: { id: afterBlockId, after: afterId },
+      path: ['children']
+    })
+    afterId = afterBlockId
+  }
+
+  return operations
+}
+
+export const getOutdentionOperations = (blockId: string, parentBlock: Editor.BaseBlock, blockIds: string[]) => {
+  const operations: Operation[] = []
+  let parentId = ''
+
+  operations.push({
+    cmd: 'listRemove',
+    table: 'block',
+    id: parentBlock.id,
+    args: { id: blockId },
+    path: ['children']
+  })
+  operations.push({
+    cmd: 'listAfter',
+    table: 'block',
+    id: parentBlock.parentId,
+    args: { id: blockId, after: parentBlock.id },
+    path: ['children']
+  })
+
+  parentId = parentBlock.parentId
+
+  // list other blocks after first block
+  let afterId = blockId
+  for (const afterBlockId of blockIds.slice(1)) {
+    operations.push({
+      cmd: 'listRemove',
+      table: 'block',
+      id: parentBlock.id,
+      args: { id: afterBlockId },
+      path: ['children']
+    })
+    operations.push({
+      cmd: 'listAfter',
+      table: 'block',
+      id: parentId,
+      args: { id: afterBlockId, after: afterId },
+      path: ['children']
+    })
+    afterId = afterBlockId
+  }
+
+  return operations
+}
+
+export const findPreviouseBlock = (
+  blockId: string,
+  parentBlockId: string,
+  blockIds: string[],
+  snapshot: BlockSnapshot
+) => {
+  const parentBlock = getBlockFromSnapshot(parentBlockId, snapshot)
+  const peerBlockIds = parentBlock.children!
+  const sourceIndex = peerBlockIds.findIndex((id) => id === blockId)
+
+  if (sourceIndex !== undefined && sourceIndex >= 1 && blockIds.every((id) => parentBlock.children?.includes(id))) {
+    const previousId = peerBlockIds[sourceIndex - 1]
+    const previousBlock = getBlockFromSnapshot(previousId, snapshot)
+    return previousBlock
+  }
+}
+
+export const canOutdention = (parentBlock: Editor.BaseBlock, blockIds: string[]) => {
+  return (
+    blockIds.every((id) => parentBlock.children?.includes(id)) &&
+    (parentBlock.type === Editor.BlockType.Story || parentBlock.type === Editor.BlockType.Thought) === false
+  )
+}
+
 export const getDuplicatedBlocks = (blocks: Editor.BaseBlock[], storyId: string) => {
   const duplicatedBlocks = blocks.map((block) => {
     const fragBlock = block
