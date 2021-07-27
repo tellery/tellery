@@ -7,6 +7,7 @@ import { useRouteMatch } from 'react-router-dom'
 import { useGetBlockTitleTextSnapshot } from './editor'
 import { MainSideBarItem } from './MainSideBarItem'
 import { SideBarContentLayout } from './SideBarContentLayout'
+import PerfectScrollbar from 'react-perfect-scrollbar'
 
 const SideBarLoader: React.FC = () => {
   return (
@@ -28,17 +29,21 @@ export const SideBarPinnedStoriesSection = () => {
 
 const WorkspaceItems: React.FC<{ storyIds: string[] }> = ({ storyIds }) => {
   return (
-    <div
+    <PerfectScrollbar
       className={css`
-        padding: 10px 16px 0;
+        flex: 1;
+        margin-top: 20px;
+        overflow-y: auto;
+        padding: 10px 16px 50px;
       `}
+      options={{ suppressScrollX: true }}
     >
       {storyIds.map((storyId) => (
         <React.Suspense key={storyId} fallback={<SideBarLoader />}>
           <StoryItem blockId={storyId} />
         </React.Suspense>
       ))}
-    </div>
+    </PerfectScrollbar>
   )
 }
 
