@@ -48,12 +48,12 @@ export function useSelectionArea(selectBlocks: (blockIds: string[] | null) => vo
 
         setSelecting(false)
         selection.clearSelection()
-        selectBlocks(null)
 
         if ((event as MouseEvent)?.button !== 0 || noSelect) {
           return false
         }
 
+        selectBlocks(null)
         return true
       })
       .on('start', () => {

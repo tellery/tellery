@@ -1187,7 +1187,7 @@ const _StoryEditor: React.FC<{
 
   const editorClickHandler = useCallback<React.MouseEventHandler<HTMLDivElement>>(
     (e) => {
-      e.preventDefault()
+      // e.preventDefault()
       const contentRect = editorRef.current!.getBoundingClientRect()
       const x = e.clientX < contentRect.x + 100 ? contentRect.x + 101 : e.clientX
       const container = getEndContainerFromPoint(x, e.clientY)
