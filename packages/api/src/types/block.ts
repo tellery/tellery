@@ -14,6 +14,7 @@ enum BlockType {
   NUMBERED_LIST = 'numbered_list',
   STORY = 'story',
   QUESTION = 'question',
+  METRIC = 'metric',
   QUOTE = 'quote',
   TABLE = 'table',
   TEXT = 'text',
