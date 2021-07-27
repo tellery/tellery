@@ -24,7 +24,7 @@ import {
   IconMenuToDo,
   IconMenuToggleList
 } from '@app/assets/icons'
-import { getBlockElementContentEditbleById, isTextBlock } from '@app/components/editor/helpers/contentEditable'
+import { getBlockElementContentEditbleById } from '@app/components/editor/helpers/contentEditable'
 import { nativeSelection2Tellery, TellerySelectionType } from '@app/components/editor/helpers/tellerySelection'
 import {
   addMark,
@@ -50,6 +50,7 @@ import { ThemingVariables } from '@app/styles'
 import { Editor, Story } from '@app/types'
 import { EditorPopover } from '../EditorPopover'
 import { useEditor, useGetBlockTitleTextSnapshot } from '../hooks'
+import { isTextBlock } from '../Blocks/utils'
 const MARK_TYPES = Object.values(Editor.InlineType)
 
 export const BlockTextOperationMenu = (props: { currentBlockId: string | null }) => {

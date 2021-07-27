@@ -39,6 +39,7 @@ import {
 } from '.'
 import { StoryQuestionsSnapshotManagerProvider } from '../StoryQuestionsSnapshotManagerProvider'
 import { ThoughtItemHeader } from '../ThoughtItem'
+import { isTextBlock } from './Blocks/utils'
 import { ContentBlocks } from './ContentBlock'
 import {
   createTranscation,
@@ -59,7 +60,6 @@ import {
   isCaretAtStart,
   isSelectionAtFirstLine,
   isSelectionAtLastLine,
-  isTextBlock,
   restoreRange,
   setBlockTranscation,
   setCaretToEnd,

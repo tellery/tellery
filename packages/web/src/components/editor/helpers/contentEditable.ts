@@ -1,5 +1,5 @@
-import invariant from 'invariant'
 import { Editor } from '@app/types'
+import invariant from 'invariant'
 
 export const saveSelection = function (containerEl: HTMLElement) {
   // const doc = containerEl.ownerDocument
@@ -186,20 +186,6 @@ export const getBlockWrapElementById = (id: string | null, container?: HTMLEleme
     return null
   }
   return node as HTMLDivElement
-}
-
-export const isTextBlockType = (blockType: Editor.BlockType) => {
-  return (
-    blockType !== Editor.BlockType.Image &&
-    blockType !== Editor.BlockType.Divider &&
-    blockType !== Editor.BlockType.Column &&
-    blockType !== Editor.BlockType.Code &&
-    blockType !== Editor.BlockType.Row
-  )
-}
-
-export const isTextBlock = (block: Editor.Block) => {
-  return isTextBlockType(block.type)
 }
 
 export const selectToEnd = (target: HTMLDivElement | null) => {
