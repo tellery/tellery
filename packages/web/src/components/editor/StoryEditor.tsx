@@ -101,7 +101,9 @@ const _StoryEditor: React.FC<{
   const mouseDownEventRef = useRef<MouseEvent | null>(null)
   const blockDnd = useBlockDndContext()
   const [lastInputChar, setLastInputChar] = useState<string | null>(null)
-  const blockAdminValue = useBlockAdminProvider()
+  const rootBlock = useFetchStoryChunk<Story | Thought>(storyId)
+
+  const blockAdminValue = useBlockAdminProvider(storyId)
 
   const lockOrUnlockScroll = useCallback((lock: boolean) => {
     setScrollLocked(lock)
@@ -646,8 +648,6 @@ const _StoryEditor: React.FC<{
     },
     [commit, snapshot, storyId]
   )
-
-  const rootBlock = useFetchStoryChunk<Story | Thought>(storyId)
 
   const user = useLoggedUser()
 

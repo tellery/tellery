@@ -1,15 +1,15 @@
-import { css, cx } from '@emotion/css'
 import { ToggleControl } from '@app/components/ToggleControl'
-import { useLocalStorage } from '@app/hooks/useLocalStorage'
-import invariant from 'invariant'
-import React, { ReactNode, useCallback, useMemo } from 'react'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
+import { css, cx } from '@emotion/css'
+import invariant from 'invariant'
+import React, { ReactNode, useCallback } from 'react'
 import { ContentEditable } from '../BlockBase/ContentEditable'
-import { useBlockBehavior } from '../hooks/useBlockBehavior'
-import { useEditor } from '../hooks'
-import { BlockComponent, registerBlock } from './utils'
 import { TellerySelectionType } from '../helpers/tellerySelection'
+import { useEditor } from '../hooks'
+import { useBlockBehavior } from '../hooks/useBlockBehavior'
+import { useBlockLocalPreferences } from '../hooks/useBlockLocalPreferences'
+import { BlockComponent, registerBlock } from './utils'
 
 export const ToggleListBlock: BlockComponent<
   React.FC<{
@@ -17,9 +17,8 @@ export const ToggleListBlock: BlockComponent<
     children: ReactNode
   }>
 > = ({ block, children }) => {
-  const { readonly, small } = useBlockBehavior()
-  const [isCollapsedLocalState, setIsCollapsedLocalState] = useLocalStorage(`${block.id}:toggle`, true)
-  const isCollapsed = useMemo(() => (small ? false : isCollapsedLocalState), [isCollapsedLocalState, small])
+  const { readonly } = useBlockBehavior()
+  const [isCollapsedLocalState, setIsCollapsedLocalState] = useBlockLocalPreferences(block.id, 'toggle', true)
 
   const editor = useEditor()
   const createFirstChild = useCallback(() => {
@@ -53,7 +52,7 @@ export const ToggleListBlock: BlockComponent<
           `}
         >
           <ToggleControl
-            value={!isCollapsed}
+            value={!isCollapsedLocalState}
             onChange={useCallback(() => {
               setIsCollapsedLocalState((value) => !value)
             }, [setIsCollapsedLocalState])}
@@ -61,7 +60,7 @@ export const ToggleListBlock: BlockComponent<
         </div>
         <ContentEditable block={block} readonly={readonly}></ContentEditable>
       </div>
-      {(block.children === undefined || block.children.length === 0) && isCollapsed === false && (
+      {(block.children === undefined || block.children.length === 0) && isCollapsedLocalState === false && (
         <div
           className={css`
             margin-left: 1.5em;
@@ -78,7 +77,7 @@ export const ToggleListBlock: BlockComponent<
           Empty toggle. Click to create one.
         </div>
       )}
-      {children && isCollapsed === false && children}
+      {children && isCollapsedLocalState === false && children}
     </>
   )
 }
