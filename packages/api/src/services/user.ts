@@ -9,6 +9,7 @@ import { InvalidArgumentError, UnauthorizedError } from '../error/error'
 import { AccountStatus, UserInfoDTO } from '../types/user'
 import { getSecretKey } from '../utils/common'
 import { decrypt, encrypt } from '../utils/crypto'
+import { isAnonymous } from '../utils/env'
 import { md5 } from '../utils/helper'
 import emailService from './email'
 
@@ -202,6 +203,8 @@ export class AnonymousUserService extends UserService {
    * @returns
    */
   async verifyToken(token: string): Promise<{ userId: string; expiresAt: number }> {
+    console.log('ANONYMOUS ....................');
+    
     return super.verifyToken(token).catch(async (err) => {
       console.debug(err)
       const email = this.randomEmail()
@@ -221,7 +224,7 @@ export class AnonymousUserService extends UserService {
   }
 }
 
-const service = process.env.ANONYMOUS ? new AnonymousUserService() : new UserService()
+const service = isAnonymous() ? new AnonymousUserService() : new UserService()
 export default service
 
 /**

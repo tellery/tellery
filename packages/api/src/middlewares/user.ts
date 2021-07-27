@@ -2,9 +2,10 @@ import { Context, Next } from 'koa'
 import _ from 'lodash'
 
 import userService from '../services/user'
+import { isAnonymous } from '../utils/env'
 import { USER_TOKEN_HEADER_KEY } from '../utils/user'
 
-const ignorePaths = ['/api/users/login']
+const ignorePaths = ['/api/users/login', '/api/readiness', '/api/liveness']
 
 // 15 days
 const d15 = 1000 * 3600 * 24 * 15
@@ -12,9 +13,17 @@ const d15 = 1000 * 3600 * 24 * 15
 export default async function user(ctx: Context, next: Next) {
   const token = ctx.headers[USER_TOKEN_HEADER_KEY] || ctx.cookies.get(USER_TOKEN_HEADER_KEY)
   let payload: { userId: string; expiresAt: number } | undefined
+  const pathIncluded = !ignorePaths.includes(ctx.path)
 
-  if (token && _.isString(token) && !ignorePaths.includes(ctx.path)) {
-    payload = await userService.verifyToken(token)
+  if (pathIncluded) {
+    if (token && _.isString(token) ) {
+      payload = await userService.verifyToken(token)
+    } else if (isAnonymous()) {
+      payload = await userService.verifyToken(token?.toString() ?? '')
+    }
+  }
+
+  if (payload) {
     ctx.state.user = { id: payload.userId }
   }
 
