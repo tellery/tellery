@@ -190,12 +190,29 @@ export class UserService {
 }
 
 class AnonymousUserService extends UserService {
-
   constructor() {
     super()
   }
 
+  /**
+   * if the token validation fails, it will create a new user and return a mock payload of token
+   * its expiresAt is in line with the requirements of regenerating new token
+   * so the user middleware will generate a new token cookie for users
+   * @param token 
+   * @returns 
+   */
   async verifyToken(token: string): Promise<{ userId: string; expiresAt: number }> {
+    return this.verifyTokenInternal(token).catch(async (err) => {
+      console.debug(err)
+      const email = this.randomEmail()
+      const user = (
+        await this.createUserByEmailsIfNotExist([email], undefined, AccountStatus.ACTIVE)
+      )[email]
+      return { userId: user.id, expiresAt: _.now() + 3600 * 24 }
+    })
+  }
+
+  private async verifyTokenInternal(token: string): Promise<{ userId: string; expiresAt: number }> {
     const payload = JSON.parse(decrypt(token, this.secretKey)) as TokenPayload
     if (payload.expiresAt < _.now()) {
       throw UnauthorizedError.notLogin()
