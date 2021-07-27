@@ -4,21 +4,21 @@ import { ThemingVariables } from '@app/styles'
 import { CircularLoading } from './CircularLoading'
 
 export const BlockingUI = (props: { blocking: boolean; children?: ReactNode; size?: number }) => {
-  const { blocking, size = 80 } = props
+  const { blocking, size = 50 } = props
   return (
     <>
       {blocking ? (
         <div
           className={css`
             width: 100%;
-            height: calc(100vh - 48px);
+            height: 100%;
             bottom: 0;
             left: 0;
             right: 0;
             top: 0;
             z-index: 100;
             position: absolute;
-            background: #fff;
+            background: transparent;
             display: flex;
             align-items: center;
             justify-content: center;

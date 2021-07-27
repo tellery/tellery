@@ -19,20 +19,6 @@ export function SmallStory(props: { storyId: string; blockId?: string; className
     return contentHeight > containerHeight
   }, [containerHeight, contentHeight])
 
-  const blockAdminValue = useBlockAdminProvider(props.storyId)
-
-  useEffect(() => {
-    if (!props.blockId) return
-    blockAdminValue.getBlockInstanceById(props.blockId).then((res) => {
-      scrollIntoView(res.wrapperElement, {
-        scrollMode: 'if-needed',
-        block: 'center',
-        inline: 'nearest',
-        boundary: containerRef.current
-      })
-    })
-  }, [blockAdminValue, props.blockId])
-
   return (
     <div
       className={cx(
@@ -53,15 +39,14 @@ export function SmallStory(props: { storyId: string; blockId?: string; className
           &::-webkit-scrollbar {
             display: none;
           }
+          position: relative;
         `}
         ref={containerRef}
       >
         <div ref={contentRef}>
-          <BlockAdminContext.Provider value={blockAdminValue}>
-            <React.Suspense fallback={<BlockingUI blocking />}>
-              <StoryContent storyId={props.storyId} blockId={props.blockId} />
-            </React.Suspense>
-          </BlockAdminContext.Provider>
+          <React.Suspense fallback={<BlockingUI blocking />}>
+            <StoryContent storyId={props.storyId} blockId={props.blockId} containerRef={containerRef} />
+          </React.Suspense>
         </div>
       </div>
       {props.blockId && isOverflow ? (
@@ -92,11 +77,29 @@ export function SmallStory(props: { storyId: string; blockId?: string; className
   )
 }
 
-const StoryContent: React.FC<{ storyId: string; blockId?: string }> = ({ storyId, blockId }) => {
+const StoryContent: React.FC<{ storyId: string; blockId?: string; containerRef: React.RefObject<HTMLDivElement> }> = ({
+  storyId,
+  blockId,
+  containerRef
+}) => {
   const story = useFetchStoryChunk(storyId)
 
+  const blockAdminValue = useBlockAdminProvider(storyId)
+
+  useEffect(() => {
+    if (!blockId) return
+    blockAdminValue.getBlockInstanceById(blockId).then((res) => {
+      scrollIntoView(res.wrapperElement, {
+        scrollMode: 'if-needed',
+        block: 'center',
+        inline: 'nearest',
+        boundary: containerRef.current
+      })
+    })
+  }, [blockAdminValue, blockId, containerRef])
+
   return (
-    <>
+    <BlockAdminContext.Provider value={blockAdminValue}>
       <div
         className={cx(
           css`
@@ -129,6 +132,6 @@ const StoryContent: React.FC<{ storyId: string; blockId?: string }> = ({ storyId
           />
         )}
       </div>
-    </>
+    </BlockAdminContext.Provider>
   )
 }
