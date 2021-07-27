@@ -351,10 +351,11 @@ export class AnonymousWorkspaceService extends WorkspaceService {
   }
 
   async inviteMembers(
-    _operatorId: string,
+    operatorId: string, // only for permission validation
     workspaceId: string,
     users: { email: string; role: PermissionWorkspaceRole }[],
   ): Promise<{ workspace: WorkspaceDTO; linkPairs: { [k: string]: string } }> {
+    await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
     const emails = _(users).map('email').value()
 
     return getConnection().transaction(async (t) => {

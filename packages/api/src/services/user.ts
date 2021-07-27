@@ -5,16 +5,13 @@ import { EntityManager, getConnection, getRepository, In } from 'typeorm'
 
 import { User } from '../core/user'
 import { UserEntity } from '../entities/user'
-import { WorkspaceEntity } from '../entities/workspace'
 import { InvalidArgumentError, UnauthorizedError } from '../error/error'
-import { PermissionWorkspaceRole } from '../types/permission'
 import { AccountStatus, UserInfoDTO } from '../types/user'
 import { getSecretKey } from '../utils/common'
 import { decrypt, encrypt } from '../utils/crypto'
 import { isAnonymous } from '../utils/env'
 import { md5 } from '../utils/helper'
 import emailService from './email'
-import workspaceService from './workspace'
 
 type TokenPayload = {
   userId: string
@@ -23,7 +20,7 @@ type TokenPayload = {
 }
 
 export class UserService {
-  protected secretKey: string
+  private secretKey: string
 
   private compatible: boolean
 

@@ -251,7 +251,7 @@ test('anonymous inviteMembersWorkspace', async (t) => {
 
   const { id } = await getRepository(WorkspaceEntity).findOneOrFail()
   const ws = new AnonymousWorkspaceService(new FakePermission())
-  await ws.inviteMembers('admin', id, [{ email: user.email, role: PermissionWorkspaceRole.MEMBER }])
+  await ws.inviteMembers(admin, id, [{ email: user.email, role: PermissionWorkspaceRole.MEMBER }])
   await workspaceService.get(user.id, id)
   t.pass()
 })
