@@ -1,4 +1,4 @@
-# Update Database Schema
+# Update Entities
 
 If you need to change the structure of an entity during the development process, you can create a new `migration script` to synchronize the changes to the database.
 
