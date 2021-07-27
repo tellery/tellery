@@ -52,6 +52,7 @@ export class BlockOperation extends DefaultOperation {
   }
 
   async update(block: Block, args: any, path: string[]): Promise<Block> {
+    
     if (this.isUpdateType(path)) {
       return this.updateType(args, block)
     }

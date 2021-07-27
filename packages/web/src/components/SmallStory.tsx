@@ -19,7 +19,7 @@ export function SmallStory(props: { storyId: string; blockId?: string; className
     return contentHeight > containerHeight
   }, [containerHeight, contentHeight])
 
-  const blockAdminValue = useBlockAdminProvider()
+  const blockAdminValue = useBlockAdminProvider(props.storyId)
 
   useEffect(() => {
     if (!props.blockId) return

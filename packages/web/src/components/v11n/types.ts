@@ -151,6 +151,8 @@ interface NumberConfig {
   columns: string[]
 
   field: string
+
+  compare?: boolean
 }
 
 export type Config<T extends Type> = T extends Type.TABLE

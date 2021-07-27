@@ -1,15 +1,26 @@
+import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
+import { Editor } from '@app/types'
 import { isArray } from 'lodash'
-import React, { useCallback, useMemo, useRef, useContext } from 'react'
+import React, { useCallback, useMemo, useRef, useContext, useEffect } from 'react'
 
 import type { BlockInstanceInterface } from '../types'
+import { useSetBlockLocalPreferences } from './useBlockLocalPreferences'
 
-export const useBlockAdminProvider = () => {
+export const useBlockAdminProvider = (storyId: string) => {
   const blockInstanceRefs = useRef<
     Record<
       string,
       BlockInstanceInterface | ((value: BlockInstanceInterface | PromiseLike<BlockInstanceInterface>) => void)[]
     >
   >({})
+
+  const storyBlocksMap = useStoryBlocksMap(storyId)
+  const storyBlocksMapRef = useRef<typeof storyBlocksMap | null>(null)
+  const setBlockPreferences = useSetBlockLocalPreferences()
+
+  useEffect(() => {
+    storyBlocksMapRef.current = storyBlocksMap
+  }, [storyBlocksMap])
 
   const registerBlockInstance = useCallback((blockId: string, blockInstance?: BlockInstanceInterface) => {
     const currentValueOrResolves = blockInstanceRefs.current[blockId]
@@ -24,20 +35,42 @@ export const useBlockAdminProvider = () => {
     blockInstanceRefs.current[blockId] = blockInstance
   }, [])
 
-  const getBlockInstanceById = useCallback((blockId: string) => {
-    return new Promise<BlockInstanceInterface>((resolve, reject) => {
-      const currentValueOrResolves = blockInstanceRefs.current[blockId]
-      if (!currentValueOrResolves) {
-        blockInstanceRefs.current[blockId] = [resolve]
-      } else {
-        if (isArray(currentValueOrResolves)) {
-          ;(blockInstanceRefs.current[blockId] as Function[]).push(resolve)
-        } else {
-          resolve(blockInstanceRefs.current[blockId] as BlockInstanceInterface)
+  const openToggledAncestors = useCallback(
+    (blockId: string) => {
+      const currentSnapshot = storyBlocksMapRef.current
+      if (!currentSnapshot) return
+      let currentNodeId = blockId
+      while (currentNodeId !== storyId) {
+        const currentBlock = currentSnapshot[currentNodeId]
+        if (!currentBlock) return
+        currentNodeId = currentBlock.parentId
+        if (!currentBlock.parentId) return
+        if (currentBlock.type === Editor.BlockType.Toggle) {
+          setBlockPreferences({ id: currentNodeId, key: 'toggle', value: false })
         }
       }
-    })
-  }, [])
+    },
+    [setBlockPreferences, storyId]
+  )
+
+  const getBlockInstanceById = useCallback(
+    (blockId: string) => {
+      openToggledAncestors(blockId)
+      return new Promise<BlockInstanceInterface>((resolve, reject) => {
+        const currentValueOrResolves = blockInstanceRefs.current[blockId]
+        if (!currentValueOrResolves) {
+          blockInstanceRefs.current[blockId] = [resolve]
+        } else {
+          if (isArray(currentValueOrResolves)) {
+            ;(blockInstanceRefs.current[blockId] as Function[]).push(resolve)
+          } else {
+            resolve(blockInstanceRefs.current[blockId] as BlockInstanceInterface)
+          }
+        }
+      })
+    },
+    [openToggledAncestors]
+  )
 
   return useMemo(() => ({ getBlockInstanceById, registerBlockInstance }), [getBlockInstanceById, registerBlockInstance])
 }

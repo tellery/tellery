@@ -37,6 +37,7 @@ import { TweetBlock } from './tweet'
 import { VideoBlock } from './video'
 import { QuestionReferenceBlock } from './questionReference'
 import { YouTubeBlock } from './youtube'
+import { MetricBlock } from './metric'
 
 
 
@@ -56,6 +57,7 @@ const blockConstructors = {
   [BlockType.STORY]: StoryBlock,
   [BlockType.EMBED]: FigmaBlock,
   [BlockType.QUESTION]: QuestionBlock,
+  [BlockType.METRIC]: MetricBlock,
   [BlockType.QUOTE]: QuoteBlock,
   [BlockType.TABLE]: TableBlock,
   [BlockType.TEXT]: TextBlock,

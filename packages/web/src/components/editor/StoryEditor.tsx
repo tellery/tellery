@@ -39,6 +39,7 @@ import {
 } from '.'
 import { StoryQuestionsSnapshotManagerProvider } from '../StoryQuestionsSnapshotManagerProvider'
 import { ThoughtItemHeader } from '../ThoughtItem'
+import { isTextBlock } from './Blocks/utils'
 import { ContentBlocks } from './ContentBlock'
 import {
   createTranscation,
@@ -59,7 +60,6 @@ import {
   isCaretAtStart,
   isSelectionAtFirstLine,
   isSelectionAtLastLine,
-  isTextBlock,
   restoreRange,
   setBlockTranscation,
   setCaretToEnd,
@@ -101,7 +101,9 @@ const _StoryEditor: React.FC<{
   const mouseDownEventRef = useRef<MouseEvent | null>(null)
   const blockDnd = useBlockDndContext()
   const [lastInputChar, setLastInputChar] = useState<string | null>(null)
-  const blockAdminValue = useBlockAdminProvider()
+  const rootBlock = useFetchStoryChunk<Story | Thought>(storyId)
+
+  const blockAdminValue = useBlockAdminProvider(storyId)
 
   const lockOrUnlockScroll = useCallback((lock: boolean) => {
     setScrollLocked(lock)
@@ -646,8 +648,6 @@ const _StoryEditor: React.FC<{
     },
     [commit, snapshot, storyId]
   )
-
-  const rootBlock = useFetchStoryChunk<Story | Thought>(storyId)
 
   const user = useLoggedUser()
 

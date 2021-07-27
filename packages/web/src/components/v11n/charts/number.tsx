@@ -10,6 +10,7 @@ import { ConfigSelect } from '../components/ConfigSelect'
 import { ThemingVariables } from '@app/styles'
 import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 import { useDataRecords } from '@app/hooks/useDataRecords'
+import { ConfigSwitch } from '../components/ConfigSwitch'
 
 export const number: Chart<Type.NUMBER> = {
   type: Type.NUMBER,
@@ -23,8 +24,9 @@ export const number: Chart<Type.NUMBER> = {
       type: Type.NUMBER,
 
       columns: data.fields.map(({ name }) => name),
-      label: field?.name || '',
-      field: field?.name || ''
+
+      field: field?.name || '',
+      compare: false
     }
   },
 
@@ -47,6 +49,13 @@ export const number: Chart<Type.NUMBER> = {
           }}
           placeholder="Please select"
         />
+        <ConfigLabel>Compare</ConfigLabel>
+        <ConfigSwitch
+          value={!!props.config.compare}
+          onChange={(compare) => {
+            onConfigChange('compare', compare)
+          }}
+        />
       </div>
     )
   },
@@ -56,7 +65,7 @@ export const number: Chart<Type.NUMBER> = {
     const displayTypes = useDataFieldsDisplayType(props.data.fields)
     const fontSize = window.innerWidth / 32
     const maxChar = (props.dimensions.width / fontSize) * 1.8
-    const number = useMemo(() => {
+    const numStr = useMemo(() => {
       const num = records[0]?.[props.config.field]
       if (!props.config?.field || num === undefined || typeof num !== 'number') {
         return ''
@@ -71,6 +80,26 @@ export const number: Chart<Type.NUMBER> = {
       }
       return numeral(num).format('0[.][0]a').toUpperCase()
     }, [displayTypes, maxChar, props.config.field, records])
+    const secondaryNumStr = useMemo(() => {
+      if (!props.config.compare) {
+        return ''
+      }
+      const num = records[0]?.[props.config.field]
+      const secondaryNum = records[1]?.[props.config.field]
+      if (
+        !props.config?.field ||
+        num === undefined ||
+        typeof num !== 'number' ||
+        secondaryNum === undefined ||
+        typeof secondaryNum !== 'number'
+      ) {
+        return ''
+      }
+      if (secondaryNum === 0) {
+        return ''
+      }
+      return `${(((num - secondaryNum) / secondaryNum) * 100).toFixed(2)}%`
+    }, [props.config.field, props.config.compare, records])
 
     return (
       <div
@@ -92,8 +121,21 @@ export const number: Chart<Type.NUMBER> = {
           `}
           style={{ fontSize }}
         >
-          {number}
+          {numStr}
         </span>
+        {secondaryNumStr ? (
+          <span
+            className={css`
+              margin-top: 10px;
+              color: ${secondaryNumStr.startsWith('-')
+                ? ThemingVariables.colors.negative[0]
+                : ThemingVariables.colors.positive[0]};
+            `}
+          >
+            {secondaryNumStr.startsWith('-') ? null : '+'}
+            {secondaryNumStr}
+          </span>
+        ) : null}
       </div>
     )
   }

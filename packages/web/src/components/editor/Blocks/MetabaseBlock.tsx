@@ -70,7 +70,7 @@ const MetabaseBlock: BlockComponent<
           </>
         ) : (
           <BlockPlaceHolder
-            text="Input public dashboard URL"
+            text="Input Metabase dashboard/question URL"
             loading={false}
             onClick={() => {
               setShowPopover(true)
