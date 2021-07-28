@@ -34,7 +34,7 @@ export default async function user(ctx: Context, next: Next) {
         if (!admin) {
           throw new Error('missing super user')
         }
-        await workspaceService.inviteMembers(admin.id, workspace.id, _(payload).get('email'))
+        await workspaceService.inviteMembers(admin.userId, workspace.id, _(payload).get('email'))
       }
     }
   }

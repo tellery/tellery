@@ -358,11 +358,8 @@ export class AnonymousWorkspaceService extends WorkspaceService {
     await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
     const emails = _(users).map('email').value()
 
+    const userMap = await userService.getByEmails(emails)
     return getConnection().transaction(async (t) => {
-      const userMap = await userService.getByEmails(
-        emails,
-      )
-
       const entities = _(users)
         .map((user) =>
           getRepository(WorkspaceMemberEntity).create({
