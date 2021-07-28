@@ -1,20 +1,45 @@
 import { Context, Next } from 'koa'
 import _ from 'lodash'
+import { getRepository } from 'typeorm'
+import { WorkspaceEntity } from '../entities/workspace'
 
 import userService from '../services/user'
+import workspaceService from '../services/workspace'
+import { PermissionWorkspaceRole } from '../types/permission'
+import { isAnonymous } from '../utils/env'
 import { USER_TOKEN_HEADER_KEY } from '../utils/user'
 
-const ignorePaths = ['/api/users/login']
+const ignorePaths = ['/api/users/login', '/api/readiness', '/api/liveness']
 
 // 15 days
-const d15 = 3600 * 24 * 15
+const d15 = 1000 * 3600 * 24 * 15
 
 export default async function user(ctx: Context, next: Next) {
   const token = ctx.headers[USER_TOKEN_HEADER_KEY] || ctx.cookies.get(USER_TOKEN_HEADER_KEY)
   let payload: { userId: string; expiresAt: number } | undefined
+  const pathIncluded = !ignorePaths.includes(ctx.path)
 
-  if (token && _.isString(token) && !ignorePaths.includes(ctx.path)) {
-    payload = await userService.verifyToken(token)
+  if (pathIncluded) {
+    if (token && _.isString(token)) {
+      payload = await userService.verifyToken(token)
+    } else if (isAnonymous()) {
+      // special logic for anonymous users
+      payload = await userService.verifyToken(token?.toString() ?? '')
+      // invited new user to workspace
+      if (_(payload).get('generated')) {
+        const workspace = await getRepository(WorkspaceEntity).findOneOrFail({
+          relations: ['members'],
+        })
+        const admin = _(workspace.members).find((m) => m.role === PermissionWorkspaceRole.ADMIN)
+        if (!admin) {
+          throw new Error('missing super user')
+        }
+        await workspaceService.inviteMembers(admin.id, workspace.id, _(payload).get('email'))
+      }
+    }
+  }
+
+  if (payload) {
     ctx.state.user = { id: payload.userId }
   }
 

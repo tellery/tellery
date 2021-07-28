@@ -1,13 +1,15 @@
 import { randomInt } from 'crypto'
 import _ from 'lodash'
+import { nanoid } from 'nanoid'
 import { EntityManager, getConnection, getRepository, In } from 'typeorm'
 
 import { User } from '../core/user'
 import { UserEntity } from '../entities/user'
 import { InvalidArgumentError, UnauthorizedError } from '../error/error'
 import { AccountStatus, UserInfoDTO } from '../types/user'
-import { absoluteURI, getSecretKey } from '../utils/common'
+import { getSecretKey } from '../utils/common'
 import { decrypt, encrypt } from '../utils/crypto'
+import { isAnonymous } from '../utils/env'
 import { md5 } from '../utils/helper'
 import emailService from './email'
 
@@ -99,6 +101,14 @@ export class UserService {
     return User.fromEntity(user)
   }
 
+  async getByEmails(emails: string[]): Promise<{ [k: string]: User }> {
+    const users = await getRepository(UserEntity).find({ where: { email: In(emails) } })
+    return _(users)
+      .keyBy('email')
+      .mapValues((u) => User.fromEntity(u))
+      .value()
+  }
+
   async confirmUser(code: string): Promise<{ id: string; status: AccountStatus }> {
     const payload = emailService.parseCode(code)
     if (_.now() > payload.expiresAt || payload.type !== 'confirm') {
@@ -188,7 +198,41 @@ export class UserService {
   }
 }
 
-const service = new UserService()
+export class AnonymousUserService extends UserService {
+  /**
+   * if the token validation fails, it will create a new user and return a mock payload of token
+   * its expiresAt is in line with the requirements of regenerating new token
+   * so the user middleware will generate a new token cookie for users
+   * @returns generated: the user is created by this function
+   */
+  async verifyToken(token: string): Promise<{ userId: string; expiresAt: number }> {
+    console.debug('anonymous ....................')
+
+    return super.verifyToken(token).catch(async (err) => {
+      console.debug(err)
+      const email = this.randomEmail()
+      const user = (
+        await this.createUserByEmailsIfNotExist([email], undefined, AccountStatus.ACTIVE)
+      )[email]
+      return {
+        userId: user.id,
+        expiresAt: _.now() + 3600 * 1000,
+        generated: true,
+        email: user.email,
+      }
+    })
+  }
+
+  async generateUserVerification(): Promise<never> {
+    throw InvalidArgumentError.notSupport('generating verification')
+  }
+
+  private randomEmail(): string {
+    return `${nanoid()}@tellery.demo`
+  }
+}
+
+const service = isAnonymous() ? new AnonymousUserService() : new UserService()
 export default service
 
 /**

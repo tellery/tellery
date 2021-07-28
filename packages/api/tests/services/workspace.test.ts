@@ -4,13 +4,13 @@ import { nanoid } from 'nanoid'
 import { getRepository, In } from 'typeorm'
 
 import { createDatabaseCon } from '../../src/clients/db/orm'
-import { FakePermission } from '../../src/core/permission'
+import { FakePermission, getIPermission } from '../../src/core/permission'
 import { Workspace } from '../../src/core/workspace'
 import { UserEntity } from '../../src/entities/user'
 import { WorkspaceEntity } from '../../src/entities/workspace'
 import { WorkspaceMemberEntity } from '../../src/entities/workspaceMember'
 import { WorkspaceViewEntity } from '../../src/entities/workspaceView'
-import { WorkspaceService } from '../../src/services/workspace'
+import { WorkspaceService, AnonymousWorkspaceService } from '../../src/services/workspace'
 import { PermissionWorkspaceRole } from '../../src/types/permission'
 import { AccountStatus } from '../../src/types/user'
 import { WorkspaceDTO, WorkspaceMemberStatus } from '../../src/types/workspace'
@@ -242,6 +242,18 @@ test('getWorkspaceViewByViewId', async (t) => {
   await getRepository(WorkspaceViewEntity).delete(view?.id)
 
   t.deepEqual(getViewRes.id, view.id)
+})
+
+test('anonymous inviteMembersWorkspace', async (t) => {
+  const admin = uuid()
+  const [user] = await mockUsers(1)
+  await workspaceService.create(admin, 'test')
+
+  const { id } = await getRepository(WorkspaceEntity).findOneOrFail()
+  const ws = new AnonymousWorkspaceService(new FakePermission())
+  await ws.inviteMembers(admin, id, [{ email: user.email, role: PermissionWorkspaceRole.MEMBER }])
+  await workspaceService.get(user.id, id)
+  t.pass()
 })
 
 function findMember(

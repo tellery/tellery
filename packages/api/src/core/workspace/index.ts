@@ -52,26 +52,28 @@ export class Workspace extends Common {
     return entity
   }
 
-  toDTO(userId: string): WorkspaceDTO {
+  toDTO(userId?: string): WorkspaceDTO {
     const me = _(this.members).find((m) => m.userId === userId)
-    if (!me) {
+    if (!me && userId) {
       throw NoPermissionsError.new()
     }
-    const isAdmin = me.role === PermissionWorkspaceRole.ADMIN
+    const isAdmin = me?.role === PermissionWorkspaceRole.ADMIN
     // sort by joinAt desc
     const sortedMembers = _(this.members)
       .filter((m) => m.userId !== userId)
       .orderBy('joinAt', 'desc')
       .value()
     // push current user to the first
-    sortedMembers.unshift(me)
+    if (me) {
+      sortedMembers.unshift(me)
+    }
     return {
       id: this.id,
       name: this.name,
       avatar: this.avatar,
       members: sortedMembers,
       memberNum: this.members.length,
-      inviteLink: isAdmin ? this.getInviteLink(userId) : undefined,
+      inviteLink: isAdmin && userId ? this.getInviteLink(userId) : undefined,
       preferences: this.preferences,
       createdAt: this.createdAt?.getTime() || 0,
     }
