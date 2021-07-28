@@ -1,8 +1,10 @@
 import { BlockingUI } from '@app/components/BlockingUI'
 import { SecondaryEditor, StoryEditor, useGetBlockTitleTextSnapshot } from '@app/components/editor'
 import { NavigationHeader } from '@app/components/NavigationHeader'
+import { SideBarMetricsSection } from '@app/components/SideBarMetricsSection'
 import { StoryBackLinks } from '@app/components/StoryBackLinks'
 import { StoryQuestionsEditor } from '@app/components/StoryQuestionsEditor'
+import { StoryQuestionsSnapshotManagerProvider } from '@app/components/StoryQuestionsSnapshotManagerProvider'
 import { ThoughtsCalendar } from '@app/components/ThoughtsCalendar'
 import { useWorkspace } from '@app/context/workspace'
 import { useFetchStoryChunk, useRecordStoryVisits, useStoryPinnedStatus } from '@app/hooks/api'
@@ -48,22 +50,50 @@ const _Page: React.FC = () => {
         <title>{title ?? DEFAULT_TITLE} - Tellery</title>
       </Helmet>
       <VerticalLayout>
+        <StoryQuestionsSnapshotManagerProvider storyId={id}>
+          {storyBlock.type === Editor.BlockType.Story && (
+            <NavigationHeader
+              storyId={id}
+              story={storyBlock}
+              title={title}
+              pinned={pinned}
+              locked={storyBlock.format?.locked}
+            />
+          )}
+        </StoryQuestionsSnapshotManagerProvider>
+
+        {storyBlock.type === Editor.BlockType.Thought && (
+          <div
+            className={css`
+              box-shadow: 0px 1px 0px #dedede;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              padding: 0 25px;
+              width: 100%;
+              z-index: 1000;
+              height: 44px;
+              background-color: #fff;
+            `}
+          >
+            Thoughts
+            <ThoughtsCalendar />
+          </div>
+        )}
         <Layout>
+          <div
+            className={css`
+              width: 240px;
+            `}
+          >
+            <SideBarMetricsSection />
+          </div>
           <StoryContainer>
             <React.Suspense fallback={<BlockingUI blocking size={50} />}>
               {storyBlock.type === Editor.BlockType.Story && (
                 <StoryEditor
                   key={id}
                   storyId={id}
-                  top={
-                    <NavigationHeader
-                      storyId={id}
-                      story={storyBlock}
-                      title={title}
-                      pinned={pinned}
-                      locked={storyBlock.format?.locked}
-                    />
-                  }
                   className={css`
                     @media (max-width: 700px) {
                       padding: 20px 20px 0 20px;
@@ -79,26 +109,6 @@ const _Page: React.FC = () => {
                   <StoryEditor
                     storyId={id}
                     scrollToBlockId={scrollToBlockId}
-                    top={
-                      <>
-                        <div
-                          className={css`
-                            box-shadow: 0px 1px 0px #dedede;
-                            display: flex;
-                            align-items: center;
-                            justify-content: space-between;
-                            padding: 0 25px;
-                            width: 100%;
-                            z-index: 1000;
-                            height: 44px;
-                            background-color: #fff;
-                          `}
-                        >
-                          Thoughts
-                          <ThoughtsCalendar />
-                        </div>
-                      </>
-                    }
                     fullWidth
                     className={css`
                       padding: 0 120px;
