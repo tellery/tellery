@@ -12,7 +12,7 @@ import { useHover } from '@app/hooks'
 import { useConnectorsListProfiles } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
-import { useLocalStorage } from '@app/hooks/useLocalStorage'
+import { useSideBarConfig } from '@app/hooks/useSideBarConfig'
 import { omniboxShowState } from '@app/store'
 import { ThemingVariables } from '@app/styles'
 import { DRAG_HANDLE_WIDTH } from '@app/utils'
@@ -38,7 +38,6 @@ const DragConstraints = {
 export const SideBar = () => {
   return (
     <motion.nav
-      style={{ width: FOLDED_WIDTH }}
       className={cx(
         css`
           user-select: none;
@@ -46,6 +45,7 @@ export const SideBar = () => {
           bottom: 0;
           height: 100%;
           z-index: 9999;
+          box-shadow: ${ThemingVariables.boxShadows[0]};
         `
       )}
     >
@@ -203,24 +203,16 @@ const SideBarContent: React.FC = () => {
 }
 
 const FloatingSideBar: React.FC<{ show: boolean }> = ({ children, show }) => {
-  const [resizeConfig, setResizeConfig] = useLocalStorage('Tellery:SidebarConfig:1', {
-    x: 240,
-    folded: false
-  })
+  const [resizeConfig, setResizeConfig] = useSideBarConfig()
 
-  const x = useMotionValue(resizeConfig.folded ? FOLDED_WIDTH : resizeConfig.x + 0.5 * DRAG_HANDLE_WIDTH)
+  const x = useMotionValue(resizeConfig.x + 0.5 * DRAG_HANDLE_WIDTH)
   const width = useTransform(x, (x) => x)
   const [dragging, setDragging] = useState(false)
 
-  const translateX = useTransform(x, (x) => (show || dragging ? 0 : -x))
+  const translateX = useTransform(x, (x) => (show || dragging || resizeConfig.folded === false ? 0 : -x))
 
   useEffect(() => {
-    if (resizeConfig.folded) {
-      x.set(FOLDED_WIDTH)
-      return
-    } else {
-      x.set(resizeConfig.x)
-    }
+    x.set(resizeConfig.x)
     const unsubscribe = x.onChange((x) => {
       if (!x) return
       setResizeConfig((config) => ({ ...config, x: x }))
@@ -233,16 +225,18 @@ const FloatingSideBar: React.FC<{ show: boolean }> = ({ children, show }) => {
 
   return (
     <motion.div
-      style={{ width: width, x: translateX }}
+      style={{
+        width: width,
+        x: translateX,
+        position: resizeConfig.folded ? 'absolute' : 'relative',
+        left: resizeConfig.folded ? `${FOLDED_WIDTH}px` : `0`,
+        zIndex: resizeConfig.folded ? -1 : 0
+      }}
       className={css`
-        position: absolute;
-        left: ${FOLDED_WIDTH}px;
-        height: 100vh;
+        height: 100%;
         top: 0;
-        z-index: -1;
         background-color: ${ThemingVariables.colors.gray[3]};
         overflow: hidden;
-        box-shadow: ${ThemingVariables.boxShadows[0]};
         transition: transform 250ms;
       `}
     >

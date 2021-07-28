@@ -17,7 +17,7 @@ export const SideBarMetricsSection = () => {
       className={css`
         height: 100%;
         overflow: hidden;
-        border: 1px solid #dedede;
+        border-right: 1px solid #dedede;
       `}
     >
       {matchStory?.params.id && <CurrentStoryQuestions storyId={matchStory?.params.id} />}
