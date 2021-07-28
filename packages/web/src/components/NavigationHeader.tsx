@@ -15,7 +15,7 @@ import { useWorkspaceView } from '@app/hooks/api'
 import React, { memo, useCallback } from 'react'
 import { ThemingVariables } from '@app/styles'
 import type { Story } from '@app/types'
-import { useStorySnapshotManager } from '../hooks/useStorySnapshotManager'
+import { useStorySnapshotManager, useStorySnapshotManagerProvider } from '../hooks/useStorySnapshotManager'
 import IconButton from './kit/IconButton'
 import { RefreshButton } from './RefreshButton'
 import { StoryConfigPopOver } from './StoryConfigPopOver'
@@ -186,8 +186,8 @@ export const _NavigationHeader = (props: {
   )
 }
 
-export const RefreshAllQuestionBlockButton: React.FC<{ storyId: string }> = () => {
-  const storySnapshotManger = useStorySnapshotManager()
+export const RefreshAllQuestionBlockButton: React.FC<{ storyId: string }> = ({ storyId }) => {
+  const storySnapshotManger = useStorySnapshotManagerProvider(storyId)
 
   if (storySnapshotManger.total <= 0) return null
   return (

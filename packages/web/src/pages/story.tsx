@@ -4,7 +4,6 @@ import { NavigationHeader } from '@app/components/NavigationHeader'
 import { SideBarMetricsSection } from '@app/components/SideBarMetricsSection'
 import { StoryBackLinks } from '@app/components/StoryBackLinks'
 import { StoryQuestionsEditor } from '@app/components/StoryQuestionsEditor'
-import { StoryQuestionsSnapshotManagerProvider } from '@app/components/StoryQuestionsSnapshotManagerProvider'
 import { ThoughtsCalendar } from '@app/components/ThoughtsCalendar'
 import { useWorkspace } from '@app/context/workspace'
 import { useFetchStoryChunk, useRecordStoryVisits, useStoryPinnedStatus } from '@app/hooks/api'
@@ -50,7 +49,7 @@ const _Page: React.FC = () => {
         <title>{title ?? DEFAULT_TITLE} - Tellery</title>
       </Helmet>
       <VerticalLayout>
-        <StoryQuestionsSnapshotManagerProvider storyId={id}>
+        <React.Suspense fallback={<div></div>}>
           {storyBlock.type === Editor.BlockType.Story && (
             <NavigationHeader
               storyId={id}
@@ -60,33 +59,35 @@ const _Page: React.FC = () => {
               locked={storyBlock.format?.locked}
             />
           )}
-        </StoryQuestionsSnapshotManagerProvider>
 
-        {storyBlock.type === Editor.BlockType.Thought && (
-          <div
-            className={css`
-              box-shadow: 0px 1px 0px #dedede;
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-              padding: 0 25px;
-              width: 100%;
-              z-index: 1000;
-              height: 44px;
-              background-color: #fff;
-            `}
-          >
-            Thoughts
-            <ThoughtsCalendar />
-          </div>
-        )}
+          {storyBlock.type === Editor.BlockType.Thought && (
+            <div
+              className={css`
+                box-shadow: 0px 1px 0px #dedede;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 25px;
+                width: 100%;
+                z-index: 1000;
+                height: 44px;
+                background-color: #fff;
+              `}
+            >
+              Thoughts
+              <ThoughtsCalendar />
+            </div>
+          )}
+        </React.Suspense>
         <Layout>
           <div
             className={css`
               width: 240px;
             `}
           >
-            <SideBarMetricsSection />
+            <React.Suspense fallback={<div></div>}>
+              <SideBarMetricsSection />
+            </React.Suspense>
           </div>
           <StoryContainer>
             <React.Suspense fallback={<BlockingUI blocking size={50} />}>

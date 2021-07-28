@@ -6,7 +6,6 @@ import { useLoggedUser } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { Operation, useCommit, useCommitHistory } from '@app/hooks/useCommit'
 import { useSelectionArea } from '@app/hooks/useSelectionArea'
-import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
 import { BlockSnapshot, getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor, Story, Thought } from '@app/types'
@@ -18,12 +17,12 @@ import debug from 'debug'
 import { dequal } from 'dequal'
 import { motion } from 'framer-motion'
 import produce from 'immer'
-import invariant from 'tiny-invariant'
 import isHotkey from 'is-hotkey'
 import React, { CSSProperties, memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useEvent } from 'react-use'
 import { useRecoilState } from 'recoil'
 import scrollIntoView from 'scroll-into-view-if-needed'
+import invariant from 'tiny-invariant'
 import {
   addMark,
   applyTransformOnTokensFromSelectionState,
@@ -37,7 +36,6 @@ import {
   splitToken,
   tokenPosition2SplitedTokenPosition
 } from '.'
-import { StoryQuestionsSnapshotManagerProvider } from '../StoryQuestionsSnapshotManagerProvider'
 import { ThoughtItemHeader } from '../ThoughtItem'
 import { isBlockHasChildren, isTextBlock } from './Blocks/utils'
 import { ContentBlocks } from './ContentBlock'
@@ -1344,18 +1342,12 @@ const _StoryEditor: React.FC<{
                   >
                     {dimensions && dimensions.width !== 0 && (
                       <>
-                        <React.Suspense fallback={<div>Loading...</div>}>
-                          {rootBlock.children?.length === 0 && (
-                            <EditorEmptyStatePlaceHolder onClick={createFirstOrLastBlockHandler} />
-                          )}
-                          {rootBlock.children && (
-                            <ContentBlocks
-                              blockIds={rootBlock.children}
-                              parentType={rootBlock.type}
-                              readonly={locked}
-                            />
-                          )}
-                        </React.Suspense>
+                        {rootBlock.children?.length === 0 && (
+                          <EditorEmptyStatePlaceHolder onClick={createFirstOrLastBlockHandler} />
+                        )}
+                        {rootBlock.children && (
+                          <ContentBlocks blockIds={rootBlock.children} parentType={rootBlock.type} readonly={locked} />
+                        )}
                         <EditorEmptyStateEndPlaceHolder
                           onClick={createFirstOrLastBlockHandler}
                           height={rootBlock.type === Editor.BlockType.Story ? 272 : 72}

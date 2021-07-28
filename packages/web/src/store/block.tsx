@@ -12,7 +12,7 @@ import { WorkspaceIdAtom } from '../hooks/useWorkspaceIdAtom'
 export type BlockSnapshot = Map<string, Editor.BaseBlock>
 export const TelleryBlockMap: BlockSnapshot = new Map()
 
-const blockUpdater = (newValue: Editor.BaseBlock | DefaultValue, oldValue: Editor.BaseBlock | DefaultValue) => {
+export const blockUpdater = (newValue: Editor.BaseBlock | DefaultValue, oldValue: Editor.BaseBlock | DefaultValue) => {
   if (newValue instanceof DefaultValue) {
     return oldValue
   } else {
