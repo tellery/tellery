@@ -140,7 +140,7 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
     return Object.values(storyBlocksMap).filter((block) => block.type === Editor.BlockType.Question)
   }, [storyBlocksMap])
 
-  const refreshOnInit = (storyBlocksMap[storyId] as Story)?.format?.refreshOnOpen
+  const refreshOnInit = (storyBlocksMap?.[storyId] as Story)?.format?.refreshOnOpen
   const refreshSnapshot = useRefreshSnapshot()
 
   useEffect(() => {

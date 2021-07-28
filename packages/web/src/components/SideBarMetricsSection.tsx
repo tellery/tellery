@@ -5,17 +5,23 @@ import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { css } from '@emotion/css'
 import React, { useMemo } from 'react'
+import PerfectScrollbar from 'react-perfect-scrollbar'
 import { useHistory, useRouteMatch } from 'react-router-dom'
 import { useGetBlockTitleTextSnapshot } from './editor'
-import { SideBarContentLayout } from './SideBarContentLayout'
 
 export const SideBarMetricsSection = () => {
   const matchStory = useRouteMatch<{ id: string }>('/story/:id')
 
   return (
-    <SideBarContentLayout title={'Metrics'}>
+    <div
+      className={css`
+        height: 100%;
+        overflow: hidden;
+        border: 1px solid #dedede;
+      `}
+    >
       {matchStory?.params.id && <CurrentStoryQuestions storyId={matchStory?.params.id} />}
-    </SideBarContentLayout>
+    </div>
   )
 }
 
@@ -67,14 +73,19 @@ const CurrentStoryQuestions: React.FC<{ storyId: string }> = ({ storyId }) => {
     return Object.values(storyBlocksMap).filter((block) => block.type === Editor.BlockType.Question)
   }, [storyBlocksMap])
   return (
-    <div
+    <PerfectScrollbar
       className={css`
-        padding: 0px 16px;
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px 16px 50px;
       `}
+      options={{ suppressScrollX: true }}
     >
-      {questionBlocks.map((block) => {
-        return <QuestionItem key={block.id} blockId={block.id} />
-      })}
-    </div>
+      <div>
+        {questionBlocks.map((block) => {
+          return <QuestionItem key={block.id} blockId={block.id} />
+        })}
+      </div>
+    </PerfectScrollbar>
   )
 }

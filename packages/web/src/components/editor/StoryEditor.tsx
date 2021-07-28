@@ -6,7 +6,6 @@ import { useLoggedUser } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { Operation, useCommit, useCommitHistory } from '@app/hooks/useCommit'
 import { useSelectionArea } from '@app/hooks/useSelectionArea'
-import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
 import { BlockSnapshot, getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor, Story, Thought } from '@app/types'
@@ -18,12 +17,12 @@ import debug from 'debug'
 import { dequal } from 'dequal'
 import { motion } from 'framer-motion'
 import produce from 'immer'
-import invariant from 'tiny-invariant'
 import isHotkey from 'is-hotkey'
 import React, { CSSProperties, memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useEvent } from 'react-use'
 import { useRecoilState } from 'recoil'
 import scrollIntoView from 'scroll-into-view-if-needed'
+import invariant from 'tiny-invariant'
 import {
   addMark,
   applyTransformOnTokensFromSelectionState,
@@ -37,7 +36,6 @@ import {
   splitToken,
   tokenPosition2SplitedTokenPosition
 } from '.'
-import { StoryQuestionsSnapshotManagerProvider } from '../StoryQuestionsSnapshotManagerProvider'
 import { ThoughtItemHeader } from '../ThoughtItem'
 import { isBlockHasChildren, isTextBlock } from './Blocks/utils'
 import { ContentBlocks } from './ContentBlock'
@@ -1216,176 +1214,160 @@ const _StoryEditor: React.FC<{
     [selectionState?.type]
   )
 
-  const [dimensions] = useDebouncedDimension(editorRef, 100, true)
-
-  // FIX: story won't show at first render
-  // TODO: pass the map to StoryQuestionsSnapshotManagerProvider
-  const storyBlocksMap = useStoryBlocksMap(storyId)
+  const [dimensions] = useDebouncedDimension(editorRef, 0, true)
 
   return (
     <>
       <BlockAdminContext.Provider value={blockAdminValue}>
         <StoryBlockOperatorsProvider storyId={storyId}>
           <EditorContext.Provider value={editorContext}>
-            <StoryQuestionsSnapshotManagerProvider storyId={storyId}>
-              {props.top}
-              <div
-                style={{
-                  overflowY: scrollLocked ? 'hidden' : defaultOverflowY,
-                  paddingRight: scrollLocked ? `${scrollbarWidth}px` : '0'
-                }}
+            {props.top}
+            <div
+              style={{
+                overflowY: scrollLocked ? 'hidden' : defaultOverflowY,
+                paddingRight: scrollLocked ? `${scrollbarWidth}px` : '0'
+              }}
+              className={cx(
+                'editor',
+                css`
+                  width: 100%;
+                  flex: 1;
+                  display: flex;
+                  flex-direction: column;
+                  user-select: none;
+                `
+              )}
+              onMouseMove={onMouseMove}
+              onMouseDown={onMouseDown}
+              onMouseUp={onMouseUp}
+              onClick={editorClickHandler}
+              // onPaste={pasteHandler}
+              // onKeyDown={keyDownHandler}
+              onCut={cutHandler}
+              onCopy={copyHandler}
+            >
+              <motion.div
+                onKeyDown={keyDownHandler}
+                tabIndex={1}
                 className={cx(
-                  'editor',
                   css`
-                    width: 100%;
-                    flex: 1;
+                    max-width: 100%;
+                    width: 900px;
+                    margin: 0 auto;
                     display: flex;
+                    flex: 1;
+                    outline: none;
                     flex-direction: column;
+                    align-items: center;
+                    font-size: 16px;
+                    transition: width 250ms ease;
+                    padding: 0;
+                    *::selection {
+                      background-color: ${ThemingVariables.colors.selection[0]};
+                    }
+                    cursor: text;
+                    flex: 1;
                     user-select: none;
-                  `
-                )}
-                onMouseMove={onMouseMove}
-                onMouseDown={onMouseDown}
-                onMouseUp={onMouseUp}
-                onClick={editorClickHandler}
-                // onPaste={pasteHandler}
-                // onKeyDown={keyDownHandler}
-                onCut={cutHandler}
-                onCopy={copyHandler}
-              >
-                <motion.div
-                  onKeyDown={keyDownHandler}
-                  tabIndex={1}
-                  className={cx(
+                  `,
+                  ((rootBlock as Story).format?.fullWidth || props.fullWidth) &&
                     css`
-                      max-width: 100%;
-                      width: 900px;
-                      margin: 0 auto;
-                      display: flex;
-                      flex: 1;
-                      outline: none;
-                      flex-direction: column;
-                      align-items: center;
-                      font-size: 16px;
-                      transition: width 250ms ease;
-                      padding: 0;
-                      *::selection {
-                        background-color: ${ThemingVariables.colors.selection[0]};
-                      }
-                      cursor: text;
-                      flex: 1;
-                      user-select: none;
+                      width: 100%;
                     `,
-                    ((rootBlock as Story).format?.fullWidth || props.fullWidth) &&
+                  locked && 'no-select',
+                  props.className
+                )}
+                ref={editorRef}
+              >
+                <textarea
+                  // onPaste={pasteHandler}
+                  ref={editorTextAreaRef}
+                  className={css`
+                    position: fixed;
+                    left: 0;
+                    top: 0;
+                    pointer-events: none;
+                    opacity: 0;
+                  `}
+                />
+                {props.showTitle !== false && (
+                  <div
+                    className={css`
+                      width: 100%;
+                    `}
+                  >
+                    {rootBlock.type === Editor.BlockType.Thought && (
+                      <ThoughtItemHeader
+                        id={rootBlock.id}
+                        date={rootBlock.content.date}
+                        className={css`
+                          margin-top: 20px;
+                          padding: 0;
+                          margin-left: -30px;
+                        `}
+                      />
+                    )}
+                    {(rootBlock as Editor.Block).type === Editor.BlockType.Story && (
+                      <ContentBlocks blockIds={[storyId]} parentType={rootBlock.type} readonly={locked}></ContentBlocks>
+                    )}
+                  </div>
+                )}
+
+                {dimensions && (
+                  <motion.div
+                    data-block-id={rootBlock.id}
+                    style={
+                      {
+                        '--max-width': `${dimensions.width}px` ?? '100%'
+                      } as CSSProperties
+                    }
+                    className={cx(
                       css`
                         width: 100%;
-                      `,
-                    locked && 'no-select',
-                    props.className
-                  )}
-                  ref={editorRef}
-                >
-                  <textarea
-                    // onPaste={pasteHandler}
-                    ref={editorTextAreaRef}
-                    className={css`
-                      position: fixed;
-                      left: 0;
-                      top: 0;
-                      pointer-events: none;
-                      opacity: 0;
-                    `}
-                  />
-                  {props.showTitle !== false && (
-                    <div
-                      className={css`
+                        display: flex;
+                        outline: none;
+                        flex-direction: column;
+                        align-items: center;
+                        padding: 0;
                         width: 100%;
-                      `}
-                    >
-                      {rootBlock.type === Editor.BlockType.Thought && (
-                        <ThoughtItemHeader
-                          id={rootBlock.id}
-                          date={rootBlock.content.date}
-                          className={css`
-                            margin-top: 20px;
-                            padding: 0;
-                            margin-left: -30px;
-                          `}
-                        />
-                      )}
-                      {(rootBlock as Editor.Block).type === Editor.BlockType.Story && (
-                        <ContentBlocks
-                          blockIds={[storyId]}
-                          parentType={rootBlock.type}
-                          readonly={locked}
-                        ></ContentBlocks>
-                      )}
-                    </div>
-                  )}
-
-                  {dimensions && (
-                    <motion.div
-                      data-block-id={rootBlock.id}
-                      style={
-                        {
-                          '--max-width': `${dimensions.width}px` ?? '100%'
-                        } as CSSProperties
-                      }
-                      className={cx(
+                        flex: 1;
+                        user-select: none;
+                      `,
+                      (rootBlock as Story)?.format?.showBorder &&
                         css`
-                          width: 100%;
-                          display: flex;
-                          outline: none;
-                          flex-direction: column;
-                          align-items: center;
-                          padding: 0;
-                          width: 100%;
-                          flex: 1;
-                          user-select: none;
+                          --border: dashed 1px ${ThemingVariables.colors.text[2]};
                         `,
-                        (rootBlock as Story)?.format?.showBorder &&
-                          css`
-                            --border: dashed 1px ${ThemingVariables.colors.text[2]};
-                          `,
-                        'editor-content',
-                        'tellery-block'
-                      )}
-                    >
-                      {dimensions && dimensions.width !== 0 && (
-                        <>
-                          <React.Suspense fallback={<div>Loading...</div>}>
-                            {rootBlock.children?.length === 0 && (
-                              <EditorEmptyStatePlaceHolder onClick={createFirstOrLastBlockHandler} />
-                            )}
-                            {rootBlock.children && (
-                              <ContentBlocks
-                                blockIds={rootBlock.children}
-                                parentType={rootBlock.type}
-                                readonly={locked}
-                              />
-                            )}
-                          </React.Suspense>
-                          <EditorEmptyStateEndPlaceHolder
-                            onClick={createFirstOrLastBlockHandler}
-                            height={rootBlock.type === Editor.BlockType.Story ? 272 : 72}
-                          />
-                          {!locked && <BlockTextOperationMenu currentBlockId={focusingBlockId} />}
-                          {props.bottom && (
-                            <div
-                              className={css`
-                                width: 100%;
-                              `}
-                            >
-                              {props.bottom}
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </motion.div>
-                  )}
-                </motion.div>
-              </div>
-            </StoryQuestionsSnapshotManagerProvider>
+                      'editor-content',
+                      'tellery-block'
+                    )}
+                  >
+                    {dimensions && dimensions.width !== 0 && (
+                      <>
+                        {rootBlock.children?.length === 0 && (
+                          <EditorEmptyStatePlaceHolder onClick={createFirstOrLastBlockHandler} />
+                        )}
+                        {rootBlock.children && (
+                          <ContentBlocks blockIds={rootBlock.children} parentType={rootBlock.type} readonly={locked} />
+                        )}
+                        <EditorEmptyStateEndPlaceHolder
+                          onClick={createFirstOrLastBlockHandler}
+                          height={rootBlock.type === Editor.BlockType.Story ? 272 : 72}
+                        />
+                        {!locked && <BlockTextOperationMenu currentBlockId={focusingBlockId} />}
+                        {props.bottom && (
+                          <div
+                            className={css`
+                              width: 100%;
+                            `}
+                          >
+                            {props.bottom}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </motion.div>
+                )}
+              </motion.div>
+            </div>
           </EditorContext.Provider>
         </StoryBlockOperatorsProvider>
       </BlockAdminContext.Provider>

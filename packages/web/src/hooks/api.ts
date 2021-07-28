@@ -23,7 +23,7 @@ import { useRecoilCallback, useRecoilValue, useRecoilValueLoadable, waitForAll, 
 import { AvailableConfig, BackLinks, Editor, ProfileConfig, Snapshot, Story, UserInfo, Workspace } from '@app/types'
 import { queryClient } from '@app/utils'
 import { emitBlockUpdate } from '@app/utils/remoteStoreObserver'
-import { TelleryBlockAtom, TelleryUserAtom } from '../store/block'
+import { blockUpdater, TelleryBlockAtom, TelleryUserAtom } from '../store/block'
 import { useBatchQueries } from './useBatchQueries'
 
 export type User = {
@@ -39,12 +39,23 @@ export const useStory = (id: string) => {
   return result
 }
 
-export const useFetchStoryChunk = <T extends Editor.BaseBlock = Story>(id: string, suspense: boolean = true): T => {
+export const useUpdateBlocks = () => {
   const updateBlocks = useRecoilCallback((recoilInterface) => (blocks: Record<string, Editor.Block>) => {
     Object.values(blocks).forEach((block) => {
-      recoilInterface.set(TelleryBlockAtom(block.id), block)
+      const targetAtom = TelleryBlockAtom(block.id)
+      const loadable = recoilInterface.snapshot.getInfo_UNSTABLE(targetAtom).loadable
+      if (loadable === undefined || loadable.state !== 'hasValue') {
+        recoilInterface.set(targetAtom, block)
+      } else {
+        recoilInterface.set(targetAtom, blockUpdater(block, loadable.contents) as Editor.BaseBlock)
+      }
     })
   })
+  return updateBlocks
+}
+
+export const useFetchStoryChunk = <T extends Editor.BaseBlock = Story>(id: string, suspense: boolean = true): T => {
+  const updateBlocks = useUpdateBlocks()
   const workspace = useWorkspace()
   // console.log('fetch story chunk', id)
   useQuery<Record<string, Editor.Block>>(
