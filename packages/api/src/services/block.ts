@@ -51,7 +51,7 @@ export class BlockService {
 
     const dtos = await bluebird.map(models, async (model) => {
       const can = await this.permission.canGetBlockData(operatorId, model)
-      const dto = Block.fromModelSafely(model)?.toDTO()
+      const dto = Block.fromEntitySafely(model)?.toDTO()
       if (dto) {
         if (!can || !dto.alive) {
           // unset content, format and children

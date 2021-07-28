@@ -4,7 +4,6 @@ import { LinkEntity } from '../../entities/link'
 
 import { LinkType } from '../../types/link'
 import { isLinkToken, LinkToken, tag, Token } from '../../types/token'
-import { extractPartialQueries } from '../../utils/sql'
 import { cascadeUpdateBlocks } from '../block'
 import { Entity } from '../common'
 
@@ -41,17 +40,6 @@ export function getLinksFromToken(input: Token[]): Link[] {
   } catch (e) {
     return []
   }
-}
-
-export function getLinksFromSql(input: string | undefined): Link[] {
-  if (!input) {
-    return []
-  }
-  const partialQueries = extractPartialQueries(input)
-  return _.map(partialQueries, ({ blockId }) => ({
-    blockId,
-    type: LinkType.QUESTION,
-  }))
 }
 
 export async function updateSourceLinkAlive(

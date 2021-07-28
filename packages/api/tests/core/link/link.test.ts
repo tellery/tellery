@@ -3,7 +3,7 @@ import _ from 'lodash'
 import { getRepository, In } from 'typeorm'
 import { createDatabaseCon } from '../../../src/clients/db/orm'
 
-import { getLinksFromSql, getLinksFromToken } from '../../../src/core/link'
+import { getLinksFromToken } from '../../../src/core/link'
 import BlockEntity from '../../../src/entities/block'
 import { LinkType } from '../../../src/types/link'
 import { mockBlocks, mockStories } from '../../testutils'
@@ -44,16 +44,6 @@ test('getLinksFromToken', (t) => {
     {
       blockId: 'bid',
       type: LinkType.BLOCK,
-    },
-  ])
-})
-
-test('getLinksFromSql', (t) => {
-  const question = getLinksFromSql('select * from {{bid}}')
-  t.deepEqual(question, [
-    {
-      blockId: 'bid',
-      type: LinkType.QUESTION,
     },
   ])
 })

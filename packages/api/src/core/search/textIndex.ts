@@ -221,7 +221,7 @@ export class TextIndexSearch implements ISearch {
 
     return _(models)
       .map((m) => {
-        const hint = Block.fromModelSafely(m)
+        const hint = Block.fromEntitySafely(m)
         if (!hint) {
           return
         }

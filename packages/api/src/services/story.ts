@@ -128,7 +128,7 @@ export class StoryService {
         id: In(_.difference(storyIds, _(searchedBlocks).map('id').value())),
       }),
     )
-      .map((b) => Block.fromModelSafely(b))
+      .map((b) => Block.fromEntitySafely(b))
       .compact()
       .value()
 

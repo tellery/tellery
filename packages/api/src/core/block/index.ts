@@ -197,7 +197,7 @@ export abstract class Block extends Entity {
     return b
   }
 
-  static fromModelSafely(block: BlockEntity) {
+  static fromEntitySafely(block: BlockEntity) {
     try {
       return Block.fromEntity(block)
     } catch (err) {
