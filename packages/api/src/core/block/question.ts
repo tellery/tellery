@@ -1,11 +1,11 @@
-import { map, uniqBy } from 'lodash';
+import { map, uniqBy } from 'lodash'
 
-import { Block, getPlainTextFromTokens } from '.';
-import { BlockType } from '../../types/block';
-import { LinkType } from '../../types/link';
-import { Token } from '../../types/token';
-import { Link } from '../link';
-import { extractPartialQueries } from '../translator';
+import { Block, getPlainTextFromTokens } from '.'
+import { BlockType } from '../../types/block'
+import { LinkType } from '../../types/link'
+import { Token } from '../../types/token'
+import { Link } from '../link'
+import { extractPartialQueries } from '../translator'
 
 type QuestionBlockContent = {
   title: Token[]

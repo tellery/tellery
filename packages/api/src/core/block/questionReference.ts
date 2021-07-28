@@ -8,4 +8,3 @@ export class QuestionReferenceBlock extends Block {
     return QuestionReferenceBlock.type
   }
 }
-

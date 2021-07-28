@@ -39,8 +39,6 @@ import { QuestionReferenceBlock } from './questionReference'
 import { YouTubeBlock } from './youtube'
 import { MetricBlock } from './metric'
 
-
-
 // record all block types
 const blockConstructors = {
   [BlockType.BULLETED_LIST]: BulletedListBlock,
@@ -80,7 +78,7 @@ const blockConstructors = {
   [BlockType.STORY_LINK]: StoryLinkBlock,
   [BlockType.TWEET]: TweetBlock,
   [BlockType.QUESTION_REFERENCE]: QuestionReferenceBlock,
-  [BlockType.YOUTUBE]: YouTubeBlock
+  [BlockType.YOUTUBE]: YouTubeBlock,
 }
 
 _(blockConstructors).forEach((v, k) => {

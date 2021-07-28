@@ -8,4 +8,3 @@ export class StoryLinkBlock extends Block {
     return StoryLinkBlock.type
   }
 }
-
