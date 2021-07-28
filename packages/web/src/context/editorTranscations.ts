@@ -761,7 +761,7 @@ export const setBlockTranscation = ({ oldBlock, newBlock }: { oldBlock: Editor.B
   const id = oldBlock.id
   if (dequal(oldBlock.content, newBlock.content) === false) {
     operations.push({
-      cmd: 'update',
+      cmd: 'set',
       path: ['content'],
       args: newBlock.content,
       table: 'block',
@@ -770,7 +770,7 @@ export const setBlockTranscation = ({ oldBlock, newBlock }: { oldBlock: Editor.B
   }
   if (dequal(oldBlock.format, newBlock.format) === false) {
     operations.push({
-      cmd: 'update',
+      cmd: 'set',
       path: ['format'],
       args: newBlock.format,
       table: 'block',
