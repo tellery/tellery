@@ -231,28 +231,6 @@ const FloatingSideBar: React.FC<{ show: boolean }> = ({ children, show }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resizeConfig.folded, setResizeConfig, x])
 
-  // const controls = useAnimation()
-
-  // const toggleFoldStatus = useCallback(() => {
-  //   setResizeConfig((config) => {
-  //     return { ...config, folded: !resizeConfig.folded }
-  //   })
-  // }, [resizeConfig.folded, setResizeConfig])
-
-  // useEffect(() => {
-  //   if (resizeConfig.folded) {
-  //     controls.start({
-  //       width: FOLDED_WIDTH,
-  //       transition: { duration: 0.15 }
-  //     })
-  //   } else {
-  //     controls.start({
-  //       width: x.get(),
-  //       transition: { duration: 0.15 }
-  //     })
-  //   }
-  // }, [controls, resizeConfig.folded, x])
-
   return (
     <motion.div
       style={{ width: width, x: translateX }}
@@ -292,7 +270,6 @@ const FloatingSideBar: React.FC<{ show: boolean }> = ({ children, show }) => {
           onDragEnd={() => {
             setDragging(false)
           }}
-          // onDoubleClick={toggleFoldStatus}
           style={{ x }}
         />
       )}

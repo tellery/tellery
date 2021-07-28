@@ -23,12 +23,6 @@ export const SideBarMetricsSection = () => {
       {matchStory?.params.id && <CurrentStoryQuestions storyId={matchStory?.params.id} />}
     </div>
   )
-
-  // return (
-  //   <SideBarContentLayout title={'Metrics'}>
-  //     {matchStory?.params.id && <CurrentStoryQuestions storyId={matchStory?.params.id} />}
-  //   </SideBarContentLayout>
-  // )
 }
 
 const QuestionItem: React.FC<{ blockId: string }> = ({ blockId }) => {
@@ -87,11 +81,7 @@ const CurrentStoryQuestions: React.FC<{ storyId: string }> = ({ storyId }) => {
       `}
       options={{ suppressScrollX: true }}
     >
-      <div
-        className={css`
-          /* padding: 0px 16px; */
-        `}
-      >
+      <div>
         {questionBlocks.map((block) => {
           return <QuestionItem key={block.id} blockId={block.id} />
         })}
