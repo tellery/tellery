@@ -207,21 +207,21 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
         currentQueryChannel.consumeEach { cursor ->
             when (cursor) {
                 is Either.Left -> {
-                    when (cursor.a) {
+                    when (cursor.value) {
                         is TruncateException -> {
                             responseChannel.send(QueryResult {
                                 truncated = true
                             })
                         }
-                        else -> throw errorWrapper(cursor.a, "query")
+                        else -> throw errorWrapper(cursor.value, "query")
                     }
                 }
                 is Either.Right -> {
-                    when (val content = cursor.b) {
+                    when (val content = cursor.value) {
                         is Either.Left -> {
                             responseChannel.send(QueryResult {
                                 fields {
-                                    addAllFields(content.a.map {
+                                    addAllFields(content.value.map {
                                         SchemaField {
                                             name = it.name
                                             displayType = toDisplayType(it.type)
@@ -233,7 +233,7 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
                         }
                         is Either.Right -> {
                             responseChannel.send(QueryResult {
-                                row = ByteString.copyFrom(serializer.toJson(content.b), UTF_8)
+                                row = ByteString.copyFrom(serializer.toJson(content.value), UTF_8)
                             })
                         }
                     }

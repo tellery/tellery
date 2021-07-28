@@ -13,7 +13,7 @@ import kotlin.test.assertFalse
 
 class DbtManagerTest {
 
-    private val mapper: ObjectMapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule())
+    private val mapper: ObjectMapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
 
     @Test
     fun `add tellery model config`() {

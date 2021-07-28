@@ -9,7 +9,7 @@ import io.tellery.entities.Profile
 
 object ProfileManager {
 
-    private val mapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule())
+    private val mapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
 
     fun batchToDbtProfile(profiles: List<Profile>): String {
         val profileMap = profiles

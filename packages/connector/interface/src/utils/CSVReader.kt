@@ -1,6 +1,5 @@
 package io.tellery.utils
 
-import arrow.core.extensions.list.zip.zipWith
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import io.tellery.entities.TypeField
 import java.sql.Types
@@ -56,7 +55,7 @@ class CSVData(
     val dataTypes: Array<Int> = Array(header.size) { -1 }
 
     val fields: List<TypeField>
-        get() = header.zipWith(this.dataTypes.toList()) { name, type -> TypeField(name, type) }
+        get() = header.zip(this.dataTypes.toList()).map{ (name, type) -> TypeField(name, type)}
 
     fun setDataType(index: Int, targetSQLType: Int, initialized: Boolean = true): Unit {
         if (initialized && dataTypes[index] != -1 && dataTypes[index] != targetSQLType) {
