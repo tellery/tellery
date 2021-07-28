@@ -6,6 +6,7 @@ import { useLoggedUser } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { Operation, useCommit, useCommitHistory } from '@app/hooks/useCommit'
 import { useSelectionArea } from '@app/hooks/useSelectionArea'
+import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
 import { BlockSnapshot, getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor, Story, Thought } from '@app/types'
@@ -78,6 +79,7 @@ import { BlockTextOperationMenu } from './Popovers/BlockTextOperationMenu'
 import { TelleryStorySelection } from './store/selection'
 import { StoryBlockOperatorsProvider } from './StoryBlockOperatorsProvider'
 import type { SetBlock } from './types'
+import { getFilteredOrderdSubsetOfBlocks } from './utils'
 const logger = debug('tellery:editor')
 
 const _StoryEditor: React.FC<{
@@ -104,6 +106,7 @@ const _StoryEditor: React.FC<{
   const blockDnd = useBlockDndContext()
   const [lastInputChar, setLastInputChar] = useState<string | null>(null)
   const rootBlock = useFetchStoryChunk<Story | Thought>(storyId)
+  const blocksMap = useStoryBlocksMap(storyId)
 
   const blockAdminValue = useBlockAdminProvider(storyId)
 
@@ -139,10 +142,15 @@ const _StoryEditor: React.FC<{
     useCallback(
       (blockIds) => {
         if (blockIds) {
-          blockDnd.setSelectingBlockIds(blockIds)
+          const orderedBlockIds = blocksMap
+            ? getFilteredOrderdSubsetOfBlocks(blocksMap, storyId, (block) => blockIds.includes(block.id)).map(
+                (block) => block.id
+              )
+            : blockIds
+          blockDnd.setSelectingBlockIds(orderedBlockIds)
           setSelectionState({
             type: TellerySelectionType.Block,
-            selectedBlocks: blockIds,
+            selectedBlocks: orderedBlockIds,
             storyId: storyId
           })
         } else {
@@ -150,7 +158,7 @@ const _StoryEditor: React.FC<{
           setSelectionState(null)
         }
       },
-      [blockDnd, setSelectionState, storyId]
+      [blockDnd, blocksMap, setSelectionState, storyId]
     )
   )
 

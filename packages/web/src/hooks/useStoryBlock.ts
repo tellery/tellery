@@ -4,8 +4,13 @@ import { useEffect, useState } from 'react'
 import { useRecoilValueLoadable } from 'recoil'
 import { useFetchStoryChunk } from './api'
 
-export const useStoryBlocksMap = (storyId: string): Record<string, Editor.BaseBlock> | undefined => {
-  const [state, setState] = useState({})
+export const useStoryBlocksMap = (storyId: string) => {
+  const [state, setState] = useState<Record<string, Editor.BaseBlock> | undefined>()
+
+  useEffect(() => {
+    setState(undefined)
+  }, [storyId])
+
   useFetchStoryChunk<Story | Thought>(storyId)
 
   const value = useRecoilValueLoadable(TelleryStoryBlocks(storyId))
@@ -14,7 +19,7 @@ export const useStoryBlocksMap = (storyId: string): Record<string, Editor.BaseBl
     if (value.state === 'hasValue') {
       setState(value.contents)
     }
-  }, [value.contents, value.state])
+  }, [value.contents, value.state, storyId])
 
-  return state
+  return state?.[storyId] ? state : undefined
 }
