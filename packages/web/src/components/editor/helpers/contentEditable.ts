@@ -118,7 +118,8 @@ export const isCaretAtEnd = (target: Element | null) => {
   const range = _range.cloneRange()
   range.selectNodeContents(target)
   range.setStart(_range.startContainer, _range.startOffset)
-  return range.toString().length === 0
+  const selectedString = range.toString()
+  return selectedString.length === 0 || selectedString === '\n'
 }
 
 export const getElementEndPoint = (element: Node) => {
