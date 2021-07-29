@@ -28,10 +28,11 @@ import {
   PullRepoRequest,
   PushRepoRequest,
   Block as BlockProtobuf,
-  QuestionBlockContent as QuestionBlockContentProto,
+  QuestionBlockContent,
 } from '../../protobufs/dbt_pb'
 import { DbtMetadata } from '../../types/dbt'
 import { QuestionBlock } from '../../core/block/question'
+import _ from 'lodash'
 
 const grpcConnectorStorage = new Map<string, ConnectorManager>()
 
@@ -224,25 +225,20 @@ export class ConnectorManager implements IConnectorManager {
   }
 
   async pushRepo(profile: string, blocks: QuestionBlock[]): Promise<void> {
-    // const request = new PushRepoRequest().setProfile(profile)
-    // const blocksMap = request.getBlocksMap()
-    // blocks.forEach((b) => {
-    //   return new BlockProtobuf()
-    //     .setId(b.id)
-    //     .setType(b.getType())
-    //     .setParentid(b.parentId)
-    //     .setParenttable(b.parentTable)
-    //     .setCreatedat(b.createdAt?.getTime() ?? Date.now())
-    //     .setUpdatedat(b.updatedAt?.getTime() ?? Date.now())
-    //     .setVersion(b.version)
-    //     .setChildrenList(b.children ?? [])
-    //     .setCreatedbyid(b.createdById ?? '')
-    //     .setLasteditedbyid(b.lastEditedById ?? '')
-    //     .setAlive(b.alive)
-    //     .setStoryid(b.storyId)
-    //     .setContent(new QuestionBlockContent().set),
-    // }
-    // )
+    const request = new PushRepoRequest().setProfile(profile)
+    const blocksMap = request.getBlocksMap()
+    blocks.forEach((b) => {
+      const content = new QuestionBlockContent()
+        .setSql(b.getSql())
+        .setTitle(b.getPlainText() ?? 'untitled')
+      const blockProtobuf = new BlockProtobuf()
+        .setId(b.id)
+        .setStoryid(b.storyId)
+        .setAlive(b.alive)
+        .setContent(content)
+      blocksMap.set(b.id, blockProtobuf)
+    })
+    await beautyCall(this.dbtClient.pushRepo, this.dbtClient, request)
   }
 
   async refreshWorkspace(): Promise<void> {

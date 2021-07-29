@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { createQueryBuilder, EntityManager, UpdateQueryBuilder } from 'typeorm'
+import { createQueryBuilder, EntityManager, getManager, UpdateQueryBuilder } from 'typeorm'
 import { TelleryBaseEntity } from '../../entities/base'
 
 import BlockEntity from '../../entities/block'
@@ -7,6 +7,7 @@ import { LinkEntity } from '../../entities/link'
 import { InvalidArgumentError } from '../../error/error'
 import { BlockDTO, BlockParentType, BlockType } from '../../types/block'
 import { EntityType } from '../../types/entity'
+import { LinkType } from '../../types/link'
 import { defaultPermissions, PermissionModel } from '../../types/permission'
 import { Token } from '../../types/token'
 import { str2Date } from '../../utils/date'
@@ -417,9 +418,63 @@ export async function cascadeUpdateBlocks<T extends TelleryBaseEntity>(
     `WITH RECURSIVE result AS (
         SELECT id, children FROM blocks WHERE id = $${
           params.length + 1
-        } UNION ALL SELECT origin.id, origin.children FROM result JOIN blocks origin ON origin.id = ANY(result.children)
+        } UNION SELECT origin.id, origin.children FROM result JOIN blocks origin ON origin.id = ANY(result.children)
       )
       ${updateSql}`,
     [...params, rootBlockId],
+  )
+}
+
+export async function cascadeLoadBlocksByLink(
+  ids: string[],
+  direction: 'forward' | 'backward',
+  linkType: LinkType,
+): Promise<BlockEntity[]> {
+  let primaryBuilder
+  let recursiveBuilder
+  if (direction === 'backward') {
+    primaryBuilder = createQueryBuilder(LinkEntity, 'links')
+      .select('links."sourceBlockId"')
+      .where('type = :linkType AND links."targetBlockId" IN (:...ids) AND "sourceAlive" = true', {
+        ids,
+        linkType,
+      })
+    recursiveBuilder = createQueryBuilder(LinkEntity, 'origin')
+      .select('origin."sourceBlockId"')
+      .innerJoin(
+        'refLinks',
+        'refLinks',
+        'origin."targetBlockId" = "refLinks"."sourceBlockId" and origin."sourceAlive" = true and type = :linkType',
+        { linkType },
+      )
+  } else {
+    primaryBuilder = createQueryBuilder(LinkEntity, 'links')
+      .select('links.targetBlockId')
+      .where('type = :linkType AND links."sourceBlockId" IN (:...ids) AND "targetAlive" = true', {
+        ids,
+        linkType,
+      })
+    recursiveBuilder = createQueryBuilder(LinkEntity, 'origin')
+      .select('origin.sourceBlockId')
+      .innerJoin(
+        'refLinks',
+        'refLinks',
+        'origin."targetBlockId" = "refLinks"."sourceBlockId" and origin."sourceAlive" = true and type = :linkType',
+        { linkType },
+      )
+  }
+  const [primarySql, primaryParams] = primaryBuilder.getQueryAndParameters()
+  const [recursiveSql] = recursiveBuilder.getQueryAndParameters()
+
+  const manager = getManager()
+  return manager.query(
+    `WITH RECURSIVE "refLinks" AS (
+	   ${primarySql}
+	   UNION
+	   ${recursiveSql}
+   )
+   SELECT * from blocks join "refLinks" on blocks.id = "refLinks"."sourceBlockId"
+   `,
+    primaryParams,
   )
 }

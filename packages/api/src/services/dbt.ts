@@ -3,10 +3,12 @@ import _ from 'lodash'
 import { nanoid } from 'nanoid'
 import { getConnection, getRepository } from 'typeorm'
 import { IConnectorManager } from '../clients/connector/interface'
-import { Block } from '../core/block'
+import { Block, cascadeLoadBlocksByLink } from '../core/block'
+import { QuestionBlock } from '../core/block/question'
 import { getIPermission, IPermission } from '../core/permission'
 import BlockEntity from '../entities/block'
 import { BlockParentType, BlockType } from '../types/block'
+import { LinkType } from '../types/link'
 import { canUpdateWorkspaceData } from '../utils/permission'
 
 export class DbtService {
@@ -34,6 +36,18 @@ export class DbtService {
   ) {
     await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
     return connectorManager.pullRepo(profile)
+  }
+
+  async pushRepo(
+    connectorManager: IConnectorManager,
+    operatorId: string,
+    workspaceId: string,
+    profile: string,
+  ) {
+    await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
+    const exportedQuestionBlocks = await this.loadAllDbtBlockDescandant(workspaceId)
+    // TODO: parse transclusion into correct dbt ref and create correct dbt name
+    await connectorManager.pushRepo(profile, exportedQuestionBlocks)
   }
 
   async refreshWorkspace(
@@ -124,6 +138,15 @@ export class DbtService {
       alive: true,
     })
     return _(models).value()
+  }
+
+  private async loadAllDbtBlockDescandant(workspaceId: string): Promise<QuestionBlock[]> {
+    const ids = _(await this.listCurrentDbtBlocks(workspaceId))
+      .map('id')
+      .value()
+    return _(await cascadeLoadBlocksByLink(ids, 'backward', LinkType.QUESTION))
+      .map((b) => QuestionBlock.fromEntitySafely(b))
+      .value() as QuestionBlock[]
   }
 }
 
