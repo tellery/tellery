@@ -107,6 +107,13 @@ const _StoryEditor: React.FC<{
   const [lastInputChar, setLastInputChar] = useState<string | null>(null)
   const rootBlock = useFetchStoryChunk<Story | Thought>(storyId)
   const blocksMap = useStoryBlocksMap(storyId)
+  const blocksMapsRef = useRef<Record<string, Editor.BaseBlock> | null>(null)
+
+  useEffect(() => {
+    if (blocksMap) {
+      blocksMapsRef.current = blocksMap
+    }
+  }, [blocksMap])
 
   const blockAdminValue = useBlockAdminProvider(storyId)
 
@@ -142,8 +149,9 @@ const _StoryEditor: React.FC<{
     useCallback(
       (blockIds) => {
         if (blockIds) {
-          const orderedBlockIds = blocksMap
-            ? getFilteredOrderdSubsetOfBlocks(blocksMap, storyId, (block) => blockIds.includes(block.id)).map(
+          const currentBlocksMap = blocksMapsRef.current
+          const orderedBlockIds = currentBlocksMap
+            ? getFilteredOrderdSubsetOfBlocks(currentBlocksMap, storyId, (block) => blockIds.includes(block.id)).map(
                 (block) => block.id
               )
             : blockIds
@@ -158,7 +166,7 @@ const _StoryEditor: React.FC<{
           setSelectionState(null)
         }
       },
-      [blockDnd, blocksMap, setSelectionState, storyId]
+      [blockDnd, setSelectionState, storyId]
     )
   )
 
