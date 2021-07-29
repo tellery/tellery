@@ -84,9 +84,7 @@ async function saveTransactions(ctx: Context) {
   const failures = await getOperationService().saveTransactions(user.id, payload.transactions)
 
   if (!isEmpty(failures)) {
-    ctx.status = 400
-    ctx.body = { failures }
-    return
+    throw failures[0].error
   }
   ctx.body = { success: true }
 }
