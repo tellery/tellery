@@ -205,12 +205,16 @@ export function WorkspaceMembers(props: { onClose(): void }) {
       className={css`
         flex: 1;
         height: 100%;
-        padding: 30px 32px 16px;
+        padding: 30px 0 16px;
         display: flex;
         flex-direction: column;
       `}
     >
-      <div>
+      <div
+        className={css`
+          padding: 0 32px;
+        `}
+      >
         {me?.role === 'admin' ? (
           <span
             className={css`
@@ -242,6 +246,7 @@ export function WorkspaceMembers(props: { onClose(): void }) {
       </div>
       <PerfectScrollbar
         className={css`
+          padding: 0 32px;
           margin: 5px 0 0 0;
           flex: 1;
           height: 0;

@@ -35,7 +35,7 @@ export function WorkspaceDatabases(props: { onClose(): void }) {
     <div
       className={css`
         flex: 1;
-        padding: 30px 32px 16px;
+        padding: 30px 0 16px;
         height: 100%;
         display: flex;
         flex-direction: column;
@@ -80,6 +80,7 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
           font-size: 16px;
           line-height: 19px;
           margin: 0;
+          padding: 0 32px;
           color: ${ThemingVariables.colors.text[0]};
         `}
       >
@@ -89,6 +90,7 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
         className={css`
           flex: 1;
           margin-top: 20px;
+          padding: 0 32px;
         `}
         options={{ suppressScrollX: true }}
       >
@@ -142,7 +144,7 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
       </PerfectScrollbar>
       <FormButton
         className={css`
-          margin-top: 20px;
+          margin: 20px 32px 0;
         `}
         variant="primary"
         onClick={handleSubmit(handleUpsertProfile.execute)}
