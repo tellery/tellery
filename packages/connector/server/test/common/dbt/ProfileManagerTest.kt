@@ -10,7 +10,7 @@ import kotlin.test.assertEquals
 
 class ProfileManagerTest {
 
-    private val mapper: ObjectMapper = ObjectMapper().registerModule(KotlinModule())
+    private val mapper: ObjectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
 
     @Test
     fun `get dbt profile from tellery profile`() {

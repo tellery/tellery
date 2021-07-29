@@ -43,7 +43,7 @@ object DbtManager {
     private val rootFolder: File
     private val keyFolder: File
     private val profileFile: File = File(System.getProperty("user.home") + "/.dbt/profiles.yml")
-    private val mapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule())
+    private val mapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
     private val jsonMapper = jacksonObjectMapper()
 
     init {

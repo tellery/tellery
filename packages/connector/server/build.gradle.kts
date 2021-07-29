@@ -62,7 +62,7 @@ dependencies {
     implementation("org.eclipse.jgit:org.eclipse.jgit:$jgitVersion")
     implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:$jgitVersion")
     implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:$jgitVersion")
-    implementation("com.jcraft:jsch:0.1.53")
+    implementation("com.jcraft:jsch:0.1.55")
     implementation("commons-io:commons-io:2.11.0")
 
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
