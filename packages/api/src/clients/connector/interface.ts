@@ -1,5 +1,7 @@
 import { Readable } from 'stream'
+import { QuestionBlock } from '../../core/block/question'
 import { Collection, Database, Profile, TypeField, AvailableConfig } from '../../types/connector'
+import { DbtMetadata } from '../../types/dbt'
 
 /**
  * interacting with tellery-connector
@@ -86,4 +88,39 @@ export interface IConnectorManager {
     collection: string,
     schema?: string,
   ): Promise<{ database: string; collection: string }>
+
+  // dbt related
+
+  /**
+   * create dbt repo
+   * @param profile profile name
+   * @returns public key
+   */
+  createRepo(profile: string): Promise<string>
+
+  /**
+   * pull dbt repo
+   * @param profile profile name
+   * @returns public key
+   */
+  pullRepo(profile: string): Promise<void>
+
+  /**
+   * push blocks that are descendance of dbt blocks (as dbt models) into its repo
+   * @param profile profile name
+   * @param blocks blocks that are descendance of dbtBlocks
+   */
+  pushRepo(profile: string, blocks: QuestionBlock[]): Promise<void>
+
+  /**
+   * refresh dbt workspace
+   */
+  refreshWorkspace(): Promise<void>
+
+  /**
+   * retrieve the metadata of dbt sources and models
+   * @param profile profile name
+   * @returns dbt metadata
+   */
+  listDbtBlocks(profile: string): Promise<DbtMetadata[]>
 }

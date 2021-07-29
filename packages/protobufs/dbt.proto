@@ -16,7 +16,7 @@ service Dbt {
 }
 
 message CreateRepoRequest {
-  string profileName = 1;
+  string profile = 1;
 }
 
 message CreateRepoResponse {
@@ -24,16 +24,16 @@ message CreateRepoResponse {
 }
 
 message PullRepoRequest {
-  string profileName = 1;
+  string profile = 1;
 }
 
 message PushRepoRequest {
-  string profileName = 1;
+  string profile = 1;
   map<string, Block> blocks = 2;
 }
 
 message ListDbtBlocksRequest {
-  string profileName = 1;
+  string profile = 1;
 }
 
 message ListDbtBlocksResponse {

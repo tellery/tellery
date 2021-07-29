@@ -8,6 +8,7 @@ import { CodeBlock } from './code'
 import { CodepenBlock } from './codepen'
 import { ColumnBlock } from './column'
 import { DataViewBlock } from './dataView'
+import { DbtBlock } from './dbt'
 import { DividerBlock } from './divider'
 import { EmbedBlock } from './embed'
 import { EquationBlock } from './equation'
@@ -44,6 +45,7 @@ const blockConstructors = {
   [BlockType.BULLETED_LIST]: BulletedListBlock,
   [BlockType.CALLOUT]: CalloutBlock,
   [BlockType.DATA_VIEW]: DataViewBlock,
+  [BlockType.DBT]: DbtBlock,
   [BlockType.EQUATION]: EquationBlock,
   [BlockType.FILE]: FileBlock,
   [BlockType.CODE]: CodeBlock,

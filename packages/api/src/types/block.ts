@@ -5,6 +5,7 @@ enum BlockType {
   CALLOUT = 'callout',
   CODE = 'code',
   DATA_VIEW = 'data_view',
+  DBT = 'dbt',
   EQUATION = 'equation',
   FILE = 'file',
   HEADING_1 = 'heading_1',
