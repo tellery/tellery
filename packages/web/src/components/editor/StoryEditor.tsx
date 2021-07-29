@@ -891,6 +891,12 @@ const _StoryEditor: React.FC<{
           }
         },
         {
+          hotkeys: ['cmd+s'],
+          handler: (e) => {
+            e.preventDefault()
+          }
+        },
+        {
           hotkeys: ['arrowleft'],
           handler: (e) => {
             if (isSelectionCollapsed(selectionState) && selectionState.type === TellerySelectionType.Inline) {
