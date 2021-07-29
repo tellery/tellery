@@ -7,7 +7,7 @@ import { QueryClient } from 'react-query'
 export const DRAG_HANDLE_WIDTH = 4
 
 export enum TELLERY_MIME_TYPES {
-  BLOCKS = 'text/tellery-blocks-v1',
+  BLOCKS = 'text/tellery-blocks-fragment-v1',
   BLOCK_REF = 'text/tellery-block-ref-v1',
   TOKEN = 'text/tellery-tokens-v1',
   MONACO = 'vscode-editor-data'

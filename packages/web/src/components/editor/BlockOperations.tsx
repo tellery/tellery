@@ -48,9 +48,11 @@ const BlockDragOperation: React.FC<{
       onMouseDown: (e: React.SyntheticEvent) => {
         const selection = editor?.getSelection()
         if (
-          (selection &&
+          !!(
+            selection &&
             selection.type === TellerySelectionType.Block &&
-            selection.selectedBlocks.includes(blockId) === true) === false
+            selection.selectedBlocks.includes(blockId) === true
+          ) === false
         ) {
           editor?.selectBlocks([blockId])
         }

@@ -1,11 +1,9 @@
-import { useWorkspace } from '@app/hooks/useWorkspace'
 import {
   Entity,
   EntityRequest,
   fetchEntity,
   fetchQuestionBackLinks,
   fetchSnapshot,
-  fetchStory,
   fetchStoryBackLinks,
   getCollectionSchema,
   request,
@@ -14,12 +12,9 @@ import {
   searchBlocks,
   sqlRequest
 } from '@app/api'
+import { isQuestionLikeBlock } from '@app/components/editor/Blocks/utils'
 import { useAsync } from '@app/hooks'
-import invariant from 'tiny-invariant'
-import { compact } from 'lodash'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { QueryObserverResult, useInfiniteQuery, useMutation, useQuery, UseQueryOptions } from 'react-query'
-import { useRecoilCallback, useRecoilValue, useRecoilValueLoadable, waitForAll, waitForAny } from 'recoil'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import type {
   AvailableConfig,
   BackLinks,
@@ -32,9 +27,13 @@ import type {
 } from '@app/types'
 import { queryClient } from '@app/utils'
 import { emitBlockUpdate } from '@app/utils/remoteStoreObserver'
+import { compact } from 'lodash'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { QueryObserverResult, useInfiniteQuery, useMutation, useQuery, UseQueryOptions } from 'react-query'
+import { useRecoilCallback, useRecoilValue, useRecoilValueLoadable, waitForAll, waitForAny } from 'recoil'
+import invariant from 'tiny-invariant'
 import { blockUpdater, TelleryBlockAtom, TelleryUserAtom } from '../store/block'
 import { useBatchQueries } from './useBatchQueries'
-import { isQuestionLikeBlock } from '@app/components/editor/Blocks/utils'
 
 export type User = {
   id: string
@@ -607,40 +606,6 @@ export const useRecordStoryVisits = () => {
     }
   })
   return mutation
-}
-
-export function useMgetStory(ids?: string[]) {
-  const workspace = useWorkspace()
-
-  const queries = useBatchQueries(
-    ids
-      ? ids.map((id) => {
-          return {
-            queryKey: ['block', id],
-            queryFn: () => fetchStory(id, workspace.id),
-            ...BatchGetOptions
-          }
-        })
-      : []
-  ) as QueryObserverResult<Story>[]
-
-  const enabled = !!(ids && queries.length === ids.length)
-
-  const isSuccess = useMemo(() => enabled && queries.every((query) => query.isFetched), [enabled, queries])
-  const data = useMemo(() => {
-    const resultMap =
-      enabled && queries.every((query) => query.isFetched)
-        ? queries.reduce((acc, query) => {
-            if (query.data?.id) {
-              acc[query.data.id] = query.data
-            }
-            return acc
-          }, {} as { [key: string]: Story })
-        : undefined
-    return resultMap
-  }, [enabled, queries])
-
-  return { queries, isSuccess, data }
 }
 
 export const useExecuteSQL = (id: string) => {

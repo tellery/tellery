@@ -74,11 +74,11 @@ export const useBlockTranscationProvider = () => {
     (
       storyId: string,
       {
-        blocks,
+        blocksFragment,
         targetBlockId,
         direction
       }: {
-        blocks: Editor.BaseBlock[]
+        blocksFragment: { children: string[]; data: Record<string, Editor.BaseBlock> }
         targetBlockId: string
         direction: 'top' | 'left' | 'bottom' | 'right' | 'child'
       }
@@ -88,10 +88,9 @@ export const useBlockTranscationProvider = () => {
           logger('insert block')
           return insertBlocksAndMoveTranscation({
             storyId,
-            blocks: blocks,
+            blocksFragment,
             targetBlockId,
             direction,
-            duplicate: true,
             snapshot
           })
         },

@@ -31,6 +31,7 @@ import {
 import { useDroppingArea } from '../hooks/useDroppingArea'
 import { DndSensor } from '../lib/dnd-kit/dndSensor'
 import { useSetUploadResource } from './editor/hooks/useUploadResource'
+import { getSubsetOfBlocksSnapshot } from './editor/utils'
 
 export const BlockDndContextProvider: React.FC = ({ children }) => {
   const [selectingBlockIds, setSelectingBlockIds] = useState<string[] | null>(null)
@@ -77,10 +78,10 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
           invariant(overData?.storyId, 'overing story id is null')
           if (item.storyId !== overStoryId) {
             blockTranscations.insertBlocks(overStoryId, {
-              blocks: getDuplicatedBlocks(
-                blockIds.map((blockId) => getBlockFromSnapshot(blockId, snapshot)),
-                overStoryId
-              ),
+              blocksFragment: {
+                children: blockIds,
+                data: getSubsetOfBlocksSnapshot(snapshot, blockIds)
+              },
               targetBlockId: id,
               direction: droppingAreaRef.current.direction
             })
@@ -107,7 +108,13 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
             })
           )
           blockTranscations.insertBlocks(overStoryId, {
-            blocks: fileBlocks,
+            blocksFragment: {
+              children: fileBlocks.map((block) => block.id),
+              data: fileBlocks.reduce((a, c) => {
+                a[c.id] = c
+                return a
+              }, {} as Record<string, Editor.BaseBlock>)
+            },
             targetBlockId: droppingAreaRef.current.blockId,
             direction: droppingAreaRef.current.direction
           })

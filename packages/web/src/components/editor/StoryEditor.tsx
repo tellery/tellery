@@ -47,7 +47,7 @@ import {
   findPreviousTextBlock,
   findRootBlock,
   getBlockElementContentEditbleById,
-  getDuplicatedBlocks,
+  getDuplicatedBlocksFragment,
   getElementEndPoint,
   getElementStartPoint,
   getEndContainerFromPoint,
@@ -79,7 +79,7 @@ import { BlockTextOperationMenu } from './Popovers/BlockTextOperationMenu'
 import { TelleryStorySelection } from './store/selection'
 import { StoryBlockOperatorsProvider } from './StoryBlockOperatorsProvider'
 import type { SetBlock } from './types'
-import { getFilteredOrderdSubsetOfBlocks } from './utils'
+import { getFilteredOrderdSubsetOfBlocks, getSubsetOfBlocksSnapshot } from './utils'
 const logger = debug('tellery:editor')
 
 const _StoryEditor: React.FC<{
@@ -147,25 +147,27 @@ const _StoryEditor: React.FC<{
 
   const { selectionRef } = useSelectionArea(
     useCallback(
-      (blockIds) => {
-        if (blockIds) {
-          const currentBlocksMap = blocksMapsRef.current
-          const orderedBlockIds = currentBlocksMap
-            ? getFilteredOrderdSubsetOfBlocks(currentBlocksMap, storyId, (block) => blockIds.includes(block.id)).map(
-                (block) => block.id
-              )
-            : blockIds
-          blockDnd.setSelectingBlockIds(orderedBlockIds)
-          setSelectionState({
-            type: TellerySelectionType.Block,
-            selectedBlocks: orderedBlockIds,
-            storyId: storyId
-          })
-        } else {
-          blockDnd.setSelectingBlockIds(null)
-          setSelectionState(null)
-        }
-      },
+      (blockIds) =>
+        // blocksMapsRef may not been updated, wait for it
+        setTimeout(() => {
+          if (blockIds) {
+            const currentBlocksMap = blocksMapsRef.current
+            const orderedBlockIds = currentBlocksMap
+              ? getFilteredOrderdSubsetOfBlocks(currentBlocksMap, storyId, (block) => blockIds.includes(block.id)).map(
+                  (block) => block.id
+                )
+              : blockIds
+            blockDnd.setSelectingBlockIds(orderedBlockIds)
+            setSelectionState({
+              type: TellerySelectionType.Block,
+              selectedBlocks: orderedBlockIds,
+              storyId: storyId
+            })
+          } else {
+            blockDnd.setSelectingBlockIds(null)
+            setSelectionState(null)
+          }
+        }, 0),
       [blockDnd, setSelectionState, storyId]
     )
   )
@@ -185,13 +187,14 @@ const _StoryEditor: React.FC<{
       if (blockIds.length === 0) {
         setSelectionState(null)
       } else {
-        selectionRef.current?.clearSelection()
-        selectionRef.current?.select(blockIds.map((id) => `[data-block-id="${id}"]`))
-        // trap focus state
-        editorTextAreaRef.current?.focus()
+        Promise.all(blockIds.map((id) => blockAdminValue.getBlockInstanceById(id))).then(() => {
+          selectionRef.current?.clearSelection()
+          selectionRef.current?.select(blockIds.map((id) => `[data-block-id="${id}"]`))
+          editorTextAreaRef.current?.focus()
+        })
       }
     },
-    [selectionRef, setSelectionState]
+    [blockAdminValue, selectionRef, setSelectionState]
   )
 
   useEffect(() => {
@@ -324,7 +327,10 @@ const _StoryEditor: React.FC<{
     (blockType: Editor.BlockType, targetBlockId: string, direction: 'top' | 'bottom' | 'child' = 'bottom') => {
       const newBlock = createEmptyBlock({ type: blockType, storyId: storyId, parentId: storyId })
       blockTranscations.insertBlocks(storyId, {
-        blocks: [newBlock],
+        blocksFragment: {
+          children: [newBlock.id],
+          data: { [newBlock.id]: newBlock }
+        },
         direction: direction,
         targetBlockId: targetBlockId
       })
@@ -598,20 +604,31 @@ const _StoryEditor: React.FC<{
     (blockIds: string[]) => {
       if (blockIds.length === 0) return
 
-      const blocks = blockIds.map((blockId) => getBlockFromSnapshot(blockId, snapshot))
-      const duplicatedBlocks = getDuplicatedBlocks(blocks, storyId)
+      const targetBlockId = blockIds[blockIds.length - 1]
+      const targetBlock = getBlockFromSnapshot(targetBlockId, snapshot)
+
+      const duplicatedBlocksFragment = getDuplicatedBlocksFragment(
+        blockIds,
+        getSubsetOfBlocksSnapshot(snapshot, blockIds),
+        storyId,
+        targetBlock.parentId
+      )
+
       blockTranscations.insertBlocks(storyId, {
-        blocks: duplicatedBlocks,
+        blocksFragment: duplicatedBlocksFragment,
         targetBlockId: blockIds[blockIds.length - 1],
         direction: 'bottom'
       })
-      setSelectedBlocks(duplicatedBlocks.map((block) => block.id))
-      const currentBlock = duplicatedBlocks[duplicatedBlocks.length - 1]
+
+      setSelectedBlocks(duplicatedBlocksFragment.children)
+      const lastBlockId = duplicatedBlocksFragment.children[duplicatedBlocksFragment.children.length - 1]
+      const currentBlock = duplicatedBlocksFragment.data[lastBlockId]
       const blockId = currentBlock.id
       focusBlockHandler(blockId, isQuestionLikeBlock(currentBlock.type))
-      return duplicatedBlocks
+
+      return duplicatedBlocksFragment
     },
-    [blockTranscations, focusBlockHandler, setSelectedBlocks, snapshot, storyId]
+    [blockAdminValue, blockTranscations, focusBlockHandler, setSelectedBlocks, snapshot, storyId]
   )
 
   const globalKeyDownHandler = useCallback(
@@ -735,7 +752,10 @@ const _StoryEditor: React.FC<{
                   parentId: storyId
                 })
                 blockTranscations.insertBlocks(storyId, {
-                  blocks: [newBlock],
+                  blocksFragment: {
+                    children: [newBlock.id],
+                    data: { [newBlock.id]: newBlock }
+                  },
                   targetBlockId: blockId,
                   direction: 'top'
                 })
@@ -759,7 +779,10 @@ const _StoryEditor: React.FC<{
                   parentId: storyId
                 })
                 blockTranscations.insertBlocks(storyId, {
-                  blocks: [newBlock],
+                  blocksFragment: {
+                    children: [newBlock.id],
+                    data: { [newBlock.id]: newBlock }
+                  },
                   targetBlockId: blockId,
                   direction: 'bottom'
                 })
@@ -1060,7 +1083,13 @@ const _StoryEditor: React.FC<{
           })
         )
         blockTranscations.insertBlocks(storyId, {
-          blocks: fileBlocks,
+          blocksFragment: {
+            children: fileBlocks.map((block) => block.id),
+            data: fileBlocks.reduce((a, c) => {
+              a[c.id] = c
+              return a
+            }, {} as Record<string, Editor.BaseBlock>)
+          },
           targetBlockId: selectionState.anchor.blockId,
           direction: 'bottom'
         })
@@ -1079,14 +1108,26 @@ const _StoryEditor: React.FC<{
             selectionState.type === TellerySelectionType.Inline
               ? selectionState.anchor.blockId
               : selectionState.selectedBlocks[selectionState.selectedBlocks.length - 1]
-          const telleryBlocksData: Editor.Block[] = JSON.parse(telleryBlockDataStr)
-          const duplicatedBlocks = getDuplicatedBlocks(telleryBlocksData, storyId)
+          const telleryBlocksData: {
+            children: string[]
+            data: Record<string, Editor.BaseBlock>
+          } = JSON.parse(telleryBlockDataStr)
+
+          const targetBlock = getBlockFromSnapshot(targetBlockId, snapshot)
+          const duplicatedBlocksFragment = getDuplicatedBlocksFragment(
+            telleryBlocksData.children,
+            telleryBlocksData.data,
+            storyId,
+            targetBlock.id
+          )
+
           blockTranscations.insertBlocks(storyId, {
-            blocks: duplicatedBlocks,
+            blocksFragment: duplicatedBlocksFragment,
             targetBlockId: targetBlockId,
             direction: 'bottom'
           })
-          setSelectedBlocks(duplicatedBlocks.map((block) => block.id))
+
+          setSelectedBlocks(duplicatedBlocksFragment.children)
         } else if (telleryTokenDataStr) {
           if (!selectionState) return
           if (isSelectionCollapsed(selectionState) && selectionState.type === TellerySelectionType.Inline) {
@@ -1138,15 +1179,22 @@ const _StoryEditor: React.FC<{
             if (!focusingBlockId) return
 
             if (restParagraphs.length > 1) {
+              const newBlocks = restParagraphs.map((text) =>
+                createEmptyBlock({
+                  type: Editor.BlockType.Text,
+                  storyId,
+                  parentId: storyId,
+                  content: { title: [[text]] }
+                })
+              )
               blockTranscations.insertBlocks(storyId, {
-                blocks: restParagraphs.map((text) =>
-                  createEmptyBlock({
-                    type: Editor.BlockType.Text,
-                    storyId,
-                    parentId: storyId,
-                    content: { title: [[text]] }
-                  })
-                ),
+                blocksFragment: {
+                  children: newBlocks.map((block) => block.id),
+                  data: newBlocks.reduce((a, c) => {
+                    a[c.id] = c
+                    return a
+                  }, {} as Record<string, Editor.BaseBlock>)
+                },
                 targetBlockId: focusingBlockId,
                 direction: 'bottom'
               })
@@ -1164,6 +1212,7 @@ const _StoryEditor: React.FC<{
       blockTranscations,
       storyId,
       setUploadResource,
+      snapshot,
       setSelectedBlocks,
       setBlockValue,
       focusingBlockId

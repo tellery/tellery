@@ -1,10 +1,3 @@
-import { MenuItemDivider } from '@app/components/MenuItemDivider'
-import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
-import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
-import { TELLERY_MIME_TYPES } from '@app/utils'
-import { css, cx } from '@emotion/css'
-import type { FlipModifier } from '@popperjs/core/lib/modifiers/flip'
-import type { OffsetModifier } from '@popperjs/core/lib/modifiers/offset'
 import {
   IconCommonLink,
   IconMenuCenterAlign,
@@ -16,16 +9,22 @@ import {
 import { getBlockWrapElementById } from '@app/components/editor/helpers/contentEditable'
 import FormSwitch from '@app/components/kit/FormSwitch'
 import Icon from '@app/components/kit/Icon'
-import copy from 'copy-to-clipboard'
-import dayjs from 'dayjs'
+import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { useBlockSuspense, useUser } from '@app/hooks/api'
-import invariant from 'tiny-invariant'
-import { useAtom } from 'jotai'
-import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
-import { toast } from 'react-toastify'
+import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { editorTransformBlockPopoverState } from '@app/store'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
+import { TELLERY_MIME_TYPES } from '@app/utils'
+import { css, cx } from '@emotion/css'
+import type { FlipModifier } from '@popperjs/core/lib/modifiers/flip'
+import type { OffsetModifier } from '@popperjs/core/lib/modifiers/offset'
+import copy from 'copy-to-clipboard'
+import dayjs from 'dayjs'
+import { useAtom } from 'jotai'
+import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { toast } from 'react-toastify'
+import invariant from 'tiny-invariant'
 import { MenuItem } from '../../MenuItem'
 import { EditorPopover } from '../EditorPopover'
 import { TellerySelectionType } from '../helpers'
@@ -147,7 +146,8 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
           action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault()
             e.stopPropagation()
-            editor?.duplicateHandler([id])
+            const selection = editor?.getSelection()
+            editor?.duplicateHandler(selection?.type === TellerySelectionType.Block ? selection.selectedBlocks : [id])
 
             close()
           }
@@ -197,7 +197,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
         {
           title: 'Center align',
           icon: <Icon icon={IconMenuCenterAlign} color={ThemingVariables.colors.text[0]} />,
-          side: <FormSwitch checked={block?.format?.textAlign === 'center'} />,
+          side: <FormSwitch checked={block?.format?.textAlign === 'center'} readOnly />,
           action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault()
             e.stopPropagation()
@@ -254,9 +254,9 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
 
   return (
     <>
-      {operationGroups.map((operations) => {
+      {operationGroups.map((operations, index) => {
         return (
-          <>
+          <React.Fragment key={index}>
             {operations.map((operation) => (
               <MenuItem
                 key={operation.title}
@@ -267,7 +267,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
               />
             ))}
             <MenuItemDivider />
-          </>
+          </React.Fragment>
         )
       })}
       {block?.lastEditedById && (
