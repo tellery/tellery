@@ -1,6 +1,6 @@
 allprojects{
     group = "io.tellery"
-    version = "0.6.0"
+    version = "0.6.0-rc1"
     repositories {
         jcenter()
     }
