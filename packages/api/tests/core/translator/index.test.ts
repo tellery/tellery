@@ -12,7 +12,6 @@ import { BlockParentType, BlockType } from '../../../src/types/block'
 import { buildSqlFromGraph, sqlMacro, translate } from '../../../src/core/translator'
 import { DirectedGraph } from '../../../src/utils/directedgraph'
 import { Block, register } from '../../../src/core/block'
-import { QuestionBlock } from '../../../src/core/block/question'
 
 test.before(async () => {
   await createDatabaseCon()
@@ -70,6 +69,41 @@ test('translate', async (t) => {
     `WITH t1 AS ( select * from order_x ), t2 AS ( select * from table2 ) select * from t1 left join t2`,
   )
   await getRepository(BlockEntity).delete([questionBlockId, dbtBlockId])
+})
+
+test('translate duplicate references', async (t) => {
+  register('dbt' as BlockType, DBTBlock)
+
+  const storyId = nanoid()
+  const questionBlockId = nanoid()
+  await getRepository(BlockEntity).save({
+    id: questionBlockId,
+    workspaceId: 'test',
+    interKey: questionBlockId,
+    parentId: 'test',
+    parentTable: BlockParentType.BLOCK,
+    storyId,
+    content: {
+      title: [[nanoid()]],
+      sql: `select * from order_x`,
+    },
+    type: BlockType.QUESTION,
+    children: [],
+    alive: true,
+  })
+
+  const sql = `select * from {{${questionBlockId} as t1}} left join {{${questionBlockId} as t2}}`
+
+  const sqlBody = await translate(sql)
+
+  stringCompare(
+    t,
+    sqlBody,
+    // FIXME: alias conflict
+    // correct sql should be"WITH t1 AS ( select * from order_x ), t2 AS ( select * from order_x ) select * from t1 left join t2"
+    `WITH t1 AS ( select * from order_x ), t1 AS ( select * from order_x ) select * from t1 left join t2`,
+  )
+  await getRepository(BlockEntity).delete([questionBlockId])
 })
 
 test('cyclic assemble', async (t) => {

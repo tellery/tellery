@@ -70,8 +70,9 @@ async function loadSqlFromBlocks(blockIds: string[]): Promise<{ [k: string]: str
     .value()
 
   // validate the integrity of blocks
-  if (records.length !== blockIds.length) {
-    throw NotFoundError.resourceNotFound(_.xor(_(records).map('id').value(), blockIds).toString())
+  const missingBlocks = _.xor(_(records).map('id').value(), blockIds)
+  if (!_.isEmpty(missingBlocks)) {
+    throw NotFoundError.resourceNotFound(missingBlocks.toString())
   }
 
   return _(records)
