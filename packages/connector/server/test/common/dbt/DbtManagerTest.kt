@@ -54,7 +54,7 @@ class DbtManagerTest {
         val manifestFile = File(DbtManagerTest::class.java.getResource("/manifest.json").toURI())
 
         val blocks = DbtManager.parseDbtBlocks(manifestFile)
-        val blockMap = blocks.map { it.name to it }.toMap()
+        val blockMap = blocks.associateBy { it.name }
 
         assertFalse(blockMap.containsKey("model.jaffle_shop.my_first_dbt_model"))
         assertEquals(3, blocks.size)

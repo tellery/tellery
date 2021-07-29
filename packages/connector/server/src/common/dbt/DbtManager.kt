@@ -48,14 +48,12 @@ object DbtManager {
 
     init {
         val appConfig = ConfigFactory.load()
-        rootFolder = File(
-            appConfig.getString("dbt.repoFolderPath")
-                ?: throw DBTProfileNotConfiguredException()
-        )
-        keyFolder = File(
-            appConfig.getString("dbt.keyFolderPath")
-                ?: throw DBTProfileNotConfiguredException()
-        )
+        rootFolder = ConfigManager.globalConfigDir.resolve(
+            appConfig.getString("dbt.repoFolderPath") ?: throw DBTProfileNotConfiguredException()
+        ).toFile()
+        keyFolder = ConfigManager.globalConfigDir.resolve(
+            appConfig.getString("dbt.keyFolderPath") ?: throw DBTProfileNotConfiguredException()
+        ).toFile()
 
         initDbtWorkspace()
     }
@@ -238,9 +236,12 @@ object DbtManager {
     }
 
     private fun overwriteDiffModels(name: String, id2Block: Map<String, Block>) {
-        val name2Block = id2Block.entries
-            .map { getBlockName(it.value, id2Block[it.value.storyId]) to it.value }
-            .toMap()
+        val name2Block = id2Block.entries.associate {
+            getBlockName(
+                it.value,
+                id2Block[it.value.storyId]
+            ) to it.value
+        }
 
         val telleryModelFolder = File(rootFolder.absolutePath + "/$name/models/tellery")
         forceMkdir(telleryModelFolder)
@@ -264,7 +265,7 @@ object DbtManager {
     }
 
     private fun getProfileByName(name: String): Profile {
-        val profile = ConfigManager.profiles.map { it.name to it }.toMap()[name]
+        val profile = ConfigManager.profiles.associateBy { it.name }[name]
             ?: throw RuntimeException("The profile is not exists, name: $name")
 
         assertInternalError(isDbtProfile(profile)) { "The profile is not a dbt profile." }
