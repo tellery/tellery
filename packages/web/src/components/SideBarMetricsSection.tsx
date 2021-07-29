@@ -1,4 +1,4 @@
-import { IconCommonQuestion } from '@app/assets/icons'
+import { IconCommonMetrics, IconCommonQuestion } from '@app/assets/icons'
 import { useBlockSuspense } from '@app/hooks/api'
 import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
 import { ThemingVariables } from '@app/styles'
@@ -8,7 +8,6 @@ import React, { useMemo } from 'react'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import { useHistory, useRouteMatch } from 'react-router-dom'
 import { useGetBlockTitleTextSnapshot } from './editor'
-import { isQuestionLikeBlock } from './editor/Blocks/utils'
 import { getFilteredOrderdSubsetOfBlocks } from './editor/utils'
 
 export const SideBarMetricsSection = () => {
@@ -44,13 +43,24 @@ const QuestionItem: React.FC<{ blockId: string }> = ({ blockId }) => {
         history.push(`#${block.id}`)
       }}
     >
-      <IconCommonQuestion
-        color={ThemingVariables.colors.gray[0]}
-        className={css`
-          flex-shrink: 0;
-          margin-right: 8px;
-        `}
-      />
+      {block.type === Editor.BlockType.Question ? (
+        <IconCommonQuestion
+          color={ThemingVariables.colors.gray[0]}
+          className={css`
+            flex-shrink: 0;
+            margin-right: 8px;
+          `}
+        />
+      ) : null}
+      {block.type === Editor.BlockType.Metric ? (
+        <IconCommonMetrics
+          color={ThemingVariables.colors.gray[0]}
+          className={css`
+            flex-shrink: 0;
+            margin-right: 8px;
+          `}
+        />
+      ) : null}
       <span
         className={css`
           font-size: 12px;
@@ -69,10 +79,13 @@ const QuestionItem: React.FC<{ blockId: string }> = ({ blockId }) => {
 
 const CurrentStoryQuestions: React.FC<{ storyId: string }> = ({ storyId }) => {
   const storyBlocksMap = useStoryBlocksMap(storyId)
-
+  const metricBlocks = useMemo(() => {
+    if (!storyBlocksMap) return []
+    return getFilteredOrderdSubsetOfBlocks(storyBlocksMap, storyId, (block) => block.type === Editor.BlockType.Metric)
+  }, [storyBlocksMap, storyId])
   const questionBlocks = useMemo(() => {
     if (!storyBlocksMap) return []
-    return getFilteredOrderdSubsetOfBlocks(storyBlocksMap, storyId, (block) => isQuestionLikeBlock(block.type))
+    return getFilteredOrderdSubsetOfBlocks(storyBlocksMap, storyId, (block) => block.type === Editor.BlockType.Question)
   }, [storyBlocksMap, storyId])
 
   return (
@@ -85,6 +98,9 @@ const CurrentStoryQuestions: React.FC<{ storyId: string }> = ({ storyId }) => {
       options={{ suppressScrollX: true }}
     >
       <div>
+        {metricBlocks.map((block) => {
+          return <QuestionItem key={block.id} blockId={block.id} />
+        })}
         {questionBlocks.map((block) => {
           return <QuestionItem key={block.id} blockId={block.id} />
         })}
