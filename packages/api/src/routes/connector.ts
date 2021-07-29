@@ -10,7 +10,7 @@ import { AuthData, AuthType } from '../types/auth'
 import { errorResponse, validate } from '../utils/http'
 import { mustGetUser } from '../utils/user'
 import { streamHttpErrorCb, withKeepaliveStream } from '../utils/stream'
-import { StorageError } from '../error/error'
+import { StorageError, UnauthorizedError } from '../error/error'
 import { translate } from '../core/translator'
 
 class AddConnectorRequest {
@@ -355,8 +355,10 @@ async function execute(ctx: Context) {
       queryResultStream.pipe(streamResponse)
     })
   } catch (err) {
-    // override the status code, therefore the error would appear in the sql editor correctly
-    err.status = 200
+    if (err! instanceof UnauthorizedError) {
+      // override the status code, therefore the error would appear in the sql editor correctly
+      err.status = 200
+    }
     throw err
   }
 }
