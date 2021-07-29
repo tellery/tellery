@@ -92,7 +92,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
   useEffect(() => {
     if (!isComposing.current && titleTokens) {
       const targetHtml = BlockRenderer(titleTokens, dependsAssetsResult ?? {})
-      logger('setLeavesHtml', titleTokens, dependsAssetsResult)
+      // logger('setLeavesHtml', titleTokens, dependsAssetsResult)
       setLeavesHtml(targetHtml)
     }
   }, [titleTokens, dependsAssetsResult])

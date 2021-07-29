@@ -20,17 +20,17 @@ export const registerBlock = (type: Editor.BlockType, component: any) => {
 }
 
 export const isTextBlock = (blockType: Editor.BlockType) => {
-  return !!Blocks[blockType].meta.isText
+  return !!Blocks[blockType]?.meta.isText
 }
 
 export const isQuestionLikeBlock = (blockType: Editor.BlockType) => {
-  return !!Blocks[blockType].meta.isQuestion
+  return !!Blocks[blockType]?.meta.isQuestion
 }
 
 export const isBlockHasChildren = (block: Editor.Block) => {
-  return !!Blocks[block.type].meta.hasChildren
+  return !!Blocks[block.type]?.meta.hasChildren
 }
 
 export const isResizebleBlockType = (blockType: Editor.BlockType) => {
-  return !!Blocks[blockType].meta.isResizeable
+  return !!Blocks[blockType]?.meta.isResizeable
 }

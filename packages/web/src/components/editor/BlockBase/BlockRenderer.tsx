@@ -180,12 +180,12 @@ export const BlockRenderer = (
     <>
       {tokens?.map((token, i) => {
         return (
-          <>
-            <Token token={token} index={i} key={i} assetsMap={assetsMap} />
+          <React.Fragment key={i}>
+            <Token token={token} index={i} assetsMap={assetsMap} />
             {/* keep it to prevent safari selection issue */}
             {/* trim it in deserialize function */}
             {i === tokens.length - 1 && isNonSelectbleToken(token) ? '\n' : null}
-          </>
+          </React.Fragment>
         )
       }) || null}
     </>
