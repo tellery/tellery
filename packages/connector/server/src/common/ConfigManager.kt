@@ -8,19 +8,31 @@ import kotlinx.coroutines.*
 import java.io.File
 import java.nio.channels.FileLock
 import java.nio.channels.OverlappingFileLockException
+import java.nio.file.Path
+import kotlin.io.path.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 object ConfigManager {
 
-    private val dbConfigPath: String
     private var config: ConnectorConfig
     private val registeredUpdateHandler: MutableList<suspend (Profile) -> Unit> = mutableListOf()
     private val registeredDeleteHandler: MutableList<suspend (String) -> Unit> = mutableListOf()
+    private val dbConfig: File
+    val globalConfigDir: Path
 
     init {
         val appConfig = ConfigFactory.load()
-        dbConfigPath =
-            appConfig.getString("dbProfile.path") ?: throw DBProfileNotConfiguredException()
+        globalConfigDir = Path(appConfig.getString("configDirPath"))
+        // Init config dir
+        if (globalConfigDir.notExists()){
+            globalConfigDir.createDirectory()
+        }
+        if (!globalConfigDir.isDirectory()){
+            throw DBConfigDirOccupiedException(globalConfigDir.name)
+        }
+
+        dbConfig =
+            globalConfigDir.resolve(appConfig.getString("dbProfile.path") ?: throw DBProfileNotConfiguredException()).toFile()
         config = loadConfig()
     }
 
@@ -40,8 +52,7 @@ object ConfigManager {
 
     fun saveProfiles(newProfiles: List<Profile>) {
         // acquire file lock
-        val file = File(dbConfigPath)
-        val fchannel = file.outputStream().channel
+        val fchannel = dbConfig.outputStream().channel
         var lock: FileLock? = null
         try {
             lock = fchannel.tryLock()
@@ -50,7 +61,7 @@ object ConfigManager {
         if (lock != null) {
             val newConfig = ConnectorConfig(newProfiles, config.credential, config.repo)
             val newConfigContent = Gson().toJson(newConfig)
-            file.writeText(newConfigContent)
+            dbConfig.writeText(newConfigContent)
             lock.release()
         }
         fchannel.close()
@@ -58,14 +69,13 @@ object ConfigManager {
 
     private fun loadConfig(): ConnectorConfig {
         val gson = Gson()
-        val file = File(dbConfigPath)
-        return if (!file.exists()) {
+        return if (!dbConfig.exists()) {
             // if profile does not exists, initialize with empty profile by default.
             val initConfig = ConnectorConfig(emptyList(), null, null)
-            file.writeText(gson.toJson(initConfig))
+            dbConfig.writeText(gson.toJson(initConfig))
             initConfig
         } else {
-            val dbConfigText = file.readText()
+            val dbConfigText = dbConfig.readText()
             // required by gson deserialization
             val itemType = object : TypeToken<ConnectorConfig>() {}.type
             gson.fromJson(dbConfigText, itemType) ?: throw DBProfileNotValidException()

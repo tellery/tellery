@@ -10,6 +10,9 @@ class TruncateException : Exception("Truncated")
 class DBProfileNotConfiguredException :
     Exception("DB Profile not configured correctly! Please specify its path in application.conf")
 
+class DBConfigDirOccupiedException(fn: String) :
+    Exception("DB Config Directory $fn has been occupied")
+
 class JDBCDriverClassNotFoundException(profile: String, className: String) :
     Exception("Driver not found for profile $profile, required driver $className")
 

@@ -12,9 +12,11 @@ object ProfileManager {
     private val mapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
 
     fun batchToDbtProfile(profiles: List<Profile>): String {
-        val profileMap = profiles
-            .map { it.configs[Constants.PROFILE_DBT_PROJECT_FIELD] to Entity(Output(toDbtProfile(it))) }
-            .toMap()
+        val profileMap = profiles.associate {
+            it.configs[Constants.PROFILE_DBT_PROJECT_FIELD] to Entity(
+                Output(toDbtProfile(it))
+            )
+        }
         return mapper.writeValueAsString(profileMap)
     }
 
