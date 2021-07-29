@@ -1,5 +1,5 @@
 import { BlockType } from '../../types/block'
-import { permissionForThoughtBlock, PermissionModel } from '../../types/permission'
+import { onlyForCreatedUser, PermissionModel } from '../../types/permission'
 import { Link } from '../link'
 import { StoryBlock } from './story'
 
@@ -35,6 +35,6 @@ export class ThoughtBlock extends StoryBlock {
    * @returns the default permission of thought block is visible only by me
    */
   async getPermissions(): Promise<PermissionModel[]> {
-    return permissionForThoughtBlock(this.createdById)
+    return onlyForCreatedUser(this.createdById)
   }
 }

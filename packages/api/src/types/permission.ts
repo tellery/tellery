@@ -58,9 +58,16 @@ const defaultPermissions = [
   { role: PermissionEntityRole.MANAGER, type: PermissionEntityRoleType.WORKSPACE },
 ]
 
-function permissionForThoughtBlock(createdById?: string): PermissionModel[] {
+function onlyForCreatedUser(createdById?: string): PermissionModel[] {
   return [
     { role: PermissionEntityRole.MANAGER, type: PermissionEntityRoleType.USER, id: createdById },
+  ]
+}
+
+function readonlyForWorkspace(createdById?: string): PermissionModel[] {
+  return [
+    { role: PermissionEntityRole.MANAGER, type: PermissionEntityRoleType.USER, id: createdById },
+    { role: PermissionEntityRole.VIEWER, type: PermissionEntityRoleType.WORKSPACE },
   ]
 }
 
@@ -73,5 +80,6 @@ export {
   PermissionWorkspaceAction,
   PermissionModel,
   defaultPermissions,
-  permissionForThoughtBlock,
+  onlyForCreatedUser,
+  readonlyForWorkspace,
 }

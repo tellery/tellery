@@ -28,6 +28,9 @@ export default async function user(ctx: Context, next: Next) {
       // invited new user to workspace
       if (_(payload).get('generated')) {
         const workspace = await getRepository(WorkspaceEntity).findOneOrFail({
+          order: {
+            createdAt: 'ASC',
+          },
           relations: ['members'],
         })
         const admin = _(workspace.members).find((m) => m.role === PermissionWorkspaceRole.ADMIN)
