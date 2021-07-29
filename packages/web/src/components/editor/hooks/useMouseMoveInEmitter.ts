@@ -1,10 +1,11 @@
 import { useLoggedUser } from '@app/hooks/useAuth'
-import { SocketContext } from '@app/context/socketio'
+import { useSocketInstance } from '@app/hooks/useSocketContextProvider'
 import { throttle } from 'lodash'
-import { useCallback, useContext, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 export const useMouseMoveInEmitter = (storyId: string, mouseInBlockId: string | null) => {
-  const socket = useContext(SocketContext)
+  const socket = useSocketInstance()
+
   const currentBlockIdRef = useRef<string | null>(null)
   const user = useLoggedUser()
 

@@ -7,7 +7,7 @@ import {
   IconCommonThoughts
 } from '@app/assets/icons'
 import { MainSideBarItem } from '@app/components/MainSideBarItem'
-import { useWorkspace } from '@app/context/workspace'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useHover } from '@app/hooks'
 import { useConnectorsListProfiles } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'

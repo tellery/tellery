@@ -1,5 +1,5 @@
 import { IconMenuQuery } from '@app/assets/icons'
-import { useWorkspace } from '@app/context/workspace'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useOpenStory } from '@app/hooks'
 import { useMgetBlocks } from '@app/hooks/api'
 import { transclusionRegex } from '@app/hooks/useSqlEditor'

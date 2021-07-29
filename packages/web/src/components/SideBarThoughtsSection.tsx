@@ -1,6 +1,6 @@
 import { IconCommonAdd } from '@app/assets/icons'
 import { createTranscation } from '@app/context/editorTranscations'
-import { useWorkspace } from '@app/context/workspace'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useOpenStory } from '@app/hooks'
 import { useAllThoughts } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'

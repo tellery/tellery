@@ -6,7 +6,7 @@ import type { editor, languages } from 'monaco-editor'
 import { useEffect, useMemo, useState } from 'react'
 import { Editor } from '@app/types'
 import { useGetCollectionSchema, useListCollections, useListDatabases } from './api'
-import { useWorkspace } from '@app/context/workspace'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 
 export function useSqlEditor(languageId?: string) {
   const monaco = useMonaco() || undefined

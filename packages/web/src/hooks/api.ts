@@ -1,4 +1,4 @@
-import { useWorkspace } from '@app/context/workspace'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import {
   Entity,
   EntityRequest,

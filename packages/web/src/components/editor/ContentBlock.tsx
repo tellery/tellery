@@ -245,7 +245,7 @@ export const BlockSelectedOverlay: React.FC<{ blockId: string; selected?: boolea
         left: 0;
         top: 0;
         position: absolute;
-        z-index: 999;
+        z-index: 1;
         background: rgba(46, 115, 252, 0.2);
         transition: opacity 250ms;
         pointer-events: none;

@@ -2,7 +2,7 @@ import { request, saveTranscations } from '@app/api'
 import { TelleryStorySelectionAtom } from '@app/components/editor'
 import type { TellerySelection } from '@app/components/editor/helpers'
 import { createTranscation } from '@app/context/editorTranscations'
-import { useWorkspace } from '@app/context/workspace'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import {
   BlockSnapshot,
   createUserLogOperation,
@@ -263,9 +263,9 @@ export const CommitContext = createContext<ReturnType<typeof useCommitProvider> 
 export const useCommit = () => {
   const commit = useContext(CommitContext)
 
-  invariant(commit, 'useCommit must use in context')
+  // invariant(commit, 'useCommit must use in context')
 
-  return commit
+  return commit!
 }
 
 const applyOperations = (

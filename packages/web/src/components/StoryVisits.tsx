@@ -1,18 +1,17 @@
-import { useLoggedUser } from '@app/hooks/useAuth'
-import { css, cx } from '@emotion/css'
-import { SocketContext } from '@app/context/socketio'
 import { useMgetUsers, useStoryVisits } from '@app/hooks/api'
-import React, { useContext, useEffect, useMemo, useState } from 'react'
+import { useLoggedUser } from '@app/hooks/useAuth'
+import { useSocketInstance } from '@app/hooks/useSocketContextProvider'
 import { ThemingVariables } from '@app/styles'
 import styled from '@emotion/styled'
 import Tippy from '@tippyjs/react'
 import dayjs from 'dayjs'
+import React, { useEffect, useMemo, useState } from 'react'
 
 export function StoryVisits(props: { storyId: string; className?: string }) {
   const { storyId } = props
   const { data: visits, refetch } = useStoryVisits(props.storyId)
   const { data: usersMap } = useMgetUsers(visits?.map((visit) => visit.userId))
-  const socket = useContext(SocketContext)
+  const socket = useSocketInstance()
   const [activeIds, setActiveIds] = useState<string[]>([])
   const user = useLoggedUser()
 

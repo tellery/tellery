@@ -1,5 +1,5 @@
 import { sqlRequest } from '@app/api'
-import { useWorkspace } from '@app/context/workspace'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { createTranscation } from '@app/context/editorTranscations'
 import dayjs from 'dayjs'
 import invariant from 'tiny-invariant'

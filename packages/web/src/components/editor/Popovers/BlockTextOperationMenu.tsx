@@ -1,4 +1,4 @@
-import { useWorkspace } from '@app/context/workspace'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useCommit } from '@app/hooks/useCommit'
 import { css } from '@emotion/css'
 import styled from '@emotion/styled'

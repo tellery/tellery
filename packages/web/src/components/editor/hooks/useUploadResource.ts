@@ -1,4 +1,4 @@
-import { useWorkspace } from '@app/context/workspace'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useBlockSuspense } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
 import { useEffect, useState } from 'react'

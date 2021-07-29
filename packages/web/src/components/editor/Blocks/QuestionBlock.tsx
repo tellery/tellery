@@ -227,6 +227,7 @@ export const QuestionBlockButtons: React.FC<{ blockId: string; show: boolean }> 
             border-radius: 8px;
             position: absolute;
             right: 0;
+            z-index: 1;
             bottom: 100%;
             margin-bottom: 13px;
             padding: 5px;
