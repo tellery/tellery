@@ -324,35 +324,41 @@ async function getCollectionSchemaRouter(ctx: Context) {
 }
 
 async function execute(ctx: Context) {
-  const payload = plainToClass(ExecuteSqlRequest, ctx.request.body)
-  await validate(ctx, payload)
-  const user = mustGetUser(ctx)
-  const { workspaceId, connectorId, profile, sql, maxRow, questionId } = payload
+  try {
+    const payload = plainToClass(ExecuteSqlRequest, ctx.request.body)
+    await validate(ctx, payload)
+    const user = mustGetUser(ctx)
+    const { workspaceId, connectorId, profile, sql, maxRow, questionId } = payload
 
-  const assembledSql = await translate(sql)
+    const assembledSql = await translate(sql)
 
-  const manager = await getIConnectorManagerFromDB(connectorId)
+    const manager = await getIConnectorManagerFromDB(connectorId)
 
-  const identifier = nanoid()
+    const identifier = nanoid()
 
-  ctx.res.on('close', async () => {
-    await connectorService.cancelQuery(manager, identifier)
-  })
+    ctx.res.on('close', async () => {
+      await connectorService.cancelQuery(manager, identifier)
+    })
 
-  await withKeepaliveStream(ctx, async (streamResponse) => {
-    const queryResultStream = await connectorService.executeSql(
-      manager,
-      user.id,
-      workspaceId,
-      profile,
-      assembledSql,
-      identifier,
-      maxRow,
-      questionId,
-      streamHttpErrorCb(streamResponse),
-    )
-    queryResultStream.pipe(streamResponse)
-  })
+    await withKeepaliveStream(ctx, async (streamResponse) => {
+      const queryResultStream = await connectorService.executeSql(
+        manager,
+        user.id,
+        workspaceId,
+        profile,
+        assembledSql,
+        identifier,
+        maxRow,
+        questionId,
+        streamHttpErrorCb(streamResponse),
+      )
+      queryResultStream.pipe(streamResponse)
+    })
+  } catch (err) {
+    // override the status code, therefore the error would appear in the sql editor correctly
+    err.status = 200
+    throw err
+  }
 }
 
 async function importFromFile(ctx: Context) {
