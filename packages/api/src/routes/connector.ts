@@ -10,7 +10,7 @@ import { AuthData, AuthType } from '../types/auth'
 import { errorResponse, validate } from '../utils/http'
 import { mustGetUser } from '../utils/user'
 import { streamHttpErrorCb, withKeepaliveStream } from '../utils/stream'
-import { StorageError } from '../error/error'
+import { StorageError, UnauthorizedError } from '../error/error'
 import { translate } from '../core/translator'
 
 class AddConnectorRequest {
@@ -324,35 +324,43 @@ async function getCollectionSchemaRouter(ctx: Context) {
 }
 
 async function execute(ctx: Context) {
-  const payload = plainToClass(ExecuteSqlRequest, ctx.request.body)
-  await validate(ctx, payload)
-  const user = mustGetUser(ctx)
-  const { workspaceId, connectorId, profile, sql, maxRow, questionId } = payload
+  try {
+    const payload = plainToClass(ExecuteSqlRequest, ctx.request.body)
+    await validate(ctx, payload)
+    const user = mustGetUser(ctx)
+    const { workspaceId, connectorId, profile, sql, maxRow, questionId } = payload
 
-  const assembledSql = await translate(sql)
+    const assembledSql = await translate(sql)
 
-  const manager = await getIConnectorManagerFromDB(connectorId)
+    const manager = await getIConnectorManagerFromDB(connectorId)
 
-  const identifier = nanoid()
+    const identifier = nanoid()
 
-  ctx.res.on('close', async () => {
-    await connectorService.cancelQuery(manager, identifier)
-  })
+    ctx.res.on('close', async () => {
+      await connectorService.cancelQuery(manager, identifier)
+    })
 
-  await withKeepaliveStream(ctx, async (streamResponse) => {
-    const queryResultStream = await connectorService.executeSql(
-      manager,
-      user.id,
-      workspaceId,
-      profile,
-      assembledSql,
-      identifier,
-      maxRow,
-      questionId,
-      streamHttpErrorCb(streamResponse),
-    )
-    queryResultStream.pipe(streamResponse)
-  })
+    await withKeepaliveStream(ctx, async (streamResponse) => {
+      const queryResultStream = await connectorService.executeSql(
+        manager,
+        user.id,
+        workspaceId,
+        profile,
+        assembledSql,
+        identifier,
+        maxRow,
+        questionId,
+        streamHttpErrorCb(streamResponse),
+      )
+      queryResultStream.pipe(streamResponse)
+    })
+  } catch (err) {
+    if (err! instanceof UnauthorizedError) {
+      // override the status code, therefore the error would appear in the sql editor correctly
+      err.status = 200
+    }
+    throw err
+  }
 }
 
 async function importFromFile(ctx: Context) {
