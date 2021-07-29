@@ -6,6 +6,9 @@ import {
   IconCommonClose,
   IconCommonDownstream,
   IconCommonError,
+  IconCommonMetrics,
+  IconCommonMore,
+  IconCommonQuestion,
   IconCommonRun,
   IconCommonSave,
   IconCommonSql,
@@ -38,7 +41,7 @@ import { atom, useRecoilCallback, useRecoilState } from 'recoil'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import { applyCreateSnapshotOperation } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
-import type { Editor, Story } from '@app/types'
+import { Editor, Story } from '@app/types'
 import { DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
 import { setBlockTranscation } from '../context/editorTranscations'
 import { CircularLoading } from './CircularLoading'
@@ -49,6 +52,8 @@ import IconButton from './kit/IconButton'
 import QuestionDownstreams from './QuestionDownstreams'
 import { charts } from './v11n/charts'
 import { Config, Type } from './v11n/types'
+import Tippy from '@tippyjs/react'
+import { MenuItem } from './MenuItem'
 
 type Mode = 'SQL' | 'VIS' | 'DOWNSTREAM'
 
@@ -845,6 +850,14 @@ export const StoryQuestionEditor: React.FC<{
             >
               <BlockTitle block={block} />
             </span>
+            {block.type === Editor.BlockType.Metric ? (
+              <IconCommonMetrics
+                color={ThemingVariables.colors.text[0]}
+                className={css`
+                  margin-left: 10px;
+                `}
+              />
+            ) : null}
           </div>
         </div>
         <div
@@ -878,6 +891,64 @@ export const StoryQuestionEditor: React.FC<{
             onClick={save}
             color={ThemingVariables.colors.primary[1]}
           />
+          <Tippy
+            content={
+              <div
+                className={cx(
+                  css`
+                    background: ${ThemingVariables.colors.gray[5]};
+                    box-shadow: ${ThemingVariables.boxShadows[0]};
+                    border-radius: 8px;
+                    padding: 8px;
+                    width: 260px;
+                    display: block;
+                    cursor: pointer;
+                  `
+                )}
+              >
+                <MenuItem
+                  icon={
+                    block.type === Editor.BlockType.Metric ? (
+                      <IconCommonQuestion color={ThemingVariables.colors.text[0]} />
+                    ) : (
+                      <IconCommonMetrics color={ThemingVariables.colors.text[0]} />
+                    )
+                  }
+                  title={`Convert to ${block.type === Editor.BlockType.Metric ? 'question' : 'metric'}`}
+                  onClick={() => {
+                    setBlock(block.id, (draftBlock) => {
+                      if (draftBlock.type === Editor.BlockType.Question) {
+                        draftBlock.type = Editor.BlockType.Metric
+                      } else if (draftBlock.type === Editor.BlockType.Metric) {
+                        draftBlock.type = Editor.BlockType.Question
+                      }
+                    })
+                  }}
+                />
+              </div>
+            }
+            placement="bottom"
+            hideOnClick={true}
+            theme="tellery"
+            animation="fade"
+            duration={150}
+            arrow={false}
+            interactive
+            trigger="click"
+            popperOptions={{
+              modifiers: [
+                {
+                  name: 'offset',
+                  enabled: true,
+                  options: {
+                    offset: [10, 20]
+                  }
+                }
+              ]
+            }}
+          >
+            <IconButton icon={IconCommonMore} color={ThemingVariables.colors.primary[1]} />
+          </Tippy>
         </div>
       </div>
       <div
