@@ -6,6 +6,7 @@ import { Editor } from '@app/types'
 import { DEFAULT_TITLE, TELLERY_MIME_TYPES } from '@app/utils'
 import { TellerySelection, TellerySelectionType } from './tellerySelection'
 import { isReferenceToken } from '../BlockBase/ContentEditable'
+import { isQuestionLikeBlock } from '../Blocks/utils'
 
 export const mergeTokens = (tokens: Editor.Token[]) => {
   return tokens.reduce((acc: Editor.Token[], current: Editor.Token) => {
@@ -184,7 +185,7 @@ export const splitToken = (title?: Editor.Token[]) => {
 }
 
 export const blockTitleToText = (block: Editor.BaseBlock, snapshot: BlockSnapshot): string => {
-  if (block.type === Editor.BlockType.Question || block.type === Editor.BlockType.Story) {
+  if (isQuestionLikeBlock(block.type) || block.type === Editor.BlockType.Story) {
     if (!block.content?.title?.length) {
       return DEFAULT_TITLE
     }

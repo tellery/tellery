@@ -77,6 +77,7 @@ export namespace Editor {
     Image = 'image',
     NumberedList = 'numbered_list',
     Page = 'page',
+    Metric = 'metric',
     Question = 'question',
     Quote = 'quote',
     Table = 'table',

@@ -8,6 +8,7 @@ import { toast } from 'react-toastify'
 import { BlockSnapshot, getBlockFromSnapshot } from '@app/store/block'
 import { Editor } from '@app/types'
 import { mergeTokens } from '../components/editor'
+import { isQuestionLikeBlock } from '@app/components/editor/Blocks/utils'
 
 export const createTranscation = ({ operations }: { operations: Operation[] }) => {
   return {
@@ -147,7 +148,7 @@ export const canOutdention = (parentBlock: Editor.BaseBlock, blockIds: string[])
 export const getDuplicatedBlocks = (blocks: Editor.BaseBlock[], storyId: string) => {
   const duplicatedBlocks = blocks.map((block) => {
     const fragBlock = block
-    if (fragBlock.type === Editor.BlockType.Question) {
+    if (isQuestionLikeBlock(fragBlock.type)) {
       const questionBlock = fragBlock as Editor.QuestionBlock
 
       const newBlock = createEmptyBlock<Editor.QuestionBlock>({

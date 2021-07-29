@@ -43,12 +43,12 @@ export const findPreviousTextBlock = (blockId: string, snapshot: BlockSnapshot) 
   const index = parentBlock.children!.findIndex((id) => id === blockId)
   for (let i = index - 1; i >= 0; i--) {
     const block = getBlockFromSnapshot(parentBlock.children![i], snapshot)
-    if (isTextBlock(block)) {
+    if (isTextBlock(block.type)) {
       return block
     }
   }
   if (block.parentId !== block.storyId) {
-    if (isTextBlock(parentBlock)) {
+    if (isTextBlock(parentBlock.type)) {
       return parentBlock
     }
   }
@@ -62,7 +62,7 @@ export const findNextTextBlock = (blockId: string, snapshot: BlockSnapshot): Edi
   for (let i = index + 1; i < parentBlock.children!.length; i++) {
     const block = getBlockFromSnapshot(parentBlock.children![i], snapshot)
 
-    if (isTextBlock(block)) {
+    if (isTextBlock(block.type)) {
       return block
     }
   }

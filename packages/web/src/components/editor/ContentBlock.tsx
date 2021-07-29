@@ -9,6 +9,7 @@ import { BlockOperations } from './BlockOperations'
 import { OperatorsAvatar } from './BlockOperators'
 import { BlockInner } from './Blocks'
 import { TitleBlock } from './Blocks/TitleBlock'
+import { isResizebleBlockType } from './Blocks/utils'
 import { DroppingAreaIndicator } from './DroppingAreaIndicator'
 import { DroppleableOverlay } from './DroppleableOverlay'
 import { useBlockAdmin } from './hooks/useBlockAdminProvider'
@@ -82,9 +83,6 @@ export const _ContentBlockPure: React.FC<{
 }
 
 export const ContentBlockPure = memo(_ContentBlockPure)
-const isResizebleBlockType = (blockType: Editor.BlockType) => {
-  return blockType === Editor.BlockType.Question || blockType === Editor.BlockType.Image
-}
 
 // _BlockInner.whyDidYouRender = {
 //   logOnDifferentValues: true,

@@ -28,6 +28,7 @@ import { useEditor, useLocalSelection } from '../hooks'
 import { BlockReferenceDropdown } from '../Popovers/BlockReferenceDropdown'
 import { SlashCommandDropdown } from '../Popovers/SlashCommandDropdown'
 import { BlockRenderer } from './BlockRenderer'
+import { isQuestionLikeBlock } from '../Blocks/utils'
 
 const logger = debug('tellery:contentEditable')
 export interface EditableRef {
@@ -425,7 +426,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
                 localSelection.focus.offset === 0
               ) {
                 e.preventDefault()
-                if (block.type === Editor.BlockType.Question) {
+                if (isQuestionLikeBlock(block.type)) {
                   e.stopPropagation()
                 } else if (block.type !== Editor.BlockType.Text && block.type !== Editor.BlockType.Story) {
                   editor?.toggleBlockType(block.id, Editor.BlockType.Text, 0)

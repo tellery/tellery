@@ -38,7 +38,7 @@ import {
   tokenPosition2SplitedTokenPosition
 } from '.'
 import { ThoughtItemHeader } from '../ThoughtItem'
-import { isBlockHasChildren, isTextBlock } from './Blocks/utils'
+import { isBlockHasChildren, isQuestionLikeBlock, isTextBlock } from './Blocks/utils'
 import { ContentBlocks } from './ContentBlock'
 import {
   canOutdention,
@@ -218,7 +218,7 @@ const _StoryEditor: React.FC<{
 
   const setSelectionAtBlockStart = useCallback(
     (block: Editor.Block) => {
-      if (isTextBlock(block)) {
+      if (isTextBlock(block.type)) {
         setSelectionState({
           storyId,
           type: TellerySelectionType.Inline,
@@ -309,7 +309,7 @@ const _StoryEditor: React.FC<{
           block.content.title = mergeTokens(splitedTokens.slice(removePrefixCount))
         }
         // TODO: use middleware
-        if (type === Editor.BlockType.Question) {
+        if (isQuestionLikeBlock(type)) {
           const newBlock = createEmptyBlock({ type: Editor.BlockType.Question })
           ;(block.content as any).sql = ''
           block.format = newBlock.format
@@ -339,7 +339,7 @@ const _StoryEditor: React.FC<{
     }
 
     const currentBlock = getBlockFromSnapshot(selectionState.anchor.blockId, snapshot)
-    if (currentBlock.type === Editor.BlockType.Story || currentBlock.type === Editor.BlockType.Question) {
+    if (currentBlock.type === Editor.BlockType.Story || isQuestionLikeBlock(currentBlock.type)) {
       return
     }
 
@@ -392,7 +392,7 @@ const _StoryEditor: React.FC<{
 
       if (startPosition !== null && endPosition !== null) {
         setBlockValue(block.id, (block) => {
-          if (isTextBlock(block)) {
+          if (isTextBlock(block.type)) {
             block!.content!.title = mergeTokens([
               ...splitedTokens.slice(0, startPosition),
               ...splitedTokens.slice(endPosition)
@@ -608,7 +608,7 @@ const _StoryEditor: React.FC<{
       setSelectedBlocks(duplicatedBlocks.map((block) => block.id))
       const currentBlock = duplicatedBlocks[duplicatedBlocks.length - 1]
       const blockId = currentBlock.id
-      focusBlockHandler(blockId, currentBlock.type === Editor.BlockType.Question)
+      focusBlockHandler(blockId, isQuestionLikeBlock(currentBlock.type))
       return duplicatedBlocks
     },
     [blockTranscations, focusBlockHandler, setSelectedBlocks, snapshot, storyId]

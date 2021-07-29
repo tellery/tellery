@@ -135,7 +135,7 @@ export const BlockTextOperationMenuInner = ({
   const workspace = useWorkspace()
 
   const tokenRange = useMemo(() => {
-    if (range && currentBlock && isTextBlock(currentBlock)) {
+    if (range && currentBlock && isTextBlock(currentBlock.type)) {
       const selection = nativeSelection2Tellery(currentBlock)
       if (selection?.type !== TellerySelectionType.Inline) return
       const focus = selection?.focus

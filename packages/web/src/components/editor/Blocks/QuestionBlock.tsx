@@ -199,10 +199,13 @@ const QuestionBlock = React.forwardRef(_QuestionBlock) as BlockComponent<
 QuestionBlock.meta = {
   isText: true,
   forwardRef: true,
-  hasChildren: false
+  hasChildren: false,
+  isQuestion: true,
+  isResizeable: true
 }
 
 registerBlock(Editor.BlockType.Question, QuestionBlock)
+registerBlock(Editor.BlockType.Metric, QuestionBlock)
 
 export const QuestionBlockButtons: React.FC<{ blockId: string; show: boolean }> = ({ blockId, show }) => {
   const block = useBlockSuspense<Editor.QuestionBlock>(blockId)

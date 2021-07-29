@@ -7,9 +7,10 @@ import { nanoid } from 'nanoid'
 import React, { useCallback, useContext, useEffect, useMemo } from 'react'
 import { useIsMutating, useQueryClient } from 'react-query'
 import { applyCreateSnapshotOperation } from '@app/store/block'
-import { Editor, Story } from '@app/types'
+import type { Editor, Story } from '@app/types'
 import { useCommit } from './useCommit'
 import { useStoryBlocksMap } from './useStoryBlock'
+import { isQuestionLikeBlock } from '@app/components/editor/Blocks/utils'
 
 export const useRefreshSnapshot = () => {
   const commit = useCommit()
@@ -137,7 +138,7 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
 
   const questionBlocks = useMemo(() => {
     if (!storyBlocksMap) return []
-    return Object.values(storyBlocksMap).filter((block) => block.type === Editor.BlockType.Question)
+    return Object.values(storyBlocksMap).filter((block) => isQuestionLikeBlock(block.type))
   }, [storyBlocksMap])
 
   const refreshOnInit = (storyBlocksMap?.[storyId] as Story)?.format?.refreshOnOpen

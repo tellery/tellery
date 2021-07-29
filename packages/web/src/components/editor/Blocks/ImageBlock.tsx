@@ -96,7 +96,8 @@ const ImageBlock: BlockComponent<
 
 ImageBlock.meta = {
   isText: false,
-  hasChildren: false
+  hasChildren: false,
+  isResizeable: true
 }
 
 registerBlock(Editor.BlockType.Image, ImageBlock)

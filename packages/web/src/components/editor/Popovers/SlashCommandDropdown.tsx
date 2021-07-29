@@ -28,6 +28,7 @@ import { mergeTokens, splitToken, tokenPosition2SplitedTokenPosition } from '..'
 import { EditorPopover } from '../EditorPopover'
 import { TellerySelection, tellerySelection2Native, TellerySelectionType } from '../helpers/tellerySelection'
 import { useEditableContextMenu, useEditor } from '../hooks'
+import { isQuestionLikeBlock } from '../Blocks/utils'
 
 const logger = debug('tellery:slashCommand')
 
@@ -143,7 +144,7 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
           focus: { blockId, offset: 0, nodeIndex: 0 }
         })
       }
-      editor?.focusBlockHandler(blockId, blockType === Editor.BlockType.Question)
+      editor?.focusBlockHandler(blockId, isQuestionLikeBlock(blockType))
 
       setOpen(false)
     },

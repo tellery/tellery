@@ -20,11 +20,21 @@ import { compact } from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { QueryObserverResult, useInfiniteQuery, useMutation, useQuery, UseQueryOptions } from 'react-query'
 import { useRecoilCallback, useRecoilValue, useRecoilValueLoadable, waitForAll, waitForAny } from 'recoil'
-import { AvailableConfig, BackLinks, Editor, ProfileConfig, Snapshot, Story, UserInfo, Workspace } from '@app/types'
+import type {
+  AvailableConfig,
+  BackLinks,
+  Editor,
+  ProfileConfig,
+  Snapshot,
+  Story,
+  UserInfo,
+  Workspace
+} from '@app/types'
 import { queryClient } from '@app/utils'
 import { emitBlockUpdate } from '@app/utils/remoteStoreObserver'
 import { blockUpdater, TelleryBlockAtom, TelleryUserAtom } from '../store/block'
 import { useBatchQueries } from './useBatchQueries'
+import { isQuestionLikeBlock } from '@app/components/editor/Blocks/utils'
 
 export type User = {
   id: string
@@ -480,7 +490,7 @@ export const useQuestionDownstreams = (id?: string) => {
       compact(
         links?.backwardRefs
           ?.map(({ blockId }) => blocks?.[blockId])
-          .filter((block) => block?.type === Editor.BlockType.Question)
+          .filter((block) => block && isQuestionLikeBlock(block.type))
       ),
     [blocks, links?.backwardRefs]
   )

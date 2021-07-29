@@ -8,6 +8,7 @@ import React, { useMemo } from 'react'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import { useHistory, useRouteMatch } from 'react-router-dom'
 import { useGetBlockTitleTextSnapshot } from './editor'
+import { isQuestionLikeBlock } from './editor/Blocks/utils'
 import { getFilteredOrderdSubsetOfBlocks } from './editor/utils'
 
 export const SideBarMetricsSection = () => {
@@ -71,7 +72,7 @@ const CurrentStoryQuestions: React.FC<{ storyId: string }> = ({ storyId }) => {
 
   const questionBlocks = useMemo(() => {
     if (!storyBlocksMap) return []
-    return getFilteredOrderdSubsetOfBlocks(storyBlocksMap, storyId, (block) => block.type === Editor.BlockType.Question)
+    return getFilteredOrderdSubsetOfBlocks(storyBlocksMap, storyId, (block) => isQuestionLikeBlock(block.type))
   }, [storyBlocksMap, storyId])
 
   return (

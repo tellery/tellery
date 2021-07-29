@@ -18,6 +18,7 @@ import Icon from './kit/Icon'
 import { OmniBoxItem, ResultType } from './OmniBoxItem'
 import { SmallStory } from './SmallStory'
 import PerfectScrollbar from 'react-perfect-scrollbar'
+import { isQuestionLikeBlock } from './editor/Blocks/utils'
 
 const PAGE_LIMIT = 51
 
@@ -73,7 +74,7 @@ export function OmniBox() {
             subText: dayjs(block.updatedAt).format('YYYY-MM-DD')
           }
         }
-        if (block.type === Editor.BlockType.Question) {
+        if (isQuestionLikeBlock(block.type)) {
           return {
             id: block.id,
             storyId: block.storyId,
