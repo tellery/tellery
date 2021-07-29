@@ -3,8 +3,15 @@ import { EntityManager } from 'typeorm'
 import { Block, getPlainTextFromTokens } from '.'
 import { WorkspaceViewEntity } from '../../entities/workspaceView'
 import { BlockParentType, BlockType } from '../../types/block'
-import { defaultPermissions, PermissionModel } from '../../types/permission'
+import {
+  defaultPermissions,
+  onlyForCreatedUser,
+  PermissionModel,
+  readonlyForWorkspace,
+} from '../../types/permission'
+import { isAnonymous } from '../../utils/env'
 import { md5 } from '../../utils/helper'
+import { getSuperUser } from '../../utils/user'
 import { TextBlock } from './text'
 
 export class StoryBlock extends TextBlock {
@@ -34,6 +41,13 @@ export class StoryBlock extends TextBlock {
    * @returns the default permission of story block is visible by workspace
    */
   async getPermissions(): Promise<PermissionModel[]> {
+    if (isAnonymous()) {
+      const su = await getSuperUser()
+      if (su.id === this.createdById) {
+        return this.permissions ?? readonlyForWorkspace(this.createdById)
+      }
+      return onlyForCreatedUser(this.createdById)
+    }
     return this.permissions ?? defaultPermissions
   }
 

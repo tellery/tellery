@@ -1,10 +1,16 @@
 import { Context } from 'koa'
+import { getRepository } from 'typeorm'
+import { User } from '../core/user'
+import { UserEntity } from '../entities/user'
 
 import { UnauthorizedError } from '../error/error'
+import { isAnonymous } from './env'
 
 export const USER_TOKEN_HEADER_KEY = 'x-user-token'
 
-function mustGetUser(ctx: Context): { id: string } {
+let superUser: User | undefined
+
+export function mustGetUser(ctx: Context): { id: string } {
   const user = getUser(ctx)
   if (!user) {
     throw UnauthorizedError.notLogin()
@@ -12,7 +18,7 @@ function mustGetUser(ctx: Context): { id: string } {
   return user
 }
 
-function getUser(ctx: Context): { id: string } | undefined {
+export function getUser(ctx: Context): { id: string } | undefined {
   const { user } = ctx.state
   if (!user) {
     if (process.env.NODE_ENV === 'local') {
@@ -25,4 +31,18 @@ function getUser(ctx: Context): { id: string } | undefined {
   return user
 }
 
-export { mustGetUser, getUser }
+/**
+ * this function is only used in anonymous mode
+ * TODO: A more elegant implementation
+ */
+export async function getSuperUser(): Promise<User> {
+  if (!isAnonymous()) {
+    throw new Error('not allowed')
+  }
+  if (superUser) {
+    return superUser
+  }
+  const user = await getRepository(UserEntity).findOneOrFail({ order: { createdAt: 'ASC' } })
+  superUser = User.fromEntity(user)
+  return superUser
+}
