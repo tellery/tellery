@@ -80,12 +80,7 @@ export const useFetchStoryChunk = <T extends Editor.BaseBlock = Story>(id: strin
     { suspense: suspense }
   )
 
-  // console.log('useFetchStoryChunk useBlockSuspense', id)
-
   const block = useBlockSuspense<T>(id)
-
-  // console.log('useFetchStoryChunk useBlockSuspense fetched', id, block)
-
   return block as T
 }
 

@@ -7,7 +7,7 @@ import {
   IconMenuNormalWidth
 } from '@app/assets/icons'
 import { createTranscation } from '@app/context/editorTranscations'
-import { useWorkspaceView } from '@app/hooks/api'
+import { useBlockSuspense, useWorkspaceView } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useCommit } from '@app/hooks/useCommit'
 import { ThemingVariables } from '@app/styles'
@@ -21,14 +21,9 @@ import { RefreshButton } from './RefreshButton'
 import { StoryConfigPopOver } from './StoryConfigPopOver'
 import { StoryVisits } from './StoryVisits'
 
-export const _NavigationHeader = (props: {
-  story: Story
-  storyId: string
-  title?: string
-  pinned?: boolean
-  locked?: boolean
-}) => {
-  const { story } = props
+export const _NavigationHeader = (props: { storyId: string; title?: string; pinned?: boolean }) => {
+  const story = useBlockSuspense<Story>(props.storyId)
+  const locked = !!story.format?.locked
   const { data: workspaceView, refetch: refetchWorkspaceView } = useWorkspaceView()
   const commit = useCommit()
   const blockTranscation = useBlockTranscations()
@@ -64,7 +59,7 @@ export const _NavigationHeader = (props: {
         z-index: 100;
       `}
     >
-      {props.locked && (
+      {locked && (
         <span
           className={css`
             display: inline-flex;
