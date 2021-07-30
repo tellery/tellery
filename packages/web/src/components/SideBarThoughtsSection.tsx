@@ -63,7 +63,7 @@ export const SideBarThoughtsSection = () => {
   }, [thoughts, today])
 
   return (
-    <SideBarContentLayout title={'Thoughts'}>
+    <SideBarContentLayout title="Thoughts">
       <FormButton
         variant="primary"
         className={css`
@@ -84,23 +84,16 @@ export const SideBarThoughtsSection = () => {
         />
         <span>Capture today&apos;s thought</span>
       </FormButton>
-      <div
-        className={css`
-          display: flex;
-          justify-content: center;
-        `}
-      >
-        <Calendar
-          value={date}
-          onChange={(_date, id) => {
-            setDate(_date)
-            if (id) {
-              openStory(id, {})
-            }
-          }}
-          onHover={setCurrentThoughtId}
-        />
-      </div>
+      <Calendar
+        value={date}
+        onChange={(_date, id) => {
+          setDate(_date)
+          if (id) {
+            openStory(id, {})
+          }
+        }}
+        onHover={setCurrentThoughtId}
+      />
       {currentThoughtId && (
         <SmallStory
           className={css`
