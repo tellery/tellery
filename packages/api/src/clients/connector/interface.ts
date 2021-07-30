@@ -1,7 +1,6 @@
 import { Readable } from 'stream'
-import { QuestionBlock } from '../../core/block/question'
 import { Collection, Database, Profile, TypeField, AvailableConfig } from '../../types/connector'
-import { DbtMetadata } from '../../types/dbt'
+import { DbtMetadata, ExportedBlockMetadata } from '../../types/dbt'
 
 /**
  * interacting with tellery-connector
@@ -110,7 +109,7 @@ export interface IConnectorManager {
    * @param profile profile name
    * @param blocks blocks that are descendance of dbtBlocks
    */
-  pushRepo(profile: string, blocks: QuestionBlock[]): Promise<void>
+  pushRepo(profile: string, blocks: ExportedBlockMetadata[]): Promise<void>
 
   /**
    * refresh dbt workspace

@@ -1,13 +1,17 @@
 import bluebird from 'bluebird'
 import _ from 'lodash'
 import { nanoid } from 'nanoid'
-import { getConnection, getRepository } from 'typeorm'
+import { getConnection, getRepository, In } from 'typeorm'
 import { IConnectorManager } from '../clients/connector/interface'
 import { Block, cascadeLoadBlocksByLink } from '../core/block'
+import { DbtBlock } from '../core/block/dbt'
 import { QuestionBlock } from '../core/block/question'
 import { getIPermission, IPermission } from '../core/permission'
+import { extractPartialQueries } from '../core/translator'
 import BlockEntity from '../entities/block'
+import { NotFoundError } from '../error/error'
 import { BlockParentType, BlockType } from '../types/block'
+import { ExportedBlockMetadata } from '../types/dbt'
 import { LinkType } from '../types/link'
 import { canUpdateWorkspaceData } from '../utils/permission'
 
@@ -45,8 +49,7 @@ export class DbtService {
     profile: string,
   ) {
     await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
-    const exportedQuestionBlocks = await this.loadAllDbtBlockDescandant(workspaceId)
-    // TODO: parse transclusion into correct dbt ref and create correct dbt name
+    const exportedQuestionBlocks = await this.loadAllDbtBlockDescendent(workspaceId)
     await connectorManager.pushRepo(profile, exportedQuestionBlocks)
   }
 
@@ -140,13 +143,77 @@ export class DbtService {
     return _(models).value()
   }
 
-  private async loadAllDbtBlockDescandant(workspaceId: string): Promise<QuestionBlock[]> {
-    const ids = _(await this.listCurrentDbtBlocks(workspaceId))
-      .map('id')
+  private async loadAllDbtBlockDescendent(workspaceId: string): Promise<ExportedBlockMetadata[]> {
+    const dbtBlocks = _(await this.listCurrentDbtBlocks(workspaceId))
+      .map(Block.fromEntitySafely)
       .value()
-    return _(await cascadeLoadBlocksByLink(ids, 'backward', LinkType.QUESTION))
+
+    const blocks = _(
+      await cascadeLoadBlocksByLink(_(dbtBlocks).map('id').value(), 'backward', LinkType.QUESTION),
+    )
       .map((b) => QuestionBlock.fromEntitySafely(b))
       .value() as QuestionBlock[]
+
+    // load story blocks for fulfilling name
+    const storyIds = _(blocks).map('storyId').value()
+    const models = await getRepository(BlockEntity).find({ id: In(storyIds) })
+    const storiesByKey = _(models).map(Block.fromEntitySafely).keyBy('id').value()
+
+    const totalBlocksByKey = _([...dbtBlocks, ...blocks])
+      .keyBy('id')
+      .value()
+
+    // translate name first, it would be used later for dbt reference naming
+    const translatedDbtNames = _(blocks)
+      .keyBy('id')
+      .mapValues((b) => {
+        const storyTitle = storiesByKey[b.storyId]?.getPlainText()
+        const blockTitle = b.getPlainText() ?? b.id
+        return (storyTitle ? `${storyTitle}-${blockTitle}` : blockTitle)
+          .replace(' ', '_')
+          .toLowerCase()
+      })
+      .value()
+
+    return _(blocks)
+      .map((b) => {
+        const originalSql = b.getSql()
+        const partialQueries = extractPartialQueries(originalSql)
+
+        // convert transclusion to dbt reference
+        const translatedSql = _.zip(
+          [{ endIndex: 0 }, ...partialQueries],
+          [...partialQueries, { startIndex: originalSql.length, blockId: undefined }],
+        )
+          .map(([i, j]) => ({
+            start: i!.endIndex,
+            end: j!.startIndex,
+            blockId: j!.blockId,
+          }))
+          .map(({ start, end, blockId }) => {
+            // end
+            if (!blockId) {
+              return originalSql.substring(start, end)
+            }
+            const refBlock = totalBlocksByKey[blockId]
+            if (!refBlock) {
+              throw NotFoundError.resourceNotFound(blockId)
+            }
+            let name: string
+            if (refBlock.getType() === BlockType.DBT) {
+              name = (refBlock as DbtBlock).getRef()
+            } else {
+              name = `{{ ref('${translatedDbtNames[blockId]}') }}`
+            }
+            return originalSql.substring(start, end) + name
+          })
+          .join('')
+        return {
+          name: translatedDbtNames[b.id],
+          sql: translatedSql,
+        }
+      })
+      .value()
   }
 }
 

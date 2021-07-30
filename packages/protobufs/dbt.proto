@@ -29,7 +29,7 @@ message PullRepoRequest {
 
 message PushRepoRequest {
   string profile = 1;
-  map<string, Block> blocks = 2;
+  repeated QuestionBlockContent blocks = 2;
 }
 
 message ListDbtBlocksRequest {
@@ -63,25 +63,11 @@ message DbtBlock {
   string rawSql = 5;
   string compiledSql = 6;
   Materialization materialized = 7;
-}
-
-message Block {
-  string id = 1;
-  string type = 2;
-  string parentId = 3;
-  string parentTable = 4;
-  int32 createdAt = 5;
-  int32 updatedAt = 6;
-  int32 version = 7;
-  repeated string children = 8;
-  string createdById = 9;
-  string lastEditedById = 10;
-  bool alive = 11;
-  QuestionBlockContent content = 12;
-  string storyId = 13;
+  // Only for source
+  string sourceTable = 8;
 }
 
 message QuestionBlockContent {
-  string title = 1;
+  string name = 1;
   string sql = 2;
 }

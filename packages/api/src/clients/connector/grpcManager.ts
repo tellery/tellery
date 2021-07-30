@@ -27,11 +27,9 @@ import {
   ListDbtBlocksRequest,
   PullRepoRequest,
   PushRepoRequest,
-  Block as BlockProtobuf,
   QuestionBlockContent,
 } from '../../protobufs/dbt_pb'
-import { DbtMetadata } from '../../types/dbt'
-import { QuestionBlock } from '../../core/block/question'
+import { DbtMetadata, ExportedBlockMetadata } from '../../types/dbt'
 import _ from 'lodash'
 
 const grpcConnectorStorage = new Map<string, ConnectorManager>()
@@ -224,20 +222,12 @@ export class ConnectorManager implements IConnectorManager {
     await beautyCall(this.dbtClient.pullRepo, this.dbtClient, request)
   }
 
-  async pushRepo(profile: string, blocks: QuestionBlock[]): Promise<void> {
-    const request = new PushRepoRequest().setProfile(profile)
-    const blocksMap = request.getBlocksMap()
-    blocks.forEach((b) => {
-      const content = new QuestionBlockContent()
-        .setSql(b.getSql())
-        .setTitle(b.getPlainText() ?? 'untitled')
-      const blockProtobuf = new BlockProtobuf()
-        .setId(b.id)
-        .setStoryid(b.storyId)
-        .setAlive(b.alive)
-        .setContent(content)
-      blocksMap.set(b.id, blockProtobuf)
-    })
+  async pushRepo(profile: string, blocks: ExportedBlockMetadata[]): Promise<void> {
+    const request = new PushRepoRequest()
+      .setProfile(profile)
+      .setBlocksList(
+        blocks.map(({ sql, name }) => new QuestionBlockContent().setSql(sql).setName(name)),
+      )
     await beautyCall(this.dbtClient.pushRepo, this.dbtClient, request)
   }
 
@@ -248,18 +238,20 @@ export class ConnectorManager implements IConnectorManager {
   async listDbtBlocks(profile: string): Promise<DbtMetadata[]> {
     const request = new ListDbtBlocksRequest().setProfile(profile)
     const res = await beautyCall(this.dbtClient.listDbtBlocks, this.dbtClient, request)
-    return res.getBlocksList().map((raw) => ({
-      name: raw.getName(),
-      description: raw.getDescription(),
-      relationName: raw.getRelationname(),
-      rawSql: raw.getRawsql(),
-      compiledSql: raw.getCompiledsql(),
-      type: getEnumKey(DbtBlock.Type, raw.getType()) as DbtMetadata['type'],
-      materialized: getEnumKey(
-        DbtBlock.Materialization,
-        raw.getMaterialized(),
-      ) as DbtMetadata['materialized'],
-    }))
+    return res.getBlocksList().map(
+      (raw) =>
+        // remove blank values
+        _.pickBy({
+          name: raw.getName(),
+          description: raw.getDescription(),
+          relationName: raw.getRelationname(),
+          rawSql: raw.getRawsql(),
+          compiledSql: raw.getCompiledsql(),
+          type: getEnumKey(DbtBlock.Type, raw.getType()),
+          materialized: getEnumKey(DbtBlock.Materialization, raw.getMaterialized()),
+          sourceTable: raw.getSourcetable(),
+        }) as DbtMetadata,
+    )
   }
 }
 

@@ -1,8 +1,7 @@
 /* eslint class-methods-use-this: 0 */
 import { Readable } from 'stream'
-import { QuestionBlock } from '../../core/block/question'
 import { Profile, TypeField, Database, Collection, AvailableConfig } from '../../types/connector'
-import { DbtMetadata } from '../../types/dbt'
+import { DbtMetadata, ExportedBlockMetadata } from '../../types/dbt'
 import { IConnectorManager } from './interface'
 
 /**
@@ -71,7 +70,7 @@ export class FakeManager implements IConnectorManager {
     return
   }
 
-  async pushRepo(_profile: string, _blocks: QuestionBlock[]): Promise<void> {
+  async pushRepo(_profile: string, _blocks: ExportedBlockMetadata[]): Promise<void> {
     return
   }
 
