@@ -14,7 +14,6 @@ import { nanoid } from 'nanoid'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import { ThoughtContainer, ThoughtHeader, ThoughtItem, ThoughtTitle } from '../components/ThoughtItem'
-import { ThoughtsCalendar } from '../components/ThoughtsCalendar'
 
 function Thoughts() {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null)
@@ -127,7 +126,6 @@ function Thoughts() {
             `}
           >
             Thoughts
-            <ThoughtsCalendar />
           </div>
           <div
             className={css`
