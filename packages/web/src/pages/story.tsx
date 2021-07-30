@@ -4,7 +4,6 @@ import { NavigationHeader } from '@app/components/NavigationHeader'
 import { SideBarMetricsSection } from '@app/components/SideBarMetricsSection'
 import { StoryBackLinks } from '@app/components/StoryBackLinks'
 import { StoryQuestionsEditor } from '@app/components/StoryQuestionsEditor'
-import { ThoughtsCalendar } from '@app/components/ThoughtsCalendar'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useFetchStoryChunk, useRecordStoryVisits, useStoryPinnedStatus } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
@@ -59,7 +58,6 @@ const _Page: React.FC = () => {
               locked={storyBlock.format?.locked}
             />
           )}
-
           {storyBlock.type === Editor.BlockType.Thought && (
             <div
               className={css`
@@ -75,7 +73,6 @@ const _Page: React.FC = () => {
               `}
             >
               Thoughts
-              <ThoughtsCalendar />
             </div>
           )}
         </React.Suspense>
