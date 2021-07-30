@@ -108,10 +108,12 @@ const _StoryEditor: React.FC<{
   const rootBlock = useFetchStoryChunk<Story | Thought>(storyId)
   const blocksMap = useStoryBlocksMap(storyId)
   const blocksMapsRef = useRef<Record<string, Editor.BaseBlock> | null>(null)
+  const [inited, setInited] = useState(false)
 
   useEffect(() => {
     if (blocksMap) {
       blocksMapsRef.current = blocksMap
+      setInited(true)
     }
   }, [blocksMap])
 
@@ -198,7 +200,7 @@ const _StoryEditor: React.FC<{
   )
 
   useEffect(() => {
-    if (!props.scrollToBlockId) return
+    if (!props.scrollToBlockId || !inited) return
     blockAdminValue.getBlockInstanceById(props.scrollToBlockId).then((res) => {
       setTimeout(() => {
         scrollIntoView(res.wrapperElement, {
@@ -211,7 +213,7 @@ const _StoryEditor: React.FC<{
       }, 0)
       setSelectedBlocks([props.scrollToBlockId as string])
     })
-  }, [blockAdminValue, props.scrollToBlockId, setSelectedBlocks])
+  }, [blockAdminValue, inited, props.scrollToBlockId, setSelectedBlocks])
 
   const blurEditor = useCallback(() => {
     setSelectionState(null)
