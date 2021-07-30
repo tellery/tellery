@@ -14,6 +14,7 @@ import styled from '@emotion/styled'
 import React, { useEffect, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet'
 import { useLocation, useParams } from 'react-router-dom'
+import { ThemingVariables } from '@app/styles'
 
 const _Page: React.FC = () => {
   const location = useLocation()
@@ -48,7 +49,17 @@ const _Page: React.FC = () => {
         <title>{title ?? DEFAULT_TITLE} - Tellery</title>
       </Helmet>
       <VerticalLayout>
-        <React.Suspense fallback={<div></div>}>
+        <React.Suspense
+          fallback={
+            <div
+              className={css`
+                height: 44px;
+                background: ${ThemingVariables.colors.gray[5]};
+                box-shadow: 0px 1px 0px ${ThemingVariables.colors.gray[1]};
+              `}
+            ></div>
+          }
+        >
           {storyBlock.type === Editor.BlockType.Story && (
             <NavigationHeader
               storyId={id}

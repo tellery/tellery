@@ -1,7 +1,3 @@
-import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
-import { useCommit } from '@app/hooks/useCommit'
-import { css } from '@emotion/css'
-import Tippy from '@tippyjs/react'
 import {
   IconCommonLock,
   IconCommonMore,
@@ -12,10 +8,14 @@ import {
 } from '@app/assets/icons'
 import { createTranscation } from '@app/context/editorTranscations'
 import { useWorkspaceView } from '@app/hooks/api'
-import React, { memo, useCallback } from 'react'
+import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
+import { useCommit } from '@app/hooks/useCommit'
 import { ThemingVariables } from '@app/styles'
 import type { Story } from '@app/types'
-import { useStorySnapshotManager, useStorySnapshotManagerProvider } from '../hooks/useStorySnapshotManager'
+import { css } from '@emotion/css'
+import Tippy from '@tippyjs/react'
+import React, { memo, useCallback } from 'react'
+import { useStorySnapshotManagerProvider } from '../hooks/useStorySnapshotManager'
 import IconButton from './kit/IconButton'
 import { RefreshButton } from './RefreshButton'
 import { StoryConfigPopOver } from './StoryConfigPopOver'

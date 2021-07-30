@@ -630,7 +630,7 @@ const _StoryEditor: React.FC<{
 
       return duplicatedBlocksFragment
     },
-    [blockAdminValue, blockTranscations, focusBlockHandler, setSelectedBlocks, snapshot, storyId]
+    [blockTranscations, focusBlockHandler, setSelectedBlocks, snapshot, storyId]
   )
 
   const globalKeyDownHandler = useCallback(

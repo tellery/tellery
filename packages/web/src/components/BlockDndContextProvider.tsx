@@ -1,5 +1,5 @@
 import { ContentBlocks } from '@app/components/editor/ContentBlock'
-import { getDuplicatedBlocks } from '@app/context/editorTranscations'
+import { getDuplicatedBlocks, getDuplicatedBlocksFragment } from '@app/context/editorTranscations'
 import { useCreateEmptyBlock } from '@app/helpers/blockFactory'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
@@ -75,13 +75,18 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
           if (!over) return
           const overData = over.data.current
           const overStoryId = overData?.storyId
+          const targetBlock = getBlockFromSnapshot(id, snapshot)
           invariant(overData?.storyId, 'overing story id is null')
           if (item.storyId !== overStoryId) {
+            const duplicatedBlocksFragment = getDuplicatedBlocksFragment(
+              blockIds,
+              getSubsetOfBlocksSnapshot(snapshot, blockIds),
+              overStoryId,
+              targetBlock.parentId
+            )
+
             blockTranscations.insertBlocks(overStoryId, {
-              blocksFragment: {
-                children: blockIds,
-                data: getSubsetOfBlocksSnapshot(snapshot, blockIds)
-              },
+              blocksFragment: duplicatedBlocksFragment,
               targetBlockId: id,
               direction: droppingAreaRef.current.direction
             })
