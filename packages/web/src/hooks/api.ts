@@ -177,7 +177,11 @@ export function useSearchBlocks<T extends Editor.BlockType>(
   )
 }
 
-export function useSearchMetrics(keyword: string, limit: number, options?: UseQueryOptions<SearchBlockResult<T>>) {
+export function useSearchMetrics(
+  keyword: string,
+  limit: number,
+  options?: UseQueryOptions<SearchBlockResult<Editor.BlockType.Metric>>
+) {
   return useSearchBlocks(keyword, limit, Editor.BlockType.Metric, options)
 }
 
