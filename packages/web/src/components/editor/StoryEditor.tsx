@@ -786,7 +786,7 @@ const _StoryEditor: React.FC<{
                     data: { [newBlock.id]: newBlock }
                   },
                   targetBlockId: blockId,
-                  direction: 'bottom'
+                  direction: block.children?.length ? 'child' : 'bottom'
                 })
                 setSelectionAtBlockStart(newBlock)
               } else {
