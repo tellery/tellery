@@ -355,7 +355,7 @@ async function execute(ctx: Context) {
       queryResultStream.pipe(streamResponse)
     })
   } catch (err) {
-    if (err! instanceof UnauthorizedError) {
+    if (!(err instanceof UnauthorizedError)) {
       // override the status code, therefore the error would appear in the sql editor correctly
       err.status = 200
     }
