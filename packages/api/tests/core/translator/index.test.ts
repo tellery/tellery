@@ -99,9 +99,7 @@ test('translate duplicate references', async (t) => {
   stringCompare(
     t,
     sqlBody,
-    // FIXME: alias conflict
-    // correct sql should be"WITH t1 AS ( select * from order_x ), t2 AS ( select * from order_x ) select * from t1 left join t2"
-    `WITH t1 AS ( select * from order_x ), t1 AS ( select * from order_x ) select * from t1 left join t2`,
+    `WITH t1 AS ( select * from order_x ), t2 AS ( select * from order_x ) select * from t1 left join t2`,
   )
   await getRepository(BlockEntity).delete([questionBlockId])
 })
