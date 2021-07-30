@@ -37,7 +37,6 @@ export const useBlockAdminProvider = (storyId: string) => {
 
   const openToggledAncestors = useCallback(
     (blockId: string) => {
-      console.log('openToggledAncestors', blockId)
       const currentSnapshot = storyBlocksMapRef.current
       if (!currentSnapshot) return
       let currentNodeId = blockId

@@ -143,19 +143,21 @@ export const StoryConfigPopOver: React.FC<{
         title="Duplicate"
         onClick={duplicateStoryHandler}
       />
-      <MenuItem
-        icon={<Icon icon={IconMenuShow} color={ThemingVariables.colors.text[0]} />}
-        title="Readonly"
-        onClick={(e) => {
-          e.preventDefault()
-          setWorkspacePermission(readOnlyStatus ? 'manager' : 'commentator')
-        }}
-        side={<FormSwitch checked={readOnlyStatus} readOnly />}
-      />
       {env.DEV && (
         <MenuItem
           icon={<Icon icon={IconMenuShow} color={ThemingVariables.colors.text[0]} />}
-          title="Show border"
+          title="Workspace Readonly (DEV)"
+          onClick={(e) => {
+            e.preventDefault()
+            setWorkspacePermission(readOnlyStatus ? 'manager' : 'commentator')
+          }}
+          side={<FormSwitch checked={readOnlyStatus} readOnly />}
+        />
+      )}
+      {env.DEV && (
+        <MenuItem
+          icon={<Icon icon={IconMenuShow} color={ThemingVariables.colors.text[0]} />}
+          title="Show border (DEV)"
           onClick={(e) => {
             e.preventDefault()
             setStoryFormat('showBorder', !story?.format?.showBorder)
