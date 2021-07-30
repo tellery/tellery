@@ -91,16 +91,23 @@ export const SideBarThoughtsSection = () => {
           <span>Capture today&apos;s thought</span>
         </div>
       )}
-      <Calendar
-        value={date}
-        onChange={(_date, id) => {
-          setDate(_date)
-          if (id) {
-            openStory(id, {})
-          }
-        }}
-        onHover={setCurrentThoughtId}
-      />
+      <div
+        className={css`
+          display: flex;
+          justify-content: center;
+        `}
+      >
+        <Calendar
+          value={date}
+          onChange={(_date, id) => {
+            setDate(_date)
+            if (id) {
+              openStory(id, {})
+            }
+          }}
+          onHover={setCurrentThoughtId}
+        />
+      </div>
       {currentThoughtId && (
         <SmallStory
           className={css`
