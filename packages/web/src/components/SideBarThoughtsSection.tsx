@@ -12,6 +12,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { SideBarContentLayout } from './SideBarContentLayout'
 import { Calendar } from './Calendar'
 import { SmallStory } from './SmallStory'
+import { FormButton } from './kit/FormButton'
 
 export const SideBarThoughtsSection = () => {
   const { data: thoughts, refetch: refetchThoughts } = useAllThoughts()
@@ -63,34 +64,26 @@ export const SideBarThoughtsSection = () => {
 
   return (
     <SideBarContentLayout title={'Thoughts'}>
-      {showCreateTodaysNotes && (
-        <div
+      <FormButton
+        variant="primary"
+        className={css`
+          width: calc(100% - 16px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 20px 8px;
+        `}
+        disabled={!showCreateTodaysNotes}
+        onClick={createTodaysNotes}
+      >
+        <IconCommonAdd
+          color={showCreateTodaysNotes ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.text[1]}
           className={css`
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 500;
-            font-size: 12px;
-            line-height: 15px;
-            margin: 20px 8px;
-            cursor: pointer;
-            height: 36px;
-            border: 1px solid ${ThemingVariables.colors.primary[1]};
-            box-sizing: border-box;
-            border-radius: 8px;
-            color: ${ThemingVariables.colors.primary[1]};
+            margin-right: 4px;
           `}
-          onClick={createTodaysNotes}
-        >
-          <IconCommonAdd
-            color={ThemingVariables.colors.primary[1]}
-            className={css`
-              margin-right: 4px;
-            `}
-          />
-          <span>Capture today&apos;s thought</span>
-        </div>
-      )}
+        />
+        <span>Capture today&apos;s thought</span>
+      </FormButton>
       <div
         className={css`
           display: flex;
