@@ -9,7 +9,6 @@ import { QuestionBlock } from '../core/block/question'
 import { getIPermission, IPermission } from '../core/permission'
 import { extractPartialQueries } from '../core/translator'
 import BlockEntity from '../entities/block'
-import { NotFoundError } from '../error/error'
 import { BlockParentType, BlockType } from '../types/block'
 import { ExportedBlockMetadata } from '../types/dbt'
 import { LinkType } from '../types/link'
@@ -196,14 +195,15 @@ export class DbtService {
               return originalSql.substring(start, end)
             }
             const refBlock = totalBlocksByKey[blockId]
-            if (!refBlock) {
-              throw NotFoundError.resourceNotFound(blockId)
-            }
             let name: string
-            if (refBlock.getType() === BlockType.DBT) {
-              name = (refBlock as DbtBlock).getRef()
+            if (!refBlock) {
+              name = `tellery_transclusion.${blockId}`
             } else {
-              name = `{{ ref('${translatedDbtNames[blockId]}') }}`
+              if (refBlock.getType() === BlockType.DBT) {
+                name = (refBlock as DbtBlock).getRef()
+              } else {
+                name = `{{ ref('${translatedDbtNames[refBlock.id]}') }}`
+              }
             }
             return originalSql.substring(start, end) + name
           })
