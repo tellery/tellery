@@ -15,16 +15,8 @@ import {
 import { isQuestionLikeBlock } from '@app/components/editor/Blocks/utils'
 import { useAsync } from '@app/hooks'
 import { useWorkspace } from '@app/hooks/useWorkspace'
-import type {
-  AvailableConfig,
-  BackLinks,
-  Editor,
-  ProfileConfig,
-  Snapshot,
-  Story,
-  UserInfo,
-  Workspace
-} from '@app/types'
+import type { AvailableConfig, BackLinks, ProfileConfig, Snapshot, Story, UserInfo, Workspace } from '@app/types'
+import { Editor } from '@app/types'
 import { queryClient } from '@app/utils'
 import { emitBlockUpdate } from '@app/utils/remoteStoreObserver'
 import { compact } from 'lodash'
@@ -183,6 +175,10 @@ export function useSearchBlocks<T extends Editor.BlockType>(
       }),
     options
   )
+}
+
+export function useSearchMetrics(keyword: string, limit: number, options?: UseQueryOptions<SearchBlockResult<T>>) {
+  return useSearchBlocks(keyword, limit, Editor.BlockType.Metric, options)
 }
 
 export const useListDatabases = () => {

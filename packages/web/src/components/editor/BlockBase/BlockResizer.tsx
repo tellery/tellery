@@ -50,6 +50,9 @@ export const BlockResizer: React.FC<{
             e.preventDefault()
             e.stopPropagation()
           }}
+          onClick={(e) => {
+            e.preventDefault()
+          }}
           style={{
             y: blockFormat.y,
             opacity: isHovering || blockFormat.isDragging ? 1 : 0,
@@ -84,6 +87,9 @@ export const BlockResizer: React.FC<{
               // left: 200
             }
           }
+          onClick={(e) => {
+            e.preventDefault()
+          }}
           drag={'x'}
           dragElastic={0}
           onDragStart={onResizeDragStart}

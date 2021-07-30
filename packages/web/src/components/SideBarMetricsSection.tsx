@@ -1,32 +1,17 @@
 import { IconCommonMetrics, IconCommonQuestion } from '@app/assets/icons'
-import { useBlockSuspense } from '@app/hooks/api'
+import { useBlockSuspense, useSearchMetrics } from '@app/hooks/api'
 import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
-import { css } from '@emotion/css'
-import React, { useMemo } from 'react'
+import { css, cx } from '@emotion/css'
+import React, { useMemo, Fragment } from 'react'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import { useHistory, useRouteMatch } from 'react-router-dom'
 import { useGetBlockTitleTextSnapshot } from './editor'
 import { getFilteredOrderdSubsetOfBlocks } from './editor/utils'
+import { Tab } from '@headlessui/react'
 
-export const SideBarMetricsSection = () => {
-  const matchStory = useRouteMatch<{ id: string }>('/story/:id')
-
-  return (
-    <div
-      className={css`
-        height: 100%;
-        overflow: hidden;
-        border-right: 1px solid #dedede;
-      `}
-    >
-      {matchStory?.params.id && <CurrentStoryQuestions storyId={matchStory?.params.id} />}
-    </div>
-  )
-}
-
-const QuestionItem: React.FC<{ blockId: string }> = ({ blockId }) => {
+const QuestionItem: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
   const block = useBlockSuspense(blockId)
   const getBlockTitle = useGetBlockTitleTextSnapshot()
   const history = useHistory()
@@ -35,12 +20,18 @@ const QuestionItem: React.FC<{ blockId: string }> = ({ blockId }) => {
     <div
       className={css`
         display: flex;
-        margin: 5px 0;
         align-items: center;
         cursor: pointer;
+        padding: 10px 16px;
+        margin-bottom: 5px;
+        :hover {
+          background: ${ThemingVariables.colors.primary[5]};
+        }
       `}
       onClick={() => {
-        history.push(`#${block.id}`)
+        if (block.storyId === storyId) {
+          history.push(`#${block.id}`)
+        }
       }}
     >
       {block.type === Editor.BlockType.Question ? (
@@ -77,7 +68,14 @@ const QuestionItem: React.FC<{ blockId: string }> = ({ blockId }) => {
   )
 }
 
-const CurrentStoryQuestions: React.FC<{ storyId: string }> = ({ storyId }) => {
+const CurrentStoryQuestions: React.FC = () => {
+  const matchStory = useRouteMatch<{ id: string }>('/story/:id')
+  const storyId = matchStory?.params.id
+
+  return storyId ? <StoryQuestions storyId={storyId} /> : null
+}
+
+const StoryQuestions: React.FC<{ storyId: string }> = ({ storyId }) => {
   const storyBlocksMap = useStoryBlocksMap(storyId)
   const metricBlocks = useMemo(() => {
     if (!storyBlocksMap) return []
@@ -88,23 +86,123 @@ const CurrentStoryQuestions: React.FC<{ storyId: string }> = ({ storyId }) => {
     return getFilteredOrderdSubsetOfBlocks(storyBlocksMap, storyId, (block) => block.type === Editor.BlockType.Question)
   }, [storyBlocksMap, storyId])
 
+  if (!storyId) return null
+
   return (
     <PerfectScrollbar
       className={css`
         flex: 1;
         overflow-y: auto;
-        padding: 10px 16px 50px;
       `}
       options={{ suppressScrollX: true }}
     >
       <div>
         {metricBlocks.map((block) => {
-          return <QuestionItem key={block.id} blockId={block.id} />
+          return <QuestionItem key={block.id} blockId={block.id} storyId={storyId} />
         })}
         {questionBlocks.map((block) => {
-          return <QuestionItem key={block.id} blockId={block.id} />
+          return <QuestionItem key={block.id} blockId={block.id} storyId={storyId} />
         })}
       </div>
     </PerfectScrollbar>
+  )
+}
+
+const AllMetrics: React.FC = () => {
+  const metricBlocksQUery = useSearchMetrics('', 1000)
+
+  const metricBlocks = useMemo(() => {
+    return Object.values(metricBlocksQUery.data?.blocks ?? {}).filter((block) => block.type === Editor.BlockType.Metric)
+  }, [metricBlocksQUery.data?.blocks])
+
+  return (
+    <PerfectScrollbar
+      className={css`
+        flex: 1;
+        overflow-y: auto;
+      `}
+      options={{ suppressScrollX: true }}
+    >
+      <div>
+        {metricBlocks.map((block) => {
+          return <QuestionItem key={block.id} blockId={block.id} storyId="" />
+        })}
+      </div>
+    </PerfectScrollbar>
+  )
+}
+
+const TABS = [
+  {
+    name: 'All Metrics',
+    Component: <AllMetrics />
+  },
+  { name: 'Current Page', Component: <CurrentStoryQuestions /> }
+]
+
+export const SideBarMetricsSection = () => {
+  return (
+    <div
+      className={css`
+        height: 100%;
+        overflow-y: hidden;
+        border-right: 1px solid #dedede;
+        display: flex;
+        flex-direction: column;
+      `}
+    >
+      <Tab.Group>
+        <Tab.List
+          className={css`
+            border-bottom: solid 1px ${ThemingVariables.colors.gray[1]};
+          `}
+        >
+          {TABS.map((tab) => (
+            <Tab as={Fragment} key={tab.name}>
+              {({ selected }) => (
+                <button
+                  className={cx(
+                    css`
+                      font-style: normal;
+                      font-weight: 500;
+                      font-size: 12px;
+                      line-height: 15px;
+                      color: ${ThemingVariables.colors.text[1]};
+                      background: transparent;
+                      border: none;
+                      padding: 15px;
+                      cursor: pointer;
+                    `,
+                    selected &&
+                      css`
+                        color: ${ThemingVariables.colors.text[0]};
+                      `
+                  )}
+                >
+                  {tab.name}
+                </button>
+              )}
+            </Tab>
+          ))}
+        </Tab.List>
+        <Tab.Panels
+          className={css`
+            flex: 1;
+            overflow-y: hidden;
+          `}
+        >
+          {TABS.map((tab) => (
+            <Tab.Panel
+              className={css`
+                height: 100%;
+              `}
+              key={tab.name}
+            >
+              {tab.Component}
+            </Tab.Panel>
+          ))}
+        </Tab.Panels>
+      </Tab.Group>
+    </div>
   )
 }

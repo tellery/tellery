@@ -278,6 +278,9 @@ const ColumnBlock: BlockComponent<
                 opacity: 1
               }}
               drag={'x'}
+              onClick={(e) => {
+                e.preventDefault()
+              }}
               dragElastic={false}
               onDragEnd={onResizeDragEnd}
               onDragStart={() => {
