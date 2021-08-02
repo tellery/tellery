@@ -9,7 +9,7 @@ import { PermissionWorkspaceRole } from '../types/permission'
 import { isAnonymous } from '../utils/env'
 import { USER_TOKEN_HEADER_KEY } from '../utils/user'
 
-const ignorePaths = ['/api/users/login', '/api/readiness', '/api/liveness']
+const ignorePaths = ['/api/users/login', '/api/readiness', '/api/liveness', '/api/static']
 
 // 15 days
 const d15 = 1000 * 3600 * 24 * 15
