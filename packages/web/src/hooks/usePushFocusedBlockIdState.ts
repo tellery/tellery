@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
-import { useHistory, useRouteMatch } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
+import { useStoryPathParams } from './useStoryPathParams'
 
 export const usePushFocusedBlockIdState = () => {
   const history = useHistory()
-  const matchStory = useRouteMatch<{ id: string }>('/story/:id')
-  const storyId = matchStory?.params.id
+  const storyId = useStoryPathParams()
 
   const scrollToBlock = useCallback(
     (blockId: string, blockStoryId?: string) => {

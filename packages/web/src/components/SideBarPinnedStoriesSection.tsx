@@ -1,13 +1,13 @@
 import { useOpenStory } from '@app/hooks'
 import { useBlockSuspense, useWorkspaceView } from '@app/hooks/api'
+import { useStoryPathParams } from '@app/hooks/useStoryPathParams'
 import { css } from '@emotion/css'
 import React from 'react'
 import ContentLoader from 'react-content-loader'
-import { useRouteMatch } from 'react-router-dom'
+import PerfectScrollbar from 'react-perfect-scrollbar'
 import { useGetBlockTitleTextSnapshot } from './editor'
 import { MainSideBarItem } from './MainSideBarItem'
 import { SideBarContentLayout } from './SideBarContentLayout'
-import PerfectScrollbar from 'react-perfect-scrollbar'
 
 const SideBarLoader: React.FC = () => {
   return (
@@ -51,7 +51,7 @@ const StoryItem: React.FC<{ blockId: string }> = ({ blockId }) => {
   const block = useBlockSuspense(blockId)
   const openStory = useOpenStory()
   const getBlockTitle = useGetBlockTitleTextSnapshot()
-  const matchStory = useRouteMatch<{ id: string }>('/story/:id')
+  const storyId = useStoryPathParams()
 
   return (
     <MainSideBarItem
@@ -60,7 +60,7 @@ const StoryItem: React.FC<{ blockId: string }> = ({ blockId }) => {
       }}
       showTitle
       title={getBlockTitle(block)}
-      active={matchStory?.params.id === block.id}
+      active={storyId === block.id}
     ></MainSideBarItem>
   )
 }

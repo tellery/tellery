@@ -1,4 +1,3 @@
-import { useBlockDndContext } from '@app/context/blockDnd'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useOnClickOutside } from '@app/hooks'
 import { useFetchStoryChunk } from '@app/hooks/api'
@@ -22,7 +21,6 @@ import isHotkey from 'is-hotkey'
 import React, { CSSProperties, memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useEvent } from 'react-use'
-import { useRecoilState } from 'recoil'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import invariant from 'tiny-invariant'
 import {
@@ -75,9 +73,9 @@ import { EditorContext, EditorContextInterface, useMouseMoveInEmitter } from './
 import { BlockAdminContext, useBlockAdminProvider } from './hooks/useBlockAdminProvider'
 import { useBlockHoveringState } from './hooks/useBlockHoveringState'
 import { useDebouncedDimension } from './hooks/useDebouncedDimensions'
+import { useStorySelection } from './hooks/useStorySelection'
 import { useSetUploadResource } from './hooks/useUploadResource'
 import { BlockTextOperationMenu } from './Popovers/BlockTextOperationMenu'
-import { TelleryStorySelection } from './store/selection'
 import { StoryBlockOperatorsProvider } from './StoryBlockOperatorsProvider'
 import type { SetBlock } from './types'
 import { getFilteredOrderdSubsetOfBlocks, getSubsetOfBlocksSnapshot } from './utils'
@@ -99,12 +97,11 @@ const _StoryEditor: React.FC<{
   const editorTextAreaRef = useRef<HTMLTextAreaElement | null>(null)
   const [hoverBlockId, setHoverBlockId] = useBlockHoveringState()
   const tellerySelectionRef = useRef<TellerySelection | null>(null)
-  const [selectionState, setSelectionState] = useRecoilState<TellerySelection | null>(TelleryStorySelection(storyId))
+  const [selectionState, setSelectionState] = useStorySelection(storyId)
   const [scrollLocked, setScrollLocked] = useState(false)
   const [scrollbarWidth, setScrollbarWidth] = useState(0)
   const isSelectingRef = useRef<DOMRect | null>(null)
   const mouseDownEventRef = useRef<MouseEvent | null>(null)
-  const blockDnd = useBlockDndContext()
   const [lastInputChar, setLastInputChar] = useState<string | null>(null)
   const rootBlock = useFetchStoryChunk<Story | Thought>(storyId)
   const blocksMap = useStoryBlocksMap(storyId)
@@ -160,18 +157,16 @@ const _StoryEditor: React.FC<{
                   (block) => block.id
                 )
               : blockIds
-            blockDnd.setSelectingBlockIds(orderedBlockIds)
             setSelectionState({
               type: TellerySelectionType.Block,
               selectedBlocks: orderedBlockIds,
               storyId: storyId
             })
           } else {
-            blockDnd.setSelectingBlockIds(null)
             setSelectionState(null)
           }
         }, 0),
-      [blockDnd, setSelectionState, storyId]
+      [setSelectionState, storyId]
     )
   )
 

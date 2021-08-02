@@ -1,9 +1,10 @@
-import { ContentBlocks } from '@app/components/editor/ContentBlock'
-import { getDuplicatedBlocks, getDuplicatedBlocksFragment } from '@app/context/editorTranscations'
+import { ContentBlocks, StandaloneContentBlock } from '@app/components/editor/ContentBlock'
+import { getDuplicatedBlocksFragment } from '@app/context/editorTranscations'
 import { useCreateEmptyBlock } from '@app/helpers/blockFactory'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
-import { Direction, DnDItemTypes, DropItem, Editor } from '@app/types'
+import { Direction, Editor } from '@app/types'
+import { DndItemDataType, DnDItemTypes } from '@app/utils/dnd'
 import {
   DndContext,
   DragEndEvent,
@@ -15,11 +16,10 @@ import {
   useSensors
 } from '@dnd-kit/core'
 import { css } from '@emotion/css'
-import invariant from 'tiny-invariant'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, useCallback, useRef, useState } from 'react'
 import ReactTestUtils from 'react-dom/test-utils'
+import invariant from 'tiny-invariant'
 import {
-  BlockDndContext,
   closetBorder,
   DroppingAreaContext,
   FileDraggble,
@@ -34,8 +34,8 @@ import { useSetUploadResource } from './editor/hooks/useUploadResource'
 import { getSubsetOfBlocksSnapshot } from './editor/utils'
 
 export const BlockDndContextProvider: React.FC = ({ children }) => {
-  const [selectingBlockIds, setSelectingBlockIds] = useState<string[] | null>(null)
-  const selectingBlockIdsRef = useRef<string[] | null>(null)
+  const [previewData, setPreviewData] = useState<ReactNode | null>(null)
+
   const [isDragging, setIsDragging] = useState(false)
   const [droppingArea, setDroppingArea] = useDroppingArea()
   const droppingAreaRef = useRef<{ blockId: string; direction: Direction } | null>(null)
@@ -52,7 +52,7 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
     setIsDragging(false)
     setDroppingArea(null)
     droppingAreaRef.current = null
-    setSelectingBlockIds(null)
+    setPreviewData(null)
   }, [setDroppingArea])
 
   const setUploadResource = useSetUploadResource()
@@ -63,13 +63,29 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
     (event: DragEndEvent) => {
       logger('drag end', event)
       setIsDragging(false)
-
-      const item = event.active.data.current as { type: string; storyId: string }
+      setPreviewData(null)
+      const item = event.active.data.current as DndItemDataType
       logger('drag end', item, droppingAreaRef.current)
       if (droppingAreaRef.current) {
         if (item.type === DnDItemTypes.Block) {
           const id = droppingAreaRef.current.blockId
-          const blockIds = selectingBlockIdsRef.current
+          const blockData = item.blockData
+          const over = event.over
+          if (!over) return
+          const overData = over.data.current
+          const overStoryId = overData?.storyId
+          invariant(overData?.storyId, 'overing story id is null')
+          blockTranscations.insertBlocks(overStoryId, {
+            blocksFragment: {
+              children: [blockData.id],
+              data: { [blockData.id]: blockData }
+            },
+            targetBlockId: id,
+            direction: droppingAreaRef.current.direction
+          })
+        } else if (item.type === DnDItemTypes.BlockIds) {
+          const id = droppingAreaRef.current.blockId
+          const blockIds = item.ids
           invariant(blockIds, 'blocks i snull')
           const over = event.over
           if (!over) return
@@ -158,13 +174,15 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
         },
         snapshot
       )
-      const item = event.active.data.current as DropItem
-      const blockIds = selectingBlockIdsRef.current
-      // TODO: dnd-kit bug, drag move may trigger before drag start
-      // if (!blockIds) return
-      // TODO: Restore it
-      if (dropAreaInfo && item.type === DnDItemTypes.Block && blockIds?.includes(dropAreaInfo[0])) {
-        setDroppingArea(null)
+      const item = event.active.data.current as DndItemDataType
+      if (item.type === DnDItemTypes.BlockIds) {
+        const blockIds = item.ids
+        // TODO: dnd-kit bug, drag move may trigger before drag start
+        // if (!blockIds) return
+        // TODO: Restore it
+        if (dropAreaInfo && blockIds?.includes(dropAreaInfo[0])) {
+          setDroppingArea(null)
+        }
       }
 
       if (dropAreaInfo) {
@@ -190,24 +208,33 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
     setIsDragging(true)
-    const data = event.active.data.current
+    const data = event.active.data.current as DndItemDataType
     logger('drag start', event)
-    if (data && data.type === DnDItemTypes.Block && data.id) {
-      const selectingBlockIds = selectingBlockIdsRef.current ?? []
-      const newSelectBlockIds = selectingBlockIds.includes(data.id) ? [...selectingBlockIds] : [data.id]
-      selectingBlockIdsRef.current = newSelectBlockIds
-      setSelectingBlockIds(newSelectBlockIds)
+    if (!data) return
+    if (data.type === DnDItemTypes.Block) {
+      // setPreviewData({
+      //   type: DnDItemTypes.Block,
+      //   data: data.blockData
+      // })
+      setPreviewData(<StandaloneContentBlock block={data.blockData} parentType={Editor.BlockType.Story} readonly />)
+    } else if (data.type === DnDItemTypes.BlockIds) {
+      console.warn(data)
+      // setPreviewData({
+      //   type: DnDItemTypes.BlockIds,
+      //   data: data.ids
+      // })
+      setPreviewData(<ContentBlocks blockIds={data.ids} readonly parentType={Editor.BlockType.Story} />)
+    } else {
+      setPreviewData(
+        <div
+          className={css`
+            width: 10px;
+            height: 10px;
+          `}
+        ></div>
+      )
     }
   }, [])
-
-  const blockDndContext = useMemo(() => {
-    return {
-      setSelectingBlockIds: (blockIds: string[] | null) => {
-        setSelectingBlockIds(blockIds)
-        selectingBlockIdsRef.current = blockIds
-      }
-    }
-  }, [setSelectingBlockIds])
 
   return (
     <div
@@ -242,31 +269,17 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
         onDragStart={handleDragStart}
       >
         <FileDraggble />
-        <BlockDndContext.Provider value={blockDndContext}>
-          <DroppingAreaContext.Provider value={droppingArea}>
-            {children}
-            <DragOverlay
-              dropAnimation={null}
-              className={css`
-                opacity: 0.5;
-              `}
-            >
-              {isDragging ? (
-                selectingBlockIds ? (
-                  <ContentBlocks blockIds={selectingBlockIds} readonly parentType={Editor.BlockType.Story} />
-                ) : (
-                  // TODO: drop indicator
-                  <div
-                    className={css`
-                      width: 10px;
-                      height: 10px;
-                    `}
-                  ></div>
-                )
-              ) : null}
-            </DragOverlay>
-          </DroppingAreaContext.Provider>
-        </BlockDndContext.Provider>
+        <DroppingAreaContext.Provider value={droppingArea}>
+          {children}
+          <DragOverlay
+            dropAnimation={null}
+            className={css`
+              opacity: 0.5;
+            `}
+          >
+            {isDragging && <React.Suspense fallback={<div>loading...</div>}>{previewData}</React.Suspense>}
+          </DragOverlay>
+        </DroppingAreaContext.Provider>
       </DndContext>
     </div>
   )

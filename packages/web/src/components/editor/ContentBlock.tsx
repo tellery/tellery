@@ -74,6 +74,32 @@ export const ContentBlocks: React.FC<{
   )
 }
 
+export const StandaloneContentBlock: React.FC<{
+  block: Editor.BaseBlock
+  small?: boolean
+  parentType: Editor.BlockType
+  readonly?: boolean
+  draggable?: boolean
+  highlightedBlockId?: string
+}> = (props) => {
+  const { small = false, readonly = false, draggable = true, highlightedBlockId } = props
+
+  const behavior = useMemo(() => {
+    return {
+      small,
+      readonly,
+      draggable,
+      highlightedBlockId
+    }
+  }, [small, readonly, draggable, highlightedBlockId])
+
+  return (
+    <BlockBehaviorConext.Provider value={behavior}>
+      <ContentBlockInner block={props.block} parentType={props.parentType} />
+    </BlockBehaviorConext.Provider>
+  )
+}
+
 export const _ContentBlockPure: React.FC<{
   id: string
   parentType: Editor.BlockType

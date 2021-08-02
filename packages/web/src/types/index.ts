@@ -17,10 +17,6 @@ declare module 'framer-motion' {
   ): MotionValue<O>
 }
 
-export enum DnDItemTypes {
-  Block = 'block',
-  File = 'file'
-}
 export type PermissionEntityRole = 'manager' | 'editor' | 'commentator' | 'viewer'
 export type PermissionEntityRoleType = 'workspace' | 'group' | 'user'
 export type Permission = { role: PermissionEntityRole; type: PermissionEntityRoleType; id?: string }

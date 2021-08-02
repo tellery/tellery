@@ -106,38 +106,3 @@ export const SideBarThoughtsSection = () => {
     </SideBarContentLayout>
   )
 }
-
-// const ThoughtsItems: React.FC<{
-//   items: {
-//     id: string
-//     date: string
-//   }[]
-// }> = ({ items }) => {
-//   return (
-//     <div
-//       className={css`
-//         padding: 10px 16px 0;
-//       `}
-//     >
-//       {items.map((item) => (
-//         <ThoughtItem key={item.id} id={item.id} date={item.date} />
-//       ))}
-//     </div>
-//   )
-// }
-
-// const ThoughtItem: React.FC<{ id: string; date: string }> = ({ id, date }) => {
-//   const openStory = useOpenStory()
-//   const matchStory = useRouteMatch<{ id: string }>('/story/:id')
-
-//   return (
-//     <MainSideBarItem
-//       onClick={(e) => {
-//         openStory(id, {})
-//       }}
-//       showTitle
-//       title={dayjs(date).format('MMM DD, YYYY')}
-//       active={matchStory?.params.id === id}
-//     ></MainSideBarItem>
-//   )
-// }

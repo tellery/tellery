@@ -1,7 +1,6 @@
+import { useDroppable } from '@dnd-kit/core'
 import { css } from '@emotion/css'
 import React, { useEffect } from 'react'
-import { DnDItemTypes } from '@app/types'
-import { useDroppable } from '@dnd-kit/core'
 
 export const DroppleableOverlay: React.FC<{
   blockId: string
@@ -13,7 +12,6 @@ export const DroppleableOverlay: React.FC<{
     id: `drop-block-${type ?? 'normal'}-${blockId}`,
     data: {
       id: blockId,
-      accepts: [DnDItemTypes.Block],
       storyId: storyId
     }
   })
