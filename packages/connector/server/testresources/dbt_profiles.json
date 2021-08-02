@@ -7,7 +7,8 @@
       "Region Id": "us-ease-2.aws",
       "Username": "abc",
       "Password": "def",
-      "DbtProjectName": "projectA"
+      "DbtProjectName": "projectA",
+      "GitUrl": "git://xxxx"
     }
   },
   {
@@ -19,7 +20,8 @@
       "Database": "my_db",
       "Username": "abc",
       "Password": "def",
-      "DbtProjectName": "projectB"
+      "DbtProjectName": "projectB",
+      "GitUrl": "git://xxxx"
     }
   },
   {
@@ -31,7 +33,19 @@
       "Database": "my_db",
       "Username": "abc",
       "Password": "def",
-      "DbtProjectName": "projectC"
+      "DbtProjectName": "projectC",
+      "GitUrl": "git://xxxx"
+    }
+  },
+  {
+    "type": "PostgreSQL",
+    "name": "profileD",
+    "configs": {
+      "Endpoint": "127.0.0.1",
+      "Port": "5432",
+      "Database": "my_db",
+      "Username": "abc",
+      "Password": "def"
     }
   }
 ]

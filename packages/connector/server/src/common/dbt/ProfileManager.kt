@@ -3,6 +3,7 @@ package io.tellery.common.dbt
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import io.tellery.common.dbt.DbtManager.isDbtProfile
 import io.tellery.common.dbt.profile.*
 import io.tellery.common.dbt.profile.Entity.Output
 import io.tellery.entities.Profile
@@ -12,11 +13,13 @@ object ProfileManager {
     private val mapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
 
     fun batchToDbtProfile(profiles: List<Profile>): String {
-        val profileMap = profiles.associate {
-            it.configs[Constants.PROFILE_DBT_PROJECT_FIELD] to Entity(
-                Output(toDbtProfile(it))
-            )
-        }
+        val profileMap = profiles
+            .filter { isDbtProfile(it) }
+            .associate {
+                it.configs[Constants.PROFILE_DBT_PROJECT_FIELD] to Entity(
+                    Output(toDbtProfile(it))
+                )
+            }
         return mapper.writeValueAsString(profileMap)
     }
 
