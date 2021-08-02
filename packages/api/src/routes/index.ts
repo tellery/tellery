@@ -11,12 +11,14 @@ import upload from './storage'
 import users from './user'
 import workspaces from './workspace'
 import thirdParty from './thirdParty'
+import dbt from './dbt'
 
 const router = new Router({
   prefix: '/api',
 })
 
 router.use('/connectors', connectors.routes(), connectors.allowedMethods())
+router.use('/connectors/dbt', dbt.routes(), dbt.allowedMethods())
 router.use('/operations', operations.routes(), operations.allowedMethods())
 router.use('/stories', stories.routes(), stories.allowedMethods())
 router.use('/questions', questions.routes(), questions.allowedMethods())
