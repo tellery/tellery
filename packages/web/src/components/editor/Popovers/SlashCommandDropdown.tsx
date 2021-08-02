@@ -11,7 +11,7 @@ import {
   IconMenuH2,
   IconMenuH3,
   IconMenuNumberList,
-  IconMenuQuery,
+  IconCommonQuestion,
   IconMenuQuote,
   IconMenuToDo,
   IconMenuToggleList,
@@ -161,7 +161,7 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
       {
         title: 'Question',
         action: createOrToggleBlock(Editor.BlockType.Question),
-        icon: <Icon icon={IconMenuQuery} color={'#000'} />
+        icon: <IconCommonQuestion color={'#000'} />
       },
       {
         title: 'Heading 1',

@@ -74,7 +74,6 @@ import IconMenuLineDivider from './menu/line_divider.svg?component'
 import IconMenuMoveTo from './menu/move_to.svg?component'
 import IconMenuNormalWidth from './menu/normal_width.svg?component'
 import IconMenuNumberList from './menu/number_list.svg?component'
-import IconMenuQuery from './menu/query.svg?component'
 import IconMenuQuote from './menu/quote.svg?component'
 import IconMenuShow from './menu/show.svg?component'
 import IconMenuSortAsc from './menu/sort_asc.svg?component'
@@ -178,7 +177,6 @@ export {
   IconMenuMoveTo,
   IconMenuNormalWidth,
   IconMenuNumberList,
-  IconMenuQuery,
   IconMenuQuote,
   IconMenuShow,
   IconMenuSortAsc,

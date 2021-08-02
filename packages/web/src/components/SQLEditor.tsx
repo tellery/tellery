@@ -1,4 +1,4 @@
-import { IconMenuQuery } from '@app/assets/icons'
+import { IconCommonQuestion } from '@app/assets/icons'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useOpenStory } from '@app/hooks'
 import { useMgetBlocks } from '@app/hooks/api'
@@ -328,7 +328,7 @@ function TransclusionContentWidget(props: {
               padding: 0 5px 0 23px;
               color: ${ThemingVariables.colors.text[0]};
               background-color: ${ThemingVariables.colors.primary[4]};
-              background-image: ${SVG2DataURI(IconMenuQuery)};
+              background-image: ${SVG2DataURI(IconCommonQuestion)};
               background-size: 16px;
               background-repeat: no-repeat;
               background-position: 5px 50%;

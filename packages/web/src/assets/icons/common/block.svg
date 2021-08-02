@@ -1,8 +1,8 @@
 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect x="3" y="3" width="14" height="1.5" rx="0.4" fill="#002FA7"/>
-<rect x="3" y="15.5" width="14" height="1.5" rx="0.4" fill="#002FA7"/>
+<rect x="3" y="3" width="14" height="1.5" rx="0.4" fill="currentColor"/>
+<rect x="3" y="15.5" width="14" height="1.5" rx="0.4" fill="currentColor"/>
 <mask id="path-3-inside-1" fill="white">
 <rect x="3" y="7" width="14" height="6" rx="0.4"/>
 </mask>
-<rect x="3" y="7" width="14" height="6" rx="0.4" stroke="#002FA7" stroke-width="3" mask="url(#path-3-inside-1)"/>
+<rect x="3" y="7" width="14" height="6" rx="0.4" stroke="currentColor" stroke-width="3" mask="url(#path-3-inside-1)"/>
 </svg>
