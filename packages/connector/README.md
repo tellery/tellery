@@ -4,7 +4,7 @@
 
 1. mount your own profile file (see example) to `/usr/app/extra/profiles.json`
 
-2. If there is any third-party / community-supported connectors, put its jar into a folder and mount it to `/usr/app/extra/lib`
+2. If there is any third-party / community-supported connectors, put its jar into a folder and mount it to `/usr/app/extra/libs`
 
 3. start the container and enjoy!
 
@@ -16,6 +16,6 @@ The default working directory is `$rootProject.workingDir`, in gradle idea plugi
 
 If you want to specify the profile path, you can override it by enviroment variable `PROFILE_PATH` (it should be a path **relative** to the working dir).
 
-If you wanna test on third-party connector, put jars into `packages/connector/extra/lib`.
+If you wanna test on third-party connector, put jars into `packages/connector/extra/libs`.
 
 Then you can go with `gradle run`, everything will be all set.

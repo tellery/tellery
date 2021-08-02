@@ -115,7 +115,7 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<JavaExec> {
     workingDir = rootProject.projectDir
-    classpath += files("${rootProject.projectDir}/extra/lib/*")
+    classpath += files("${rootProject.projectDir}/extra/libs/*")
 }
 
 tasks.withType<Jar> {
@@ -143,7 +143,7 @@ jib {
         appRoot = "/usr/app"
         containerizingMode = "packaged"
         workingDirectory = "/usr/app"
-        extraClasspath = listOf("/usr/app/extra/lib/*")
+        extraClasspath = listOf("/usr/app/extra/libs/*")
         jvmFlags = listOf(
             "-server",
             "-Djava.awt.headless=true",
