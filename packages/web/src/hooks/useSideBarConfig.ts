@@ -1,8 +1,7 @@
 import { useAtom } from 'jotai'
 import { atomWithStorage } from 'jotai/utils'
 
-const SideBarConfigAtom = atomWithStorage('Tellery:SidebarConfig:1', {
-  x: 240,
+const SideBarConfigAtom = atomWithStorage('Tellery:SidebarConfig:2', {
   folded: false
 })
 

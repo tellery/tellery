@@ -7,17 +7,16 @@ import {
   IconCommonThoughts
 } from '@app/assets/icons'
 import { MainSideBarItem } from '@app/components/MainSideBarItem'
-import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useHover } from '@app/hooks'
 import { useConnectorsListProfiles } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useSideBarConfig } from '@app/hooks/useSideBarConfig'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { omniboxShowState } from '@app/store'
 import { ThemingVariables } from '@app/styles'
-import { DRAG_HANDLE_WIDTH } from '@app/utils'
 import { css, cx } from '@emotion/css'
-import { AnimatePresence, motion, useMotionValue, useTransform } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useUpdateAtom } from 'jotai/utils'
 import { nanoid } from 'nanoid'
 import React, { ReactNode, useCallback, useEffect, useState } from 'react'
@@ -29,11 +28,7 @@ import { UserModal } from './UserModal'
 import { WorkspaceModal } from './WorkspaceModal'
 
 const FOLDED_WIDTH = 68
-
-const DragConstraints = {
-  left: 200,
-  right: 600
-}
+const SIDEBAR_WIDTH = 240
 
 export const SideBar = () => {
   return (
@@ -205,29 +200,11 @@ const SideBarContent: React.FC = () => {
 const FloatingSideBar: React.FC<{ show: boolean }> = ({ children, show }) => {
   const [resizeConfig, setResizeConfig] = useSideBarConfig()
 
-  const x = useMotionValue(resizeConfig.x + 0.5 * DRAG_HANDLE_WIDTH)
-  const width = useTransform(x, (x) => x)
-  const [dragging, setDragging] = useState(false)
-
-  const translateX = useTransform(x, (x) => (show || dragging || resizeConfig.folded === false ? 0 : -x))
-
-  useEffect(() => {
-    x.set(resizeConfig.x)
-    const unsubscribe = x.onChange((x) => {
-      if (!x) return
-      setResizeConfig((config) => ({ ...config, x: x }))
-    })
-    return () => {
-      unsubscribe()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resizeConfig.folded, setResizeConfig, x])
-
   return (
     <motion.div
       style={{
-        width: width,
-        x: translateX,
+        width: SIDEBAR_WIDTH,
+        x: show || resizeConfig.folded === false ? 0 : -SIDEBAR_WIDTH,
         position: resizeConfig.folded ? 'absolute' : 'relative',
         left: resizeConfig.folded ? `${FOLDED_WIDTH}px` : `0`,
         zIndex: resizeConfig.folded ? -1 : 0
@@ -241,32 +218,6 @@ const FloatingSideBar: React.FC<{ show: boolean }> = ({ children, show }) => {
       `}
     >
       {children}
-      {!resizeConfig.folded && (
-        <motion.div
-          title="drag to resize"
-          whileDrag={{ backgroundColor: ThemingVariables.colors.gray[1] }}
-          drag={'x'}
-          dragConstraints={DragConstraints}
-          className={css`
-            position: absolute;
-            cursor: col-resize;
-            left: -${DRAG_HANDLE_WIDTH / 2}px;
-            top: 0;
-            height: 100%;
-            z-index: 10;
-            width: ${DRAG_HANDLE_WIDTH}px;
-          `}
-          dragElastic={false}
-          dragMomentum={false}
-          onDrag={() => {
-            setDragging(true)
-          }}
-          onDragEnd={() => {
-            setDragging(false)
-          }}
-          style={{ x }}
-        />
-      )}
     </motion.div>
   )
 }
