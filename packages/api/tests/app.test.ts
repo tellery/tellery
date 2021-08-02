@@ -825,6 +825,22 @@ test.serial('reference completion', async (t: ExecutionContext<any>) => {
   await getConnection().transaction(async (manager) => {
     const bop = new BlockOperation('test', 'test', manager)
 
+    // create story
+    await set(
+      bop,
+      sid1,
+      {
+        id: sid1,
+        children: [qid, mid1, mid2],
+        type: 'story',
+        content: { title: [[title]] },
+        parentId: 'test',
+        parentTable: 'workspace',
+        storyId: sid1,
+        alive: true,
+      },
+      [],
+    )
     // create question
     await set(
       bop,
@@ -902,6 +918,8 @@ test.serial('reference completion', async (t: ExecutionContext<any>) => {
   t.is(blocks3[srs3[1]].type, 'metric')
   // last one is question block
   t.is(blocks3[srs3[2]].type, 'question')
+  // contains story blocks
+  t.not(blocks3[sid1], undefined)
 
   // not find with title
   const completionRes2: any = await got<any>('api/referenceCompletion', {
@@ -919,6 +937,7 @@ test.serial('reference completion', async (t: ExecutionContext<any>) => {
   // all of them are metric blocks
   t.is(blocks2[srs2[0]].type, 'metric')
   t.is(blocks2[srs2[1]].type, 'metric')
+  t.not(blocks2[sid1], undefined)
 
   await getRepository(BlockEntity).delete([qid, mid1, mid2])
 })

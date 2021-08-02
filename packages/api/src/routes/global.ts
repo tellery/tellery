@@ -194,6 +194,16 @@ async function referenceCompletion(ctx: Context) {
     }
   }
 
+  // fill story blocks
+  const storyBlocks = await blockService.mget(
+    user.id,
+    payload.workspaceId,
+    _(results.blocks).map('storyId').uniq().value(),
+  )
+  _(storyBlocks).forEach((b) => {
+    results.blocks![b.id] = b
+  })
+
   ctx.body = { results }
 }
 
