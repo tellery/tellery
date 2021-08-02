@@ -16,6 +16,15 @@ import { useGetBlockTitleTextSnapshot } from './editor'
 import { isQuestionLikeBlock } from './editor/Blocks/utils'
 import { getFilteredOrderdSubsetOfBlocks } from './editor/utils'
 import { useQuestionEditor } from './StoryQuestionsEditor'
+import ContentLoader from 'react-content-loader'
+
+const SideBarLoader: React.FC = () => {
+  return (
+    <ContentLoader viewBox="0 0 210 36" style={{ width: '100%', height: '36px', padding: '0 8px' }}>
+      <rect x="0" y="0" rx="5" ry="5" width="210" height="36" />
+    </ContentLoader>
+  )
+}
 
 const TocQuestionItem: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
   const block = useBlockSuspense(blockId)
@@ -200,7 +209,11 @@ const AllMetrics: React.FC = () => {
     >
       <div>
         {metricBlocks.map((block) => {
-          return <DataAssetItem key={block.id} blockId={block.id} currentStoryId={storyId!} />
+          return (
+            <React.Suspense key={block.id} fallback={<SideBarLoader />}>
+              <DataAssetItem blockId={block.id} currentStoryId={storyId!} />
+            </React.Suspense>
+          )
         })}
       </div>
     </PerfectScrollbar>

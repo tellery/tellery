@@ -12,7 +12,6 @@ import { ThemingVariables } from '@app/styles'
 import { Editor, Story, Thought } from '@app/types'
 import { isUrl, TELLERY_MIME_TYPES } from '@app/utils'
 import { css, cx } from '@emotion/css'
-import computeScrollIntoView from 'compute-scroll-into-view'
 import copy from 'copy-to-clipboard'
 import debug from 'debug'
 import { dequal } from 'dequal'
@@ -206,16 +205,17 @@ const _StoryEditor: React.FC<{
     // TODO: if block not belong to this story...
     blockAdminValue.getBlockInstanceById(blockId).then(({ wrapperElement, blockRef }) => {
       setTimeout(() => {
-        const actions = computeScrollIntoView(wrapperElement, {
+        scrollIntoView(wrapperElement, {
           scrollMode: 'if-needed',
-          block: 'end',
+          behavior: 'smooth',
+          block: 'center',
           inline: 'nearest',
           boundary: rootBlock.type === Editor.BlockType.Story ? editorRef.current?.parentElement : undefined
         })
-        actions.forEach(({ el, top, left }) => {
-          el.scrollTop = top + 100
-          el.scrollLeft = left
-        })
+        // actions.forEach(({ el, top, left }) => {
+        //   el.scrollTop = top + 100
+        //   el.scrollLeft = left
+        // })
         if (openMenu) {
           blockRef.current.openMenu()
         }
