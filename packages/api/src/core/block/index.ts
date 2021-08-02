@@ -9,7 +9,7 @@ import { BlockDTO, BlockParentType, BlockType } from '../../types/block'
 import { EntityType } from '../../types/entity'
 import { defaultPermissions, PermissionModel } from '../../types/permission'
 import { Token } from '../../types/token'
-import { str2Date } from '../../utils/date'
+import { str2Date, strOrDate2number } from '../../utils/date'
 import { removeByPathAndId, setByPath } from '../../utils/updater'
 import { Entity } from '../common'
 import { Link, updateSourceLinkAlive, updateTargetLinkAlive } from '../link'
@@ -167,8 +167,8 @@ export abstract class Block extends Entity {
       format: this.format,
       children: this.children,
       permissions: this.permissions ?? defaultPermissions,
-      createdAt: this.createdAt?.getTime() || 0,
-      updatedAt: this.updatedAt?.getTime() || 0,
+      createdAt: strOrDate2number(this.createdAt) || 0,
+      updatedAt: strOrDate2number(this.updatedAt) || 0,
       version: this.version,
       createdById: this.createdById,
       lastEditedById: this.lastEditedById,
