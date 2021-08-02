@@ -38,7 +38,6 @@ import { IconCommonArrowDropDown, IconCommonClose, IconCommonAdd } from '@app/as
 import { CustomTooltip } from '../components/CustomTooltip'
 import { useCrossFilter, useDataRecords } from '@app/hooks/useDataRecords'
 import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
-import Icon from '@app/components/kit/Icon'
 
 const splitter = ', '
 
@@ -310,7 +309,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                       }
                     }}
                   >
-                    <Icon icon={IconCommonClose} color={ThemingVariables.colors.gray[0]} />
+                    <IconCommonClose color={ThemingVariables.colors.gray[0]} />
                   </div>
                 </div>
               )}

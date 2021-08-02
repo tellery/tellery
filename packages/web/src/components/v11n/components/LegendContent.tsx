@@ -6,7 +6,7 @@ import { useDimensions } from '@app/hooks/useDimensions'
 import { fontFamily } from '../constants'
 import { IconVisualizationCircle } from '@app/assets/icons'
 import { ThemingVariables } from '@app/styles'
-import Icon from '@app/components/kit/Icon'
+
 import Tippy from '@tippyjs/react'
 
 const fontSize = 14
@@ -81,14 +81,13 @@ function LegendItem(props: { value: Payload; small?: boolean; onMouseEnter(): vo
       onMouseLeave={props.onMouseLeave}
     >
       <Tippy content={props.value.value} disabled={!props.small}>
-        <Icon
-          icon={IconVisualizationCircle}
-          size={iconSize}
-          color={props.value.color}
+        <div
           className={css`
             margin-right: ${iconMargin}px;
           `}
-        />
+        >
+          <IconVisualizationCircle color={props.value.color} width={iconSize} height={iconSize} />
+        </div>
       </Tippy>
       {props.small ? null : props.value.value}
     </li>

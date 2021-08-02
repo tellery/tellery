@@ -23,7 +23,7 @@ export const BlockPlaceHolder = (props: { onClick?: () => void; loading: boolean
         color: ${ThemingVariables.colors.primary[2]};
       `}
     >
-      {loading ? <CircularLoading size={25} color={ThemingVariables.colors.primary[0]} /> : text}
+      {loading ? <CircularLoading size={25} color={ThemingVariables.colors.primary[1]} /> : text}
     </div>
   )
 }

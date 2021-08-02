@@ -7,7 +7,6 @@ import { useLocalStorage } from '@app/hooks/useLocalStorage'
 import { ThemingVariables } from '@app/styles'
 import { DRAG_HANDLE_WIDTH } from '../../utils'
 import { StoryEditor } from './StoryEditor'
-import Icon from '../kit/Icon'
 import { BlockingUI } from '../BlockingUI'
 
 export const secondaryStoryIdState = atom<string | null>(null)
@@ -129,8 +128,7 @@ const _SecondaryEditor = () => {
                 flex: 0 0 44px;
               `}
             >
-              <Icon
-                icon={IconCommonClose}
+              <IconCommonClose
                 color={ThemingVariables.colors.text[0]}
                 className={css`
                   cursor: pointer;

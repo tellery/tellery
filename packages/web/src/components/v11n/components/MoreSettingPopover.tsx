@@ -14,7 +14,6 @@ import { ThemingVariables } from '@app/styles'
 import { ComboShape, ComboStack, Config, Type } from '../types'
 import { ConfigSelect } from './ConfigSelect'
 import { ConfigSwitch } from './ConfigSwitch'
-import Icon from '@app/components/kit/Icon'
 
 const lineTypes: Config<Type.COMBO>['groups'][0]['type'][] = ['linear', 'monotone', 'step']
 
@@ -61,8 +60,7 @@ export function MoreSettingPopover(props: {
               {
                 {
                   linear: (
-                    <Icon
-                      icon={IconVisualizationLineStyleLinear}
+                    <IconVisualizationLineStyleLinear
                       color={
                         props.value.type === lineType
                           ? ThemingVariables.colors.gray[5]
@@ -71,8 +69,7 @@ export function MoreSettingPopover(props: {
                     />
                   ),
                   monotone: (
-                    <Icon
-                      icon={IconVisualizationLineStyleMonotone}
+                    <IconVisualizationLineStyleMonotone
                       color={
                         props.value.type === lineType
                           ? ThemingVariables.colors.gray[5]
@@ -81,8 +78,7 @@ export function MoreSettingPopover(props: {
                     />
                   ),
                   step: (
-                    <Icon
-                      icon={IconVisualizationLineStyleStep}
+                    <IconVisualizationLineStyleStep
                       color={
                         props.value.type === lineType
                           ? ThemingVariables.colors.gray[5]
@@ -195,8 +191,7 @@ export function MoreSettingPopover(props: {
                 {
                   {
                     [ComboShape.LINE]: (
-                      <Icon
-                        icon={IconVisualizationLine}
+                      <IconVisualizationLine
                         color={
                           props.value.shape === shape
                             ? ThemingVariables.colors.gray[5]
@@ -205,8 +200,7 @@ export function MoreSettingPopover(props: {
                       />
                     ),
                     [ComboShape.BAR]: (
-                      <Icon
-                        icon={IconVisualizationBar}
+                      <IconVisualizationBar
                         color={
                           props.value.shape === shape
                             ? ThemingVariables.colors.gray[5]
@@ -215,8 +209,7 @@ export function MoreSettingPopover(props: {
                       />
                     ),
                     [ComboShape.AREA]: (
-                      <Icon
-                        icon={IconVisualizationArea}
+                      <IconVisualizationArea
                         color={
                           props.value.shape === shape
                             ? ThemingVariables.colors.gray[5]

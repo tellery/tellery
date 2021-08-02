@@ -3,7 +3,6 @@ import { css } from '@emotion/css'
 import { ThemingVariables } from '@app/styles'
 import { SVG2DataURI } from '@app/lib/svg'
 import { IconCommonArrowDropDown, IconCommonClose } from '@app/assets/icons'
-import Icon from '@app/components/kit/Icon'
 
 export function ConfigSelectWithClear(props: {
   className?: string
@@ -79,7 +78,7 @@ export function ConfigSelectWithClear(props: {
           props.onChange(undefined)
         }}
       >
-        <Icon icon={IconCommonClose} color={ThemingVariables.colors.gray[0]} />
+        <IconCommonClose color={ThemingVariables.colors.gray[0]} />
       </div>
     </div>
   )
