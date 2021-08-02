@@ -127,7 +127,7 @@ object DbtManager {
         forceMkdir(rootFolder)
         forceMkdir(keyFolder)
 
-        val profiles = ConfigManager.profiles
+        val profiles = ConfigManager.profiles.filter { isDbtProfile(it) }
         reloadDbtProfiles(profiles)
 
         if (profiles.isNotEmpty()) {
@@ -142,6 +142,10 @@ object DbtManager {
 
         val dbtProfileContent = batchToDbtProfile(profiles)
         overwriteFile(profileFile, dbtProfileContent)
+    }
+
+    fun isDbtProfile(profile: Profile): Boolean {
+        return EXTERNAL_CONFIG_FIELDS.all { profile.configs.containsKey(it) }
     }
 
     @VisibleForTesting
@@ -223,11 +227,11 @@ object DbtManager {
         val keyFolders = keyFolder.list() ?: Collections.emptyList<String>().toTypedArray()
 
         profiles
-            .filter { !keyFolders.contains(it.name) && isDbtProfile(it) }
+            .filter { !keyFolders.contains(it.name) }
             .forEach { generateRepoKeyPair(DbtRepository(rootFolder, keyFolder, it)) }
 
         profiles
-            .filter { !repoFolders.contains(it.name) && isDbtProfile(it) }
+            .filter { !repoFolders.contains(it.name) }
             .forEach {
                 val repo = DbtRepository(rootFolder, keyFolder, it)
                 cloneRemoteRepo(repo)
@@ -291,12 +295,6 @@ object DbtManager {
             file.createNewFile()
         }
         file.writeText(content)
-    }
-
-    private fun isDbtProfile(profile: Profile): Boolean {
-        return EXTERNAL_CONFIG_FIELDS
-            .map { profile.configs.containsKey(it) }
-            .reduce { acc, b -> acc && b }
     }
 
     private class StreamGobbler(
