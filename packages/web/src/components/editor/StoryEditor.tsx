@@ -204,7 +204,9 @@ const _StoryEditor: React.FC<{
 
   useEffect(() => {
     if (!inited) return
-    const blockId = location.hash.slice(1) || (location.state as any).focusedBlockId
+    const blockId = location.hash.slice(1) || (location.state as any)?.focusedBlockId
+    if (!blockId) return
+    // TODO: if block not belong to this story...
     blockAdminValue.getBlockInstanceById(blockId).then((res) => {
       setTimeout(() => {
         scrollIntoView(res.wrapperElement, {
