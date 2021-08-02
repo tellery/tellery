@@ -25,8 +25,8 @@ import io.tellery.common.dbt.model.Manifest
 import io.tellery.entities.DBTProfileNotConfiguredException
 import io.tellery.entities.DBTRepositoryNotExistsException
 import io.tellery.entities.Profile
-import io.tellery.grpc.Block
 import io.tellery.grpc.DbtBlock
+import io.tellery.grpc.QuestionBlockContent
 import io.tellery.utils.logger
 import org.apache.commons.io.FileUtils
 import java.io.BufferedReader
@@ -93,18 +93,18 @@ object DbtManager {
         checkoutMasterAndPull(repo)
     }
 
-    fun pushRepo(name: String, id2Block: Map<String, Block>) {
+    fun pushRepo(name: String, blocks: List<QuestionBlockContent>) {
         if (!repoIsAlreadyExists(name)) {
             throw DBTRepositoryNotExistsException(name)
         }
 
-        if (id2Block.isEmpty()) {
-            return;
+        if (blocks.isEmpty()) {
+            return
         }
 
         val repo = DbtRepository(rootFolder, keyFolder, getProfileByName(name))
         checkoutMasterAndPull(repo)
-        overwriteDiffModels(name, id2Block)
+        overwriteDiffModels(name, blocks)
         checkoutNewBranchAndCommitAndPush(repo)
     }
 
@@ -237,30 +237,21 @@ object DbtManager {
             }
     }
 
-    private fun overwriteDiffModels(name: String, id2Block: Map<String, Block>) {
-        val name2Block = id2Block.entries
-            .map { getBlockName(it.value, id2Block[it.value.storyId]) to it.value }
-            .toMap()
-
+    private fun overwriteDiffModels(name: String, blocks: List<QuestionBlockContent>) {
         val telleryModelFolder = File(rootFolder.absolutePath + "/$name/models/tellery")
         forceMkdir(telleryModelFolder)
 
-        name2Block.entries.forEach {
-            val sqlFile = File(telleryModelFolder, "${it.key}.sql")
+        blocks.forEach { b ->
+            val sqlFile = File(telleryModelFolder, "${b.name}.sql")
             if (sqlFile.exists()) {
                 val sqlContext = sqlFile.readText()
-                if (sqlContext != it.value.content.sql) {
-                    overwriteFile(sqlFile, it.value.content.sql)
+                if (sqlContext != b.sql) {
+                    overwriteFile(sqlFile, b.sql)
                 }
             } else {
-                overwriteFile(sqlFile, it.value.content.sql)
+                overwriteFile(sqlFile, b.sql)
             }
         }
-    }
-
-    private fun getBlockName(block: Block, storyBlock: Block?): String {
-        val storyPrefix = storyBlock?.content?.getTitle(0)?.replace(" ", "_")?.lowercase() ?: ""
-        return storyPrefix + "-" + block.content.getTitle(0).replace(" ", "_").lowercase()
     }
 
     private fun getProfileByName(name: String): Profile {
