@@ -47,7 +47,7 @@ const TocQuestionItem: React.FC<{ blockId: string; storyId: string }> = ({ block
         pushFocusedBlockIdState(block.id, block.storyId)
       }}
     >
-      {block.type === Editor.BlockType.Question ? (
+      {block.type === Editor.BlockType.Question || block.type === Editor.BlockType.QuestionSnapshot ? (
         <IconCommonQuestion
           color={ThemingVariables.colors.gray[0]}
           className={css`
