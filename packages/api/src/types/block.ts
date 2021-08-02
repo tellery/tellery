@@ -28,6 +28,7 @@ enum BlockType {
   BOOKMARK = 'bookmark',
   STORY_LINK = 'story_link',
   QUESTION_REFERENCE = 'question_reference',
+  QUESTION_SNAPSHOT = 'question_snapshot',
 
   // embeds
   EMBED = 'embed',
