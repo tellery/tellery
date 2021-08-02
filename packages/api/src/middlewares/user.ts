@@ -9,7 +9,7 @@ import { PermissionWorkspaceRole } from '../types/permission'
 import { isAnonymous } from '../utils/env'
 import { USER_TOKEN_HEADER_KEY } from '../utils/user'
 
-const ignorePaths = ['/api/users/login', '/api/readiness', '/api/liveness', '/api/static']
+const ignorePaths = ['/api/users/login']
 
 // 15 days
 const d15 = 1000 * 3600 * 24 * 15
@@ -22,7 +22,7 @@ export default async function user(ctx: Context, next: Next) {
   if (pathIncluded) {
     if (token && _.isString(token)) {
       payload = await userService.verifyToken(token)
-    } else if (isAnonymous()) {
+    } else if (isAnonymous() && ctx.path === '/api/users/me') {
       // special logic for anonymous users
       payload = await userService.verifyToken(token?.toString() ?? '')
       // invited new user to workspace
