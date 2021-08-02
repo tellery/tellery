@@ -92,7 +92,7 @@
   "devDependencies": {
     "@babel/core": "^7.14.8",
     "@babel/plugin-transform-react-jsx": "^7.14.5",
-    "@babel/preset-env": "^7.14.8",
+    "@babel/preset-env": "^7.14.9",
     "@babel/preset-react": "^7.14.5",
     "@babel/preset-typescript": "^7.14.5",
     "@nodelib/fs.walk": "^1.2.8",
