@@ -462,7 +462,9 @@ const QuestionBlockStatus: React.FC<{
         >
           <div
             className={css`
-              margin-right: 5px;
+              > {
+                margin-right: 5px;
+              }
             `}
           >
             {loading ? (
