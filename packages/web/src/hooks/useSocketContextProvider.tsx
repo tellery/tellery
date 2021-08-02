@@ -18,6 +18,7 @@ export const useSocketContextProvider = () => {
   const user = useLoggedUser()
   const workspace = useWorkspace()
   const updateBlocks = useUpdateBlocks()
+
   useEffect(() => {
     const socket = io(WS_URI, {
       reconnectionAttempts: 10,
