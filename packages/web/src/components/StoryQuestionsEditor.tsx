@@ -1,6 +1,3 @@
-import { useWorkspace } from '@app/hooks/useWorkspace'
-import { useCommit } from '@app/hooks/useCommit'
-import { css, cx } from '@emotion/css'
 import {
   IconCommonArrowDropDown,
   IconCommonClose,
@@ -14,11 +11,8 @@ import {
   IconCommonSql,
   IconVisualizationSetting
 } from '@app/assets/icons'
-import { getBlockWrapElementById } from '@app/components/editor/helpers/contentEditable'
 import { SQLEditor } from '@app/components/SQLEditor'
 import { Configuration } from '@app/components/v11n'
-import { dequal } from 'dequal'
-import { motion, useMotionValue, useTransform } from 'framer-motion'
 import { useHover, useOpenStory, usePrevious } from '@app/hooks'
 import {
   useBlockSuspense,
@@ -27,10 +21,20 @@ import {
   useQuestionDownstreams,
   useSnapshot
 } from '@app/hooks/api'
+import { useCommit } from '@app/hooks/useCommit'
 import { useLocalStorage } from '@app/hooks/useLocalStorage'
+import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
 import { useSqlEditor } from '@app/hooks/useSqlEditor'
+import { useWorkspace } from '@app/hooks/useWorkspace'
+import { applyCreateSnapshotOperation } from '@app/store/block'
+import { ThemingVariables } from '@app/styles'
+import { Editor, Story } from '@app/types'
+import { DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
+import { css, cx } from '@emotion/css'
+import Tippy from '@tippyjs/react'
+import { dequal } from 'dequal'
+import { motion, useMotionValue, useTransform } from 'framer-motion'
 import { produce } from 'immer'
-import invariant from 'tiny-invariant'
 import isHotkey from 'is-hotkey'
 import { nanoid } from 'nanoid'
 import React, { SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -38,22 +42,17 @@ import { useIsMutating } from 'react-query'
 import { toast } from 'react-toastify'
 import { Tab, TabList, TabPanel, TabStateReturn, useTabState } from 'reakit/Tab'
 import { atom, useRecoilCallback, useRecoilState } from 'recoil'
-import scrollIntoView from 'scroll-into-view-if-needed'
-import { applyCreateSnapshotOperation } from '@app/store/block'
-import { ThemingVariables } from '@app/styles'
-import { Editor, Story } from '@app/types'
-import { DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
+import invariant from 'tiny-invariant'
 import { setBlockTranscation } from '../context/editorTranscations'
 import { CircularLoading } from './CircularLoading'
 import { BlockTitle, useGetBlockTitleTextSnapshot } from './editor'
 import type { SetBlock } from './editor/types'
 import Icon from './kit/Icon'
 import IconButton from './kit/IconButton'
+import { MenuItem } from './MenuItem'
 import QuestionDownstreams from './QuestionDownstreams'
 import { charts } from './v11n/charts'
 import { Config, Type } from './v11n/types'
-import Tippy from '@tippyjs/react'
-import { MenuItem } from './MenuItem'
 
 type Mode = 'SQL' | 'VIS' | 'DOWNSTREAM'
 
@@ -757,17 +756,11 @@ export const StoryQuestionEditor: React.FC<{
   const mutatingCount = useDraftBlockMutating(block.id)
   const openStory = useOpenStory()
   const { data: downstreams } = useQuestionDownstreams(block.id)
+  const pushFocusedBlockIdState = usePushFocusedBlockIdState()
+
   const scrollToBlock = useCallback(() => {
-    const element = getBlockWrapElementById(block.id)
-    element &&
-      scrollIntoView(element, {
-        behavior: 'smooth',
-        scrollMode: 'always',
-        block: 'start',
-        inline: 'nearest',
-        boundary: element.closest('.editor')
-      })
-  }, [block.id])
+    pushFocusedBlockIdState(block.id, block.storyId)
+  }, [block.id, block.storyId, pushFocusedBlockIdState])
 
   return (
     <TabPanel

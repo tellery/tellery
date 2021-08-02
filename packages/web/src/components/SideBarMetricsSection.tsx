@@ -1,20 +1,21 @@
 import { IconCommonMetrics, IconCommonQuestion } from '@app/assets/icons'
 import { useBlockSuspense, useSearchMetrics } from '@app/hooks/api'
+import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
 import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
-import React, { useMemo, Fragment } from 'react'
+import { Tab } from '@headlessui/react'
+import React, { Fragment, useMemo } from 'react'
 import PerfectScrollbar from 'react-perfect-scrollbar'
-import { useHistory, useRouteMatch } from 'react-router-dom'
+import { useRouteMatch } from 'react-router-dom'
 import { useGetBlockTitleTextSnapshot } from './editor'
 import { getFilteredOrderdSubsetOfBlocks } from './editor/utils'
-import { Tab } from '@headlessui/react'
 
 const QuestionItem: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
   const block = useBlockSuspense(blockId)
   const getBlockTitle = useGetBlockTitleTextSnapshot()
-  const history = useHistory()
+  const pushFocusedBlockIdState = usePushFocusedBlockIdState()
 
   return (
     <div
@@ -29,9 +30,7 @@ const QuestionItem: React.FC<{ blockId: string; storyId: string }> = ({ blockId,
         }
       `}
       onClick={() => {
-        if (block.storyId === storyId) {
-          history.push(`#${block.id}`)
-        }
+        pushFocusedBlockIdState(block.id, block.storyId)
       }}
     >
       {block.type === Editor.BlockType.Question ? (

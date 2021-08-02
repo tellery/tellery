@@ -20,6 +20,7 @@ import { motion } from 'framer-motion'
 import produce from 'immer'
 import isHotkey from 'is-hotkey'
 import React, { CSSProperties, memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useEvent } from 'react-use'
 import { useRecoilState } from 'recoil'
 import scrollIntoView from 'scroll-into-view-if-needed'
@@ -199,9 +200,12 @@ const _StoryEditor: React.FC<{
     [blockAdminValue, selectionRef, setSelectionState]
   )
 
+  const location = useLocation()
+
   useEffect(() => {
-    if (!props.scrollToBlockId || !inited) return
-    blockAdminValue.getBlockInstanceById(props.scrollToBlockId).then((res) => {
+    if (!inited) return
+    const blockId = location.hash.slice(1) || (location.state as any).focusedBlockId
+    blockAdminValue.getBlockInstanceById(blockId).then((res) => {
       setTimeout(() => {
         scrollIntoView(res.wrapperElement, {
           scrollMode: 'always',
@@ -210,10 +214,10 @@ const _StoryEditor: React.FC<{
           inline: 'nearest',
           boundary: editorRef.current?.parentElement
         })
+        setSelectedBlocks([blockId as string])
       }, 0)
-      setSelectedBlocks([props.scrollToBlockId as string])
     })
-  }, [blockAdminValue, inited, props.scrollToBlockId, setSelectedBlocks])
+  }, [blockAdminValue, inited, setSelectedBlocks, location.state, location.hash])
 
   const blurEditor = useCallback(() => {
     setSelectionState(null)

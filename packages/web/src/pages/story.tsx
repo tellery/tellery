@@ -70,13 +70,6 @@ const _Page: React.FC = () => {
 }
 
 const StoryContent: React.FC<{ storyId: string }> = ({ storyId }) => {
-  const [scrollToBlockId, setScrollToBlockId] = useState<string | null>(null)
-  const location = useLocation()
-
-  useEffect(() => {
-    const blockId = location.hash.slice(1)
-    setScrollToBlockId(blockId)
-  }, [location])
   const storyBlock = useFetchStoryChunk<Story | Thought>(storyId, false)
 
   return (
@@ -90,7 +83,6 @@ const StoryContent: React.FC<{ storyId: string }> = ({ storyId }) => {
             }
             padding: 100px 100px 0 100px;
           `}
-          scrollToBlockId={scrollToBlockId}
           bottom={<StoryBackLinks storyId={storyId} />}
         ></StoryEditor>
       )}
@@ -98,7 +90,6 @@ const StoryContent: React.FC<{ storyId: string }> = ({ storyId }) => {
         <>
           <StoryEditor
             storyId={storyId}
-            scrollToBlockId={scrollToBlockId}
             fullWidth
             className={css`
               padding: 0 120px;
