@@ -47,7 +47,7 @@ dependencies {
     api("com.michael-bull.kotlin-coroutines-jdbc:kotlin-coroutines-jdbc:1.0.2")
 
     api("com.aventrix.jnanoid:jnanoid:2.0.0")
-    api("com.amazonaws:aws-java-sdk-s3:1.12.35")
+    api("com.amazonaws:aws-java-sdk-s3:1.12.37")
     api("com.github.doyaaaaaken:kotlin-csv-jvm:0.15.2")
 
     api("com.github.kittinunf.fuel:fuel:2.3.1")
