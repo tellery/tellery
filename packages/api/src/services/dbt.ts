@@ -10,7 +10,7 @@ import { getIPermission, IPermission } from '../core/permission'
 import { extractPartialQueries } from '../core/translator'
 import BlockEntity from '../entities/block'
 import { BlockParentType, BlockType } from '../types/block'
-import { ExportedBlockMetadata } from '../types/dbt'
+import { DbtMetadata, ExportedBlockMetadata } from '../types/dbt'
 import { LinkType } from '../types/link'
 import { canUpdateWorkspaceData } from '../utils/permission'
 
@@ -68,72 +68,12 @@ export class DbtService {
     profile: string,
   ) {
     await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
-    const [metadata, currentDbtBlocks] = await Promise.all([
-      connectorManager.listDbtBlocks(profile),
-      this.listCurrentDbtBlocks(workspaceId),
-    ])
 
-    const currentDbtBlocksByName = _.keyBy(
-      currentDbtBlocks,
-      (b) => _.get(b, 'content.name') as string,
-    )
-    const metadataByName = _.keyBy(metadata, 'name')
-
-    const oldNames = _(currentDbtBlocksByName).keys()
-    const newNames = _(metadataByName).keys()
-
-    const deletedBlockIds = oldNames
-      .difference(newNames.value())
-      .map((name) => currentDbtBlocksByName[name].id)
-      .value()
-
-    const createdBlocks = newNames.difference(oldNames.value()).map((name) => {
-      const rawMetadata = metadataByName[name]
-      return Block.fromArgs({
-        id: nanoid(),
-        type: BlockType.DBT,
-        parentId: workspaceId,
-        parentTable: BlockParentType.WORKSPACE,
-        storyId: workspaceId,
-        content: {
-          ...rawMetadata,
-          title: [[`dbt:${rawMetadata.name}`]],
-        },
-        alive: true,
-        version: 0,
-        format: {},
-        children: [],
-        createdById: operatorId,
-        lastEditedById: operatorId,
-      }).toModel(workspaceId)
-    })
-
-    const modifiedBlocks = newNames
-      .intersection(oldNames.value())
-      .map((name) => {
-        const block = currentDbtBlocksByName[name]
-        const newMeta = metadataByName[name]
-        const oldMeta = _.get(block, 'content')
-        if (_.isEqual(newMeta, oldMeta)) {
-          return null
-        } else {
-          _.set(block, 'content', newMeta)
-          return block
-        }
-      })
-      .compact()
-      .value()
-
-    await getConnection().transaction(async (t) => {
-      await bluebird.all([
-        t.getRepository(BlockEntity).update(deletedBlockIds, { alive: false }),
-        t.getRepository(BlockEntity).insert(createdBlocks),
-      ])
-      await bluebird.map(modifiedBlocks, async (b) => b.save(), { concurrency: 10 })
-    })
+    const metadata = await connectorManager.listDbtBlocks(profile)
+    await this.updateDbtBlocksByMetadata(workspaceId, operatorId, metadata)
   }
 
-  private async listCurrentDbtBlocks(workspaceId: string) {
+  async listCurrentDbtBlocks(workspaceId: string) {
     const models = await getRepository(BlockEntity).find({
       type: BlockType.DBT,
       workspaceId: workspaceId,
@@ -142,10 +82,14 @@ export class DbtService {
     return _(models).value()
   }
 
-  private async loadAllDbtBlockDescendent(workspaceId: string): Promise<ExportedBlockMetadata[]> {
+  async loadAllDbtBlockDescendent(workspaceId: string): Promise<ExportedBlockMetadata[]> {
     const dbtBlocks = _(await this.listCurrentDbtBlocks(workspaceId))
       .map(Block.fromEntitySafely)
       .value()
+
+    if (dbtBlocks.length === 0) {
+      return []
+    }
 
     const blocks = _(
       await cascadeLoadBlocksByLink(_(dbtBlocks).map('id').value(), 'backward', LinkType.QUESTION),
@@ -214,6 +158,75 @@ export class DbtService {
         }
       })
       .value()
+  }
+
+  async updateDbtBlocksByMetadata(
+    workspaceId: string,
+    operatorId: string,
+    metadata: DbtMetadata[],
+  ) {
+    const currentDbtBlocksByName = _.keyBy(
+      await this.listCurrentDbtBlocks(workspaceId),
+      (b) => _.get(b, 'content.name') as string,
+    )
+    const metadataByName = _.keyBy(metadata, 'name')
+
+    const oldNames = _(currentDbtBlocksByName).keys()
+    const newNames = _(metadataByName).keys()
+
+    const deletedBlockIds = oldNames
+      .difference(newNames.value())
+      .map((name) => currentDbtBlocksByName[name].id)
+      .value()
+
+    const createdBlocks = newNames
+      .difference(oldNames.value())
+      .map((name) => {
+        const rawMetadata = metadataByName[name]
+        return Block.fromArgs({
+          id: nanoid(),
+          type: BlockType.DBT,
+          parentId: workspaceId,
+          parentTable: BlockParentType.WORKSPACE,
+          storyId: workspaceId,
+          content: {
+            ...rawMetadata,
+            title: [[`dbt:${rawMetadata.name}`]],
+          },
+          alive: true,
+          version: 0,
+          format: {},
+          children: [],
+          createdById: operatorId,
+          lastEditedById: operatorId,
+        }).toModel(workspaceId)
+      })
+      .value()
+
+    const modifiedBlocks = newNames
+      .intersection(oldNames.value())
+      .map((name) => {
+        const block = currentDbtBlocksByName[name]
+        const newMeta = metadataByName[name]
+        const oldMeta = _.get(block, 'content')
+        if (_.isEqual(newMeta, oldMeta)) {
+          return null
+        } else {
+          _.set(block, 'content', newMeta)
+          _.set(block, 'lastEditedById', operatorId)
+          return block
+        }
+      })
+      .compact()
+      .value()
+
+    await getConnection().transaction(async (t) => {
+      await bluebird.all([
+        t.getRepository(BlockEntity).update(deletedBlockIds, { alive: false }),
+        t.getRepository(BlockEntity).insert(createdBlocks),
+      ])
+      await bluebird.map(modifiedBlocks, async (b) => b.save(), { concurrency: 10 })
+    })
   }
 }
 
