@@ -21,7 +21,7 @@ export const createEmptyBlock = <T extends Editor.BaseBlock = Editor.BaseBlock>(
     content: cloneDeep(args.content) || { title: [] },
     type: args.type,
     format: args?.format ?? {},
-    children: [],
+    children: args?.children ?? [],
     storyId: args.storyId,
     parentTable: args.parentTable ?? Editor.BlockParentType.BLOCK,
     parentId: args?.parentId,

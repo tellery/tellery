@@ -8,7 +8,7 @@ import {
   splitToken,
   tokenPosition2SplitedTokenPosition
 } from '@app/components/editor/helpers/tokenManipulation'
-import Icon from '@app/components/kit/Icon'
+
 import { motion } from 'framer-motion'
 import { useBlockSuspense, useSearchBlocks } from '@app/hooks/api'
 import invariant from 'tiny-invariant'
@@ -226,7 +226,7 @@ export const _BlockReferenceDropdownInner: React.FC<
                 flex-shrink: 0;
               `}
             >
-              <Icon icon={IconCommonAdd} color={ThemingVariables.colors.primary[1]} />
+              <IconCommonAdd color={ThemingVariables.colors.primary[1]} />
             </div>
             Create {keyword}
           </>
@@ -279,7 +279,7 @@ export const _BlockReferenceDropdownInner: React.FC<
               color: #888;
             `}
           >
-            {keyword}
+            Reference story
             <span>{isLoading && 'loading'}</span>
           </div>
           {items.map((item, index) => (

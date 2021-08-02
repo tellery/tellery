@@ -7,7 +7,6 @@ import { IconCommonArrowDouble, IconCommonArrowDropDown } from '@app/assets/icon
 import { useAllThoughts, useMgetBlocks } from '@app/hooks/api'
 import type { Thought } from '@app/types'
 import { ThemingVariables } from '@app/styles'
-import Icon from './kit/Icon'
 
 export const Calendar = forwardRef<
   HTMLDivElement,
@@ -55,7 +54,12 @@ export const Calendar = forwardRef<
   )
 
   return (
-    <div ref={ref}>
+    <div
+      ref={ref}
+      onMouseLeave={() => {
+        props.onHover(undefined)
+      }}
+    >
       <ReactCalendar
         view="month"
         value={props.value}
@@ -66,8 +70,7 @@ export const Calendar = forwardRef<
         activeStartDate={activeStartDate}
         onActiveStartDateChange={(value) => setActiveStartDate(value.activeStartDate)}
         prev2Label={
-          <Icon
-            icon={IconCommonArrowDouble}
+          <IconCommonArrowDouble
             color={ThemingVariables.colors.text[1]}
             className={css`
               display: block;
@@ -76,8 +79,7 @@ export const Calendar = forwardRef<
           />
         }
         prevLabel={
-          <Icon
-            icon={IconCommonArrowDropDown}
+          <IconCommonArrowDropDown
             color={ThemingVariables.colors.text[1]}
             className={css`
               display: block;
@@ -86,8 +88,7 @@ export const Calendar = forwardRef<
           />
         }
         nextLabel={
-          <Icon
-            icon={IconCommonArrowDropDown}
+          <IconCommonArrowDropDown
             color={ThemingVariables.colors.text[1]}
             className={css`
               display: block;
@@ -95,14 +96,12 @@ export const Calendar = forwardRef<
             `}
           />
         }
-        next2Label={<Icon icon={IconCommonArrowDouble} color={ThemingVariables.colors.text[1]} />}
+        next2Label={<IconCommonArrowDouble color={ThemingVariables.colors.text[1]} />}
         className={cx(
           css`
-            width: 290px;
+            width: 274px;
             border-radius: 8px;
-            box-shadow: ${ThemingVariables.boxShadows[0]};
-            padding: 20px 16px;
-            background-color: ${ThemingVariables.colors.gray[5]};
+            padding: 20px 8px;
 
             & .react-calendar__navigation {
               margin-bottom: 8px;
@@ -111,9 +110,8 @@ export const Calendar = forwardRef<
                 outline: none;
                 border: none;
                 background-color: transparent;
-                pointer-events: none;
                 font-weight: 500;
-                font-size: 16px;
+                font-size: 12px;
               }
 
               .react-calendar__navigation__arrow {
@@ -147,7 +145,7 @@ export const Calendar = forwardRef<
                   font-weight: 500;
                   font-size: 12px;
                   line-height: 30px;
-                  color: ${ThemingVariables.colors.text[1]};
+                  color: ${ThemingVariables.colors.text[2]};
                 }
               }
             }
@@ -178,7 +176,7 @@ export const Calendar = forwardRef<
               width: 30px;
               padding: 3px;
               display: block;
-              background-color: ${ThemingVariables.colors.gray[5]};
+              background-color: transparent;
               border: none;
               box-sizing: border-box;
               border-radius: 8px;
@@ -192,7 +190,7 @@ export const Calendar = forwardRef<
 
               &.react-calendar__month-view__days__day--neighboringMonth abbr {
                 color: ${ThemingVariables.colors.text[2]};
-                background-color: ${ThemingVariables.colors.gray[5]};
+                background-color: transparent;
               }
 
               &:hover {
@@ -225,19 +223,22 @@ export const Calendar = forwardRef<
               css`
                 & abbr {
                   color: ${ThemingVariables.colors.gray[5]};
-                  background-color: ${ThemingVariables.colors.primary[4]};
+                  background-color: ${ThemingVariables.colors.primary[1]};
+                  opacity: 0.1;
                 }
               `,
               css`
                 & abbr {
                   color: ${ThemingVariables.colors.gray[5]};
-                  background-color: ${ThemingVariables.colors.primary[3]};
+                  background-color: ${ThemingVariables.colors.primary[1]};
+                  opacity: 0.3;
                 }
               `,
               css`
                 & abbr {
                   color: ${ThemingVariables.colors.gray[5]};
-                  background-color: ${ThemingVariables.colors.primary[2]};
+                  background-color: ${ThemingVariables.colors.primary[1]};
+                  opacity: 0.5;
                 }
               `
             ][highlights?.[key] || 0] ||
@@ -245,6 +246,7 @@ export const Calendar = forwardRef<
                 & abbr {
                   color: ${ThemingVariables.colors.gray[5]};
                   background-color: ${ThemingVariables.colors.primary[1]};
+                  opacity: 1;
                 }
               `
           )

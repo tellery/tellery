@@ -1,8 +1,7 @@
 import { css } from '@emotion/css'
 import { MouseEvent, useEffect, useRef } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
-import Icon from '@app/components/kit/Icon'
-import { IconCommonBlock, IconCommonSearch, IconMenuQuery, IconCommonStoryBlock } from '@app/assets/icons'
+import { IconCommonBlock, IconCommonSearch, IconCommonQuestion, IconCommonStoryBlock } from '@app/assets/icons'
 import { ThemingVariables } from '@app/styles'
 
 export enum ResultType {
@@ -56,20 +55,42 @@ export function OmniBoxItem(props: {
       onClick={props.onClick}
       onMouseMove={props.setActive}
     >
-      <Icon
-        icon={
-          {
-            [ResultType.BLOCK]: IconCommonBlock,
-            [ResultType.QUESTION]: IconMenuQuery,
-            [ResultType.STORY]: IconCommonStoryBlock,
-            [ResultType.MORE]: IconCommonSearch
-          }[props.item.type]
-        }
-        color={ThemingVariables.colors.gray[0]}
-        className={css`
-          flex-shrink: 0;
-        `}
-      />
+      {
+        {
+          [ResultType.BLOCK]: (
+            <IconCommonBlock
+              color={ThemingVariables.colors.gray[0]}
+              className={css`
+                flex-shrink: 0;
+              `}
+            />
+          ),
+          [ResultType.QUESTION]: (
+            <IconCommonQuestion
+              color={ThemingVariables.colors.gray[0]}
+              className={css`
+                flex-shrink: 0;
+              `}
+            />
+          ),
+          [ResultType.STORY]: (
+            <IconCommonStoryBlock
+              color={ThemingVariables.colors.gray[0]}
+              className={css`
+                flex-shrink: 0;
+              `}
+            />
+          ),
+          [ResultType.MORE]: (
+            <IconCommonSearch
+              color={ThemingVariables.colors.gray[0]}
+              className={css`
+                flex-shrink: 0;
+              `}
+            />
+          )
+        }[props.item.type]
+      }
       <div
         className={css`
           width: calc(100% - 32px);

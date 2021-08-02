@@ -43,11 +43,11 @@ export const useBlockAdminProvider = (storyId: string) => {
       while (currentNodeId !== storyId) {
         const currentBlock = currentSnapshot[currentNodeId]
         if (!currentBlock) return
-        currentNodeId = currentBlock.parentId
-        if (!currentBlock.parentId) return
         if (currentBlock.type === Editor.BlockType.Toggle) {
           setBlockPreferences({ id: currentNodeId, key: 'toggle', value: false })
         }
+        currentNodeId = currentBlock.parentId
+        if (!currentBlock.parentId) return
       }
     },
     [setBlockPreferences, storyId]

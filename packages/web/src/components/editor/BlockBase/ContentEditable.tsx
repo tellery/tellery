@@ -28,6 +28,7 @@ import { useEditor, useLocalSelection } from '../hooks'
 import { BlockReferenceDropdown } from '../Popovers/BlockReferenceDropdown'
 import { SlashCommandDropdown } from '../Popovers/SlashCommandDropdown'
 import { BlockRenderer } from './BlockRenderer'
+import { isQuestionLikeBlock } from '../Blocks/utils'
 
 const logger = debug('tellery:contentEditable')
 export interface EditableRef {
@@ -52,7 +53,6 @@ const _ContentEditable: React.ForwardRefRenderFunction<
   const { block, readonly, maxLines = 0, disableReferenceDropdown, disableSlashCommand } = props
   const editbleRef = useRef<HTMLDivElement | null>(null)
   const [leavesHtml, setLeavesHtml] = useState<string | null>(null)
-  const innerTextRef = useRef<string | null>(null)
   const [willFlush, setWillFlush] = useState(false)
   const currentMarksRef = useRef<Editor.TokenType[] | null>(null)
   const [showReferenceDropdown, setShowReferenceDropdown] = useState(false)
@@ -92,7 +92,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
   useEffect(() => {
     if (!isComposing.current && titleTokens) {
       const targetHtml = BlockRenderer(titleTokens, dependsAssetsResult ?? {})
-      logger('setLeavesHtml', titleTokens, dependsAssetsResult)
+      // logger('setLeavesHtml', titleTokens, dependsAssetsResult)
       setLeavesHtml(targetHtml)
     }
   }, [titleTokens, dependsAssetsResult])
@@ -178,7 +178,6 @@ const _ContentEditable: React.ForwardRefRenderFunction<
     invariant(editor, 'editor context is null,')
     logger('is focusing', isFocusing, localSelection)
     if (!isComposing.current && editbleRef.current && isFocusing) {
-      innerTextRef.current = editbleRef.current.innerText
       const newBlockTitle = deserialize(editbleRef.current, block)
       const oldSelection = localSelection
       const oldTokens = block.content?.title ?? []
@@ -388,11 +387,6 @@ const _ContentEditable: React.ForwardRefRenderFunction<
         onKeyDown={(e) => {
           if (!isFocusing) return
           if (!localSelection) return
-          if (e.key === '{') {
-            if (innerTextRef.current && innerTextRef.current[innerTextRef.current.length - 1] === '{') {
-              return
-            }
-          }
           if (isComposing.current === false) {
             if (showReferenceDropdown || showSlashCommandDropdown) {
               if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'Enter') {
@@ -432,7 +426,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
                 localSelection.focus.offset === 0
               ) {
                 e.preventDefault()
-                if (block.type === Editor.BlockType.Question) {
+                if (isQuestionLikeBlock(block.type)) {
                   e.stopPropagation()
                 } else if (block.type !== Editor.BlockType.Text && block.type !== Editor.BlockType.Story) {
                   editor?.toggleBlockType(block.id, Editor.BlockType.Text, 0)

@@ -14,10 +14,10 @@ import { omniboxShowState } from '@app/store'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { CircularLoading } from './CircularLoading'
-import Icon from './kit/Icon'
 import { OmniBoxItem, ResultType } from './OmniBoxItem'
 import { SmallStory } from './SmallStory'
 import PerfectScrollbar from 'react-perfect-scrollbar'
+import { isQuestionLikeBlock } from './editor/Blocks/utils'
 
 const PAGE_LIMIT = 51
 
@@ -73,7 +73,7 @@ export function OmniBox() {
             subText: dayjs(block.updatedAt).format('YYYY-MM-DD')
           }
         }
-        if (block.type === Editor.BlockType.Question) {
+        if (isQuestionLikeBlock(block.type)) {
           return {
             id: block.id,
             storyId: block.storyId,
@@ -379,8 +379,7 @@ export function OmniBox() {
                 align-items: center;
               `}
             >
-              <Icon
-                icon={IconCommonAdd}
+              <IconCommonAdd
                 color={ThemingVariables.colors.text[2]}
                 className={css`
                   flex-shrink: 0;

@@ -8,6 +8,7 @@ import { toast } from 'react-toastify'
 import { BlockSnapshot, getBlockFromSnapshot } from '@app/store/block'
 import { Editor } from '@app/types'
 import { mergeTokens } from '../components/editor'
+import { isQuestionLikeBlock } from '@app/components/editor/Blocks/utils'
 
 export const createTranscation = ({ operations }: { operations: Operation[] }) => {
   return {
@@ -144,10 +145,43 @@ export const canOutdention = (parentBlock: Editor.BaseBlock, blockIds: string[])
   )
 }
 
+export const getDuplicatedBlocksFragment = (
+  children: string[],
+  data: Record<string, Editor.BaseBlock>,
+  storyId: string,
+  parentId: string
+) => {
+  const oldIdsNewIdsMapping: Record<string, string> = {}
+  let result: Record<string, Editor.BaseBlock> = {}
+
+  children.forEach((currentId) => {
+    const currentBlock = data[currentId]
+    const newId = nanoid()
+    const fragment = getDuplicatedBlocksFragment(currentBlock.children ?? [], data, storyId, newId)
+    const newBlock = createEmptyBlock({
+      type: currentBlock.type,
+      id: newId,
+      storyId,
+      parentId: parentId,
+      content: currentBlock.content,
+      children: fragment.children,
+      format: currentBlock.format
+    })
+    result[newId] = newBlock
+    result = { ...result, ...fragment.data }
+    oldIdsNewIdsMapping[currentId] = newId
+  })
+
+  return {
+    children: children.map((id) => oldIdsNewIdsMapping[id]),
+    data: result
+  }
+}
+
 export const getDuplicatedBlocks = (blocks: Editor.BaseBlock[], storyId: string) => {
   const duplicatedBlocks = blocks.map((block) => {
     const fragBlock = block
-    if (fragBlock.type === Editor.BlockType.Question) {
+    if (isQuestionLikeBlock(fragBlock.type)) {
       const questionBlock = fragBlock as Editor.QuestionBlock
 
       const newBlock = createEmptyBlock<Editor.QuestionBlock>({
@@ -159,7 +193,8 @@ export const getDuplicatedBlocks = (blocks: Editor.BaseBlock[], storyId: string)
           sql: questionBlock.content?.sql,
           visualization: questionBlock.content?.visualization,
           snapshotId: questionBlock.content?.snapshotId
-        }
+        },
+        format: fragBlock.format
       })
       return newBlock
     } else {
@@ -168,6 +203,7 @@ export const getDuplicatedBlocks = (blocks: Editor.BaseBlock[], storyId: string)
         storyId,
         parentId: storyId,
         content: fragBlock.content,
+        children: fragBlock.children,
         format: fragBlock.format
       })
     }
@@ -302,41 +338,35 @@ const getMappedSnapshot = (snapshot: BlockSnapshot, mapper: (snapshot: BlockSnap
 }
 
 export const insertBlocksAndMoveTranscation = ({
-  blocks,
+  blocksFragment,
   targetBlockId,
   storyId,
   direction,
-  duplicate = true,
   snapshot
 }: {
-  blocks: Editor.BaseBlock[]
+  blocksFragment: { children: string[]; data: Record<string, Editor.BaseBlock> }
   targetBlockId: string
   storyId: string
   direction: 'top' | 'left' | 'bottom' | 'right' | 'child'
-  duplicate: boolean
   snapshot: BlockSnapshot
 }) => {
   const operations: Operation[] = []
 
-  const insertedBlocks = blocks
+  const insertedBlocks = Object.values(blocksFragment.data)
 
-  if (duplicate) {
-    for (const block of insertedBlocks) {
-      operations.push({ cmd: 'set', id: block.id, path: [], args: block, table: 'block' })
-    }
+  for (const block of insertedBlocks) {
+    operations.push({ cmd: 'set', id: block.id, path: [], args: block, table: 'block' })
   }
 
-  const newSnapshot = duplicate
-    ? getMappedSnapshot(snapshot, (newSnapshot) => {
-        for (const block of insertedBlocks) {
-          newSnapshot.set(block.id, block)
-        }
-      })
-    : snapshot
+  const newSnapshot = getMappedSnapshot(snapshot, (newSnapshot) => {
+    for (const block of insertedBlocks) {
+      newSnapshot.set(block.id, block)
+    }
+  })
 
   operations.push(
     ...moveBlocksTranscation({
-      sourceBlockIds: insertedBlocks.map((block) => block.id),
+      sourceBlockIds: blocksFragment.children,
       targetBlockId,
       storyId,
       direction,
@@ -761,7 +791,7 @@ export const setBlockTranscation = ({ oldBlock, newBlock }: { oldBlock: Editor.B
   const id = oldBlock.id
   if (dequal(oldBlock.content, newBlock.content) === false) {
     operations.push({
-      cmd: 'update',
+      cmd: 'set',
       path: ['content'],
       args: newBlock.content,
       table: 'block',
@@ -770,7 +800,7 @@ export const setBlockTranscation = ({ oldBlock, newBlock }: { oldBlock: Editor.B
   }
   if (dequal(oldBlock.format, newBlock.format) === false) {
     operations.push({
-      cmd: 'update',
+      cmd: 'set',
       path: ['format'],
       args: newBlock.format,
       table: 'block',

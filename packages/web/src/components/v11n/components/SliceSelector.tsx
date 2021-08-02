@@ -4,7 +4,6 @@ import { CSSProperties, ReactNode, useRef, useState } from 'react'
 import { BlockPopover } from '../../BlockPopover'
 import { ThemingVariables } from '@app/styles'
 import { IconCommonCheck } from '@app/assets/icons'
-import Icon from '@app/components/kit/Icon'
 
 export function SliceSelector(props: {
   className?: string
@@ -103,11 +102,7 @@ export function SliceSelector(props: {
                   cursor: props.value.color === index ? 'default' : 'pointer'
                 }}
               >
-                {props.value.color === index ? (
-                  <Icon icon={IconCommonCheck} color={ThemingVariables.colors.gray[5]} />
-                ) : (
-                  ''
-                )}
+                {props.value.color === index ? <IconCommonCheck color={ThemingVariables.colors.gray[5]} /> : ''}
               </Button>
             ))}
           </div>

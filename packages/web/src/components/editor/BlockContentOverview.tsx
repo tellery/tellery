@@ -37,10 +37,6 @@ export const BlockContentOverview = (props: { block: Editor.Block }) => {
       )}
     >
       {block.content?.title && <ContentEditable block={block} key={block.id} readonly />}
-      {/* {block.type === Editor.BlockType.Question && (
-        <SimpleQuestionBlock block={block as Editor.QuestionBlock} key={block.id} />
-        // <QuestionBlock  />
-      )} */}
     </div>
   )
 }

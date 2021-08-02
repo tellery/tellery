@@ -1,132 +1,50 @@
 import {
   IconCommonAdd,
   IconCommonAllQuestion,
-  IconCommonMenu,
-  IconCommonMetrics,
   IconCommonSearch,
   IconCommonSetting,
   IconCommonStar,
   IconCommonThoughts
 } from '@app/assets/icons'
 import { MainSideBarItem } from '@app/components/MainSideBarItem'
-import { useWorkspace } from '@app/context/workspace'
+import { useHover } from '@app/hooks'
 import { useConnectorsListProfiles } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
-import { useLocalStorage } from '@app/hooks/useLocalStorage'
+import { useSideBarConfig } from '@app/hooks/useSideBarConfig'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { omniboxShowState } from '@app/store'
 import { ThemingVariables } from '@app/styles'
-import { DRAG_HANDLE_WIDTH } from '@app/utils'
 import { css, cx } from '@emotion/css'
-import { AnimatePresence, motion, useAnimation, useMotionValue, useTransform } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useUpdateAtom } from 'jotai/utils'
 import { nanoid } from 'nanoid'
 import React, { ReactNode, useCallback, useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { SideBarAllStoriesSection } from './SideBarAllStoriesSection'
-import { SideBarMetricsSection } from './SideBarMetricsSection'
 import { SideBarPinnedStoriesSection } from './SideBarPinnedStoriesSection'
 import { SideBarThoughtsSection } from './SideBarThoughtsSection'
 import { UserModal } from './UserModal'
 import { WorkspaceModal } from './WorkspaceModal'
 
 const FOLDED_WIDTH = 68
-
-const DragConstraints = {
-  left: 200,
-  right: 600
-}
+const SIDEBAR_WIDTH = 274
 
 export const SideBar = () => {
-  const [resizeConfig, setResizeConfig] = useLocalStorage('Tellery:SidebarConfig:1', {
-    x: 240,
-    folded: false
-  })
-
-  const x = useMotionValue(resizeConfig.folded ? FOLDED_WIDTH : resizeConfig.x + 0.5 * DRAG_HANDLE_WIDTH)
-
-  const width = useTransform(x, (x) => x)
-
-  useEffect(() => {
-    if (resizeConfig.folded) {
-      x.set(FOLDED_WIDTH)
-      return
-    } else {
-      x.set(resizeConfig.x)
-    }
-    const unsubscribe = x.onChange((x) => {
-      if (!x) return
-      setResizeConfig((config) => ({ ...config, x: x }))
-    })
-    return () => {
-      unsubscribe()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resizeConfig.folded, setResizeConfig, x])
-
-  const controls = useAnimation()
-
-  const toggleFoldStatus = useCallback(() => {
-    setResizeConfig((config) => {
-      return { ...config, folded: !resizeConfig.folded }
-    })
-  }, [resizeConfig.folded, setResizeConfig])
-
-  useEffect(() => {
-    if (resizeConfig.folded) {
-      controls.start({
-        width: FOLDED_WIDTH,
-        transition: { duration: 0.15 }
-      })
-    } else {
-      controls.start({
-        width: x.get(),
-        transition: { duration: 0.15 }
-      })
-    }
-  }, [controls, resizeConfig.folded, x])
-
   return (
     <motion.nav
-      style={
-        resizeConfig.folded === false
-          ? {
-              width: width
-            }
-          : undefined
-      }
-      animate={controls}
       className={cx(
         css`
           user-select: none;
           margin: auto;
           bottom: 0;
           height: 100%;
+          z-index: 9999;
+          box-shadow: ${ThemingVariables.boxShadows[0]};
         `
       )}
     >
-      <SideBarContent folded={resizeConfig.folded} toggleFoldStatus={toggleFoldStatus} />
-      {!resizeConfig.folded && (
-        <motion.div
-          title="drag to resize"
-          whileDrag={{ backgroundColor: ThemingVariables.colors.gray[1] }}
-          drag={'x'}
-          dragConstraints={DragConstraints}
-          className={css`
-            position: absolute;
-            cursor: col-resize;
-            left: -${DRAG_HANDLE_WIDTH / 2}px;
-            top: 0;
-            height: 100%;
-            z-index: 10;
-            width: ${DRAG_HANDLE_WIDTH}px;
-          `}
-          dragElastic={false}
-          dragMomentum={false}
-          onDoubleClick={toggleFoldStatus}
-          style={{ x }}
-        />
-      )}
+      <SideBarContent />
     </motion.nav>
   )
 }
@@ -146,17 +64,19 @@ const SideBarContents = {
     icon: IconCommonThoughts,
     hoverTitle: 'My Thoughts',
     content: <SideBarThoughtsSection />
-  },
-  METRICS: {
-    icon: IconCommonMetrics,
-    hoverTitle: 'Metrics',
-    content: <SideBarMetricsSection />
   }
+  // METRICS: {
+  //   icon: IconCommonMetrics,
+  //   hoverTitle: 'Metrics',
+  //   content: <SideBarMetricsSection />
+  // }
 }
 
-const SideBarContent: React.FC<{ folded: boolean; toggleFoldStatus: () => void }> = ({ folded, toggleFoldStatus }) => {
+const SideBarContent: React.FC = () => {
   const [modalContent, setModalContent] = useState<ReactNode>(null)
   const [activeSideBarTab, setActiveSideBarTab] = useState<keyof typeof SideBarContents | null>('PINNED')
+
+  const [ref, isHovering] = useHover<HTMLDivElement>()
 
   const history = useHistory()
   const workspace = useWorkspace()
@@ -193,8 +113,9 @@ const SideBarContent: React.FC<{ folded: boolean; toggleFoldStatus: () => void }
       className={css`
         display: flex;
         height: 100%;
-        overflow: hidden;
+        position: relative;
       `}
+      ref={ref}
     >
       <div
         className={css`
@@ -206,7 +127,7 @@ const SideBarContent: React.FC<{ folded: boolean; toggleFoldStatus: () => void }
           position: relative;
         `}
       >
-        <div
+        {/* <div
           className={css`
             cursor: pointer;
             margin: 18px auto 0 auto;
@@ -214,7 +135,7 @@ const SideBarContent: React.FC<{ folded: boolean; toggleFoldStatus: () => void }
           onClick={toggleFoldStatus}
         >
           <IconCommonMenu color={ThemingVariables.colors.gray[0]} />
-        </div>
+        </div> */}
 
         <UserSection
           onClick={() => {
@@ -267,22 +188,37 @@ const SideBarContent: React.FC<{ folded: boolean; toggleFoldStatus: () => void }
           <MainSideBarItem icon={IconCommonSetting} hoverTitle="Settings" onClick={showSettingsModal} />
         </div>
       </div>
-      <div
-        style={{
-          display: folded ? 'none' : 'initial'
-        }}
-        className={css`
-          flex-grow: 1;
-          flex-shrink: 1;
-          background-color: ${ThemingVariables.colors.gray[3]};
-          overflow: hidden;
-        `}
-      >
+      <FloatingSideBar show={isHovering}>
         {activeSideBarTab && SideBarContents[activeSideBarTab].content}
-      </div>
+      </FloatingSideBar>
 
       <AnimatePresence>{modalContent}</AnimatePresence>
     </div>
+  )
+}
+
+const FloatingSideBar: React.FC<{ show: boolean }> = ({ children, show }) => {
+  const [resizeConfig, setResizeConfig] = useSideBarConfig()
+
+  return (
+    <motion.div
+      style={{
+        width: SIDEBAR_WIDTH,
+        x: show || resizeConfig.folded === false ? 0 : -SIDEBAR_WIDTH,
+        position: resizeConfig.folded ? 'absolute' : 'relative',
+        left: resizeConfig.folded ? `${FOLDED_WIDTH}px` : `0`,
+        zIndex: resizeConfig.folded ? -1 : 0
+      }}
+      className={css`
+        height: 100%;
+        top: 0;
+        background-color: ${ThemingVariables.colors.gray[3]};
+        overflow: hidden;
+        transition: transform 250ms;
+      `}
+    >
+      {children}
+    </motion.div>
   )
 }
 

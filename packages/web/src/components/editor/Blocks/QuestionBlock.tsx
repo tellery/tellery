@@ -14,7 +14,6 @@ import {
   IconVisualizationSetting
 } from '@app/assets/icons'
 import { BlockingUI } from '@app/components/editor/BlockBase/BlockingUIBlock'
-import Icon from '@app/components/kit/Icon'
 import IconButton from '@app/components/kit/IconButton'
 import { MenuItem } from '@app/components/MenuItem'
 import { RefreshButton } from '@app/components/RefreshButton'
@@ -192,6 +191,127 @@ const _QuestionBlock: React.ForwardRefRenderFunction<any, QuestionBlockProps> = 
     </div>
   )
 }
+
+const _QuestionSnapshotBlock: React.ForwardRefRenderFunction<any, QuestionBlockProps> = (props, ref) => {
+  const editor = useEditor<Editor.QuestionBlock>()
+  const { block } = props
+  const { readonly } = useBlockBehavior()
+  const elementRef = useRef<HTMLDivElement | null>(null)
+  const contentRef = useRef<HTMLDivElement | null>(null)
+  const originalBlock = useBlockSuspense<Editor.QuestionBlock>(block.id)
+  const [titleEditing, setTitleEditing] = useState(false)
+  const localSelection = useLocalSelection(block.id)
+  const isInputFocusing = !!localSelection
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      openMenu: () => {}
+    }),
+    []
+  )
+
+  const onClickOutSide = useCallback(() => {
+    setTitleEditing(false)
+  }, [])
+
+  useOnClickOutside(elementRef, onClickOutSide)
+
+  useEffect(() => {
+    if (!block.content) {
+      // setIsPopoverOpen(true)
+      editor?.setBlockValue?.(block.id, (draftBlock) => {
+        draftBlock.content = { title: [] }
+        draftBlock.format = {
+          width: DEFAULT_QUESTION_BLOCK_WIDTH,
+          aspectRatio: DEFAULT_QUESTION_BLOCK_ASPECT_RATIO
+        }
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const isEmptyBlock = useMemo(() => {
+    return block.content?.sql === undefined
+  }, [block.content?.sql])
+
+  const snapshotId = originalBlock?.content?.snapshotId
+  const visualization = block.content?.visualization
+
+  const mutateSnapshot = useRefreshSnapshot()
+  const mutatingCount = useSnapshotMutating(originalBlock.id)
+
+  useEffect(() => {
+    if (originalBlock.id === block.id && !snapshotId && originalBlock.content?.sql && mutatingCount === 0) {
+      mutateSnapshot.execute(originalBlock)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return (
+    <div ref={elementRef} className={QuestionsBlockContainer} tabIndex={-1}>
+      {isEmptyBlock ? (
+        <BlockPlaceHolder loading={false} text="New Question" />
+      ) : (
+        originalBlock && (
+          <>
+            <QuestionBlockHeader
+              setTitleEditing={setTitleEditing}
+              titleEditing={titleEditing || isInputFocusing}
+              block={block}
+            />
+            <QuestionBlockStatus snapshotId={snapshotId} block={block} originalBlock={originalBlock} />
+            <motion.div
+              style={{
+                paddingTop: props.blockFormat.paddingTop
+              }}
+              transition={{ duration: 0 }}
+              className={css`
+                position: relative;
+                display: inline-block;
+                width: 100%;
+                min-height: 100px;
+              `}
+              onClick={() => {
+                setTitleEditing(false)
+              }}
+            >
+              <QuestionBlockBody ref={contentRef} snapshotId={snapshotId} visualization={visualization} />
+              {readonly === false && (
+                <BlockResizer
+                  blockFormat={props.blockFormat}
+                  contentRef={contentRef}
+                  parentType={props.parentType}
+                  blockId={block.id}
+                  offsetY={FOOTER_HEIGHT}
+                />
+              )}
+            </motion.div>
+            <div
+              className={css`
+                height: ${FOOTER_HEIGHT}px;
+              `}
+            />
+          </>
+        )
+      )}
+    </div>
+  )
+}
+
+const QuestionSnapshotBlock = React.forwardRef(_QuestionSnapshotBlock) as BlockComponent<
+  React.ForwardRefExoticComponent<QuestionBlockProps & React.RefAttributes<any>>
+>
+
+QuestionSnapshotBlock.meta = {
+  isText: true,
+  forwardRef: true,
+  hasChildren: false,
+  isQuestion: false,
+  isResizeable: true
+}
+registerBlock(Editor.BlockType.QuestionSnapshot, QuestionSnapshotBlock)
+
 const QuestionBlock = React.forwardRef(_QuestionBlock) as BlockComponent<
   React.ForwardRefExoticComponent<QuestionBlockProps & React.RefAttributes<any>>
 >
@@ -199,10 +319,13 @@ const QuestionBlock = React.forwardRef(_QuestionBlock) as BlockComponent<
 QuestionBlock.meta = {
   isText: true,
   forwardRef: true,
-  hasChildren: false
+  hasChildren: false,
+  isQuestion: true,
+  isResizeable: true
 }
 
 registerBlock(Editor.BlockType.Question, QuestionBlock)
+registerBlock(Editor.BlockType.Metric, QuestionBlock)
 
 export const QuestionBlockButtons: React.FC<{ blockId: string; show: boolean }> = ({ blockId, show }) => {
   const block = useBlockSuspense<Editor.QuestionBlock>(blockId)
@@ -224,6 +347,7 @@ export const QuestionBlockButtons: React.FC<{ blockId: string; show: boolean }> 
             border-radius: 8px;
             position: absolute;
             right: 0;
+            z-index: 1;
             bottom: 100%;
             margin-bottom: 13px;
             padding: 5px;
@@ -459,7 +583,9 @@ const QuestionBlockStatus: React.FC<{
         >
           <div
             className={css`
-              margin-right: 5px;
+              > {
+                margin-right: 5px;
+              }
             `}
           >
             {loading ? (
@@ -581,12 +707,13 @@ export const MoreDropdownSelect: React.FC<{
 }> = ({ snapshot, block, sql, setIsActive, className, hoverContent }) => {
   const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null)
   const { data: user } = useUser(block?.lastEditedById ?? null)
+  const editor = useEditor<Editor.QuestionBlock>()
 
   const operations = useMemo(() => {
     return [
       {
         title: 'Download as CSV',
-        icon: <Icon icon={IconMenuDownload} color={ThemingVariables.colors.text[0]} />,
+        icon: <IconMenuDownload color={ThemingVariables.colors.text[0]} />,
         action: () => {
           const snapshotData = snapshot?.data
           invariant(snapshotData, 'snapshotData is null')
@@ -597,7 +724,7 @@ export const MoreDropdownSelect: React.FC<{
       },
       {
         title: 'Download as Image',
-        icon: <Icon icon={IconMenuDownload} color={ThemingVariables.colors.text[0]} />,
+        icon: <IconMenuDownload color={ThemingVariables.colors.text[0]} />,
         action: async () => {
           const elementSVG = getBlockImageById(block.id)
           if (elementSVG) {
@@ -612,13 +739,22 @@ export const MoreDropdownSelect: React.FC<{
       },
       {
         title: 'Copy SQL',
-        icon: <Icon icon={IconCommonCopy} color={ThemingVariables.colors.text[0]} />,
+        icon: <IconCommonCopy color={ThemingVariables.colors.text[0]} />,
         action: () => {
           copy(sql)
         }
+      },
+      {
+        title: 'Convert to Snapshot',
+        icon: <IconCommonCopy color={ThemingVariables.colors.text[0]} />,
+        action: () => {
+          editor?.setBlockValue?.(block.id, (draftBlock) => {
+            draftBlock.type = Editor.BlockType.QuestionSnapshot
+          })
+        }
       }
     ] as OperationInterface[]
-  }, [block.id, snapshot?.data, sql])
+  }, [block.id, editor, snapshot?.data, sql])
 
   const { isOpen, openMenu, getToggleButtonProps, getMenuProps, highlightedIndex, getItemProps, closeMenu } = useSelect(
     { items: operations }
@@ -635,7 +771,7 @@ export const MoreDropdownSelect: React.FC<{
       <IconButton
         hoverContent={hoverContent}
         icon={IconCommonMore}
-        color={ThemingVariables.colors.primary[0]}
+        color={ThemingVariables.colors.primary[1]}
         {...getToggleButtonProps({ ref: setReferenceElement })}
         className={cx(
           css`
@@ -739,6 +875,7 @@ const TitleButtonsInner: React.FC<{
       <IconButton
         hoverContent="Visualization options"
         icon={IconVisualizationSetting}
+        color={ThemingVariables.colors.primary[1]}
         className={QuestionBlockIconButton}
         onClick={() => questionEditor.open({ mode: 'VIS', readonly, blockId: block.id, storyId: block.storyId! })}
       />
@@ -746,6 +883,7 @@ const TitleButtonsInner: React.FC<{
         hoverContent="Edit SQL"
         className={QuestionBlockIconButton}
         icon={IconCommonSql}
+        color={ThemingVariables.colors.primary[1]}
         onClick={() => questionEditor.open({ mode: 'SQL', readonly, blockId: block.id, storyId: block.storyId! })}
       />
       <MoreDropdownSelect

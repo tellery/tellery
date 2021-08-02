@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useWorkspaceList } from '@app/hooks/api'
-import { WorkspaceContext } from '@app/context/workspace'
+import { WorkspaceContext } from '@app/hooks/useWorkspace'
 import { useWorkspaceIdState } from '@app/hooks/useWorkspaceIdAtom'
 
 export const WorkspaceProvider: React.FC = ({ children }) => {

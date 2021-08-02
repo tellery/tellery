@@ -5,7 +5,7 @@ import {
   insertBlocksAndMoveTranscation,
   moveBlocksTranscation
 } from '@app/context/editorTranscations'
-import { useWorkspace } from '@app/context/workspace'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { getBlockFromSnapshot } from '@app/store/block'
 import { Editor, Permission } from '@app/types'
@@ -74,11 +74,11 @@ export const useBlockTranscationProvider = () => {
     (
       storyId: string,
       {
-        blocks,
+        blocksFragment,
         targetBlockId,
         direction
       }: {
-        blocks: Editor.BaseBlock[]
+        blocksFragment: { children: string[]; data: Record<string, Editor.BaseBlock> }
         targetBlockId: string
         direction: 'top' | 'left' | 'bottom' | 'right' | 'child'
       }
@@ -88,10 +88,9 @@ export const useBlockTranscationProvider = () => {
           logger('insert block')
           return insertBlocksAndMoveTranscation({
             storyId,
-            blocks: blocks,
+            blocksFragment,
             targetBlockId,
             direction,
-            duplicate: true,
             snapshot
           })
         },

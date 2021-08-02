@@ -99,7 +99,7 @@ export const SideBarAllStoriesSection = () => {
             `}
           >
             {(isLoading || isFetchingNextPage) && (
-              <CircularLoading size={20} color={ThemingVariables.colors.primary[0]} />
+              <CircularLoading size={20} color={ThemingVariables.colors.primary[1]} />
             )}
           </div>
         </PerfectScrollbar>

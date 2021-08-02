@@ -1,6 +1,5 @@
 import { css, cx } from '@emotion/css'
 import Tippy from '@tippyjs/react'
-import { svgColorClassName } from '@app/lib/svg'
 import { isNil, omitBy } from 'lodash'
 import React, { FunctionComponent, SVGAttributes, ButtonHTMLAttributes, useMemo, forwardRef, ReactNode } from 'react'
 import { ThemingVariables } from '@app/styles'
@@ -20,13 +19,13 @@ export default forwardRef<
       omitBy(
         {
           width: size,
-          height: size
+          height: size,
+          color: props.disabled ? ThemingVariables.colors.gray[0] : props.color
         },
         isNil
       ),
-    [size]
+    [props.color, props.disabled, size]
   )
-  const color = props.disabled ? ThemingVariables.colors.gray[0] : props.color
 
   const button = (
     <button
@@ -44,7 +43,6 @@ export default forwardRef<
             cursor: not-allowed;
           }
         `,
-        color ? svgColorClassName(color, icon) : undefined,
         className
       )}
       aria-label={icon.name}

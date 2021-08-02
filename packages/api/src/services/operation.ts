@@ -72,7 +72,7 @@ export class OperationService {
         successes.push(transaction)
       } catch (error) {
         res.push({
-          error: error.toString(),
+          error,
           transactionId: transaction.id,
         })
       }

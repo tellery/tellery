@@ -9,7 +9,7 @@ import { useEditor } from '../hooks'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
 import { UploadFilePlaceHolder } from '../BlockBase/UploadFilePlaceHolder'
-import { useWorkspace } from '@app/context/workspace'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { registerBlock, BlockComponent } from './utils'
 
 const Image = styled.img`
@@ -96,7 +96,8 @@ const ImageBlock: BlockComponent<
 
 ImageBlock.meta = {
   isText: false,
-  hasChildren: false
+  hasChildren: false,
+  isResizeable: true
 }
 
 registerBlock(Editor.BlockType.Image, ImageBlock)

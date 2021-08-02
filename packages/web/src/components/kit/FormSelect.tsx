@@ -1,5 +1,5 @@
 import { css, cx } from '@emotion/css'
-import { ThemingVariables } from '@app/styles'
+import { TelleryThemeLight, ThemingVariables } from '@app/styles'
 import { SVG2DataURI } from '@app/lib/svg'
 import { IconCommonArrowDropDown } from '@app/assets/icons'
 import { forwardRef, SelectHTMLAttributes } from 'react'
@@ -25,7 +25,7 @@ export default forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElem
           cursor: pointer;
           text-overflow: ellipsis;
           display: block;
-          background-image: ${SVG2DataURI(IconCommonArrowDropDown)};
+          background-image: ${SVG2DataURI(IconCommonArrowDropDown, TelleryThemeLight.colors.gray[0])};
           color: ${ThemingVariables.colors.text[0]};
           &:disabled {
             opacity: 1;

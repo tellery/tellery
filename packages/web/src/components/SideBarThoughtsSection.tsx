@@ -1,6 +1,6 @@
 import { IconCommonAdd } from '@app/assets/icons'
 import { createTranscation } from '@app/context/editorTranscations'
-import { useWorkspace } from '@app/context/workspace'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useOpenStory } from '@app/hooks'
 import { useAllThoughts } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
@@ -8,10 +8,11 @@ import { ThemingVariables } from '@app/styles'
 import { css } from '@emotion/css'
 import dayjs from 'dayjs'
 import { nanoid } from 'nanoid'
-import React, { useCallback, useMemo } from 'react'
-import { useRouteMatch } from 'react-router-dom'
-import { MainSideBarItem } from './MainSideBarItem'
+import React, { useCallback, useMemo, useState } from 'react'
 import { SideBarContentLayout } from './SideBarContentLayout'
+import { Calendar } from './Calendar'
+import { SmallStory } from './SmallStory'
+import { FormButton } from './kit/FormButton'
 
 export const SideBarThoughtsSection = () => {
   const { data: thoughts, refetch: refetchThoughts } = useAllThoughts()
@@ -22,7 +23,8 @@ export const SideBarThoughtsSection = () => {
   const workspace = useWorkspace()
   const commit = useCommit()
   const openStory = useOpenStory()
-
+  const [date, setDate] = useState(new Date())
+  const [currentThoughtId, setCurrentThoughtId] = useState<string>()
   const createTodaysNotes = useCallback(async () => {
     const id = nanoid()
     await commit({
@@ -52,7 +54,6 @@ export const SideBarThoughtsSection = () => {
     openStory(id, {})
     refetchThoughts()
   }, [commit, openStory, refetchThoughts, today, workspace.id])
-
   const showCreateTodaysNotes = useMemo(() => {
     if (thoughts === undefined) return false
     if (thoughts.length >= 1 && thoughts[0].date === today) {
@@ -60,69 +61,49 @@ export const SideBarThoughtsSection = () => {
     }
     return true
   }, [thoughts, today])
+
   return (
-    <SideBarContentLayout title={'Thoughts'}>
-      {showCreateTodaysNotes && (
-        <div
+    <SideBarContentLayout title="Thoughts">
+      <FormButton
+        variant="secondary"
+        className={css`
+          background: transparent;
+          width: calc(100% - 16px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 8px;
+        `}
+        disabled={!showCreateTodaysNotes}
+        onClick={createTodaysNotes}
+      >
+        <IconCommonAdd
+          color={showCreateTodaysNotes ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.text[1]}
           className={css`
-            display: flex;
-            align-items: center;
-            padding: 0 16px;
-            cursor: pointer;
+            margin-right: 4px;
           `}
-          onClick={createTodaysNotes}
-        >
-          <IconCommonAdd
-            color={ThemingVariables.colors.gray[5]}
-            className={css`
-              background-color: ${ThemingVariables.colors.primary[1]};
-              padding: 5px;
-              border-radius: 100%;
-              width: 10px;
-              height: 10px;
-              margin: 5px 0;
-              margin-right: 5px;
-            `}
-          />
-          <span>Capture today&apos;s thought</span>
-        </div>
+        />
+        <span>Capture today&apos;s thought</span>
+      </FormButton>
+      <Calendar
+        value={date}
+        onChange={(_date, id) => {
+          setDate(_date)
+          if (id) {
+            openStory(id, {})
+          }
+        }}
+        onHover={setCurrentThoughtId}
+      />
+      {currentThoughtId && (
+        <SmallStory
+          className={css`
+            padding: 0 20px;
+          `}
+          color="transparent"
+          storyId={currentThoughtId}
+        />
       )}
-      {thoughts && <ThoughtsItems items={thoughts} />}
     </SideBarContentLayout>
-  )
-}
-
-const ThoughtsItems: React.FC<{
-  items: {
-    id: string
-    date: string
-  }[]
-}> = ({ items }) => {
-  return (
-    <div
-      className={css`
-        padding: 10px 16px 0;
-      `}
-    >
-      {items.map((item) => (
-        <ThoughtItem key={item.id} id={item.id} date={item.date} />
-      ))}
-    </div>
-  )
-}
-
-const ThoughtItem: React.FC<{ id: string; date: string }> = ({ id, date }) => {
-  const openStory = useOpenStory()
-  const matchStory = useRouteMatch<{ id: string }>('/story/:id')
-
-  return (
-    <MainSideBarItem
-      onClick={(e) => {
-        openStory(id, {})
-      }}
-      showTitle
-      title={dayjs(date).format('MMM DD, YYYY')}
-      active={matchStory?.params.id === id}
-    ></MainSideBarItem>
   )
 }

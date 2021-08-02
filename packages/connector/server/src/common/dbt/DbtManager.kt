@@ -43,19 +43,17 @@ object DbtManager {
     private val rootFolder: File
     private val keyFolder: File
     private val profileFile: File = File(System.getProperty("user.home") + "/.dbt/profiles.yml")
-    private val mapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule())
+    private val mapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
     private val jsonMapper = jacksonObjectMapper()
 
     init {
         val appConfig = ConfigFactory.load()
-        rootFolder = File(
-            appConfig.getString("dbt.repoFolderPath")
-                ?: throw DBTProfileNotConfiguredException()
-        )
-        keyFolder = File(
-            appConfig.getString("dbt.keyFolderPath")
-                ?: throw DBTProfileNotConfiguredException()
-        )
+        rootFolder = ConfigManager.globalConfigDir.resolve(
+            appConfig.getString("dbt.repoFolderPath") ?: throw DBTProfileNotConfiguredException()
+        ).toFile()
+        keyFolder = ConfigManager.globalConfigDir.resolve(
+            appConfig.getString("dbt.keyFolderPath") ?: throw DBTProfileNotConfiguredException()
+        ).toFile()
 
         initDbtWorkspace()
     }
@@ -129,7 +127,7 @@ object DbtManager {
         forceMkdir(rootFolder)
         forceMkdir(keyFolder)
 
-        val profiles = ConfigManager.profiles
+        val profiles = ConfigManager.profiles.filter { isDbtProfile(it) }
         reloadDbtProfiles(profiles)
 
         if (profiles.isNotEmpty()) {
@@ -144,6 +142,10 @@ object DbtManager {
 
         val dbtProfileContent = batchToDbtProfile(profiles)
         overwriteFile(profileFile, dbtProfileContent)
+    }
+
+    fun isDbtProfile(profile: Profile): Boolean {
+        return EXTERNAL_CONFIG_FIELDS.all { profile.configs.containsKey(it) }
     }
 
     @VisibleForTesting
@@ -225,11 +227,11 @@ object DbtManager {
         val keyFolders = keyFolder.list() ?: Collections.emptyList<String>().toTypedArray()
 
         profiles
-            .filter { !keyFolders.contains(it.name) && isDbtProfile(it) }
+            .filter { !keyFolders.contains(it.name) }
             .forEach { generateRepoKeyPair(DbtRepository(rootFolder, keyFolder, it)) }
 
         profiles
-            .filter { !repoFolders.contains(it.name) && isDbtProfile(it) }
+            .filter { !repoFolders.contains(it.name) }
             .forEach {
                 val repo = DbtRepository(rootFolder, keyFolder, it)
                 cloneRemoteRepo(repo)
@@ -255,7 +257,7 @@ object DbtManager {
     }
 
     private fun getProfileByName(name: String): Profile {
-        val profile = ConfigManager.profiles.map { it.name to it }.toMap()[name]
+        val profile = ConfigManager.profiles.associateBy { it.name }[name]
             ?: throw RuntimeException("The profile is not exists, name: $name")
 
         assertInternalError(isDbtProfile(profile)) { "The profile is not a dbt profile." }
@@ -281,12 +283,6 @@ object DbtManager {
             file.createNewFile()
         }
         file.writeText(content)
-    }
-
-    private fun isDbtProfile(profile: Profile): Boolean {
-        return EXTERNAL_CONFIG_FIELDS
-            .map { profile.configs.containsKey(it) }
-            .reduce { acc, b -> acc && b }
     }
 
     private class StreamGobbler(

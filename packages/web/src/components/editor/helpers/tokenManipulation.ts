@@ -6,6 +6,8 @@ import { Editor } from '@app/types'
 import { DEFAULT_TITLE, TELLERY_MIME_TYPES } from '@app/utils'
 import { TellerySelection, TellerySelectionType } from './tellerySelection'
 import { isReferenceToken } from '../BlockBase/ContentEditable'
+import { isQuestionLikeBlock } from '../Blocks/utils'
+import { getSubsetOfBlocksSnapshot } from '../utils'
 
 export const mergeTokens = (tokens: Editor.Token[]) => {
   return tokens.reduce((acc: Editor.Token[], current: Editor.Token) => {
@@ -107,12 +109,13 @@ export const getBlockOrTokensFromSelection = (
 }
 
 export const getBlocksFragmentFromSelection = (selectionState: TellerySelection, snapshot: BlockSnapshot) => {
-  const result: Editor.Block[] = []
-
   if (selectionState === null)
     return {
       type: TELLERY_MIME_TYPES.BLOCKS,
-      value: result
+      value: {
+        children: [],
+        data: {}
+      }
     }
 
   if (selectionState.type === TellerySelectionType.Inline) {
@@ -125,29 +128,44 @@ export const getBlocksFragmentFromSelection = (selectionState: TellerySelection,
       value: fragment as Editor.Token[]
     }
   } else if (selectionState.type === TellerySelectionType.Block) {
-    // TODO: use blocksTreeToBlocksArray
-    // const startIndex = blocks.findIndex((block) => block.id === selectionState.anchor.blockId)
-    // const endIndex = blocks.findIndex((block) => block.id === selectionState.focus.blockId)
     const selectedIds = selectionState.selectedBlocks
-    for (const id of selectedIds) {
-      const fragment = getBlockOrTokensFromSelection(getBlockFromSnapshot(id, snapshot), selectionState)
-      result.push(fragment as Editor.Block)
-    }
     return {
       type: TELLERY_MIME_TYPES.BLOCKS,
-      value: result
+      value: {
+        children: selectedIds,
+        data: getSubsetOfBlocksSnapshot(snapshot, selectedIds)
+      }
     }
   }
 }
 
+// TODO: display children text
 export const convertBlocksOrTokensToPureText = (
-  fragment: { type: string; value: Editor.Block[] | Editor.Token[] },
+  fragment: {
+    type: string
+    value:
+      | {
+          children: string[]
+          data: Record<string, Editor.BaseBlock>
+        }
+      | Editor.Token[]
+  },
   snapshot: BlockSnapshot
 ) => {
   if (fragment.type === TELLERY_MIME_TYPES.TOKEN) {
     return tokensToText(fragment.value as Editor.Token[], snapshot)
   } else if (fragment.type === TELLERY_MIME_TYPES.BLOCKS) {
-    return (fragment.value as Editor.Block[]).map((block) => blockTitleToText(block, snapshot)).join('\n')
+    const value = fragment.value as {
+      children: string[]
+      data: Record<string, Editor.BaseBlock>
+    }
+
+    return value.children
+      .map((id) => {
+        const block = value.data[id]
+        return blockTitleToText(block, snapshot)
+      })
+      .join('\n')
   }
   return 'tellery'
 }
@@ -184,7 +202,7 @@ export const splitToken = (title?: Editor.Token[]) => {
 }
 
 export const blockTitleToText = (block: Editor.BaseBlock, snapshot: BlockSnapshot): string => {
-  if (block.type === Editor.BlockType.Question || block.type === Editor.BlockType.Story) {
+  if (isQuestionLikeBlock(block.type) || block.type === Editor.BlockType.Story) {
     if (!block.content?.title?.length) {
       return DEFAULT_TITLE
     }

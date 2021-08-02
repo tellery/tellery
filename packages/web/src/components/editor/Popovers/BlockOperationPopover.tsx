@@ -1,10 +1,3 @@
-import { MenuItemDivider } from '@app/components/MenuItemDivider'
-import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
-import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
-import { TELLERY_MIME_TYPES } from '@app/utils'
-import { css, cx } from '@emotion/css'
-import type { FlipModifier } from '@popperjs/core/lib/modifiers/flip'
-import type { OffsetModifier } from '@popperjs/core/lib/modifiers/offset'
 import {
   IconCommonLink,
   IconMenuCenterAlign,
@@ -15,17 +8,23 @@ import {
 } from '@app/assets/icons'
 import { getBlockWrapElementById } from '@app/components/editor/helpers/contentEditable'
 import FormSwitch from '@app/components/kit/FormSwitch'
-import Icon from '@app/components/kit/Icon'
-import copy from 'copy-to-clipboard'
-import dayjs from 'dayjs'
+import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { useBlockSuspense, useUser } from '@app/hooks/api'
-import invariant from 'tiny-invariant'
-import { useAtom } from 'jotai'
-import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
-import { toast } from 'react-toastify'
+import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
+import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
 import { editorTransformBlockPopoverState } from '@app/store'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
+import { TELLERY_MIME_TYPES } from '@app/utils'
+import { css, cx } from '@emotion/css'
+import type { FlipModifier } from '@popperjs/core/lib/modifiers/flip'
+import type { OffsetModifier } from '@popperjs/core/lib/modifiers/offset'
+import copy from 'copy-to-clipboard'
+import dayjs from 'dayjs'
+import { useAtom } from 'jotai'
+import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { toast } from 'react-toastify'
+import invariant from 'tiny-invariant'
 import { MenuItem } from '../../MenuItem'
 import { EditorPopover } from '../EditorPopover'
 import { TellerySelectionType } from '../helpers'
@@ -111,13 +110,14 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
   const deleteBlockHandler = useCallback(() => {
     blockTranscations.removeBlocks(block.storyId!, [id])
   }, [block.storyId, blockTranscations, id])
+  const focusBlockHandler = usePushFocusedBlockIdState()
 
   const operationGroups = useMemo(() => {
     return [
       [
         {
           title: 'Copy link',
-          icon: <Icon icon={IconCommonLink} color={ThemingVariables.colors.text[0]} />,
+          icon: <IconCommonLink color={ThemingVariables.colors.text[0]} />,
           action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault()
             e.stopPropagation()
@@ -143,11 +143,12 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
         },
         {
           title: 'Duplicate',
-          icon: <Icon icon={IconMenuDuplicate} color={ThemingVariables.colors.text[0]} />,
+          icon: <IconMenuDuplicate color={ThemingVariables.colors.text[0]} />,
           action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault()
             e.stopPropagation()
-            editor?.duplicateHandler([id])
+            const selection = editor?.getSelection()
+            editor?.duplicateHandler(selection?.type === TellerySelectionType.Block ? selection.selectedBlocks : [id])
 
             close()
           }
@@ -156,7 +157,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
       [
         {
           title: 'Add block above',
-          icon: <Icon icon={IconMenuInsertBefore} color={ThemingVariables.colors.text[0]} />,
+          icon: <IconMenuInsertBefore color={ThemingVariables.colors.text[0]} />,
           action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault()
             e.stopPropagation()
@@ -170,12 +171,12 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
               focus: { blockId: newBlock.id, nodeIndex: 0, offset: 0 },
               storyId: newBlock.storyId!
             })
-            editor?.focusBlockHandler(newBlock.id, true)
+            focusBlockHandler(newBlock.id, newBlock.storyId, true)
           }
         },
         {
           title: 'Add block below',
-          icon: <Icon icon={IconMenuInsertAfter} color={ThemingVariables.colors.text[0]} />,
+          icon: <IconMenuInsertAfter color={ThemingVariables.colors.text[0]} />,
           action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault()
             e.stopPropagation()
@@ -191,13 +192,13 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
               focus: { blockId: newBlock.id, nodeIndex: 0, offset: 0 },
               storyId: newBlock.storyId!
             })
-            editor?.focusBlockHandler(newBlock.id, true)
+            focusBlockHandler(newBlock.id, newBlock.storyId, true)
           }
         },
         {
           title: 'Center align',
-          icon: <Icon icon={IconMenuCenterAlign} color={ThemingVariables.colors.text[0]} />,
-          side: <FormSwitch checked={block?.format?.textAlign === 'center'} />,
+          icon: <IconMenuCenterAlign color={ThemingVariables.colors.text[0]} />,
+          side: <FormSwitch checked={block?.format?.textAlign === 'center'} readOnly />,
           action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault()
             e.stopPropagation()
@@ -214,7 +215,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
       [
         {
           title: 'Delete',
-          icon: <Icon icon={IconMenuDelete} color={ThemingVariables.colors.text[0]} />,
+          icon: <IconMenuDelete color={ThemingVariables.colors.text[0]} />,
           action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault()
             e.stopPropagation()
@@ -229,7 +230,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
       ]
       // {
       //   title: 'Debug: Copy block id',
-      //   icon: <Icon icon={IconMenuDuplicate} color={ThemingVariables.colors.text[0]} />,
+      //   icon: <IconMenuDuplicate color={ThemingVariables.colors.text[0]} />,
       //   action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       //     e.preventDefault()
       //     e.stopPropagation()
@@ -240,7 +241,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
       // },
       // {
       //   title: 'Debug: Copy as json',
-      //   icon: <Icon icon={IconMenuDuplicate} color={ThemingVariables.colors.text[0]} />,
+      //   icon: <IconMenuDuplicate color={ThemingVariables.colors.text[0]} />,
       //   action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       //     e.preventDefault()
       //     e.stopPropagation()
@@ -254,9 +255,9 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
 
   return (
     <>
-      {operationGroups.map((operations) => {
+      {operationGroups.map((operations, index) => {
         return (
-          <>
+          <React.Fragment key={index}>
             {operations.map((operation) => (
               <MenuItem
                 key={operation.title}
@@ -267,7 +268,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
               />
             ))}
             <MenuItemDivider />
-          </>
+          </React.Fragment>
         )
       })}
       {block?.lastEditedById && (

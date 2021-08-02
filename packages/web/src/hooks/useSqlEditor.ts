@@ -1,12 +1,12 @@
 import { Monaco, useMonaco } from '@monaco-editor/react'
-import { getCollectionSchema, searchBlocks } from '@app/api'
+import { getCollectionSchema, referenceCompletion } from '@app/api'
 import { useGetBlockTitleTextSnapshot } from '@app/components/editor'
 import { compact, padStart } from 'lodash'
 import type { editor, languages } from 'monaco-editor'
 import { useEffect, useMemo, useState } from 'react'
-import { Editor } from '@app/types'
 import { useGetCollectionSchema, useListCollections, useListDatabases } from './api'
-import { useWorkspace } from '@app/context/workspace'
+import { useWorkspace } from '@app/hooks/useWorkspace'
+import { Editor } from '@app/types'
 
 export function useSqlEditor(languageId?: string) {
   const monaco = useMonaco() || undefined
@@ -279,7 +279,6 @@ function useSqlEditorLanguage(languageId?: string, monaco?: Monaco) {
   }, [monaco, languageId, workspace])
 }
 
-// const commandId = 'goto-question'
 export const transclusionRegex = /\{\{ *([0-9a-zA-Z\-_]{21}) *(as *\w+)? *\}\}/
 const incompleteTransclusionRegex = /\{\{([^{}]+)\}\}/
 
@@ -302,16 +301,23 @@ function useSqlEditorTransclusion(languageId?: string, monaco?: Monaco) {
         const current = matches.find((match) => match.range.containsPosition(position))
         if (current) {
           const keyword = current.matches?.[1] || ''
-          const data = await searchBlocks(keyword, 100, workspace.id, Editor.BlockType.Question)
-          const questionSearchResults = data ? compact(data.searchResults.map((id) => data.blocks[id])) : []
+          const data = await referenceCompletion(workspace.id, keyword, 100)
+          const searchResults = data ? compact(data.searchResults.map((id) => data.blocks[id])) : []
           return {
-            suggestions: questionSearchResults.map((question) => ({
+            suggestions: searchResults.map((result, index) => ({
               range: current.range,
-              label: getBlockTitle(question) || '',
-              detail: question.storyId ? getBlockTitle(data?.blocks[question.storyId]) : undefined,
-              kind: monaco.languages.CompletionItemKind.Function,
-              insertText: `{{${question.id}}}`,
-              filterText: `{{${keyword}}}`
+              label: getBlockTitle(result) || '',
+              detail:
+                result.storyId && data?.blocks[result.storyId]
+                  ? getBlockTitle(data?.blocks[result.storyId])
+                  : undefined,
+              kind:
+                result.type === Editor.BlockType.Metric
+                  ? monaco.languages.CompletionItemKind.Class
+                  : monaco.languages.CompletionItemKind.Function,
+              insertText: `{{${result.id}}}`,
+              filterText: `{{${keyword}}}`,
+              sortText: index.toString().padStart(4, '0')
             })),
             incomplete: true
           }
@@ -321,133 +327,4 @@ function useSqlEditorTransclusion(languageId?: string, monaco?: Monaco) {
     })
     return dispose
   }, [monaco, languageId, getBlockTitle, workspace.id])
-  // useEffect(() => {
-  //    if (!monaco || !languageId) {
-  //     return
-  //   }
-  //   const { dispose } = monaco.languages.registerHoverProvider(languageId, {
-  //     async provideHover(model, position) {
-  //       const matches = model.findMatches(transclusionRegex.source, true, true, true, null, true)
-  //       const questionIds = uniq(compact(matches.map((match) => match.matches?.[1])))
-  //       const questions = keyBy(
-  //         await Promise.all(
-  //           questionIds.map((questionId) =>
-  //             fetchEntity<Editor.QuestionBlock>('block', { id: questionId }, workspace.id)
-  //           )
-  //         ),
-  //         'id'
-  //       )
-  //       const current = matches.find((match) => match.range.containsPosition(position))
-  //       if (current) {
-  //         const questionId = current.matches?.[1]
-  //         const block = questionId ? questions?.[questionId] : undefined
-  //         if (!block?.content) {
-  //           return { contents: [] }
-  //         }
-  //         return {
-  //           range: current.range,
-  //           contents: [
-  //             {
-  //               value: `### ${getBlockTitle(block)}\n\`\`\`${languageId}\n${block.content.sql || '// no sql'}\n\`\`\``
-  //             }
-  //           ]
-  //         }
-  //       }
-  //       return {
-  //         contents: []
-  //       }
-  //     }
-  //   })
-  //   return dispose
-  // }, [monaco, languageId, getBlockTitle, workspace.id])
-  // useEffect(() => {
-  //    if (!monaco || !languageId) {
-  //     return
-  //   }
-  //   const { dispose } = monaco.languages.registerCodeLensProvider(languageId, {
-  //     async provideCodeLenses(model) {
-  //       const matches = model.findMatches(transclusionRegex.source, true, true, true, null, true)
-  //       const questionIds = uniq(compact(matches.map((match) => match.matches?.[1])))
-  //       const questions = keyBy(
-  //         await Promise.all(
-  //           questionIds.map((questionId) =>
-  //             fetchEntity<Editor.QuestionBlock>('block', { id: questionId }, workspace.id)
-  //           )
-  //         ),
-  //         'id'
-  //       )
-  //       return {
-  //         lenses: compact(
-  //           matches.map((match, index) => {
-  //             const questionId = match.matches?.[1]
-  //             const block = questionId && questions?.[questionId]
-  //             if (!block) {
-  //               return undefined
-  //             }
-  //             return {
-  //               id: `${questionId}${index}`,
-  //               command: {
-  //                 id: commandId,
-  //                 title: getBlockTitle(block),
-  //                 arguments: [block.storyId, questionId]
-  //               },
-  //               range: match.range
-  //             }
-  //           })
-  //         ),
-  //         dispose: () => {}
-  //       }
-  //     }
-  //   })
-  //   return dispose
-  // }, [monaco, languageId, getBlockTitle, workspace.id])
-  // useEffect(() => {
-  //    if (!monaco || !languageId) {
-  //     return
-  //   }
-  //   const { dispose } = monaco.languages.registerLinkProvider(languageId, {
-  //     async provideLinks(model) {
-  //       const matches = model.findMatches(transclusionRegex.source, true, true, true, null, true)
-  //       const questionIds = uniq(compact(matches.map((match) => match.matches?.[1])))
-  //       const questions = keyBy(
-  //         await Promise.all(
-  //           questionIds.map((questionId) =>
-  //             fetchEntity<Editor.QuestionBlock>('block', { id: questionId }, workspace.id)
-  //           )
-  //         ),
-  //         'id'
-  //       )
-  //       return {
-  //         links: compact(
-  //           matches.map((match) => {
-  //             const questionId = match.matches?.[1]
-  //             const block = (questionId ? questions?.[questionId] : undefined) as Editor.QuestionBlock | undefined
-  //             if (!block) {
-  //               return undefined
-  //             }
-  //             return {
-  //               tooltip: 'Goto question',
-  //               range: match.range,
-  //               url: `command:${commandId}?${encodeURIComponent(JSON.stringify([block.storyId, questionId]))}`
-  //             }
-  //           })
-  //         ),
-  //         dispose: () => {}
-  //       }
-  //     }
-  //   })
-  //   return dispose
-  // }, [monaco, languageId, workspace.id])
-  // const openStoryHandler = useOpenStory()
-  // const { open } = useQuestionEditor()
-  // useEffect(() => {
-  //    if (!monaco || !languageId) {
-  //     return
-  //   }
-  //   const { dispose } = monaco.editor.registerCommand(commandId, (_accessor, ...args) => {
-  //     openStoryHandler(args[0], { blockId: args[1], isAltKeyPressed: true })
-  //     open({ mode: 'SQL', storyId: args[0], blockId: args[1], readonly: false })
-  //   })
-  //   return dispose
-  // }, [monaco, open, openStoryHandler])
 }

@@ -5,7 +5,7 @@ import ReactDOMServer from 'react-dom/server'
 import { useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor, Story } from '@app/types'
-import { blockTitleToText, extractEntitiesFromToken } from '../helpers/tokenManipulation'
+import { blockTitleToText, extractEntitiesFromToken, isNonSelectbleToken } from '../helpers/tokenManipulation'
 
 export const COLORS = {
   blue: ThemingVariables.colors.visualization[0],
@@ -179,7 +179,14 @@ export const BlockRenderer = (
   const leafs = (
     <>
       {tokens?.map((token, i) => {
-        return <Token token={token} index={i} key={i} assetsMap={assetsMap} />
+        return (
+          <React.Fragment key={i}>
+            <Token token={token} index={i} assetsMap={assetsMap} />
+            {/* keep it to prevent safari selection issue */}
+            {/* trim it in deserialize function */}
+            {i === tokens.length - 1 && isNonSelectbleToken(token) ? '\n' : null}
+          </React.Fragment>
+        )
       }) || null}
     </>
   )

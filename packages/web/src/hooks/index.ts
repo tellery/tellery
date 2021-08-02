@@ -6,6 +6,7 @@ import { MutableRefObject, RefObject, useCallback, useEffect, useRef, useState }
 import { useHistory, useLocation, useRouteMatch } from 'react-router-dom'
 import { useKeyPress } from 'react-use'
 import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect'
+import { useStoryPathParams } from './useStoryPathParams'
 export { useMediaQueries, useMediaQuery } from '@react-hook/media-query'
 
 export const useMounted = (): RefObject<boolean> => {
@@ -57,7 +58,8 @@ interface OpenStoryOpetions {
 
 export const useOpenStory = () => {
   const history = useHistory()
-  const matchStoryPattern = useRouteMatch<{ id: string }>('/story/:id')
+  const pathStoryId = useStoryPathParams()
+
   const matchThoughtPattern = useRouteMatch<{ id: string }>('/thought')
   const [secondaryStoryId, setSecondaryStoryId] = useAtom(secondaryStoryIdState)
   const [isPressed] = useKeyPress('Alt')
@@ -66,7 +68,7 @@ export const useOpenStory = () => {
       const { blockId, _currentStoryId, isAltKeyPressed = isPressed } = options ?? {}
       const targetUrl = `/story/${storyId}${blockId ? `#${blockId}` : ''}`
 
-      const mainEditorStoryId = matchStoryPattern && matchStoryPattern.params.id
+      const mainEditorStoryId = pathStoryId
       const currentStoryId = _currentStoryId ?? mainEditorStoryId
       const isInSecondaryEditor = secondaryStoryId !== null && secondaryStoryId === currentStoryId
 
@@ -100,7 +102,7 @@ export const useOpenStory = () => {
         }
       }
     },
-    [history, isPressed, matchStoryPattern, matchThoughtPattern, secondaryStoryId, setSecondaryStoryId]
+    [history, isPressed, matchThoughtPattern, pathStoryId, secondaryStoryId, setSecondaryStoryId]
   )
   return handler
 }
@@ -209,11 +211,11 @@ export function useHover<T>(): [MutableRefObject<T | null>, boolean] {
       const node = ref.current as unknown as HTMLElement
       if (node) {
         node.addEventListener('mouseover', handleMouseOver)
-        node.addEventListener('mouseout', handleMouseOut)
+        node.addEventListener('mouseleave', handleMouseOut)
 
         return () => {
           node.removeEventListener('mouseover', handleMouseOver)
-          node.removeEventListener('mouseout', handleMouseOut)
+          node.removeEventListener('mouseleave', handleMouseOut)
         }
       }
     },

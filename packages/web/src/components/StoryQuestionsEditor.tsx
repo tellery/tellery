@@ -1,21 +1,18 @@
-import { useWorkspace } from '@app/context/workspace'
-import { useCommit } from '@app/hooks/useCommit'
-import { css, cx } from '@emotion/css'
 import {
   IconCommonArrowDropDown,
   IconCommonClose,
   IconCommonDownstream,
   IconCommonError,
+  IconCommonMetrics,
+  IconCommonMore,
+  IconCommonQuestion,
   IconCommonRun,
   IconCommonSave,
   IconCommonSql,
   IconVisualizationSetting
 } from '@app/assets/icons'
-import { getBlockWrapElementById } from '@app/components/editor/helpers/contentEditable'
 import { SQLEditor } from '@app/components/SQLEditor'
 import { Configuration } from '@app/components/v11n'
-import { dequal } from 'dequal'
-import { motion, useMotionValue, useTransform } from 'framer-motion'
 import { useHover, useOpenStory, usePrevious } from '@app/hooks'
 import {
   useBlockSuspense,
@@ -24,10 +21,20 @@ import {
   useQuestionDownstreams,
   useSnapshot
 } from '@app/hooks/api'
+import { useCommit } from '@app/hooks/useCommit'
 import { useLocalStorage } from '@app/hooks/useLocalStorage'
+import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
 import { useSqlEditor } from '@app/hooks/useSqlEditor'
+import { useWorkspace } from '@app/hooks/useWorkspace'
+import { applyCreateSnapshotOperation } from '@app/store/block'
+import { ThemingVariables } from '@app/styles'
+import { Editor, Story } from '@app/types'
+import { DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
+import { css, cx } from '@emotion/css'
+import Tippy from '@tippyjs/react'
+import { dequal } from 'dequal'
+import { motion, useMotionValue, useTransform } from 'framer-motion'
 import { produce } from 'immer'
-import invariant from 'tiny-invariant'
 import isHotkey from 'is-hotkey'
 import { nanoid } from 'nanoid'
 import React, { SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -35,17 +42,13 @@ import { useIsMutating } from 'react-query'
 import { toast } from 'react-toastify'
 import { Tab, TabList, TabPanel, TabStateReturn, useTabState } from 'reakit/Tab'
 import { atom, useRecoilCallback, useRecoilState } from 'recoil'
-import scrollIntoView from 'scroll-into-view-if-needed'
-import { applyCreateSnapshotOperation } from '@app/store/block'
-import { ThemingVariables } from '@app/styles'
-import type { Editor, Story } from '@app/types'
-import { DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
+import invariant from 'tiny-invariant'
 import { setBlockTranscation } from '../context/editorTranscations'
 import { CircularLoading } from './CircularLoading'
 import { BlockTitle, useGetBlockTitleTextSnapshot } from './editor'
 import type { SetBlock } from './editor/types'
-import Icon from './kit/Icon'
 import IconButton from './kit/IconButton'
+import { MenuItem } from './MenuItem'
 import QuestionDownstreams from './QuestionDownstreams'
 import { charts } from './v11n/charts'
 import { Config, Type } from './v11n/types'
@@ -115,17 +118,20 @@ export const useQuestionEditor = () => {
 }
 
 export const useCleanQuestionEditorHandler = () => {
-  const handler = useRecoilCallback((recoilCallback) => async (arg: string) => {
-    const blockId = arg
-    const blockMap = await recoilCallback.snapshot.getPromise(questionEditorBlockMapState)
-    if (blockMap[blockId]) {
-      recoilCallback.set(questionEditorBlockMapState, (state) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { [blockId]: _removed, ...rest } = state
-        return rest
-      })
-    }
-  })
+  const handler = useRecoilCallback(
+    (recoilCallback) => async (arg: string) => {
+      const blockId = arg
+      const blockMap = await recoilCallback.snapshot.getPromise(questionEditorBlockMapState)
+      if (blockMap[blockId]) {
+        recoilCallback.set(questionEditorBlockMapState, (state) => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { [blockId]: _removed, ...rest } = state
+          return rest
+        })
+      }
+    },
+    []
+  )
 
   return handler
 }
@@ -147,7 +153,8 @@ export const useOpenQuestionBlockIdHandler = () => {
             }
           }
         })
-      }
+      },
+    []
   )
   return handler
 }
@@ -295,7 +302,7 @@ const TabHeader: React.FC<{ blockId: string; hovering: boolean }> = ({ blockId, 
         // ref={ref}
         title={getBlockTitle(block)}
       >
-        {mutatingCount !== 0 && <CircularLoading size={20} color={ThemingVariables.colors.primary[0]} />}
+        {mutatingCount !== 0 && <CircularLoading size={20} color={ThemingVariables.colors.primary[1]} />}
         <div
           className={css`
             flex: 1 1;
@@ -422,7 +429,11 @@ export const EditorContent = () => {
           `}
         >
           {opendQuestionBlockIds?.map((id) => {
-            return <QuestionTab id={id} key={id} isActive={id === activeId} tab={tab} onClick={() => setActiveId(id)} />
+            return (
+              <React.Suspense key={id} fallback={<div>loading...</div>}>
+                <QuestionTab id={id} isActive={id === activeId} tab={tab} onClick={() => setActiveId(id)} />
+              </React.Suspense>
+            )
           })}
         </div>
         <IconButton
@@ -446,7 +457,9 @@ export const EditorContent = () => {
         />
       </TabList>
       {opendQuestionBlockIds.map((id) => (
-        <StoryQuestionEditor key={id} tab={tab} id={id} setActiveId={setActiveId} />
+        <React.Suspense key={id} fallback={<div>loading...</div>}>
+          <StoryQuestionEditor tab={tab} id={id} setActiveId={setActiveId} />
+        </React.Suspense>
       ))}
     </>
   )
@@ -752,17 +765,11 @@ export const StoryQuestionEditor: React.FC<{
   const mutatingCount = useDraftBlockMutating(block.id)
   const openStory = useOpenStory()
   const { data: downstreams } = useQuestionDownstreams(block.id)
+  const pushFocusedBlockIdState = usePushFocusedBlockIdState()
+
   const scrollToBlock = useCallback(() => {
-    const element = getBlockWrapElementById(block.id)
-    element &&
-      scrollIntoView(element, {
-        behavior: 'smooth',
-        scrollMode: 'always',
-        block: 'start',
-        inline: 'nearest',
-        boundary: element.closest('.editor')
-      })
-  }, [block.id])
+    pushFocusedBlockIdState(block.id, block.storyId)
+  }, [block.id, block.storyId, pushFocusedBlockIdState])
 
   return (
     <TabPanel
@@ -845,6 +852,14 @@ export const StoryQuestionEditor: React.FC<{
             >
               <BlockTitle block={block} />
             </span>
+            {block.type === Editor.BlockType.Metric ? (
+              <IconCommonMetrics
+                color={ThemingVariables.colors.text[0]}
+                className={css`
+                  margin-left: 10px;
+                `}
+              />
+            ) : null}
           </div>
         </div>
         <div
@@ -878,6 +893,64 @@ export const StoryQuestionEditor: React.FC<{
             onClick={save}
             color={ThemingVariables.colors.primary[1]}
           />
+          <Tippy
+            content={
+              <div
+                className={cx(
+                  css`
+                    background: ${ThemingVariables.colors.gray[5]};
+                    box-shadow: ${ThemingVariables.boxShadows[0]};
+                    border-radius: 8px;
+                    padding: 8px;
+                    width: 260px;
+                    display: block;
+                    cursor: pointer;
+                  `
+                )}
+              >
+                <MenuItem
+                  icon={
+                    block.type === Editor.BlockType.Metric ? (
+                      <IconCommonQuestion color={ThemingVariables.colors.text[0]} />
+                    ) : (
+                      <IconCommonMetrics color={ThemingVariables.colors.text[0]} />
+                    )
+                  }
+                  title={`Convert to ${block.type === Editor.BlockType.Metric ? 'question' : 'metric'}`}
+                  onClick={() => {
+                    setBlock(block.id, (draftBlock) => {
+                      if (draftBlock.type === Editor.BlockType.Question) {
+                        draftBlock.type = Editor.BlockType.Metric
+                      } else if (draftBlock.type === Editor.BlockType.Metric) {
+                        draftBlock.type = Editor.BlockType.Question
+                      }
+                    })
+                  }}
+                />
+              </div>
+            }
+            placement="bottom"
+            hideOnClick={true}
+            theme="tellery"
+            animation="fade"
+            duration={150}
+            arrow={false}
+            interactive
+            trigger="click"
+            popperOptions={{
+              modifiers: [
+                {
+                  name: 'offset',
+                  enabled: true,
+                  options: {
+                    offset: [10, 20]
+                  }
+                }
+              ]
+            }}
+          >
+            <IconButton icon={IconCommonMore} color={ThemingVariables.colors.primary[1]} />
+          </Tippy>
         </div>
       </div>
       <div
@@ -1062,8 +1135,7 @@ export const DraftStatus: React.FC<{
         ></div>
       )}
       {(hovering || (!isDraft && showClose)) && (
-        <Icon
-          icon={IconCommonClose}
+        <IconCommonClose
           color={ThemingVariables.colors.text[0]}
           className={css`
             position: absolute;

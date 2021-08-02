@@ -124,6 +124,20 @@ export async function searchBlocks<T extends Editor.BlockType>(
     .then(({ data: { results } }) => results)
 }
 
+export async function referenceCompletion<T extends Editor.BlockType>(
+  workspaceId: string,
+  keyword: string,
+  limit: number
+): Promise<SearchBlockResult<T>> {
+  return request
+    .post('/api/referenceCompletion', {
+      workspaceId,
+      keyword,
+      limit
+    })
+    .then(({ data: { results } }) => results)
+}
+
 export interface EntityRequest {
   id: string
   storyId?: string

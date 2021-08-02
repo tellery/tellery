@@ -24,7 +24,6 @@ import { useHistory } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { ThemingVariables } from '@app/styles'
 import type { Permission, PermissionEntityRole, Story } from '@app/types'
-import Icon from './kit/Icon'
 import { env } from '@app/env'
 
 const upsertPermission = (permissions: Permission[], permission: Permission): Permission[] => {
@@ -112,7 +111,7 @@ export const StoryConfigPopOver: React.FC<{
       )}
     >
       <MenuItem
-        icon={<Icon icon={IconCommonRefresh} color={ThemingVariables.colors.text[0]} />}
+        icon={<IconCommonRefresh color={ThemingVariables.colors.text[0]} />}
         title="Refresh on open"
         onClick={(e) => {
           e.preventDefault()
@@ -121,7 +120,7 @@ export const StoryConfigPopOver: React.FC<{
         side={<FormSwitch checked={!!story?.format?.refreshOnOpen} readOnly />}
       />
       <MenuItem
-        icon={<Icon icon={IconCommonLock} color={ThemingVariables.colors.text[0]} />}
+        icon={<IconCommonLock color={ThemingVariables.colors.text[0]} />}
         title="Lock"
         onClick={(e) => {
           e.preventDefault()
@@ -130,7 +129,7 @@ export const StoryConfigPopOver: React.FC<{
         side={<FormSwitch checked={!!story?.format?.locked} readOnly />}
       />
       <MenuItem
-        icon={<Icon icon={IconCommonCopy} color={ThemingVariables.colors.text[0]} />}
+        icon={<IconCommonCopy color={ThemingVariables.colors.text[0]} />}
         title="Copy link"
         onClick={() => {
           copy(window.location.href)
@@ -139,23 +138,25 @@ export const StoryConfigPopOver: React.FC<{
         }}
       />
       <MenuItem
-        icon={<Icon icon={IconMenuDuplicate} color={ThemingVariables.colors.text[0]} />}
+        icon={<IconMenuDuplicate color={ThemingVariables.colors.text[0]} />}
         title="Duplicate"
         onClick={duplicateStoryHandler}
       />
-      <MenuItem
-        icon={<Icon icon={IconMenuShow} color={ThemingVariables.colors.text[0]} />}
-        title="Readonly"
-        onClick={(e) => {
-          e.preventDefault()
-          setWorkspacePermission(readOnlyStatus ? 'manager' : 'commentator')
-        }}
-        side={<FormSwitch checked={readOnlyStatus} readOnly />}
-      />
       {env.DEV && (
         <MenuItem
-          icon={<Icon icon={IconMenuShow} color={ThemingVariables.colors.text[0]} />}
-          title="Show border"
+          icon={<IconMenuShow color={ThemingVariables.colors.text[0]} />}
+          title="Workspace Readonly (DEV)"
+          onClick={(e) => {
+            e.preventDefault()
+            setWorkspacePermission(readOnlyStatus ? 'manager' : 'commentator')
+          }}
+          side={<FormSwitch checked={readOnlyStatus} readOnly />}
+        />
+      )}
+      {env.DEV && (
+        <MenuItem
+          icon={<IconMenuShow color={ThemingVariables.colors.text[0]} />}
+          title="Show border (DEV)"
           onClick={(e) => {
             e.preventDefault()
             setStoryFormat('showBorder', !story?.format?.showBorder)
@@ -165,7 +166,7 @@ export const StoryConfigPopOver: React.FC<{
       )}
       <MenuItemDivider />
       <MenuItem
-        icon={<Icon icon={IconMenuDelete} color={ThemingVariables.colors.negative[0]} />}
+        icon={<IconMenuDelete color={ThemingVariables.colors.negative[0]} />}
         title={
           <span
             className={css`

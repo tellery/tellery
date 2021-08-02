@@ -20,7 +20,6 @@ import { toast } from 'react-toastify'
 import { FormButton } from './kit/FormButton'
 import FormInput from './kit/FormInput'
 import FormLabel from './kit/FormLabel'
-import Icon from './kit/Icon'
 import IconButton from './kit/IconButton'
 import { MenuItem } from './MenuItem'
 import { MenuItemDivider } from './MenuItemDivider'
@@ -183,7 +182,7 @@ export function WorkspaceMembers(props: { onClose(): void }) {
               }}
             >
               {role}
-              <Icon icon={IconCommonArrowDropDown} color={ThemingVariables.colors.gray[0]} />
+              <IconCommonArrowDropDown color={ThemingVariables.colors.gray[0]} />
             </button>
           </Tippy>
           <FormButton
@@ -205,12 +204,16 @@ export function WorkspaceMembers(props: { onClose(): void }) {
       className={css`
         flex: 1;
         height: 100%;
-        padding: 30px 32px 16px;
+        padding: 30px 0 16px;
         display: flex;
         flex-direction: column;
       `}
     >
-      <div>
+      <div
+        className={css`
+          padding: 0 32px;
+        `}
+      >
         {me?.role === 'admin' ? (
           <span
             className={css`
@@ -242,6 +245,7 @@ export function WorkspaceMembers(props: { onClose(): void }) {
       </div>
       <PerfectScrollbar
         className={css`
+          padding: 0 32px;
           margin: 5px 0 0 0;
           flex: 1;
           height: 0;
@@ -455,7 +459,7 @@ function WorkspaceMember(props: {
           }}
         >
           {role}
-          <Icon icon={IconCommonArrowDropDown} color={ThemingVariables.colors.gray[0]} />
+          <IconCommonArrowDropDown color={ThemingVariables.colors.gray[0]} />
         </button>
       </Tippy>
     </li>

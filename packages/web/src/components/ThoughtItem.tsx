@@ -2,7 +2,6 @@ import { css } from '@emotion/css'
 import styled from '@emotion/styled'
 import { IconCommonCalendar } from '@app/assets/icons'
 import { StoryEditor } from '@app/components/editor'
-import Icon from '@app/components/kit/Icon'
 import dayjs from 'dayjs'
 import { useOnScreen } from '@app/hooks'
 import React, { ReactNode, useEffect, useRef, useState } from 'react'
@@ -16,8 +15,7 @@ export const ThoughtItemHeader: React.FC<{ date: string; id: string; className?:
 }) => {
   return (
     <ThoughtHeader className={className}>
-      <Icon
-        icon={IconCommonCalendar}
+      <IconCommonCalendar
         color={ThemingVariables.colors.gray[5]}
         className={css`
           background-color: ${ThemingVariables.colors.primary[1]};

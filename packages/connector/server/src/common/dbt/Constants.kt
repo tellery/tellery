@@ -32,6 +32,6 @@ object Constants {
     const val SF_USERNAME_FIELD: String = "Username"
     const val SF_PASSWORD_FIELD: String = "Password"
 
-    val EXTERNAL_CONFIG_FIELDS: List<String> =
-        ImmutableList.of(PROFILE_GIT_URL_FIELD, PROFILE_DBT_PROJECT_FIELD)
+    val EXTERNAL_CONFIG_FIELDS: List<String> = listOf(PROFILE_GIT_URL_FIELD, PROFILE_DBT_PROJECT_FIELD)
+
 }

@@ -1,9 +1,8 @@
 import { css } from '@emotion/css'
 
-import { ThemingVariables } from '@app/styles'
+import { TelleryThemeLight, ThemingVariables } from '@app/styles'
 import { SVG2DataURI } from '@app/lib/svg'
 import { IconCommonArrowDropDown, IconCommonClose } from '@app/assets/icons'
-import Icon from '@app/components/kit/Icon'
 
 export function ConfigSelectWithClear(props: {
   className?: string
@@ -49,7 +48,7 @@ export function ConfigSelectWithClear(props: {
         `}
         style={{
           color: props.value ? ThemingVariables.colors.text[0] : ThemingVariables.colors.text[1],
-          backgroundImage: SVG2DataURI(IconCommonArrowDropDown)
+          backgroundImage: SVG2DataURI(IconCommonArrowDropDown, TelleryThemeLight.colors.gray[0])
         }}
         value={props.value || ''}
         onChange={(e) => {
@@ -79,7 +78,7 @@ export function ConfigSelectWithClear(props: {
           props.onChange(undefined)
         }}
       >
-        <Icon icon={IconCommonClose} color={ThemingVariables.colors.gray[0]} />
+        <IconCommonClose color={ThemingVariables.colors.gray[0]} />
       </div>
     </div>
   )

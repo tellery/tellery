@@ -1,7 +1,7 @@
 import { useLoggedUser } from '@app/hooks/useAuth'
-import { SocketContext } from '@app/context/socketio'
 import { useMgetUsers, User } from '@app/hooks/api'
 import React, { useContext, useEffect, useMemo, useState } from 'react'
+import { useSocketInstance } from '@app/hooks/useSocketContextProvider'
 
 export const OperatorsContext = React.createContext<Record<string, User[]> | null>(null)
 
@@ -11,7 +11,8 @@ export const useBlockOperators = (blockId: string) => {
 }
 
 export const useStoryOperatorsProvider = (storyId: string) => {
-  const socket = useContext(SocketContext)
+  const socket = useSocketInstance()
+
   const user = useLoggedUser()
 
   const [operatorPositions, setOperatorPositions] = useState<Record<string, string>>({})

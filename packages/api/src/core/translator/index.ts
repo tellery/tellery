@@ -70,8 +70,9 @@ async function loadSqlFromBlocks(blockIds: string[]): Promise<{ [k: string]: str
     .value()
 
   // validate the integrity of blocks
-  if (records.length !== blockIds.length) {
-    throw NotFoundError.resourceNotFound(_.xor(_(records).map('id').value(), blockIds).toString())
+  const missingBlocks = _.xor(_(records).map('id').value(), blockIds)
+  if (!_.isEmpty(missingBlocks)) {
+    throw NotFoundError.resourceNotFound(missingBlocks.toString())
   }
 
   return _(records)
@@ -137,7 +138,7 @@ export function buildSqlFromGraph(graph: DirectedGraph<SQLPieces, string>): stri
     } else {
       let whole = true
       subs.forEach((s) => {
-        if (!sqlMap[s.blockId]) {
+        if (!sqlMap[sqlMapKey(s.blockId, s.alias)]) {
           whole = false
           stack.push(s)
         }
@@ -148,7 +149,7 @@ export function buildSqlFromGraph(graph: DirectedGraph<SQLPieces, string>): stri
         record = true
 
         const commonTableExprs = _(subs)
-          .map((s) => sqlMap[s.blockId])
+          .map((s) => sqlMap[sqlMapKey(s.blockId, s.alias)])
           .value()
         // remove leading space and newlines, for further check
         const polishedMainBody = mainBody.trim()
@@ -170,12 +171,12 @@ export function buildSqlFromGraph(graph: DirectedGraph<SQLPieces, string>): stri
     }
 
     if (record) {
-      sqlMap[blockId] = alias
+      sqlMap[sqlMapKey(blockId, alias)] = alias
         ? `  ${alias} AS (\n    ${cteBody.replace(/\n/g, '\n    ')}\n  )`
         : cteBody.replace(/\n/g, '\n    ')
     }
   }
-  return sqlMap[rootKey]
+  return sqlMap[sqlMapKey(rootKey)]
 }
 
 function extractPartialQueries(sql: string): PartialQuery[] {
@@ -211,6 +212,10 @@ function sqlMacro(sql: string): SQLPieces {
     mainBody,
     subs: _.map(partialQueries, (i) => _.pick(i, ['blockId', 'alias'])),
   }
+}
+
+function sqlMapKey(blockId: string, alias?: string): string {
+  return `${blockId}${alias ?? ''}`
 }
 
 export { translate, sqlMacro, extractPartialQueries }

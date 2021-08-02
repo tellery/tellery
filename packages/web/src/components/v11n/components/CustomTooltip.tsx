@@ -5,7 +5,6 @@ import { IconCommonDot } from '@app/assets/icons'
 import { ThemingVariables } from '@app/styles'
 import { formatRecord } from '../utils'
 import type { DisplayType } from '../types'
-import Icon from '@app/components/kit/Icon'
 
 export function CustomTooltip(
   props: TooltipProps<ValueType, string> & {
@@ -70,8 +69,7 @@ export function CustomTooltip(
             )}
           >
             {props.hideDot ? null : (
-              <Icon
-                icon={IconCommonDot}
+              <IconCommonDot
                 color={item.payload?.fill || item.color}
                 className={css`
                   vertical-align: middle;

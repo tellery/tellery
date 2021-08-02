@@ -9,7 +9,7 @@ import { PermissionWorkspaceRole } from '../types/permission'
 import { isAnonymous } from '../utils/env'
 import { USER_TOKEN_HEADER_KEY } from '../utils/user'
 
-const ignorePaths = ['/api/users/login', '/api/readiness', '/api/liveness']
+const ignorePaths = ['/api/users/login']
 
 // 15 days
 const d15 = 1000 * 3600 * 24 * 15
@@ -22,19 +22,24 @@ export default async function user(ctx: Context, next: Next) {
   if (pathIncluded) {
     if (token && _.isString(token)) {
       payload = await userService.verifyToken(token)
-    } else if (isAnonymous()) {
+    } else if (isAnonymous() && ctx.path === '/api/users/me') {
       // special logic for anonymous users
       payload = await userService.verifyToken(token?.toString() ?? '')
       // invited new user to workspace
       if (_(payload).get('generated')) {
         const workspace = await getRepository(WorkspaceEntity).findOneOrFail({
+          order: {
+            createdAt: 'ASC',
+          },
           relations: ['members'],
         })
         const admin = _(workspace.members).find((m) => m.role === PermissionWorkspaceRole.ADMIN)
         if (!admin) {
           throw new Error('missing super user')
         }
-        await workspaceService.inviteMembers(admin.userId, workspace.id, _(payload).get('email'))
+        await workspaceService.inviteMembers(admin.userId, workspace.id, [
+          { email: _(payload).get('email'), role: PermissionWorkspaceRole.MEMBER },
+        ])
       }
     }
   }

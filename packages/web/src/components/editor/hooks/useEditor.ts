@@ -21,7 +21,6 @@ export type EditorContextInterface<BlockType> = {
   selectBlocks: (blockIds: string[]) => void
   storyId: string
   duplicateHandler: (blockIds: string[]) => Editor.BaseBlock[] | undefined
-  focusBlockHandler: (blockId: string, openMenu: boolean) => void
 }
 
 export const useEditor = <BlockType extends unknown>() => {

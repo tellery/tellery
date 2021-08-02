@@ -1,12 +1,13 @@
+import { getBlockElementById } from '@app/components/editor/helpers/contentEditable'
+import { BlockSnapshot, getBlockFromSnapshot } from '@app/store/block'
+import { Direction, Editor } from '@app/types'
+import { DnDItemTypes } from '@app/utils/dnd'
 import { CollisionDetection, useDraggable } from '@dnd-kit/core'
 import { css } from '@emotion/css'
-import { getBlockElementById } from '@app/components/editor/helpers/contentEditable'
 import debug from 'debug'
-import invariant from 'tiny-invariant'
-import React, { useContext, useRef } from 'react'
+import React, { useRef } from 'react'
 import { atom, atomFamily, selector } from 'recoil'
-import { BlockSnapshot, getBlockFromSnapshot } from '@app/store/block'
-import { Direction, DnDItemTypes, Editor } from '@app/types'
+import invariant from 'tiny-invariant'
 export const logger = debug('tellery:dnd')
 
 interface BlockAreaInterface {
@@ -44,16 +45,6 @@ export const DroppingArea = selector<BlockAreaInterface | null>({
     set(BlockDroppingArea(newBlockId), newValue)
   }
 })
-
-export const BlockDndContext = React.createContext<{
-  setSelectingBlockIds: (blockIds: string[] | null) => void
-} | null>(null)
-
-export const useBlockDndContext = () => {
-  const context = useContext(BlockDndContext)
-  invariant(context, 'useBlockDndContext must use in context')
-  return context
-}
 
 export const MouseSensorOptions = {
   // Require the mouse to move by 10 pixels before activating

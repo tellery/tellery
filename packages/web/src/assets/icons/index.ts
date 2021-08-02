@@ -29,6 +29,7 @@ import IconCommonLock from './common/lock.svg?component'
 import IconCommonMenu from './common/menu.svg?component'
 import IconCommonMetrics from './common/metrics.svg?component'
 import IconCommonMore from './common/more.svg?component'
+import IconCommonPin from './common/pin.svg?component'
 import IconCommonQuestion from './common/question.svg?component'
 import IconCommonRead from './common/read.svg?component'
 import IconCommonRefresh from './common/refresh.svg?component'
@@ -73,7 +74,6 @@ import IconMenuLineDivider from './menu/line_divider.svg?component'
 import IconMenuMoveTo from './menu/move_to.svg?component'
 import IconMenuNormalWidth from './menu/normal_width.svg?component'
 import IconMenuNumberList from './menu/number_list.svg?component'
-import IconMenuQuery from './menu/query.svg?component'
 import IconMenuQuote from './menu/quote.svg?component'
 import IconMenuShow from './menu/show.svg?component'
 import IconMenuSortAsc from './menu/sort_asc.svg?component'
@@ -132,6 +132,7 @@ export {
   IconCommonMenu,
   IconCommonMetrics,
   IconCommonMore,
+  IconCommonPin,
   IconCommonQuestion,
   IconCommonRead,
   IconCommonRefresh,
@@ -176,7 +177,6 @@ export {
   IconMenuMoveTo,
   IconMenuNormalWidth,
   IconMenuNumberList,
-  IconMenuQuery,
   IconMenuQuote,
   IconMenuShow,
   IconMenuSortAsc,

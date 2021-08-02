@@ -5,7 +5,6 @@ import type { Config, Type } from '../types'
 import { BlockPopover } from '../../BlockPopover'
 import { ThemingVariables } from '@app/styles'
 import { IconCommonCheck } from '@app/assets/icons'
-import Icon from '@app/components/kit/Icon'
 
 export function ColorSelector(props: {
   className?: string
@@ -107,11 +106,7 @@ export function ColorSelector(props: {
                   cursor: props.value.color === index ? 'default' : 'pointer'
                 }}
               >
-                {props.value.color === index ? (
-                  <Icon icon={IconCommonCheck} color={ThemingVariables.colors.gray[5]} />
-                ) : (
-                  ''
-                )}
+                {props.value.color === index ? <IconCommonCheck color={ThemingVariables.colors.gray[5]} /> : ''}
               </Button>
             ))}
           </div>

@@ -1,5 +1,5 @@
-import { IconMenuQuery } from '@app/assets/icons'
-import { useWorkspace } from '@app/context/workspace'
+import { IconCommonQuestion } from '@app/assets/icons'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useOpenStory } from '@app/hooks'
 import { useMgetBlocks } from '@app/hooks/api'
 import { transclusionRegex } from '@app/hooks/useSqlEditor'
@@ -13,9 +13,9 @@ import { compact, uniq } from 'lodash'
 import type { editor } from 'monaco-editor/esm/vs/editor/editor.api'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { useQuery } from 'react-query'
 import { useGetBlockTitleTextSnapshot } from './editor'
 import { useQuestionEditor } from './StoryQuestionsEditor'
+import { SQLViewer } from './SQLViewer'
 
 const STORY_BLOCK_REGEX = new RegExp(`${window.location.protocol}//${window.location.host}/story/(\\S+)#(\\S+)`)
 
@@ -46,7 +46,6 @@ export function SQLEditor(props: {
     if (!editor || !monaco) {
       return
     }
-
     editor.onDidPaste((e) => {
       const pastedString = editor.getModel()?.getValueInRange(e.range)
       if (!pastedString) return
@@ -223,12 +222,6 @@ function TransclusionContentWidget(props: {
   const el = document.querySelector(
     `[widgetid="content.widget.transclusion.${props.blockId}.${block.id}.${props.index}"]`
   )
-  const monaco = useMonaco()
-  const { data } = useQuery<string | undefined>(
-    ['editor.colorize', props.languageId, block.content?.sql],
-    () => monaco?.editor.colorize(block.content?.sql!, props.languageId!, {}),
-    { enabled: !!props.languageId && !!block.content?.sql }
-  )
   const title = getBlockTitle(block)
   const [visible, setVisible] = useState(false)
 
@@ -239,80 +232,80 @@ function TransclusionContentWidget(props: {
           theme="tellery"
           duration={150}
           content={
-            data ? (
-              <div
+            <div
+              className={css`
+                pointer-events: all;
+                width: 600px;
+                box-shadow: ${ThemingVariables.boxShadows[0]};
+                border-radius: 8px;
+                display: flex;
+                flex-direction: column;
+                background: ${ThemingVariables.colors.gray[5]};
+              `}
+            >
+              <h4
                 className={css`
-                  pointer-events: all;
-                  width: 600px;
-                  max-height: 360px;
-                  box-shadow: ${ThemingVariables.boxShadows[0]};
-                  border-radius: 8px;
-                  display: flex;
-                  flex-direction: column;
-                  background: ${ThemingVariables.colors.gray[5]};
+                  flex-shrink: 0;
+                  font-weight: 600;
+                  font-size: 16px;
+                  line-height: 22px;
+                  margin: 20px 15px 0 15px;
+                  color: ${ThemingVariables.colors.text[0]};
                 `}
               >
-                <h4
-                  className={css`
-                    flex-shrink: 0;
-                    font-weight: 600;
-                    font-size: 16px;
-                    line-height: 22px;
-                    margin: 20px 15px 0 15px;
-                    color: ${ThemingVariables.colors.text[0]};
-                  `}
-                >
-                  {title}
-                </h4>
+                {title}
+              </h4>
+              {block.content?.sql && props.languageId && visible ? (
                 <div
                   className={css`
-                    flex: 1;
-                    height: 0;
-                    padding: 10px 15px;
-                    overflow-y: auto;
-                    font-family: Menlo, Monaco, 'Courier New', monospace;
-                    line-height: 18px;
-                    font-size: 12px;
-                    word-break: break-word;
-                    white-space: pre-wrap;
-                  `}
-                  dangerouslySetInnerHTML={{ __html: data }}
-                />
-                <div
-                  className={css`
-                    border-top: 1px solid ${ThemingVariables.colors.gray[1]};
-                    height: 44px;
-                    flex-shrink: 0;
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    padding: 14px 0;
-                    margin: 0 15px;
-                    span {
-                      font-size: 14px;
-                      line-height: 16px;
-                      color: ${ThemingVariables.colors.text[1]};
-                    }
+                    height: 300px;
                   `}
                 >
-                  <span
+                  <SQLViewer
+                    blockId={block.id}
+                    languageId={props.languageId}
+                    value={block.content?.sql}
+                    padding={{ top: 10, bottom: 10 }}
                     className={css`
-                      cursor: pointer;
+                      padding: 0 15px;
                     `}
-                    onClick={() => {
-                      if (!block.storyId) {
-                        return
-                      }
-                      openStoryHandler(block.storyId, { blockId: block.id, isAltKeyPressed: true })
-                      open({ mode: 'SQL', storyId: block.storyId, blockId: block.id, readonly: false })
-                    }}
-                  >
-                    Go to question
-                  </span>
-                  <span>⌘+click</span>
+                  />
                 </div>
+              ) : null}
+              <div
+                className={css`
+                  border-top: 1px solid ${ThemingVariables.colors.gray[1]};
+                  height: 44px;
+                  flex-shrink: 0;
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                  padding: 14px 0;
+                  margin: 0 15px;
+                  span {
+                    font-size: 14px;
+                    line-height: 16px;
+                    color: ${ThemingVariables.colors.text[1]};
+                  }
+                `}
+              >
+                <span
+                  className={css`
+                    cursor: pointer;
+                  `}
+                  onClick={() => {
+                    if (!block.storyId) {
+                      return
+                    }
+                    openStoryHandler(block.storyId, { blockId: block.id, isAltKeyPressed: true })
+                    open({ mode: 'SQL', storyId: block.storyId, blockId: block.id, readonly: false })
+                  }}
+                >
+                  Go to question
+                </span>
+                <span>⌘+click</span>
               </div>
-            ) : null
+            </div>
           }
           onClickOutside={() => {
             setVisible(false)
@@ -328,7 +321,7 @@ function TransclusionContentWidget(props: {
               padding: 0 5px 0 23px;
               color: ${ThemingVariables.colors.text[0]};
               background-color: ${ThemingVariables.colors.primary[4]};
-              background-image: ${SVG2DataURI(IconMenuQuery)};
+              background-image: ${SVG2DataURI(IconCommonQuestion)};
               background-size: 16px;
               background-repeat: no-repeat;
               background-position: 5px 50%;

@@ -1,11 +1,9 @@
-import { useWorkspace } from '@app/context/workspace'
 import {
   Entity,
   EntityRequest,
   fetchEntity,
   fetchQuestionBackLinks,
   fetchSnapshot,
-  fetchStory,
   fetchStoryBackLinks,
   getCollectionSchema,
   request,
@@ -14,16 +12,19 @@ import {
   searchBlocks,
   sqlRequest
 } from '@app/api'
+import { isQuestionLikeBlock } from '@app/components/editor/Blocks/utils'
 import { useAsync } from '@app/hooks'
-import invariant from 'tiny-invariant'
+import { useWorkspace } from '@app/hooks/useWorkspace'
+import type { AvailableConfig, BackLinks, ProfileConfig, Snapshot, Story, UserInfo, Workspace } from '@app/types'
+import { Editor } from '@app/types'
+import { queryClient } from '@app/utils'
+import { emitBlockUpdate } from '@app/utils/remoteStoreObserver'
 import { compact } from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { QueryObserverResult, useInfiniteQuery, useMutation, useQuery, UseQueryOptions } from 'react-query'
 import { useRecoilCallback, useRecoilValue, useRecoilValueLoadable, waitForAll, waitForAny } from 'recoil'
-import { AvailableConfig, BackLinks, Editor, ProfileConfig, Snapshot, Story, UserInfo, Workspace } from '@app/types'
-import { queryClient } from '@app/utils'
-import { emitBlockUpdate } from '@app/utils/remoteStoreObserver'
-import { TelleryBlockAtom, TelleryUserAtom } from '../store/block'
+import invariant from 'tiny-invariant'
+import { blockUpdater, TelleryBlockAtom, TelleryUserAtom } from '../store/block'
 import { useBatchQueries } from './useBatchQueries'
 
 export type User = {
@@ -39,12 +40,26 @@ export const useStory = (id: string) => {
   return result
 }
 
+export const useUpdateBlocks = () => {
+  const updateBlocks = useRecoilCallback(
+    (recoilInterface) => (blocks: Record<string, Editor.Block>) => {
+      Object.values(blocks).forEach((block) => {
+        const targetAtom = TelleryBlockAtom(block.id)
+        const loadable = recoilInterface.snapshot.getInfo_UNSTABLE(targetAtom).loadable
+        if (loadable === undefined || loadable.state !== 'hasValue') {
+          recoilInterface.set(targetAtom, block)
+        } else {
+          recoilInterface.set(targetAtom, blockUpdater(block, loadable.contents) as Editor.BaseBlock)
+        }
+      })
+    },
+    []
+  )
+  return updateBlocks
+}
+
 export const useFetchStoryChunk = <T extends Editor.BaseBlock = Story>(id: string, suspense: boolean = true): T => {
-  const updateBlocks = useRecoilCallback((recoilInterface) => (blocks: Record<string, Editor.Block>) => {
-    Object.values(blocks).forEach((block) => {
-      recoilInterface.set(TelleryBlockAtom(block.id), block)
-    })
-  })
+  const updateBlocks = useUpdateBlocks()
   const workspace = useWorkspace()
   // console.log('fetch story chunk', id)
   useQuery<Record<string, Editor.Block>>(
@@ -68,12 +83,7 @@ export const useFetchStoryChunk = <T extends Editor.BaseBlock = Story>(id: strin
     { suspense: suspense }
   )
 
-  // console.log('useFetchStoryChunk useBlockSuspense', id)
-
   const block = useBlockSuspense<T>(id)
-
-  // console.log('useFetchStoryChunk useBlockSuspense fetched', id, block)
-
   return block as T
 }
 
@@ -163,6 +173,14 @@ export function useSearchBlocks<T extends Editor.BlockType>(
       }),
     options
   )
+}
+
+export function useSearchMetrics(
+  keyword: string,
+  limit: number,
+  options?: UseQueryOptions<SearchBlockResult<Editor.BlockType.Metric>>
+) {
+  return useSearchBlocks(keyword, limit, Editor.BlockType.Metric, options)
 }
 
 export const useListDatabases = () => {
@@ -469,7 +487,7 @@ export const useQuestionDownstreams = (id?: string) => {
       compact(
         links?.backwardRefs
           ?.map(({ blockId }) => blocks?.[blockId])
-          .filter((block) => block?.type === Editor.BlockType.Question)
+          .filter((block) => block && isQuestionLikeBlock(block.type))
       ),
     [blocks, links?.backwardRefs]
   )
@@ -586,40 +604,6 @@ export const useRecordStoryVisits = () => {
     }
   })
   return mutation
-}
-
-export function useMgetStory(ids?: string[]) {
-  const workspace = useWorkspace()
-
-  const queries = useBatchQueries(
-    ids
-      ? ids.map((id) => {
-          return {
-            queryKey: ['block', id],
-            queryFn: () => fetchStory(id, workspace.id),
-            ...BatchGetOptions
-          }
-        })
-      : []
-  ) as QueryObserverResult<Story>[]
-
-  const enabled = !!(ids && queries.length === ids.length)
-
-  const isSuccess = useMemo(() => enabled && queries.every((query) => query.isFetched), [enabled, queries])
-  const data = useMemo(() => {
-    const resultMap =
-      enabled && queries.every((query) => query.isFetched)
-        ? queries.reduce((acc, query) => {
-            if (query.data?.id) {
-              acc[query.data.id] = query.data
-            }
-            return acc
-          }, {} as { [key: string]: Story })
-        : undefined
-    return resultMap
-  }, [enabled, queries])
-
-  return { queries, isSuccess, data }
 }
 
 export const useExecuteSQL = (id: string) => {

@@ -1,8 +1,7 @@
 import { IconCommonDrag } from '@app/assets/icons'
-import Icon from '@app/components/kit/Icon'
 import { editorTransformBlockPopoverState } from '@app/store'
 import { ThemingVariables } from '@app/styles'
-import { DnDItemTypes } from '@app/types'
+import { DndItemDataBlockIdsType, DnDItemTypes } from '@app/utils/dnd'
 import { useDraggable } from '@dnd-kit/core'
 import { css, cx } from '@emotion/css'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -12,6 +11,7 @@ import { useBlockHovering } from '../../hooks/useBlockHovering'
 import { BlockOperation } from './BlockOperation'
 import { TellerySelectionType } from './helpers'
 import { useEditor } from './hooks'
+import { useStorySelection } from './hooks/useStorySelection'
 import { BlockOperationPopover } from './Popovers/BlockOperationPopover'
 
 const BlockDragOperation: React.FC<{
@@ -22,13 +22,30 @@ const BlockDragOperation: React.FC<{
 }> = (props) => {
   const { blockId, storyId } = props
   const editor = useEditor()
+  const [selectionState] = useStorySelection(storyId)
+  const selectedBlockIds = useMemo(() => {
+    if (
+      !!(
+        selectionState &&
+        selectionState.type === TellerySelectionType.Block &&
+        selectionState.selectedBlocks.includes(blockId) === true
+      ) === false
+    ) {
+      return [blockId]
+    }
+    if (selectionState && selectionState.type === TellerySelectionType.Block) {
+      return selectionState.selectedBlocks
+    }
+    return []
+  }, [blockId, selectionState])
+
   const blockDrag = useDraggable({
     id: `drag-${blockId}`,
     data: {
-      type: DnDItemTypes.Block,
-      id: blockId,
+      type: DnDItemTypes.BlockIds,
+      ids: selectedBlockIds,
       storyId: storyId
-    }
+    } as DndItemDataBlockIdsType
   })
 
   useEffect(() => {
@@ -48,9 +65,11 @@ const BlockDragOperation: React.FC<{
       onMouseDown: (e: React.SyntheticEvent) => {
         const selection = editor?.getSelection()
         if (
-          (selection &&
+          !!(
+            selection &&
             selection.type === TellerySelectionType.Block &&
-            selection.selectedBlocks.includes(blockId) === true) === false
+            selection.selectedBlocks.includes(blockId) === true
+          ) === false
         ) {
           editor?.selectBlocks([blockId])
         }
@@ -80,7 +99,7 @@ const BlockDragOperation: React.FC<{
           setTransformPopoverOpen(true)
         }}
       >
-        <Icon icon={IconCommonDrag} color={ThemingVariables.colors.gray[0]} />
+        <IconCommonDrag color={ThemingVariables.colors.gray[0]} />
       </BlockOperation>
     </>
   )

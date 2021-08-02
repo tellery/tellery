@@ -2,7 +2,7 @@ import { request, saveTranscations } from '@app/api'
 import { TelleryStorySelectionAtom } from '@app/components/editor'
 import type { TellerySelection } from '@app/components/editor/helpers'
 import { createTranscation } from '@app/context/editorTranscations'
-import { useWorkspace } from '@app/context/workspace'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import {
   BlockSnapshot,
   createUserLogOperation,
@@ -252,7 +252,8 @@ export const useCommitProvider = () => {
       logger('callback commit')
       invariant(user.id, 'userId is null')
       return commit({ ...commitOptions, recoilCallback, userId: user.id, workspaceId: workspace.id })
-    }
+    },
+    [user.id, workspace.id]
   )
   return callbackedCommit
 }

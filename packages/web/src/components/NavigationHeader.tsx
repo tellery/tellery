@@ -1,7 +1,3 @@
-import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
-import { useCommit } from '@app/hooks/useCommit'
-import { css } from '@emotion/css'
-import Tippy from '@tippyjs/react'
 import {
   IconCommonLock,
   IconCommonMore,
@@ -11,24 +7,23 @@ import {
   IconMenuNormalWidth
 } from '@app/assets/icons'
 import { createTranscation } from '@app/context/editorTranscations'
-import { useWorkspaceView } from '@app/hooks/api'
-import React, { memo, useCallback } from 'react'
+import { useBlockSuspense, useWorkspaceView } from '@app/hooks/api'
+import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
+import { useCommit } from '@app/hooks/useCommit'
 import { ThemingVariables } from '@app/styles'
 import type { Story } from '@app/types'
-import { useStorySnapshotManager } from '../hooks/useStorySnapshotManager'
+import { css } from '@emotion/css'
+import Tippy from '@tippyjs/react'
+import React, { memo, useCallback } from 'react'
+import { useStorySnapshotManagerProvider } from '../hooks/useStorySnapshotManager'
 import IconButton from './kit/IconButton'
 import { RefreshButton } from './RefreshButton'
 import { StoryConfigPopOver } from './StoryConfigPopOver'
 import { StoryVisits } from './StoryVisits'
 
-export const _NavigationHeader = (props: {
-  story: Story
-  storyId: string
-  title?: string
-  pinned?: boolean
-  locked?: boolean
-}) => {
-  const { story } = props
+export const _NavigationHeader = (props: { storyId: string; title?: string; pinned?: boolean }) => {
+  const story = useBlockSuspense<Story>(props.storyId)
+  const locked = !!story.format?.locked
   const { data: workspaceView, refetch: refetchWorkspaceView } = useWorkspaceView()
   const commit = useCommit()
   const blockTranscation = useBlockTranscations()
@@ -64,7 +59,7 @@ export const _NavigationHeader = (props: {
         z-index: 100;
       `}
     >
-      {props.locked && (
+      {locked && (
         <span
           className={css`
             display: inline-flex;
@@ -186,8 +181,8 @@ export const _NavigationHeader = (props: {
   )
 }
 
-export const RefreshAllQuestionBlockButton: React.FC<{ storyId: string }> = () => {
-  const storySnapshotManger = useStorySnapshotManager()
+export const RefreshAllQuestionBlockButton: React.FC<{ storyId: string }> = ({ storyId }) => {
+  const storySnapshotManger = useStorySnapshotManagerProvider(storyId)
 
   if (storySnapshotManger.total <= 0) return null
   return (

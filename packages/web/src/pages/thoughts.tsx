@@ -1,9 +1,9 @@
 import { IconCommonAdd } from '@app/assets/icons'
 import { SecondaryEditor } from '@app/components/editor'
-import Icon from '@app/components/kit/Icon'
+
 import { StoryQuestionsEditor } from '@app/components/StoryQuestionsEditor'
 import { createTranscation } from '@app/context/editorTranscations'
-import { useWorkspace } from '@app/context/workspace'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useSearchParams } from '@app/hooks'
 import { useAllThoughts } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
@@ -14,7 +14,6 @@ import { nanoid } from 'nanoid'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import { ThoughtContainer, ThoughtHeader, ThoughtItem, ThoughtTitle } from '../components/ThoughtItem'
-import { ThoughtsCalendar } from '../components/ThoughtsCalendar'
 
 function Thoughts() {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null)
@@ -127,7 +126,6 @@ function Thoughts() {
             `}
           >
             Thoughts
-            <ThoughtsCalendar />
           </div>
           <div
             className={css`
@@ -145,8 +143,7 @@ function Thoughts() {
                     padding: 10px 80px;
                   `}
                 >
-                  <Icon
-                    icon={IconCommonAdd}
+                  <IconCommonAdd
                     color={ThemingVariables.colors.gray[5]}
                     className={css`
                       background-color: ${ThemingVariables.colors.primary[1]};

@@ -17,10 +17,6 @@ declare module 'framer-motion' {
   ): MotionValue<O>
 }
 
-export enum DnDItemTypes {
-  Block = 'block',
-  File = 'file'
-}
 export type PermissionEntityRole = 'manager' | 'editor' | 'commentator' | 'viewer'
 export type PermissionEntityRoleType = 'workspace' | 'group' | 'user'
 export type Permission = { role: PermissionEntityRole; type: PermissionEntityRoleType; id?: string }
@@ -77,6 +73,7 @@ export namespace Editor {
     Image = 'image',
     NumberedList = 'numbered_list',
     Page = 'page',
+    Metric = 'metric',
     Question = 'question',
     Quote = 'quote',
     Table = 'table',
@@ -92,6 +89,7 @@ export namespace Editor {
     Bookmark = 'bookmark',
     StoryLink = 'story_link',
     QuestionReference = 'question_reference',
+    QuestionSnapshot = 'question_snapshot',
 
     // embeds
     Embed = 'embed',
@@ -249,15 +247,6 @@ export type Asset = Story | Editor.Block
 export type BackLinks = {
   forwardRefs: Ref[]
   backwardRefs: Ref[]
-}
-
-export type DropItem = {
-  type: DnDItemTypes
-  blocks?: Editor.Block[]
-  storyId?: string
-  files?: FileList
-  id: string
-  // removeSelfHandler(): void
 }
 
 export interface UserInfo {

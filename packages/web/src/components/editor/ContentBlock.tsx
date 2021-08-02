@@ -9,6 +9,7 @@ import { BlockOperations } from './BlockOperations'
 import { OperatorsAvatar } from './BlockOperators'
 import { BlockInner } from './Blocks'
 import { TitleBlock } from './Blocks/TitleBlock'
+import { isResizebleBlockType } from './Blocks/utils'
 import { DroppingAreaIndicator } from './DroppingAreaIndicator'
 import { DroppleableOverlay } from './DroppleableOverlay'
 import { useBlockAdmin } from './hooks/useBlockAdminProvider'
@@ -73,6 +74,32 @@ export const ContentBlocks: React.FC<{
   )
 }
 
+export const StandaloneContentBlock: React.FC<{
+  block: Editor.BaseBlock
+  small?: boolean
+  parentType: Editor.BlockType
+  readonly?: boolean
+  draggable?: boolean
+  highlightedBlockId?: string
+}> = (props) => {
+  const { small = false, readonly = false, draggable = true, highlightedBlockId } = props
+
+  const behavior = useMemo(() => {
+    return {
+      small,
+      readonly,
+      draggable,
+      highlightedBlockId
+    }
+  }, [small, readonly, draggable, highlightedBlockId])
+
+  return (
+    <BlockBehaviorConext.Provider value={behavior}>
+      <ContentBlockInner block={props.block} parentType={props.parentType} />
+    </BlockBehaviorConext.Provider>
+  )
+}
+
 export const _ContentBlockPure: React.FC<{
   id: string
   parentType: Editor.BlockType
@@ -82,9 +109,6 @@ export const _ContentBlockPure: React.FC<{
 }
 
 export const ContentBlockPure = memo(_ContentBlockPure)
-const isResizebleBlockType = (blockType: Editor.BlockType) => {
-  return blockType === Editor.BlockType.Question || blockType === Editor.BlockType.Image
-}
 
 // _BlockInner.whyDidYouRender = {
 //   logOnDifferentValues: true,
@@ -247,7 +271,7 @@ export const BlockSelectedOverlay: React.FC<{ blockId: string; selected?: boolea
         left: 0;
         top: 0;
         position: absolute;
-        z-index: 999;
+        z-index: 1;
         background: rgba(46, 115, 252, 0.2);
         transition: opacity 250ms;
         pointer-events: none;

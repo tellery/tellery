@@ -1,4 +1,4 @@
-import { useWorkspace } from '@app/context/workspace'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useAsync } from '@app/hooks'
 import type { User } from '@app/hooks/api'
 import { useAuth } from '@app/hooks/useAuth'

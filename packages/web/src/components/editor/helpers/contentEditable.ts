@@ -1,4 +1,5 @@
 import { Editor } from '@app/types'
+import { dequal } from 'dequal'
 import invariant from 'tiny-invariant'
 
 export const saveSelection = function (containerEl: HTMLElement) {
@@ -117,7 +118,8 @@ export const isCaretAtEnd = (target: Element | null) => {
   const range = _range.cloneRange()
   range.selectNodeContents(target)
   range.setStart(_range.startContainer, _range.startOffset)
-  return range.toString().length === 0
+  const selectedString = range.toString()
+  return selectedString.length === 0 || selectedString === '\n'
 }
 
 export const getElementEndPoint = (element: Node) => {
@@ -245,10 +247,15 @@ export const deserializaToken = (el: Element, block: Editor.Block): Editor.Token
 }
 
 export const deserialize = (el: Element, block: Editor.Block): Editor.Token[] => {
-  const children = Array.from(el.childNodes).map((childnode) => deserializaToken(childnode as Element, block))
+  const childrenNodesArray = Array.from(el.childNodes)
+  const children = childrenNodesArray.map((childnode) => deserializaToken(childnode as Element, block))
 
   if (el.tagName === 'BODY' || (el.nodeType === Node.ELEMENT_NODE && (el as HTMLElement).dataset.root)) {
-    return children
+    if (dequal(children[children.length - 1], ['\n'])) {
+      return children.slice(0, children.length - 1)
+    } else {
+      return children
+    }
   } else {
     return [['']]
   }

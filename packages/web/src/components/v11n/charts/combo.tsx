@@ -32,13 +32,12 @@ import { LegendContent } from '../components/LegendContent'
 import { fontFamily } from '../constants'
 import { createTrend, formatNumber, formatRecord, isContinuous, isNumeric } from '../utils'
 import { MoreSettingPopover } from '../components/MoreSettingPopover'
-import { ThemingVariables } from '@app/styles'
+import { TelleryThemeLight, ThemingVariables } from '@app/styles'
 import { SVG2DataURI } from '@app/lib/svg'
 import { IconCommonArrowDropDown, IconCommonClose, IconCommonAdd } from '@app/assets/icons'
 import { CustomTooltip } from '../components/CustomTooltip'
 import { useCrossFilter, useDataRecords } from '@app/hooks/useDataRecords'
 import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
-import Icon from '@app/components/kit/Icon'
 
 const splitter = ', '
 
@@ -273,7 +272,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                       padding-right: 30px;
                     `}
                     style={{
-                      backgroundImage: SVG2DataURI(IconCommonArrowDropDown)
+                      backgroundImage: SVG2DataURI(IconCommonArrowDropDown, TelleryThemeLight.colors.gray[0])
                     }}
                     value={item}
                     onChange={(e) => {
@@ -310,7 +309,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                       }
                     }}
                   >
-                    <Icon icon={IconCommonClose} color={ThemingVariables.colors.gray[0]} />
+                    <IconCommonClose color={ThemingVariables.colors.gray[0]} />
                   </div>
                 </div>
               )}
@@ -1206,7 +1205,7 @@ function AxisSelect(props: {
       )}
       disabled={props.disabled}
       style={{
-        backgroundImage: SVG2DataURI(IconCommonAdd)
+        backgroundImage: SVG2DataURI(IconCommonAdd, TelleryThemeLight.colors.gray[0])
       }}
       value={''}
       onChange={
