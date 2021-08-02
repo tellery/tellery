@@ -2,6 +2,7 @@ import { ContentBlocks, StandaloneContentBlock } from '@app/components/editor/Co
 import { getDuplicatedBlocksFragment } from '@app/context/editorTranscations'
 import { useCreateEmptyBlock } from '@app/helpers/blockFactory'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
+import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
 import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { Direction, Editor } from '@app/types'
 import { DndItemDataType, DnDItemTypes } from '@app/utils/dnd'
@@ -30,22 +31,25 @@ import {
 } from '../context/blockDnd'
 import { useDroppingArea } from '../hooks/useDroppingArea'
 import { DndSensor } from '../lib/dnd-kit/dndSensor'
+import { isQuestionLikeBlock } from './editor/Blocks/utils'
 import { useSetUploadResource } from './editor/hooks/useUploadResource'
 import { getSubsetOfBlocksSnapshot } from './editor/utils'
 
 export const BlockDndContextProvider: React.FC = ({ children }) => {
   const [previewData, setPreviewData] = useState<ReactNode | null>(null)
-
   const [isDragging, setIsDragging] = useState(false)
-  const [droppingArea, setDroppingArea] = useDroppingArea()
   const droppingAreaRef = useRef<{ blockId: string; direction: Direction } | null>(null)
+  const dataTransferRef = useRef<DataTransfer | null>(null)
+
+  const [droppingArea, setDroppingArea] = useDroppingArea()
   const mouseSensor = useSensor(MouseSensor, MouseSensorOptions)
   const dragSensor = useSensor(DndSensor)
   const sensors = useSensors(dragSensor, mouseSensor)
-  const dataTransferRef = useRef<DataTransfer | null>(null)
-
   const blockTranscations = useBlockTranscations()
   const createEmptyBlock = useCreateEmptyBlock()
+  const setUploadResource = useSetUploadResource()
+  const snapshot = useBlockSnapshot()
+  const focusBlockHandler = usePushFocusedBlockIdState()
 
   const handleDragCancel = useCallback(() => {
     logger('drag cancel')
@@ -54,10 +58,6 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
     droppingAreaRef.current = null
     setPreviewData(null)
   }, [setDroppingArea])
-
-  const setUploadResource = useSetUploadResource()
-
-  const snapshot = useBlockSnapshot()
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
@@ -83,6 +83,8 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
             targetBlockId: id,
             direction: droppingAreaRef.current.direction
           })
+
+          focusBlockHandler(blockData.id, blockData.storyId, isQuestionLikeBlock(blockData.type))
         } else if (item.type === DnDItemTypes.BlockIds) {
           const id = droppingAreaRef.current.blockId
           const blockIds = item.ids
@@ -165,7 +167,6 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
       if (!event.active.rect.current?.translated) return
 
       const { top, left } = event.active.rect.current.translated
-      // logger('move', offsetLeft, offsetTop)
       const dropAreaInfo = findDroppbleBlockIdAndDirection(
         leaveBlockId,
         {
@@ -212,17 +213,8 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
     logger('drag start', event)
     if (!data) return
     if (data.type === DnDItemTypes.Block) {
-      // setPreviewData({
-      //   type: DnDItemTypes.Block,
-      //   data: data.blockData
-      // })
       setPreviewData(<StandaloneContentBlock block={data.blockData} parentType={Editor.BlockType.Story} readonly />)
     } else if (data.type === DnDItemTypes.BlockIds) {
-      console.warn(data)
-      // setPreviewData({
-      //   type: DnDItemTypes.BlockIds,
-      //   data: data.ids
-      // })
       setPreviewData(<ContentBlocks blockIds={data.ids} readonly parentType={Editor.BlockType.Story} />)
     } else {
       setPreviewData(

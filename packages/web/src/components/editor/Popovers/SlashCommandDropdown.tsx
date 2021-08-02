@@ -28,6 +28,7 @@ import { EditorPopover } from '../EditorPopover'
 import { TellerySelection, tellerySelection2Native, TellerySelectionType } from '../helpers/tellerySelection'
 import { useEditableContextMenu, useEditor } from '../hooks'
 import { isQuestionLikeBlock } from '../Blocks/utils'
+import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
 
 const logger = debug('tellery:slashCommand')
 
@@ -99,6 +100,7 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
   const editor = useEditor<Editor.Block>()
   // const [selectedResultIndex, setSelectedResultIndex] = useState(0)
   const currentBlock = useBlockSuspense(id)
+  const focusBlockHandler = usePushFocusedBlockIdState()
 
   const removeBlockSlashCommandText = useCallback(() => {
     invariant(selection && selection.type !== TellerySelectionType.Block, 'selection type is block')
@@ -143,11 +145,11 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
           focus: { blockId, offset: 0, nodeIndex: 0 }
         })
       }
-      editor?.focusBlockHandler(blockId, isQuestionLikeBlock(blockType))
+      focusBlockHandler(blockId, block.storyId, isQuestionLikeBlock(blockType))
 
       setOpen(false)
     },
-    [editor, id, setOpen]
+    [editor, focusBlockHandler, id, setOpen]
   )
 
   const operations = useMemo(() => {

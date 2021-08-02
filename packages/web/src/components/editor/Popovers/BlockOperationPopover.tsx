@@ -11,6 +11,7 @@ import FormSwitch from '@app/components/kit/FormSwitch'
 import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { useBlockSuspense, useUser } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
+import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
 import { editorTransformBlockPopoverState } from '@app/store'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
@@ -109,6 +110,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
   const deleteBlockHandler = useCallback(() => {
     blockTranscations.removeBlocks(block.storyId!, [id])
   }, [block.storyId, blockTranscations, id])
+  const focusBlockHandler = usePushFocusedBlockIdState()
 
   const operationGroups = useMemo(() => {
     return [
@@ -169,7 +171,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
               focus: { blockId: newBlock.id, nodeIndex: 0, offset: 0 },
               storyId: newBlock.storyId!
             })
-            editor?.focusBlockHandler(newBlock.id, true)
+            focusBlockHandler(newBlock.id, newBlock.storyId, true)
           }
         },
         {
@@ -190,7 +192,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
               focus: { blockId: newBlock.id, nodeIndex: 0, offset: 0 },
               storyId: newBlock.storyId!
             })
-            editor?.focusBlockHandler(newBlock.id, true)
+            focusBlockHandler(newBlock.id, newBlock.storyId, true)
           }
         },
         {

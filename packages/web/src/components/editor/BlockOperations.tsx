@@ -22,7 +22,7 @@ const BlockDragOperation: React.FC<{
 }> = (props) => {
   const { blockId, storyId } = props
   const editor = useEditor()
-  const [selectionState, setSelectionState] = useStorySelection(storyId)
+  const [selectionState] = useStorySelection(storyId)
   const selectedBlockIds = useMemo(() => {
     if (
       !!(

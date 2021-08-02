@@ -4,6 +4,7 @@ import { useFetchStoryChunk } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { Operation, useCommit, useCommitHistory } from '@app/hooks/useCommit'
+import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
 import { useSelectionArea } from '@app/hooks/useSelectionArea'
 import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
 import { BlockSnapshot, getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
@@ -88,7 +89,6 @@ const _StoryEditor: React.FC<{
   showTitle?: boolean
   className?: string
   paddingHorizon?: number
-  scrollToBlockId?: string | null
   top?: ReactNode
   defaultOverflowY?: 'auto' | 'visible' | 'hidden'
 }> = (props) => {
@@ -200,22 +200,29 @@ const _StoryEditor: React.FC<{
   useEffect(() => {
     if (!inited) return
     const blockId = location.hash.slice(1) || (location.state as any)?.focusedBlockId
-    console.log('blockId', blockId, location.state)
-    // if (!blockId) return
+    const openMenu = !!(location.state as any)?.openMenu
+
+    if (!blockId) return
     // TODO: if block not belong to this story...
-    blockAdminValue.getBlockInstanceById(blockId).then((res) => {
+    blockAdminValue.getBlockInstanceById(blockId).then(({ wrapperElement, blockRef }) => {
       setTimeout(() => {
-        scrollIntoView(res.wrapperElement, {
-          scrollMode: 'always',
-          block: 'center',
-          behavior: 'smooth',
+        const actions = computeScrollIntoView(wrapperElement, {
+          scrollMode: 'if-needed',
+          block: 'end',
           inline: 'nearest',
-          boundary: editorRef.current?.parentElement
+          boundary: rootBlock.type === Editor.BlockType.Story ? editorRef.current?.parentElement : undefined
         })
-      }, 0)
+        actions.forEach(({ el, top, left }) => {
+          el.scrollTop = top + 100
+          el.scrollLeft = left
+        })
+        if (openMenu) {
+          blockRef.current.openMenu()
+        }
+      }, 100)
       setSelectedBlocks([blockId as string])
     })
-  }, [blockAdminValue, inited, setSelectedBlocks, location.state, location.hash])
+  }, [blockAdminValue, inited, setSelectedBlocks, location.state, location.hash, rootBlock.type])
 
   const blurEditor = useCallback(() => {
     setSelectionState(null)
@@ -556,7 +563,6 @@ const _StoryEditor: React.FC<{
   )
 
   const user = useLoggedUser()
-
   const commitHistory = useCommitHistory<{ selection: TellerySelection }>(user.id, storyId)
 
   const canWrite = useMemo(() => {
@@ -575,34 +581,7 @@ const _StoryEditor: React.FC<{
     return !!(rootBlock as Story)?.format?.locked || canWrite === false
   }, [canWrite, rootBlock])
 
-  const focusBlockHandler = useCallback(
-    (blockId: string, openMenu: boolean) => {
-      const focusBlock = (blockId: string, element: HTMLElement) => {
-        if (openMenu) {
-          blockAdminValue.getBlockInstanceById(blockId).then((instance) => {
-            instance.blockRef.current.openMenu()
-          })
-        }
-        setTimeout(() => {
-          const actions = computeScrollIntoView(element, {
-            scrollMode: 'if-needed',
-            block: 'end',
-            inline: 'nearest',
-            boundary: rootBlock.type === Editor.BlockType.Story ? editorRef.current?.parentElement : undefined
-          })
-          actions.forEach(({ el, top, left }) => {
-            el.scrollTop = top + 100
-            el.scrollLeft = left
-          })
-        }, 100)
-      }
-
-      blockAdminValue.getBlockInstanceById(blockId).then((instance) => {
-        focusBlock(blockId, instance.wrapperElement)
-      })
-    },
-    [blockAdminValue, rootBlock.type]
-  )
+  const focusBlockHandler = usePushFocusedBlockIdState()
 
   const duplicateHandler = useCallback(
     (blockIds: string[]) => {
@@ -628,7 +607,7 @@ const _StoryEditor: React.FC<{
       const lastBlockId = duplicatedBlocksFragment.children[duplicatedBlocksFragment.children.length - 1]
       const currentBlock = duplicatedBlocksFragment.data[lastBlockId]
       const blockId = currentBlock.id
-      focusBlockHandler(blockId, isQuestionLikeBlock(currentBlock.type))
+      focusBlockHandler(blockId, currentBlock.storyId, isQuestionLikeBlock(currentBlock.type))
 
       return duplicatedBlocksFragment
     },
@@ -1239,8 +1218,7 @@ const _StoryEditor: React.FC<{
       storyId,
       lockOrUnlockScroll,
       selectBlocks: setSelectedBlocks,
-      duplicateHandler,
-      focusBlockHandler
+      duplicateHandler
     } as EditorContextInterface<Editor.BaseBlock>
   }, [
     blurEditor,
@@ -1254,7 +1232,6 @@ const _StoryEditor: React.FC<{
     toggleBlockType,
     storyId,
     duplicateHandler,
-    focusBlockHandler,
     setSelectedBlocks
   ])
 
