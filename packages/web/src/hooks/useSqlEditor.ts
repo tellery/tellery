@@ -304,7 +304,7 @@ function useSqlEditorTransclusion(languageId?: string, monaco?: Monaco) {
           const data = await referenceCompletion(workspace.id, keyword, 100)
           const searchResults = data ? compact(data.searchResults.map((id) => data.blocks[id])) : []
           return {
-            suggestions: searchResults.map((result) => ({
+            suggestions: searchResults.map((result, index) => ({
               range: current.range,
               label: getBlockTitle(result) || '',
               detail:
@@ -316,7 +316,8 @@ function useSqlEditorTransclusion(languageId?: string, monaco?: Monaco) {
                   ? monaco.languages.CompletionItemKind.Class
                   : monaco.languages.CompletionItemKind.Function,
               insertText: `{{${result.id}}}`,
-              filterText: `{{${keyword}}}`
+              filterText: `{{${keyword}}}`,
+              sortText: index.toString().padStart(4, '0')
             })),
             incomplete: true
           }
