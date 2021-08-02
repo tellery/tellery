@@ -89,6 +89,7 @@ export namespace Editor {
     Bookmark = 'bookmark',
     StoryLink = 'story_link',
     QuestionReference = 'question_reference',
+    QuestionSnapshot = 'question_snapshot',
 
     // embeds
     Embed = 'embed',
