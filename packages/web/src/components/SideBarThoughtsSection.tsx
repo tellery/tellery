@@ -65,13 +65,14 @@ export const SideBarThoughtsSection = () => {
   return (
     <SideBarContentLayout title="Thoughts">
       <FormButton
-        variant="primary"
+        variant="secondary"
         className={css`
+          background: transparent;
           width: calc(100% - 16px);
           display: flex;
           align-items: center;
           justify-content: center;
-          margin: 20px 8px;
+          margin: 0 8px;
         `}
         disabled={!showCreateTodaysNotes}
         onClick={createTodaysNotes}

@@ -28,7 +28,7 @@ import { UserModal } from './UserModal'
 import { WorkspaceModal } from './WorkspaceModal'
 
 const FOLDED_WIDTH = 68
-const SIDEBAR_WIDTH = 240
+const SIDEBAR_WIDTH = 274
 
 export const SideBar = () => {
   return (

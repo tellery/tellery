@@ -99,9 +99,9 @@ export const Calendar = forwardRef<
         next2Label={<IconCommonArrowDouble color={ThemingVariables.colors.text[1]} />}
         className={cx(
           css`
-            width: 290px;
+            width: 274px;
             border-radius: 8px;
-            padding: 20px 16px;
+            padding: 20px 8px;
 
             & .react-calendar__navigation {
               margin-bottom: 8px;
@@ -110,9 +110,8 @@ export const Calendar = forwardRef<
                 outline: none;
                 border: none;
                 background-color: transparent;
-                pointer-events: none;
                 font-weight: 500;
-                font-size: 16px;
+                font-size: 12px;
               }
 
               .react-calendar__navigation__arrow {
@@ -146,7 +145,7 @@ export const Calendar = forwardRef<
                   font-weight: 500;
                   font-size: 12px;
                   line-height: 30px;
-                  color: ${ThemingVariables.colors.text[1]};
+                  color: ${ThemingVariables.colors.text[2]};
                 }
               }
             }
