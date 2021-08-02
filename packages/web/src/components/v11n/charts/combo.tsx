@@ -32,7 +32,7 @@ import { LegendContent } from '../components/LegendContent'
 import { fontFamily } from '../constants'
 import { createTrend, formatNumber, formatRecord, isContinuous, isNumeric } from '../utils'
 import { MoreSettingPopover } from '../components/MoreSettingPopover'
-import { ThemingVariables } from '@app/styles'
+import { TelleryThemeLight, ThemingVariables } from '@app/styles'
 import { SVG2DataURI } from '@app/lib/svg'
 import { IconCommonArrowDropDown, IconCommonClose, IconCommonAdd } from '@app/assets/icons'
 import { CustomTooltip } from '../components/CustomTooltip'
@@ -272,7 +272,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                       padding-right: 30px;
                     `}
                     style={{
-                      backgroundImage: SVG2DataURI(IconCommonArrowDropDown)
+                      backgroundImage: SVG2DataURI(IconCommonArrowDropDown, TelleryThemeLight.colors.gray[0])
                     }}
                     value={item}
                     onChange={(e) => {
@@ -1205,7 +1205,7 @@ function AxisSelect(props: {
       )}
       disabled={props.disabled}
       style={{
-        backgroundImage: SVG2DataURI(IconCommonAdd)
+        backgroundImage: SVG2DataURI(IconCommonAdd, TelleryThemeLight.colors.gray[0])
       }}
       value={''}
       onChange={
