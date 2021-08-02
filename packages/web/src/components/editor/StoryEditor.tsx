@@ -205,7 +205,8 @@ const _StoryEditor: React.FC<{
   useEffect(() => {
     if (!inited) return
     const blockId = location.hash.slice(1) || (location.state as any)?.focusedBlockId
-    if (!blockId) return
+    console.log('blockId', blockId, location.state)
+    // if (!blockId) return
     // TODO: if block not belong to this story...
     blockAdminValue.getBlockInstanceById(blockId).then((res) => {
       setTimeout(() => {
@@ -216,8 +217,8 @@ const _StoryEditor: React.FC<{
           inline: 'nearest',
           boundary: editorRef.current?.parentElement
         })
-        setSelectedBlocks([blockId as string])
       }, 0)
+      setSelectedBlocks([blockId as string])
     })
   }, [blockAdminValue, inited, setSelectedBlocks, location.state, location.hash])
 

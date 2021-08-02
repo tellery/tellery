@@ -119,17 +119,20 @@ export const useQuestionEditor = () => {
 }
 
 export const useCleanQuestionEditorHandler = () => {
-  const handler = useRecoilCallback((recoilCallback) => async (arg: string) => {
-    const blockId = arg
-    const blockMap = await recoilCallback.snapshot.getPromise(questionEditorBlockMapState)
-    if (blockMap[blockId]) {
-      recoilCallback.set(questionEditorBlockMapState, (state) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { [blockId]: _removed, ...rest } = state
-        return rest
-      })
-    }
-  })
+  const handler = useRecoilCallback(
+    (recoilCallback) => async (arg: string) => {
+      const blockId = arg
+      const blockMap = await recoilCallback.snapshot.getPromise(questionEditorBlockMapState)
+      if (blockMap[blockId]) {
+        recoilCallback.set(questionEditorBlockMapState, (state) => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { [blockId]: _removed, ...rest } = state
+          return rest
+        })
+      }
+    },
+    []
+  )
 
   return handler
 }
@@ -151,7 +154,8 @@ export const useOpenQuestionBlockIdHandler = () => {
             }
           }
         })
-      }
+      },
+    []
   )
   return handler
 }

@@ -252,7 +252,8 @@ export const useCommitProvider = () => {
       logger('callback commit')
       invariant(user.id, 'userId is null')
       return commit({ ...commitOptions, recoilCallback, userId: user.id, workspaceId: workspace.id })
-    }
+    },
+    [user.id, workspace.id]
   )
   return callbackedCommit
 }

@@ -41,17 +41,20 @@ export const useStory = (id: string) => {
 }
 
 export const useUpdateBlocks = () => {
-  const updateBlocks = useRecoilCallback((recoilInterface) => (blocks: Record<string, Editor.Block>) => {
-    Object.values(blocks).forEach((block) => {
-      const targetAtom = TelleryBlockAtom(block.id)
-      const loadable = recoilInterface.snapshot.getInfo_UNSTABLE(targetAtom).loadable
-      if (loadable === undefined || loadable.state !== 'hasValue') {
-        recoilInterface.set(targetAtom, block)
-      } else {
-        recoilInterface.set(targetAtom, blockUpdater(block, loadable.contents) as Editor.BaseBlock)
-      }
-    })
-  })
+  const updateBlocks = useRecoilCallback(
+    (recoilInterface) => (blocks: Record<string, Editor.Block>) => {
+      Object.values(blocks).forEach((block) => {
+        const targetAtom = TelleryBlockAtom(block.id)
+        const loadable = recoilInterface.snapshot.getInfo_UNSTABLE(targetAtom).loadable
+        if (loadable === undefined || loadable.state !== 'hasValue') {
+          recoilInterface.set(targetAtom, block)
+        } else {
+          recoilInterface.set(targetAtom, blockUpdater(block, loadable.contents) as Editor.BaseBlock)
+        }
+      })
+    },
+    []
+  )
   return updateBlocks
 }
 
