@@ -3,7 +3,6 @@ import type { Props, Payload } from '@tellery/recharts/types/component/DefaultLe
 import type { MouseEvent } from 'react'
 import { IconVisualizationCircle } from '@app/assets/icons'
 import { ThemingVariables } from '@app/styles'
-import Icon from '@app/components/kit/Icon'
 
 const fontSize = 14
 
@@ -59,10 +58,10 @@ function LegendItem(props: { value: Payload; onMouseEnter(): void; onMouseLeave(
       onMouseEnter={props.onMouseEnter}
       onMouseLeave={props.onMouseLeave}
     >
-      <Icon
-        icon={IconVisualizationCircle}
+      <IconVisualizationCircle
         color={props.value.color}
-        size={iconSize}
+        width={iconSize}
+        height={iconSize}
         className={css`
           margin-right: ${iconMargin}px;
           flex-shrink: 0;

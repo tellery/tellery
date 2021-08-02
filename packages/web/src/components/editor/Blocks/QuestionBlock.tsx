@@ -14,7 +14,6 @@ import {
   IconVisualizationSetting
 } from '@app/assets/icons'
 import { BlockingUI } from '@app/components/editor/BlockBase/BlockingUIBlock'
-import Icon from '@app/components/kit/Icon'
 import IconButton from '@app/components/kit/IconButton'
 import { MenuItem } from '@app/components/MenuItem'
 import { RefreshButton } from '@app/components/RefreshButton'
@@ -590,7 +589,7 @@ export const MoreDropdownSelect: React.FC<{
     return [
       {
         title: 'Download as CSV',
-        icon: <Icon icon={IconMenuDownload} color={ThemingVariables.colors.text[0]} />,
+        icon: <IconMenuDownload color={ThemingVariables.colors.text[0]} />,
         action: () => {
           const snapshotData = snapshot?.data
           invariant(snapshotData, 'snapshotData is null')
@@ -601,7 +600,7 @@ export const MoreDropdownSelect: React.FC<{
       },
       {
         title: 'Download as Image',
-        icon: <Icon icon={IconMenuDownload} color={ThemingVariables.colors.text[0]} />,
+        icon: <IconMenuDownload color={ThemingVariables.colors.text[0]} />,
         action: async () => {
           const elementSVG = getBlockImageById(block.id)
           if (elementSVG) {
@@ -616,7 +615,7 @@ export const MoreDropdownSelect: React.FC<{
       },
       {
         title: 'Copy SQL',
-        icon: <Icon icon={IconCommonCopy} color={ThemingVariables.colors.text[0]} />,
+        icon: <IconCommonCopy color={ThemingVariables.colors.text[0]} />,
         action: () => {
           copy(sql)
         }
@@ -639,7 +638,7 @@ export const MoreDropdownSelect: React.FC<{
       <IconButton
         hoverContent={hoverContent}
         icon={IconCommonMore}
-        color={ThemingVariables.colors.primary[0]}
+        color={ThemingVariables.colors.primary[1]}
         {...getToggleButtonProps({ ref: setReferenceElement })}
         className={cx(
           css`
@@ -743,6 +742,7 @@ const TitleButtonsInner: React.FC<{
       <IconButton
         hoverContent="Visualization options"
         icon={IconVisualizationSetting}
+        color={ThemingVariables.colors.primary[1]}
         className={QuestionBlockIconButton}
         onClick={() => questionEditor.open({ mode: 'VIS', readonly, blockId: block.id, storyId: block.storyId! })}
       />
@@ -750,6 +750,7 @@ const TitleButtonsInner: React.FC<{
         hoverContent="Edit SQL"
         className={QuestionBlockIconButton}
         icon={IconCommonSql}
+        color={ThemingVariables.colors.primary[1]}
         onClick={() => questionEditor.open({ mode: 'SQL', readonly, blockId: block.id, storyId: block.storyId! })}
       />
       <MoreDropdownSelect

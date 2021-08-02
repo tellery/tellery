@@ -1,4 +1,3 @@
-import Icon from '@app/components/kit/Icon'
 import { useHover } from '@app/hooks'
 import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { css, cx } from '@emotion/css'
@@ -156,82 +155,82 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
       // {
       //   title: 'Text',
       //   action: createOrToggleBlock(Editor.BlockType.Text),
-      //   icon: <Icon icon={IconMenuText} color={'#000'} />
+      //   icon: <IconMenuText color={ThemingVariables.colors.text[0]} />
       // },
       {
         title: 'Question',
         action: createOrToggleBlock(Editor.BlockType.Question),
-        icon: <IconCommonQuestion color={'#000'} />
+        icon: <IconCommonQuestion color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Heading 1',
         action: createOrToggleBlock(Editor.BlockType.Header),
-        icon: <Icon icon={IconMenuH1} color={'#000'} />
+        icon: <IconMenuH1 color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Heading 2',
         action: createOrToggleBlock(Editor.BlockType.SubHeader),
-        icon: <Icon icon={IconMenuH2} color={'#000'} />
+        icon: <IconMenuH2 color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Heading 3',
         action: createOrToggleBlock(Editor.BlockType.SubSubHeader),
-        icon: <Icon icon={IconMenuH3} color={'#000'} />
+        icon: <IconMenuH3 color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Checklist',
         action: createOrToggleBlock(Editor.BlockType.Todo),
-        icon: <Icon icon={IconMenuToDo} color={'#000'} />
+        icon: <IconMenuToDo color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Bullet List',
         action: createOrToggleBlock(Editor.BlockType.BulletList),
-        icon: <Icon icon={IconMenuBulletedList} color={'#000'} />
+        icon: <IconMenuBulletedList color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Numbered List',
         action: createOrToggleBlock(Editor.BlockType.NumberedList),
-        icon: <Icon icon={IconMenuNumberList} color={'#000'} />
+        icon: <IconMenuNumberList color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Toggle List',
         action: createOrToggleBlock(Editor.BlockType.Toggle),
-        icon: <Icon icon={IconMenuToggleList} color={'#000'} />
+        icon: <IconMenuToggleList color={ThemingVariables.colors.text[0]} />
       },
       // {
       //   title: 'Image',
       //   action: createOrToggleBlock(Editor.BlockType.Image),
-      //   icon: <Icon icon={IconMenuImage} color={'#000'} />
+      //   icon: <IconMenuImage color={ThemingVariables.colors.text[0]} />
       // },
       {
         title: 'Upload Image, Excel and CSV',
         action: createOrToggleBlock(Editor.BlockType.File),
-        icon: <Icon icon={IconMenuUpload} color={'#000'} />
+        icon: <IconMenuUpload color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Code',
         action: createOrToggleBlock(Editor.BlockType.Code),
-        icon: <Icon icon={IconMenuCode} color={'#000'} />
+        icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Quote',
         action: createOrToggleBlock(Editor.BlockType.Quote),
-        icon: <Icon icon={IconMenuQuote} color={'#000'} />
+        icon: <IconMenuQuote color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Embed',
         action: createOrToggleBlock(Editor.BlockType.Embed),
-        icon: <Icon icon={IconCommonLink} color={'#000'} />
+        icon: <IconCommonLink color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Metabase (Beta)',
         action: createOrToggleBlock(Editor.BlockType.Metabase),
-        icon: <Icon icon={IconCommonLink} color={'#000'} />
+        icon: <IconCommonLink color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Line Divider',
         action: createOrToggleBlock(Editor.BlockType.Divider),
-        icon: <Icon icon={IconMenuDivider} color={'#000'} />
+        icon: <IconMenuDivider color={ThemingVariables.colors.text[0]} />
       }
     ].filter((item) => item.title.toLowerCase().indexOf(keyword.toLowerCase()) !== -1)
   }, [createOrToggleBlock, keyword])

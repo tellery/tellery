@@ -4,7 +4,7 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { IconCommonDrag } from '@app/assets/icons'
 import { ThemingVariables } from '@app/styles'
-import Icon from '@app/components/kit/Icon'
+
 import { useMemo } from 'react'
 
 export function SortableItem(props: { id: string; children: ReactNode }) {
@@ -40,8 +40,7 @@ export function SortableItem(props: { id: string; children: ReactNode }) {
       {...attributes}
       {...listeners}
     >
-      <Icon
-        icon={IconCommonDrag}
+      <IconCommonDrag
         color={ThemingVariables.colors.gray[0]}
         className={css`
           margin: 0 -2px;

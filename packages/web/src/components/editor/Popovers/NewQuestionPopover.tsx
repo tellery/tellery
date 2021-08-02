@@ -1,7 +1,7 @@
 import { DEFAULT_TITLE } from '@app/utils'
 import { css } from '@emotion/css'
 import { IconCommonAdd, IconCommonSearch, IconCommonStoryBlock } from '@app/assets/icons'
-import Icon from '@app/components/kit/Icon'
+
 import { MenuItem } from '@app/components/MenuItem'
 import { useQuestionEditor } from '@app/components/StoryQuestionsEditor'
 import { useSearchBlocks } from '@app/hooks/api'
@@ -87,7 +87,7 @@ export const QuestionSearchResultCell = (props: {
                 border-radius: 8px;
               `}
             >
-              <Icon icon={IconCommonAdd} color={ThemingVariables.colors.primary[1]} />
+              <IconCommonAdd color={ThemingVariables.colors.primary[1]} />
             </div>
           }
           title={keyword ? `Create "${keyword}"` : 'Create new question '}
@@ -212,8 +212,7 @@ export const NewQuestionPopover: React.FC<{
               justify-content: flex-start;
             `}
           >
-            <Icon
-              icon={IconCommonSearch}
+            <IconCommonSearch
               className={css`
                 margin-left: 8px;
               `}

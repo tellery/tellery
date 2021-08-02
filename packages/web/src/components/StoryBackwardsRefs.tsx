@@ -56,7 +56,7 @@ export const StoryBackwardsRefs = (props: { refs: Ref[]; storyId: string }) => {
           Links to this story
         </div>
         {/* TODO: use skelton */}
-        <React.Suspense fallback={<CircularLoading size={30} color={ThemingVariables.colors.primary[0]} />}>
+        <React.Suspense fallback={<CircularLoading size={30} color={ThemingVariables.colors.primary[1]} />}>
           <div
             className={css`
               display: flex;

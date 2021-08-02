@@ -1,6 +1,6 @@
 import { IconCommonAdd } from '@app/assets/icons'
 import { SecondaryEditor } from '@app/components/editor'
-import Icon from '@app/components/kit/Icon'
+
 import { StoryQuestionsEditor } from '@app/components/StoryQuestionsEditor'
 import { createTranscation } from '@app/context/editorTranscations'
 import { useWorkspace } from '@app/hooks/useWorkspace'
@@ -143,8 +143,7 @@ function Thoughts() {
                     padding: 10px 80px;
                   `}
                 >
-                  <Icon
-                    icon={IconCommonAdd}
+                  <IconCommonAdd
                     color={ThemingVariables.colors.gray[5]}
                     className={css`
                       background-color: ${ThemingVariables.colors.primary[1]};

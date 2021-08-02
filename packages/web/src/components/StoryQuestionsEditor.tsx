@@ -47,7 +47,6 @@ import { setBlockTranscation } from '../context/editorTranscations'
 import { CircularLoading } from './CircularLoading'
 import { BlockTitle, useGetBlockTitleTextSnapshot } from './editor'
 import type { SetBlock } from './editor/types'
-import Icon from './kit/Icon'
 import IconButton from './kit/IconButton'
 import { MenuItem } from './MenuItem'
 import QuestionDownstreams from './QuestionDownstreams'
@@ -303,7 +302,7 @@ const TabHeader: React.FC<{ blockId: string; hovering: boolean }> = ({ blockId, 
         // ref={ref}
         title={getBlockTitle(block)}
       >
-        {mutatingCount !== 0 && <CircularLoading size={20} color={ThemingVariables.colors.primary[0]} />}
+        {mutatingCount !== 0 && <CircularLoading size={20} color={ThemingVariables.colors.primary[1]} />}
         <div
           className={css`
             flex: 1 1;
@@ -1130,8 +1129,7 @@ export const DraftStatus: React.FC<{
         ></div>
       )}
       {(hovering || (!isDraft && showClose)) && (
-        <Icon
-          icon={IconCommonClose}
+        <IconCommonClose
           color={ThemingVariables.colors.text[0]}
           className={css`
             position: absolute;

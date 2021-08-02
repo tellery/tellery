@@ -7,7 +7,6 @@ import { IconCommonArrowDouble, IconCommonArrowDropDown } from '@app/assets/icon
 import { useAllThoughts, useMgetBlocks } from '@app/hooks/api'
 import type { Thought } from '@app/types'
 import { ThemingVariables } from '@app/styles'
-import Icon from './kit/Icon'
 
 export const Calendar = forwardRef<
   HTMLDivElement,
@@ -71,8 +70,7 @@ export const Calendar = forwardRef<
         activeStartDate={activeStartDate}
         onActiveStartDateChange={(value) => setActiveStartDate(value.activeStartDate)}
         prev2Label={
-          <Icon
-            icon={IconCommonArrowDouble}
+          <IconCommonArrowDouble
             color={ThemingVariables.colors.text[1]}
             className={css`
               display: block;
@@ -81,8 +79,7 @@ export const Calendar = forwardRef<
           />
         }
         prevLabel={
-          <Icon
-            icon={IconCommonArrowDropDown}
+          <IconCommonArrowDropDown
             color={ThemingVariables.colors.text[1]}
             className={css`
               display: block;
@@ -91,8 +88,7 @@ export const Calendar = forwardRef<
           />
         }
         nextLabel={
-          <Icon
-            icon={IconCommonArrowDropDown}
+          <IconCommonArrowDropDown
             color={ThemingVariables.colors.text[1]}
             className={css`
               display: block;
@@ -100,7 +96,7 @@ export const Calendar = forwardRef<
             `}
           />
         }
-        next2Label={<Icon icon={IconCommonArrowDouble} color={ThemingVariables.colors.text[1]} />}
+        next2Label={<IconCommonArrowDouble color={ThemingVariables.colors.text[1]} />}
         className={cx(
           css`
             width: 290px;

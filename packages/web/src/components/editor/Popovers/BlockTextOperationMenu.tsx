@@ -36,7 +36,7 @@ import {
   splitToken,
   tokenPosition2SplitedTokenPosition
 } from '@app/components/editor/helpers/tokenManipulation'
-import Icon from '@app/components/kit/Icon'
+
 import { createTranscation } from '@app/context/editorTranscations'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useBlockSuspense } from '@app/hooks/api'
@@ -425,7 +425,7 @@ export const BlockTextOperationMenuInner = ({
           arrow={false}
         >
           <OperationButton active={markdMap.get(button.type as Editor.InlineType)} onClick={button.onClick}>
-            <Icon icon={button.icon!} color={ThemingVariables.colors.text[0]} />
+            {button.icon!({ color: ThemingVariables.colors.text[0] })}
           </OperationButton>
         </Tippy>
       )
@@ -499,47 +499,47 @@ const TEXT_TYPES = [
   {
     type: Editor.BlockType.Text,
     text: 'Text',
-    icon: <Icon icon={IconMenuText} color={ThemingVariables.colors.text[0]} />
+    icon: <IconMenuText color={ThemingVariables.colors.text[0]} />
   },
   {
     type: Editor.BlockType.Header,
     text: 'Heading 1',
-    icon: <Icon icon={IconMenuH1} color={ThemingVariables.colors.text[0]} />
+    icon: <IconMenuH1 color={ThemingVariables.colors.text[0]} />
   },
   {
     type: Editor.BlockType.SubHeader,
     text: 'Heading 2',
-    icon: <Icon icon={IconMenuH2} color={ThemingVariables.colors.text[0]} />
+    icon: <IconMenuH2 color={ThemingVariables.colors.text[0]} />
   },
   {
     type: Editor.BlockType.SubSubHeader,
     text: 'Heading 3',
-    icon: <Icon icon={IconMenuH3} color={ThemingVariables.colors.text[0]} />
+    icon: <IconMenuH3 color={ThemingVariables.colors.text[0]} />
   },
   {
     type: Editor.BlockType.BulletList,
     text: 'Bullet List',
-    icon: <Icon icon={IconMenuBulletedList} color={ThemingVariables.colors.text[0]} />
+    icon: <IconMenuBulletedList color={ThemingVariables.colors.text[0]} />
   },
   {
     type: Editor.BlockType.NumberedList,
     text: 'Numbered List',
-    icon: <Icon icon={IconMenuNumberList} color={ThemingVariables.colors.text[0]} />
+    icon: <IconMenuNumberList color={ThemingVariables.colors.text[0]} />
   },
   {
     type: Editor.BlockType.Quote,
     text: 'Quote',
-    icon: <Icon icon={IconMenuQuote} color={ThemingVariables.colors.text[0]} />
+    icon: <IconMenuQuote color={ThemingVariables.colors.text[0]} />
   },
   {
     type: Editor.BlockType.Todo,
     text: 'Todo',
-    icon: <Icon icon={IconMenuToDo} color={ThemingVariables.colors.text[0]} />
+    icon: <IconMenuToDo color={ThemingVariables.colors.text[0]} />
   },
   {
     type: Editor.BlockType.Toggle,
     text: 'Toggle',
-    icon: <Icon icon={IconMenuToggleList} color={ThemingVariables.colors.text[0]} />
+    icon: <IconMenuToggleList color={ThemingVariables.colors.text[0]} />
   }
 ]
 
@@ -584,7 +584,7 @@ const ToggleTypeOperation = (props: {
         }}
       >
         {currentTypeText}
-        <Icon icon={IconCommonArrowDropDown} color={ThemingVariables.colors.gray[0]} />
+        <IconCommonArrowDropDown color={ThemingVariables.colors.gray[0]} />
       </div>
       <EditorPopover referenceElement={referenceElement} open={open} setOpen={setOpen} disableClickThrough>
         <div
@@ -686,15 +686,14 @@ const AddLinkOperation = (props: {
                 )
               }}
             > */}
-        <Icon
-          icon={IconCommonLink}
+        <IconCommonLink
           color={ThemingVariables.colors.text[0]}
           className={css`
             margin-right: 3px;
           `}
         />
         Link
-        <Icon icon={IconCommonArrowDropDown} color={ThemingVariables.colors.gray[0]} />
+        <IconCommonArrowDropDown color={ThemingVariables.colors.gray[0]} />
       </div>
       <EditorPopover referenceElement={props.referenceRange} open={open} setOpen={setOpen} disableClickThrough>
         <div

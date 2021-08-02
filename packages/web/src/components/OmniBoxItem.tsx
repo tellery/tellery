@@ -1,7 +1,6 @@
 import { css } from '@emotion/css'
 import { MouseEvent, useEffect, useRef } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
-import Icon from '@app/components/kit/Icon'
 import { IconCommonBlock, IconCommonSearch, IconCommonQuestion, IconCommonStoryBlock } from '@app/assets/icons'
 import { ThemingVariables } from '@app/styles'
 

@@ -8,7 +8,6 @@ import {
 } from '@app/assets/icons'
 import { getBlockWrapElementById } from '@app/components/editor/helpers/contentEditable'
 import FormSwitch from '@app/components/kit/FormSwitch'
-import Icon from '@app/components/kit/Icon'
 import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { useBlockSuspense, useUser } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
@@ -116,7 +115,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
       [
         {
           title: 'Copy link',
-          icon: <Icon icon={IconCommonLink} color={ThemingVariables.colors.text[0]} />,
+          icon: <IconCommonLink color={ThemingVariables.colors.text[0]} />,
           action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault()
             e.stopPropagation()
@@ -142,7 +141,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
         },
         {
           title: 'Duplicate',
-          icon: <Icon icon={IconMenuDuplicate} color={ThemingVariables.colors.text[0]} />,
+          icon: <IconMenuDuplicate color={ThemingVariables.colors.text[0]} />,
           action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault()
             e.stopPropagation()
@@ -156,7 +155,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
       [
         {
           title: 'Add block above',
-          icon: <Icon icon={IconMenuInsertBefore} color={ThemingVariables.colors.text[0]} />,
+          icon: <IconMenuInsertBefore color={ThemingVariables.colors.text[0]} />,
           action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault()
             e.stopPropagation()
@@ -175,7 +174,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
         },
         {
           title: 'Add block below',
-          icon: <Icon icon={IconMenuInsertAfter} color={ThemingVariables.colors.text[0]} />,
+          icon: <IconMenuInsertAfter color={ThemingVariables.colors.text[0]} />,
           action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault()
             e.stopPropagation()
@@ -196,7 +195,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
         },
         {
           title: 'Center align',
-          icon: <Icon icon={IconMenuCenterAlign} color={ThemingVariables.colors.text[0]} />,
+          icon: <IconMenuCenterAlign color={ThemingVariables.colors.text[0]} />,
           side: <FormSwitch checked={block?.format?.textAlign === 'center'} readOnly />,
           action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault()
@@ -214,7 +213,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
       [
         {
           title: 'Delete',
-          icon: <Icon icon={IconMenuDelete} color={ThemingVariables.colors.text[0]} />,
+          icon: <IconMenuDelete color={ThemingVariables.colors.text[0]} />,
           action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault()
             e.stopPropagation()
@@ -229,7 +228,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
       ]
       // {
       //   title: 'Debug: Copy block id',
-      //   icon: <Icon icon={IconMenuDuplicate} color={ThemingVariables.colors.text[0]} />,
+      //   icon: <IconMenuDuplicate color={ThemingVariables.colors.text[0]} />,
       //   action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       //     e.preventDefault()
       //     e.stopPropagation()
@@ -240,7 +239,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
       // },
       // {
       //   title: 'Debug: Copy as json',
-      //   icon: <Icon icon={IconMenuDuplicate} color={ThemingVariables.colors.text[0]} />,
+      //   icon: <IconMenuDuplicate color={ThemingVariables.colors.text[0]} />,
       //   action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       //     e.preventDefault()
       //     e.stopPropagation()

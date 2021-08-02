@@ -14,7 +14,6 @@ import { omniboxShowState } from '@app/store'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { CircularLoading } from './CircularLoading'
-import Icon from './kit/Icon'
 import { OmniBoxItem, ResultType } from './OmniBoxItem'
 import { SmallStory } from './SmallStory'
 import PerfectScrollbar from 'react-perfect-scrollbar'
@@ -380,8 +379,7 @@ export function OmniBox() {
                 align-items: center;
               `}
             >
-              <Icon
-                icon={IconCommonAdd}
+              <IconCommonAdd
                 color={ThemingVariables.colors.text[2]}
                 className={css`
                   flex-shrink: 0;

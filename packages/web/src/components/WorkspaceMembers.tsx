@@ -20,7 +20,6 @@ import { toast } from 'react-toastify'
 import { FormButton } from './kit/FormButton'
 import FormInput from './kit/FormInput'
 import FormLabel from './kit/FormLabel'
-import Icon from './kit/Icon'
 import IconButton from './kit/IconButton'
 import { MenuItem } from './MenuItem'
 import { MenuItemDivider } from './MenuItemDivider'
@@ -183,7 +182,7 @@ export function WorkspaceMembers(props: { onClose(): void }) {
               }}
             >
               {role}
-              <Icon icon={IconCommonArrowDropDown} color={ThemingVariables.colors.gray[0]} />
+              <IconCommonArrowDropDown color={ThemingVariables.colors.gray[0]} />
             </button>
           </Tippy>
           <FormButton
@@ -460,7 +459,7 @@ function WorkspaceMember(props: {
           }}
         >
           {role}
-          <Icon icon={IconCommonArrowDropDown} color={ThemingVariables.colors.gray[0]} />
+          <IconCommonArrowDropDown color={ThemingVariables.colors.gray[0]} />
         </button>
       </Tippy>
     </li>

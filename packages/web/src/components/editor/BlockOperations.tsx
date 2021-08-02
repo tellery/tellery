@@ -1,5 +1,4 @@
 import { IconCommonDrag } from '@app/assets/icons'
-import Icon from '@app/components/kit/Icon'
 import { editorTransformBlockPopoverState } from '@app/store'
 import { ThemingVariables } from '@app/styles'
 import { DnDItemTypes } from '@app/types'
@@ -82,7 +81,7 @@ const BlockDragOperation: React.FC<{
           setTransformPopoverOpen(true)
         }}
       >
-        <Icon icon={IconCommonDrag} color={ThemingVariables.colors.gray[0]} />
+        <IconCommonDrag color={ThemingVariables.colors.gray[0]} />
       </BlockOperation>
     </>
   )
