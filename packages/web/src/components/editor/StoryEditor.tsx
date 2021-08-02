@@ -1328,7 +1328,6 @@ const _StoryEditor: React.FC<{
                     css`
                       width: 100%;
                     `,
-                  locked && 'no-select',
                   props.className
                 )}
                 ref={editorRef}
