@@ -191,6 +191,127 @@ const _QuestionBlock: React.ForwardRefRenderFunction<any, QuestionBlockProps> = 
     </div>
   )
 }
+
+const _QuestionSnapshotBlock: React.ForwardRefRenderFunction<any, QuestionBlockProps> = (props, ref) => {
+  const editor = useEditor<Editor.QuestionBlock>()
+  const { block } = props
+  const { readonly } = useBlockBehavior()
+  const elementRef = useRef<HTMLDivElement | null>(null)
+  const contentRef = useRef<HTMLDivElement | null>(null)
+  const originalBlock = useBlockSuspense<Editor.QuestionBlock>(block.id)
+  const [titleEditing, setTitleEditing] = useState(false)
+  const localSelection = useLocalSelection(block.id)
+  const isInputFocusing = !!localSelection
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      openMenu: () => {}
+    }),
+    []
+  )
+
+  const onClickOutSide = useCallback(() => {
+    setTitleEditing(false)
+  }, [])
+
+  useOnClickOutside(elementRef, onClickOutSide)
+
+  useEffect(() => {
+    if (!block.content) {
+      // setIsPopoverOpen(true)
+      editor?.setBlockValue?.(block.id, (draftBlock) => {
+        draftBlock.content = { title: [] }
+        draftBlock.format = {
+          width: DEFAULT_QUESTION_BLOCK_WIDTH,
+          aspectRatio: DEFAULT_QUESTION_BLOCK_ASPECT_RATIO
+        }
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const isEmptyBlock = useMemo(() => {
+    return block.content?.sql === undefined
+  }, [block.content?.sql])
+
+  const snapshotId = originalBlock?.content?.snapshotId
+  const visualization = block.content?.visualization
+
+  const mutateSnapshot = useRefreshSnapshot()
+  const mutatingCount = useSnapshotMutating(originalBlock.id)
+
+  useEffect(() => {
+    if (originalBlock.id === block.id && !snapshotId && originalBlock.content?.sql && mutatingCount === 0) {
+      mutateSnapshot.execute(originalBlock)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return (
+    <div ref={elementRef} className={QuestionsBlockContainer} tabIndex={-1}>
+      {isEmptyBlock ? (
+        <BlockPlaceHolder loading={false} text="New Question" />
+      ) : (
+        originalBlock && (
+          <>
+            <QuestionBlockHeader
+              setTitleEditing={setTitleEditing}
+              titleEditing={titleEditing || isInputFocusing}
+              block={block}
+            />
+            <QuestionBlockStatus snapshotId={snapshotId} block={block} originalBlock={originalBlock} />
+            <motion.div
+              style={{
+                paddingTop: props.blockFormat.paddingTop
+              }}
+              transition={{ duration: 0 }}
+              className={css`
+                position: relative;
+                display: inline-block;
+                width: 100%;
+                min-height: 100px;
+              `}
+              onClick={() => {
+                setTitleEditing(false)
+              }}
+            >
+              <QuestionBlockBody ref={contentRef} snapshotId={snapshotId} visualization={visualization} />
+              {readonly === false && (
+                <BlockResizer
+                  blockFormat={props.blockFormat}
+                  contentRef={contentRef}
+                  parentType={props.parentType}
+                  blockId={block.id}
+                  offsetY={FOOTER_HEIGHT}
+                />
+              )}
+            </motion.div>
+            <div
+              className={css`
+                height: ${FOOTER_HEIGHT}px;
+              `}
+            />
+          </>
+        )
+      )}
+    </div>
+  )
+}
+
+const QuestionSnapshotBlock = React.forwardRef(_QuestionSnapshotBlock) as BlockComponent<
+  React.ForwardRefExoticComponent<QuestionBlockProps & React.RefAttributes<any>>
+>
+
+QuestionSnapshotBlock.meta = {
+  isText: true,
+  forwardRef: true,
+  hasChildren: false,
+  isQuestion: false,
+  isResizeable: true
+}
+registerBlock(Editor.BlockType.QuestionSnapshot, QuestionSnapshotBlock)
+
 const QuestionBlock = React.forwardRef(_QuestionBlock) as BlockComponent<
   React.ForwardRefExoticComponent<QuestionBlockProps & React.RefAttributes<any>>
 >
@@ -586,6 +707,7 @@ export const MoreDropdownSelect: React.FC<{
 }> = ({ snapshot, block, sql, setIsActive, className, hoverContent }) => {
   const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null)
   const { data: user } = useUser(block?.lastEditedById ?? null)
+  const editor = useEditor<Editor.QuestionBlock>()
 
   const operations = useMemo(() => {
     return [
@@ -621,9 +743,18 @@ export const MoreDropdownSelect: React.FC<{
         action: () => {
           copy(sql)
         }
+      },
+      {
+        title: 'Convert to Snapshot',
+        icon: <IconCommonCopy color={ThemingVariables.colors.text[0]} />,
+        action: () => {
+          editor?.setBlockValue?.(block.id, (draftBlock) => {
+            draftBlock.type = Editor.BlockType.QuestionSnapshot
+          })
+        }
       }
     ] as OperationInterface[]
-  }, [block.id, snapshot?.data, sql])
+  }, [block.id, editor, snapshot?.data, sql])
 
   const { isOpen, openMenu, getToggleButtonProps, getMenuProps, highlightedIndex, getItemProps, closeMenu } = useSelect(
     { items: operations }
