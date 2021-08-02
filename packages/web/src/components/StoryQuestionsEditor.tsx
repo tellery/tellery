@@ -429,7 +429,11 @@ export const EditorContent = () => {
           `}
         >
           {opendQuestionBlockIds?.map((id) => {
-            return <QuestionTab id={id} key={id} isActive={id === activeId} tab={tab} onClick={() => setActiveId(id)} />
+            return (
+              <React.Suspense key={id} fallback={<div>loading...</div>}>
+                <QuestionTab id={id} isActive={id === activeId} tab={tab} onClick={() => setActiveId(id)} />
+              </React.Suspense>
+            )
           })}
         </div>
         <IconButton
@@ -453,7 +457,9 @@ export const EditorContent = () => {
         />
       </TabList>
       {opendQuestionBlockIds.map((id) => (
-        <StoryQuestionEditor key={id} tab={tab} id={id} setActiveId={setActiveId} />
+        <React.Suspense key={id} fallback={<div>loading...</div>}>
+          <StoryQuestionEditor tab={tab} id={id} setActiveId={setActiveId} />
+        </React.Suspense>
       ))}
     </>
   )
