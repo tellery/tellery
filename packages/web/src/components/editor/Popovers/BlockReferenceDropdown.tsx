@@ -279,7 +279,7 @@ export const _BlockReferenceDropdownInner: React.FC<
               color: #888;
             `}
           >
-            {keyword}
+            Reference story
             <span>{isLoading && 'loading'}</span>
           </div>
           {items.map((item, index) => (
