@@ -248,15 +248,6 @@ export type BackLinks = {
   backwardRefs: Ref[]
 }
 
-export type DropItem = {
-  type: DnDItemTypes
-  blocks?: Editor.Block[]
-  storyId?: string
-  files?: FileList
-  id: string
-  // removeSelfHandler(): void
-}
-
 export interface UserInfo {
   id: string
   avatar: string
