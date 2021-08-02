@@ -10,6 +10,7 @@ export type BlockComponent<P = {}> = P & {
     forwardRef?: boolean
     isQuestion?: boolean
     isResizeable?: boolean
+    isExecuteable?: boolean
   }
 }
 
@@ -25,6 +26,10 @@ export const isTextBlock = (blockType: Editor.BlockType) => {
 
 export const isQuestionLikeBlock = (blockType: Editor.BlockType) => {
   return !!Blocks[blockType]?.meta.isQuestion
+}
+
+export const isExecuteableBlockType = (blockType: Editor.BlockType) => {
+  return !!Blocks[blockType]?.meta.isExecuteable
 }
 
 export const isBlockHasChildren = (block: Editor.Block) => {

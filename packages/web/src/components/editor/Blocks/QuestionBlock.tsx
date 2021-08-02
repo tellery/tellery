@@ -307,8 +307,9 @@ QuestionSnapshotBlock.meta = {
   isText: true,
   forwardRef: true,
   hasChildren: false,
-  isQuestion: false,
-  isResizeable: true
+  isQuestion: true,
+  isResizeable: true,
+  isExecuteable: false
 }
 registerBlock(Editor.BlockType.QuestionSnapshot, QuestionSnapshotBlock)
 
@@ -321,7 +322,8 @@ QuestionBlock.meta = {
   forwardRef: true,
   hasChildren: false,
   isQuestion: true,
-  isResizeable: true
+  isResizeable: true,
+  isExecuteable: true
 }
 
 registerBlock(Editor.BlockType.Question, QuestionBlock)

@@ -10,7 +10,7 @@ import { applyCreateSnapshotOperation } from '@app/store/block'
 import type { Editor, Story } from '@app/types'
 import { useCommit } from './useCommit'
 import { useStoryBlocksMap } from './useStoryBlock'
-import { isQuestionLikeBlock } from '@app/components/editor/Blocks/utils'
+import { isExecuteableBlockType, isQuestionLikeBlock } from '@app/components/editor/Blocks/utils'
 
 export const useRefreshSnapshot = () => {
   const commit = useCommit()
@@ -136,9 +136,9 @@ export const useRefreshSnapshot = () => {
 export const useStorySnapshotManagerProvider = (storyId: string) => {
   const storyBlocksMap = useStoryBlocksMap(storyId)
 
-  const questionBlocks = useMemo(() => {
+  const executeableQuestionBlocks = useMemo(() => {
     if (!storyBlocksMap) return []
-    return Object.values(storyBlocksMap).filter((block) => isQuestionLikeBlock(block.type))
+    return Object.values(storyBlocksMap).filter((block) => isExecuteableBlockType(block.type))
   }, [storyBlocksMap])
 
   const refreshOnInit = (storyBlocksMap?.[storyId] as Story)?.format?.refreshOnOpen
@@ -146,7 +146,7 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
 
   useEffect(() => {
     if (refreshOnInit) {
-      questionBlocks.forEach((questionBlock: Editor.QuestionBlock) => {
+      executeableQuestionBlocks.forEach((questionBlock: Editor.QuestionBlock) => {
         if (dayjs().diff(dayjs(questionBlock.content?.lastRunAt ?? 0)) > 1000 * 5 * 60) {
           refreshSnapshot.execute(questionBlock)
         }
@@ -156,16 +156,16 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
   }, [refreshOnInit, refreshSnapshot])
 
   const runAll = useCallback(() => {
-    questionBlocks.forEach((questionBlock: Editor.QuestionBlock) => {
+    executeableQuestionBlocks.forEach((questionBlock: Editor.QuestionBlock) => {
       refreshSnapshot.execute(questionBlock)
     })
-  }, [questionBlocks, refreshSnapshot])
+  }, [executeableQuestionBlocks, refreshSnapshot])
 
   const cancelAll = useCallback(() => {
-    questionBlocks.forEach((questionBlock: Editor.QuestionBlock) => {
+    executeableQuestionBlocks.forEach((questionBlock: Editor.QuestionBlock) => {
       refreshSnapshot.cancel(questionBlock.id)
     })
-  }, [questionBlocks, refreshSnapshot])
+  }, [executeableQuestionBlocks, refreshSnapshot])
 
   const refreshingSnapshot = useIsMutating({
     predicate: (mutation) => (mutation.options.mutationKey as string)?.startsWith(`story/${storyId}`)
@@ -173,12 +173,12 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
 
   return useMemo(
     () => ({
-      total: questionBlocks.length,
+      total: executeableQuestionBlocks.length,
       mutating: refreshingSnapshot,
       runAll,
       cancelAll
     }),
-    [cancelAll, questionBlocks.length, refreshingSnapshot, runAll]
+    [cancelAll, executeableQuestionBlocks.length, refreshingSnapshot, runAll]
   )
 }
 
