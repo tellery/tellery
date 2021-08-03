@@ -10,7 +10,7 @@ export function MainSideBarItem(props: {
   title?: string
   hoverTitle?: string
   showTitle?: boolean
-  onHover: () => void
+  onHover?: () => void
   onClick: (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => void
 }) {
   const Icon = props.icon
@@ -18,7 +18,7 @@ export function MainSideBarItem(props: {
 
   useEffect(() => {
     if (isHovering) {
-      props.onHover()
+      props.onHover?.()
     }
   }, [isHovering, props])
 
