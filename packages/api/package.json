@@ -38,7 +38,7 @@
     "formidable": "^1.2.2",
     "google-protobuf": "^3.17.3",
     "got": "^11.8.2",
-    "grpc": "^1.24.10",
+    "grpc": "^1.24.11",
     "http-errors": "^1.8.0",
     "ioredis": "^4.27.7",
     "jsonwebtoken": "^8.5.1",
