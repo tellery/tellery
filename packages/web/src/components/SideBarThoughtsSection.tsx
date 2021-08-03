@@ -11,7 +11,6 @@ import { nanoid } from 'nanoid'
 import React, { useCallback, useMemo, useState } from 'react'
 import { SideBarContentLayout } from './SideBarContentLayout'
 import { Calendar } from './Calendar'
-import { SmallStory } from './SmallStory'
 import { FormButton } from './kit/FormButton'
 
 export const SideBarThoughtsSection = () => {
@@ -24,7 +23,6 @@ export const SideBarThoughtsSection = () => {
   const commit = useCommit()
   const openStory = useOpenStory()
   const [date, setDate] = useState(new Date())
-  const [currentThoughtId, setCurrentThoughtId] = useState<string>()
   const createTodaysNotes = useCallback(async () => {
     const id = nanoid()
     await commit({
@@ -93,17 +91,7 @@ export const SideBarThoughtsSection = () => {
             openStory(id, {})
           }
         }}
-        onHover={setCurrentThoughtId}
       />
-      {currentThoughtId && (
-        <SmallStory
-          className={css`
-            padding: 0 20px;
-          `}
-          color="transparent"
-          storyId={currentThoughtId}
-        />
-      )}
     </SideBarContentLayout>
   )
 }
