@@ -1290,6 +1290,7 @@ const _StoryEditor: React.FC<{
                   display: flex;
                   flex-direction: column;
                   user-select: none;
+                  cursor: text;
                 `
               )}
               onMouseMove={onMouseMove}
@@ -1320,7 +1321,6 @@ const _StoryEditor: React.FC<{
                     *::selection {
                       background-color: ${ThemingVariables.colors.selection[0]};
                     }
-                    cursor: text;
                     flex: 1;
                     user-select: none;
                   `,

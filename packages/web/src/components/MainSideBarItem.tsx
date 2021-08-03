@@ -30,57 +30,59 @@ export function MainSideBarItem(props: {
       arrow={false}
       placement="right"
     >
-      <a
-        data-active={props.active}
-        ref={ref}
-        className={cx(
-          sideBarContainerStyle,
-          css`
-            &:hover {
-              background: ${ThemingVariables.colors.primary[3]};
-            }
-            &:active {
-              background: ${ThemingVariables.colors.primary[2]};
-            }
-            &[data-active='true'] {
-              background: ${ThemingVariables.colors.primary[1]};
-              color: ${ThemingVariables.colors.gray[5]};
-            }
-          `
-        )}
-        title={props.title}
-        onClick={props.onClick}
-      >
-        {Icon && (
-          <div
-            className={css`
-              width: 20px;
-              align-items: center;
-              display: flex;
-              justify-content: center;
-            `}
-          >
-            <Icon
-              color={props.active ? ThemingVariables.colors.gray[5] : ThemingVariables.colors.text[0]}
+      <div>
+        <a
+          data-active={props.active}
+          ref={ref}
+          className={cx(
+            sideBarContainerStyle,
+            css`
+              &:hover {
+                background: ${ThemingVariables.colors.primary[3]};
+              }
+              &:active {
+                background: ${ThemingVariables.colors.primary[2]};
+              }
+              &[data-active='true'] {
+                background: ${ThemingVariables.colors.primary[1]};
+                color: ${ThemingVariables.colors.gray[5]};
+              }
+            `
+          )}
+          title={props.title}
+          onClick={props.onClick}
+        >
+          {Icon && (
+            <div
               className={css`
-                flex-shrink: 0;
+                width: 20px;
+                align-items: center;
+                display: flex;
+                justify-content: center;
               `}
-            />
-          </div>
-        )}
-        {props.showTitle && (
-          <span
-            className={css`
-              margin-left: 5px;
-              width: 100%;
-              text-overflow: ellipsis;
-              overflow: hidden;
-            `}
-          >
-            {props.title}
-          </span>
-        )}
-      </a>
+            >
+              <Icon
+                color={props.active ? ThemingVariables.colors.gray[5] : ThemingVariables.colors.text[0]}
+                className={css`
+                  flex-shrink: 0;
+                `}
+              />
+            </div>
+          )}
+          {props.showTitle && (
+            <span
+              className={css`
+                margin-left: 5px;
+                width: 100%;
+                text-overflow: ellipsis;
+                overflow: hidden;
+              `}
+            >
+              {props.title}
+            </span>
+          )}
+        </a>
+      </div>
     </Tippy>
   )
 }
