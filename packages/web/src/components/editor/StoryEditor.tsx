@@ -72,6 +72,7 @@ import {
 import { EditorContext, EditorContextInterface, useMouseMoveInEmitter } from './hooks'
 import { BlockAdminContext, useBlockAdminProvider } from './hooks/useBlockAdminProvider'
 import { useBlockHoveringState } from './hooks/useBlockHoveringState'
+import { useGetBlockLocalPreferences } from './hooks/useBlockLocalPreferences'
 import { useDebouncedDimension } from './hooks/useDebouncedDimensions'
 import { useStorySelection } from './hooks/useStorySelection'
 import { useSetUploadResource } from './hooks/useUploadResource'
@@ -107,6 +108,7 @@ const _StoryEditor: React.FC<{
   const blocksMapsRef = useRef<Record<string, Editor.BaseBlock> | null>(null)
   const [inited, setInited] = useState(false)
 
+  const getBlockLocalPreferences = useGetBlockLocalPreferences()
   useEffect(() => {
     if (blocksMap) {
       blocksMapsRef.current = blocksMap
@@ -712,7 +714,7 @@ const _StoryEditor: React.FC<{
       const handlers: { hotkeys: string[]; handler: (e: KeyboardEvent) => void }[] = [
         {
           hotkeys: ['enter'],
-          handler: (e) => {
+          handler: async (e) => {
             e.preventDefault()
             setHoverBlockId(null)
             if (isSelectionCollapsed(selectionState) && selectionState.type === TellerySelectionType.Inline) {
@@ -761,13 +763,23 @@ const _StoryEditor: React.FC<{
                   storyId,
                   parentId: storyId
                 })
+                const getDirection = async (block: Editor.BaseBlock) => {
+                  if (block.type === Editor.BlockType.Toggle) {
+                    const collapsedState = await getBlockLocalPreferences({ id: block.id, key: 'toggle' })
+                    if (collapsedState) {
+                      return 'bottom'
+                    }
+                  }
+                  return block.children?.length ? 'child' : 'bottom'
+                }
+                const direction = await getDirection(block)
                 blockTranscations.insertBlocks(storyId, {
                   blocksFragment: {
                     children: [newBlock.id],
                     data: { [newBlock.id]: newBlock }
                   },
                   targetBlockId: blockId,
-                  direction: block.children?.length ? 'child' : 'bottom'
+                  direction: direction
                 })
                 setSelectionAtBlockStart(newBlock)
               } else {
