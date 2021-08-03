@@ -11,12 +11,13 @@ import linkService from '../services/link'
 import searchService from '../services/search'
 import snapshotService from '../services/snapshot'
 import * as userService from '../services/user'
-import { BlockDTO } from '../types/block'
+import { BlockDTO, BlockType } from '../types/block'
+import { SearchResultDataDTO } from '../types/search'
+import { SnapshotDTO } from '../types/snapshot'
 import { StoryDTO } from '../types/story'
 import { UserInfoDTO } from '../types/user'
 import { validate } from '../utils/http'
 import { mustGetUser } from '../utils/user'
-import { SnapshotDTO } from '../types/snapshot'
 
 export class GlobalSearchRequest {
   @IsDefined()
@@ -148,9 +149,68 @@ async function mgetResources(ctx: Context) {
   ctx.body = res
 }
 
+/**
+ * Automatically complete references to other block in the editor
+ */
+async function referenceCompletion(ctx: Context) {
+  const payload = plainToClass(GlobalSearchRequest, ctx.request.body)
+  await validate(ctx, payload)
+
+  const user = mustGetUser(ctx)
+  const { limit } = payload
+  const types = [BlockType.METRIC, BlockType.QUESTION]
+  const funcs = _(types)
+    .map((t) =>
+      searchService.searchResources(
+        user.id,
+        payload.workspaceId,
+        payload.keyword,
+        [SearchableResourceType.BLOCK],
+        limit,
+        { type: t },
+      ),
+    )
+    .value()
+  const searchedRes = await Promise.all(funcs)
+
+  const rss = _(searchedRes).map('results').value()
+
+  const srs = _(rss).flatMap('searchResults').take(limit).value()
+
+  const results: SearchResultDataDTO = {
+    blocks: {},
+    highlights: {},
+    searchResults: srs,
+  }
+
+  for (const sr of srs) {
+    for (const rs of rss) {
+      if (rs.highlights[sr]) {
+        results.highlights[sr] = rs.highlights[sr]
+      }
+      if (rs.blocks && rs.blocks[sr]) {
+        results.blocks![sr] = rs.blocks[sr]
+      }
+    }
+  }
+
+  // fill story blocks
+  const storyBlocks = await blockService.mget(
+    user.id,
+    payload.workspaceId,
+    _(results.blocks).map('storyId').uniq().value(),
+  )
+  _(storyBlocks).forEach((b) => {
+    results.blocks![b.id] = b
+  })
+
+  ctx.body = { results }
+}
+
 const router = new Router()
 
 router.post('/search', search)
 router.post('/mgetResources', mgetResources)
+router.post('/referenceCompletion', referenceCompletion)
 
 export default router

@@ -6,7 +6,7 @@ import _, { random } from 'lodash'
 import { nanoid } from 'nanoid'
 import { Socket } from 'socket.io'
 import { io } from 'socket.io-client'
-import { getConnection } from 'typeorm'
+import { getConnection, getRepository, In } from 'typeorm'
 
 import app from '../src'
 import { createDatabaseCon } from '../src/clients/db/orm'
@@ -810,4 +810,134 @@ test.serial('search question blocks by sql', async (t: ExecutionContext<any>) =>
   }).json()
 
   t.is(searchWithoutSql.results.searchResults.length, 0)
+})
+
+test.serial('reference completion', async (t: ExecutionContext<any>) => {
+  const sid1 = nanoid()
+  const qid = nanoid()
+  const mid1 = nanoid()
+  const mid2 = nanoid()
+  const workspaceId = uuid()
+  // here nanoid() will be word cutting
+  const title = `searchable title`
+  const sql = 'select * from order limit 1'
+
+  await getConnection().transaction(async (manager) => {
+    const bop = new BlockOperation('test', 'test', manager)
+
+    // create story
+    await set(
+      bop,
+      sid1,
+      {
+        id: sid1,
+        children: [qid, mid1, mid2],
+        type: 'story',
+        content: { title: [[title]] },
+        parentId: 'test',
+        parentTable: 'workspace',
+        storyId: sid1,
+        alive: true,
+      },
+      [],
+    )
+    // create question
+    await set(
+      bop,
+      qid,
+      {
+        id: qid,
+        workspaceId,
+        type: BlockType.QUESTION,
+        storyId: sid1,
+        parentId: workspaceId,
+        parentTable: 'workspace',
+        content: {
+          title: [[title]],
+          sql,
+        },
+        alive: true,
+      },
+      [],
+    )
+    // create metrics 1
+    await set(
+      bop,
+      mid1,
+      {
+        id: mid1,
+        workspaceId,
+        type: BlockType.METRIC,
+        storyId: sid1,
+        parentId: workspaceId,
+        parentTable: 'workspace',
+        content: {
+          title: [[title]],
+          sql,
+        },
+        alive: true,
+      },
+      [],
+    )
+    // create metrics 2
+    await set(
+      bop,
+      mid2,
+      {
+        id: mid2,
+        workspaceId,
+        type: BlockType.METRIC,
+        storyId: sid1,
+        parentId: workspaceId,
+        parentTable: 'workspace',
+        content: {
+          title: [[title]],
+          sql,
+        },
+        alive: true,
+      },
+      [],
+    )
+  })
+
+  // not find with title
+  const completionRes3: any = await got<any>('api/referenceCompletion', {
+    prefixUrl: t.context.prefixUrl,
+    method: 'POST',
+    json: {
+      workspaceId,
+      keyword: 'searchable',
+      limit: 3,
+    },
+  }).json()
+  const srs3 = completionRes3.results.searchResults
+  const blocks3 = completionRes3.results.blocks
+  t.is(srs3.length, 3)
+  // first two are metric blocks
+  t.is(blocks3[srs3[0]].type, 'metric')
+  t.is(blocks3[srs3[1]].type, 'metric')
+  // last one is question block
+  t.is(blocks3[srs3[2]].type, 'question')
+  // contains story blocks
+  t.not(blocks3[sid1], undefined)
+
+  // not find with title
+  const completionRes2: any = await got<any>('api/referenceCompletion', {
+    prefixUrl: t.context.prefixUrl,
+    method: 'POST',
+    json: {
+      workspaceId,
+      keyword: 'searchable',
+      limit: 2,
+    },
+  }).json()
+  const srs2 = completionRes2.results.searchResults
+  const blocks2 = completionRes2.results.blocks
+  t.is(srs2.length, 2)
+  // all of them are metric blocks
+  t.is(blocks2[srs2[0]].type, 'metric')
+  t.is(blocks2[srs2[1]].type, 'metric')
+  t.not(blocks2[sid1], undefined)
+
+  await getRepository(BlockEntity).delete([qid, mid1, mid2])
 })
