@@ -15,7 +15,6 @@ export function MainSideBarItem(props: {
   return (
     <Tippy
       disabled={!props.hoverTitle}
-      delay={1000}
       content={props.hoverTitle ?? null}
       hideOnClick={false}
       arrow={false}
