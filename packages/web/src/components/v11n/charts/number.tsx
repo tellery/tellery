@@ -11,6 +11,7 @@ import { ThemingVariables } from '@app/styles'
 import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 import { useDataRecords } from '@app/hooks/useDataRecords'
 import { ConfigSwitch } from '../components/ConfigSwitch'
+import { ConfigInput } from '../components/ConfigInput'
 
 export const number: Chart<Type.NUMBER> = {
   type: Type.NUMBER,
@@ -54,6 +55,20 @@ export const number: Chart<Type.NUMBER> = {
           value={!!props.config.compare}
           onChange={(compare) => {
             onConfigChange('compare', compare)
+          }}
+        />
+        <ConfigLabel>Prefix</ConfigLabel>
+        <ConfigInput
+          value={props.config.prefix || ''}
+          onChange={(prefix) => {
+            onConfigChange('prefix', prefix)
+          }}
+        />
+        <ConfigLabel>Suffix</ConfigLabel>
+        <ConfigInput
+          value={props.config.suffix || ''}
+          onChange={(suffix) => {
+            onConfigChange('suffix', suffix)
           }}
         />
       </div>
@@ -121,7 +136,9 @@ export const number: Chart<Type.NUMBER> = {
           `}
           style={{ fontSize }}
         >
+          {props.config.prefix || ''}
           {numStr}
+          {props.config.suffix || ''}
         </span>
         {secondaryNumStr ? (
           <span

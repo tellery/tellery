@@ -153,6 +153,8 @@ interface NumberConfig {
   field: string
 
   compare?: boolean
+  prefix?: string
+  suffix?: string
 }
 
 export type Config<T extends Type> = T extends Type.TABLE
