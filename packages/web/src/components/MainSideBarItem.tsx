@@ -1,7 +1,8 @@
+import { useHover } from '@app/hooks'
 import { ThemingVariables } from '@app/styles'
 import { css, cx } from '@emotion/css'
 import Tippy from '@tippyjs/react'
-import React, { FunctionComponent, SVGAttributes } from 'react'
+import React, { FunctionComponent, SVGAttributes, useEffect } from 'react'
 
 export function MainSideBarItem(props: {
   icon?: FunctionComponent<SVGAttributes<SVGElement>>
@@ -9,9 +10,18 @@ export function MainSideBarItem(props: {
   title?: string
   hoverTitle?: string
   showTitle?: boolean
+  onHover: () => void
   onClick: (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => void
 }) {
   const Icon = props.icon
+  const [ref, isHovering] = useHover<HTMLAnchorElement>()
+
+  useEffect(() => {
+    if (isHovering) {
+      props.onHover()
+    }
+  }, [isHovering, props])
+
   return (
     <Tippy
       disabled={!props.hoverTitle}
@@ -22,6 +32,7 @@ export function MainSideBarItem(props: {
     >
       <a
         data-active={props.active}
+        ref={ref}
         className={cx(
           sideBarContainerStyle,
           css`
@@ -32,7 +43,6 @@ export function MainSideBarItem(props: {
               background: ${ThemingVariables.colors.primary[2]};
             }
             &[data-active='true'] {
-              cursor: default;
               background: ${ThemingVariables.colors.primary[1]};
               color: ${ThemingVariables.colors.gray[5]};
             }

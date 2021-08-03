@@ -52,17 +52,17 @@ export const SideBar = () => {
 const SideBarContents = {
   PINNED: {
     icon: IconCommonStar,
-    hoverTitle: 'Pinned Stories',
+    // hoverTitle: 'Pinned Stories',
     content: <SideBarPinnedStoriesSection />
   },
   ALL_STORIES: {
     icon: IconCommonAllQuestion,
-    hoverTitle: 'All Stories',
+    // hoverTitle: 'All Stories',
     content: <SideBarAllStoriesSection />
   },
   THOUGHTS: {
     icon: IconCommonThoughts,
-    hoverTitle: 'My Thoughts',
+    // hoverTitle: 'My Thoughts',
     content: <SideBarThoughtsSection />
   }
   // METRICS: {
@@ -162,7 +162,8 @@ const SideBarContent: React.FC = () => {
               <MainSideBarItem
                 key={id}
                 {...rest}
-                onClick={() => {
+                onClick={() => {}}
+                onHover={() => {
                   setActiveSideBarTab(key)
                 }}
                 active={activeSideBarTab === id}
