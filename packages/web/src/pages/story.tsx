@@ -35,11 +35,17 @@ const _Page: React.FC = () => {
         <div
           className={css`
             display: flex;
+            flex: 1;
+            height: 100%;
           `}
         >
           <div
             className={css`
               flex: 1;
+              height: 100%;
+              overflow: hidden;
+              display: flex;
+              flex-direction: column;
             `}
           >
             <div
