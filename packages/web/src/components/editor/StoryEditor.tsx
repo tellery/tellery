@@ -1157,6 +1157,15 @@ const _StoryEditor: React.FC<{
                     }
                   )
                 })
+                setSelectionState((state) => {
+                  if (state?.type === TellerySelectionType.Inline) {
+                    return {
+                      ...state,
+                      anchor: state.focus
+                    }
+                  }
+                  return state
+                })
               } else {
                 logger('to do')
               }
