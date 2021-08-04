@@ -694,12 +694,27 @@ export const StoryQuestionEditor: React.FC<{
         workspaceId: workspace.id
       })
 
-      setBlock(block.id, (draftBlock) => {
-        draftBlock.content!.snapshotId = snapshotId
-      })
+      if (!readonly) {
+        setBlock(block.id, (draftBlock) => {
+          draftBlock.content!.snapshotId = snapshotId
+        })
+      }
     }
     setMode('VIS')
-  }, [block, sql, executeSQL, workspace, isDraftSql, setMode, setSnapshotId, originalBlock, setBlock])
+  }, [
+    block,
+    sql,
+    executeSQL,
+    workspace.id,
+    workspace.preferences.connectorId,
+    workspace.preferences.profile,
+    isDraftSql,
+    setMode,
+    setSnapshotId,
+    originalBlock,
+    readonly,
+    setBlock
+  ])
 
   const cancelExecuteSql = useCallback(() => {
     if (block?.id) {
