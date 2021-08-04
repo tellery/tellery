@@ -75,6 +75,7 @@ export function WorkspaceModal(props: ModalProps) {
               color: ${ThemingVariables.colors.text[1]};
               overflow: hidden;
               text-overflow: ellipsis;
+              white-space: nowrap;
             `}
           >
             Tellery

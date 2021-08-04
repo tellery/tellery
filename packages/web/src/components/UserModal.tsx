@@ -68,6 +68,7 @@ export function UserModal(props: { onClose(): void }) {
               color: ${ThemingVariables.colors.text[1]};
               overflow: hidden;
               text-overflow: ellipsis;
+              white-space: nowrap;
             `}
           >
             {user.email}
