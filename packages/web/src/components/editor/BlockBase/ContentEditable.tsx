@@ -407,6 +407,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
                 editor?.setBlockValue?.(block.id, (block) => {
                   block!.content!.title = mergeTokens([...tokens1, ['\n'], ...tokens2])
                 })
+                e.preventDefault()
                 e.stopPropagation()
               }
               // e.preventDefault()

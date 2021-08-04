@@ -1,6 +1,7 @@
 import { Editor } from '@app/types'
 import { dequal } from 'dequal'
 import invariant from 'tiny-invariant'
+import { isNonSelectbleToken } from '.'
 
 export const saveSelection = function (containerEl: HTMLElement) {
   // const doc = containerEl.ownerDocument
@@ -252,7 +253,11 @@ export const deserialize = (el: Element, block: Editor.Block): Editor.Token[] =>
 
   if (el.tagName === 'BODY' || (el.nodeType === Node.ELEMENT_NODE && (el as HTMLElement).dataset.root)) {
     if (dequal(children[children.length - 1], ['\n'])) {
-      return children.slice(0, children.length - 1)
+      const previousToken = children[children.length - 2]
+      if (previousToken && isNonSelectbleToken(previousToken)) {
+        return children.slice(0, children.length - 1)
+      }
+      return children
     } else {
       return children
     }
