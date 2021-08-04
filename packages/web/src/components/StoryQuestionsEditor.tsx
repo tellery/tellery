@@ -30,6 +30,7 @@ import { ThemingVariables } from '@app/styles'
 import { Editor, Story } from '@app/types'
 import { DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
 import { css, cx } from '@emotion/css'
+import Tippy from '@tippyjs/react'
 import { dequal } from 'dequal'
 import { motion, useMotionValue, useTransform } from 'framer-motion'
 import { produce } from 'immer'
@@ -925,45 +926,51 @@ export const StoryQuestionEditor: React.FC<{
             }
           `}
         >
-          <IconButton
-            icon={IconCommonSql}
-            className={css`
-              &::after {
-                display: ${mode === 'SQL' ? 'visible' : 'none'};
-              }
-            `}
-            color={mode === 'SQL' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
-            onClick={() => {
-              setMode('SQL')
-            }}
-          />
-          {snapshot?.data && (
+          <Tippy content="Edit SQL" arrow={false} placement="right">
             <IconButton
-              icon={IconVisualizationSetting}
+              icon={IconCommonSql}
               className={css`
                 &::after {
-                  display: ${mode === 'VIS' ? 'visible' : 'none'};
+                  display: ${mode === 'SQL' ? 'visible' : 'none'};
                 }
               `}
-              color={mode === 'VIS' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
+              color={mode === 'SQL' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
               onClick={() => {
-                setMode('VIS')
+                setMode('SQL')
               }}
             />
+          </Tippy>
+          {snapshot?.data && (
+            <Tippy content="Visualization options" arrow={false} placement="right">
+              <IconButton
+                icon={IconVisualizationSetting}
+                className={css`
+                  &::after {
+                    display: ${mode === 'VIS' ? 'visible' : 'none'};
+                  }
+                `}
+                color={mode === 'VIS' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
+                onClick={() => {
+                  setMode('VIS')
+                }}
+              />
+            </Tippy>
           )}
           {downstreams.length === 0 || (
-            <IconButton
-              icon={IconCommonDownstream}
-              className={css`
-                &::after {
-                  display: ${mode === 'DOWNSTREAM' ? 'visible' : 'none'};
-                }
-              `}
-              color={mode === 'DOWNSTREAM' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
-              onClick={() => {
-                setMode('DOWNSTREAM')
-              }}
-            />
+            <Tippy content="Downstreams" arrow={false} placement="right">
+              <IconButton
+                icon={IconCommonDownstream}
+                className={css`
+                  &::after {
+                    display: ${mode === 'DOWNSTREAM' ? 'visible' : 'none'};
+                  }
+                `}
+                color={mode === 'DOWNSTREAM' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
+                onClick={() => {
+                  setMode('DOWNSTREAM')
+                }}
+              />
+            </Tippy>
           )}
         </div>
         {mode === 'SQL' && (
