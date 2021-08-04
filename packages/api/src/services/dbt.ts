@@ -9,6 +9,7 @@ import { QuestionBlock } from '../core/block/question'
 import { getIPermission, IPermission } from '../core/permission'
 import { extractPartialQueries } from '../core/translator'
 import BlockEntity from '../entities/block'
+import { LinkEntity } from '../entities/link'
 import { BlockParentType, BlockType } from '../types/block'
 import { DbtMetadata, ExportedBlockMetadata } from '../types/dbt'
 import { LinkType } from '../types/link'
@@ -84,7 +85,7 @@ export class DbtService {
 
   async loadAllDbtBlockDescendent(workspaceId: string): Promise<ExportedBlockMetadata[]> {
     const dbtBlocks = _(await this.listCurrentDbtBlocks(workspaceId))
-      .map(Block.fromEntitySafely)
+      .map(Block.fromEntity)
       .value()
 
     if (dbtBlocks.length === 0) {
@@ -95,10 +96,11 @@ export class DbtService {
       await cascadeLoadBlocksByLink(_(dbtBlocks).map('id').value(), 'backward', LinkType.QUESTION),
     )
       .map((b) => QuestionBlock.fromEntitySafely(b))
+      .compact()
       .value() as QuestionBlock[]
 
     // load story blocks for fulfilling name
-    const storyIds = _(blocks).map('storyId').value()
+    const storyIds = _(blocks).map('storyId').uniq().value()
     const models = await getRepository(BlockEntity).find({ id: In(storyIds) })
     const storiesByKey = _(models).map(Block.fromEntitySafely).keyBy('id').value()
 
@@ -223,6 +225,10 @@ export class DbtService {
     await getConnection().transaction(async (t) => {
       await bluebird.all([
         t.getRepository(BlockEntity).update(deletedBlockIds, { alive: false }),
+        // unlink deleted dbt blocks
+        t
+          .getRepository(LinkEntity)
+          .update({ targetBlockId: In(deletedBlockIds) }, { targetAlive: false }),
         t.getRepository(BlockEntity).insert(createdBlocks),
       ])
       await bluebird.map(modifiedBlocks, async (b) => b.save(), { concurrency: 10 })
