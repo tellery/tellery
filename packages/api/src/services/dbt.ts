@@ -53,15 +53,6 @@ export class DbtService {
     await connectorManager.pushRepo(profile, exportedQuestionBlocks)
   }
 
-  async refreshWorkspace(
-    connectorManager: IConnectorManager,
-    operatorId: string,
-    workspaceId: string,
-  ) {
-    await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
-    await connectorManager.refreshWorkspace()
-  }
-
   async updateDbtBlocks(
     connectorManager: IConnectorManager,
     operatorId: string,

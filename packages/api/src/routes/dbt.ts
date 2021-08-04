@@ -40,14 +40,6 @@ class PushRepoRequest {
   profile!: string
 }
 
-class RefreshWorkspaceRequest {
-  @IsDefined()
-  workspaceId!: string
-
-  @IsDefined()
-  connectorId!: string
-}
-
 class UpdateDbtBlocksRequest {
   @IsDefined()
   workspaceId!: string
@@ -89,16 +81,6 @@ async function pushRepo(ctx: Context) {
   ctx.body = {}
 }
 
-async function refreshWorkspace(ctx: Context) {
-  const payload = plainToClass(RefreshWorkspaceRequest, ctx.request.body)
-  await validate(ctx, payload)
-  const user = mustGetUser(ctx)
-  const { workspaceId, connectorId } = payload
-  const manager = await getIConnectorManagerFromDB(connectorId)
-  await dbtService.refreshWorkspace(manager, user.id, workspaceId)
-  ctx.body = {}
-}
-
 async function updateDbtBlocks(ctx: Context) {
   const payload = plainToClass(UpdateDbtBlocksRequest, ctx.request.body)
   await validate(ctx, payload)
@@ -114,7 +96,6 @@ const router = new Router()
 router.post('/createRepo', createRepo)
 router.post('/pullRepo', pullRepo)
 router.post('/pushRepo', pushRepo)
-router.post('/refreshWorkspace', refreshWorkspace)
 router.post('/updateDbtBlocks', updateDbtBlocks)
 
 export default router

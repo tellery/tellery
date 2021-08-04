@@ -231,10 +231,6 @@ export class ConnectorManager implements IConnectorManager {
     await beautyCall(this.dbtClient.pushRepo, this.dbtClient, request)
   }
 
-  async refreshWorkspace(): Promise<void> {
-    await beautyCall(this.dbtClient.refreshWorkspace, this.dbtClient, new Empty())
-  }
-
   async listDbtBlocks(profile: string): Promise<DbtMetadata[]> {
     const request = new ListDbtBlocksRequest().setProfile(profile)
     const res = await beautyCall(this.dbtClient.listDbtBlocks, this.dbtClient, request)

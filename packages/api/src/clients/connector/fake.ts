@@ -74,10 +74,6 @@ export class FakeManager implements IConnectorManager {
     return
   }
 
-  async refreshWorkspace(): Promise<void> {
-    return
-  }
-
   async listDbtBlocks(_profile: string): Promise<DbtMetadata[]> {
     return []
   }

@@ -112,11 +112,6 @@ export interface IConnectorManager {
   pushRepo(profile: string, blocks: ExportedBlockMetadata[]): Promise<void>
 
   /**
-   * refresh dbt workspace
-   */
-  refreshWorkspace(): Promise<void>
-
-  /**
    * retrieve the metadata of dbt sources and models
    * @param profile profile name
    * @returns dbt metadata
