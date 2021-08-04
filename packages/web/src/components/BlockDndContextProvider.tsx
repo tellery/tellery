@@ -1,4 +1,4 @@
-import { ContentBlocks, StandaloneContentBlock } from '@app/components/editor/ContentBlock'
+import { ContentBlocks } from '@app/components/editor/ContentBlock'
 import { getDuplicatedBlocksFragment } from '@app/context/editorTranscations'
 import { useCreateEmptyBlock } from '@app/helpers/blockFactory'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
@@ -154,7 +154,7 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
       setDroppingArea(null)
       droppingAreaRef.current = null
     },
-    [setDroppingArea, blockTranscations, snapshot, createEmptyBlock, setUploadResource]
+    [setDroppingArea, blockTranscations, focusBlockHandler, snapshot, createEmptyBlock, setUploadResource]
   )
 
   const handleDragMove = useCallback(
@@ -213,7 +213,7 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
     logger('drag start', event)
     if (!data) return
     if (data.type === DnDItemTypes.Block) {
-      setPreviewData(<StandaloneContentBlock block={data.blockData} parentType={Editor.BlockType.Story} readonly />)
+      setPreviewData(<ContentBlocks blockIds={[data.originalBlockId]} readonly parentType={Editor.BlockType.Story} />)
     } else if (data.type === DnDItemTypes.BlockIds) {
       setPreviewData(<ContentBlocks blockIds={data.ids} readonly parentType={Editor.BlockType.Story} />)
     } else {

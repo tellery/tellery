@@ -47,6 +47,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
     placeHolderText?: string
     disableReferenceDropdown?: boolean
     placeHolderStrategy?: 'always' | 'never' | 'active'
+    disableTextAlign?: boolean
   }
 > = (props, ref) => {
   const editor = useEditor<Editor.Block>()
@@ -313,7 +314,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
       style={
         {
           '--max-lines': maxLines,
-          textAlign: block?.format?.textAlign ?? 'left'
+          textAlign: props.disableTextAlign ? 'left' : block?.format?.textAlign ?? 'left'
         } as React.CSSProperties
       }
       className={cx(

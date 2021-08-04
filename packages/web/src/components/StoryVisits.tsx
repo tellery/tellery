@@ -18,19 +18,31 @@ export function StoryVisits(props: { storyId: string; className?: string }) {
   const sortedVisits = useMemo(() => {
     if (!visits) return undefined
     const userIndex = visits.findIndex((visit) => visit.userId === user.id)
-    if (userIndex !== -1) {
-      return [visits[userIndex], ...visits.slice(0, userIndex), ...visits.slice(userIndex + 1)]
-    } else {
-      return [
-        {
-          storyId: storyId,
-          userId: user.id,
-          lastVisitTimestamp: new Date().getTime()
-        },
-        ...visits
-      ]
-    }
-  }, [storyId, user.id, visits])
+    const currentUser =
+      userIndex !== -1
+        ? visits[userIndex]
+        : {
+            storyId: storyId,
+            userId: user.id,
+            lastVisitTimestamp: new Date().getTime()
+          }
+    const restVisits = userIndex === -1 ? visits : [...visits.slice(0, userIndex), ...visits.slice(userIndex + 1)]
+
+    return [
+      currentUser,
+      ...restVisits.sort((a, b) => {
+        const valueOfA = activeIds.includes(a.userId)
+        const valueOfB = activeIds.includes(b.userId)
+        if (valueOfA && valueOfB) {
+          return 0
+        } else if (valueOfA) {
+          return -1
+        } else {
+          return 1
+        }
+      })
+    ]
+  }, [activeIds, storyId, user.id, visits])
 
   useEffect(() => {
     if (!socket) return

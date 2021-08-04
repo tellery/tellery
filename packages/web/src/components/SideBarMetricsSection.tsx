@@ -89,6 +89,7 @@ const DataAssetItem: React.FC<{ blockId: string; currentStoryId: string }> = ({ 
     id: `drag-${blockId}`,
     data: {
       type: DnDItemTypes.Block,
+      originalBlockId: blockId,
       blockData: createEmptyBlock<Editor.QuestionBlock>({
         type: Editor.BlockType.Question,
         storyId: currentStoryId,

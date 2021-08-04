@@ -12,9 +12,9 @@ import { Editor, Story, Thought } from '@app/types'
 import { DEFAULT_TITLE } from '@app/utils'
 import { css } from '@emotion/css'
 import styled from '@emotion/styled'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { Helmet } from 'react-helmet'
-import { useLocation, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 
 const _Page: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -44,7 +44,7 @@ const _Page: React.FC = () => {
             ></div>
           }
         >
-          <StoryHeader storyId={id} />
+          <StoryHeader storyId={id} key={id} />
         </React.Suspense>
         <Layout>
           <div
@@ -76,6 +76,7 @@ const StoryContent: React.FC<{ storyId: string }> = ({ storyId }) => {
     <>
       {storyBlock.type === Editor.BlockType.Story && (
         <StoryEditor
+          key={storyId}
           storyId={storyId}
           className={css`
             @media (max-width: 700px) {
@@ -89,6 +90,7 @@ const StoryContent: React.FC<{ storyId: string }> = ({ storyId }) => {
       {storyBlock.type === Editor.BlockType.Thought && (
         <>
           <StoryEditor
+            key={storyId}
             storyId={storyId}
             fullWidth
             className={css`
