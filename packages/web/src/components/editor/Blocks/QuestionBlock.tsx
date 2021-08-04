@@ -4,6 +4,7 @@ import {
   IconCommonMore,
   IconCommonRefresh,
   IconCommonSql,
+  IconCommonTurn,
   IconMenuDownload,
   IconMiscNoResult,
   IconVisualizationSetting
@@ -584,7 +585,7 @@ const QuestionBlockStatus: React.FC<{
         >
           <div
             className={css`
-              > {
+              > * {
                 margin-right: 5px;
               }
             `}
@@ -725,7 +726,7 @@ export const MoreDropdownSelect: React.FC<{
         }
       },
       {
-        title: 'Download as Image',
+        title: 'Download as image',
         icon: <IconMenuDownload color={ThemingVariables.colors.text[0]} />,
         action: async () => {
           const elementSVG = getBlockImageById(block.id)
@@ -747,8 +748,8 @@ export const MoreDropdownSelect: React.FC<{
         }
       },
       !readonly && {
-        title: 'Convert to Snapshot',
-        icon: <IconCommonCopy color={ThemingVariables.colors.text[0]} />,
+        title: 'Convert to snapshot',
+        icon: <IconCommonTurn color={ThemingVariables.colors.text[0]} />,
         action: () => {
           editor?.setBlockValue?.(block.id, (draftBlock) => {
             draftBlock.type = Editor.BlockType.QuestionSnapshot
