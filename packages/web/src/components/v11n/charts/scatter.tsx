@@ -39,6 +39,8 @@ enum Tab {
   AXIS = 'Axis'
 }
 
+const opacity = 0.15
+
 const scaleTypes = ['auto', 'linear', 'pow', 'sqrt', 'log']
 
 export const scatter: Chart<Type.SCATTER> = {
@@ -204,7 +206,7 @@ export const scatter: Chart<Type.SCATTER> = {
                     margin-top: 10px;
                     font-size: 14px;
                     font-weight: 400;
-                    opacity: 0.3;
+                    opacity: ${opacity};
                     cursor: pointer;
 
                     &:hover {
@@ -511,7 +513,7 @@ export const scatter: Chart<Type.SCATTER> = {
                     <Cell
                       key={`cell-${index}`}
                       fill={ThemingVariables.colors.visualization[color.color]}
-                      opacity={hoverDataKey === undefined || hoverDataKey === color.key ? 1 : 0.3}
+                      opacity={hoverDataKey === undefined || hoverDataKey === color.key ? 1 : opacity}
                       onMouseEnter={() => {
                         setHoverDataKey(color.key)
                       }}

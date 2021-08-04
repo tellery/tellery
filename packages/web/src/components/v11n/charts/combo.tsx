@@ -41,6 +41,8 @@ import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 
 const splitter = ', '
 
+const opacity = 0.15
+
 enum Tab {
   DATA = 'Data',
   DISPLAY = 'Display',
@@ -462,7 +464,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                     margin-top: 10px;
                     font-size: 14px;
                     font-weight: 400;
-                    opacity: 0.3;
+                    opacity: ${opacity};
                     cursor: pointer;
 
                     &:hover {
@@ -1008,7 +1010,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                 name={key}
                 stroke={ThemingVariables.colors.visualization[color]}
                 isAnimationActive={false}
-                opacity={hoverDataKey === undefined || hoverDataKey === valueKey(key) ? 1 : 0.3}
+                opacity={hoverDataKey === undefined || hoverDataKey === valueKey(key) ? 1 : opacity}
                 dot={{
                   display: props.config.shapes.length * result100.length > 50 ? 'none' : undefined,
                   onMouseEnter: () => {
@@ -1046,11 +1048,11 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                 dataKey={valueKey(key)}
                 stroke={ThemingVariables.colors.visualization[color]}
                 strokeWidth={2}
-                stopOpacity={hoverDataKey === undefined || hoverDataKey === valueKey(key) ? 1 : 0.3}
+                stopOpacity={hoverDataKey === undefined || hoverDataKey === valueKey(key) ? 1 : opacity}
                 fill={ThemingVariables.colors.visualization[color]}
-                fillOpacity={0.3}
+                fillOpacity={opacity}
                 isAnimationActive={false}
-                opacity={hoverDataKey === undefined || hoverDataKey === valueKey(key) ? 1 : 0.3}
+                opacity={hoverDataKey === undefined || hoverDataKey === valueKey(key) ? 1 : opacity}
                 connectNulls={group.connectNulls}
                 dot={{
                   display: 'none',
@@ -1089,7 +1091,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                 maxBarSize={isContinuous(xDisplayType) ? 20 : undefined}
                 fill={ThemingVariables.colors.visualization[color]}
                 isAnimationActive={false}
-                opacity={hoverDataKey === undefined || hoverDataKey === valueKey(key) ? 1 : 0.3}
+                opacity={hoverDataKey === undefined || hoverDataKey === valueKey(key) ? 1 : opacity}
                 onMouseEnter={() => {
                   setHoverDataKey(valueKey(key))
                 }}
@@ -1131,7 +1133,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                 name={`${key}${trendSuffix}`}
                 stroke={ThemingVariables.colors.visualization[color]}
                 isAnimationActive={false}
-                opacity={hoverDataKey === undefined || hoverDataKey === valueKey(key) ? 1 : 0.3}
+                opacity={hoverDataKey === undefined || hoverDataKey === valueKey(key) ? 1 : opacity}
                 dot={{ display: 'none' }}
                 activeDot={{ display: 'none' }}
                 strokeDasharray="5 5"

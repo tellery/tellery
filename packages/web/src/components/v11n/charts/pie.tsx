@@ -25,6 +25,8 @@ enum Tab {
   DISPLAY = 'Display'
 }
 
+const opacity = 0.15
+
 const OTHERS_KEY = 'Others'
 
 const numberformat = new Intl.NumberFormat([], { maximumFractionDigits: 2 })
@@ -230,7 +232,7 @@ export const pie: Chart<Type.PIE> = {
                     margin-top: 10px;
                     font-size: 14px;
                     font-weight: 400;
-                    opacity: 0.3;
+                    opacity: ${opacity};
                     cursor: pointer;
 
                     &:hover {
@@ -379,7 +381,7 @@ export const pie: Chart<Type.PIE> = {
                   ? ThemingVariables.colors.visualizationOther
                   : ThemingVariables.colors.visualization[color]
               }
-              opacity={hoverDataKey === undefined || hoverDataKey === key ? 1 : 0.3}
+              opacity={hoverDataKey === undefined || hoverDataKey === key ? 1 : opacity}
               onMouseEnter={() => {
                 setHoverDataKey(key)
               }}
