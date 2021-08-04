@@ -8,11 +8,12 @@ data class PostgresqlProfile(
     val host: String,
     val user: String,
     val password: String,
-    val port: String
+    val port: Int,
+    override val database: String
 ) : BaseProfile(
     type = Constants.PROFILE_PG_TYPE,
     schema = Constants.PROFILE_SCHEMA,
-    database = null,
+    database = database,
     warehouse = null,
     dbname = null
 )

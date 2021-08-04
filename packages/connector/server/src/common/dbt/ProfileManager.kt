@@ -28,17 +28,19 @@ object ProfileManager {
             "PostgreSQL" -> {
                 return PostgresqlProfile(
                     host = getValueOrThrowException(profile, Constants.PG_ENDPOINT_FIELD),
-                    port = getValueOrThrowException(profile, Constants.PG_PORT_FIELD),
+                    port = getValueOrThrowException(profile, Constants.PG_PORT_FIELD).toInt(),
                     user = getValueOrThrowException(profile, Constants.PG_USERNAME_FIELD),
-                    password = getValueOrThrowException(profile, Constants.PG_PASSWORD_FIELD)
+                    password = getValueOrThrowException(profile, Constants.PG_PASSWORD_FIELD),
+                    database = getValueOrThrowException(profile, Constants.PG_DATABASE_FIELD)
                 )
             }
             "Redshift" -> {
                 return RedshiftProfile(
                     host = getValueOrThrowException(profile, Constants.RS_ENDPOINT_FIELD),
-                    port = getValueOrThrowException(profile, Constants.RS_PORT_FIELD),
+                    port = getValueOrThrowException(profile, Constants.RS_PORT_FIELD).toInt(),
                     user = getValueOrThrowException(profile, Constants.RS_USERNAME_FIELD),
-                    password = getValueOrThrowException(profile, Constants.RS_PASSWORD_FIELD)
+                    password = getValueOrThrowException(profile, Constants.RS_PASSWORD_FIELD),
+                    database = getValueOrThrowException(profile, Constants.RS_DATABASE_FIELD)
                 )
             }
             "Snowflake" -> {

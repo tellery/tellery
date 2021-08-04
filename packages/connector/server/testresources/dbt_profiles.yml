@@ -16,7 +16,8 @@ projectB:
       host: "examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com"
       user: "abc"
       password: "def"
-      port: "5439"
+      port: 5439
+      database: "my_db"
       type: "redshift"
       schema: "tellery_schema"
       dbname: "tellery_dbname"
@@ -27,7 +28,8 @@ projectC:
       host: "127.0.0.1"
       user: "abc"
       password: "def"
-      port: "5432"
+      port: 5432
+      database: "my_db"
       type: "postgres"
       schema: "tellery_schema"
   target: "dev"
