@@ -41,11 +41,13 @@ const WorkspaceItems: React.FC<{ storyIds: string[] }> = ({ storyIds }) => {
       `}
       options={{ suppressScrollX: true }}
     >
-      {storyIds.map((storyId) => (
-        <React.Suspense key={storyId} fallback={<SideBarLoader />}>
-          <StoryCard blockId={storyId} />
-        </React.Suspense>
-      ))}
+      <div>
+        {storyIds.map((storyId) => (
+          <React.Suspense key={storyId} fallback={<SideBarLoader />}>
+            <StoryCard blockId={storyId} />
+          </React.Suspense>
+        ))}
+      </div>
     </PerfectScrollbar>
   )
 }
