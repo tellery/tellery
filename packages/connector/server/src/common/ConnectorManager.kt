@@ -10,6 +10,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
+import java.lang.reflect.InvocationTargetException
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
 import kotlin.reflect.full.*
@@ -81,7 +82,11 @@ object ConnectorManager {
                         schema: String?,
                         content: ByteArray
                     ) {
-                        func.callSuspend(connector, database, collection, schema, content)
+                        try {
+                            func.callSuspend(connector, database, collection, schema, content)
+                        } catch (e: InvocationTargetException){
+                            throw e.targetException
+                        }
                     }
                 }
 
