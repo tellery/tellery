@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 open class BaseProfile(
     val type: String,
     val schema: String,
-    val database: String?,
+    open val database: String?,
     val warehouse: String?,
     val dbname: String?
 )

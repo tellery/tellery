@@ -8,12 +8,12 @@ import io.tellery.grpc.*
 
 class DbtService : DbtCoroutineGrpc.DbtImplBase() {
 
-    override suspend fun createRepo(request: CreateRepoRequest): CreateRepoResponse {
+    override suspend fun generateKeyPair(request: GenerateKeyPairRequest): GenerateKeyPairResponse {
         return withErrorWrapper(request) { req ->
             assert(!Strings.isNullOrEmpty(req.profile)) { "Profile name cannot be null or empty." }
 
-            val publicKey = DbtManager.createRepo(req.profile)
-            CreateRepoResponse.newBuilder().setPublicKey(publicKey).build()
+            val publicKey = DbtManager.generateRepoKeyPair(req.profile)
+            GenerateKeyPairResponse.newBuilder().setPublicKey(publicKey).build()
         }
     }
 
@@ -29,7 +29,7 @@ class DbtService : DbtCoroutineGrpc.DbtImplBase() {
     override suspend fun pushRepo(request: PushRepoRequest): Empty {
         return withErrorWrapper(request) { req ->
             assert(!Strings.isNullOrEmpty(req.profile)) { "Profile name cannot be null or empty." }
-            assert(req.blocksList != null) {" Blocks cannot be null"}
+            assert(req.blocksList != null) { " Blocks cannot be null" }
 
             DbtManager.pushRepo(req.profile, req.blocksList)
             Empty.getDefaultInstance()

@@ -1,6 +1,6 @@
 ---
 projectA:
-  output:
+  outputs:
     dev:
       account: "xy12345.us-ease-2.aws"
       user: "abc"
@@ -11,23 +11,25 @@ projectA:
       warehouse: "tellery_warehouse"
   target: "dev"
 projectB:
-  output:
+  outputs:
     dev:
       host: "examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com"
       user: "abc"
       password: "def"
-      port: "5439"
+      port: 5439
+      database: "my_db"
       type: "redshift"
       schema: "tellery_schema"
       dbname: "tellery_dbname"
   target: "dev"
 projectC:
-  output:
+  outputs:
     dev:
       host: "127.0.0.1"
       user: "abc"
       password: "def"
-      port: "5432"
+      port: 5432
+      database: "my_db"
       type: "postgres"
       schema: "tellery_schema"
   target: "dev"
