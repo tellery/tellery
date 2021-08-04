@@ -214,6 +214,7 @@ export class AnonymousUserService extends UserService {
       const user = (
         await this.createUserByEmailsIfNotExist([email], undefined, AccountStatus.ACTIVE)
       )[email]
+      await this.updateUser(user.id, { username: `Anonymous-${nanoid(4)}` })
       return {
         userId: user.id,
         expiresAt: _.now() + 3600 * 1000,
