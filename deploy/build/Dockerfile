@@ -1,3 +1,4 @@
+ARG GA_ID
 FROM node:14.17.1-slim as api-builder
 ENV TZ Asia/Shanghai
 WORKDIR /app/tellery-api
@@ -14,6 +15,7 @@ COPY packages/web/package.json .
 COPY packages/web/yarn.lock .
 RUN yarn install --frozen-lockfile
 COPY packages/web .
+ENV VITE_GOOGLE_ANALYTICS_4_ID=$GA_ID
 RUN yarn build
 
 FROM node:14.17.1-alpine

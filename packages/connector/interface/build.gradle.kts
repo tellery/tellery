@@ -5,6 +5,9 @@ val arrowVersion: String by project
 val logbackVersion: String by project
 val grpcVersion: String by project
 
+// Version for releasing snapshot, should be the next version (one to be released)
+val snapshotVersion = "0.7.0"
+
 repositories {
     jcenter()
     maven("https://dl.bintray.com/arrow-kt/arrow-kt/")
@@ -80,7 +83,7 @@ publishing {
         create<MavenPublication>("maven"){
             groupId = project.group.toString()
             artifactId = "connector-interface"
-            version = System.getenv("RELEASE_VERSION") ?: project.version.toString() + "-SNAPSHOT"
+            version = System.getenv("RELEASE_VERSION") ?: "$snapshotVersion-SNAPSHOT"
             from(components["java"])
         }
     }
