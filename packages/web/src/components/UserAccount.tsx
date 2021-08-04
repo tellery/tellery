@@ -9,7 +9,6 @@ import { css } from '@emotion/css'
 import { ErrorMessage } from '@hookform/error-message'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import { useHistory } from 'react-router-dom'
 import { FormButton } from './kit/FormButton'
 import FormError from './kit/FormError'
 import FormFileButton from './kit/FormFileButton'
@@ -36,7 +35,6 @@ export default function UserAccount(props: { onClose(): void }) {
   useEffect(() => {
     reset(user)
   }, [user, reset])
-  const history = useHistory()
   const { onClose } = props
   useEffect(() => {
     if (handleUpdateUser.status === 'success') {
@@ -45,9 +43,9 @@ export default function UserAccount(props: { onClose(): void }) {
   }, [handleUpdateUser.status, onClose])
   useEffect(() => {
     if (handleLogoutUser.status === 'success') {
-      history.push('/login')
+      window.location.href = '/login'
     }
-  }, [handleLogoutUser.status, history])
+  }, [handleLogoutUser.status])
   const avatar = watch('avatar')
   const newPassword = watch('newPassword')
 
