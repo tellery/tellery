@@ -215,7 +215,7 @@ const _StoryEditor: React.FC<{
           behavior: 'smooth',
           block: 'center',
           inline: 'nearest',
-          boundary: rootBlock.type === Editor.BlockType.Story ? editorRef.current?.parentElement : undefined
+          boundary: editorRef.current?.parentElement
         })
         // actions.forEach(({ el, top, left }) => {
         //   el.scrollTop = top + 100
