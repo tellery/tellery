@@ -744,7 +744,7 @@ export const MoreDropdownSelect: React.FC<{
           toast('Link copied')
         }
       },
-      {
+      !readonly && {
         title: 'Duplicate',
         icon: <IconMenuDuplicate color={ThemingVariables.colors.text[0]} />,
         action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
