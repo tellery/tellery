@@ -10,6 +10,7 @@ data class DbtModel(
     @JsonProperty("compiled_sql") val compiledSql: String?,
     @JsonProperty("resource_type") val resourceType: String,
     @JsonProperty("relation_name") val relationName: String?,
+    @JsonProperty("source_name") val sourceName: String?,
     @JsonProperty("unique_id") val uniqueId: String,
     val database: String,
     val schema: String,
@@ -39,6 +40,7 @@ data class DbtModel(
             else -> DbtBlock.Materialization.UNKNOWN
         }
 
+        if (sourceName != null) builder.sourceTable = sourceName
         return builder.build()
     }
 }
