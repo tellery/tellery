@@ -14,7 +14,6 @@ export const Calendar = forwardRef<
     className?: string
     value: Date
     onChange(date: Date, id?: string): void
-    onHover(id?: string): void
   }
 >(function Calendar(props, ref) {
   const { data: thoughts } = useAllThoughts()
@@ -54,12 +53,7 @@ export const Calendar = forwardRef<
   )
 
   return (
-    <div
-      ref={ref}
-      onMouseLeave={() => {
-        props.onHover(undefined)
-      }}
-    >
+    <div ref={ref}>
       <ReactCalendar
         view="month"
         value={props.value}
@@ -151,19 +145,6 @@ export const Calendar = forwardRef<
             }
           `,
           props.className
-        )}
-        tileContent={({ date }) => (
-          <div
-            className={css`
-              height: 24px;
-              width: 24px;
-              margin-top: -24px;
-              z-index: -1;
-            `}
-            onMouseEnter={() => {
-              props.onHover(map[dayjs(date).format('YYYY-MM-DD')])
-            }}
-          />
         )}
         tileClassName={(tile) => {
           const key = dayjs(tile.date).format('YYYY-MM-DD')

@@ -127,20 +127,16 @@ object DbtManager {
         forceMkdir(rootFolder)
         forceMkdir(keyFolder)
 
-        val profiles = ConfigManager.profiles.filter { isDbtProfile(it) }
-        reloadDbtProfiles(profiles)
-
-        if (profiles.isNotEmpty()) {
-            createRemoteRepos(profiles)
-        }
+        reloadDbtProfiles(ConfigManager.profiles)
+        createRemoteRepos(ConfigManager.profiles)
     }
 
     fun reloadDbtProfiles(profiles: List<Profile>) {
-        if (profiles.isEmpty()) {
+        val dbtProfiles = profiles.filter{ isDbtProfile(it) }
+        if (dbtProfiles.isEmpty()) {
             return
         }
-
-        val dbtProfileContent = batchToDbtProfile(profiles)
+        val dbtProfileContent = batchToDbtProfile(dbtProfiles)
         overwriteFile(profileFile, dbtProfileContent)
     }
 
@@ -223,14 +219,18 @@ object DbtManager {
     }
 
     private fun createRemoteRepos(profiles: List<Profile>) {
+        val dbtProfiles = profiles.filter{ isDbtProfile(it) }
+        if (dbtProfiles.isEmpty()){
+            return
+        }
         val repoFolders = rootFolder.list() ?: Collections.emptyList<String>().toTypedArray()
         val keyFolders = keyFolder.list() ?: Collections.emptyList<String>().toTypedArray()
 
-        profiles
+        dbtProfiles
             .filter { !keyFolders.contains(it.name) }
             .forEach { generateRepoKeyPair(DbtRepository(rootFolder, keyFolder, it)) }
 
-        profiles
+        dbtProfiles
             .filter { !repoFolders.contains(it.name) }
             .forEach {
                 val repo = DbtRepository(rootFolder, keyFolder, it)

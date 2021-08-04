@@ -24,3 +24,12 @@ export const useSetBlockLocalPreferences = () => {
   )
   return setValue
 }
+
+export const useGetBlockLocalPreferences = () => {
+  const getValue = useAtomCallback<unknown, { id: string; key: string }>(
+    useCallback((get, set, arg) => {
+      return get(blockLocalPreferencesAtoms({ id: arg.id, key: arg.key, initValue: false }))
+    }, [])
+  )
+  return getValue
+}

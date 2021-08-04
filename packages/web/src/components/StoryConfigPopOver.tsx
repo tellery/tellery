@@ -25,6 +25,7 @@ import { toast } from 'react-toastify'
 import { ThemingVariables } from '@app/styles'
 import type { Permission, PermissionEntityRole, Story } from '@app/types'
 import { env } from '@app/env'
+import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 
 const upsertPermission = (permissions: Permission[], permission: Permission): Permission[] => {
   const filteredPermission = permissions.filter(
@@ -44,11 +45,15 @@ export const StoryConfigPopOver: React.FC<{
   const { data: lastEditedBy } = useUser(story?.lastEditedById ?? null)
   const user = useLoggedUser()
   const history = useHistory()
+  const permissions = useStoryPermissions(story.id)
 
   const setWorkspacePermission = useCallback(
     async (role: PermissionEntityRole) => {
+      if (!permissions.canWrite) {
+        return
+      }
       if (!user) return
-      const permissions = upsertPermission(
+      const newPermissions = upsertPermission(
         upsertPermission(story?.permissions ?? [], {
           role,
           type: 'workspace'
@@ -60,9 +65,9 @@ export const StoryConfigPopOver: React.FC<{
         } as Permission
       )
 
-      await blockTranscation.updateBlockPermissions(story.id, permissions)
+      await blockTranscation.updateBlockPermissions(story.id, newPermissions)
     },
-    [blockTranscation, story.id, story?.permissions, user]
+    [blockTranscation, story.id, story?.permissions, user, permissions]
   )
   const openStory = useOpenStory()
 
@@ -110,24 +115,29 @@ export const StoryConfigPopOver: React.FC<{
         `
       )}
     >
-      <MenuItem
-        icon={<IconCommonRefresh color={ThemingVariables.colors.text[0]} />}
-        title="Refresh on open"
-        onClick={(e) => {
-          e.preventDefault()
-          setStoryFormat('refreshOnOpen', !story?.format?.refreshOnOpen)
-        }}
-        side={<FormSwitch checked={!!story?.format?.refreshOnOpen} readOnly />}
-      />
-      <MenuItem
-        icon={<IconCommonLock color={ThemingVariables.colors.text[0]} />}
-        title="Lock"
-        onClick={(e) => {
-          e.preventDefault()
-          setStoryFormat('locked', !story?.format?.locked)
-        }}
-        side={<FormSwitch checked={!!story?.format?.locked} readOnly />}
-      />
+      {permissions.canWrite && (
+        <>
+          <MenuItem
+            icon={<IconCommonRefresh color={ThemingVariables.colors.text[0]} />}
+            title="Refresh on open"
+            onClick={(e) => {
+              e.preventDefault()
+              setStoryFormat('refreshOnOpen', !story?.format?.refreshOnOpen)
+            }}
+            side={<FormSwitch checked={!!story?.format?.refreshOnOpen} readOnly />}
+          />
+          <MenuItem
+            icon={<IconCommonLock color={ThemingVariables.colors.text[0]} />}
+            title="Lock"
+            onClick={(e) => {
+              e.preventDefault()
+              setStoryFormat('locked', !story?.format?.locked)
+            }}
+            side={<FormSwitch checked={!!story?.format?.locked} readOnly />}
+          />
+        </>
+      )}
+
       <MenuItem
         icon={<IconCommonCopy color={ThemingVariables.colors.text[0]} />}
         title="Copy link"
@@ -142,17 +152,18 @@ export const StoryConfigPopOver: React.FC<{
         title="Duplicate"
         onClick={duplicateStoryHandler}
       />
-      {env.DEV && (
+      {permissions.canWrite && (
         <MenuItem
           icon={<IconMenuShow color={ThemingVariables.colors.text[0]} />}
-          title="Workspace Readonly (DEV)"
+          title="Workspace Readonly"
           onClick={(e) => {
             e.preventDefault()
             setWorkspacePermission(readOnlyStatus ? 'manager' : 'commentator')
           }}
-          side={<FormSwitch checked={readOnlyStatus} readOnly />}
+          side={<FormSwitch checked={readOnlyStatus} readOnly disabled={!permissions.canWrite} />}
         />
       )}
+
       {env.DEV && (
         <MenuItem
           icon={<IconMenuShow color={ThemingVariables.colors.text[0]} />}
@@ -164,25 +175,29 @@ export const StoryConfigPopOver: React.FC<{
           side={<FormSwitch checked={!!story?.format?.showBorder} readOnly />}
         />
       )}
-      <MenuItemDivider />
-      <MenuItem
-        icon={<IconMenuDelete color={ThemingVariables.colors.negative[0]} />}
-        title={
-          <span
-            className={css`
-              color: ${ThemingVariables.colors.negative[0]};
-            `}
-          >
-            Delete
-          </span>
-        }
-        onClick={async () => {
-          if (confirm(`Delete story?`)) {
-            await blockTranscation.deleteStory(props.story.id)
-            history.push('/stories')
-          }
-        }}
-      />
+      {permissions.canWrite && (
+        <>
+          <MenuItemDivider />
+          <MenuItem
+            icon={<IconMenuDelete color={ThemingVariables.colors.negative[0]} />}
+            title={
+              <span
+                className={css`
+                  color: ${ThemingVariables.colors.negative[0]};
+                `}
+              >
+                Delete
+              </span>
+            }
+            onClick={async () => {
+              if (confirm(`Delete story?`)) {
+                await blockTranscation.deleteStory(props.story.id)
+                history.push('/stories')
+              }
+            }}
+          />
+        </>
+      )}
       <MenuItemDivider />
       {story?.lastEditedById && (
         <div

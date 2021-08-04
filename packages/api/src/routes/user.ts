@@ -4,6 +4,7 @@ import { Context } from 'koa'
 import Router from 'koa-router'
 
 import userService from '../services/user'
+import { isAnonymous } from '../utils/env'
 import { validate } from '../utils/http'
 import { mustGetUser } from '../utils/user'
 
@@ -98,7 +99,10 @@ async function login(ctx: Context) {
 }
 
 async function logout(ctx: Context) {
-  setToken(ctx, null)
+  // for anonymous user service, logout does not clean cookies / header
+  if (!isAnonymous()) {
+    setToken(ctx, null)
+  }
   ctx.body = { success: true }
 }
 

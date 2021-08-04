@@ -199,7 +199,7 @@ export const StoryRefs = (props: { refs: Ref[]; storyId: string; isSQLEditor?: b
                               isAltKeyPressed: e.altKey
                             })
                             if (props.isSQLEditor) {
-                              openQuestion({ mode: 'SQL', storyId: block.storyId!, blockId: block.id, readonly: false })
+                              openQuestion({ mode: 'SQL', storyId: block.storyId!, blockId: block.id })
                             }
                           }}
                         >

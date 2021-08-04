@@ -59,16 +59,22 @@ const defaultPermissions = [
 ]
 
 function onlyForCreatedUser(createdById?: string): PermissionModel[] {
-  return [
-    { role: PermissionEntityRole.MANAGER, type: PermissionEntityRoleType.USER, id: createdById },
-  ]
+  return createdById
+    ? [{ role: PermissionEntityRole.MANAGER, type: PermissionEntityRoleType.USER, id: createdById }]
+    : [{ role: PermissionEntityRole.MANAGER, type: PermissionEntityRoleType.WORKSPACE }]
 }
 
 function readonlyForWorkspace(createdById?: string): PermissionModel[] {
-  return [
-    { role: PermissionEntityRole.MANAGER, type: PermissionEntityRoleType.USER, id: createdById },
-    { role: PermissionEntityRole.VIEWER, type: PermissionEntityRoleType.WORKSPACE },
-  ]
+  return createdById
+    ? [
+        {
+          role: PermissionEntityRole.MANAGER,
+          type: PermissionEntityRoleType.USER,
+          id: createdById,
+        },
+        { role: PermissionEntityRole.VIEWER, type: PermissionEntityRoleType.WORKSPACE },
+      ]
+    : [{ role: PermissionEntityRole.MANAGER, type: PermissionEntityRoleType.WORKSPACE }]
 }
 
 export {

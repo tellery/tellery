@@ -8,7 +8,6 @@ import { toast } from 'react-toastify'
 import { BlockSnapshot, getBlockFromSnapshot } from '@app/store/block'
 import { Editor } from '@app/types'
 import { mergeTokens } from '../components/editor'
-import { isQuestionLikeBlock } from '@app/components/editor/Blocks/utils'
 
 export const createTranscation = ({ operations }: { operations: Operation[] }) => {
   return {
@@ -181,32 +180,14 @@ export const getDuplicatedBlocksFragment = (
 export const getDuplicatedBlocks = (blocks: Editor.BaseBlock[], storyId: string) => {
   const duplicatedBlocks = blocks.map((block) => {
     const fragBlock = block
-    if (isQuestionLikeBlock(fragBlock.type)) {
-      const questionBlock = fragBlock as Editor.QuestionBlock
-
-      const newBlock = createEmptyBlock<Editor.QuestionBlock>({
-        type: Editor.BlockType.Question,
-        storyId,
-        parentId: storyId,
-        content: {
-          title: questionBlock.content?.title,
-          sql: questionBlock.content?.sql,
-          visualization: questionBlock.content?.visualization,
-          snapshotId: questionBlock.content?.snapshotId
-        },
-        format: fragBlock.format
-      })
-      return newBlock
-    } else {
-      return createEmptyBlock({
-        type: fragBlock.type,
-        storyId,
-        parentId: storyId,
-        content: fragBlock.content,
-        children: fragBlock.children,
-        format: fragBlock.format
-      })
-    }
+    return createEmptyBlock({
+      type: fragBlock.type,
+      storyId,
+      parentId: storyId,
+      content: fragBlock.content,
+      children: fragBlock.children,
+      format: fragBlock.format
+    })
   })
 
   return duplicatedBlocks
@@ -258,7 +239,13 @@ export const addInsertBlockOperations = (
       toast.error('block is null')
     }
     invariant(block, 'block is null')
-    operations.push({ cmd: 'set', id: block.id, path: [], args: block, table: 'block' })
+    operations.push({
+      cmd: 'set',
+      id: block.id,
+      path: [],
+      args: { ...block, parentId: targetParentBlockId, children: [] },
+      table: 'block'
+    })
     if (!afterId) {
       operations.push({
         cmd: 'listBefore',

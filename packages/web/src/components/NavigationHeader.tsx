@@ -10,6 +10,7 @@ import { createTranscation } from '@app/context/editorTranscations'
 import { useBlockSuspense, useWorkspaceView } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useCommit } from '@app/hooks/useCommit'
+import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { ThemingVariables } from '@app/styles'
 import type { Story } from '@app/types'
 import { css } from '@emotion/css'
@@ -42,6 +43,7 @@ export const _NavigationHeader = (props: { storyId: string; title?: string; pinn
     },
     [story, commit]
   )
+  const permissions = useStoryPermissions(props.storyId)
 
   return (
     <div
@@ -106,19 +108,23 @@ export const _NavigationHeader = (props: { storyId: string; title?: string; pinn
             border-right: solid 1px ${ThemingVariables.colors.gray[1]};
           `}
         />
-        <RefreshAllQuestionBlockButton storyId={props.storyId} />
+        {permissions.canWrite && (
+          <>
+            <RefreshAllQuestionBlockButton storyId={props.storyId} />
+            <IconButton
+              hoverContent={story.format?.fullWidth ? 'Dsiable Full Width' : 'Full Width'}
+              icon={story.format?.fullWidth ? IconMenuNormalWidth : IconMenuFullWidth}
+              color={ThemingVariables.colors.text[0]}
+              className={css`
+                margin-right: 20px;
+              `}
+              onClick={() => {
+                setStoryFormat('fullWidth', !story.format?.fullWidth)
+              }}
+            />
+          </>
+        )}
 
-        <IconButton
-          hoverContent={story.format?.fullWidth ? 'Dsiable Full Width' : 'Full Width'}
-          icon={story.format?.fullWidth ? IconMenuNormalWidth : IconMenuFullWidth}
-          color={ThemingVariables.colors.text[0]}
-          className={css`
-            margin-right: 20px;
-          `}
-          onClick={() => {
-            setStoryFormat('fullWidth', !story.format?.fullWidth)
-          }}
-        />
         {props.pinned ? (
           <IconButton
             hoverContent={'Favorite'}

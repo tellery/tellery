@@ -6,7 +6,5 @@
 *.ipr
 *.iws
 
-/drivers
+/extra
 /profiles.json
-/dbt
-/dbt_key

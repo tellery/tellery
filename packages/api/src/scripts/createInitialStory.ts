@@ -11,6 +11,7 @@ import BlockEntity from '../entities/block'
 import { BlockParentType, BlockType } from '../types/block'
 import { WorkspaceViewEntity } from '../entities/workspaceView'
 import { SnapshotEntity } from '../entities/snapshot'
+import { readonlyForWorkspace } from '../types/permission'
 
 async function main() {
   await createDatabaseCon()
@@ -54,6 +55,9 @@ async function main() {
     },
     type: BlockType.STORY,
     children: [questionId],
+    permissions: readonlyForWorkspace(superUser.id),
+    createdById: superUser.id,
+    lastEditedById: superUser.id,
     alive: true,
   })
 
@@ -83,6 +87,9 @@ async function main() {
         minPercentage: 1,
       },
     },
+    permissions: readonlyForWorkspace(superUser.id),
+    createdById: superUser.id,
+    lastEditedById: superUser.id,
     format: { width: 0.7, aspectRatio: 1.7777777777777777 },
     type: BlockType.QUESTION,
     children: [],

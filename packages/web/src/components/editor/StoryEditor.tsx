@@ -4,9 +4,11 @@ import { useFetchStoryChunk } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { Operation, useCommit, useCommitHistory } from '@app/hooks/useCommit'
+import { usePermissions } from '@app/hooks/usePermissions'
 import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
 import { useSelectionArea } from '@app/hooks/useSelectionArea'
 import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
+import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { BlockSnapshot, getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor, Story, Thought } from '@app/types'
@@ -72,6 +74,7 @@ import {
 import { EditorContext, EditorContextInterface, useMouseMoveInEmitter } from './hooks'
 import { BlockAdminContext, useBlockAdminProvider } from './hooks/useBlockAdminProvider'
 import { useBlockHoveringState } from './hooks/useBlockHoveringState'
+import { useGetBlockLocalPreferences } from './hooks/useBlockLocalPreferences'
 import { useDebouncedDimension } from './hooks/useDebouncedDimensions'
 import { useStorySelection } from './hooks/useStorySelection'
 import { useSetUploadResource } from './hooks/useUploadResource'
@@ -106,7 +109,10 @@ const _StoryEditor: React.FC<{
   const blocksMap = useStoryBlocksMap(storyId)
   const blocksMapsRef = useRef<Record<string, Editor.BaseBlock> | null>(null)
   const [inited, setInited] = useState(false)
+  const permissions = useStoryPermissions(storyId)
+  const canWrite = permissions.canWrite
 
+  const getBlockLocalPreferences = useGetBlockLocalPreferences()
   useEffect(() => {
     if (blocksMap) {
       blocksMapsRef.current = blocksMap
@@ -256,6 +262,7 @@ const _StoryEditor: React.FC<{
   const blockTranscations = useBlockTranscations()
 
   const createFirstOrLastBlockHandler = useCallback(() => {
+    if (!permissions.canWrite) return
     const newBlock = createEmptyBlock<Editor.Block>({
       type: Editor.BlockType.Text,
       storyId,
@@ -273,7 +280,7 @@ const _StoryEditor: React.FC<{
     } else {
       setSelectionAtBlockStart(newBlock)
     }
-  }, [commit, setSelectionAtBlockStart, snapshot, storyId])
+  }, [commit, permissions.canWrite, setSelectionAtBlockStart, snapshot, storyId])
 
   const updateSelection = useCallback(
     (newBlock: Editor.BaseBlock, oldBlock: Editor.BaseBlock) => {
@@ -294,6 +301,7 @@ const _StoryEditor: React.FC<{
 
   const setBlockValue = useCallback<SetBlock<Editor.BaseBlock>>(
     (id, update) => {
+      if (!permissions.canWrite) return
       commit({
         transcation: (snapshot) => {
           const oldBlock = getBlockFromSnapshot(id, snapshot)
@@ -309,7 +317,7 @@ const _StoryEditor: React.FC<{
         storyId
       })
     },
-    [commit, storyId, updateSelection]
+    [commit, permissions.canWrite, storyId, updateSelection]
   )
 
   const toggleBlockType = useCallback(
@@ -565,18 +573,6 @@ const _StoryEditor: React.FC<{
   const user = useLoggedUser()
   const commitHistory = useCommitHistory<{ selection: TellerySelection }>(user.id, storyId)
 
-  const canWrite = useMemo(() => {
-    if (!rootBlock) return false
-    const permissions = (rootBlock as Story).permissions
-    return permissions?.some((permission) => {
-      return (
-        permission.role === 'manager' &&
-        ((permission.type === 'workspace' && permission.role === 'manager') ||
-          (permission.type === 'user' && permission.id === user.id))
-      )
-    })
-  }, [rootBlock, user])
-
   const locked = useMemo(() => {
     return !!(rootBlock as Story)?.format?.locked || canWrite === false
   }, [canWrite, rootBlock])
@@ -712,7 +708,7 @@ const _StoryEditor: React.FC<{
       const handlers: { hotkeys: string[]; handler: (e: KeyboardEvent) => void }[] = [
         {
           hotkeys: ['enter'],
-          handler: (e) => {
+          handler: async (e) => {
             e.preventDefault()
             setHoverBlockId(null)
             if (isSelectionCollapsed(selectionState) && selectionState.type === TellerySelectionType.Inline) {
@@ -761,13 +757,23 @@ const _StoryEditor: React.FC<{
                   storyId,
                   parentId: storyId
                 })
+                const getDirection = async (block: Editor.BaseBlock) => {
+                  if (block.type === Editor.BlockType.Toggle) {
+                    const collapsedState = await getBlockLocalPreferences({ id: block.id, key: 'toggle' })
+                    if (collapsedState) {
+                      return 'bottom'
+                    }
+                  }
+                  return block.children?.length ? 'child' : 'bottom'
+                }
+                const direction = await getDirection(block)
                 blockTranscations.insertBlocks(storyId, {
                   blocksFragment: {
                     children: [newBlock.id],
                     data: { [newBlock.id]: newBlock }
                   },
                   targetBlockId: blockId,
-                  direction: block.children?.length ? 'child' : 'bottom'
+                  direction: direction
                 })
                 setSelectionAtBlockStart(newBlock)
               } else {
@@ -1154,6 +1160,15 @@ const _StoryEditor: React.FC<{
                     }
                   )
                 })
+                setSelectionState((state) => {
+                  if (state?.type === TellerySelectionType.Inline) {
+                    return {
+                      ...state,
+                      anchor: state.focus
+                    }
+                  }
+                  return state
+                })
               } else {
                 logger('to do')
               }
@@ -1198,7 +1213,8 @@ const _StoryEditor: React.FC<{
       snapshot,
       setSelectedBlocks,
       setBlockValue,
-      focusingBlockId
+      focusingBlockId,
+      setSelectionState
     ]
   )
 
@@ -1290,6 +1306,7 @@ const _StoryEditor: React.FC<{
                   display: flex;
                   flex-direction: column;
                   user-select: none;
+                  cursor: text;
                 `
               )}
               onMouseMove={onMouseMove}
@@ -1320,7 +1337,6 @@ const _StoryEditor: React.FC<{
                     *::selection {
                       background-color: ${ThemingVariables.colors.selection[0]};
                     }
-                    cursor: text;
                     flex: 1;
                     user-select: none;
                   `,
@@ -1328,7 +1344,6 @@ const _StoryEditor: React.FC<{
                     css`
                       width: 100%;
                     `,
-                  locked && 'no-select',
                   props.className
                 )}
                 ref={editorRef}

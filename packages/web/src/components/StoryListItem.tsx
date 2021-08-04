@@ -161,6 +161,7 @@ export function StoryListItem(props: {
                   border-radius: 12px;
                   overflow: hidden;
                   margin-right: 4px;
+                  flex-shrink: 0;
                 `}
               />
               <span
@@ -170,6 +171,9 @@ export function StoryListItem(props: {
                   text-align: center;
                   padding: 0 1px;
                   color: ${ThemingVariables.colors.text[0]};
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  white-space: nowrap;
                 `}
               >
                 {props.value.user.name}
