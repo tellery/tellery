@@ -36,22 +36,24 @@ const _Page: React.FC = () => {
           className={css`
             display: flex;
             flex: 1;
-            height: 100%;
+            align-items: stretch;
+            overflow: hidden;
           `}
         >
           <div
             className={css`
               flex: 1;
-              height: 100%;
-              overflow: hidden;
               display: flex;
               flex-direction: column;
+              justify-content: stretch;
+              overflow: hidden;
             `}
           >
             <div
               className={css`
                 height: 44px;
                 flex-shrink: 0;
+                position: relative;
               `}
             >
               <React.Suspense
@@ -172,10 +174,10 @@ const VerticalLayout = styled.div`
 `
 const Layout = styled.div`
   display: flex;
-  height: 100%;
   justify-content: flex-start;
   position: relative;
   overflow: hidden;
+  flex: 1;
 `
 
 const StoryContainer = styled.div`
@@ -185,7 +187,6 @@ const StoryContainer = styled.div`
   flex: 1;
   align-self: stretch;
   overflow: hidden;
-  height: 100%;
 `
 
 export default _Page
