@@ -56,7 +56,7 @@ export const _NavigationHeader = (props: { storyId: string; title?: string; pinn
         align-self: flex-start;
         width: 100%;
         line-height: 0;
-        flex: 0 0 44px;
+        height: 100%;
         box-shadow: 0px 1px 0px ${ThemingVariables.colors.gray[1]};
         z-index: 100;
       `}

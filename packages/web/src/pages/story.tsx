@@ -32,20 +32,25 @@ const _Page: React.FC = () => {
   return (
     <>
       <VerticalLayout>
-        <React.Suspense
-          fallback={
-            <div
-              className={css`
-                height: 44px;
-                background: ${ThemingVariables.colors.gray[5]};
-                box-shadow: 0px 1px 0px ${ThemingVariables.colors.gray[1]};
-                flex-shrink: 0;
-              `}
-            ></div>
-          }
+        <div
+          className={css`
+            height: 44px;
+            flex-shrink: 0;
+          `}
         >
-          <StoryHeader storyId={id} key={id} />
-        </React.Suspense>
+          <React.Suspense
+            fallback={
+              <div
+                className={css`
+                  background: ${ThemingVariables.colors.gray[5]};
+                  box-shadow: 0px 1px 0px ${ThemingVariables.colors.gray[1]};
+                `}
+              ></div>
+            }
+          >
+            <StoryHeader storyId={id} key={id} />
+          </React.Suspense>
+        </div>
         <Layout>
           <div
             className={css`
@@ -127,7 +132,8 @@ const StoryHeader: React.FC<{ storyId: string }> = ({ storyId }) => {
             padding: 0 25px;
             width: 100%;
             z-index: 1000;
-            height: 44px;
+            flex-shrink: 0;
+            height: 100%;
             background-color: #fff;
           `}
         >
