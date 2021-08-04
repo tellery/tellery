@@ -56,17 +56,21 @@ object DbtManager {
         ).toFile()
     }
 
-    fun createRepo(name: String): String {
+    fun generateRepoKeyPair(name: String): String {
         val repo = DbtRepository(rootFolder, keyFolder, getProfileByName(name))
-        if (repoIsAlreadyExists(name)) {
-            logger.warn { "$name repository is in root folder, so ignore creating this repository." }
-            return generateRepoKeyPair(repo)
+
+        if (repo.publicKey.exists() && repo.publicKey.exists()) {
+            logger.warn { "The private key and public key are exists." }
+            return repo.publicKey.readText()
         }
 
-        val publicKey = generateRepoKeyPair(repo)
-        cloneRemoteRepo(repo)
-        updateTelleryModelConfig(repo)
-        return publicKey
+        forceMkdir(repo.sshFolder)
+
+        val jsch = JSch()
+        val keyPair = KeyPair.genKeyPair(jsch, KeyPair.RSA, 2048)
+        keyPair.writePrivateKey(repo.privateKey.absolutePath)
+        keyPair.writePublicKey(repo.publicKey.absolutePath, "")
+        return repo.publicKey.readText()
     }
 
     fun removeRepo(name: String) {
@@ -81,11 +85,13 @@ object DbtManager {
     }
 
     fun pullRepo(name: String) {
+        val repo = DbtRepository(rootFolder, keyFolder, getProfileByName(name))
+
         if (!repoIsAlreadyExists(name)) {
-            throw DBTRepositoryNotExistsException(name)
+            cloneRemoteRepo(repo)
+            updateTelleryModelConfig(repo)
         }
 
-        val repo = DbtRepository(rootFolder, keyFolder, getProfileByName(name))
         checkoutMasterAndPull(repo)
     }
 
@@ -125,16 +131,15 @@ object DbtManager {
         forceMkdir(rootFolder)
         forceMkdir(keyFolder)
         forceMkdir(profileFile.parentFile)
-        if (!profileFile.exists()){
+        if (!profileFile.exists()) {
             profileFile.createNewFile()
         }
 
         reloadDbtProfiles(ConfigManager.profiles)
-        createRemoteRepos(ConfigManager.profiles)
     }
 
     fun reloadDbtProfiles(profiles: List<Profile>) {
-        val dbtProfiles = profiles.filter{ isDbtProfile(it) }
+        val dbtProfiles = profiles.filter { isDbtProfile(it) }
         if (dbtProfiles.isEmpty()) {
             return
         }
@@ -203,42 +208,6 @@ object DbtManager {
         checkoutMasterAndPull(repo)
         overwriteFile(projectConfigFile, mapper.writeValueAsString(projectConfig))
         commitAndPush(repo, "Update the dbt_project.yml by tellery.")
-    }
-
-    private fun generateRepoKeyPair(repo: DbtRepository): String {
-        if (repo.publicKey.exists() && repo.publicKey.exists()) {
-            logger.warn { "The private key and public key exists." }
-            return repo.publicKey.readText()
-        }
-
-        forceMkdir(repo.sshFolder)
-
-        val jsch = JSch()
-        val keyPair = KeyPair.genKeyPair(jsch, KeyPair.RSA, 2048)
-        keyPair.writePrivateKey(repo.privateKey.absolutePath)
-        keyPair.writePublicKey(repo.publicKey.absolutePath, "")
-        return repo.publicKey.readText()
-    }
-
-    private fun createRemoteRepos(profiles: List<Profile>) {
-        val dbtProfiles = profiles.filter{ isDbtProfile(it) }
-        if (dbtProfiles.isEmpty()){
-            return
-        }
-        val repoFolders = rootFolder.list() ?: Collections.emptyList<String>().toTypedArray()
-        val keyFolders = keyFolder.list() ?: Collections.emptyList<String>().toTypedArray()
-
-        dbtProfiles
-            .filter { !keyFolders.contains(it.name) }
-            .forEach { generateRepoKeyPair(DbtRepository(rootFolder, keyFolder, it)) }
-
-        dbtProfiles
-            .filter { !repoFolders.contains(it.name) }
-            .forEach {
-                val repo = DbtRepository(rootFolder, keyFolder, it)
-                cloneRemoteRepo(repo)
-                updateTelleryModelConfig(repo)
-            }
     }
 
     private fun overwriteDiffModels(name: String, blocks: List<QuestionBlockContent>) {

@@ -8,18 +8,18 @@ option java_multiple_files = true;
 import "google/protobuf/empty.proto";
 
 service Dbt {
-  rpc CreateRepo (CreateRepoRequest) returns (CreateRepoResponse);
+  rpc GenerateKeyPair (GenerateKeyPairRequest) returns (GenerateKeyPairResponse);
   rpc PullRepo (PullRepoRequest) returns (google.protobuf.Empty);
   rpc PushRepo (PushRepoRequest) returns (google.protobuf.Empty);
   rpc RefreshWorkspace (google.protobuf.Empty) returns (google.protobuf.Empty);
   rpc ListDbtBlocks (ListDbtBlocksRequest) returns (ListDbtBlocksResponse);
 }
 
-message CreateRepoRequest {
+message GenerateKeyPairRequest {
   string profile = 1;
 }
 
-message CreateRepoResponse {
+message GenerateKeyPairResponse {
   string publicKey = 1;
 }
 
