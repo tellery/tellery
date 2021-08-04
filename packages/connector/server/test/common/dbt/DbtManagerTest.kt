@@ -13,7 +13,8 @@ import kotlin.test.assertFalse
 
 class DbtManagerTest {
 
-    private val mapper: ObjectMapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
+    private val mapper: ObjectMapper =
+        ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
 
     @Test
     fun `add tellery model config`() {
@@ -68,5 +69,6 @@ class DbtManagerTest {
         assertEquals("raw.public.Orders_", source.relationName)
         assertEquals(DbtBlock.Materialization.UNKNOWN, source.materialized)
         assertEquals("", source.description)
+        assertEquals("jaffle_shop", source.sourceTable)
     }
 }
