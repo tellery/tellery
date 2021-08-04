@@ -8,6 +8,7 @@ import { usePermissions } from '@app/hooks/usePermissions'
 import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
 import { useSelectionArea } from '@app/hooks/useSelectionArea'
 import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
+import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { BlockSnapshot, getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor, Story, Thought } from '@app/types'
@@ -108,6 +109,8 @@ const _StoryEditor: React.FC<{
   const blocksMap = useStoryBlocksMap(storyId)
   const blocksMapsRef = useRef<Record<string, Editor.BaseBlock> | null>(null)
   const [inited, setInited] = useState(false)
+  const permissions = useStoryPermissions(storyId)
+  const canWrite = permissions.canWrite
 
   const getBlockLocalPreferences = useGetBlockLocalPreferences()
   useEffect(() => {
@@ -259,6 +262,7 @@ const _StoryEditor: React.FC<{
   const blockTranscations = useBlockTranscations()
 
   const createFirstOrLastBlockHandler = useCallback(() => {
+    if (!permissions.canWrite) return
     const newBlock = createEmptyBlock<Editor.Block>({
       type: Editor.BlockType.Text,
       storyId,
@@ -276,7 +280,7 @@ const _StoryEditor: React.FC<{
     } else {
       setSelectionAtBlockStart(newBlock)
     }
-  }, [commit, setSelectionAtBlockStart, snapshot, storyId])
+  }, [commit, permissions.canWrite, setSelectionAtBlockStart, snapshot, storyId])
 
   const updateSelection = useCallback(
     (newBlock: Editor.BaseBlock, oldBlock: Editor.BaseBlock) => {
@@ -297,6 +301,7 @@ const _StoryEditor: React.FC<{
 
   const setBlockValue = useCallback<SetBlock<Editor.BaseBlock>>(
     (id, update) => {
+      if (!permissions.canWrite) return
       commit({
         transcation: (snapshot) => {
           const oldBlock = getBlockFromSnapshot(id, snapshot)
@@ -312,7 +317,7 @@ const _StoryEditor: React.FC<{
         storyId
       })
     },
-    [commit, storyId, updateSelection]
+    [commit, permissions.canWrite, storyId, updateSelection]
   )
 
   const toggleBlockType = useCallback(
@@ -567,8 +572,6 @@ const _StoryEditor: React.FC<{
 
   const user = useLoggedUser()
   const commitHistory = useCommitHistory<{ selection: TellerySelection }>(user.id, storyId)
-  const permissions = usePermissions(rootBlock, user)
-  const canWrite = permissions.canWrite
 
   const locked = useMemo(() => {
     return !!(rootBlock as Story)?.format?.locked || canWrite === false
