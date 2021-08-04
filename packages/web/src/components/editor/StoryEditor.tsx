@@ -1417,10 +1417,7 @@ const _StoryEditor: React.FC<{
                         {rootBlock.children && (
                           <ContentBlocks blockIds={rootBlock.children} parentType={rootBlock.type} readonly={locked} />
                         )}
-                        <EditorEmptyStateEndPlaceHolder
-                          onClick={createFirstOrLastBlockHandler}
-                          height={rootBlock.type === Editor.BlockType.Story ? 272 : 72}
-                        />
+                        <EditorEmptyStateEndPlaceHolder onClick={createFirstOrLastBlockHandler} height={272} />
                         {!locked && <BlockTextOperationMenu currentBlockId={focusingBlockId} />}
                         {props.bottom && (
                           <div
