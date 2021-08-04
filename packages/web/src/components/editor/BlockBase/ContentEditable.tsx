@@ -403,13 +403,17 @@ const _ContentEditable: React.ForwardRefRenderFunction<
               }
             }
             if (e.key === 'Enter') {
-              if (e.shiftKey === true || block.type === Editor.BlockType.Code) {
+              if (block.type === Editor.BlockType.Code) {
                 const [tokens1, tokens2] = splitBlockTokens(block.content?.title || [], localSelection)
                 editor?.setBlockValue?.(block.id, (block) => {
                   block!.content!.title = mergeTokens([...tokens1, ['\n'], ...tokens2])
                 })
                 e.preventDefault()
                 e.stopPropagation()
+              } else {
+                if (e.shiftKey === true) {
+                  e.stopPropagation()
+                }
               }
               // e.preventDefault()
               // onKeyDown?.(e)
