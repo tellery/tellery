@@ -12,6 +12,7 @@ fun readCSV(content: ByteArray): CSVData {
     csvReader().open(content.inputStream()) {
         readAllAsSequence().forEach { row ->
             if (ret == null) {
+                // handle row conversion
                 ret = CSVData(row)
             } else {
                 ret!!.records.add(row)
@@ -48,11 +49,15 @@ fun readCSV(content: ByteArray): CSVData {
 
 
 // Assume that all csv files have header
-class CSVData(
-    var header: List<String>,
-) {
+class CSVData(rawHeader: List<String>) {
+    // handle header parsing
+    val header: List<String> = rawHeader.map{
+        it.replace('-', '_')
+            .replace(' ', '_')
+            .replace('.', '_')
+    }
     val records: MutableList<List<String>> = mutableListOf()
-    val dataTypes: Array<Int> = Array(header.size) { -1 }
+    private val dataTypes: Array<Int> = Array(header.size) { -1 }
 
     val fields: List<TypeField>
         get() = header.zip(this.dataTypes.toList()).map{ (name, type) -> TypeField(name, type)}
