@@ -52,26 +52,18 @@ export const SideBar = () => {
 }
 
 const SideBarContents = {
-  PINNED: {
-    icon: IconCommonStar,
-    // hoverTitle: 'Pinned Stories',
-    content: <SideBarPinnedStoriesSection />
-  },
   ALL_STORIES: {
     icon: IconCommonAllQuestion,
-    // hoverTitle: 'All Stories',
     content: <SideBarAllStoriesSection />
+  },
+  PINNED: {
+    icon: IconCommonStar,
+    content: <SideBarPinnedStoriesSection />
   },
   THOUGHTS: {
     icon: IconCommonThoughts,
-    // hoverTitle: 'My Thoughts',
     content: <SideBarThoughtsSection />
   }
-  // METRICS: {
-  //   icon: IconCommonMetrics,
-  //   hoverTitle: 'Metrics',
-  //   content: <SideBarMetricsSection />
-  // }
 }
 
 const SideBarContent: React.FC = () => {
