@@ -37,7 +37,7 @@ const TocQuestionItem: React.FC<{ blockId: string; storyId: string }> = ({ block
         display: flex;
         align-items: center;
         cursor: pointer;
-        padding: 10px 16px;
+        padding: 6px 16px;
         margin-bottom: 5px;
         :hover {
           background: ${ThemingVariables.colors.primary[5]};
@@ -112,7 +112,7 @@ const DataAssetItem: React.FC<{ blockId: string; currentStoryId: string }> = ({ 
         display: flex;
         align-items: center;
         cursor: pointer;
-        padding: 10px 16px;
+        padding: 6px 16px;
         margin-bottom: 5px;
         user-select: none;
         :hover {

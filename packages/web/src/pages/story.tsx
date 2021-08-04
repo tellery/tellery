@@ -34,40 +34,52 @@ const _Page: React.FC = () => {
       <VerticalLayout>
         <div
           className={css`
-            height: 44px;
-            flex-shrink: 0;
+            display: flex;
           `}
         >
-          <React.Suspense
-            fallback={
-              <div
-                className={css`
-                  background: ${ThemingVariables.colors.gray[5]};
-                  box-shadow: 0px 1px 0px ${ThemingVariables.colors.gray[1]};
-                `}
-              ></div>
-            }
-          >
-            <StoryHeader storyId={id} key={id} />
-          </React.Suspense>
-        </div>
-        <Layout>
           <div
             className={css`
-              width: 240px;
+              flex: 1;
             `}
           >
-            <React.Suspense fallback={<div></div>}>
-              <SideBarMetricsSection />
-            </React.Suspense>
+            <div
+              className={css`
+                height: 44px;
+                flex-shrink: 0;
+              `}
+            >
+              <React.Suspense
+                fallback={
+                  <div
+                    className={css`
+                      background: ${ThemingVariables.colors.gray[5]};
+                      box-shadow: 0px 1px 0px ${ThemingVariables.colors.gray[1]};
+                    `}
+                  ></div>
+                }
+              >
+                <StoryHeader storyId={id} key={id} />
+              </React.Suspense>
+            </div>
+            <Layout>
+              <div
+                className={css`
+                  width: 240px;
+                `}
+              >
+                <React.Suspense fallback={<div></div>}>
+                  <SideBarMetricsSection />
+                </React.Suspense>
+              </div>
+              <StoryContainer>
+                <React.Suspense fallback={<BlockingUI blocking size={50} />}>
+                  <StoryContent storyId={id} />
+                </React.Suspense>
+              </StoryContainer>
+            </Layout>
           </div>
-          <StoryContainer>
-            <React.Suspense fallback={<BlockingUI blocking size={50} />}>
-              <StoryContent storyId={id} />
-            </React.Suspense>
-          </StoryContainer>
           <SecondaryEditor />
-        </Layout>
+        </div>
         <StoryQuestionsEditor />
       </VerticalLayout>
     </>
