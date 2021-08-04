@@ -1210,7 +1210,8 @@ const _StoryEditor: React.FC<{
       snapshot,
       setSelectedBlocks,
       setBlockValue,
-      focusingBlockId
+      focusingBlockId,
+      setSelectionState
     ]
   )
 

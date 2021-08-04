@@ -643,6 +643,7 @@ const AddLinkOperation = (props: {
   const [open, setOpen] = useState(false)
   const [link, setLink] = useState('')
   const inputRef = useRef<HTMLInputElement | null>(null)
+  const editor = useEditor()
 
   useEffect(() => {
     if (!open) {
@@ -747,6 +748,15 @@ const AddLinkOperation = (props: {
                   e.preventDefault()
                   props.markHandler(Editor.InlineType.Link, [link], link.length === 0)
                   props.setInlineEditing(false)
+                  editor?.setSelectionState((state) => {
+                    if (state?.type === TellerySelectionType.Inline) {
+                      return {
+                        ...state,
+                        anchor: state.focus
+                      }
+                    }
+                    return state
+                  })
                   setOpen(false)
                 }
               }}
