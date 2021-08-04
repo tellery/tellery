@@ -134,7 +134,7 @@ export const NewQuestionPopover: React.FC<{
           }
         })
         setOpen(false)
-        questionEditor.open({ mode: 'SQL', readonly: false, blockId: block.id, storyId: block.storyId! })
+        questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
       } else {
         const questionIndex = index - 1
         setOpen(false)

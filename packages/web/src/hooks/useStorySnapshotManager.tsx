@@ -11,6 +11,9 @@ import type { Editor, Story } from '@app/types'
 import { useCommit } from './useCommit'
 import { useStoryBlocksMap } from './useStoryBlock'
 import { isExecuteableBlockType, isQuestionLikeBlock } from '@app/components/editor/Blocks/utils'
+import { useLoggedUser } from './useAuth'
+import { usePermissions } from './usePermissions'
+import { useStoryPermissions } from './useStoryPermissions'
 
 export const useRefreshSnapshot = () => {
   const commit = useCommit()
@@ -142,10 +145,11 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
   }, [storyBlocksMap])
 
   const refreshOnInit = (storyBlocksMap?.[storyId] as Story)?.format?.refreshOnOpen
+  const permissions = useStoryPermissions(storyId)
   const refreshSnapshot = useRefreshSnapshot()
 
   useEffect(() => {
-    if (refreshOnInit) {
+    if (refreshOnInit && permissions.canWrite) {
       executeableQuestionBlocks.forEach((questionBlock: Editor.QuestionBlock) => {
         if (dayjs().diff(dayjs(questionBlock.content?.lastRunAt ?? 0)) > 1000 * 5 * 60) {
           refreshSnapshot.execute(questionBlock)

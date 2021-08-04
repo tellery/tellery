@@ -25,6 +25,7 @@ import { useCommit } from '@app/hooks/useCommit'
 import { useLocalStorage } from '@app/hooks/useLocalStorage'
 import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
 import { useSqlEditor } from '@app/hooks/useSqlEditor'
+import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { applyCreateSnapshotOperation } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
@@ -57,7 +58,7 @@ type Mode = 'SQL' | 'VIS' | 'DOWNSTREAM'
 
 export interface QuestionEditor {
   close: (arg: string) => Promise<void>
-  open: (arg: { mode: Mode; readonly: boolean }) => Promise<void>
+  open: (arg: { mode: Mode }) => Promise<void>
 }
 
 export const useDraftBlockMutating = (blockId: string) => {
@@ -80,7 +81,6 @@ export const questionEditorBlockMapState = atom<
       storyId: string
       draft?: EditorDraft
       mode: string
-      readonly: boolean
     }
   >
 >({
@@ -139,7 +139,7 @@ export const useCleanQuestionEditorHandler = () => {
 export const useOpenQuestionBlockIdHandler = () => {
   const handler = useRecoilCallback(
     (recoilCallback) =>
-      ({ mode, readonly, blockId, storyId }: { mode: Mode; blockId: string; readonly: boolean; storyId: string }) => {
+      ({ mode, blockId, storyId }: { mode: Mode; blockId: string; storyId: string }) => {
         recoilCallback.set(questionEditorActiveIdState, blockId)
         recoilCallback.set(questionEditorOpenState, true)
         recoilCallback.set(questionEditorBlockMapState, (state) => {
@@ -148,8 +148,7 @@ export const useOpenQuestionBlockIdHandler = () => {
             [blockId]: {
               ...state[blockId],
               storyId,
-              mode,
-              readonly
+              mode
             }
           }
         })
@@ -500,8 +499,10 @@ export const StoryQuestionEditor: React.FC<{
     [commit, block]
   )
 
+  const permissions = useStoryPermissions(block.storyId ?? block.id)
+
   const mode = questionBlockState?.mode ?? 'VIS'
-  const readonly = questionBlockState?.readonly ?? false
+  const readonly = permissions.readonly
   const isDraftSql = !!questionBlockState?.draft?.sql
   const isDraft = !!questionBlockState?.draft
   const originalSQL = originalBlock?.content?.sql

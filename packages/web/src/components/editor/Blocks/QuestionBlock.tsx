@@ -1,8 +1,3 @@
-import { MenuItemDivider } from '@app/components/MenuItemDivider'
-import { Diagram } from '@app/components/v11n'
-import { css, cx, keyframes } from '@emotion/css'
-import styled from '@emotion/styled'
-import Tippy from '@tippyjs/react'
 import {
   IconCommonCopy,
   IconCommonError,
@@ -16,25 +11,29 @@ import {
 import { BlockingUI } from '@app/components/editor/BlockBase/BlockingUIBlock'
 import IconButton from '@app/components/kit/IconButton'
 import { MenuItem } from '@app/components/MenuItem'
+import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { RefreshButton } from '@app/components/RefreshButton'
 import { useQuestionEditor } from '@app/components/StoryQuestionsEditor'
+import { Diagram } from '@app/components/v11n'
 import { charts } from '@app/components/v11n/charts'
 import { Config, Data, Type } from '@app/components/v11n/types'
+import { useOnClickOutside, useOnScreen } from '@app/hooks'
+import { useBlockSuspense, useSnapshot, useUser } from '@app/hooks/api'
+import { useInterval } from '@app/hooks/useInterval'
+import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
+import { ThemingVariables } from '@app/styles'
+import { Editor, Snapshot } from '@app/types'
+import { DEFAULT_TITLE, snapshotToCSV } from '@app/utils'
+import { css, cx, keyframes } from '@emotion/css'
+import Tippy from '@tippyjs/react'
 import copy from 'copy-to-clipboard'
 import dayjs from 'dayjs'
 import download from 'downloadjs'
 import { useSelect } from 'downshift'
 import { AnimatePresence, motion, usePresence } from 'framer-motion'
-import { useOnClickOutside, useOnScreen } from '@app/hooks'
-import { useBlockSuspense, useSnapshot, useUser } from '@app/hooks/api'
-import { useInterval } from '@app/hooks/useInterval'
-import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
 import html2canvas from 'html2canvas'
-import invariant from 'tiny-invariant'
 import React, { ReactNode, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
-import { ThemingVariables } from '@app/styles'
-import { Editor, Snapshot } from '@app/types'
-import { DEFAULT_TITLE, snapshotToCSV } from '@app/utils'
+import invariant from 'tiny-invariant'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
 import { BlockResizer } from '../BlockBase/BlockResizer'
 import { ContentEditable } from '../BlockBase/ContentEditable'
@@ -82,10 +81,10 @@ const _QuestionBlock: React.ForwardRefRenderFunction<any, QuestionBlockProps> = 
     ref,
     () => ({
       openMenu: () => {
-        questionEditor.open({ mode: 'SQL', readonly, blockId: block.id, storyId: block.storyId! })
+        questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
       }
     }),
-    [block.id, block.storyId, questionEditor, readonly]
+    [block.id, block.storyId, questionEditor]
   )
 
   const onClickOutSide = useCallback(() => {
@@ -710,6 +709,7 @@ export const MoreDropdownSelect: React.FC<{
   const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null)
   const { data: user } = useUser(block?.lastEditedById ?? null)
   const editor = useEditor<Editor.QuestionBlock>()
+  const { readonly } = useBlockBehavior()
 
   const operations = useMemo(() => {
     return [
@@ -746,7 +746,7 @@ export const MoreDropdownSelect: React.FC<{
           copy(sql)
         }
       },
-      {
+      !readonly && {
         title: 'Convert to Snapshot',
         icon: <IconCommonCopy color={ThemingVariables.colors.text[0]} />,
         action: () => {
@@ -755,8 +755,8 @@ export const MoreDropdownSelect: React.FC<{
           })
         }
       }
-    ] as OperationInterface[]
-  }, [block.id, editor, snapshot?.data, sql])
+    ].filter((x) => !!x) as OperationInterface[]
+  }, [block.id, editor, readonly, snapshot?.data, sql])
 
   const { isOpen, openMenu, getToggleButtonProps, getMenuProps, highlightedIndex, getItemProps, closeMenu } = useSelect(
     { items: operations }
@@ -867,26 +867,28 @@ const TitleButtonsInner: React.FC<{
 
   return (
     <>
-      <RefreshButton
-        color={ThemingVariables.colors.primary[1]}
-        loading={loading}
-        hoverContent="Refresh"
-        className={QuestionBlockIconButton}
-        onClick={loading ? () => mutateSnapshot.cancel(block.id) : () => mutateSnapshot.execute(block)}
-      />
+      {!readonly && (
+        <RefreshButton
+          color={ThemingVariables.colors.primary[1]}
+          loading={loading}
+          hoverContent="Refresh"
+          className={QuestionBlockIconButton}
+          onClick={loading ? () => mutateSnapshot.cancel(block.id) : () => mutateSnapshot.execute(block)}
+        />
+      )}
       <IconButton
         hoverContent="Visualization options"
         icon={IconVisualizationSetting}
         color={ThemingVariables.colors.primary[1]}
         className={QuestionBlockIconButton}
-        onClick={() => questionEditor.open({ mode: 'VIS', readonly, blockId: block.id, storyId: block.storyId! })}
+        onClick={() => questionEditor.open({ mode: 'VIS', blockId: block.id, storyId: block.storyId! })}
       />
       <IconButton
         hoverContent="Edit SQL"
         className={QuestionBlockIconButton}
         icon={IconCommonSql}
         color={ThemingVariables.colors.primary[1]}
-        onClick={() => questionEditor.open({ mode: 'SQL', readonly, blockId: block.id, storyId: block.storyId! })}
+        onClick={() => questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })}
       />
       <MoreDropdownSelect
         hoverContent="More"
@@ -899,46 +901,6 @@ const TitleButtonsInner: React.FC<{
     </>
   )
 }
-
-const StatusIndicator = styled.div<{ size: number; status: 'error' | 'loading' | 'success' }>`
-  --status-indicator-color: ${(props) => {
-    switch (props.status) {
-      case 'error':
-        return ThemingVariables.colors.negative[0]
-      case 'loading':
-        return ThemingVariables.colors.warning[0]
-      case 'success':
-        return ThemingVariables.colors.positive[0]
-      default:
-        return ThemingVariables.colors.positive[0]
-    }
-  }};
-  @keyframes status-indicator-pulse {
-    0% {
-      box-shadow: 0 0 0 0 ${ThemingVariables.colors.warning[1]};
-    }
-    70% {
-      box-shadow: 0 0 0 ${(props) => props.size}px transparent;
-    }
-    100% {
-      box-shadow: 0 0 0 0 transparent;
-    }
-  }
-
-  display: ${(props) => (props.status === 'success' ? 'none' : 'inline-block')};
-  border-radius: 50%;
-  width: ${(props) => props.size}px;
-  height: ${(props) => props.size}px;
-  animation-name: ${(props) => (props.status === 'loading' ? 'status-indicator-pulse' : '')};
-  animation-duration: 1.5s;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-  animation-direction: normal;
-  animation-delay: 0;
-  animation-fill-mode: none;
-  margin-right: 10px;
-  background-color: var(--status-indicator-color);
-`
 
 const QuestionBlockIconButton = css`
   width: 30px;

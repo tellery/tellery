@@ -4,6 +4,7 @@ import { useFetchStoryChunk } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { Operation, useCommit, useCommitHistory } from '@app/hooks/useCommit'
+import { usePermissions } from '@app/hooks/usePermissions'
 import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
 import { useSelectionArea } from '@app/hooks/useSelectionArea'
 import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
@@ -566,18 +567,8 @@ const _StoryEditor: React.FC<{
 
   const user = useLoggedUser()
   const commitHistory = useCommitHistory<{ selection: TellerySelection }>(user.id, storyId)
-
-  const canWrite = useMemo(() => {
-    if (!rootBlock) return false
-    const permissions = (rootBlock as Story).permissions
-    return permissions?.some((permission) => {
-      return (
-        permission.role === 'manager' &&
-        ((permission.type === 'workspace' && permission.role === 'manager') ||
-          (permission.type === 'user' && permission.id === user.id))
-      )
-    })
-  }, [rootBlock, user])
+  const permissions = usePermissions(rootBlock, user)
+  const canWrite = permissions.canWrite
 
   const locked = useMemo(() => {
     return !!(rootBlock as Story)?.format?.locked || canWrite === false

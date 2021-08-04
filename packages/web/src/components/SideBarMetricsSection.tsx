@@ -123,7 +123,7 @@ const DataAssetItem: React.FC<{ blockId: string; currentStoryId: string }> = ({ 
       ref={setNodeRef}
       onClick={() => {
         // pushFocusedBlockIdState(block.id, block.storyId)
-        questionEditor.open({ mode: 'SQL', blockId: block.id, readonly: false, storyId: block.storyId! })
+        questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
       }}
     >
       {block.type === Editor.BlockType.Question ? (
