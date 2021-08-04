@@ -4,8 +4,6 @@ import {
   IconCommonDownstream,
   IconCommonError,
   IconCommonMetrics,
-  IconCommonMore,
-  IconCommonQuestion,
   IconCommonRun,
   IconCommonSave,
   IconCommonSql,
@@ -32,7 +30,6 @@ import { ThemingVariables } from '@app/styles'
 import { Editor, Story } from '@app/types'
 import { DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
 import { css, cx } from '@emotion/css'
-import Tippy from '@tippyjs/react'
 import { dequal } from 'dequal'
 import { motion, useMotionValue, useTransform } from 'framer-motion'
 import { produce } from 'immer'
@@ -49,7 +46,6 @@ import { CircularLoading } from './CircularLoading'
 import { BlockTitle, useGetBlockTitleTextSnapshot } from './editor'
 import type { SetBlock } from './editor/types'
 import IconButton from './kit/IconButton'
-import { MenuItem } from './MenuItem'
 import QuestionDownstreams from './QuestionDownstreams'
 import { charts } from './v11n/charts'
 import { Config, Type } from './v11n/types'
@@ -894,64 +890,6 @@ export const StoryQuestionEditor: React.FC<{
             onClick={save}
             color={ThemingVariables.colors.primary[1]}
           />
-          <Tippy
-            content={
-              <div
-                className={cx(
-                  css`
-                    background: ${ThemingVariables.colors.gray[5]};
-                    box-shadow: ${ThemingVariables.boxShadows[0]};
-                    border-radius: 8px;
-                    padding: 8px;
-                    width: 260px;
-                    display: block;
-                    cursor: pointer;
-                  `
-                )}
-              >
-                <MenuItem
-                  icon={
-                    block.type === Editor.BlockType.Metric ? (
-                      <IconCommonQuestion color={ThemingVariables.colors.text[0]} />
-                    ) : (
-                      <IconCommonMetrics color={ThemingVariables.colors.text[0]} />
-                    )
-                  }
-                  title={`Convert to ${block.type === Editor.BlockType.Metric ? 'question' : 'metric'}`}
-                  onClick={() => {
-                    setBlock(block.id, (draftBlock) => {
-                      if (draftBlock.type === Editor.BlockType.Question) {
-                        draftBlock.type = Editor.BlockType.Metric
-                      } else if (draftBlock.type === Editor.BlockType.Metric) {
-                        draftBlock.type = Editor.BlockType.Question
-                      }
-                    })
-                  }}
-                />
-              </div>
-            }
-            placement="bottom"
-            hideOnClick={true}
-            theme="tellery"
-            animation="fade"
-            duration={150}
-            arrow={false}
-            interactive
-            trigger="click"
-            popperOptions={{
-              modifiers: [
-                {
-                  name: 'offset',
-                  enabled: true,
-                  options: {
-                    offset: [10, 20]
-                  }
-                }
-              ]
-            }}
-          >
-            <IconButton icon={IconCommonMore} color={ThemingVariables.colors.primary[1]} />
-          </Tippy>
         </div>
       </div>
       <div

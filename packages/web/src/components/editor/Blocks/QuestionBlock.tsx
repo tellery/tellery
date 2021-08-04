@@ -1,6 +1,7 @@
 import {
   IconCommonCopy,
   IconCommonError,
+  IconCommonMetrics,
   IconCommonMore,
   IconCommonRefresh,
   IconCommonSql,
@@ -747,17 +748,28 @@ export const MoreDropdownSelect: React.FC<{
           copy(sql)
         }
       },
-      !readonly && {
-        title: 'Convert to snapshot',
-        icon: <IconCommonTurn color={ThemingVariables.colors.text[0]} />,
-        action: () => {
-          editor?.setBlockValue?.(block.id, (draftBlock) => {
-            draftBlock.type = Editor.BlockType.QuestionSnapshot
-          })
+      !readonly &&
+        block.type === Editor.BlockType.Question && {
+          title: 'Convert to snapshot',
+          icon: <IconCommonTurn color={ThemingVariables.colors.text[0]} />,
+          action: () => {
+            editor?.setBlockValue?.(block.id, (draftBlock) => {
+              draftBlock.type = Editor.BlockType.QuestionSnapshot
+            })
+          }
+        },
+      !readonly &&
+        block.type === Editor.BlockType.Question && {
+          title: 'Convert to metric',
+          icon: <IconCommonMetrics color={ThemingVariables.colors.text[0]} />,
+          action: () => {
+            editor?.setBlockValue?.(block.id, (draftBlock) => {
+              draftBlock.type = Editor.BlockType.Metric
+            })
+          }
         }
-      }
     ].filter((x) => !!x) as OperationInterface[]
-  }, [block.id, editor, readonly, snapshot?.data, sql])
+  }, [block.id, block.type, editor, readonly, snapshot?.data, sql])
 
   const { isOpen, openMenu, getToggleButtonProps, getMenuProps, highlightedIndex, getItemProps, closeMenu } = useSelect(
     { items: operations }

@@ -1,6 +1,6 @@
 import { fetchBlock } from '@app/api'
 import { useWorkspace } from '@app/hooks/useWorkspace'
-import { useUpdateBlocks } from '@app/hooks/api'
+import { useRefetchMetrics, useUpdateBlocks } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { WS_URI } from '@app/utils'
 import debug from 'debug'
@@ -9,6 +9,7 @@ import { createContext, useEffect, useState, useContext } from 'react'
 import { useQueryClient } from 'react-query'
 import io, { Socket } from 'socket.io-client'
 import type { DefaultEventsMap } from 'socket.io-client/build/typed-events'
+import { Editor } from '@app/types'
 
 export const logger = debug('tellery:socket')
 
@@ -18,6 +19,7 @@ export const useSocketContextProvider = () => {
   const user = useLoggedUser()
   const workspace = useWorkspace()
   const updateBlocks = useUpdateBlocks()
+  const refetchMetrics = useRefetchMetrics()
 
   useEffect(() => {
     const socket = io(WS_URI, {
@@ -55,6 +57,9 @@ export const useSocketContextProvider = () => {
           if (entity.type === 'block') {
             fetchBlock(entity.id, workspace.id).then((res) => {
               updateBlocks({ [res.id]: res })
+              if (res.type === Editor.BlockType.Metric) {
+                refetchMetrics()
+              }
             })
           }
         }
@@ -65,7 +70,7 @@ export const useSocketContextProvider = () => {
       logger('socketInstance, off')
       socketInstance.off('notification', onNoti)
     }
-  }, [queryClient, socketInstance, updateBlocks, workspace.id])
+  }, [queryClient, refetchMetrics, socketInstance, updateBlocks, workspace.id])
 
   return socketInstance
 }

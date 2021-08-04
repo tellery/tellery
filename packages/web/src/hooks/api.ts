@@ -21,7 +21,14 @@ import { queryClient } from '@app/utils'
 import { emitBlockUpdate } from '@app/utils/remoteStoreObserver'
 import { compact } from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { QueryObserverResult, useInfiniteQuery, useMutation, useQuery, UseQueryOptions } from 'react-query'
+import {
+  QueryObserverResult,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  UseQueryOptions
+} from 'react-query'
 import { useRecoilCallback, useRecoilValue, useRecoilValueLoadable, waitForAll, waitForAny } from 'recoil'
 import invariant from 'tiny-invariant'
 import { blockUpdater, TelleryBlockAtom, TelleryUserAtom } from '../store/block'
@@ -162,7 +169,7 @@ export function useSearchBlocks<T extends Editor.BlockType>(
 ) {
   const workspace = useWorkspace()
   return useQuery<SearchBlockResult<T>>(
-    ['search', 'block', keyword, limit, type],
+    ['search', 'block', type, keyword, limit],
     async () =>
       searchBlocks(keyword, limit, workspace.id, type).then((results) => {
         const blocks = results.blocks as Record<string, Editor.Block>
@@ -181,6 +188,14 @@ export function useSearchMetrics(
   options?: UseQueryOptions<SearchBlockResult<Editor.BlockType.Metric>>
 ) {
   return useSearchBlocks(keyword, limit, Editor.BlockType.Metric, options)
+}
+
+export const useRefetchMetrics = () => {
+  const queryClient = useQueryClient()
+  const refetch = useCallback(() => {
+    queryClient.refetchQueries(['search', 'block', Editor.BlockType.Metric])
+  }, [queryClient])
+  return refetch
 }
 
 export const useListDatabases = () => {
