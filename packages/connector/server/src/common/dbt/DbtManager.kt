@@ -54,8 +54,6 @@ object DbtManager {
         keyFolder = ConfigManager.globalConfigDir.resolve(
             appConfig.getString("dbt.keyFolderPath") ?: throw DBTProfileNotConfiguredException()
         ).toFile()
-
-        initDbtWorkspace()
     }
 
     fun createRepo(name: String): String {
@@ -126,6 +124,10 @@ object DbtManager {
     fun initDbtWorkspace() {
         forceMkdir(rootFolder)
         forceMkdir(keyFolder)
+        forceMkdir(profileFile.parentFile)
+        if (!profileFile.exists()){
+            profileFile.createNewFile()
+        }
 
         reloadDbtProfiles(ConfigManager.profiles)
         createRemoteRepos(ConfigManager.profiles)
@@ -205,7 +207,7 @@ object DbtManager {
 
     private fun generateRepoKeyPair(repo: DbtRepository): String {
         if (repo.publicKey.exists() && repo.publicKey.exists()) {
-            logger.warn { "The private key and public key are exists." }
+            logger.warn { "The private key and public key exists." }
             return repo.publicKey.readText()
         }
 
