@@ -62,7 +62,7 @@ export const SideBarAllStoriesSection = () => {
   )
 
   return (
-    <SideBarContentLayout title={'All Stories'}>
+    <SideBarContentLayout title="Stories">
       <div
         className={css`
           display: flex;
