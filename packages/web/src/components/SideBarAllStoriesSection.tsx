@@ -15,6 +15,7 @@ import { useStoryPathParams } from '@app/hooks/useStoryPathParams'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { nanoid } from 'nanoid'
 import { useHistory } from 'react-router-dom'
+import Tippy from '@tippyjs/react'
 
 export const SideBarAllStoriesSection = () => {
   const { data: workspaceView } = useWorkspaceView()
@@ -134,23 +135,25 @@ const NewStoryButton = () => {
   }, [blockTranscations, history])
 
   return (
-    <div
-      className={css`
-        background: #ffffff;
-        border: 1px solid ${ThemingVariables.colors.gray[1]};
-        box-sizing: border-box;
-        border-radius: 8px;
-        height: 36px;
-        width: 36px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-      `}
-      onClick={handleCreateNewSotry}
-    >
-      <IconCommonAdd width={20} height={20} color={ThemingVariables.colors.text[0]} />
-    </div>
+    <Tippy content={'Create a new story'} hideOnClick={false} arrow={false} placement="right">
+      <div
+        className={css`
+          background: #ffffff;
+          border: 1px solid ${ThemingVariables.colors.gray[1]};
+          box-sizing: border-box;
+          border-radius: 8px;
+          height: 36px;
+          width: 36px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          cursor: pointer;
+        `}
+        onClick={handleCreateNewSotry}
+      >
+        <IconCommonAdd width={20} height={20} color={ThemingVariables.colors.text[0]} />
+      </div>
+    </Tippy>
   )
 }
 
