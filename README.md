@@ -5,9 +5,9 @@
 </p>
 <p align="center">
     <a href="https://tellery.io">Website</a> |
+    <a href="https://demo.tellery.io">Demo</a> |
     <a href="https://tellery.io/docs">Docs</a> |
     <a href="https://tellery.io/docs/changelog">Changelog</a> |
-    <a href="https://join.slack.com/t/telleryio/shared_invite/zt-s37tgvo7-QBdpggK_uG6QqJVWhSXlFg">Slack</a> |
     <a href="https://twitter.com/TelleryHQ">Twitter</a>
     <br /><br />
     <a href="https://github.com/tellery/tellery/actions/workflows/docker-web.yml">
@@ -47,9 +47,9 @@ Want an anomalies investigation? A campaign-oriented dashboard? A feature-specif
 
 ## Getting started
 
+- Try this [online demo](https://demo.tellery.io) 
 - Install the [demo project](https://tellery.io/docs/getting-started/quick-setup) (run locally with docker)
 - Read the [documentation](https://tellery.io/docs/)
-- Find out [why we built Tellery](https://tellery.io/docs/about)
 
 
 ## Recording
