@@ -37,7 +37,6 @@ export const queryClient = new QueryClient({
   }
 })
 export function snapshotToCSV(snpshot: Data) {
-  console.log(snpshot.records, snpshot.fields)
   return new TextEncoder().encode(
     Papa.unparse({
       fields: snpshot.fields.map((field) => field.name),

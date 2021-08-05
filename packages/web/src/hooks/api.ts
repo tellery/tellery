@@ -68,7 +68,6 @@ export const useUpdateBlocks = () => {
 export const useFetchStoryChunk = <T extends Editor.BaseBlock = Story>(id: string, suspense: boolean = true): T => {
   const updateBlocks = useUpdateBlocks()
   const workspace = useWorkspace()
-  // console.log('fetch story chunk', id)
   useQuery<Record<string, Editor.Block>>(
     ['story', 'chunk', workspace, id],
     async () =>
@@ -78,13 +77,7 @@ export const useFetchStoryChunk = <T extends Editor.BaseBlock = Story>(id: strin
           storyId: id
         })
         .then(({ data: { blocks } }) => {
-          console.log('fetch story chunk', id)
-          console.log('useFetchStoryChunk update blocks')
-
           updateBlocks(blocks)
-          // Object.values(blocks).forEach((block) => {
-          //   emitBlockUpdate(block as Editor.BaseBlock)
-          // })
           return blocks
         }),
     { suspense: suspense }
@@ -288,7 +281,6 @@ export const useMgetEntities = (entities: { type: ResourceType; args: EntityRequ
     const resultMap = isSuccess
       ? queries.reduce(
           (acc, query) => {
-            console.log(query.data)
             if (query.data?.id) {
               acc[query.data.resourceType][query.data.id] = query.data
             }
@@ -382,7 +374,6 @@ export const useUser = (id: string | null): { data?: User; error?: { statusCode?
   const [state, setState] = useState({})
 
   useEffect(() => {
-    console.log(atom.contents, id, 'use user', atom.state)
     if (!id) {
       return
     }

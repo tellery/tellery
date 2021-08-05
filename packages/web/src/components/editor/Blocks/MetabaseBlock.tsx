@@ -87,7 +87,6 @@ const MetabaseBlock: BlockComponent<
                 const url = new URL(src)
                 oldValue.content.siteUrl = `${url.protocol}//${url.host}`
                 const pathParts = url.pathname.split('/').slice(1)
-                console.log(pathParts)
                 if (pathParts.length === 3) {
                   if (pathParts[0] === 'public') {
                     oldValue.content.resourceType = pathParts[1]

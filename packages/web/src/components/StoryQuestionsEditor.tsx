@@ -560,7 +560,6 @@ export const StoryQuestionEditor: React.FC<{
       setQuestionBlocksMap((blocksMap) => {
         const oldConfig = visualizationConfig
         const newConfig = typeof update === 'function' ? update(oldConfig ?? undefined) : update
-        console.log('old config', oldConfig, 'new config', newConfig)
         return {
           ...blocksMap,
           [id]: {
@@ -734,7 +733,6 @@ export const StoryQuestionEditor: React.FC<{
         {
           hotkeys: ['mod+enter', 'ctrl+enter'],
           handler: (e) => {
-            console.log('mod + enter')
             e.preventDefault()
             e.stopPropagation()
             run()

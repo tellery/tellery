@@ -8,7 +8,6 @@ export const useStoryPermissions = (storyId: string) => {
   const block = useBlockSuspense<Story>(storyId)
   const locked = !!block.format?.locked
 
-  console.log('useStoryPermissions', block)
   const canWrite = useMemo(() => {
     if (!block || !user) return false
     const permissions = block.permissions

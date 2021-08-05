@@ -268,7 +268,6 @@ export const tokenPosition2SplitedTokenPosition = (
     if (tokenText) {
       splitedOffset += tokenText.length
     }
-    console.log('tokenPosition2SplitedTokenPosition', i, tokenText, splitedOffset)
   }
   splitedOffset += offset
   return splitedOffset
@@ -276,7 +275,6 @@ export const tokenPosition2SplitedTokenPosition = (
 
 export const splitedTokenPosition2TokenPosition = (tokens: Editor.Token[], offset: number) => {
   let splitedOffset = offset < 0 ? 0 : offset
-  console.log('tokens and offset', tokens, offset)
   for (let i = 0; i < tokens.length; i++) {
     const tokenText = tokens?.[i]?.[0]
 

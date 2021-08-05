@@ -40,7 +40,6 @@ export const _BlockReferenceDropdown: React.FC<BlockReferenceDropDownInterface> 
       invariant(selection, 'selection is null')
       setReferenceRange((_referenceRange) => {
         const range = tellerySelection2Native(selection)
-        console.log('selection range', range, range?.getBoundingClientRect())
         invariant(range, 'range is null')
         // const _range = docSelection.rangeCount > 0 && docSelection.getRangeAt(0).cloneRange()
         // invariant(_range, 'selection not exist')

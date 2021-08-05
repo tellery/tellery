@@ -34,7 +34,6 @@ export const DeletedBlock: React.FC<{
         onClick={() => {
           const currentBlock = ref.current?.closest('.tellery-block') as HTMLDivElement
           const closetParent = currentBlock?.parentElement?.closest('.tellery-block') as HTMLDivElement
-          console.log(currentBlock, closetParent)
           if (!closetParent || !closetParent.dataset.blockId) return
           commit({
             storyId: editor?.storyId!,
