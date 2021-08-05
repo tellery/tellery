@@ -62,7 +62,7 @@ export class FakeManager implements IConnectorManager {
     }
   }
 
-  async createRepo(_profile: string): Promise<string> {
+  async generateKeyPair(_profile: string): Promise<string> {
     return 'fakePublicKey'
   }
 

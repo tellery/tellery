@@ -19,7 +19,7 @@ import mu.KotlinLogging
 import kotlin.coroutines.resumeWithException
 
 
-val logger = KotlinLogging.logger { }
+private val logger = KotlinLogging.logger { }
 
 class S3Storage(
     val accessKey: String,

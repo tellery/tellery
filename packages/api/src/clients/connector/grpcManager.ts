@@ -22,7 +22,7 @@ import { IConnectorManager } from './interface'
 import { beautyStream, beautyCall } from '../../utils/grpc'
 import { DbtClient } from '../../protobufs/dbt_grpc_pb'
 import {
-  CreateRepoRequest,
+  GenerateKeyPairRequest,
   DbtBlock,
   ListDbtBlocksRequest,
   PullRepoRequest,
@@ -211,9 +211,9 @@ export class ConnectorManager implements IConnectorManager {
     }
   }
 
-  async createRepo(profile: string): Promise<string> {
-    const request = new CreateRepoRequest().setProfile(profile)
-    const res = await beautyCall(this.dbtClient.createRepo, this.dbtClient, request)
+  async generateKeyPair(profile: string): Promise<string> {
+    const request = new GenerateKeyPairRequest().setProfile(profile)
+    const res = await beautyCall(this.dbtClient.generateKeyPair, this.dbtClient, request)
     return res.getPublickey()
   }
 
@@ -243,8 +243,8 @@ export class ConnectorManager implements IConnectorManager {
           relationName: raw.getRelationname(),
           rawSql: raw.getRawsql(),
           compiledSql: raw.getCompiledsql(),
-          type: getEnumKey(DbtBlock.Type, raw.getType()),
-          materialized: getEnumKey(DbtBlock.Materialization, raw.getMaterialized()),
+          type: getEnumKey(DbtBlock.Type, raw.getType()).toLowerCase(),
+          materialized: getEnumKey(DbtBlock.Materialization, raw.getMaterialized()).toLowerCase(),
           sourceTable: raw.getSourcetable(),
         }) as DbtMetadata,
     )

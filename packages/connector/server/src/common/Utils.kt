@@ -3,8 +3,10 @@ package io.tellery.common
 import io.grpc.Metadata
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
-import io.tellery.utils.logger
+import mu.KotlinLogging
 import java.sql.SQLException
+
+private val logger = KotlinLogging.logger { }
 
 suspend fun <S, T> withErrorWrapper(request: S, handler: suspend (request: S) -> T): T {
     try {

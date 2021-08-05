@@ -7,7 +7,7 @@ import { mustGetUser } from '../utils/user'
 import dbtService from '../services/dbt'
 import Router from 'koa-router'
 
-class CreateRepoRequest {
+class GenerateKeyPairRequest {
   @IsDefined()
   workspaceId!: string
 
@@ -51,14 +51,16 @@ class UpdateDbtBlocksRequest {
   profile!: string
 }
 
-async function createRepo(ctx: Context) {
-  const payload = plainToClass(CreateRepoRequest, ctx.request.body)
+async function generateKeyPair(ctx: Context) {
+  const payload = plainToClass(GenerateKeyPairRequest, ctx.request.body)
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
   const { workspaceId, connectorId, profile } = payload
   const manager = await getIConnectorManagerFromDB(connectorId)
-  await dbtService.createRepo(manager, user.id, workspaceId, profile)
-  ctx.body = {}
+  const publicKey = await dbtService.generateKeyPair(manager, user.id, workspaceId, profile)
+  ctx.body = {
+    publicKey,
+  }
 }
 
 async function pullRepo(ctx: Context) {
@@ -93,7 +95,7 @@ async function updateDbtBlocks(ctx: Context) {
 
 const router = new Router()
 
-router.post('/createRepo', createRepo)
+router.post('/generateKeyPair', generateKeyPair)
 router.post('/pullRepo', pullRepo)
 router.post('/pushRepo', pushRepo)
 router.post('/updateDbtBlocks', updateDbtBlocks)

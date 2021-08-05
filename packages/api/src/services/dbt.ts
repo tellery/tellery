@@ -22,14 +22,14 @@ export class DbtService {
     this.permission = p
   }
 
-  async createRepo(
+  async generateKeyPair(
     connectorManager: IConnectorManager,
     operatorId: string,
     workspaceId: string,
     profile: string,
   ): Promise<string> {
     await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
-    return connectorManager.createRepo(profile)
+    return connectorManager.generateKeyPair(profile)
   }
 
   async pullRepo(
@@ -62,6 +62,7 @@ export class DbtService {
     await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
 
     const metadata = await connectorManager.listDbtBlocks(profile)
+    console.log('metadata: ', metadata)
     await this.updateDbtBlocksByMetadata(workspaceId, operatorId, metadata)
   }
 
@@ -215,12 +216,16 @@ export class DbtService {
 
     await getConnection().transaction(async (t) => {
       await bluebird.all([
-        t.getRepository(BlockEntity).update(deletedBlockIds, { alive: false }),
-        // unlink deleted dbt blocks
-        t
-          .getRepository(LinkEntity)
-          .update({ targetBlockId: In(deletedBlockIds) }, { targetAlive: false }),
-        t.getRepository(BlockEntity).insert(createdBlocks),
+        ...(deletedBlockIds.length > 0
+          ? [
+              t.getRepository(BlockEntity).update(deletedBlockIds, { alive: false }),
+              // unlink deleted dbt blocks
+              t
+                .getRepository(LinkEntity)
+                .update({ targetBlockId: In(deletedBlockIds) }, { targetAlive: false }),
+            ]
+          : []),
+        createdBlocks.length > 0 ? t.getRepository(BlockEntity).insert(createdBlocks) : undefined,
       ])
       await bluebird.map(modifiedBlocks, async (b) => b.save(), { concurrency: 10 })
     })

@@ -91,11 +91,11 @@ export interface IConnectorManager {
   // dbt related
 
   /**
-   * create dbt repo
+   * generate key pair for pulling repo
    * @param profile profile name
    * @returns public key
    */
-  createRepo(profile: string): Promise<string>
+  generateKeyPair(profile: string): Promise<string>
 
   /**
    * pull dbt repo

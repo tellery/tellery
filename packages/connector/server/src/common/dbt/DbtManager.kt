@@ -27,7 +27,7 @@ import io.tellery.entities.DBTRepositoryNotExistsException
 import io.tellery.entities.Profile
 import io.tellery.grpc.DbtBlock
 import io.tellery.grpc.QuestionBlockContent
-import io.tellery.utils.logger
+import mu.KotlinLogging
 import org.apache.commons.io.FileUtils
 import java.io.BufferedReader
 import java.io.File
@@ -45,6 +45,7 @@ object DbtManager {
     private val profileFile: File = File(System.getProperty("user.home") + "/.dbt/profiles.yml")
     private val mapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
     private val jsonMapper = jacksonObjectMapper()
+    private val logger = KotlinLogging.logger {}
 
     init {
         val appConfig = ConfigFactory.load()
@@ -60,7 +61,7 @@ object DbtManager {
         val repo = DbtRepository(rootFolder, keyFolder, getProfileByName(name))
 
         if (repo.publicKey.exists() && repo.publicKey.exists()) {
-            logger.warn { "The private key and public key are exists." }
+            logger.warn { "The private key and public key exist." }
             return repo.publicKey.readText()
         }
 
