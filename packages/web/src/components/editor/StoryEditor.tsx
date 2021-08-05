@@ -378,11 +378,11 @@ const _StoryEditor: React.FC<{
       return
     }
 
-    logger('lastinput', lastInputChar)
+    // logger('lastinput', lastInputChar)
     const splitedTokens = splitToken(currentBlock.content?.title ?? [])
     const transformData = getTransformedTypeAndPrefixLength(splitedTokens, 1, selectionState, lastInputChar)
     if (!transformData) return
-    logger('transform', transformData)
+    // logger('transform', transformData)
 
     const prefixLength = transformData ? (transformData[1] as number) : 0
     const newType = transformData ? (transformData[0] as Editor.BlockType) : null

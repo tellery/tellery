@@ -1,5 +1,15 @@
-import { css, cx } from '@emotion/css'
 import { deserialize, restoreRange, saveSelection } from '@app/components/editor/helpers/contentEditable'
+import { useOpenStory, usePrevious } from '@app/hooks'
+import { useMgetBlocksAny } from '@app/hooks/api'
+import { ThemingVariables } from '@app/styles'
+import { Editor } from '@app/types'
+import { css, cx } from '@emotion/css'
+import debug from 'debug'
+import { dequal } from 'dequal'
+import produce from 'immer'
+import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
+import invariant from 'tiny-invariant'
+import { isQuestionLikeBlock } from '../Blocks/utils'
 import {
   nativeSelection2Tellery,
   TellerySelection,
@@ -10,25 +20,14 @@ import {
   extractEntitiesFromToken,
   getTokensLength,
   mergeTokens,
-  splitBlockTokens,
   splitToken,
   toggleMark,
   tokenPosition2SplitedTokenPosition
 } from '../helpers/tokenManipulation'
-import debug from 'debug'
-import { dequal } from 'dequal'
-import { useOpenStory, usePrevious } from '@app/hooks'
-import { useMgetBlocksAny } from '@app/hooks/api'
-import produce from 'immer'
-import invariant from 'tiny-invariant'
-import React, { useCallback, useDebugValue, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
-import { ThemingVariables } from '@app/styles'
-import { Editor } from '@app/types'
 import { useEditor, useLocalSelection } from '../hooks'
 import { BlockReferenceDropdown } from '../Popovers/BlockReferenceDropdown'
 import { SlashCommandDropdown } from '../Popovers/SlashCommandDropdown'
 import { BlockRenderer } from './BlockRenderer'
-import { isQuestionLikeBlock } from '../Blocks/utils'
 
 const logger = debug('tellery:contentEditable')
 export interface EditableRef {
@@ -66,8 +65,6 @@ const _ContentEditable: React.ForwardRefRenderFunction<
   const openStoryHandler = useOpenStory()
 
   const titleTokens = useMemo(() => block?.content?.title || [], [block?.content?.title])
-
-  useDebugValue(isFocusing ? 'isFocusing' : 'isBluring')
 
   const dependsAssetsKeys = useMemo(() => {
     return titleTokens
@@ -179,6 +176,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
     invariant(editor, 'editor context is null,')
     logger('is focusing', isFocusing, localSelection)
     if (!isComposing.current && editbleRef.current && isFocusing) {
+      editbleRef.current.normalize()
       const newBlockTitle = deserialize(editbleRef.current, block)
       const oldSelection = localSelection
       const oldTokens = block.content?.title ?? []
@@ -403,28 +401,9 @@ const _ContentEditable: React.ForwardRefRenderFunction<
               }
             }
             if (e.key === 'Enter') {
-              if (block.type === Editor.BlockType.Code) {
-                const [tokens1, tokens2] = splitBlockTokens(block.content?.title || [], localSelection)
-                editor?.setBlockValue?.(block.id, (block) => {
-                  block!.content!.title = mergeTokens([...tokens1, ['\n'], ...tokens2])
-                })
-                e.preventDefault()
+              if (e.shiftKey === true) {
                 e.stopPropagation()
-              } else {
-                if (e.shiftKey === true) {
-                  e.stopPropagation()
-                }
               }
-              // e.preventDefault()
-              // onKeyDown?.(e)
-            } else if (e.key === 'Tab' && block.type === Editor.BlockType.Code) {
-              if (!localSelection) return
-              e.preventDefault()
-              e.stopPropagation()
-              const [tokens1, tokens2] = splitBlockTokens(block.content?.title || [], localSelection)
-              editor?.setBlockValue?.(block.id, (block) => {
-                block!.content!.title = mergeTokens([...tokens1, ['  '], ...tokens2])
-              })
             } else if (e.key === 'Backspace') {
               if (
                 localSelection?.type === TellerySelectionType.Inline &&
@@ -437,13 +416,8 @@ const _ContentEditable: React.ForwardRefRenderFunction<
                 } else if (block.type !== Editor.BlockType.Text && block.type !== Editor.BlockType.Story) {
                   editor?.toggleBlockType(block.id, Editor.BlockType.Text, 0)
                   e.stopPropagation()
-                } else {
-                  // onKeyDown?.(e)
-                  // deleteBlockHandler?.(block)
                 }
               }
-            } else {
-              // onKeyDown?.(e)
             }
           } else {
             e.stopPropagation()

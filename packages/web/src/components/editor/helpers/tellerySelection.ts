@@ -36,6 +36,7 @@ export type TellerySelection = (TelleryBlockSelection | TelleryInlineSelection) 
 
 const findNodePositionAndOffset = (node: Node, offset: number) => {
   let root: HTMLElement = node as HTMLElement
+
   while (true) {
     if (root && root.nodeType === Node.ELEMENT_NODE && (root as HTMLElement)?.dataset.root) {
       break
@@ -46,6 +47,7 @@ const findNodePositionAndOffset = (node: Node, offset: number) => {
       break
     }
   }
+
   const childIter = root.childNodes.values()
   let i = 0
   if (node === root) {

@@ -1,13 +1,14 @@
-import { useBlockHovering } from '@app/hooks/useBlockHovering'
-import { css, cx } from '@emotion/css'
 import { MenuItem } from '@app/components/MenuItem'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import scrollIntoView from 'scroll-into-view-if-needed'
+import { useBlockHovering } from '@app/hooks/useBlockHovering'
 import { ThemingVariables } from '@app/styles'
 import { CodeBlockLang, CodeBlockLangDisplayName, Editor } from '@app/types'
+import { css, cx } from '@emotion/css'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import scrollIntoView from 'scroll-into-view-if-needed'
+import { mergeTokens, splitBlockTokens } from '..'
 import { ContentEditable } from '../BlockBase/ContentEditable'
 import { EditorPopover } from '../EditorPopover'
-import { useEditor } from '../hooks'
+import { useEditor, useLocalSelection } from '../hooks'
 import { BlockComponent, registerBlock } from './utils'
 
 const CodeBlock: BlockComponent<
@@ -15,6 +16,9 @@ const CodeBlock: BlockComponent<
     block: Editor.Block
   }>
 > = ({ block }) => {
+  const editor = useEditor<Editor.CodeBlock>()
+  const localSelection = useLocalSelection(block.id)
+
   return (
     <>
       <div
@@ -27,9 +31,26 @@ const CodeBlock: BlockComponent<
             background-color: ${ThemingVariables.colors.primary[5]};
             font-family: monospace;
             white-space: pre;
+            overflow: auto;
             position: relative;
           `
         )}
+        onKeyDown={(e) => {
+          if (!localSelection) return
+          if (e.key === 'Enter') {
+            document.execCommand('insertLineBreak')
+            e.preventDefault()
+            e.stopPropagation()
+          } else if (e.key === 'Tab') {
+            e.preventDefault()
+            e.stopPropagation()
+            if (e.shiftKey) return
+            const [tokens1, tokens2] = splitBlockTokens(block.content?.title || [], localSelection)
+            editor?.setBlockValue?.(block.id, (block) => {
+              block!.content!.title = mergeTokens([...tokens1, ['  '], ...tokens2])
+            })
+          }
+        }}
       >
         <CodeBlockOperation block={block as Editor.CodeBlock} />
         <ContentEditable block={block} placeHolderStrategy="never"></ContentEditable>

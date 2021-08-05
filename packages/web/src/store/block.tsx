@@ -140,13 +140,11 @@ export const logger = debug('tellery:api')
 
 export const getBlockFromSnapshot = (blockId: string, snapshot: BlockSnapshot): Editor.Block => {
   const block = snapshot.get(blockId)
-  logger('snapshot', snapshot, snapshot.has(blockId), blockId)
   invariant(block, `blockLoadable ${blockId} is undefined`)
   return block
 }
 
 export const getBlockFromStoreMap = (blockId: string, snapshot: BlockSnapshot): Editor.Block | undefined => {
-  logger('map', blockId, snapshot, snapshot.get(blockId))
   return snapshot.get(blockId)
 }
 
