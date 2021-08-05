@@ -17,15 +17,7 @@ test.before(async () => {
   await createDatabaseCon()
 })
 
-class DBTBlock extends Block {
-  getType() {
-    return 'dbt' as BlockType
-  }
-}
-
 test('translate', async (t) => {
-  register('dbt' as BlockType, DBTBlock)
-
   const storyId = nanoid()
   const questionBlockId = nanoid()
   const dbtBlockId = nanoid()
@@ -55,7 +47,7 @@ test('translate', async (t) => {
       materialized: 'table',
       relationName: 'table2',
     },
-    type: 'dbt' as BlockType,
+    type: BlockType.DBT,
     children: [],
     alive: true,
   })
@@ -66,14 +58,12 @@ test('translate', async (t) => {
   stringCompare(
     t,
     sqlBody,
-    `WITH t1 AS ( select * from order_x ), t2 AS ( select * from table2 ) select * from t1 left join t2`,
+    `WITH t1 AS ( select * from order_x ), t2 AS ( SELECT * from table2 ) select * from t1 left join t2`,
   )
   await getRepository(BlockEntity).delete([questionBlockId, dbtBlockId])
 })
 
 test('translate duplicate references', async (t) => {
-  register('dbt' as BlockType, DBTBlock)
-
   const storyId = nanoid()
   const questionBlockId = nanoid()
   await getRepository(BlockEntity).save({
