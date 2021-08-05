@@ -7,6 +7,7 @@ import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
 import { EditorPopover } from '../EditorPopover'
 import { useEditor } from '../hooks'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
+import { renderEquation } from './katex'
 import { BlockComponent, registerBlock } from './utils'
 
 interface EquationBlockInterface extends Editor.BaseBlock {
@@ -39,15 +40,11 @@ const EquationBlock: BlockComponent<
   useEffect(() => {
     const render = async () => {
       const equation = block.content?.equation
-      const katex = await import('katex')
-      await import('katex/dist/katex.css')
       if (!equation) {
         setEquationHtml(null)
         return
       }
-      const html = katex.renderToString(equation, {
-        throwOnError: false
-      })
+      const html = await renderEquation(equation)
       setEquationHtml(html)
     }
     render()
