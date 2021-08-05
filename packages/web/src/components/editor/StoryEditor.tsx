@@ -202,6 +202,17 @@ const _StoryEditor: React.FC<{
   const location = useLocation()
 
   useEffect(() => {
+    const focusTitle = (location.state as any)?.focusTitle
+    if (focusTitle) {
+      blockAdminValue.getBlockInstanceById(storyId).then(({ wrapperElement }) => {
+        setTimeout(() => {
+          setCaretToStart(wrapperElement.querySelector("[contenteditable='true']"))
+        }, 100)
+      })
+    }
+  }, [blockAdminValue, location, setSelectedBlocks, storyId])
+
+  useEffect(() => {
     if (!inited) return
     const blockId = location.hash.slice(1) || (location.state as any)?.focusedBlockId
     const openMenu = !!(location.state as any)?.openMenu

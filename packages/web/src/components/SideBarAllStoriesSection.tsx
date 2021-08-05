@@ -131,7 +131,9 @@ const NewStoryButton = () => {
   const handleCreateNewSotry = useCallback(async () => {
     const id = nanoid()
     await blockTranscations.createNewStory({ id: id })
-    history.push(`/story/${id}`)
+    history.push(`/story/${id}`, {
+      focusTitle: true
+    })
   }, [blockTranscations, history])
 
   return (
