@@ -75,6 +75,11 @@ export class DbtService {
     return _(models).value()
   }
 
+  /**
+   * Recursively load all descendent of dbt blocks
+   * that is, for a question block, if any of its ancestor (of transclusion) linked from dbt blocks, it should appear here.
+   * exposes only for test
+   */
   async loadAllDbtBlockDescendent(workspaceId: string): Promise<ExportedBlockMetadata[]> {
     const dbtBlocks = _(await this.listCurrentDbtBlocks(workspaceId))
       .map(Block.fromEntity)
@@ -154,6 +159,15 @@ export class DbtService {
       .value()
   }
 
+  /**
+   * Update current dbt blocks by given metadata (distinct by uniqId)
+   * if will create new dbt blocks, update current dbt blocks if the content has changed, and remove dbt blocks if its uniq id does not appear in given metadata
+   * exposes only for test
+   *
+   * @param workspaceId
+   * @param operatorId
+   * @param metadata
+   */
   async updateDbtBlocksByMetadata(
     workspaceId: string,
     operatorId: string,
@@ -215,18 +229,17 @@ export class DbtService {
       .value()
 
     await getConnection().transaction(async (t) => {
-      await bluebird.all([
-        ...(deletedBlockIds.length > 0
-          ? [
-              t.getRepository(BlockEntity).update(deletedBlockIds, { alive: false }),
-              // unlink deleted dbt blocks
-              t
-                .getRepository(LinkEntity)
-                .update({ targetBlockId: In(deletedBlockIds) }, { targetAlive: false }),
-            ]
-          : []),
-        createdBlocks.length > 0 ? t.getRepository(BlockEntity).insert(createdBlocks) : undefined,
-      ])
+      if (deletedBlockIds.length > 0) {
+        await Promise.all([
+          t.getRepository(BlockEntity).update(deletedBlockIds, { alive: false }),
+          t
+            .getRepository(LinkEntity)
+            .update({ targetBlockId: In(deletedBlockIds) }, { targetAlive: false }),
+        ])
+      }
+      if (createdBlocks.length > 0) {
+        await t.getRepository(BlockEntity).insert(createdBlocks)
+      }
       await bluebird.map(modifiedBlocks, async (b) => b.save(), { concurrency: 10 })
     })
   }

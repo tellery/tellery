@@ -22,15 +22,15 @@ test.before(async () => {
   register(BlockType.QUESTION, QuestionBlock)
 })
 
-function generateDbtBlock(metadata: DbtMetadata) {
+function generateDbtBlock(metadata: DbtMetadata, workspaceId: string) {
   const id = nanoid()
   const entity = new BlockEntity()
   Object.assign(entity, {
     id,
     interKey: id,
-    workspaceId: 'test',
+    workspaceId: workspaceId,
     storyId: 'test',
-    parentId: 'test',
+    parentId: workspaceId,
     parentTable: BlockParentType.WORKSPACE,
     type: BlockType.DBT,
     content: {
@@ -115,20 +115,24 @@ const metadata_model_dau: DbtMetadata = {
 
 test.serial('list current dbt blocks', async (t) => {
   // create blocks first
+  const workspaceId = nanoid()
   const entities = _([metadata_source_event, metadata_source_user, metadata_model_dau])
-    .map(generateDbtBlock)
+    .map((e) => generateDbtBlock(e, workspaceId))
     .value()
   await getRepository(BlockEntity).save(entities)
 
-  const loadedBlocks = await dbtService.listCurrentDbtBlocks('test')
+  const loadedBlocks = await dbtService.listCurrentDbtBlocks(workspaceId)
 
   t.is(loadedBlocks.length, 3)
   await getRepository(BlockEntity).delete(_(entities).map('id').value())
 })
 
-test.serial('push exported metadata', async (t) => {
+test('push exported metadata', async (t) => {
   // create blocks first
-  const entities = _([metadata_source_event, metadata_model_dau]).map(generateDbtBlock).value()
+  const workspaceId = nanoid()
+  const entities = _([metadata_source_event, metadata_model_dau])
+    .map((e) => generateDbtBlock(e, workspaceId))
+    .value()
   await getRepository(BlockEntity).save(entities)
 
   const [dbtSourceId, dbtModelId] = _(entities).map('id').value()
@@ -152,15 +156,14 @@ test.serial('push exported metadata', async (t) => {
   )
 
   await getConnection().transaction(async (manager) => {
-    const op = new BlockOperation(uuid(), 'test', manager)
+    const op = new BlockOperation(uuid(), workspaceId, manager)
     await set(op, anotherParentQuestionId, anotherParentQuestionOp, [])
     await set(op, children1Id, children1Op, [])
     await set(op, children2Id, children2Op, [])
     await set(op, children3Id, children3Op, [])
   })
 
-  const exportedMeta = await dbtService.loadAllDbtBlockDescendent('test')
-  console.log('exported meta:', exportedMeta)
+  const exportedMeta = await dbtService.loadAllDbtBlockDescendent(workspaceId)
   t.is(exportedMeta.length, 3)
   t.deepEqual(_(exportedMeta).sortBy('name').value(), [
     {
@@ -186,10 +189,11 @@ test.serial('push exported metadata', async (t) => {
   ])
 })
 
-test.serial('update dbt blocks', async (t) => {
+test('update dbt blocks', async (t) => {
+  const workspaceId = nanoid()
   // create blocks first
   const entities = _([metadata_source_user, metadata_source_event, metadata_source_order])
-    .map(generateDbtBlock)
+    .map((e) => generateDbtBlock(e, workspaceId))
     .value()
   await getRepository(BlockEntity).save(entities)
 
@@ -203,8 +207,8 @@ test.serial('update dbt blocks', async (t) => {
     metadata_model_dau,
   ]
 
-  await dbtService.updateDbtBlocksByMetadata('test', 'test', newMetadata)
-  const newBlocks = await dbtService.listCurrentDbtBlocks('test')
+  await dbtService.updateDbtBlocksByMetadata(workspaceId, 'test', newMetadata)
+  const newBlocks = await dbtService.listCurrentDbtBlocks(workspaceId)
   const newBlockNames = _(newBlocks)
     .map((b) => _.get(b, 'content.name'))
     .value()
