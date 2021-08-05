@@ -62,7 +62,8 @@ export const _EditorPopoverContent = (props: PopoverProps) => {
 
   return createPortal(
     <div
-      onClick={() => {
+      onClick={(e) => {
+        e.stopPropagation()
         props.setOpen(false)
       }}
       key="modal"

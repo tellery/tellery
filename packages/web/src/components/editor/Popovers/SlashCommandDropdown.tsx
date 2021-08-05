@@ -233,6 +233,11 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
         title: 'Line Divider',
         action: createOrToggleBlock(Editor.BlockType.Divider),
         icon: <IconMenuDivider color={ThemingVariables.colors.text[0]} />
+      },
+      {
+        title: 'Block Equation (Beta)',
+        action: createOrToggleBlock(Editor.BlockType.Equation),
+        icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
       }
     ].filter((item) => item.title.toLowerCase().indexOf(keyword.toLowerCase()) !== -1)
   }, [createOrToggleBlock, keyword])

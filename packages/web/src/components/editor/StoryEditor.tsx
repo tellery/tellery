@@ -1026,7 +1026,7 @@ const _StoryEditor: React.FC<{
         setHoverBlockId(null)
       } else {
         const rootBlock = findRootBlock(container)
-        const id = rootBlock?.dataset.blockId
+        const id = rootBlock?.dataset?.blockId
         const THERESHOLD = 20
         if (isSelectingRef.current && mouseDownEventRef.current) {
           if (
