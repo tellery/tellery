@@ -17,7 +17,7 @@ import user from './middlewares/user'
 import router from './routes'
 import { initSocketServer } from './socket/app'
 import { isTest } from './utils/env'
-import { injectFrontendEnv } from './utils/frontend-injector'
+import { injectFrontendEnv } from './utils/frontendInjector'
 
 initDatabaseConRetry(99)
 
