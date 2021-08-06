@@ -31,7 +31,7 @@ export function initSocketServer(s: Server): SocketIO {
     const pubClient = getRedisCon()
     const subClient = pubClient.duplicate()
     io.adapter(createRedisAdapter({ pubClient, subClient }))
-    emitter = new RedisEmitter(subClient)
+    emitter = new RedisEmitter(pubClient.duplicate())
   } else {
     const {
       username: user,
