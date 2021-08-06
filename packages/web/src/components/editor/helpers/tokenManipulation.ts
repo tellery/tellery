@@ -1,13 +1,13 @@
-import dayjs from 'dayjs'
-import { dequal } from 'dequal'
-import invariant from 'tiny-invariant'
 import { BlockSnapshot, getBlockFromSnapshot } from '@app/store/block'
 import { Editor } from '@app/types'
 import { DEFAULT_TITLE, TelleryGlyph, TELLERY_MIME_TYPES } from '@app/utils'
-import { TellerySelection, TellerySelectionType } from './tellerySelection'
+import dayjs from 'dayjs'
+import { dequal } from 'dequal'
+import invariant from 'tiny-invariant'
 import { isReferenceToken } from '../BlockBase/ContentEditable'
 import { isQuestionLikeBlock } from '../Blocks/utils'
 import { getSubsetOfBlocksSnapshot } from '../utils'
+import { TellerySelection, TellerySelectionType } from './tellerySelection'
 
 export const mergeTokens = (tokens: Editor.Token[]) => {
   return tokens.reduce((acc: Editor.Token[], current: Editor.Token) => {
@@ -201,6 +201,18 @@ export const splitToken = (title?: Editor.Token[]) => {
   )
 }
 
+export const splitTokenAndMarkIndex = (title?: Editor.Token[]) => {
+  return (
+    title?.reduce((acc: Editor.Token[], token, index) => {
+      const splitedToken = token[0]
+        .split('')
+        .map((text): Editor.Token => [text, [[Editor.InlineType.LocalIndex, index], ...(token[1] ?? [])]])
+      acc.push(...splitedToken)
+      return acc
+    }, []) || []
+  )
+}
+
 export const blockTitleToText = (block: Editor.BaseBlock, snapshot: BlockSnapshot): string => {
   if (isQuestionLikeBlock(block.type) || block.type === Editor.BlockType.Story) {
     if (!block.content?.title?.length) {
@@ -223,7 +235,7 @@ export const tokensToText = (tokens: Editor.Token[] = [], snapshot?: BlockSnapsh
         if (type === 's') {
           if (snapshot) {
             try {
-              const block = getBlockFromSnapshot(id, snapshot)
+              const block = getBlockFromSnapshot(id as string, snapshot)
               return blockTitleToText(block, snapshot)
             } catch {
               return TelleryGlyph.BI_LINK
@@ -352,7 +364,7 @@ export const marksArrayToMarksMap = (marks: Editor.TokenType[]) => {
     marks?.reduce((a, c) => {
       a[c[0]] = c.slice(1) || []
       return a
-    }, {} as { [key: string]: string[] }) || {}
+    }, {} as { [key: string]: (string | number)[] }) || {}
   return marksMap
 }
 
@@ -362,7 +374,11 @@ export const marksMapToMarksArray = (map: { [key: string]: string[] }) => {
   return sortMarks(marks)
 }
 
-export const addMark = (marks: Editor.TokenType[] | undefined | null, mark: Editor.InlineType, args: string[]) => {
+export const addMark = (
+  marks: Editor.TokenType[] | undefined | null,
+  mark: Editor.InlineType,
+  args: (string | number)[]
+) => {
   const marksMap = marksArrayToMarksMap(marks || [])
   marksMap[mark] = args
   const uniqueMarks = marksMapToMarksArray(marksMap)
@@ -397,12 +413,38 @@ export const isNonSelectbleToken = (token: Editor.Token) => {
 }
 
 export const extractEntitiesFromToken = (token: Editor.Token) => {
-  const linkEntity = token[1]?.filter((mark) => mark[0] === Editor.InlineType.Link)[0]
-  const referenceEntity = token[1]?.filter((mark) => mark[0] === Editor.InlineType.Reference)[0]
-  return {
-    link: linkEntity,
-    reference: referenceEntity
+  const entities: Record<string, Editor.TokenType | undefined> = {
+    link: undefined,
+    reference: undefined,
+    classNames: undefined,
+    index: undefined
   }
+  const tokenTypes = token[1]
+  if (!tokenTypes) return entities
+  for (let i = 0; i < tokenTypes.length; i++) {
+    const tokenType = tokenTypes[i]
+    const mark = tokenType[0]
+    switch (mark) {
+      case Editor.InlineType.Link: {
+        entities.link = tokenType
+        break
+      }
+      case Editor.InlineType.Reference: {
+        entities.reference = tokenType
+        break
+      }
+      case Editor.InlineType.LocalClassnames: {
+        entities.classNames = tokenType
+        break
+      }
+      case Editor.InlineType.LocalIndex: {
+        entities.index = tokenType
+        break
+      }
+    }
+  }
+
+  return entities
 }
 
 const TOKEN_MAP: { [key: string]: { type: Editor.BlockType } } = {

@@ -216,6 +216,7 @@ const _StoryEditor: React.FC<{
     if (!inited) return
     const blockId = location.hash.slice(1) || (location.state as any)?.focusedBlockId
     const openMenu = !!(location.state as any)?.openMenu
+    const select = !!(location.state as any)?.select
 
     if (!blockId) return
     // TODO: if block not belong to this story...
@@ -228,15 +229,11 @@ const _StoryEditor: React.FC<{
           inline: 'nearest',
           boundary: editorRef.current?.parentElement
         })
-        // actions.forEach(({ el, top, left }) => {
-        //   el.scrollTop = top + 100
-        //   el.scrollLeft = left
-        // })
         if (openMenu) {
           blockRef.current.openMenu()
         }
       }, 100)
-      setSelectedBlocks([blockId as string])
+      select && setSelectedBlocks([blockId as string])
     })
   }, [blockAdminValue, inited, setSelectedBlocks, location.state, location.hash, rootBlock.type])
 

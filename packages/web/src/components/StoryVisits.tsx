@@ -10,10 +10,13 @@ import React, { useEffect, useMemo, useState } from 'react'
 export function StoryVisits(props: { storyId: string; className?: string }) {
   const { storyId } = props
   const { data: visits, refetch } = useStoryVisits(props.storyId)
-  const { data: usersMap } = useMgetUsers(visits?.map((visit) => visit.userId))
   const socket = useSocketInstance()
   const [activeIds, setActiveIds] = useState<string[]>([])
   const user = useLoggedUser()
+  const visitsIds = useMemo(() => {
+    return [user.id, ...(visits ?? [])?.map((visit) => visit.userId)]
+  }, [visits, user.id])
+  const { data: usersMap } = useMgetUsers(visitsIds)
 
   const sortedVisits = useMemo(() => {
     if (!visits) return undefined
