@@ -199,7 +199,7 @@ export class DbtService {
           storyId: workspaceId,
           content: {
             ...rawMetadata,
-            title: [[`dbt:${rawMetadata.name}`]],
+            title: [[rawMetadata.name]],
           },
           alive: true,
           version: 0,
