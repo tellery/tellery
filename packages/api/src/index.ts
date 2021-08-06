@@ -17,6 +17,7 @@ import user from './middlewares/user'
 import router from './routes'
 import { initSocketServer } from './socket/app'
 import { isTest } from './utils/env'
+import { injectFrontendEnv } from './utils/frontend-injector'
 
 initDatabaseConRetry(99)
 
@@ -54,6 +55,7 @@ if (!config.has('socket.url')) {
 }
 
 if (!isTest()) {
+  injectFrontendEnv(path.join(staticDirPath, 'web'))
   server.listen(port, () => {
     console.log('Server listening at port %d', port)
   })
