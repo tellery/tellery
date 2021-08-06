@@ -12,6 +12,7 @@ data class DbtModel(
     @JsonProperty("relation_name") val relationName: String?,
     @JsonProperty("source_name") val sourceName: String?,
     @JsonProperty("unique_id") val uniqueId: String,
+    val name: String,
     val database: String,
     val schema: String,
     val description: String,
@@ -26,7 +27,8 @@ data class DbtModel(
     fun toDbtBlock(): DbtBlock {
         val builder = DbtBlock.newBuilder()
             .setType(if (resourceType == "model") DbtBlock.Type.MODEL else DbtBlock.Type.SOURCE)
-            .setName(uniqueId)
+            .setName(name)
+            .setUniqueId(uniqueId)
             .setDescription(description)
             .setRelationName(relationName)
 

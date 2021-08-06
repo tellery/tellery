@@ -57,14 +57,15 @@ message DbtBlock {
 
   Type type = 1;
   string name = 2;
-  string description = 3;
-  string relationName = 4;
+  string uniqueId = 3;
+  string description = 4;
+  string relationName = 5;
   // Only for model
-  string rawSql = 5;
-  string compiledSql = 6;
-  Materialization materialized = 7;
+  string rawSql = 6;
+  string compiledSql = 7;
+  Materialization materialized = 8;
   // Only for source
-  string sourceTable = 8;
+  string sourceTable = 9;
 }
 
 message QuestionBlockContent {

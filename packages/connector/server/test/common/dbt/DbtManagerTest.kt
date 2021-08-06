@@ -60,12 +60,12 @@ class DbtManagerTest {
         assertFalse(blockMap.containsKey("model.jaffle_shop.my_first_dbt_model"))
         assertEquals(3, blocks.size)
 
-        val model = blockMap["model.jaffle_shop.my_second_dbt_model"]!!
+        val model = blockMap["my_second_dbt_model"]!!
         assertEquals("`mythic-hulling-307909`.`dbt_bob`.`my_second_dbt_model`", model.relationName)
         assertEquals(DbtBlock.Materialization.VIEW, model.materialized)
         assertEquals("A starter dbt model", model.description)
 
-        val source = blockMap["source.jaffle_shop.jaffle_shop.orders"]!!
+        val source = blockMap["orders"]!!
         assertEquals("raw.public.Orders_", source.relationName)
         assertEquals(DbtBlock.Materialization.UNKNOWN, source.materialized)
         assertEquals("", source.description)

@@ -21,17 +21,17 @@ object GitUtils {
     private val logger = KotlinLogging.logger { }
 
     fun cloneRemoteRepo(repo: DbtRepository) {
-            Git.cloneRepository()
-                .setDirectory(repo.gitRepoFolder)
-                .setURI(repo.gitUrl)
-                .setProgressMonitor(SimpleProgressMonitor())
-                .setTransportConfigCallback {
-                    val sshTransport = it as SshTransport
-                    sshTransport.sshSessionFactory =
-                        providesSshSessionFactory(repo.privateKey.absolutePath)
-                }
-                .call()
-                .use {}
+        Git.cloneRepository()
+            .setDirectory(repo.gitRepoFolder)
+            .setURI(repo.gitUrl)
+            .setProgressMonitor(SimpleProgressMonitor())
+            .setTransportConfigCallback {
+                val sshTransport = it as SshTransport
+                sshTransport.sshSessionFactory =
+                    providesSshSessionFactory(repo.privateKey.absolutePath)
+            }
+            .call()
+            .use {}
     }
 
     fun checkoutMasterAndPull(repo: DbtRepository) {
