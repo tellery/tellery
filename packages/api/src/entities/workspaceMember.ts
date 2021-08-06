@@ -18,7 +18,6 @@ export class WorkspaceMemberEntity extends TelleryBaseEntity {
   workspace!: WorkspaceEntity
 
   @Column()
-  @Index()
   userId!: string
 
   @Column({ enum: PermissionWorkspaceRole })
