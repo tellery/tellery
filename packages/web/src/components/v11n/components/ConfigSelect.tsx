@@ -13,8 +13,6 @@ export function ConfigSelect(props: {
   onChange(value: string): void
   placeholder?: string
 }) {
-  console.log(props.value)
-
   return (
     <select
       className={cx(

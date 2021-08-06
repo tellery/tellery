@@ -9,8 +9,9 @@ export enum DisplayType {
   BYTES = 'BYTES',
   BOOLEAN = 'BOOLEAN',
   BLOB = 'BLOB',
-  TIME = 'TIME',
+  DATETIME = 'DATETIME',
   DATE = 'DATE',
+  TIME = 'TIME',
   STRUCT = 'STRUCT',
   ARRAY = 'ARRAY'
 }

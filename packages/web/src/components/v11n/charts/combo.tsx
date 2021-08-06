@@ -30,7 +30,7 @@ import { ConfigInput } from '../components/ConfigInput'
 import { ConfigSelect } from '../components/ConfigSelect'
 import { LegendContent } from '../components/LegendContent'
 import { fontFamily } from '../constants'
-import { createTrend, formatNumber, formatRecord, isNumeric } from '../utils'
+import { createTrend, formatNumber, formatRecord, isContinuous, isNumeric, isTimeSeries } from '../utils'
 import { MoreSettingPopover } from '../components/MoreSettingPopover'
 import { TelleryThemeLight, ThemingVariables } from '@app/styles'
 import { SVG2DataURI } from '@app/lib/svg'
@@ -77,21 +77,13 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
       return cache[Type.COMBO]!
     }
     // pick a number column as Y axis
-    const y = data.fields.find(
-      ({ displayType }) =>
-        isNumeric(displayType) && displayType !== DisplayType.TIME && displayType !== DisplayType.DATE
-    )
+    const y = data.fields.find(({ displayType }) => isNumeric(displayType) && !isTimeSeries(displayType))
     const x =
       // first, try use a time column as X axis
       data.fields.find(
         ({ name, displayType }) =>
           // X and Y axis can't be the same
-          name !== y?.name &&
-          (displayType === DisplayType.TIME ||
-            displayType === DisplayType.DATE ||
-            name === 'dt' ||
-            name === 'date' ||
-            name === 'ts')
+          name !== y?.name && (isTimeSeries(displayType) || name === 'dt' || name === 'date' || name === 'ts')
       ) ||
       // then, select numeric data as the X axis
       data.fields.find(({ name, displayType }) => name !== y?.name && isNumeric(displayType)) ||
@@ -113,11 +105,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
       referenceYAxis: 'left',
 
       xLabel: x?.name || '',
-      xType: x
-        ? x.displayType === DisplayType.FLOAT || x.displayType === DisplayType.TIME
-          ? 'linear'
-          : 'ordinal'
-        : undefined,
+      xType: x ? (isContinuous(x.displayType) ? 'linear' : 'ordinal') : undefined,
       yLabel: y?.name || '',
       yScale: 'auto',
       yRangeMin: 0,
@@ -255,11 +243,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                     axise,
                     value,
                     'xType',
-                    value.length > 1
-                      ? 'ordinal'
-                      : displayTypes[value[0]] === DisplayType.FLOAT || displayTypes[value[0]] === DisplayType.TIME
-                      ? 'linear'
-                      : 'ordinal'
+                    value.length > 1 ? 'ordinal' : isContinuous(displayTypes[value[0]]) ? 'linear' : 'ordinal'
                   )
                 } else {
                   onConfigChange(axise, value, mapAxis2Label(axise), calcLabel(value, axise))
@@ -300,17 +284,11 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                       if (axise === 'dimensions') {
                         onConfigChange(axise, array)
                       } else if (axise === 'xAxises') {
-                        console.log(array, displayTypes[array[0]])
                         onConfigChange(
                           axise,
                           array,
                           'xType',
-                          array.length > 1
-                            ? 'ordinal'
-                            : displayTypes[array[0]] === DisplayType.FLOAT ||
-                              displayTypes[array[0]] === DisplayType.TIME
-                            ? 'linear'
-                            : 'ordinal'
+                          array.length > 1 ? 'ordinal' : isContinuous(displayTypes[array[0]]) ? 'linear' : 'ordinal'
                         )
                       } else {
                         onConfigChange(axise, array, mapAxis2Label(axise), calcLabel(array, axise))
@@ -903,7 +881,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                 ? 'number'
                 : props.config.xType === 'ordinal'
                 ? 'category'
-                : xDisplayType === DisplayType.FLOAT || xDisplayType === DisplayType.TIME
+                : isContinuous(xDisplayType)
                 ? 'number'
                 : 'category'
             }
