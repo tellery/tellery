@@ -51,4 +51,8 @@ export function getOwnerDocument(target: Event['target']) {
   return target instanceof HTMLElement ? target.ownerDocument : document
 }
 
+export enum TelleryGlyph {
+  BI_LINK = '\ue000'
+}
+
 export { isUrl }

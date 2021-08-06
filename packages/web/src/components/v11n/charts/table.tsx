@@ -63,8 +63,7 @@ export const table: Chart<Type.TABLE> = {
           renderItem={(item) => (
             <div
               className={css`
-                flex: 1;
-                width: 0;
+                width: 100%;
                 padding-right: 10px;
                 font-size: 14px;
                 font-weight: 400;
@@ -73,13 +72,23 @@ export const table: Chart<Type.TABLE> = {
                 justify-content: space-between;
               `}
             >
-              {item}
+              <div
+                className={css`
+                  flex: 1;
+                  width: 0;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  margin-right: 5px;
+                `}
+              >
+                {item}
+              </div>
               {props.config.columnVisibility[item] === false ? (
                 <IconButton
                   icon={IconMenuHide}
                   color={ThemingVariables.colors.text[0]}
                   className={css`
-                    cursor: pointer;
+                    flex-shrink: 0;
                   `}
                   onClick={() => {
                     props.onConfigChange('columnVisibility', {
@@ -93,7 +102,7 @@ export const table: Chart<Type.TABLE> = {
                   icon={IconMenuShow}
                   color={ThemingVariables.colors.text[0]}
                   className={css`
-                    cursor: pointer;
+                    flex-shrink: 0;
                   `}
                   onClick={() => {
                     props.onConfigChange('columnVisibility', {

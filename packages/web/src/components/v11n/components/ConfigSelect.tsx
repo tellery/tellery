@@ -3,17 +3,20 @@ import { css, cx } from '@emotion/css'
 import { TelleryThemeLight, ThemingVariables } from '@app/styles'
 import { SVG2DataURI } from '@app/lib/svg'
 import { IconCommonArrowDropDown } from '@app/assets/icons'
+import { upperFirst } from 'lodash'
 
 export function ConfigSelect(props: {
   className?: string
   options: string[]
+  disabled?: boolean
   disables?: string[]
-  value: string
+  value?: string
   onChange(value: string): void
   placeholder?: string
 }) {
   return (
     <select
+      disabled={props.disabled}
       className={cx(
         css`
           width: 185px;
@@ -31,6 +34,10 @@ export function ConfigSelect(props: {
           text-overflow: ellipsis;
           display: block;
           padding-right: 30px;
+          :disabled {
+            cursor: not-allowed;
+            background-color: ${ThemingVariables.colors.gray[2]};
+          }
         `,
         props.className
       )}
@@ -50,7 +57,7 @@ export function ConfigSelect(props: {
       ) : null}
       {props.options.map((option) => (
         <option key={option} value={option} disabled={props.disables?.includes(option)}>
-          {option}
+          {upperFirst(option)}
         </option>
       ))}
     </select>

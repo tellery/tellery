@@ -9,8 +9,9 @@ export enum DisplayType {
   BYTES = 'BYTES',
   BOOLEAN = 'BOOLEAN',
   BLOB = 'BLOB',
-  TIME = 'TIME',
+  DATETIME = 'DATETIME',
   DATE = 'DATE',
+  TIME = 'TIME',
   STRUCT = 'STRUCT',
   ARRAY = 'ARRAY'
 }
@@ -81,6 +82,7 @@ interface ComboConfig<T extends Type = Type.COMBO> {
 
   // Axis
   xLabel: string
+  xType?: 'linear' | 'ordinal'
   yLabel: string
   yScale: ScaleType
   yRangeMin: number | undefined
@@ -138,6 +140,7 @@ interface ScatterConfig {
 
   // Axis
   xLabel: string
+  xType?: 'linear' | 'ordinal'
   yLabel: string
   yScale: ScaleType
   yRangeMin: number | undefined

@@ -7,7 +7,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 import { DisplayType, Type } from '../types'
 import type { Chart } from './base'
 import { LegendContentVertical } from '../components/LegendContentVertical'
-import { formatRecord, isNumeric } from '../utils'
+import { formatRecord, isNumeric, isTimeSeries } from '../utils'
 import { ConfigButton } from '../components/ConfigButton'
 import { ConfigLabel } from '../components/ConfigLabel'
 import { ConfigSelect } from '../components/ConfigSelect'
@@ -45,10 +45,7 @@ export const pie: Chart<Type.PIE> = {
 
       dimension: data.fields.find(({ displayType }) => displayType === DisplayType.STRING)?.name || '',
       measurement:
-        data.fields.find(
-          ({ displayType }) =>
-            isNumeric(displayType) && displayType !== DisplayType.TIME && displayType !== DisplayType.DATE
-        )?.name || '',
+        data.fields.find(({ displayType }) => isNumeric(displayType) && !isTimeSeries(displayType))?.name || '',
       minPercentage: 1,
 
       showLegend: true,

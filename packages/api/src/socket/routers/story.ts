@@ -7,6 +7,9 @@ import { BroadCastArgs, BroadCastEvent, OnEventType } from '../../types/socket'
 import { validate } from '../../utils/socket'
 import { NotificationService } from '../services/notification'
 import activitySyncServiceConstructor from '../../services/activitySync'
+import { Emitter } from '../types'
+
+const nsp = '/workspace'
 
 class OnEventRequest {
   @IsDefined()
@@ -30,9 +33,10 @@ class BroadCastRequest {
 
 let notificationService: NotificationService
 
-export function init(io: Server) {
-  const workspaceIO = io.of('/workspace')
-  notificationService = new NotificationService(workspaceIO)
+export function init(io: Server, emitter: Emitter) {
+  const workspaceIO = io.of(nsp)
+  const workspaceEmitter = emitter.of(nsp)
+  notificationService = new NotificationService(workspaceIO, workspaceEmitter)
   const activityService = activitySyncServiceConstructor()
 
   workspaceIO.on('connection', async (socket: Socket) => {
