@@ -5,12 +5,12 @@ import { useLocation } from 'react-use'
 import { RoutesWithoutSession } from './RoutesWithoutSession'
 import { RoutesWithSession } from './RoutesWithSession'
 
-env.GOOGLE_ANALYTICS_4_ID && ReactGA.initialize(env.GOOGLE_ANALYTICS_4_ID)
+env.GA4_ID && ReactGA.initialize(env.GA4_ID)
 
 export const Routes = () => {
   const locaiton = useLocation()
   useEffect(() => {
-    env.GOOGLE_ANALYTICS_4_ID && ReactGA.send('pageview')
+    env.GA4_ID && ReactGA.send('pageview')
   }, [locaiton])
 
   return (
