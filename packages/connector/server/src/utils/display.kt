@@ -7,6 +7,8 @@ import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSerializationContext
 import com.google.gson.JsonSerializer
 import java.lang.reflect.Type
+import java.sql.Time
+import java.sql.Timestamp
 
 import java.sql.Types
 import java.util.*
@@ -20,7 +22,8 @@ fun toDisplayType(type: Int): DisplayType {
         Types.BINARY, Types.VARBINARY, Types.LONGVARBINARY -> DisplayType.BYTES
         Types.FLOAT, Types.REAL, Types.DOUBLE, Types.NUMERIC, Types.DECIMAL -> DisplayType.FLOAT
         Types.CHAR, Types.VARCHAR, Types.LONGVARCHAR -> DisplayType.STRING
-        Types.TIME, Types.TIMESTAMP -> DisplayType.TIME
+        Types.TIMESTAMP, Types.TIMESTAMP_WITH_TIMEZONE -> DisplayType.DATETIME
+        Types.TIME -> DisplayType.TIME
         Types.DATE -> DisplayType.DATE
         Types.STRUCT -> DisplayType.STRUCT
         Types.ARRAY -> DisplayType.ARRAY
@@ -29,8 +32,7 @@ fun toDisplayType(type: Int): DisplayType {
 }
 
 
-
-class DateAsTimestampSerializer : JsonSerializer<Date> {
+class TimestampSerializer : JsonSerializer<Date> {
     override fun serialize(ts: Date, typeOf: Type?, ctx: JsonSerializationContext?): JsonElement {
         return JsonPrimitive(ts.time)
     }

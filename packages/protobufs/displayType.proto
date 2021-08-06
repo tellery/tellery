@@ -18,4 +18,5 @@ enum DisplayType {
   STRUCT = 9;
   ARRAY = 10;
   DATE = 11;
+  DATETIME = 12;
 }
