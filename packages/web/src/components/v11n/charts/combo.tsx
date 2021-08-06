@@ -30,7 +30,7 @@ import { ConfigInput } from '../components/ConfigInput'
 import { ConfigSelect } from '../components/ConfigSelect'
 import { LegendContent } from '../components/LegendContent'
 import { fontFamily } from '../constants'
-import { createTrend, formatNumber, formatRecord, isNumeric } from '../utils'
+import { createTrend, formatNumber, formatRecord, isContinuous, isNumeric, isTimeSeries } from '../utils'
 import { MoreSettingPopover } from '../components/MoreSettingPopover'
 import { TelleryThemeLight, ThemingVariables } from '@app/styles'
 import { SVG2DataURI } from '@app/lib/svg'
@@ -77,21 +77,13 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
       return cache[Type.COMBO]!
     }
     // pick a number column as Y axis
-    const y = data.fields.find(
-      ({ displayType }) =>
-        isNumeric(displayType) && displayType !== DisplayType.TIME && displayType !== DisplayType.DATE
-    )
+    const y = data.fields.find(({ displayType }) => isNumeric(displayType) && !isTimeSeries(displayType))
     const x =
       // first, try use a time column as X axis
       data.fields.find(
         ({ name, displayType }) =>
           // X and Y axis can't be the same
-          name !== y?.name &&
-          (displayType === DisplayType.TIME ||
-            displayType === DisplayType.DATE ||
-            name === 'dt' ||
-            name === 'date' ||
-            name === 'ts')
+          name !== y?.name && (isTimeSeries(displayType) || name === 'dt' || name === 'date' || name === 'ts')
       ) ||
       // then, select numeric data as the X axis
       data.fields.find(({ name, displayType }) => name !== y?.name && isNumeric(displayType)) ||
@@ -113,7 +105,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
       referenceYAxis: 'left',
 
       xLabel: x?.name || '',
-      xType: x?.displayType === DisplayType.FLOAT || x?.displayType === DisplayType.TIME ? 'linear' : undefined,
+      xType: x ? (isContinuous(x.displayType) ? 'linear' : 'ordinal') : undefined,
       yLabel: y?.name || '',
       yScale: 'auto',
       yRangeMin: 0,
@@ -231,6 +223,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
           })) as Config<Type.COMBO>['shapes']
       )
     }, [onConfigChange, shapes, props.config.shapes])
+    const displayTypes = useDataFieldsDisplayType(props.data.fields)
     const renderAxisSelect = useCallback(
       (title: string, axise: 'xAxises' | 'dimensions' | 'yAxises' | 'y2Axises', disabled: boolean, first?: boolean) => {
         return (
@@ -244,6 +237,14 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
               onChange={(value) => {
                 if (axise === 'dimensions') {
                   onConfigChange(axise, value)
+                } else if (axise === 'xAxises') {
+                  console.log(value, displayTypes[value[0]])
+                  onConfigChange(
+                    axise,
+                    value,
+                    'xType',
+                    value.length > 1 ? 'ordinal' : isContinuous(displayTypes[value[0]]) ? 'linear' : 'ordinal'
+                  )
                 } else {
                   onConfigChange(axise, value, mapAxis2Label(axise), calcLabel(value, axise))
                 }
@@ -282,6 +283,13 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                       const array = axises[axise].map((axis) => (axis === item ? e.target.value : axis))
                       if (axise === 'dimensions') {
                         onConfigChange(axise, array)
+                      } else if (axise === 'xAxises') {
+                        onConfigChange(
+                          axise,
+                          array,
+                          'xType',
+                          array.length > 1 ? 'ordinal' : isContinuous(displayTypes[array[0]]) ? 'linear' : 'ordinal'
+                        )
                       } else {
                         onConfigChange(axise, array, mapAxis2Label(axise), calcLabel(array, axise))
                       }
@@ -337,7 +345,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
           </>
         )
       },
-      [onConfigChange, props.config.axises, axises]
+      [axises, props.config.axises, onConfigChange, displayTypes]
     )
 
     return (
@@ -533,8 +541,10 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                 </AxisFormItem>
                 <AxisFormItem label="Type">
                   <ConfigSelect
-                    options={['auto', 'linear', 'ordinal']}
-                    value={props.config.xType || 'auto'}
+                    disabled={props.config.xAxises.length > 1 || !isNumeric(displayTypes[props.config.xAxises[0]])}
+                    options={['linear', 'ordinal']}
+                    placeholder="Please select"
+                    value={props.config.xType}
                     onChange={(value) => {
                       onConfigChange('xType', value)
                     }}
@@ -868,7 +878,13 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
             tickFormatter={(tick) => formatRecord(tick, xDisplayType)}
             padding={props.config.xType === 'linear' ? { right: 16, left: 16 } : undefined}
             type={
-              props.config.xType === 'linear' ? 'number' : props.config.xType === 'ordinal' ? 'category' : undefined
+              props.config.xType === 'linear'
+                ? 'number'
+                : props.config.xType === 'ordinal'
+                ? 'category'
+                : isContinuous(xDisplayType)
+                ? 'number'
+                : 'category'
             }
             domain={['dataMin', 'dataMax']}
           />

@@ -23,7 +23,7 @@ import { ConfigLabel } from '../components/ConfigLabel'
 import { ConfigSelectWithClear } from '../components/ConfigSelectWithClear'
 import { ConfigSelect } from '../components/ConfigSelect'
 import { CustomTooltip } from '../components/CustomTooltip'
-import { formatNumber, formatRecord, isNumeric } from '../utils'
+import { formatNumber, formatRecord, isContinuous, isNumeric, isTimeSeries } from '../utils'
 import { LegendContent } from '../components/LegendContent'
 import { ColorSelector } from '../components/ColorSelector'
 import { ThemingVariables } from '@app/styles'
@@ -51,21 +51,13 @@ export const scatter: Chart<Type.SCATTER> = {
       return cache[Type.SCATTER]!
     }
     // pick a number column as Y axis
-    const y = data.fields.find(
-      ({ displayType }) =>
-        isNumeric(displayType) && displayType !== DisplayType.TIME && displayType !== DisplayType.DATE
-    )
+    const y = data.fields.find(({ displayType }) => isNumeric(displayType) && !isTimeSeries(displayType))
     const x =
       // first, try to pick a time column as X axis
       data.fields.find(
         ({ name, displayType }) =>
           // X and Y axis can't be the same
-          name !== y?.name &&
-          (displayType === DisplayType.TIME ||
-            displayType === DisplayType.DATE ||
-            name === 'dt' ||
-            name === 'date' ||
-            name === 'ts')
+          name !== y?.name && (isTimeSeries(displayType) || name === 'dt' || name === 'date' || name === 'ts')
       ) ||
       // then, pick numeric data as the X axis
       data.fields.find(({ name, displayType }) => name !== y?.name && isNumeric(displayType)) ||
@@ -89,7 +81,7 @@ export const scatter: Chart<Type.SCATTER> = {
       referenceYValue: undefined,
 
       xLabel: x?.name || '',
-      xType: x?.displayType === DisplayType.FLOAT || x?.displayType === DisplayType.TIME ? 'linear' : undefined,
+      xType: x ? (isContinuous(x.displayType) ? 'linear' : 'ordinal') : undefined,
       yLabel: y?.name || '',
       yScale: 'auto',
       yRangeMin: 0,
@@ -101,6 +93,7 @@ export const scatter: Chart<Type.SCATTER> = {
     const { onConfigChange } = props
     const [tab, setTab] = useState(Tab.DATA)
     const records = useDataRecords(props.data)
+    const displayTypes = useDataFieldsDisplayType(props.data.fields)
 
     return (
       <div
@@ -156,6 +149,7 @@ export const scatter: Chart<Type.SCATTER> = {
                   if (!isNumeric(props.data.fields.find((field) => field.name === props.config.xAxis)?.displayType)) {
                     onConfigChange('referenceXLabel', '', 'referenceXValue', undefined)
                   }
+                  onConfigChange('xAxis', xAxis, 'xType', isContinuous(displayTypes[xAxis]) ? 'linear' : 'ordinal')
                 }}
                 placeholder="Please select"
               />
@@ -310,6 +304,17 @@ export const scatter: Chart<Type.SCATTER> = {
                     }}
                   />
                 </AxisFormItem>
+                <AxisFormItem label="Type">
+                  <ConfigSelect
+                    disabled={!isNumeric(displayTypes[props.config.xAxis])}
+                    options={['linear', 'ordinal']}
+                    placeholder="Please select"
+                    value={props.config.xType}
+                    onChange={(value) => {
+                      onConfigChange('xType', value)
+                    }}
+                  />
+                </AxisFormItem>
               </div>
               <ConfigLabel>Y axis</ConfigLabel>
               <div
@@ -393,6 +398,7 @@ export const scatter: Chart<Type.SCATTER> = {
     const showXLabel = props.config.xLabel && !isSmall
     const showYLabel = props.config.yLabel && !isSmall
     const displayTypes = useDataFieldsDisplayType(props.data.fields)
+    const xDisplayType = displayTypes[props.config.xAxis]
 
     return (
       <ResponsiveContainer>
@@ -455,10 +461,16 @@ export const scatter: Chart<Type.SCATTER> = {
                   }
                 : undefined
             }
-            tickFormatter={(tick) => formatRecord(tick, displayTypes[props.config.xAxis])}
+            tickFormatter={(tick) => formatRecord(tick, xDisplayType)}
             stroke={ThemingVariables.colors.text[1]}
             type={
-              props.config.xType === 'linear' ? 'number' : props.config.xType === 'ordinal' ? 'category' : undefined
+              props.config.xType === 'linear'
+                ? 'number'
+                : props.config.xType === 'ordinal'
+                ? 'category'
+                : isContinuous(xDisplayType)
+                ? 'number'
+                : 'category'
             }
             allowDuplicatedCategory={false}
           />
