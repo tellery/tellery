@@ -1,4 +1,5 @@
 import { Editor } from '@app/types'
+import { TelleryGlyph } from '@app/utils'
 import { dequal } from 'dequal'
 import invariant from 'tiny-invariant'
 import { isNonSelectbleToken } from '.'
@@ -249,7 +250,7 @@ export const deserialize = (el: Element, block: Editor.Block): Editor.Token[] =>
 
           const hasReference = token[1] && token[1].some((marks) => marks[0] === Editor.InlineType.Reference)
           if (hasReference) {
-            children.push([' ', token[1]])
+            children.push([TelleryGlyph.BI_LINK, token[1]])
             break
           }
           if (children[i]) {

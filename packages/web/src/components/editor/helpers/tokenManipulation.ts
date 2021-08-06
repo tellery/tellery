@@ -3,7 +3,7 @@ import { dequal } from 'dequal'
 import invariant from 'tiny-invariant'
 import { BlockSnapshot, getBlockFromSnapshot } from '@app/store/block'
 import { Editor } from '@app/types'
-import { DEFAULT_TITLE, TELLERY_MIME_TYPES } from '@app/utils'
+import { DEFAULT_TITLE, TelleryGlyph, TELLERY_MIME_TYPES } from '@app/utils'
 import { TellerySelection, TellerySelectionType } from './tellerySelection'
 import { isReferenceToken } from '../BlockBase/ContentEditable'
 import { isQuestionLikeBlock } from '../Blocks/utils'
@@ -213,7 +213,7 @@ export const blockTitleToText = (block: Editor.BaseBlock, snapshot: BlockSnapsho
   return text
 }
 
-export const tokensToText = (tokens: Editor.Token[] = [], snapshot: BlockSnapshot): string => {
+export const tokensToText = (tokens: Editor.Token[] = [], snapshot?: BlockSnapshot): string => {
   return tokens
     .map((token) => {
       const { reference: referenceEntity } = extractEntitiesFromToken(token)
@@ -221,12 +221,15 @@ export const tokensToText = (tokens: Editor.Token[] = [], snapshot: BlockSnapsho
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const [_prefix, type, id] = referenceEntity
         if (type === 's') {
-          try {
-            const block = getBlockFromSnapshot(id, snapshot)
-            return blockTitleToText(block, snapshot)
-          } catch {
-            return `[[${id}]]`
+          if (snapshot) {
+            try {
+              const block = getBlockFromSnapshot(id, snapshot)
+              return blockTitleToText(block, snapshot)
+            } catch {
+              return TelleryGlyph.BI_LINK
+            }
           }
+          return `[[${id}]]`
         }
         return ''
       }

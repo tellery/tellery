@@ -47,10 +47,23 @@ const _ContentEditable: React.ForwardRefRenderFunction<
     disableReferenceDropdown?: boolean
     placeHolderStrategy?: 'always' | 'never' | 'active'
     disableTextAlign?: boolean
+    tokensRenderer?: (
+      tokens: Editor.Token[],
+      assetsMap: {
+        [key: string]: Editor.Block
+      }
+    ) => string
   }
 > = (props, ref) => {
   const editor = useEditor<Editor.Block>()
-  const { block, readonly, maxLines = 0, disableReferenceDropdown, disableSlashCommand } = props
+  const {
+    block,
+    readonly,
+    maxLines = 0,
+    disableReferenceDropdown,
+    disableSlashCommand,
+    tokensRenderer = BlockRenderer
+  } = props
   const editbleRef = useRef<HTMLDivElement | null>(null)
   const [leavesHtml, setLeavesHtml] = useState<string | null>(null)
   const [willFlush, setWillFlush] = useState(false)
@@ -89,11 +102,11 @@ const _ContentEditable: React.ForwardRefRenderFunction<
 
   useEffect(() => {
     if (!isComposing.current && titleTokens) {
-      const targetHtml = BlockRenderer(titleTokens, dependsAssetsResult ?? {})
+      const targetHtml = tokensRenderer(titleTokens, dependsAssetsResult ?? {})
       // logger('setLeavesHtml', titleTokens, dependsAssetsResult)
       setLeavesHtml(targetHtml)
     }
-  }, [titleTokens, dependsAssetsResult])
+  }, [titleTokens, dependsAssetsResult, tokensRenderer])
 
   useEffect(() => {
     if (readonly) return

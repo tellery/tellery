@@ -1,6 +1,6 @@
 import { useHover } from '@app/hooks'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
-import { DEFAULT_TITLE } from '@app/utils'
+import { DEFAULT_TITLE, TelleryGlyph } from '@app/utils'
 import { css } from '@emotion/css'
 import { IconCommonAdd, IconCommonStoryBlock } from '@app/assets/icons'
 import {
@@ -125,11 +125,11 @@ export const _BlockReferenceDropdownInner: React.FC<
               const newStoryId = nanoid()
               const title = keyword ?? DEFAULT_TITLE
               await blockTranscations.createNewStory({ id: newStoryId, title })
-              return [' ', [[Editor.InlineType.Reference, 's', `${newStoryId}`]]]
+              return [TelleryGlyph.BI_LINK, [[Editor.InlineType.Reference, 's', `${newStoryId}`]]]
             } else {
               const referenceIndex = index - 1
               const story = stories[referenceIndex]
-              return [' ', [[Editor.InlineType.Reference, 's', `${story.id}`]]]
+              return [TelleryGlyph.BI_LINK, [[Editor.InlineType.Reference, 's', `${story.id}`]]]
             }
           }
           const newToken: Editor.Token = await getNewToken(index)
