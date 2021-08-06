@@ -1,10 +1,10 @@
 package io.tellery.common.dbt
 
-import annotations.Dbt
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.tellery.common.dbt.DbtManager.isDbtProfile
+import io.tellery.connectors.annotations.Dbt
 import io.tellery.connectors.profiles.BaseDbtProfile
 import io.tellery.entities.Profile
 import io.tellery.utils.allSubclasses
