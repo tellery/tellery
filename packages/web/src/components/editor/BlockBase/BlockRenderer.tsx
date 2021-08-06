@@ -103,7 +103,7 @@ export const getStylesForTokenText = (token: Editor.Token) => {
 
 const getTextElement = (token: Editor.Token, index: number, classNames?: string) => {
   const styles = getStylesForTokenText(token)
-  const isPureTextToken = Object.keys(styles).length === 0 && !classNames
+  const isPureTextToken = Object.keys(styles).length === 0 && classNames === undefined
   const text = token[0]
   const textSpan = isPureTextToken ? (
     <React.Fragment key={index}>{text}</React.Fragment>
@@ -136,8 +136,7 @@ export const Token = ({
     classNames: localClassNames
   } = extractEntitiesFromToken(token)
   const realIndex = (localIndex?.[1] as number) ?? index
-  const classNames =
-    localClassNames?.length && localClassNames.length > 1 ? localClassNames.slice(1).join(' ') : undefined
+  const classNames = localClassNames ? localClassNames.slice(1).join(' ') ?? '' : undefined
 
   if (linkEntity) {
     const styleGen = INLINE_WRAPPER_STYLE.get(Editor.InlineType.Link)!

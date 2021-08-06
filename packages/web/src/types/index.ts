@@ -44,9 +44,9 @@ export type Snapshot = {
 export const CodeBlockLangDisplayName = {
   [CodeBlockLang.TypeScipt]: 'TypeScript',
   [CodeBlockLang.JavaScript]: 'JavaScript',
-  [CodeBlockLang.SQL]: 'SQL',
-  [CodeBlockLang.PGSQL]: 'PostgreSQL',
-  [CodeBlockLang.SQLMore]: 'SQL More'
+  [CodeBlockLang.SQL]: 'SQL'
+  // [CodeBlockLang.PGSQL]: 'PostgreSQL'
+  // [CodeBlockLang.SQLMore]: 'SQL More'
 }
 
 export namespace Editor {
