@@ -59,7 +59,11 @@ export namespace Editor {
     Preformatted = 'p',
     Hightlighted = 'h',
     Reference = 'r',
-    Code = 'c'
+    Code = 'c',
+
+    // Temp useage only
+    LocalClassnames = 'localClassnames',
+    LocalIndex = 'localIndex'
   }
   export enum BlockType {
     BulletList = 'bulleted_list',
@@ -110,7 +114,7 @@ export namespace Editor {
     BLOCK = 'block'
   }
 
-  export type TokenType = [InlineType, ...string[]]
+  export type TokenType = [InlineType, ...(string | number)[]]
 
   export type Token = [string, TokenType[]?]
 

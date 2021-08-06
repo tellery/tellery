@@ -241,7 +241,7 @@ export const BlockTextOperationMenuInner = ({
           const entity = extractEntitiesFromToken(token)
           const uniqueMarks = removeMark(marks, Editor.InlineType.Reference)
           invariant(entity.reference, 'reference is null')
-          const block = getBlockFromSnapshot(entity.reference[2], snapshot)
+          const block = getBlockFromSnapshot(entity.reference[2] as string, snapshot)
           const tokenText = entity.reference ? getBlockTitle(block) ?? ' ' : token[0]
           if (uniqueMarks) {
             return [tokenText, uniqueMarks]

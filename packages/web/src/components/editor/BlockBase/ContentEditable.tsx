@@ -447,7 +447,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
             if (link) {
               if (e.defaultPrevented === false) {
                 e.preventDefault()
-                window.open(link[1])
+                window.open(link[1] as string)
               }
               return
             }
@@ -456,7 +456,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
               if (e.defaultPrevented === false) {
                 e.preventDefault()
                 if (reference[1] === 's') {
-                  openStoryHandler(reference[2], {
+                  openStoryHandler(reference[2] as string, {
                     _currentStoryId: block.storyId,
                     isAltKeyPressed: e.altKey
                   })

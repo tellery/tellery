@@ -368,7 +368,7 @@ export const marksArrayToMarksMap = (marks: Editor.TokenType[]) => {
   return marksMap
 }
 
-export const marksMapToMarksArray = (map: { [key: string]: string[] }) => {
+export const marksMapToMarksArray = (map: { [key: string]: (string | number)[] }) => {
   const keys = Object.keys(map) as Editor.InlineType[]
   const marks: Editor.TokenType[] = keys.map((key) => [key, ...map[key]])
   return sortMarks(marks)

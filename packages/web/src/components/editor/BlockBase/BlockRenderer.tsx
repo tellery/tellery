@@ -91,7 +91,9 @@ export const getStylesForTokenText = (token: Editor.Token) => {
   return (
     marks
       .map((mark) => {
-        return INLINE_STYLES.get(mark[0] as Editor.InlineType)?.(...mark.slice(1)) as CSSProperties | undefined
+        return INLINE_STYLES.get(mark[0] as Editor.InlineType)?.(...(mark as string[]).slice(1)) as
+          | CSSProperties
+          | undefined
       })
       .reduce((a, c) => {
         return { ...a, ...c }
@@ -99,14 +101,15 @@ export const getStylesForTokenText = (token: Editor.Token) => {
   )
 }
 
-const getTextElement = (token: Editor.Token, index: number) => {
-  const isPureTextToken = token.length === 1
+const getTextElement = (token: Editor.Token, index: number, classNames?: string) => {
+  const styles = getStylesForTokenText(token)
+  const isPureTextToken = Object.keys(styles).length === 0 && !classNames
   const text = token[0]
   const textSpan = isPureTextToken ? (
     <React.Fragment key={index}>{text}</React.Fragment>
   ) : (
     <>
-      <span style={getStylesForTokenText(token)} data-token-index={index}>
+      <span style={styles} data-token-index={index} className={classNames}>
         {text}
       </span>
     </>
@@ -126,13 +129,29 @@ export const Token = ({
   }
 }) => {
   const snapshot = useBlockSnapshot()
-  const { link: linkEntity, reference: referenceEntity } = extractEntitiesFromToken(token)
+  const {
+    link: linkEntity,
+    reference: referenceEntity,
+    index: localIndex,
+    classNames: localClassNames
+  } = extractEntitiesFromToken(token)
+  const realIndex = (localIndex?.[1] as number) ?? index
+  const classNames =
+    localClassNames?.length && localClassNames.length > 1 ? localClassNames.slice(1).join(' ') : undefined
+
   if (linkEntity) {
     const styleGen = INLINE_WRAPPER_STYLE.get(Editor.InlineType.Link)!
 
     return (
       <>
-        <a href={linkEntity[1]} data-token-index={index} target="_blank" rel="noopener noreferrer" style={styleGen()}>
+        <a
+          href={linkEntity[1] as string}
+          data-token-index={realIndex}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={styleGen()}
+          className={classNames}
+        >
           <IconCommonLink height="1em" width="1em" viewBox="0 0 20 20" style={{ verticalAlign: 'middle' }} />
           {getTextElement(token, index)}
           <span style={{ whiteSpace: 'nowrap' }}></span>
@@ -158,7 +177,14 @@ export const Token = ({
     const styleGen = INLINE_STYLES.get(Editor.InlineType.Reference)!
     return (
       <>
-        <a href={href} data-token-index={index} rel="noopener noreferrer" contentEditable={false} style={styleGen()}>
+        <a
+          href={href}
+          data-token-index={realIndex}
+          rel="noopener noreferrer"
+          contentEditable={false}
+          style={styleGen()}
+          className={classNames}
+        >
           <span style={{ whiteSpace: 'nowrap' }}></span>
           <span>{title}</span>
           <span style={{ whiteSpace: 'nowrap' }}></span>
@@ -167,7 +193,7 @@ export const Token = ({
     )
   }
 
-  return getTextElement(token, index)
+  return getTextElement(token, realIndex, classNames)
 }
 
 export const BlockRenderer = (
