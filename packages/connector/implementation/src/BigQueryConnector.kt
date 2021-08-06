@@ -12,6 +12,7 @@ import io.tellery.annotations.Config
 import io.tellery.annotations.Config.ConfigType
 import io.tellery.annotations.Connector
 import io.tellery.annotations.HandleImport
+import io.tellery.connectors.fields.BigQueryFields
 import io.tellery.entities.*
 import io.tellery.utils.loadPrivateKey
 import kotlinx.coroutines.CancellationException
@@ -28,7 +29,7 @@ import kotlin.coroutines.resumeWithException
     type = "BigQuery",
     configs = [
         Config(
-            name = "Key File",
+            name = BigQueryFields.KEY_FILE,
             type = ConfigType.FILE,
             description = "Upload your key file right here. For instruction see here: https://cloud.google.com/bigquery/docs/quickstarts/quickstart-client-libraries",
             hint = "",

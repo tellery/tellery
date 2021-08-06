@@ -4,6 +4,7 @@ import io.tellery.annotations.Config
 import io.tellery.annotations.Config.ConfigType
 import io.tellery.annotations.Connector
 import io.tellery.annotations.HandleImport
+import io.tellery.connectors.fields.SnowflakeFields
 import io.tellery.entities.CollectionField
 import io.tellery.entities.Profile
 import io.tellery.entities.TypeField
@@ -18,28 +19,28 @@ import java.sql.Connection
     type = "Snowflake",
     configs = [
         Config(
-            name = "Account Name",
+            name = SnowflakeFields.ACCOUNT_NAME,
             type = ConfigType.STRING,
             description = "Your Snowflake account name",
             hint = "xy12345",
             required = true
         ),
         Config(
-            name = "Region Id",
+            name = SnowflakeFields.REGION_ID,
             type = ConfigType.STRING,
             description = "Your region Id",
             hint = "us-ease-2.aws",
             required = true
         ),
         Config(
-            name = "Username",
+            name = SnowflakeFields.USERNAME,
             type = ConfigType.STRING,
             description = "Your Snowflake username",
             hint = "your_username",
             required = true,
         ),
         Config(
-            name = "Password",
+            name = SnowflakeFields.PASSWORD,
             type = ConfigType.STRING,
             description = "Your Snowflake password",
             hint = "",
@@ -47,13 +48,13 @@ import java.sql.Connection
             secret = true,
         ),
         Config(
-            name = "Role",
+            name = SnowflakeFields.ROLE,
             type = ConfigType.STRING,
             description = "The default access control role to use in the Snowflake session",
             hint = "SYSADMIN"
         ),
         Config(
-            name = "Warehouse",
+            name = SnowflakeFields.WAREHOUSE,
             type = ConfigType.STRING,
             description = "The virtual warehouse to use once connected by default",
             hint = "COMPUTE_WH"
