@@ -113,7 +113,11 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
       referenceYAxis: 'left',
 
       xLabel: x?.name || '',
-      xType: x?.displayType === DisplayType.FLOAT || x?.displayType === DisplayType.TIME ? 'linear' : undefined,
+      xType: x
+        ? x.displayType === DisplayType.FLOAT || x.displayType === DisplayType.TIME
+          ? 'linear'
+          : 'ordinal'
+        : undefined,
       yLabel: y?.name || '',
       yScale: 'auto',
       yRangeMin: 0,
@@ -231,6 +235,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
           })) as Config<Type.COMBO>['shapes']
       )
     }, [onConfigChange, shapes, props.config.shapes])
+    const displayTypes = useDataFieldsDisplayType(props.data.fields)
     const renderAxisSelect = useCallback(
       (title: string, axise: 'xAxises' | 'dimensions' | 'yAxises' | 'y2Axises', disabled: boolean, first?: boolean) => {
         return (
@@ -244,6 +249,18 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
               onChange={(value) => {
                 if (axise === 'dimensions') {
                   onConfigChange(axise, value)
+                } else if (axise === 'xAxises') {
+                  console.log(value, displayTypes[value[0]])
+                  onConfigChange(
+                    axise,
+                    value,
+                    'xType',
+                    value.length > 1
+                      ? 'ordinal'
+                      : displayTypes[value[0]] === DisplayType.FLOAT || displayTypes[value[0]] === DisplayType.TIME
+                      ? 'linear'
+                      : 'ordinal'
+                  )
                 } else {
                   onConfigChange(axise, value, mapAxis2Label(axise), calcLabel(value, axise))
                 }
@@ -282,6 +299,19 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                       const array = axises[axise].map((axis) => (axis === item ? e.target.value : axis))
                       if (axise === 'dimensions') {
                         onConfigChange(axise, array)
+                      } else if (axise === 'xAxises') {
+                        console.log(array, displayTypes[array[0]])
+                        onConfigChange(
+                          axise,
+                          array,
+                          'xType',
+                          array.length > 1
+                            ? 'ordinal'
+                            : displayTypes[array[0]] === DisplayType.FLOAT ||
+                              displayTypes[array[0]] === DisplayType.TIME
+                            ? 'linear'
+                            : 'ordinal'
+                        )
                       } else {
                         onConfigChange(axise, array, mapAxis2Label(axise), calcLabel(array, axise))
                       }
@@ -337,7 +367,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
           </>
         )
       },
-      [onConfigChange, props.config.axises, axises]
+      [axises, props.config.axises, onConfigChange, displayTypes]
     )
 
     return (
@@ -533,8 +563,9 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                 </AxisFormItem>
                 <AxisFormItem label="Type">
                   <ConfigSelect
-                    options={['auto', 'linear', 'ordinal']}
-                    value={props.config.xType || 'auto'}
+                    options={['linear', 'ordinal']}
+                    placeholder="Please select"
+                    value={props.config.xType}
                     onChange={(value) => {
                       onConfigChange('xType', value)
                     }}
@@ -868,7 +899,13 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
             tickFormatter={(tick) => formatRecord(tick, xDisplayType)}
             padding={props.config.xType === 'linear' ? { right: 16, left: 16 } : undefined}
             type={
-              props.config.xType === 'linear' ? 'number' : props.config.xType === 'ordinal' ? 'category' : undefined
+              props.config.xType === 'linear'
+                ? 'number'
+                : props.config.xType === 'ordinal'
+                ? 'category'
+                : xDisplayType === DisplayType.FLOAT || xDisplayType === DisplayType.TIME
+                ? 'number'
+                : 'category'
             }
             domain={['dataMin', 'dataMax']}
           />
