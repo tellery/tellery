@@ -57,10 +57,19 @@ object DbtManager {
         ).toFile()
     }
 
+    fun getPublicKey(name: String): String? {
+        val repo = DbtRepository(rootFolder, keyFolder, getProfileByName(name))
+        return if (repo.publicKey.exists()) {
+            repo.publicKey.readText()
+        } else {
+            null
+        }
+    }
+
     fun generateRepoKeyPair(name: String): String {
         val repo = DbtRepository(rootFolder, keyFolder, getProfileByName(name))
 
-        if (repo.publicKey.exists() && repo.publicKey.exists()) {
+        if (repo.publicKey.exists()) {
             logger.warn { "The private key and public key exist." }
             return repo.publicKey.readText()
         }
@@ -89,7 +98,11 @@ object DbtManager {
         val repo = DbtRepository(rootFolder, keyFolder, getProfileByName(name))
 
         if (!repoIsAlreadyExists(name)) {
-            cloneRemoteRepo(repo)
+            try {
+                cloneRemoteRepo(repo)
+            } catch (ex: Exception) {
+                repo.gitRepoFolder.deleteOnExit()
+            }
             updateTelleryModelConfig(repo)
         }
 
@@ -119,7 +132,7 @@ object DbtManager {
         val repo = DbtRepository(rootFolder, keyFolder, getProfileByName(name))
         val process =
             Runtime.getRuntime().exec("dbt compile", null, File(repo.gitRepoFolder.absolutePath))
-        val streamGobbler = StreamGobbler(process.inputStream) { logger.info(it) }
+        val streamGobbler = StreamGobbler(process.inputStream) { logger.debug(it) }
         Executors.newSingleThreadExecutor().submit(streamGobbler)
         val exitCode = process.waitFor()
         assertInternalError(exitCode == 0) { "The dbt command execution failed: dbt compile." }

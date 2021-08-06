@@ -73,9 +73,12 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
         get() = Profiles {
             addAllProfiles(ConnectorManager.getCurrentProfiles().values.map {
                 val connectorMeta =
-                    ConnectorManager.getAvailableConfigs().find { cfg -> cfg.type == it.type }!!
+                    ConnectorManager.getAvailableConfigs()
+                        .find { cfg -> cfg.type == it.type }!!
                 val secretConfigs =
                     connectorMeta.configs.filter { it.secret }.map { it.name }.toSet()
+                val publicKey = DbtManager.getPublicKey(it.name)
+
                 ProfileBody {
                     type = it.type
                     name = it.name
@@ -86,6 +89,10 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
                             k to v
                         }
                     })
+
+                    if (publicKey != null) {
+                        putConfigs("Public Key", publicKey)
+                    }
                 }
             })
         }
