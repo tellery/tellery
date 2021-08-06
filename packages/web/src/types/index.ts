@@ -25,9 +25,17 @@ export type Permissions = Permission[]
 export enum CodeBlockLang {
   TypeScipt = 'TypeScript',
   JavaScript = 'JavaScript',
-  SQL = 'SQL',
-  PGSQL = 'PostgreSQL',
-  SQLMore = 'SQLMore'
+  SQL = 'SQL'
+  // PGSQL = 'PostgreSQL',
+  // SQLMore = 'SQLMore'
+}
+
+export const CodeBlockLangDisplayName = {
+  [CodeBlockLang.TypeScipt]: 'TypeScript',
+  [CodeBlockLang.JavaScript]: 'JavaScript',
+  [CodeBlockLang.SQL]: 'SQL'
+  // [CodeBlockLang.PGSQL]: 'PostgreSQL'
+  // [CodeBlockLang.SQLMore]: 'SQL More'
 }
 
 export type Snapshot = {
@@ -39,14 +47,6 @@ export type Snapshot = {
   lastEditedById?: string
   questionId?: string
   createdAt?: string
-}
-
-export const CodeBlockLangDisplayName = {
-  [CodeBlockLang.TypeScipt]: 'TypeScript',
-  [CodeBlockLang.JavaScript]: 'JavaScript',
-  [CodeBlockLang.SQL]: 'SQL'
-  // [CodeBlockLang.PGSQL]: 'PostgreSQL'
-  // [CodeBlockLang.SQLMore]: 'SQL More'
 }
 
 export namespace Editor {

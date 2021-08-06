@@ -185,7 +185,7 @@ const findNodesAtIndex = (container: HTMLElement, index: number, offset: number)
 
   let accOffset = 0
   while (resultNodes.length) {
-    const currentNode = resultNodes.shift()
+    const currentNode = resultNodes.shift()!
     const currentNodeLength = currentNode?.textContent?.length ?? 0
     if (accOffset + currentNodeLength >= offset) {
       return {
