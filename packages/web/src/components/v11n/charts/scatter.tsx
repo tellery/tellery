@@ -306,6 +306,7 @@ export const scatter: Chart<Type.SCATTER> = {
                 </AxisFormItem>
                 <AxisFormItem label="Type">
                   <ConfigSelect
+                    disabled={!isNumeric(displayTypes[props.config.xAxis])}
                     options={['linear', 'ordinal']}
                     placeholder="Please select"
                     value={props.config.xType}

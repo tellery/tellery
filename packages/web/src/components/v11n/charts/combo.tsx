@@ -541,6 +541,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                 </AxisFormItem>
                 <AxisFormItem label="Type">
                   <ConfigSelect
+                    disabled={props.config.xAxises.length > 1 || !isNumeric(displayTypes[props.config.xAxises[0]])}
                     options={['linear', 'ordinal']}
                     placeholder="Please select"
                     value={props.config.xType}

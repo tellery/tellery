@@ -8,6 +8,7 @@ import { upperFirst } from 'lodash'
 export function ConfigSelect(props: {
   className?: string
   options: string[]
+  disabled?: boolean
   disables?: string[]
   value?: string
   onChange(value: string): void
@@ -15,6 +16,7 @@ export function ConfigSelect(props: {
 }) {
   return (
     <select
+      disabled={props.disabled}
       className={cx(
         css`
           width: 185px;
@@ -32,6 +34,10 @@ export function ConfigSelect(props: {
           text-overflow: ellipsis;
           display: block;
           padding-right: 30px;
+          :disabled {
+            cursor: not-allowed;
+            background-color: ${ThemingVariables.colors.gray[2]};
+          }
         `,
         props.className
       )}
