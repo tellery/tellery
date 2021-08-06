@@ -23,7 +23,7 @@ import { ConfigLabel } from '../components/ConfigLabel'
 import { ConfigSelectWithClear } from '../components/ConfigSelectWithClear'
 import { ConfigSelect } from '../components/ConfigSelect'
 import { CustomTooltip } from '../components/CustomTooltip'
-import { formatNumber, formatRecord, isContinuous, isNumeric } from '../utils'
+import { formatNumber, formatRecord, isNumeric } from '../utils'
 import { LegendContent } from '../components/LegendContent'
 import { ColorSelector } from '../components/ColorSelector'
 import { ThemingVariables } from '@app/styles'
@@ -89,6 +89,7 @@ export const scatter: Chart<Type.SCATTER> = {
       referenceYValue: undefined,
 
       xLabel: x?.name || '',
+      xType: x?.displayType === DisplayType.FLOAT || x?.displayType === DisplayType.TIME ? 'linear' : undefined,
       yLabel: y?.name || '',
       yScale: 'auto',
       yRangeMin: 0,
@@ -456,7 +457,9 @@ export const scatter: Chart<Type.SCATTER> = {
             }
             tickFormatter={(tick) => formatRecord(tick, displayTypes[props.config.xAxis])}
             stroke={ThemingVariables.colors.text[1]}
-            type={isContinuous(displayTypes[props.config.xAxis]) ? 'number' : 'category'}
+            type={
+              props.config.xType === 'linear' ? 'number' : props.config.xType === 'ordinal' ? 'category' : undefined
+            }
             allowDuplicatedCategory={false}
           />
           <YAxis

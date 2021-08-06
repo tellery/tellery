@@ -92,7 +92,3 @@ export function isNumeric(displayType?: DisplayType) {
     [DisplayType.FLOAT, DisplayType.BIGINT, DisplayType.INT, DisplayType.TIME, DisplayType.DATE].includes(displayType)
   )
 }
-
-export function isContinuous(displayType?: DisplayType) {
-  return displayType === DisplayType.FLOAT || displayType === DisplayType.TIME
-}

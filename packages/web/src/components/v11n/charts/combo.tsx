@@ -30,7 +30,7 @@ import { ConfigInput } from '../components/ConfigInput'
 import { ConfigSelect } from '../components/ConfigSelect'
 import { LegendContent } from '../components/LegendContent'
 import { fontFamily } from '../constants'
-import { createTrend, formatNumber, formatRecord, isContinuous, isNumeric } from '../utils'
+import { createTrend, formatNumber, formatRecord, isNumeric } from '../utils'
 import { MoreSettingPopover } from '../components/MoreSettingPopover'
 import { TelleryThemeLight, ThemingVariables } from '@app/styles'
 import { SVG2DataURI } from '@app/lib/svg'
@@ -113,6 +113,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
       referenceYAxis: 'left',
 
       xLabel: x?.name || '',
+      xType: x?.displayType === DisplayType.FLOAT || x?.displayType === DisplayType.TIME ? 'linear' : undefined,
       yLabel: y?.name || '',
       yScale: 'auto',
       yRangeMin: 0,
@@ -530,6 +531,15 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                     }}
                   />
                 </AxisFormItem>
+                <AxisFormItem label="Type">
+                  <ConfigSelect
+                    options={['auto', 'linear', 'ordinal']}
+                    value={props.config.xType || 'auto'}
+                    onChange={(value) => {
+                      onConfigChange('xType', value)
+                    }}
+                  />
+                </AxisFormItem>
               </div>
               <ConfigLabel>Y axis (Left)</ConfigLabel>
               <div
@@ -856,8 +866,10 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
             }
             stroke={ThemingVariables.colors.text[1]}
             tickFormatter={(tick) => formatRecord(tick, xDisplayType)}
-            padding={isContinuous(xDisplayType) ? { right: 16, left: 16 } : undefined}
-            type={isContinuous(xDisplayType) ? 'number' : 'category'}
+            padding={props.config.xType === 'linear' ? { right: 16, left: 16 } : undefined}
+            type={
+              props.config.xType === 'linear' ? 'number' : props.config.xType === 'ordinal' ? 'category' : undefined
+            }
             domain={['dataMin', 'dataMax']}
           />
           <YAxis
@@ -1088,7 +1100,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                 yAxisId={calcYAxisId(group.key)}
                 dataKey={valueKey(key)}
                 strokeWidth={0}
-                maxBarSize={isContinuous(xDisplayType) ? 20 : undefined}
+                maxBarSize={props.config.xType === 'ordinal' ? 20 : undefined}
                 fill={ThemingVariables.colors.visualization[color]}
                 isAnimationActive={false}
                 opacity={hoverDataKey === undefined || hoverDataKey === valueKey(key) ? 1 : opacity}
