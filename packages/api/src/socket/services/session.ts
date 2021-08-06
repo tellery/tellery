@@ -1,6 +1,7 @@
 import _ from 'lodash'
-import { Namespace, Socket } from 'socket.io'
+import { Socket } from 'socket.io'
 import { getCacheManager } from '../../utils/cache'
+import { Emitter } from '../types'
 
 export interface ISessionService {
   enter(id: string, socket: Socket): Promise<void>
@@ -17,12 +18,12 @@ export interface ISessionService {
 }
 
 export class StorySessionService implements ISessionService {
-  private readonly nio: Namespace
+  private readonly emitter: Emitter
 
   private readonly onlineTTL = 3600
 
-  constructor(nio: Namespace) {
-    this.nio = nio
+  constructor(emitter: Emitter) {
+    this.emitter = emitter
   }
 
   get cache() {
@@ -47,7 +48,7 @@ export class StorySessionService implements ISessionService {
   }
 
   async emit(storyId: string, event: string, val: any): Promise<boolean> {
-    return this.nio.to(this.getRoomKey(storyId)).emit(event, val)
+    return this.emitter.to(this.getRoomKey(storyId)).emit(event, val)
   }
 
   async getOnlineList(storyId: string): Promise<string[]> {
@@ -76,10 +77,10 @@ export class StorySessionService implements ISessionService {
 }
 
 export class WorkspaceSessionService implements ISessionService {
-  private readonly nio: Namespace
+  private readonly emitter: Emitter
 
-  constructor(nio: Namespace) {
-    this.nio = nio
+  constructor(emitter: Emitter) {
+    this.emitter = emitter
   }
 
   async enter(workspaceId: string, socket: Socket): Promise<void> {
@@ -91,7 +92,7 @@ export class WorkspaceSessionService implements ISessionService {
   }
 
   async emit(workspaceId: string, event: string, val: any): Promise<boolean> {
-    return this.nio.to(this.getRoomKey(workspaceId)).emit(event, val)
+    return this.emitter.to(this.getRoomKey(workspaceId)).emit(event, val)
   }
 
   getOnlineList(): Promise<string[]> {
