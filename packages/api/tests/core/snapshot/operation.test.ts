@@ -11,8 +11,8 @@ test.before(async () => {
   await createDatabaseCon()
 })
 
-test('setSnapshot', async (t) => {
-  return getConnection().transaction(async (manager) => {
+test('setSnapshot', async (t) =>
+  getConnection().transaction(async (manager) => {
     const op = new SnapshotOperation(uuid(), 'test', manager)
     const id = nanoid()
 
@@ -65,11 +65,10 @@ test('setSnapshot', async (t) => {
     t.deepEqual(snapshot2?.version, 2)
 
     await manager.getRepository(SnapshotEntity).delete(id)
-  })
-})
+  }))
 
-test('updateSnapshot', async (t) => {
-  return getConnection().transaction(async (manager) => {
+test('updateSnapshot', async (t) =>
+  getConnection().transaction(async (manager) => {
     const op = new SnapshotOperation(uuid(), 'test', manager)
     const id = nanoid()
     const uid = uuid()
@@ -135,5 +134,4 @@ test('updateSnapshot', async (t) => {
     t.deepEqual(snapshot2?.createdById, uid)
 
     await manager.getRepository(SnapshotEntity).delete(id)
-  })
-})
+  }))

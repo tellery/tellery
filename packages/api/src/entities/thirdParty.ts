@@ -12,5 +12,5 @@ export class ThirdPartyConfigurationEntity extends TelleryBaseEntity {
   type!: string
 
   @Column('json', { default: {} })
-  config!: object
+  config!: Record<string, unknown>
 }

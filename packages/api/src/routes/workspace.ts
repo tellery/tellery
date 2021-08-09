@@ -133,7 +133,7 @@ class UpdateWorkspacePreferencesRequest {
 
   @IsDefined()
   @IsNotEmptyObject()
-  preferences!: Object
+  preferences!: Record<string, unknown>
 }
 
 async function listWorkspaces(ctx: Context) {

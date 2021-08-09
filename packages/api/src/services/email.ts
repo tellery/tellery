@@ -3,7 +3,7 @@ import * as Eta from 'eta'
 import fs from 'fs'
 import _ from 'lodash'
 
-import email, { EmailSender } from '../core/email'
+import emailSender, { EmailSender } from '../core/email'
 import { InternalError, NotFoundError } from '../error/error'
 import { absoluteURI, getSecretKey } from '../utils/common'
 import { decrypt, encrypt } from '../utils/crypto'
@@ -72,7 +72,7 @@ export class EmailService {
     })
   }
 
-  async render(template: string, value: { [k: string]: any }) {
+  async render(template: string, value: { [k: string]: any }): Promise<string> {
     const t = this.templates[template]
     if (!t) {
       throw NotFoundError.resourceNotFound(`template: ${template}`)
@@ -98,5 +98,5 @@ export class EmailService {
   }
 }
 
-const service = new EmailService(email())
+const service = new EmailService(emailSender())
 export default service

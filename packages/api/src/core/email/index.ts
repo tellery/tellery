@@ -17,7 +17,7 @@ export interface EmailSender {
   sendHtml(to: string[], title: string, htmlBody: string): Promise<void>
 }
 
-export default function email(): EmailSender {
+export default function emailSender(): EmailSender {
   if (isTest()) {
     return new TestEmailSender()
   }

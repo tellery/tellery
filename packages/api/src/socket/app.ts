@@ -14,7 +14,7 @@ import { init } from './routers/story'
 import { Emitter } from './types'
 
 export function initSocketServer(s: Server): SocketIO {
-  initDatabaseConRetry(99)
+  initDatabaseConRetry(99).catch((err) => console.error(err))
 
   const io = new SocketIO(s, {
     // heartbeat each 10s

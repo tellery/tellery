@@ -1,9 +1,9 @@
 import { plainToClass } from 'class-transformer'
 import { Context } from 'koa'
 import Router from 'koa-router'
-import { validate } from '../utils/http'
-import metabase from '../thridParty/metabase'
 import { IsDefined, IsObject, IsUrl } from 'class-validator'
+import { validate } from '../utils/http'
+import metabase from '../thirdParty/metabase'
 
 class GenerateMetabaseTokenRequest {
   @IsDefined()

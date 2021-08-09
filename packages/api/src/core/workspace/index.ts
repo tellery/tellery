@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { WorkspaceEntity } from '../../entities/workspace'
-import { InvalidArgumentError, NoPermissionsError } from '../../error/error'
+import { NoPermissionsError } from '../../error/error'
 import { PermissionWorkspaceRole } from '../../types/permission'
 import { WorkspaceDTO } from '../../types/workspace'
 import { absoluteURI, string2Hex } from '../../utils/common'
@@ -18,14 +18,14 @@ export class Workspace extends Common {
 
   inviteCode: string
 
-  preferences: Object
+  preferences: Record<string, unknown>
 
   constructor(
     id: string,
     name: string,
     members: WorkspaceMember[],
     inviteCode: string,
-    preferences: Object,
+    preferences: Record<string, unknown>,
     version: number,
     avatar?: string,
     createdAt?: Date,
@@ -79,7 +79,7 @@ export class Workspace extends Common {
     }
   }
 
-  getInviteLink(userId: string) {
+  getInviteLink(userId: string): string {
     return absoluteURI(`/workspace/invite/${string2Hex(userId)}/${this.inviteCode}`)
   }
 
@@ -91,7 +91,7 @@ export class Workspace extends Common {
         .map((m) => WorkspaceMember.fromEntity(m))
         .value(),
       model.inviteCode,
-      model.preferences,
+      model.preferences as Record<string, unknown>,
       model.version,
       model.avatar,
       model.createdAt,

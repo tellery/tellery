@@ -17,8 +17,8 @@ test.before(async () => {
   await createDatabaseCon()
 })
 
-test('set story block', async (t) => {
-  return getConnection().transaction(async (manager) => {
+test('set story block', async (t) =>
+  getConnection().transaction(async (manager) => {
     const op = new BlockOperation(uuid(), 'test', manager)
     const id = nanoid()
 
@@ -48,8 +48,7 @@ test('set story block', async (t) => {
     t.deepEqual(story?.parentId, 'test')
     t.deepEqual(story?.createdById, uid)
     t.deepEqual(story?.version, 1)
-  })
-})
+  }))
 
 test('set story block by path', async (t) => {
   const [{ id }] = await mockStories(1)

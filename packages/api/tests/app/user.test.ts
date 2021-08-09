@@ -17,7 +17,9 @@ test.before.cb((t: ExecutionContext<any>) => {
   t.context.server = app
   t.context.server.listen(port, () => {
     t.context.prefixUrl = `http://localhost:${port}`
-    createDatabaseCon().then(() => (t as any).end())
+    createDatabaseCon()
+      .then(() => (t as any).end())
+      .catch((err) => console.error(err))
   })
 })
 
