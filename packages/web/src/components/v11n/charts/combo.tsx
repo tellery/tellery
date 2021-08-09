@@ -1116,7 +1116,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                 yAxisId={calcYAxisId(group.key)}
                 dataKey={valueKey(key)}
                 strokeWidth={0}
-                maxBarSize={props.config.xType === 'ordinal' ? 20 : undefined}
+                maxBarSize={props.config.xType === 'linear' ? 20 : undefined}
                 fill={ThemingVariables.colors.visualization[color]}
                 isAnimationActive={false}
                 opacity={hoverDataKey === undefined || hoverDataKey === valueKey(key) ? 1 : opacity}
