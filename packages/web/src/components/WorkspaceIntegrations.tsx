@@ -3,7 +3,7 @@ import { useConnectorsList, useConnectorsListProfiles, useGenerateKeyPair } from
 import { ThemingVariables } from '@app/styles'
 import type { ProfileConfig } from '@app/types'
 import { css } from '@emotion/css'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { FormButton } from './kit/FormButton'
 import FormInput from './kit/FormInput'
@@ -69,7 +69,7 @@ export function WorkspaceIntegrations(props: { onClose(): void }) {
 }
 
 function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
-  const { data: profiles } = useConnectorsListProfiles(props.connectorId)
+  const { data: profiles, refetch } = useConnectorsListProfiles(props.connectorId)
   const profile = profiles?.[0]
   const { register, watch } = useForm<ProfileConfig>({
     defaultValues: profile,
@@ -80,6 +80,11 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
     watch('configs.Dbt Project Name') as string | undefined,
     watch('configs.Git Url') as string | undefined
   )
+  useEffect(() => {
+    if (handleGenerateKeyPair.status === 'success') {
+      refetch()
+    }
+  }, [handleGenerateKeyPair.status, refetch])
 
   return (
     <>
@@ -111,8 +116,8 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
           DBT
         </h2>
       </div>
-      <FormLabel>Name</FormLabel>
-      <FormInput {...register('configs.Dbt Project Name')} />
+      <FormLabel>Project name</FormLabel>
+      <FormInput {...register('configs.Dbt Project Name')} disabled={!!profile?.configs['Dbt Project Name']} />
       <FormLabel
         className={css`
           margin-top: 16px;
@@ -120,14 +125,30 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
       >
         Git url
       </FormLabel>
-      <FormInput {...register('configs.Git Url')} />
-      <FormButton
-        variant="primary"
-        onClick={handleGenerateKeyPair.execute}
-        disabled={handleGenerateKeyPair.status === 'pending'}
-      >
-        Compile
-      </FormButton>
+      <FormInput {...register('configs.Git Url')} disabled={!!profile?.configs['Git Url']} />
+      {profile?.configs['Public Key'] ? (
+        <>
+          <FormLabel
+            className={css`
+              margin-top: 16px;
+            `}
+          >
+            Public Key
+          </FormLabel>
+          <FormInput {...register('configs.Public Key')} disabled={!!profile?.configs['Public Key']} />
+        </>
+      ) : (
+        <FormButton
+          variant="primary"
+          onClick={handleGenerateKeyPair.execute}
+          disabled={handleGenerateKeyPair.status === 'pending'}
+          className={css`
+            margin-top: 16px;
+          `}
+        >
+          Compile
+        </FormButton>
+      )}
     </>
   )
 }
