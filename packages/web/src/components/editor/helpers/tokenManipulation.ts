@@ -241,7 +241,7 @@ export const tokensToText = (tokens: Editor.Token[] = [], snapshot?: BlockSnapsh
               return TelleryGlyph.BI_LINK
             }
           }
-          return `[[${id}]]`
+          return TelleryGlyph.BI_LINK
         }
         return ''
       }

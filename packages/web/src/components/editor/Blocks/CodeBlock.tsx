@@ -43,6 +43,7 @@ const getHighlightedTokens = (tokens: Editor.Token[], language: string) => {
       return a
     }, [])
   const splitedMarkedTokens = splitTokenAndMarkIndex(tokens)
+  console.log(splitedMarkedTokens, highlightedSplitedTokens)
   invariant(
     highlightedSplitedTokens.length === splitedMarkedTokens.length,
     'highlightedSplitedTokens is not equal to splitedTokens'
