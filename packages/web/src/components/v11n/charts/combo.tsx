@@ -238,10 +238,11 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                 if (axise === 'dimensions') {
                   onConfigChange(axise, value)
                 } else if (axise === 'xAxises') {
-                  console.log(value, displayTypes[value[0]])
                   onConfigChange(
                     axise,
                     value,
+                    mapAxis2Label(axise),
+                    calcLabel(value, axise),
                     'xType',
                     value.length > 1 ? 'ordinal' : isContinuous(displayTypes[value[0]]) ? 'linear' : 'ordinal'
                   )
@@ -287,6 +288,8 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                         onConfigChange(
                           axise,
                           array,
+                          mapAxis2Label(axise),
+                          calcLabel(array, axise),
                           'xType',
                           array.length > 1 ? 'ordinal' : isContinuous(displayTypes[array[0]]) ? 'linear' : 'ordinal'
                         )
