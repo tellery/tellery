@@ -13,6 +13,7 @@ import { SideBarContentLayout } from './SideBarContentLayout'
 import { Calendar } from './Calendar'
 import { FormButton } from './kit/FormButton'
 import { useLoggedUser } from '@app/hooks/useAuth'
+import { useTranslation } from 'react-i18next'
 
 export const SideBarThoughtsSection = () => {
   const { data: thoughts, refetch: refetchThoughts } = useAllThoughts()
@@ -63,9 +64,10 @@ export const SideBarThoughtsSection = () => {
     }
     return true
   }, [thoughts, today])
+  const { t } = useTranslation()
 
   return (
-    <SideBarContentLayout title="Thoughts">
+    <SideBarContentLayout title={t`Thoughts`}>
       <FormButton
         variant="secondary"
         className={css`
@@ -85,7 +87,7 @@ export const SideBarThoughtsSection = () => {
             margin-right: 4px;
           `}
         />
-        <span>Capture today&apos;s thought</span>
+        <span>{t`Capture today's thought`}</span>
       </FormButton>
       <Calendar
         value={date}
