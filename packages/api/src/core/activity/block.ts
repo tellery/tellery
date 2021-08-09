@@ -38,7 +38,7 @@ export abstract class BlockActivity extends Activity {
         model.resourceId,
         model.workspaceId,
         model.operatorId,
-        _(model.after).get('storyId'),
+        _(model.after as Record<string, unknown>).get('storyId') as string,
         model.after as Block,
         Number(model.timestamp),
       )
@@ -47,7 +47,7 @@ export abstract class BlockActivity extends Activity {
       model.resourceId,
       model.workspaceId,
       model.operatorId,
-      _(model.after).get('storyId'),
+      _(model.after as Record<string, unknown>).get('storyId') as string,
       model.before as Block,
       model.after as Block,
       Number(model.timestamp),

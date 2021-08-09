@@ -22,7 +22,7 @@ function match(block: Block): boolean {
  * For ephemeral, actually this can be considered as a name-based transclusion (though it happens in the level of DBT), just return the compiled SQL.
  */
 function translate(block: Block): string {
-  const materialization = _(block.content).get('materialized')
+  const materialization = _(block.content).get('materialized') as string
   switch (materialization) {
     // In case of dbt updated a level of materialization
     case 'unknown':
@@ -30,7 +30,7 @@ function translate(block: Block): string {
         `The materialization of ${materialization} is unknown, please check if your connector matches your dbt version`,
       )
     case 'ephemeral':
-      return _(block.content).get('compiledSql')
+      return _(block.content).get('compiledSql') as string
     default:
       return `select * from ${_(block.content).get('relationName')}`
   }

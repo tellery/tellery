@@ -13,7 +13,7 @@ export class QueueEntity extends TelleryBaseWithoutIdEntity {
   key!: string
 
   @Column('json')
-  object!: Object
+  object!: unknown
 
   @Column({ default: false })
   deleted!: boolean

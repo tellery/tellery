@@ -26,7 +26,7 @@ export function getPostgreSQLConfig(): PostgreSQLConfig {
   return config.get<PostgreSQLConfig>('postgres')
 }
 
-export function getParticiple(cfg: PostgreSQLConfig) {
+export function getParticiple(cfg: PostgreSQLConfig): string {
   return cfg.searchPlugin ? cfg.searchLanguage : 'simple'
 }
 

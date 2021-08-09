@@ -67,7 +67,7 @@ export class ConnectorManager implements IConnectorManager {
     this.client = new ConnectorClient(url, credential)
   }
 
-  public checkAuth(authType: AuthType, authData: AuthData) {
+  public checkAuth(authType: AuthType, authData: AuthData): boolean {
     return this.authType === authType && this.authData === authData
   }
 
@@ -95,7 +95,7 @@ export class ConnectorManager implements IConnectorManager {
   async upsertProfile(profileBody: Profile): Promise<Profile[]> {
     const { name, type, configs } = profileBody
 
-    let request = new UpsertProfileRequest()
+    const request = new UpsertProfileRequest()
       .setName(name)
       .setType(type)
       .setConfigsList(Object.entries(configs).map(([k, v]) => new KVEntry().setKey(k).setValue(v)))

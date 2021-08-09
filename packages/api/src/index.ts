@@ -19,7 +19,7 @@ import { initSocketServer } from './socket/app'
 import { isTest } from './utils/env'
 import { injectFrontendEnv } from './utils/frontendInjector'
 
-initDatabaseConRetry(99)
+initDatabaseConRetry(99).catch((err) => console.error(err))
 
 const port = config.get<number>('server.port')
 const host = config.get<string | undefined>('server.host')

@@ -62,12 +62,12 @@ export function init(io: Server, emitter: Emitter) {
 
     socket.on('disconnecting', async () => {
       // broadcast of leaving a story
-      await bluebird.map(notificationService.getStoryIdsWhichSocketIn(socket), async (sid) => {
-        return onEvent(notificationService, socket, {
+      await bluebird.map(notificationService.getStoryIdsWhichSocketIn(socket), async (sid) =>
+        onEvent(notificationService, socket, {
           type: OnEventType.USER_LEAVE_STORY,
           value: { storyId: sid },
-        })
-      })
+        }),
+      )
     })
 
     socket.on('disconnect', async () => {

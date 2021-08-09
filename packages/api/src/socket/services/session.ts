@@ -34,7 +34,7 @@ export class StorySessionService implements ISessionService {
     await this.updateOnlineCache(storyId, (val) =>
       _([val, socket.id]).flatMap().compact().uniq().value(),
     )
-    socket.join(this.getRoomKey(storyId))
+    socket.join(this.getRoomKey(storyId))?.catch((err) => console.error(err))
   }
 
   async leave(storyId: string, socket: Socket): Promise<void> {
@@ -44,10 +44,10 @@ export class StorySessionService implements ISessionService {
         .value(),
     )
 
-    socket.leave(this.getRoomKey(storyId))
+    socket.leave(this.getRoomKey(storyId))?.catch((err) => console.error(err))
   }
 
-  async emit(storyId: string, event: string, val: any): Promise<boolean> {
+  async emit(storyId: string, event: string, val: unknown): Promise<boolean> {
     return this.emitter.to(this.getRoomKey(storyId)).emit(event, val)
   }
 
@@ -84,14 +84,14 @@ export class WorkspaceSessionService implements ISessionService {
   }
 
   async enter(workspaceId: string, socket: Socket): Promise<void> {
-    socket.join(this.getRoomKey(workspaceId))
+    socket.join(this.getRoomKey(workspaceId))?.catch((err) => console.error(err))
   }
 
   async leave(workspaceId: string, socket: Socket): Promise<void> {
-    socket.leave(this.getRoomKey(workspaceId))
+    socket.leave(this.getRoomKey(workspaceId))?.catch((err) => console.error(err))
   }
 
-  async emit(workspaceId: string, event: string, val: any): Promise<boolean> {
+  async emit(workspaceId: string, event: string, val: unknown): Promise<boolean> {
     return this.emitter.to(this.getRoomKey(workspaceId)).emit(event, val)
   }
 

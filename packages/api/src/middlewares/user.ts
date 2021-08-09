@@ -14,7 +14,7 @@ const ignorePaths = ['/api/users/login']
 // 15 days
 const d15 = 1000 * 3600 * 24 * 15
 
-export default async function user(ctx: Context, next: Next) {
+export default async function user(ctx: Context, next: Next): Promise<unknown> {
   const token = ctx.headers[USER_TOKEN_HEADER_KEY] || ctx.cookies.get(USER_TOKEN_HEADER_KEY)
   let payload: { userId: string; expiresAt: number } | undefined
   const pathIncluded = !ignorePaths.includes(ctx.path)

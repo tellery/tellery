@@ -16,8 +16,8 @@ export function getUpstreamHook(upstream: string): (err: RequestError) => Reques
   }
 }
 
-export async function validate(ctx: Context, payload: Object): Promise<void> {
-  const errors = await valid(payload)
+export async function validate(ctx: Context, payload: unknown): Promise<void> {
+  const errors = await valid(payload as Record<string, unknown>)
   if (errors.length > 0) {
     ctx.throw(400, errorResponse(errors[0].toString()))
   }
