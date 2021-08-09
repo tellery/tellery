@@ -91,7 +91,7 @@
     "validator": "^13.6.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.14.8",
+    "@babel/core": "^7.15.0",
     "@babel/plugin-transform-react-jsx": "^7.14.9",
     "@babel/preset-env": "^7.14.9",
     "@babel/preset-react": "^7.14.5",
