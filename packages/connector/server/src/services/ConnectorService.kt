@@ -78,7 +78,11 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
                         .find { cfg -> cfg.type == it.type }!!
                 val secretConfigs =
                     connectorMeta.configs.filter { it.secret }.map { it.name }.toSet()
-                val publicKey = DbtManager.getPublicKey(it.name)
+                val publicKey = if (DbtManager.isDbtProfile(it)) {
+                    DbtManager.getPublicKey(it.name)
+                } else {
+                    null
+                }
 
                 ProfileBody {
                     type = it.type
