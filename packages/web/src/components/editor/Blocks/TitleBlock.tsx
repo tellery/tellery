@@ -1,8 +1,7 @@
-import { css, cx } from '@emotion/css'
-import React from 'react'
 import { Editor } from '@app/types'
-import { useBlockBehavior } from '../hooks/useBlockBehavior'
+import React from 'react'
 import { ContentEditable } from '../BlockBase/ContentEditable'
+import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import { BlockComponent, registerBlock } from './utils'
 
 export const TitleBlock: BlockComponent<React.FC<{ block: Editor.Block }>> = (props: { block: Editor.Block }) => {
