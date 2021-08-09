@@ -939,7 +939,7 @@ export const StoryQuestionEditor: React.FC<{
             }
           `}
         >
-          <Tippy content="Edit SQL" arrow={false} placement="right">
+          <Tippy content="Edit SQL" arrow={false} placement="right" delay={300}>
             <IconButton
               icon={IconCommonSql}
               className={css`
@@ -954,7 +954,7 @@ export const StoryQuestionEditor: React.FC<{
             />
           </Tippy>
           {snapshot?.data && (
-            <Tippy content="Visualization options" arrow={false} placement="right">
+            <Tippy content="Visualization options" arrow={false} placement="right" delay={300}>
               <IconButton
                 icon={IconVisualizationSetting}
                 className={css`
@@ -970,7 +970,7 @@ export const StoryQuestionEditor: React.FC<{
             </Tippy>
           )}
           {downstreams.length === 0 || (
-            <Tippy content="Downstreams" arrow={false} placement="right">
+            <Tippy content="Downstreams" arrow={false} placement="right" delay={300}>
               <IconButton
                 icon={IconCommonDownstream}
                 className={css`
