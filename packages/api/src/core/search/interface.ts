@@ -14,24 +14,36 @@ export function getISearch() {
  *
  */
 export interface ISearch {
+  /**
+   * Search users by keyword
+   */
   searchUsers(
-    username: string,
+    keyword: string,
     filter?: SearchFilter,
     skip?: number,
     limit?: number,
   ): Promise<HintData[]>
+  /**
+   * Search according to `block.searchableText`
+   */
   searchBlocks(
     text: string,
     filter?: SearchFilter,
     skip?: number,
     limit?: number,
   ): Promise<HintData[]>
+  /**
+   * Search according to `block.content.sql`
+   */
   searchBlocksBySql(
     text: string,
     filter?: SearchFilter,
     skip?: number,
     limit?: number,
   ): Promise<HintData[]>
+  /**
+   * Search all blocks in Story by keyword and aggregate the results by storyId
+   */
   searchBlocksGroupByStoryId(
     text: string,
     filter?: SearchFilter,
@@ -72,6 +84,16 @@ export enum SearchableResourceType {
 }
 
 export interface SearchFilter {
+  /**
+   * @param tableName: name of the table currently executing query
+   * @return: the filter statement in the sql that can be recognized by typeorm
+   * e.g.
+   * query("block") => `1=1 AND "block"."blockId"=:blockId`
+   */
   query: (tableName?: string) => string
+  /**
+   * type: ObjectLiteral
+   * parameters in typeorm QueryBuilder
+   */
   parameters: { [k: string]: any }
 }
