@@ -85,7 +85,7 @@ export function WorkspaceMembers(props: { onClose(): void }) {
             className={css`
               font-weight: 600;
               font-size: 16px;
-              line-height: 19px;
+              line-height: 20px;
               margin: 0;
               color: ${ThemingVariables.colors.text[0]};
             `}

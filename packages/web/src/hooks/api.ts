@@ -665,6 +665,37 @@ export function useConnectorsUpsertProfile(connectorId: string) {
   return useAsync(handleUpdateProfile)
 }
 
+export function useGenerateKeyPair(connectorId: string, dbtProjectName?: string, gitUrl?: string) {
+  const workspace = useWorkspace()
+  const handleGenerateKeyPair = useCallback(async () => {
+    if (!dbtProjectName || !gitUrl) {
+      return
+    }
+    const {
+      data: { profiles }
+    } = await request.post<{ profiles: ProfileConfig[] }>('/api/connectors/listProfiles', {
+      connectorId,
+      workspaceId: workspace.id
+    })
+    const profile = profiles[0]
+    if (!profile) {
+      return
+    }
+    await request.post('/api/connectors/upsertProfile', {
+      ...profile,
+      configs: { ...profile.configs, 'Dbt Project Name': dbtProjectName, 'Git Url': gitUrl },
+      workspaceId: workspace.id,
+      connectorId
+    })
+    await request.post('/api/connectors/dbt/generateKeyPair', {
+      profile: profile.name,
+      workspaceId: workspace.id,
+      connectorId
+    })
+  }, [connectorId, dbtProjectName, gitUrl, workspace.id])
+  return useAsync(handleGenerateKeyPair)
+}
+
 export const useAllThoughts = () => {
   const workspace = useWorkspace()
   const result = useQuery(['thought', 'loadAll', workspace], async () => {

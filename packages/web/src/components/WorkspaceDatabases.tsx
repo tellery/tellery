@@ -200,6 +200,7 @@ function FileConfig(props: { value: AvailableConfig; setValue: (value: string) =
 
 function Config(props: { value: AvailableConfig; register: UseFormRegister<ProfileConfig>; disabled: boolean }) {
   const { value: config, register } = props
+  console.log(`configs.${config.name}`)
 
   return (
     <>
