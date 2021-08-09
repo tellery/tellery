@@ -97,7 +97,7 @@
     "grpc_tools_node_protoc_ts": "^5.3.1",
     "grpc-tools": "^1.11.2",
     "husky": "^7.0.1",
-    "lint-staged": "^11.1.1",
+    "lint-staged": "^11.1.2",
     "nodemon": "^2.0.12",
     "nyc": "^15.1.0",
     "prettier": "^2.3.2",
