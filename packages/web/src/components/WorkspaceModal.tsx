@@ -124,7 +124,7 @@ export function WorkspaceModal(props: ModalProps) {
         {tab === Tabs.Preferences ? <WorkspacePreferences onClose={props.onClose} /> : null}
         {tab === Tabs.Members ? <WorkspaceMembers onClose={props.onClose} /> : null}
         {tab === Tabs.Databases ? <WorkspaceDatabases onClose={props.onClose} /> : null}
-        {tab === Tabs.Integrations ? <WorkspaceIntegrations onClose={props.onClose} /> : null}
+        {tab === Tabs.Integrations ? <WorkspaceIntegrations /> : null}
       </div>
     </motion.div>
   )

@@ -3,18 +3,20 @@ import { useConnectorsList, useConnectorsListProfiles, useGenerateKeyPair, useWo
 import { ThemingVariables } from '@app/styles'
 import type { ProfileConfig } from '@app/types'
 import { css } from '@emotion/css'
+import copy from 'copy-to-clipboard'
 import React, { useState, useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { FormButton } from './kit/FormButton'
 import FormInput from './kit/FormInput'
 import FormLabel from './kit/FormLabel'
 import IconButton from './kit/IconButton'
+import { toast } from 'react-toastify'
 
 enum Integration {
   DBT = 'DBT'
 }
 
-export function WorkspaceIntegrations(props: { onClose(): void }) {
+export function WorkspaceIntegrations() {
   const { data: workspace } = useWorkspaceDetail()
   const [integration, setIntegration] = useState<Integration>()
   const { data: connectors } = useConnectorsList()
@@ -79,10 +81,13 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
     () => profiles?.find((p) => p.name === workspace?.preferences.profile),
     [profiles, workspace?.preferences.profile]
   )
-  const { register, watch } = useForm<ProfileConfig>({
+  const { register, watch, reset } = useForm<ProfileConfig>({
     defaultValues: profile,
     mode: 'onBlur'
   })
+  useEffect(() => {
+    reset(profile)
+  }, [profile, reset])
   const handleGenerateKeyPair = useGenerateKeyPair(
     props.connectorId,
     watch('configs.Dbt Project Name') as string | undefined,
@@ -141,9 +146,49 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
               margin-top: 16px;
             `}
           >
-            Public Key
+            Public key
           </FormLabel>
           <FormInput {...register('configs.Public Key')} disabled={!!profile?.configs['Public Key']} />
+          <div
+            className={css`
+              margin-top: 16px;
+              display: flex;
+            `}
+          >
+            <FormButton
+              variant="secondary"
+              className={css`
+                margin-right: 16px;
+                width: 70px;
+              `}
+            >
+              Push
+            </FormButton>
+            <FormButton
+              variant="secondary"
+              className={css`
+                margin-right: 16px;
+                width: 70px;
+              `}
+            >
+              Pull
+            </FormButton>
+            <div
+              className={css`
+                flex: 1;
+              `}
+            />
+            <FormButton
+              variant="primary"
+              onClick={() => {
+                console.log(watch('configs.Public Key'))
+                copy(watch('configs.Public Key') as string)
+                toast.success('Public key copied')
+              }}
+            >
+              Copy public key
+            </FormButton>
+          </div>
         </>
       ) : (
         <FormButton
