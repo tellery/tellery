@@ -3,6 +3,8 @@ import {
   useConnectorsList,
   useConnectorsListProfiles,
   useGenerateKeyPair,
+  usePullRepo,
+  usePushRepo,
   useRevokeKeyPair,
   useWorkspaceDetail
 } from '@app/hooks/api'
@@ -117,6 +119,8 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
       props.onClose()
     }
   }, [handleRevokeKeyPair.status, props, refetch])
+  const handlePullRepo = usePullRepo(props.connectorId, profile?.name)
+  const handlePushRepo = usePushRepo(props.connectorId, profile?.name)
 
   return (
     <>
@@ -200,6 +204,8 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
                 margin-right: 16px;
                 width: 70px;
               `}
+              onClick={handlePushRepo.execute}
+              disabled={handlePullRepo.status === 'pending' || handlePushRepo.status === 'pending'}
             >
               Push
             </FormButton>
@@ -209,6 +215,8 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
                 margin-right: 16px;
                 width: 70px;
               `}
+              onClick={handlePullRepo.execute}
+              disabled={handlePullRepo.status === 'pending' || handlePushRepo.status === 'pending'}
             >
               Pull
             </FormButton>

@@ -714,6 +714,36 @@ export function useRevokeKeyPair(connectorId: string, profile?: ProfileConfig) {
   return useAsync(handleRevokeKeyPair)
 }
 
+export function usePushRepo(connectorId: string, profile?: string) {
+  const workspace = useWorkspace()
+  const handlePushRepo = useCallback(async () => {
+    if (!profile) {
+      return
+    }
+    await request.post('/api/connectors/dbt/pushRepo', {
+      profile,
+      workspaceId: workspace.id,
+      connectorId
+    })
+  }, [connectorId, profile, workspace.id])
+  return useAsync(handlePushRepo)
+}
+
+export function usePullRepo(connectorId: string, profile?: string) {
+  const workspace = useWorkspace()
+  const handlePullRepo = useCallback(async () => {
+    if (!profile) {
+      return
+    }
+    await request.post('/api/connectors/dbt/pullRepo', {
+      profile,
+      workspaceId: workspace.id,
+      connectorId
+    })
+  }, [connectorId, profile, workspace.id])
+  return useAsync(handlePullRepo)
+}
+
 /**
  * dbt end
  */
