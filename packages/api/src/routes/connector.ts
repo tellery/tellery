@@ -1,5 +1,5 @@
 import { plainToClass, Type } from 'class-transformer'
-import { IsDefined, IsOptional, IsEnum, ValidateNested } from 'class-validator'
+import { IsDefined, IsOptional, IsEnum } from 'class-validator'
 import { Context } from 'koa'
 import Router from 'koa-router'
 import { nanoid } from 'nanoid'
@@ -51,13 +51,6 @@ class ListProfilesRequest {
   connectorId!: string
 }
 
-class Auth {
-  @IsDefined()
-  username!: string
-
-  @IsOptional()
-  password?: string
-}
 class UpsertProfileRequest {
   @IsDefined()
   workspaceId!: string
@@ -70,11 +63,6 @@ class UpsertProfileRequest {
 
   @IsDefined()
   type!: string
-
-  @Type(() => Auth)
-  @ValidateNested()
-  @IsOptional()
-  auth?: Auth
 
   @Type(() => String)
   @IsDefined()
@@ -238,14 +226,13 @@ async function upsertProfileRouter(ctx: Context) {
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
 
-  const { connectorId, workspaceId, name, type, auth, configs } = payload
+  const { connectorId, workspaceId, name, type, configs } = payload
 
   const manager = await getIConnectorManagerFromDB(connectorId)
 
   const profileBody = {
     name,
     type,
-    auth,
     configs: Object.fromEntries(configs),
   }
 

@@ -35,10 +35,8 @@ import { TODOBlock } from './todo'
 import { ToggleBlock } from './toggle'
 import { TweetBlock } from './tweet'
 import { VideoBlock } from './video'
-import { QuestionReferenceBlock } from './questionReference'
 import { YouTubeBlock } from './youtube'
 import { MetricBlock } from './metric'
-import { QuestionSnapshotBlock } from './questionSnapshot'
 
 // record all block types
 const blockConstructors = {
@@ -78,8 +76,6 @@ const blockConstructors = {
   [BlockType.OBSERVEABLEHQ]: ObservablehqBlock,
   [BlockType.STORY_LINK]: StoryLinkBlock,
   [BlockType.TWEET]: TweetBlock,
-  [BlockType.QUESTION_REFERENCE]: QuestionReferenceBlock,
-  [BlockType.QUESTION_SNAPSHOT]: QuestionSnapshotBlock,
   [BlockType.YOUTUBE]: YouTubeBlock,
 }
 
