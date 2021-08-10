@@ -240,7 +240,11 @@ export class DbtService {
       if (createdBlocks.length > 0) {
         await t.getRepository(BlockEntity).insert(createdBlocks)
       }
-      await bluebird.map(modifiedBlocks, async (b) => b.save(), { concurrency: 10 })
+      await bluebird.map(
+        modifiedBlocks,
+        async (b) => t.getRepository(BlockEntity).update(b.id, b),
+        { concurrency: 10 },
+      )
     })
   }
 }
