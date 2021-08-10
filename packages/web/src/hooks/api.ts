@@ -677,7 +677,7 @@ export function useGenerateKeyPair(connectorId: string, dbtProjectName?: string,
       connectorId,
       workspaceId: workspace.id
     })
-    const profile = profiles[0]
+    const profile = profiles?.find((p) => p.name === workspace?.preferences.profile)
     if (!profile) {
       return
     }
@@ -692,7 +692,7 @@ export function useGenerateKeyPair(connectorId: string, dbtProjectName?: string,
       workspaceId: workspace.id,
       connectorId
     })
-  }, [connectorId, dbtProjectName, gitUrl, workspace.id])
+  }, [connectorId, dbtProjectName, gitUrl, workspace.id, workspace?.preferences.profile])
   return useAsync(handleGenerateKeyPair)
 }
 

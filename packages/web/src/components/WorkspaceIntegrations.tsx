@@ -1,9 +1,9 @@
 import { IconCommonArrowLeft } from '@app/assets/icons'
-import { useConnectorsList, useConnectorsListProfiles, useGenerateKeyPair } from '@app/hooks/api'
+import { useConnectorsList, useConnectorsListProfiles, useGenerateKeyPair, useWorkspaceDetail } from '@app/hooks/api'
 import { ThemingVariables } from '@app/styles'
 import type { ProfileConfig } from '@app/types'
 import { css } from '@emotion/css'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { FormButton } from './kit/FormButton'
 import FormInput from './kit/FormInput'
@@ -15,9 +15,13 @@ enum Integration {
 }
 
 export function WorkspaceIntegrations(props: { onClose(): void }) {
+  const { data: workspace } = useWorkspaceDetail()
   const [integration, setIntegration] = useState<Integration>()
   const { data: connectors } = useConnectorsList()
-  const connector = connectors?.[0]
+  const connector = useMemo(
+    () => connectors?.find((c) => c.id === workspace?.preferences.connectorId),
+    [connectors, workspace?.preferences.connectorId]
+  )
 
   return connector ? (
     <div
@@ -69,8 +73,12 @@ export function WorkspaceIntegrations(props: { onClose(): void }) {
 }
 
 function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
+  const { data: workspace } = useWorkspaceDetail()
   const { data: profiles, refetch } = useConnectorsListProfiles(props.connectorId)
-  const profile = profiles?.[0]
+  const profile = useMemo(
+    () => profiles?.find((p) => p.name === workspace?.preferences.profile),
+    [profiles, workspace?.preferences.profile]
+  )
   const { register, watch } = useForm<ProfileConfig>({
     defaultValues: profile,
     mode: 'onBlur'
