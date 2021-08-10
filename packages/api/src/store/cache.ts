@@ -1,6 +1,7 @@
 import cacheManager, { Cache } from 'cache-manager'
 import { Redis } from 'ioredis'
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const redisStore = require('cache-manager-ioredis')
 
 export interface CacheStore {

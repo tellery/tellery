@@ -23,7 +23,11 @@ export class OperationService {
     this.activityService = activityService()
   }
 
-  async saveSingleTransaction(operatorId: string, workspaceId: string, data: SingleOperation[]) {
+  async saveSingleTransaction(
+    operatorId: string,
+    workspaceId: string,
+    data: SingleOperation[],
+  ): Promise<void> {
     return getConnection().transaction(async (t) => {
       const cache: { [k: string]: OperationManager } = {}
       await bluebird.each(data, async (val) => {
@@ -79,14 +83,14 @@ export class OperationService {
     })
 
     // notify client of this update
-    this.sendNotification(operatorId, successes)
+    this.sendNotification(operatorId, successes).catch((err) => console.error(err))
 
     return _.compact(res)
   }
 
   makeNotificationPayload(
     data: { id: string; workspaceId: string; operations: SingleOperation[] }[],
-  ) {
+  ): { workspaceId: string; opts: NotificationOpt[] }[] {
     // merge all operations happened to the same storyId of the same workspaceId
     // 1. aggregate by workspaceId
     return _(data)
@@ -102,8 +106,7 @@ export class OperationService {
             (o): NotificationOpt => ({
               id: o.id,
               storyId: _(o.args).get('storyId'),
-              // @ts-ignore
-              type: o.table,
+              type: o.table as 'workspaceView' | 'block',
             }),
           )
           .value()
@@ -119,7 +122,7 @@ export class OperationService {
   async sendNotification(
     operatorId: string,
     data: { id: string; workspaceId: string; operations: SingleOperation[] }[],
-  ) {
+  ): Promise<void[]> {
     const payloads = this.makeNotificationPayload(data)
 
     return bluebird.map(payloads, async ({ workspaceId, opts }) =>

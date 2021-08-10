@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { Column, Entity, Index, JoinColumn, OneToMany } from 'typeorm'
 
 import { TelleryBaseEntity } from './base'

@@ -2,6 +2,16 @@ import React, { useContext } from 'react'
 import { kebabCase, cloneDeep } from 'lodash'
 export interface TelleryTheme {
   colors: {
+    palette: {
+      blue: string
+      cyan: string
+      gray: string
+      yellow: string
+      purple: string
+      orange: string
+      pink: string
+      green: string
+    }
     text: string[]
     gray: string[]
     code: string[]
@@ -21,6 +31,16 @@ export interface TelleryTheme {
  */
 export const TelleryThemeLight: TelleryTheme = {
   colors: {
+    palette: {
+      blue: '#5B8FF9',
+      cyan: '#61DDAA',
+      gray: '#65789B',
+      yellow: '#F6BD16',
+      purple: '#7262fd',
+      orange: '#F6903D',
+      pink: '#F08BB4',
+      green: '#008685'
+    },
     text: ['#333333', '#999999', '#CCCCCC'],
     gray: ['#BABABA', '#DEDEDE', '#EFEFEF', '#F7F7F7', '#FBFBFB', '#FFFFFF'],
     primary: ['#002072', '#002FA7', '#ADBCE3', '#D6DEF1', '#EBEEF8', '#F5F7FB'],

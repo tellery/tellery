@@ -1,5 +1,5 @@
 import type { BlockSnapshot } from '@app/store/block'
-import type { Editor } from '@app/types'
+import { Editor } from '@app/types'
 import { flattenDeep } from 'lodash'
 import invariant from 'tiny-invariant'
 
@@ -36,4 +36,26 @@ export const getSubsetOfBlocksSnapshot = (blockSnapshot: BlockSnapshot, blockIds
   }
 
   return result
+}
+
+export const TOKEN_MAP: { [key: string]: { type: Editor.BlockType } } = {
+  '# ': { type: Editor.BlockType.Header },
+  '## ': { type: Editor.BlockType.SubHeader },
+  '### ': { type: Editor.BlockType.SubSubHeader },
+  '- ': { type: Editor.BlockType.BulletList },
+  '* ': { type: Editor.BlockType.BulletList },
+  '> ': { type: Editor.BlockType.Quote },
+  '》 ': { type: Editor.BlockType.Quote },
+  '---': { type: Editor.BlockType.Divider },
+  '[]': { type: Editor.BlockType.Todo },
+  '【】': { type: Editor.BlockType.Todo },
+  '```': { type: Editor.BlockType.Code },
+  '···': { type: Editor.BlockType.Code },
+  '>> ': { type: Editor.BlockType.Toggle },
+  '》》 ': { type: Editor.BlockType.Toggle },
+  '?? ': { type: Editor.BlockType.Question },
+  '？？ ': { type: Editor.BlockType.Question },
+  '1. ': { type: Editor.BlockType.NumberedList },
+  '1。': { type: Editor.BlockType.NumberedList },
+  '$$ ': { type: Editor.BlockType.Equation }
 }

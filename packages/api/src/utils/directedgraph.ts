@@ -3,7 +3,7 @@ import _ from 'lodash'
 export class DirectedGraph<T, K = string> {
   private storage: Map<K, { node: T; edges: K[] }> = new Map()
 
-  hasNode(key: K): Boolean {
+  hasNode(key: K): boolean {
     return this.storage.has(key)
   }
 

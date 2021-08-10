@@ -82,8 +82,8 @@ export class OperationManager {
     // record the operation
     const before = this._origin
     const after = await this.operation.findInDB(this.id)
-    this.recordActivity(before, after)
-    this.saveStorySnapshot(after)
+    this.recordActivity(before, after).catch((err) => console.error(err))
+    this.saveStorySnapshot(after).catch((err) => console.error(err))
   }
 
   /**

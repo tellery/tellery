@@ -105,9 +105,7 @@ export class WorkspaceService {
       take: limit,
     })
     const dtos = _(models)
-      .map((m) => {
-        return Workspace.fromEntity(m).toDTO(operatorId)
-      })
+      .map((m) => Workspace.fromEntity(m).toDTO(operatorId))
       .value()
 
     const { data: workspaces, next: nextNext } = loadMore(dtos, limit, (q) => q.createdAt)
@@ -322,7 +320,7 @@ export class WorkspaceService {
   async updateWorkspacePreferences(
     operatorId: string,
     workspaceId: string,
-    preferences: Object,
+    preferences: Record<string, unknown>,
   ): Promise<WorkspaceDTO> {
     await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
     await getRepository(WorkspaceEntity).update(workspaceId, { preferences })
@@ -377,7 +375,7 @@ export class AnonymousWorkspaceService extends WorkspaceService {
         .insert()
         .into(WorkspaceMemberEntity)
         .values(entities)
-        .onConflict('DO NOTHING')
+        .orIgnore()
         .execute()
 
       const workspace = await this.mustFindOneWithMembers(workspaceId, t)

@@ -98,6 +98,7 @@ export class TextIndexSearch implements ISearch {
     }[] = []
     const splitRegexp = this.filterBeforeReg(text).split(' ')
 
+    // if text is empty, returns all the story blocks
     if (_.isEmpty(text)) {
       const executor = getRepository(BlockEntity).createQueryBuilder('block').select('block.*')
       if (filter) {
@@ -126,6 +127,7 @@ export class TextIndexSearch implements ISearch {
             subQuery.where(filter.query('block'), filter.parameters)
           }
           const regexpParams = this.convertToByteaStr(splitRegexp)
+          // textsend_i is created by migration `TextSearchIndexing`
           subQuery
             .andWhere(
               new Brackets((qb) => {
@@ -173,6 +175,12 @@ export class TextIndexSearch implements ISearch {
     return hints
   }
 
+  /**
+   * Search for block based on fields in a specific database
+   * @param searchableColumn Field for full-text search in the database
+   * @param getSearchableValue Defines how to get plain text from block entities
+   * @returns
+   */
   private async searchBlocksInternal(
     text: string,
     filter?: SearchFilter,
@@ -183,6 +191,7 @@ export class TextIndexSearch implements ISearch {
   ): Promise<HintData[]> {
     let executor: SelectQueryBuilder<BlockEntity>
     const splitRegexps = this.filterBeforeReg(text).split(' ')
+    // if text is empty, return all blocks
     if (_.isEmpty(text)) {
       executor = getRepository(BlockEntity)
         .createQueryBuilder('block')
@@ -203,6 +212,7 @@ export class TextIndexSearch implements ISearch {
       executor
         .andWhere(
           new Brackets((qb) => {
+            // textsend_i is created by migration `TextSearchIndexing`
             qb.where(this.getSearchFilterQuery(searchableColumn)('block')).orWhere(
               `text(textsend_i(block.${searchableColumn})) ~* ${regexpParams.query}`,
             )
@@ -241,17 +251,26 @@ export class TextIndexSearch implements ISearch {
       .value()
   }
 
+  /**
+   * @param column searched field
+   * @returns All fields in block entity and scores for full-text search in searched field
+   */
   private getSearchSelectQuery(column: string) {
     const tsQuery = `plainto_tsquery('${this.participle}', :keyword)`
     return (alias: string) =>
       `"${alias}".*, ts_rank_cd(to_tsvector('${this.participle}', ${alias}.${column}), ${tsQuery}) as score`
   }
 
+  /**
+   * @param column searched field
+   * @returns search conditions
+   */
   private getSearchFilterQuery(column: string) {
     return (alias: string) =>
       `to_tsvector('${this.participle}', ${alias}.${column}) @@ plainto_tsquery('${this.participle}', :keyword)`
   }
 
+  // Get the result of word segmentation
   private getAddTokensSelectQuery() {
     return `to_tsvector('${this.participle}', :keyword)`
   }
@@ -292,6 +311,7 @@ export class TextIndexSearch implements ISearch {
       .value()
     const text = _(params)
       .keys()
+      // textsend_i is created by migration `TextSearchIndexing`
       .map((s) => `ltrim(text(textsend_i(:${s})), '\\x')`)
       .join(`|| '.*' ||`)
     return { query: `text(${text})`, params }

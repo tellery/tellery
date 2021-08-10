@@ -36,8 +36,12 @@ test('test mergeAndSaveActivitiesPayloads With Block', async (t) => {
   t.not(a, undefined)
   t.deepEqual(a?.resourceId, blockId)
 
-  await getRepository(ActivityListEntity).delete(al?.id!)
-  await getRepository(ActivityListEntity).delete(a?.id!)
+  if (al) {
+    await getRepository(ActivityListEntity).delete(al.id)
+  }
+  if (a) {
+    await getRepository(ActivityListEntity).delete(a.id)
+  }
 })
 
 test('test mergeAndSaveActivitiesPayloads With Story', async (t) => {

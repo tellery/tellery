@@ -6,7 +6,7 @@ import { dequal } from 'dequal'
 import invariant from 'tiny-invariant'
 import { isReferenceToken } from '../BlockBase/ContentEditable'
 import { isQuestionLikeBlock } from '../Blocks/utils'
-import { getSubsetOfBlocksSnapshot } from '../utils'
+import { getSubsetOfBlocksSnapshot, TOKEN_MAP } from '../utils'
 import { TellerySelection, TellerySelectionType } from './tellerySelection'
 
 export const mergeTokens = (tokens: Editor.Token[]) => {
@@ -447,26 +447,6 @@ export const extractEntitiesFromToken = (token: Editor.Token) => {
   return entities
 }
 
-const TOKEN_MAP: { [key: string]: { type: Editor.BlockType } } = {
-  '# ': { type: Editor.BlockType.Header },
-  '## ': { type: Editor.BlockType.SubHeader },
-  '### ': { type: Editor.BlockType.SubSubHeader },
-  '- ': { type: Editor.BlockType.BulletList },
-  '* ': { type: Editor.BlockType.BulletList },
-  '> ': { type: Editor.BlockType.Quote },
-  '》 ': { type: Editor.BlockType.Quote },
-  '---': { type: Editor.BlockType.Divider },
-  '[]': { type: Editor.BlockType.Todo },
-  '【】': { type: Editor.BlockType.Todo },
-  '```': { type: Editor.BlockType.Code },
-  '···': { type: Editor.BlockType.Code },
-  '>> ': { type: Editor.BlockType.Toggle },
-  '》》 ': { type: Editor.BlockType.Toggle },
-  '?? ': { type: Editor.BlockType.Question },
-  '？？ ': { type: Editor.BlockType.Question },
-  '1. ': { type: Editor.BlockType.NumberedList },
-  '1。': { type: Editor.BlockType.NumberedList }
-}
 export const getTransformedTypeAndPrefixLength = (
   tokens: Editor.Token[],
   changedLength: number,

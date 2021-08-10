@@ -134,7 +134,8 @@ export const ContentBlockInner: React.FC<{
             caret-color: rgb(55, 53, 47);
             text-align: left;
           `,
-          'tellery-block'
+          'tellery-block',
+          'no-select'
         )}
       >
         <TitleBlock block={block} />
@@ -246,9 +247,9 @@ const getBlockClassNames = (blockType: Editor.BlockType, isSelecteable: boolean)
       --line-height-em: 1.5em;
       --text-color: ${ThemingVariables.colors.text[0]};
     `,
+    'no-select',
     isSelecteable && 'block-selectble',
     'tellery-block',
-    'no-select',
     `tellery-${blockType}-block`,
     BLOCK_WRAPPER_CLASS.has(blockType) && BLOCK_WRAPPER_CLASS.get(blockType)
   ]

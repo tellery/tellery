@@ -79,15 +79,15 @@ export class UserService {
     const missing = _.difference(emails, _(users).map('email').value())
 
     const inserts = _(missing)
-      .map((email) => {
-        return r.create({
+      .map((email) =>
+        r.create({
           username: email.split('@')[0] || email,
           email,
           avatar: `/api/static/avatars/user-${randomInt(4)}.png`,
           password: '',
           status,
-        })
-      })
+        }),
+      )
       .value()
     const insertedUsers = await r.save(inserts)
     return _([...users, ...insertedUsers])

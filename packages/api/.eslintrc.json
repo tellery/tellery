@@ -1,12 +1,18 @@
 {
-  "extends": ["airbnb-typescript/base", "prettier", "prettier/@typescript-eslint"],
-  "plugins": ["@typescript-eslint", "prettier", "import"],
   "env": {
     "node": true,
-    "jest": true
+    "es6": true
   },
+  "parser": "@typescript-eslint/parser",
+  "extends": [
+    "airbnb-typescript/base",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier"
+  ],
+  "plugins": ["@typescript-eslint", "prettier", "import"],
   "parserOptions": {
-    "ecmaVersion": 2018,
+    "ecmaVersion": 2020,
     "sourceType": "module",
     "project": "./tsconfig.json"
   },
@@ -22,6 +28,8 @@
     "import/no-cycle": "off",
     "default-case": "off",
     "@typescript-eslint/no-unused-vars": ["error", { "vars": "all", "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-floating-promises": "error",
+    "@typescript-eslint/return-await": "error",
     "no-plusplus": "off"
   }
 }
