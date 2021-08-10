@@ -174,7 +174,7 @@ export const scatter: Chart<Type.SCATTER> = {
                     color
                       ? Object.keys(groupBy(records, color)).map((c, index) => ({
                           key: c,
-                          color: index % ThemingVariables.colors.visualization.length
+                          color: index
                         }))
                       : []
                   )
@@ -436,7 +436,10 @@ export const scatter: Chart<Type.SCATTER> = {
                 name: color.key,
                 dataKey: color.key,
                 value: color.key,
-                color: ThemingVariables.colors.visualization[color.color]
+                color:
+                  color.color >= ThemingVariables.colors.visualization.length
+                    ? ThemingVariables.colors.visualizationOther
+                    : ThemingVariables.colors.visualization[color.color]
               }))}
               onMouseEnter={
                 ((value: { value: string }) => {
@@ -527,7 +530,11 @@ export const scatter: Chart<Type.SCATTER> = {
                   return (
                     <Cell
                       key={`cell-${index}`}
-                      fill={ThemingVariables.colors.visualization[color.color]}
+                      fill={
+                        color.color >= ThemingVariables.colors.visualization.length
+                          ? ThemingVariables.colors.visualizationOther
+                          : ThemingVariables.colors.visualization[color.color]
+                      }
                       opacity={hoverDataKey === undefined || hoverDataKey === color.key ? 1 : opacity}
                       onMouseEnter={() => {
                         setHoverDataKey(color.key)
