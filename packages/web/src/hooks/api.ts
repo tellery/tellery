@@ -696,6 +696,32 @@ export function useGenerateKeyPair(connectorId: string, dbtProjectName?: string,
   return useAsync(handleGenerateKeyPair)
 }
 
+export function useRevokeKeyPair(connectorId: string) {
+  const workspace = useWorkspace()
+  const handleRevokeKeyPair = useCallback(async () => {
+    const {
+      data: { profiles }
+    } = await request.post<{ profiles: ProfileConfig[] }>('/api/connectors/listProfiles', {
+      connectorId,
+      workspaceId: workspace.id
+    })
+    const profile = profiles?.find((p) => p.name === workspace?.preferences.profile)
+    if (!profile) {
+      return
+    }
+    delete profile.configs['Dbt Project Name']
+    delete profile.configs['Git Url']
+    delete profile.configs['Public Key']
+    await request.post('/api/connectors/upsertProfile', {
+      ...profile,
+      configs: profile.configs,
+      workspaceId: workspace.id,
+      connectorId
+    })
+  }, [connectorId, workspace.id, workspace?.preferences.profile])
+  return useAsync(handleRevokeKeyPair)
+}
+
 export const useAllThoughts = () => {
   const workspace = useWorkspace()
   const result = useQuery(['thought', 'loadAll', workspace], async () => {

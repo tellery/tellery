@@ -1,5 +1,11 @@
 import { IconCommonArrowLeft } from '@app/assets/icons'
-import { useConnectorsList, useConnectorsListProfiles, useGenerateKeyPair, useWorkspaceDetail } from '@app/hooks/api'
+import {
+  useConnectorsList,
+  useConnectorsListProfiles,
+  useGenerateKeyPair,
+  useRevokeKeyPair,
+  useWorkspaceDetail
+} from '@app/hooks/api'
 import { ThemingVariables } from '@app/styles'
 import type { ProfileConfig } from '@app/types'
 import { css } from '@emotion/css'
@@ -23,6 +29,11 @@ export function WorkspaceIntegrations() {
   const connector = useMemo(
     () => connectors?.find((c) => c.id === workspace?.preferences.connectorId),
     [connectors, workspace?.preferences.connectorId]
+  )
+  const { data: profiles } = useConnectorsListProfiles(connector?.id)
+  const profile = useMemo(
+    () => profiles?.find((p) => p.name === workspace?.preferences.profile),
+    [profiles, workspace?.preferences.profile]
   )
 
   return connector ? (
@@ -63,7 +74,7 @@ export function WorkspaceIntegrations() {
               setIntegration(Integration.DBT)
             }}
           >
-            Connect
+            {profile?.configs['Public Key'] ? 'View' : 'Connect'}
           </FormButton>
         </div>
       )}
@@ -98,6 +109,13 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
       refetch()
     }
   }, [handleGenerateKeyPair.status, refetch])
+  const handleRevokeKeyPair = useRevokeKeyPair(props.connectorId)
+  useEffect(() => {
+    if (handleRevokeKeyPair.status === 'success') {
+      refetch()
+      props.onClose()
+    }
+  }, [handleRevokeKeyPair.status, props, refetch])
 
   return (
     <>
@@ -119,6 +137,7 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
         />
         <h2
           className={css`
+            flex: 1;
             font-weight: 600;
             font-size: 16px;
             line-height: 20px;
@@ -128,6 +147,25 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
         >
           DBT
         </h2>
+        {profile?.configs['Public Key'] ? (
+          <span
+            className={css`
+              float: right;
+              font-weight: 600;
+              font-size: 14px;
+              line-height: 16px;
+              color: ${ThemingVariables.colors.primary[1]};
+              cursor: pointer;
+            `}
+            onClick={() => {
+              if (confirm('Revoke DBT?')) {
+                handleRevokeKeyPair.execute()
+              }
+            }}
+          >
+            Revoke
+          </span>
+        ) : null}
       </div>
       <FormLabel>Project name</FormLabel>
       <FormInput {...register('configs.Dbt Project Name')} disabled={!!profile?.configs['Dbt Project Name']} />
@@ -180,10 +218,12 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
             />
             <FormButton
               variant="primary"
+              disabled={!profile?.configs['Public Key']}
               onClick={() => {
-                console.log(watch('configs.Public Key'))
-                copy(watch('configs.Public Key') as string)
-                toast.success('Public key copied')
+                if (profile?.configs['Public Key']) {
+                  copy(profile.configs['Public Key'] as string)
+                  toast.success('Public key copied')
+                }
               }}
             >
               Copy public key
