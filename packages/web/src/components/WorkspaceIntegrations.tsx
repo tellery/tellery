@@ -71,7 +71,7 @@ export function WorkspaceIntegrations() {
           </h3>
           <p>Use dbt and tellery to manage your data model</p>
           <FormButton
-            variant="primary"
+            variant={profile?.configs['Public Key'] ? 'secondary' : 'primary'}
             onClick={() => {
               setIntegration(Integration.DBT)
             }}
