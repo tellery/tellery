@@ -40,7 +40,6 @@ export const CodeBlockLangDisplayName = {
 
 export type Snapshot = {
   data: Data
-  date: string
   id: string
   sql: string
   createdById?: string
@@ -60,6 +59,8 @@ export namespace Editor {
     Hightlighted = 'h',
     Reference = 'r',
     Code = 'c',
+    Equation = 'e',
+    Variable = 'v',
 
     // Temp useage only
     LocalClassnames = 'localClassnames',

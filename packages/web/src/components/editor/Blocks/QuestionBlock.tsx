@@ -22,7 +22,7 @@ import { Diagram } from '@app/components/v11n'
 import { charts } from '@app/components/v11n/charts'
 import { Config, Data, Type } from '@app/components/v11n/types'
 import { useOnClickOutside, useOnScreen } from '@app/hooks'
-import { useBlockSuspense, useSnapshot, useUser } from '@app/hooks/api'
+import { useBlockSuspense, useGetSnapshot, useSnapshot, useUser } from '@app/hooks/api'
 import { useInterval } from '@app/hooks/useInterval'
 import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
 import { ThemingVariables } from '@app/styles'
@@ -148,7 +148,9 @@ const _QuestionBlock: React.ForwardRefRenderFunction<any, QuestionBlockProps> = 
               titleEditing={titleEditing || isInputFocusing}
               block={block}
             />
-            <QuestionBlockStatus snapshotId={snapshotId} block={block} originalBlock={originalBlock} />
+            <React.Suspense fallback={<div />}>
+              <QuestionBlockStatus snapshotId={snapshotId} block={block} originalBlock={originalBlock} />
+            </React.Suspense>
             <motion.div
               style={{
                 paddingTop: props.blockFormat.paddingTop
@@ -164,7 +166,9 @@ const _QuestionBlock: React.ForwardRefRenderFunction<any, QuestionBlockProps> = 
                 setTitleEditing(false)
               }}
             >
-              <QuestionBlockBody ref={contentRef} snapshotId={snapshotId} visualization={visualization} />
+              <React.Suspense fallback={<BlockingUI blocking />}>
+                <QuestionBlockBody ref={contentRef} snapshotId={snapshotId} visualization={visualization} />
+              </React.Suspense>
               {readonly === false && (
                 <BlockResizer
                   blockFormat={props.blockFormat}
@@ -336,7 +340,6 @@ registerBlock(Editor.BlockType.Metric, QuestionBlock)
 
 export const QuestionBlockButtons: React.FC<{ blockId: string; show: boolean }> = ({ blockId, show }) => {
   const block = useBlockSuspense<Editor.QuestionBlock>(blockId)
-  const { data: snapshot } = useSnapshot(block?.content?.snapshotId)
   const { small } = useBlockBehavior()
 
   return (
@@ -370,7 +373,7 @@ export const QuestionBlockButtons: React.FC<{ blockId: string; show: boolean }> 
             opacity: 1;
           `}
         >
-          <TitleButtonsInner snapshot={snapshot} block={block} sql={block.content?.sql ?? ''} />
+          <TitleButtonsInner block={block} sql={block.content?.sql ?? ''} />
         </motion.div>
       )}
     </AnimatePresence>
@@ -381,12 +384,7 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
   HTMLDivElement | null,
   { snapshotId?: string; visualization?: Config<Type> }
 > = ({ snapshotId, visualization }, ref) => {
-  const {
-    data: snapshot,
-    isFetched: isSnapshotFetched,
-    isIdle: isSnapshotIdle,
-    isPreviousData
-  } = useSnapshot(snapshotId)
+  const snapshot = useSnapshot(snapshotId)
 
   const visualizationConfig = useMemo(() => {
     // ensure snapshot data is valid
@@ -398,61 +396,59 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
   }, [snapshot, visualization])
 
   return (
-    <BlockingUI blocking={isSnapshotIdle === false && isSnapshotFetched === false && isPreviousData === false}>
-      <div
-        ref={ref}
-        onCopy={(e) => {
-          e.stopPropagation()
-        }}
-        onClick={(e) => {
-          e.stopPropagation()
-        }}
-        className={css`
-          height: 100%;
-          width: 100%;
-          min-height: 100px;
-          min-width: 100px;
-          user-select: text;
-          position: absolute;
-          padding: 0 20px;
-          left: 0;
-          top: 0;
-        `}
-      >
-        {visualizationConfig && snapshot?.data && snapshot.data.fields ? (
-          <LazyRenderDiagram data={snapshot?.data} config={visualizationConfig} />
-        ) : (
+    <div
+      ref={ref}
+      onCopy={(e) => {
+        e.stopPropagation()
+      }}
+      onClick={(e) => {
+        e.stopPropagation()
+      }}
+      className={css`
+        height: 100%;
+        width: 100%;
+        min-height: 100px;
+        min-width: 100px;
+        user-select: text;
+        position: absolute;
+        padding: 0 20px;
+        left: 0;
+        top: 0;
+      `}
+    >
+      {visualizationConfig && snapshot?.data && snapshot.data.fields ? (
+        <LazyRenderDiagram data={snapshot?.data} config={visualizationConfig} />
+      ) : (
+        <div
+          className={css`
+            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+          `}
+        >
+          <IconMiscNoResult />
           <div
             className={css`
-              height: 100%;
-              position: absolute;
-              left: 0;
-              top: 0;
-              width: 100%;
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: center;
+              font-style: normal;
+              font-weight: 500;
+              font-size: 14px;
+              line-height: 17px;
+              color: ${ThemingVariables.colors.primary[1]};
+              opacity: 0.3;
+              margin-top: 10px;
             `}
           >
-            <IconMiscNoResult />
-            <div
-              className={css`
-                font-style: normal;
-                font-weight: 500;
-                font-size: 14px;
-                line-height: 17px;
-                color: ${ThemingVariables.colors.primary[1]};
-                opacity: 0.3;
-                margin-top: 10px;
-              `}
-            >
-              No Result
-            </div>
+            No Result
           </div>
-        )}
-      </div>
-    </BlockingUI>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -524,7 +520,7 @@ const QuestionBlockStatus: React.FC<{
   originalBlock: Editor.QuestionBlock
   snapshotId?: string
 }> = ({ block, originalBlock, snapshotId }) => {
-  const { data: snapshot } = useSnapshot(snapshotId)
+  const snapshot = useSnapshot(snapshotId)
   const mutatingCount = useSnapshotMutating(originalBlock.id)
   const [mutatingStartTimeStamp, setMutatingStartTimeStamp] = useState(0)
   const [nowTimeStamp, setNowTimeStamp] = useState(0)
@@ -705,18 +701,18 @@ export const LazyRenderDiagram: React.FC<{ data?: Data; config: Config<Type> }> 
 }
 
 export const MoreDropdownSelect: React.FC<{
-  snapshot?: Snapshot
-  block: Editor.Block
+  block: Editor.QuestionBlock
   sql: string
   hoverContent: ReactNode
   className?: string
   setIsActive: (active: boolean) => void
-}> = ({ snapshot, block, sql, setIsActive, className, hoverContent }) => {
+}> = ({ block, sql, setIsActive, className, hoverContent }) => {
   const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null)
   const { data: user } = useUser(block?.lastEditedById ?? null)
   const editor = useEditor<Editor.QuestionBlock>()
   const { readonly } = useBlockBehavior()
 
+  const getSnapshot = useGetSnapshot()
   const operations = useMemo(() => {
     return [
       {
@@ -759,7 +755,8 @@ export const MoreDropdownSelect: React.FC<{
       {
         title: 'Download as CSV',
         icon: <IconMenuDownload color={ThemingVariables.colors.text[0]} />,
-        action: () => {
+        action: async () => {
+          const snapshot = await getSnapshot({ snapshotId: block?.content?.snapshotId })
           const snapshotData = snapshot?.data
           invariant(snapshotData, 'snapshotData is null')
           const csvString = snapshotToCSV(snapshotData)
@@ -810,7 +807,7 @@ export const MoreDropdownSelect: React.FC<{
           }
         }
     ].filter((x) => !!x) as OperationInterface[]
-  }, [block, editor, readonly, snapshot?.data, sql])
+  }, [block, editor, getSnapshot, readonly, sql])
 
   const { isOpen, openMenu, getToggleButtonProps, getMenuProps, highlightedIndex, getItemProps, closeMenu } = useSelect(
     { items: operations }
@@ -903,10 +900,9 @@ export const MoreDropdownSelect: React.FC<{
 }
 
 const TitleButtonsInner: React.FC<{
-  snapshot: Snapshot | undefined
   block: Editor.Block
   sql: string
-}> = ({ snapshot, block, sql }) => {
+}> = ({ block, sql }) => {
   const { readonly } = useBlockBehavior()
   const [isActive, setIsActive] = useState(false)
   const [isPresent, safeToRemove] = usePresence()
@@ -947,7 +943,6 @@ const TitleButtonsInner: React.FC<{
       <MoreDropdownSelect
         hoverContent="More"
         className={QuestionBlockIconButton}
-        snapshot={snapshot}
         block={block}
         sql={sql}
         setIsActive={setIsActive}

@@ -31,7 +31,7 @@ import {
 } from 'react-query'
 import { useRecoilCallback, useRecoilValue, useRecoilValueLoadable, waitForAll, waitForAny } from 'recoil'
 import invariant from 'tiny-invariant'
-import { blockUpdater, TelleryBlockAtom, TelleryUserAtom } from '../store/block'
+import { blockUpdater, TelleryBlockAtom, TellerySnapshotAtom, TelleryUserAtom } from '../store/block'
 import { useBatchQueries } from './useBatchQueries'
 
 export type User = {
@@ -456,13 +456,29 @@ export const useBlock = <T extends Editor.BaseBlock = Editor.Block>(
   return state
 }
 
-export const useSnapshot = (id: string = '') => {
-  const workspace = useWorkspace()
+export const useSnapshot = (id: string | null = null) => {
+  const atom = useRecoilValue(TellerySnapshotAtom(id))
 
-  return useQuery<Snapshot>(['snapshot', id], () => fetchSnapshot(id, workspace.id), {
-    enabled: !!id,
-    keepPreviousData: true
-  })
+  return atom
+  // const workspace = useWorkspace()
+
+  // return useQuery<Snapshot>(['snapshot', id], () => fetchSnapshot(id, workspace.id), {
+  //   enabled: !!id,
+  //   keepPreviousData: true
+  // })
+}
+
+export const useGetSnapshot = () => {
+  // const snapshot = useSnapshot(block?.content?.snapshotId)
+  const getSnapshot = useRecoilCallback(
+    (recoilCallback) =>
+      async ({ snapshotId }: { snapshotId?: string }) => {
+        const snapshot = await recoilCallback.snapshot.getPromise(TellerySnapshotAtom(snapshotId ?? null))
+        return snapshot
+      },
+    []
+  )
+  return getSnapshot
 }
 
 export const useQuestionBackLinks = (id: string = '') => {

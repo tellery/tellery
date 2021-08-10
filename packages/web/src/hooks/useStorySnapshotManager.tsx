@@ -1,24 +1,23 @@
 import { sqlRequest } from '@app/api'
-import { useWorkspace } from '@app/hooks/useWorkspace'
+import { isExecuteableBlockType } from '@app/components/editor/Blocks/utils'
 import { createTranscation } from '@app/context/editorTranscations'
+import { useWorkspace } from '@app/hooks/useWorkspace'
+import { useCreateSnapshot } from '@app/store/block'
+import type { Editor, Story } from '@app/types'
 import dayjs from 'dayjs'
-import invariant from 'tiny-invariant'
 import { nanoid } from 'nanoid'
 import React, { useCallback, useContext, useEffect, useMemo } from 'react'
 import { useIsMutating, useQueryClient } from 'react-query'
-import { applyCreateSnapshotOperation } from '@app/store/block'
-import type { Editor, Story } from '@app/types'
+import invariant from 'tiny-invariant'
 import { useCommit } from './useCommit'
 import { useStoryBlocksMap } from './useStoryBlock'
-import { isExecuteableBlockType, isQuestionLikeBlock } from '@app/components/editor/Blocks/utils'
-import { useLoggedUser } from './useAuth'
-import { usePermissions } from './usePermissions'
 import { useStoryPermissions } from './useStoryPermissions'
 
 export const useRefreshSnapshot = () => {
   const commit = useCommit()
   const workspace = useWorkspace()
   const queryClient = useQueryClient()
+  const createSnapshot = useCreateSnapshot()
 
   const execute = useCallback(
     (questionBlock: Editor.QuestionBlock) => {
@@ -71,7 +70,7 @@ export const useRefreshSnapshot = () => {
             return
           }
           const snapshotId = nanoid()
-          await applyCreateSnapshotOperation({
+          await createSnapshot({
             snapshotId,
             questionId: originalBlockId,
             sql: sql,

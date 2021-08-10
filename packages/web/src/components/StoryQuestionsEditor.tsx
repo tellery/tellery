@@ -25,7 +25,7 @@ import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdStat
 import { useSqlEditor } from '@app/hooks/useSqlEditor'
 import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { useWorkspace } from '@app/hooks/useWorkspace'
-import { applyCreateSnapshotOperation } from '@app/store/block'
+import { applyCreateSnapshotOperation, useCreateSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor, Story } from '@app/types'
 import { DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
@@ -505,9 +505,8 @@ export const StoryQuestionEditor: React.FC<{
   const originalSQL = originalBlock?.content?.sql
   const sql = questionBlockState?.draft?.sql ?? originalSQL ?? ''
   const snapShotId = questionBlockState?.draft?.snapshotId ?? originalBlock?.content?.snapshotId
-  // const visConfig = questionBlockState?.draft?.visConfig ?? block?.content?.visualization
 
-  const { data: snapshot, isFetched: isSnapshotFetched, isIdle: isSnapshotIdle } = useSnapshot(snapShotId)
+  const snapshot = useSnapshot(snapShotId)
 
   useEffect(() => {
     setQuestionBlocksMap((blocksMap) => {
@@ -646,6 +645,8 @@ export const StoryQuestionEditor: React.FC<{
     () => profiles?.find((profile) => profile.name === workspace.preferences.profile)?.type,
     [profiles, workspace.preferences.profile]
   )
+  const createSnapshot = useCreateSnapshot()
+
   const run = useCallback(async () => {
     if (!block) return
     if (!sql) return
@@ -665,10 +666,10 @@ export const StoryQuestionEditor: React.FC<{
     setSQLError(null)
     setSqlSidePanel(false)
     const snapshotId = nanoid()
-    queryClient.setQueryData(['snapshot', snapshotId], { id: snapshotId, data, sql })
+    // queryClient.setQueryData(['snapshot', snapshotId], { id: snapshotId, data, sql })
     if (isDraftSql) {
       // TODO: fix snap shot question id
-      await applyCreateSnapshotOperation({
+      await createSnapshot({
         snapshotId,
         questionId: block.id,
         sql: sql,
@@ -685,7 +686,7 @@ export const StoryQuestionEditor: React.FC<{
       //   false
       // )
       // TODO: fix snap shot question id
-      await applyCreateSnapshotOperation({
+      await createSnapshot({
         snapshotId,
         questionId: originalBlockId,
         sql: sql,
@@ -703,6 +704,7 @@ export const StoryQuestionEditor: React.FC<{
   }, [
     block,
     sql,
+    createSnapshot,
     executeSQL,
     workspace.id,
     workspace.preferences.connectorId,

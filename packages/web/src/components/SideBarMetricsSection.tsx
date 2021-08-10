@@ -2,7 +2,6 @@ import { IconCommonMetrics, IconCommonQuestion } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useBlockSuspense, useSearchMetrics } from '@app/hooks/api'
 import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
-import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { DndItemDataBlockType, DnDItemTypes } from '@app/utils/dnd'
@@ -13,10 +12,9 @@ import React, { Fragment, useMemo } from 'react'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import { useStoryPathParams } from '../hooks/useStoryPathParams'
 import { useGetBlockTitleTextSnapshot } from './editor'
-import { isQuestionLikeBlock } from './editor/Blocks/utils'
-import { getFilteredOrderdSubsetOfBlocks } from './editor/utils'
 import { useQuestionEditor } from './StoryQuestionsEditor'
 import ContentLoader from 'react-content-loader'
+import { useStoryQustions } from './editor/hooks/useStoryQustions'
 
 const SideBarLoader: React.FC = () => {
   return (
@@ -168,11 +166,7 @@ const CurrentStoryQuestions: React.FC = () => {
 }
 
 const StoryQuestions: React.FC<{ storyId: string }> = ({ storyId }) => {
-  const storyBlocksMap = useStoryBlocksMap(storyId)
-  const questionLikeBlocks = useMemo(() => {
-    if (!storyBlocksMap) return []
-    return getFilteredOrderdSubsetOfBlocks(storyBlocksMap, storyId, (block) => isQuestionLikeBlock(block.type))
-  }, [storyBlocksMap, storyId])
+  const questionLikeBlocks = useStoryQustions(storyId)
 
   if (!storyId) return null
 

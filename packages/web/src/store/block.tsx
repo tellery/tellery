@@ -1,13 +1,14 @@
 import { applyTransactionsAsync, Operation, Transcation } from '@app/hooks/useCommit'
-import { fetchBlock, fetchUser } from '@app/api'
+import { fetchBlock, fetchSnapshot, fetchUser } from '@app/api'
 import debug from 'debug'
 import invariant from 'tiny-invariant'
 import { cloneDeep } from 'lodash'
 import { nanoid } from 'nanoid'
-import { atomFamily, DefaultValue, selectorFamily, Snapshot } from 'recoil'
-import type { Editor } from '@app/types'
+import { atomFamily, DefaultValue, selectorFamily, useRecoilCallback } from 'recoil'
+import type { Editor, Snapshot } from '@app/types'
 import { subscribeBlockUpdate } from '@app/utils/remoteStoreObserver'
 import { WorkspaceIdAtom } from '../hooks/useWorkspaceIdAtom'
+import type { Data } from '@app/components/v11n/types'
 
 export type BlockSnapshot = Map<string, Editor.BaseBlock>
 export const TelleryBlockMap: BlockSnapshot = new Map()
@@ -59,6 +60,22 @@ export const TelleryBlockAtom = atomFamily<Editor.BaseBlock, string>({
       }
     }
   ]
+})
+
+export const TellerySnapshotAtom = atomFamily<Snapshot | null, string | null>({
+  key: 'TellerySnapshotAtom',
+  default: selectorFamily({
+    key: 'TellerySnapshotAtom/Default',
+    get:
+      (snapshotId: string | null) =>
+      async ({ get }) => {
+        if (!snapshotId) return null
+        const workspaceId = get(WorkspaceIdAtom)
+        invariant(workspaceId, 'workspaceId is null')
+        const response = await fetchSnapshot(snapshotId, workspaceId)
+        return response
+      }
+  })
 })
 
 export const TelleryStoryBlocks = selectorFamily<Record<string, Editor.BaseBlock>, string>({
@@ -171,34 +188,40 @@ export const createUserLogOperation = (entityId: string, type: 'EDIT' | 'CREATE'
   }
 }
 
-export const applyCreateSnapshotOperation = async (props: {
-  snapshotId: string
-  questionId: string
-  sql: string
-  data?: unknown
-  workspaceId: string
-}) => {
-  const { snapshotId, data, sql, questionId, workspaceId } = props
-  const transactions: Transcation[] = [
-    {
-      workspaceId,
-      id: nanoid(),
-      operations: [
-        {
-          cmd: 'set',
-          args: {
-            alive: true,
-            id: snapshotId,
-            questionId: questionId,
-            sql: sql,
-            data: data
-          },
-          path: [],
+export const useCreateSnapshot = () => {
+  const create = useRecoilCallback(
+    (recoilcallback) =>
+      async (props: { snapshotId: string; questionId: string; sql: string; data?: unknown; workspaceId: string }) => {
+        const { snapshotId, data, sql, questionId, workspaceId } = props
+
+        const transactions: Transcation[] = [
+          {
+            workspaceId,
+            id: nanoid(),
+            operations: [
+              {
+                cmd: 'set',
+                args: {
+                  alive: true,
+                  id: snapshotId,
+                  questionId: questionId,
+                  sql: sql,
+                  data: data
+                },
+                path: [],
+                id: snapshotId,
+                table: 'snapshot'
+              }
+            ]
+          }
+        ]
+        recoilcallback.set(TellerySnapshotAtom(snapshotId), {
           id: snapshotId,
-          table: 'snapshot'
-        }
-      ]
-    }
-  ]
-  return applyTransactionsAsync(transactions)
+          data: data as Data,
+          sql
+        })
+        return applyTransactionsAsync(transactions)
+      }
+  )
+  return create
 }

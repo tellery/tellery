@@ -417,7 +417,8 @@ export const extractEntitiesFromToken = (token: Editor.Token) => {
     link: undefined,
     reference: undefined,
     classNames: undefined,
-    index: undefined
+    index: undefined,
+    equation: undefined
   }
   const tokenTypes = token[1]
   if (!tokenTypes) return entities
@@ -439,6 +440,10 @@ export const extractEntitiesFromToken = (token: Editor.Token) => {
       }
       case Editor.InlineType.LocalIndex: {
         entities.index = tokenType
+        break
+      }
+      case Editor.InlineType.Equation: {
+        entities.equation = tokenType
         break
       }
     }
