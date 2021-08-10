@@ -101,6 +101,7 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
   }, [profile, reset])
   const handleGenerateKeyPair = useGenerateKeyPair(
     props.connectorId,
+    profile,
     watch('configs.Dbt Project Name') as string | undefined,
     watch('configs.Git Url') as string | undefined
   )
@@ -109,7 +110,7 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
       refetch()
     }
   }, [handleGenerateKeyPair.status, refetch])
-  const handleRevokeKeyPair = useRevokeKeyPair(props.connectorId)
+  const handleRevokeKeyPair = useRevokeKeyPair(props.connectorId, profile)
   useEffect(() => {
     if (handleRevokeKeyPair.status === 'success') {
       refetch()

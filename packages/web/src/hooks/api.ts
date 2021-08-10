@@ -665,20 +665,19 @@ export function useConnectorsUpsertProfile(connectorId: string) {
   return useAsync(handleUpdateProfile)
 }
 
-export function useGenerateKeyPair(connectorId: string, dbtProjectName?: string, gitUrl?: string) {
+/**
+ * dbt start
+ */
+
+export function useGenerateKeyPair(
+  connectorId: string,
+  profile?: ProfileConfig,
+  dbtProjectName?: string,
+  gitUrl?: string
+) {
   const workspace = useWorkspace()
   const handleGenerateKeyPair = useCallback(async () => {
-    if (!dbtProjectName || !gitUrl) {
-      return
-    }
-    const {
-      data: { profiles }
-    } = await request.post<{ profiles: ProfileConfig[] }>('/api/connectors/listProfiles', {
-      connectorId,
-      workspaceId: workspace.id
-    })
-    const profile = profiles?.find((p) => p.name === workspace?.preferences.profile)
-    if (!profile) {
+    if (!profile || !dbtProjectName || !gitUrl) {
       return
     }
     await request.post('/api/connectors/upsertProfile', {
@@ -692,20 +691,13 @@ export function useGenerateKeyPair(connectorId: string, dbtProjectName?: string,
       workspaceId: workspace.id,
       connectorId
     })
-  }, [connectorId, dbtProjectName, gitUrl, workspace.id, workspace?.preferences.profile])
+  }, [connectorId, dbtProjectName, gitUrl, profile, workspace.id])
   return useAsync(handleGenerateKeyPair)
 }
 
-export function useRevokeKeyPair(connectorId: string) {
+export function useRevokeKeyPair(connectorId: string, profile?: ProfileConfig) {
   const workspace = useWorkspace()
   const handleRevokeKeyPair = useCallback(async () => {
-    const {
-      data: { profiles }
-    } = await request.post<{ profiles: ProfileConfig[] }>('/api/connectors/listProfiles', {
-      connectorId,
-      workspaceId: workspace.id
-    })
-    const profile = profiles?.find((p) => p.name === workspace?.preferences.profile)
     if (!profile) {
       return
     }
@@ -718,9 +710,13 @@ export function useRevokeKeyPair(connectorId: string) {
       workspaceId: workspace.id,
       connectorId
     })
-  }, [connectorId, workspace.id, workspace?.preferences.profile])
+  }, [connectorId, profile, workspace.id])
   return useAsync(handleRevokeKeyPair)
 }
+
+/**
+ * dbt end
+ */
 
 export const useAllThoughts = () => {
   const workspace = useWorkspace()
