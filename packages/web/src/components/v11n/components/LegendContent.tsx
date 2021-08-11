@@ -3,6 +3,8 @@ import type { MouseEvent } from 'react'
 import type { Props, Payload } from '@tellery/recharts/types/component/DefaultLegendContent'
 import { IconVisualizationCircle } from '@app/assets/icons'
 import { ThemingVariables } from '@app/styles'
+import PerfectScrollbar from 'react-perfect-scrollbar'
+import Tippy from '@tippyjs/react'
 
 const fontSize = 14
 
@@ -14,7 +16,8 @@ const itemMargin = 10
 
 export function LegendContent(props: Props) {
   return (
-    <div
+    <PerfectScrollbar
+      options={{ suppressScrollY: true }}
       className={css`
         width: 100%;
         overflow-x: auto;
@@ -50,7 +53,7 @@ export function LegendContent(props: Props) {
           />
         ))}
       </ul>
-    </div>
+    </PerfectScrollbar>
   )
 }
 
@@ -74,15 +77,22 @@ function LegendItem(props: { value: Payload; onMouseEnter(): void; onMouseLeave(
       onMouseEnter={props.onMouseEnter}
       onMouseLeave={props.onMouseLeave}
     >
-      <IconVisualizationCircle
-        color={props.value.color}
-        width={iconSize}
-        height={iconSize}
-        className={css`
-          margin-right: ${iconMargin}px;
-          vertical-align: top;
-        `}
-      />
+      <Tippy content={props.value.value}>
+        <span
+          className={css`
+            margin-right: ${iconMargin}px;
+          `}
+        >
+          <IconVisualizationCircle
+            color={props.value.color}
+            width={iconSize}
+            height={iconSize}
+            className={css`
+              vertical-align: top;
+            `}
+          />
+        </span>
+      </Tippy>
       {props.value.value}
     </li>
   )

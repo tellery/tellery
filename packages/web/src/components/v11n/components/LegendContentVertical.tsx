@@ -3,6 +3,7 @@ import type { Props, Payload } from '@tellery/recharts/types/component/DefaultLe
 import type { MouseEvent } from 'react'
 import { IconVisualizationCircle } from '@app/assets/icons'
 import { ThemingVariables } from '@app/styles'
+import PerfectScrollbar from 'react-perfect-scrollbar'
 
 const fontSize = 14
 
@@ -12,34 +13,37 @@ const iconMargin = 4
 
 export function LegendContentVertical(props: Props) {
   return (
-    <ul
+    <PerfectScrollbar
+      options={{ suppressScrollX: true }}
       className={css`
-        padding: 0;
-        margin: 0;
-        &::-webkit-scrollbar {
-          display: none;
-        }
-        display: flex;
-        flex-direction: column;
+        height: 100%;
+        overflow-y: auto;
       `}
-      style={{
-        textAlign: props.align,
-        verticalAlign: props.verticalAlign
-      }}
     >
-      {props.payload?.map((item) => (
-        <LegendItem
-          key={item.id}
-          value={item}
-          onMouseEnter={() => {
-            props.onMouseEnter?.(item as unknown as MouseEvent)
-          }}
-          onMouseLeave={() => {
-            props.onMouseLeave?.(item as unknown as MouseEvent)
-          }}
-        />
-      ))}
-    </ul>
+      <ul
+        className={css`
+          padding: 0;
+          margin: 0;
+        `}
+        style={{
+          textAlign: props.align,
+          verticalAlign: props.verticalAlign
+        }}
+      >
+        {props.payload?.map((item) => (
+          <LegendItem
+            key={item.id}
+            value={item}
+            onMouseEnter={() => {
+              props.onMouseEnter?.(item as unknown as MouseEvent)
+            }}
+            onMouseLeave={() => {
+              props.onMouseLeave?.(item as unknown as MouseEvent)
+            }}
+          />
+        ))}
+      </ul>
+    </PerfectScrollbar>
   )
 }
 
@@ -48,7 +52,7 @@ function LegendItem(props: { value: Payload; onMouseEnter(): void; onMouseLeave(
     <li
       className={css`
         width: 100%;
-        display: inline-flex;
+        display: flex;
         align-items: center;
         color: ${ThemingVariables.colors.text[0]};
         font-weight: 500;
