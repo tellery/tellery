@@ -201,12 +201,15 @@ export class DbtService {
       .intersection(oldNames.value())
       .map((name) => {
         const block = currentDbtBlocksByName[name]
-        const newMeta = metadataByName[name]
+        const newMeta = {
+          ...metadataByName[name],
+          title: [[name]],
+        }
         const oldMeta = _.get(block, 'content')
         if (_.isEqual(newMeta, oldMeta)) {
           return null
         }
-        _.set(block, 'content', { ...newMeta, title: [[newMeta.name]] })
+        _.set(block, 'content', newMeta)
         _.set(block, 'lastEditedById', operatorId)
         return block
       })
