@@ -49,6 +49,7 @@ async function main() {
     interKey: storyId,
     parentId: workspace.id,
     parentTable: BlockParentType.WORKSPACE,
+    searchableText: 'Welcome to Tellery',
     storyId,
     content: {
       title: [['Welcome to Tellery']],
@@ -67,6 +68,7 @@ async function main() {
     interKey: questionId,
     parentId: story.id,
     parentTable: BlockParentType.BLOCK,
+    searchableText: 'Iris sample data',
     storyId,
     content: {
       title: [['Iris sample data']],
