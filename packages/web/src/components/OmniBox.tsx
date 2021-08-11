@@ -163,7 +163,7 @@ export function OmniBox() {
         display: flex;
         flex-direction: column;
         align-items: center;
-        background-color: rgba(16, 22, 26, 0.2);
+        background-color: rgba(0, 0, 0, 0.5);
         z-index: 9999999999;
         transition: opacity 0.2s;
       `}
