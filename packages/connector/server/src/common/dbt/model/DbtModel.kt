@@ -17,6 +17,7 @@ data class DbtModel(
     val schema: String,
     val description: String,
     val config: Config,
+    val path: String?
 ) {
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class Config(
@@ -30,7 +31,6 @@ data class DbtModel(
             .setName(name)
             .setUniqueId(uniqueId)
             .setDescription(description)
-            .setRelationName(relationName)
 
         if (rawSql != null) builder.rawSql = rawSql
         if (compiledSql != null) builder.compiledSql = compiledSql
@@ -43,6 +43,8 @@ data class DbtModel(
         }
 
         if (sourceName != null) builder.sourceTable = sourceName
+        // Relation name is null when the materialized of table is ephemeral
+        if (relationName != null) builder.relationName = relationName
         return builder.build()
     }
 }
