@@ -163,7 +163,7 @@ export abstract class DefaultOperation implements IOperation {
         position++
       }
     }
-    _(entity).get(path).splice(position, 0, operateeId)
+    _(entity).get(path)?.splice(position, 0, operateeId)
     const array = this.getStringArray(entity, path)
     if (!_(array).isEmpty() && _.uniq(array).length !== array!.length) {
       throw new InvalidArgumentError(`the <${path}> of ${entity} has duplicate values`)
