@@ -205,7 +205,7 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
                 width: 70px;
               `}
               onClick={handlePushRepo.execute}
-              disabled={handlePullRepo.status === 'pending' || handlePushRepo.status === 'pending'}
+              loading={handlePullRepo.status === 'pending' || handlePushRepo.status === 'pending'}
             >
               Push
             </FormButton>
@@ -216,7 +216,7 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
                 width: 70px;
               `}
               onClick={handlePullRepo.execute}
-              disabled={handlePullRepo.status === 'pending' || handlePushRepo.status === 'pending'}
+              loading={handlePullRepo.status === 'pending' || handlePushRepo.status === 'pending'}
             >
               Pull
             </FormButton>
@@ -243,7 +243,7 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
         <FormButton
           variant="primary"
           onClick={handleGenerateKeyPair.execute}
-          disabled={handleGenerateKeyPair.status === 'pending'}
+          loading={handleGenerateKeyPair.status === 'pending'}
           className={css`
             margin-top: 16px;
           `}
