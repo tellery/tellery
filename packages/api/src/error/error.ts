@@ -63,3 +63,19 @@ export class StorageError extends Error {
     )
   }
 }
+
+export class DBTError extends Error {
+  status = 400
+
+  static unknownMaterializationError(): DBTError {
+    return new DBTError(
+      'Unknown materialization error, please check the version of your connector and dbt',
+    )
+  }
+
+  static unspecifiedTypeError(): DBTError {
+    return new DBTError(
+      'unspecified type error, please check the version of your connector and dbt',
+    )
+  }
+}

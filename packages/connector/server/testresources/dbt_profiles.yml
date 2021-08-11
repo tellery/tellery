@@ -1,33 +1,59 @@
 ---
 projectA:
-  output:
+  outputs:
     dev:
+      type: "snowflake"
+      dbname: "tellery_dbname"
+      warehouse: "tellery_warehouse"
+      schema: "tellery_schema"
       account: "xy12345.us-ease-2.aws"
       user: "abc"
       password: "def"
-      type: "snowflake"
-      schema: "tellery_schema"
-      database: "tellery_database"
-      warehouse: "tellery_warehouse"
   target: "dev"
 projectB:
-  output:
+  outputs:
     dev:
+      type: "redshift"
+      dbname: "my_db"
+      warehouse: "tellery_warehouse"
+      schema: "tellery_schema"
       host: "examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com"
+      port: 5439
       user: "abc"
       password: "def"
-      port: "5439"
-      type: "redshift"
-      schema: "tellery_schema"
-      dbname: "tellery_dbname"
   target: "dev"
 projectC:
-  output:
+  outputs:
     dev:
+      type: "postgres"
+      dbname: "my_db"
+      warehouse: "tellery_warehouse"
+      schema: "tellery_schema"
       host: "127.0.0.1"
+      port: 5432
       user: "abc"
       password: "def"
-      port: "5432"
-      type: "postgres"
+  target: "dev"
+projectE:
+  outputs:
+    dev:
+      type: "bigquery"
+      dbname: "tellery_dbname"
+      warehouse: "tellery_warehouse"
       schema: "tellery_schema"
+      method: "service-account-json"
+      priority: "interactive"
+      dataset: "tellery_dataset"
+      project: "test"
+      keyfile_json:
+        type: "service_account"
+        project_id: "test"
+        private_key_id: "PRIVATE_KEY_ID"
+        private_key: "THIS IS PRIVATE KEY"
+        client_email: "dbt-user@mythic-hulling-307909.iam.gserviceaccount.com"
+        client_id: "100916503390147053408"
+        auth_uri: "https://accounts.google.com/o/oauth2/auth"
+        token_uri: "https://oauth2.googleapis.com/token"
+        auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs"
+        client_x509_cert_url: "https://www.googleapis.com/robot/v1/metadata/x509"
   target: "dev"

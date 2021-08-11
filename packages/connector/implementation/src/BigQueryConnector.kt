@@ -2,6 +2,7 @@ package io.tellery.connectors
 
 import arrow.core.Either
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.auth.oauth2.ServiceAccountCredentials
 import com.google.cloud.bigquery.*
 import com.google.cloud.bigquery.BigQuery.DatasetListOption
@@ -11,6 +12,7 @@ import io.tellery.annotations.Config
 import io.tellery.annotations.Config.ConfigType
 import io.tellery.annotations.Connector
 import io.tellery.annotations.HandleImport
+import io.tellery.connectors.fields.BigQueryFields
 import io.tellery.entities.*
 import io.tellery.utils.loadPrivateKey
 import kotlinx.coroutines.CancellationException
@@ -27,7 +29,7 @@ import kotlin.coroutines.resumeWithException
     type = "BigQuery",
     configs = [
         Config(
-            name = "Key File",
+            name = BigQueryFields.KEY_FILE,
             type = ConfigType.FILE,
             description = "Upload your key file right here. For instruction see here: https://cloud.google.com/bigquery/docs/quickstarts/quickstart-client-libraries",
             hint = "",
@@ -53,13 +55,15 @@ class BigQueryConnector : BaseConnector() {
     }
 
     override suspend fun getDatabases(): List<String> {
-        return bigQueryClient.listDatasets(DatasetListOption.all()).iterateAll().map{ it.datasetId.dataset }
+        return bigQueryClient.listDatasets(DatasetListOption.all()).iterateAll()
+            .map { it.datasetId.dataset }
     }
 
 
     // Here dbName stands for datasetId
     override suspend fun getCollections(dbName: String): List<CollectionField> {
-        return bigQueryClient.listTables(dbName).iterateAll().map{ CollectionField(it.tableId.table, null) }
+        return bigQueryClient.listTables(dbName).iterateAll()
+            .map { CollectionField(it.tableId.table, null) }
     }
 
     // Here dbName stands for datasetId, and collectionName stands for tableId
@@ -79,19 +83,20 @@ class BigQueryConnector : BaseConnector() {
         sendToChannel: suspend (QueryResultWrapper) -> Unit
     ) {
         val queryConfig = QueryJobConfiguration.newBuilder(ctx.sql).build()
-        val jobId = JobId.newBuilder().setJob("${ctx.questionId}-${NanoIdUtils.randomNanoId()}").build()
+        val jobId =
+            JobId.newBuilder().setJob("${ctx.questionId}-${NanoIdUtils.randomNanoId()}").build()
 
         val resultSet = asyncJobRunner(jobId) {
             bigQueryClient.query(queryConfig, jobId)
         }
 
-        val fields = resultSet.schema.fields.map{
+        val fields = resultSet.schema.fields.map {
             TypeField(it.name, bigQueryTypeToSQLType(it.type.standardType))
         }
         sendToChannel(Either.Left(fields))
 
         resultSet.iterateAll().forEach { row ->
-            sendToChannel(Either.Right(row.map{it.value}))
+            sendToChannel(Either.Right(row.map { it.value }))
         }
     }
 
@@ -101,7 +106,7 @@ class BigQueryConnector : BaseConnector() {
         collection: String,
         _schema: String?,
         content: ByteArray
-    ){
+    ) {
 
         val writeChannelConfig = WriteChannelConfiguration
             .newBuilder(TableId.of(database, collection))
@@ -121,7 +126,7 @@ class BigQueryConnector : BaseConnector() {
             if (completed == null) {
                 throw InterruptedException()
             } else {
-                if (completed.status.error != null){
+                if (completed.status.error != null) {
                     logger.error("import failed: {}", completed.status.error)
                     throw Exception("BigQuery import error: ${completed.status.error.toString()}")
                 }
@@ -139,21 +144,21 @@ class BigQueryConnector : BaseConnector() {
                     completableFuture.cancel(true)
                 }
 
-                completableFuture.handle{res, exception ->
-                    if (exception != null){
+                completableFuture.handle { res, exception ->
+                    if (exception != null) {
                         cont.resumeWithException(exception)
                     } else {
                         cont.resumeWith(Result.success(res))
                     }
                 }
-            } catch (e: InterruptedException){
+            } catch (e: InterruptedException) {
                 throw CancellationException()
             }
         }
     }
 
     private fun bigQueryTypeToSQLType(type: StandardSQLTypeName): Int {
-        return when(type){
+        return when (type) {
             StandardSQLTypeName.BOOL -> Types.BOOLEAN
             StandardSQLTypeName.INT64 -> Types.INTEGER
             StandardSQLTypeName.FLOAT64 -> Types.DOUBLE
@@ -172,20 +177,49 @@ class BigQueryConnector : BaseConnector() {
     }
 
     data class BigQueryKeyBody(
-        @SerializedName("type") val type: String,
-        @SerializedName("project_id") val projectId: String,
-        @SerializedName("private_key_id") val privateKeyId: String,
-        @SerializedName("private_key") val privateKey: String,
-        @SerializedName("client_email") val clientEmail: String,
-        @SerializedName("client_id") val clientId: String,
-        @SerializedName("auth_uri") val authUri: String,
-        @SerializedName("token_uri") val tokenUri: String,
-        @SerializedName("auth_provider_x509_cert_url") val authProviderX509CertUrl: String,
-        @SerializedName("client_x509_cert_url") val clientX509CertUrl: String
+        @JsonProperty("type")
+        @SerializedName("type")
+        val type: String,
+
+        @JsonProperty("project_id")
+        @SerializedName("project_id")
+        val projectId: String,
+
+        @JsonProperty("private_key_id")
+        @SerializedName("private_key_id")
+        val privateKeyId: String,
+
+        @JsonProperty("private_key")
+        @SerializedName("private_key")
+        val privateKey: String,
+
+        @JsonProperty("client_email")
+        @SerializedName("client_email")
+        val clientEmail: String,
+
+        @JsonProperty("client_id")
+        @SerializedName("client_id")
+        val clientId: String,
+
+        @JsonProperty("auth_uri")
+        @SerializedName("auth_uri")
+        val authUri: String,
+
+        @JsonProperty("token_uri")
+        @SerializedName("token_uri")
+        val tokenUri: String,
+
+        @JsonProperty("auth_provider_x509_cert_url")
+        @SerializedName("auth_provider_x509_cert_url")
+        val authProviderX509CertUrl: String,
+
+        @JsonProperty("client_x509_cert_url")
+        @SerializedName("client_x509_cert_url")
+        val clientX509CertUrl: String
     ) {
         fun toCreds(): ServiceAccountCredentials {
             val obj = this
-            return ServiceAccountCredentials.newBuilder().apply{
+            return ServiceAccountCredentials.newBuilder().apply {
                 projectId = obj.projectId
                 privateKeyId = obj.privateKeyId
                 privateKey = loadPrivateKey(obj.privateKey)

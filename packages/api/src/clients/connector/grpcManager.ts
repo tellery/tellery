@@ -20,6 +20,17 @@ import { DisplayType } from '../../protobufs/displayType_pb'
 import { ConnectorClient } from '../../protobufs/connector_grpc_pb'
 import { IConnectorManager } from './interface'
 import { beautyStream, beautyCall } from '../../utils/grpc'
+import { DbtClient } from '../../protobufs/dbt_grpc_pb'
+import {
+  GenerateKeyPairRequest,
+  DbtBlock,
+  ListDbtBlocksRequest,
+  PullRepoRequest,
+  PushRepoRequest,
+  QuestionBlockContent,
+} from '../../protobufs/dbt_pb'
+import { DbtMetadata, ExportedBlockMetadata } from '../../types/dbt'
+import _ from 'lodash'
 
 const grpcConnectorStorage = new Map<string, ConnectorManager>()
 
@@ -47,6 +58,8 @@ export function getGrpcConnector(
 export class ConnectorManager implements IConnectorManager {
   private client: ConnectorClient
 
+  private dbtClient: DbtClient
+
   private authType: AuthType
 
   private authData: AuthData
@@ -65,6 +78,7 @@ export class ConnectorManager implements IConnectorManager {
       throw new Error(`Invalid auth type for grpcConnector: ${authType}`)
     }
     this.client = new ConnectorClient(url, credential)
+    this.dbtClient = new DbtClient(url, credential)
   }
 
   public checkAuth(authType: AuthType, authData: AuthData): boolean {
@@ -195,6 +209,45 @@ export class ConnectorManager implements IConnectorManager {
         importResult.hasSchema() ? `${importResult.getSchema()}.` : ''
       }${importResult.getCollection()}`,
     }
+  }
+
+  async generateKeyPair(profile: string): Promise<string> {
+    const request = new GenerateKeyPairRequest().setProfile(profile)
+    const res = await beautyCall(this.dbtClient.generateKeyPair, this.dbtClient, request)
+    return res.getPublickey()
+  }
+
+  async pullRepo(profile: string): Promise<void> {
+    const request = new PullRepoRequest().setProfile(profile)
+    await beautyCall(this.dbtClient.pullRepo, this.dbtClient, request)
+  }
+
+  async pushRepo(profile: string, blocks: ExportedBlockMetadata[]): Promise<void> {
+    const request = new PushRepoRequest()
+      .setProfile(profile)
+      .setBlocksList(
+        blocks.map(({ sql, name }) => new QuestionBlockContent().setSql(sql).setName(name)),
+      )
+    await beautyCall(this.dbtClient.pushRepo, this.dbtClient, request)
+  }
+
+  async listDbtBlocks(profile: string): Promise<DbtMetadata[]> {
+    const request = new ListDbtBlocksRequest().setProfile(profile)
+    const res = await beautyCall(this.dbtClient.listDbtBlocks, this.dbtClient, request)
+    return res.getBlocksList().map(
+      (raw) =>
+        // remove blank values
+        _.pickBy({
+          name: raw.getName(),
+          description: raw.getDescription(),
+          relationName: raw.getRelationname(),
+          rawSql: raw.getRawsql(),
+          compiledSql: raw.getCompiledsql(),
+          type: getEnumKey(DbtBlock.Type, raw.getType()).toLowerCase(),
+          materialized: getEnumKey(DbtBlock.Materialization, raw.getMaterialized()).toLowerCase(),
+          sourceTable: raw.getSourcetable(),
+        }) as DbtMetadata,
+    )
   }
 }
 

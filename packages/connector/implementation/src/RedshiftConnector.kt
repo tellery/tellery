@@ -4,6 +4,7 @@ import io.tellery.annotations.Config
 import io.tellery.annotations.Config.ConfigType
 import io.tellery.annotations.Connector
 import io.tellery.annotations.HandleImport
+import io.tellery.connectors.fields.RedshiftFields
 import io.tellery.entities.ImportFailureException
 import io.tellery.entities.Profile
 import io.tellery.entities.TypeField
@@ -17,35 +18,35 @@ import java.sql.Connection
     type = "Redshift",
     configs = [
         Config(
-            name = "Endpoint",
+            name = RedshiftFields.ENDPOINT,
             type = ConfigType.STRING,
             description = "The endpoint of the Amazon Redshift cluster",
             hint = "examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com",
             required = true
         ),
         Config(
-            name = "Port",
+            name = RedshiftFields.PORT,
             type = ConfigType.NUMBER,
             description = "The port number that you specified when you launched the cluster. If you have a firewall, make sure that this port is open for you to use",
             hint = "5439",
             required = true
         ),
         Config(
-            name = "Database",
+            name = RedshiftFields.DATABASE,
             type = ConfigType.STRING,
             description = "The logical database to connect to and run queries against",
             hint = "my_db",
             required = true
         ),
         Config(
-            name = "Username",
+            name = RedshiftFields.USERNAME,
             type = ConfigType.STRING,
             description = "The username (role) you used to connect to your Redshift cluster (created when initializing Redshift cluster)",
             hint = "your_username",
             required = true,
         ),
         Config(
-            name = "Password",
+            name = RedshiftFields.PASSWORD,
             type = ConfigType.STRING,
             description = "",
             hint = "",
@@ -53,30 +54,30 @@ import java.sql.Connection
             secret = true,
         ),
         Config(
-            name = "S3 Access Key",
+            name = RedshiftFields.S3_ACCESS_KEY,
             type = ConfigType.STRING,
             description = "S3 Access Key ID(for uploading csv)"
         ),
         Config(
-            name = "S3 Secret Key",
+            name = RedshiftFields.S3_SECRET_KEY,
             type = ConfigType.STRING,
             description = "S3 Secret Access Key (for uploading csv)",
             secret = true
         ),
         Config(
-            name = "S3 Region",
+            name = RedshiftFields.S3_REGION,
             type = ConfigType.STRING,
-            description = "S3 region (be the same as your Redshift cluster",
+            description = "S3 region (be the same as your Redshift cluster)",
             hint = "us-east-1"
         ),
         Config(
-            name = "S3 Bucket",
+            name = RedshiftFields.S3_BUCKET,
             type = ConfigType.STRING,
             description = "S3 bucket (where uploaded csv stores)",
             hint = "tellery"
         ),
         Config(
-            name = "S3 Key Prefix",
+            name = RedshiftFields.S3_KEY_PREFIX,
             type = ConfigType.STRING,
             description = "S3 key prefix prepends to uploaded csv"
         ),

@@ -8,32 +8,32 @@ option java_multiple_files = true;
 import "google/protobuf/empty.proto";
 
 service Dbt {
-  rpc CreateRepo (CreateRepoRequest) returns (CreateRepoResponse);
+  rpc GenerateKeyPair (GenerateKeyPairRequest) returns (GenerateKeyPairResponse);
   rpc PullRepo (PullRepoRequest) returns (google.protobuf.Empty);
   rpc PushRepo (PushRepoRequest) returns (google.protobuf.Empty);
   rpc RefreshWorkspace (google.protobuf.Empty) returns (google.protobuf.Empty);
   rpc ListDbtBlocks (ListDbtBlocksRequest) returns (ListDbtBlocksResponse);
 }
 
-message CreateRepoRequest {
-  string profileName = 1;
+message GenerateKeyPairRequest {
+  string profile = 1;
 }
 
-message CreateRepoResponse {
+message GenerateKeyPairResponse {
   string publicKey = 1;
 }
 
 message PullRepoRequest {
-  string profileName = 1;
+  string profile = 1;
 }
 
 message PushRepoRequest {
-  string profileName = 1;
-  map<string, Block> blocks = 2;
+  string profile = 1;
+  repeated QuestionBlockContent blocks = 2;
 }
 
 message ListDbtBlocksRequest {
-  string profileName = 1;
+  string profile = 1;
 }
 
 message ListDbtBlocksResponse {
@@ -57,31 +57,18 @@ message DbtBlock {
 
   Type type = 1;
   string name = 2;
-  string description = 3;
-  string relationName = 4;
+  string uniqueId = 3;
+  string description = 4;
+  string relationName = 5;
   // Only for model
-  string rawSql = 5;
-  string compiledSql = 6;
-  Materialization materialized = 7;
-}
-
-message Block {
-  string id = 1;
-  string type = 2;
-  string parentId = 3;
-  string parentTable = 4;
-  int32 createdAt = 5;
-  int32 updatedAt = 6;
-  int32 version = 7;
-  repeated string children = 8;
-  string createdById = 9;
-  string lastEditedById = 10;
-  bool alive = 11;
-  QuestionBlockContent content = 12;
-  string storyId = 13;
+  string rawSql = 6;
+  string compiledSql = 7;
+  Materialization materialized = 8;
+  // Only for source
+  string sourceTable = 9;
 }
 
 message QuestionBlockContent {
-  repeated string title = 1;
+  string name = 1;
   string sql = 2;
 }

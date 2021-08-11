@@ -157,7 +157,7 @@ async function referenceCompletion(ctx: Context) {
 
   const user = mustGetUser(ctx)
   const { limit } = payload
-  const types = [BlockType.METRIC, BlockType.QUESTION]
+  const types = [BlockType.METRIC, BlockType.DBT, BlockType.QUESTION]
   const funcs = _(types)
     .map((t) =>
       searchService.searchResources(

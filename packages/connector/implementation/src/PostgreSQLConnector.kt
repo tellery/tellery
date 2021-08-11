@@ -4,6 +4,7 @@ import io.tellery.annotations.Config
 import io.tellery.annotations.Config.ConfigType
 import io.tellery.annotations.Connector
 import io.tellery.annotations.HandleImport
+import io.tellery.connectors.fields.PostgreSQLFields
 import io.tellery.entities.Profile
 import io.tellery.entities.TypeField
 import io.tellery.utils.readCSV
@@ -16,35 +17,35 @@ import java.sql.Connection
     type = "PostgreSQL",
     configs = [
         Config(
-            name = "Endpoint",
+            name = PostgreSQLFields.ENDPOINT,
             type = ConfigType.STRING,
             description = "The endpoint of your postgreSQL",
             hint = "your-db-hostname-or-ip",
             required = true
         ),
         Config(
-            name = "Port",
+            name = PostgreSQLFields.PORT,
             type = ConfigType.NUMBER,
             description = "The port number of your database. If you have a firewall, make sure that this port is open for you to use",
             hint = "5432",
             required = true
         ),
         Config(
-            name = "Database",
+            name = PostgreSQLFields.DATABASE,
             type = ConfigType.STRING,
             description = "The logical database to connect to and run queries against",
             hint = "my_db",
             required = true
         ),
         Config(
-            name = "Username",
+            name = PostgreSQLFields.USERNAME,
             type = ConfigType.STRING,
             description = "The username (role) you used to connect to your database",
             hint = "postgres",
             required = true,
         ),
         Config(
-            name = "Password",
+            name = PostgreSQLFields.PASSWORD,
             type = ConfigType.STRING,
             description = "",
             hint = "",

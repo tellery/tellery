@@ -8,30 +8,30 @@ import io.tellery.grpc.*
 
 class DbtService : DbtCoroutineGrpc.DbtImplBase() {
 
-    override suspend fun createRepo(request: CreateRepoRequest): CreateRepoResponse {
-        return withErrorWrapper(request) {
-            assert(!Strings.isNullOrEmpty(it.profileName)) { "Profile name cannot be null or empty." }
+    override suspend fun generateKeyPair(request: GenerateKeyPairRequest): GenerateKeyPairResponse {
+        return withErrorWrapper(request) { req ->
+            assert(!Strings.isNullOrEmpty(req.profile)) { "Profile name cannot be null or empty." }
 
-            val publicKey = DbtManager.createRepo(it.profileName)
-            CreateRepoResponse.newBuilder().setPublicKey(publicKey).build()
+            val publicKey = DbtManager.generateRepoKeyPair(req.profile)
+            GenerateKeyPairResponse.newBuilder().setPublicKey(publicKey).build()
         }
     }
 
     override suspend fun pullRepo(request: PullRepoRequest): Empty {
-        return withErrorWrapper(request) {
-            assert(!Strings.isNullOrEmpty(it.profileName)) { "Profile name cannot be null or empty." }
+        return withErrorWrapper(request) { req ->
+            assert(!Strings.isNullOrEmpty(req.profile)) { "Profile name cannot be null or empty." }
 
-            DbtManager.pullRepo(it.profileName)
+            DbtManager.pullRepo(req.profile)
             Empty.getDefaultInstance()
         }
     }
 
     override suspend fun pushRepo(request: PushRepoRequest): Empty {
-        return withErrorWrapper(request) {
-            assert(!Strings.isNullOrEmpty(it.profileName)) { "Profile name cannot be null or empty." }
-            assert(it.blocksMap != null) { "Block map cannot be null." }
+        return withErrorWrapper(request) { req ->
+            assert(!Strings.isNullOrEmpty(req.profile)) { "Profile name cannot be null or empty." }
+            assert(req.blocksList != null) { " Blocks cannot be null" }
 
-            DbtManager.pushRepo(it.profileName, it.blocksMap)
+            DbtManager.pushRepo(req.profile, req.blocksList)
             Empty.getDefaultInstance()
         }
     }
@@ -44,10 +44,10 @@ class DbtService : DbtCoroutineGrpc.DbtImplBase() {
     }
 
     override suspend fun listDbtBlocks(request: ListDbtBlocksRequest): ListDbtBlocksResponse {
-        return withErrorWrapper(request) {
-            assert(!Strings.isNullOrEmpty(it.profileName)) { "Profile name cannot be null or empty." }
+        return withErrorWrapper(request) { req ->
+            assert(!Strings.isNullOrEmpty(req.profile)) { "Profile name cannot be null or empty." }
 
-            val blocks = DbtManager.listBlocks(request.profileName)
+            val blocks = DbtManager.listBlocks(request.profile)
             ListDbtBlocksResponse.newBuilder().addAllBlocks(blocks).build()
         }
     }

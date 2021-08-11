@@ -3,7 +3,7 @@ package io.tellery.common.dbt
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.JSchException
 import com.jcraft.jsch.Session
-import io.tellery.utils.logger
+import mu.KotlinLogging
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.ProgressMonitor
 import org.eclipse.jgit.merge.ContentMergeStrategy
@@ -18,6 +18,7 @@ import java.util.*
 object GitUtils {
 
     private val dateFormat: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss")
+    private val logger = KotlinLogging.logger { }
 
     fun cloneRemoteRepo(repo: DbtRepository) {
         Git.cloneRepository()
@@ -96,11 +97,11 @@ object GitUtils {
 
     private class SimpleProgressMonitor : ProgressMonitor {
         override fun start(totalTasks: Int) {
-            logger.info { "Starting work on $totalTasks tasks." }
+            logger.debug { "Starting work on $totalTasks tasks." }
         }
 
         override fun beginTask(title: String?, totalWork: Int) {
-            logger.info { "Start $title: $totalWork" }
+            logger.debug { "Start $title: $totalWork" }
         }
 
         override fun update(completed: Int) {}

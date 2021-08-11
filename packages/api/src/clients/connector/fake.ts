@@ -1,6 +1,7 @@
 /* eslint class-methods-use-this: 0 */
 import { Readable } from 'stream'
 import { Profile, TypeField, Database, Collection, AvailableConfig } from '../../types/connector'
+import { DbtMetadata, ExportedBlockMetadata } from '../../types/dbt'
 import { IConnectorManager } from './interface'
 
 /**
@@ -59,5 +60,21 @@ export class FakeManager implements IConnectorManager {
       database: '',
       collection: '',
     }
+  }
+
+  async generateKeyPair(_profile: string): Promise<string> {
+    return 'fakePublicKey'
+  }
+
+  async pullRepo(_profile: string): Promise<void> {
+    return
+  }
+
+  async pushRepo(_profile: string, _blocks: ExportedBlockMetadata[]): Promise<void> {
+    return
+  }
+
+  async listDbtBlocks(_profile: string): Promise<DbtMetadata[]> {
+    return []
   }
 }

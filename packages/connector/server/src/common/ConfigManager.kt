@@ -24,15 +24,17 @@ object ConfigManager {
         val appConfig = ConfigFactory.load()
         globalConfigDir = Path(appConfig.getString("configDirPath"))
         // Init config dir
-        if (globalConfigDir.notExists()){
+        if (globalConfigDir.notExists()) {
             globalConfigDir.createDirectory()
         }
-        if (!globalConfigDir.isDirectory()){
+        if (!globalConfigDir.isDirectory()) {
             throw DBConfigDirOccupiedException(globalConfigDir.name)
         }
 
         dbConfig =
-            globalConfigDir.resolve(appConfig.getString("dbProfile.path") ?: throw DBProfileNotConfiguredException()).toFile()
+            globalConfigDir.resolve(
+                appConfig.getString("dbProfile.path") ?: throw DBProfileNotConfiguredException()
+            ).toFile()
         config = loadConfig()
     }
 
@@ -64,6 +66,7 @@ object ConfigManager {
             dbConfig.writeText(newConfigContent)
             lock.release()
         }
+        runBlocking { reloadProfiles() }
         fchannel.close()
     }
 
