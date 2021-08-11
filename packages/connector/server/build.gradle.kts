@@ -137,7 +137,7 @@ tasks.test {
 
 jib {
     from {
-        image = "adoptopenjdk/openjdk8:alpine"
+        image = "tellery/jdk8-dbt:0.20.0"
     }
     container {
         appRoot = "/usr/app"
