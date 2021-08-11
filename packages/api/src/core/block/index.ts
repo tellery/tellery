@@ -172,6 +172,7 @@ export abstract class Block extends Entity {
       content: this.content,
       format: this.format,
       children: this.children,
+      resources: this.resources,
       permissions: this.permissions ?? defaultPermissions,
       createdAt: strOrDate2number(this.createdAt) || 0,
       updatedAt: strOrDate2number(this.updatedAt) || 0,
