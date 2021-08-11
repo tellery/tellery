@@ -213,6 +213,16 @@ test('update dbt blocks', async (t) => {
     .map((b) => _.get(b, 'content.name'))
     .value()
   t.is(newBlocks.length, 3)
+  t.deepEqual(
+    _.get(
+      newBlocks.find((b) => _.get(b, 'content.name') === 'event'),
+      'content',
+    ),
+    {
+      ...metadataSourceEvent,
+      title: [[metadataSourceEvent.name]],
+    },
+  )
   t.false(newBlockNames.includes('order'))
   t.truthy(newBlockNames.includes('dau'))
   t.truthy(
