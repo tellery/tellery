@@ -1,7 +1,7 @@
 import { DEFAULT_QUESTION_BLOCK_ASPECT_RATIO, DEFAULT_QUESTION_BLOCK_WIDTH } from '@app/components/editor/utils'
-import { cloneDeep } from 'lodash'
-import { nanoid } from 'nanoid'
 import { Editor } from '@app/types'
+import { blockIdGenerator } from '@app/utils'
+import { cloneDeep } from 'lodash'
 
 export const useCreateEmptyBlock = () => {
   return <T extends Editor.BaseBlock = Editor.BaseBlock>(args: Partial<T>) => {
@@ -13,7 +13,7 @@ export const useCreateEmptyBlock = () => {
 }
 
 export const createEmptyBlock = <T extends Editor.BaseBlock = Editor.BaseBlock>(args: Partial<T>) => {
-  const id = args?.id ?? nanoid()
+  const id = args?.id ?? blockIdGenerator()
   const now = new Date().valueOf()
   const commonParts = {
     id,

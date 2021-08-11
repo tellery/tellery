@@ -1,14 +1,14 @@
-import { applyTransactionsAsync, Operation, Transcation } from '@app/hooks/useCommit'
 import { fetchBlock, fetchSnapshot, fetchUser } from '@app/api'
-import debug from 'debug'
-import invariant from 'tiny-invariant'
-import { cloneDeep } from 'lodash'
-import { nanoid } from 'nanoid'
-import { atomFamily, DefaultValue, selectorFamily, useRecoilCallback } from 'recoil'
-import type { Editor, Snapshot } from '@app/types'
-import { subscribeBlockUpdate } from '@app/utils/remoteStoreObserver'
-import { WorkspaceIdAtom } from '../hooks/useWorkspaceIdAtom'
 import type { Data } from '@app/components/v11n/types'
+import { applyTransactionsAsync, Operation, Transcation } from '@app/hooks/useCommit'
+import type { Editor, Snapshot } from '@app/types'
+import { blockIdGenerator } from '@app/utils'
+import { subscribeBlockUpdate } from '@app/utils/remoteStoreObserver'
+import debug from 'debug'
+import { cloneDeep } from 'lodash'
+import { atomFamily, DefaultValue, selectorFamily, useRecoilCallback } from 'recoil'
+import invariant from 'tiny-invariant'
+import { WorkspaceIdAtom } from '../hooks/useWorkspaceIdAtom'
 
 export type BlockSnapshot = Map<string, Editor.BaseBlock>
 export const TelleryBlockMap: BlockSnapshot = new Map()
@@ -197,7 +197,7 @@ export const useCreateSnapshot = () => {
         const transactions: Transcation[] = [
           {
             workspaceId,
-            id: nanoid(),
+            id: blockIdGenerator(),
             operations: [
               {
                 cmd: 'set',

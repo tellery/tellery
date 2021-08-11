@@ -1,8 +1,3 @@
-import { useWorkspace } from '@app/hooks/useWorkspace'
-import { useCommit } from '@app/hooks/useCommit'
-import { css } from '@emotion/css'
-import styled from '@emotion/styled'
-import Tippy from '@tippyjs/react'
 import { getStoriesByTitle } from '@app/api'
 import {
   IconCommonArrowDropDown,
@@ -34,27 +29,30 @@ import {
   mergeTokens,
   removeMark,
   splitToken,
-  tokenPosition2SplitedTokenPosition,
-  tokensToText
+  tokenPosition2SplitedTokenPosition
 } from '@app/components/editor/helpers/tokenManipulation'
-
 import { createTranscation } from '@app/context/editorTranscations'
-import { AnimatePresence, motion } from 'framer-motion'
 import { useBlockSuspense } from '@app/hooks/api'
-import invariant from 'tiny-invariant'
-import isHotkey from 'is-hotkey'
-import { nanoid } from 'nanoid'
-import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { usePopper } from 'react-popper'
+import { useCommit } from '@app/hooks/useCommit'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor, Story } from '@app/types'
+import { blockIdGenerator, TelleryGlyph } from '@app/utils'
+import { css } from '@emotion/css'
+import styled from '@emotion/styled'
+import Tippy from '@tippyjs/react'
+import { AnimatePresence, motion } from 'framer-motion'
+import isHotkey from 'is-hotkey'
+import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { usePopper } from 'react-popper'
+import invariant from 'tiny-invariant'
+import { isTextBlock } from '../Blocks/utils'
 import { EditorPopover } from '../EditorPopover'
 import { useEditor, useGetBlockTitleTextSnapshot } from '../hooks'
-import { isTextBlock } from '../Blocks/utils'
-import { TelleryGlyph } from '@app/utils'
-import type { StringIterator } from 'lodash'
 import { useStoryQustions } from '../hooks/useStoryQustions'
+import { useVariable } from '../hooks/useVariable'
+
 const MARK_TYPES = Object.values(Editor.InlineType)
 
 export const BlockTextOperationMenu = (props: { currentBlockId: string | null }) => {
@@ -262,7 +260,7 @@ export const BlockTextOperationMenuInner = ({
       let story = (await getStoriesByTitle({ title, workspaceId: workspace.id }))?.[0]
 
       if (!story) {
-        const id = nanoid()
+        const id = blockIdGenerator()
         // TODO: use create block factory
         story = {
           id: id,
@@ -343,7 +341,7 @@ export const BlockTextOperationMenuInner = ({
       let story = (await getStoriesByTitle({ title, workspaceId: workspace.id }))?.[0]
 
       if (!story) {
-        const id = nanoid()
+        const id = blockIdGenerator()
         // TODO: use create block factory
         story = {
           id: id,
@@ -540,7 +538,7 @@ export const BlockTextOperationMenuInner = ({
           icon={IconFontStory}
         />
         <VerticalDivider />
-        <InlineVariablePopover
+        <InlineFormulaPopover
           setInlineEditing={setInlineEditing}
           markHandler={markHandler}
           referenceRange={range}
@@ -951,20 +949,27 @@ const InlineEquationPopover = (props: {
   )
 }
 
-const InlineVariableInput: React.FC<{ storyId: string }> = ({ storyId }) => {
+const FormulaResultRenderer: React.FC<{ storyId: string; formula: string }> = ({ storyId, formula }) => {
+  const variableValue = useVariable(storyId, formula)
+  if (typeof variableValue === 'number') {
+    return <>{variableValue}</>
+  } else if (typeof variableValue === 'string') {
+    return <>{variableValue}</>
+  } else {
+    return <>{JSON.stringify(variableValue)}</>
+  }
+}
+
+const InlineFormulaInput: React.FC<{ storyId: string }> = ({ storyId }) => {
   const currentQuestions = useStoryQustions(storyId)
-  const editor = useEditor()
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
+  const [formula, setFormula] = useState('')
 
   useEffect(() => {
     inputRef.current?.focus()
   }, [])
 
   const getBlockTitle = useGetBlockTitleTextSnapshot()
-
-  const evaluator = useCallback((formula: string) => {}, [])
-
-  // const value =
 
   return (
     <>
@@ -992,6 +997,7 @@ const InlineVariableInput: React.FC<{ storyId: string }> = ({ storyId }) => {
             font-size: 14px;
             line-height: 17px;
             color: ${ThemingVariables.colors.text[1]};
+            width: 420px;
           `}
         >
           <textarea
@@ -1002,7 +1008,7 @@ const InlineVariableInput: React.FC<{ storyId: string }> = ({ storyId }) => {
               user-select: none;
               resize: none;
               min-height: 50px;
-              min-width: 420px;
+              width: 100%;
             `}
             onPaste={(e) => {
               e.stopPropagation()
@@ -1014,6 +1020,7 @@ const InlineVariableInput: React.FC<{ storyId: string }> = ({ storyId }) => {
             }}
             placeholder="Input an formula"
             onInput={(e) => {
+              setFormula(e.currentTarget.value)
               // setLink(e.currentTarget.value)
             }}
             // onKeyDown={(e) => {
@@ -1039,9 +1046,16 @@ const InlineVariableInput: React.FC<{ storyId: string }> = ({ storyId }) => {
             className={css`
               background-color: ${ThemingVariables.colors.primary[5]};
               padding: 10px;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+              width: 100%;
             `}
           >
             =
+            <React.Suspense fallback={<div></div>}>
+              <FormulaResultRenderer storyId={storyId} formula={formula} />
+            </React.Suspense>
           </div>
         </div>
         <div
@@ -1072,7 +1086,7 @@ const InlineVariableInput: React.FC<{ storyId: string }> = ({ storyId }) => {
               `}
               onClick={(e) => {
                 e.preventDefault()
-                document.execCommand('insertText', false, ` {{${question.id}}} `)
+                document.execCommand('insertText', false, `{{${question.id}}}[1,1]`)
               }}
             >
               {getBlockTitle(question)}
@@ -1084,7 +1098,7 @@ const InlineVariableInput: React.FC<{ storyId: string }> = ({ storyId }) => {
   )
 }
 
-const InlineVariablePopover = (props: {
+const InlineFormulaPopover = (props: {
   markHandler: (type: Editor.InlineType, links: string[], isFirstLink: boolean) => void
   setInlineEditing: (editing: boolean) => void
   referenceRange: Range | null
@@ -1102,7 +1116,7 @@ const InlineVariablePopover = (props: {
       <OperationButtonWithHoverContent
         active={false}
         icon={IconFontCode}
-        hoverContent="Inline variable"
+        hoverContent="Inline formula"
         type={Editor.InlineType.Variable}
         onClick={() => {
           setOpen(true)
@@ -1110,7 +1124,7 @@ const InlineVariablePopover = (props: {
         }}
       />
       <EditorPopover referenceElement={props.referenceRange} open={open} setOpen={setOpen} disableClickThrough>
-        <InlineVariableInput storyId={props.storyId} />
+        <InlineFormulaInput storyId={props.storyId} />
       </EditorPopover>
     </>
   )

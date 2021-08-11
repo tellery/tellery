@@ -25,17 +25,16 @@ import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdStat
 import { useSqlEditor } from '@app/hooks/useSqlEditor'
 import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { useWorkspace } from '@app/hooks/useWorkspace'
-import { applyCreateSnapshotOperation, useCreateSnapshot } from '@app/store/block'
+import { useCreateSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor, Story } from '@app/types'
-import { DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
+import { blockIdGenerator, DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import Tippy from '@tippyjs/react'
 import { dequal } from 'dequal'
 import { motion, useMotionValue, useTransform } from 'framer-motion'
 import { produce } from 'immer'
 import isHotkey from 'is-hotkey'
-import { nanoid } from 'nanoid'
 import React, { SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useIsMutating } from 'react-query'
 import { toast } from 'react-toastify'
@@ -665,7 +664,7 @@ export const StoryQuestionEditor: React.FC<{
     }
     setSQLError(null)
     setSqlSidePanel(false)
-    const snapshotId = nanoid()
+    const snapshotId = blockIdGenerator()
     // queryClient.setQueryData(['snapshot', snapshotId], { id: snapshotId, data, sql })
     if (isDraftSql) {
       // TODO: fix snap shot question id

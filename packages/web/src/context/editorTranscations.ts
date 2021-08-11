@@ -1,17 +1,17 @@
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import type { Operation, Transcation } from '@app/hooks/useCommit'
-import { dequal } from 'dequal'
-import invariant from 'tiny-invariant'
-import { cloneDeep } from 'lodash'
-import { nanoid } from 'nanoid'
-import { toast } from 'react-toastify'
 import { BlockSnapshot, getBlockFromSnapshot } from '@app/store/block'
 import { Editor } from '@app/types'
+import { blockIdGenerator } from '@app/utils'
+import { dequal } from 'dequal'
+import { cloneDeep } from 'lodash'
+import { toast } from 'react-toastify'
+import invariant from 'tiny-invariant'
 import { mergeTokens } from '../components/editor'
 
 export const createTranscation = ({ operations }: { operations: Operation[] }) => {
   return {
-    id: nanoid(),
+    id: blockIdGenerator(),
     operations
   }
 }
@@ -155,7 +155,7 @@ export const getDuplicatedBlocksFragment = (
 
   children.forEach((currentId) => {
     const currentBlock = data[currentId]
-    const newId = nanoid()
+    const newId = blockIdGenerator()
     const fragment = getDuplicatedBlocksFragment(currentBlock.children ?? [], data, storyId, newId)
     const newBlock = createEmptyBlock({
       type: currentBlock.type,

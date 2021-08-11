@@ -4,7 +4,11 @@ import { env } from '@app/env'
 import isUrl from 'is-url'
 import Papa from 'papaparse'
 import { QueryClient } from 'react-query'
+import { customAlphabet } from 'nanoid'
 export const DRAG_HANDLE_WIDTH = 4
+
+const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+export const blockIdGenerator = customAlphabet(alphabet, 21)
 
 export enum TELLERY_MIME_TYPES {
   BLOCKS = 'text/tellery-blocks-fragment-v1',

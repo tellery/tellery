@@ -7,7 +7,6 @@ import { useOpenStory } from '@app/hooks'
 import { useSearchBlocks } from '@app/hooks/api'
 import { useAtom } from 'jotai'
 import { compact } from 'lodash'
-import { nanoid } from 'nanoid'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { omniboxShowState } from '@app/store'
@@ -18,6 +17,7 @@ import { OmniBoxItem, ResultType } from './OmniBoxItem'
 import { SmallStory } from './SmallStory'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import { isQuestionLikeBlock } from './editor/Blocks/utils'
+import { blockIdGenerator } from '@app/utils'
 
 const PAGE_LIMIT = 51
 
@@ -42,7 +42,7 @@ export function OmniBox() {
   )
 
   const handleCreateNewSotry = useCallback(async () => {
-    const storyId = nanoid()
+    const storyId = blockIdGenerator()
     await blockTranscations.createNewStory({ id: storyId, title: keyword })
     return storyId
   }, [blockTranscations, keyword])

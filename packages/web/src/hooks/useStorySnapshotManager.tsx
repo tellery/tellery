@@ -4,8 +4,8 @@ import { createTranscation } from '@app/context/editorTranscations'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useCreateSnapshot } from '@app/store/block'
 import type { Editor, Story } from '@app/types'
+import { blockIdGenerator } from '@app/utils'
 import dayjs from 'dayjs'
-import { nanoid } from 'nanoid'
 import React, { useCallback, useContext, useEffect, useMemo } from 'react'
 import { useIsMutating, useQueryClient } from 'react-query'
 import invariant from 'tiny-invariant'
@@ -69,7 +69,7 @@ export const useRefreshSnapshot = () => {
             })
             return
           }
-          const snapshotId = nanoid()
+          const snapshotId = blockIdGenerator()
           await createSnapshot({
             snapshotId,
             questionId: originalBlockId,

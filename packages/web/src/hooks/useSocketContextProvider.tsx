@@ -1,15 +1,14 @@
 import { fetchBlock } from '@app/api'
-import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useRefetchMetrics, useUpdateBlocks } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
-import { WS_URI } from '@app/utils'
+import { useWorkspace } from '@app/hooks/useWorkspace'
+import { Editor } from '@app/types'
+import { blockIdGenerator, WS_URI } from '@app/utils'
 import debug from 'debug'
-import { nanoid } from 'nanoid'
-import { createContext, useEffect, useState, useContext } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import { useQueryClient } from 'react-query'
 import io, { Socket } from 'socket.io-client'
 import type { DefaultEventsMap } from 'socket.io-client/build/typed-events'
-import { Editor } from '@app/types'
 
 export const logger = debug('tellery:socket')
 
@@ -27,7 +26,7 @@ export const useSocketContextProvider = () => {
       transports: ['websocket'],
       query: {
         workspaceId: workspace.id,
-        sessionId: nanoid(),
+        sessionId: blockIdGenerator(),
         userId: user.id
       }
     })
