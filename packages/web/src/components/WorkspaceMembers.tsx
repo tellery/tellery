@@ -190,7 +190,8 @@ export function WorkspaceMembers(props: { onClose(): void }) {
             className={css`
               flex-shrink: 0;
             `}
-            disabled={members.length === 0 || handleInviteMembers.status === 'pending'}
+            disabled={members.length === 0}
+            loading={handleInviteMembers.status === 'pending'}
             onClick={handleInviteMembers.execute}
           >
             {workspace?.preferences.emailConfig ? 'Send invitations' : 'Copy invitation links'}

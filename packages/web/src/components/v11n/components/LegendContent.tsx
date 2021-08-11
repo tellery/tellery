@@ -1,12 +1,9 @@
-import { useTextWidth } from '@imagemarker/use-text-width'
 import { css } from '@emotion/css'
-import { useRef, MouseEvent } from 'react'
+import type { MouseEvent } from 'react'
 import type { Props, Payload } from '@tellery/recharts/types/component/DefaultLegendContent'
-import { useDimensions } from '@app/hooks/useDimensions'
-import { fontFamily } from '../constants'
 import { IconVisualizationCircle } from '@app/assets/icons'
 import { ThemingVariables } from '@app/styles'
-
+import PerfectScrollbar from 'react-perfect-scrollbar'
 import Tippy from '@tippyjs/react'
 
 const fontSize = 14
@@ -18,56 +15,53 @@ const iconMargin = 4
 const itemMargin = 10
 
 export function LegendContent(props: Props) {
-  const ref = useRef<HTMLUListElement>(null)
-  const textWidth = useTextWidth({
-    text: props.payload?.map((item) => item.value).join(''),
-    font: `${fontSize}px ${fontFamily}`
-  })
-  const { width: containerWidth } = useDimensions(ref, 0)
-  const additionalWidth = props.payload ? props.payload.length * (iconMargin + iconSize + itemMargin) : 0
-
   return (
-    <ul
-      ref={ref}
+    <PerfectScrollbar
+      options={{ suppressScrollY: true }}
       className={css`
-        padding: 0;
-        margin: 0;
-        margin-left: -${itemMargin}px;
-        line-height: ${fontSize}px;
-        height: ${fontSize + 3}px;
-        display: flex;
+        width: 100%;
         overflow-x: auto;
-        &::-webkit-scrollbar {
-          display: none;
-        }
       `}
-      style={{
-        textAlign: props.align,
-        verticalAlign: props.verticalAlign
-      }}
     >
-      {props.payload?.map((item, index) => (
-        <LegendItem
-          key={(item.id || '') + index}
-          value={item}
-          small={textWidth + additionalWidth > containerWidth}
-          onMouseEnter={() => {
-            props.onMouseEnter?.(item as unknown as MouseEvent)
-          }}
-          onMouseLeave={() => {
-            props.onMouseLeave?.(item as unknown as MouseEvent)
-          }}
-        />
-      ))}
-    </ul>
+      <ul
+        className={css`
+          padding: 0;
+          margin: 0;
+          margin-left: -${itemMargin}px;
+          line-height: ${fontSize}px;
+          height: ${fontSize + 4}px;
+          width: max-content;
+          &::-webkit-scrollbar {
+            display: none;
+          }
+        `}
+        style={{
+          textAlign: props.align,
+          verticalAlign: props.verticalAlign
+        }}
+      >
+        {props.payload?.map((item, index) => (
+          <LegendItem
+            key={(item.id || '') + index}
+            value={item}
+            onMouseEnter={() => {
+              props.onMouseEnter?.(item as unknown as MouseEvent)
+            }}
+            onMouseLeave={() => {
+              props.onMouseLeave?.(item as unknown as MouseEvent)
+            }}
+          />
+        ))}
+      </ul>
+    </PerfectScrollbar>
   )
 }
 
-function LegendItem(props: { value: Payload; small?: boolean; onMouseEnter(): void; onMouseLeave(): void }) {
+function LegendItem(props: { value: Payload; onMouseEnter(): void; onMouseLeave(): void }) {
   return (
     <li
       className={css`
-        display: inline-flex;
+        display: inline-block;
         margin-left: ${itemMargin}px;
         align-items: center;
         font-size: ${fontSize}px;
@@ -75,21 +69,31 @@ function LegendItem(props: { value: Payload; small?: boolean; onMouseEnter(): vo
         font-weight: 500;
         line-height: ${fontSize}px;
         white-space: nowrap;
+        max-width: 160px;
+        overflow: hidden;
+        text-overflow: ellipsis;
       `}
       key={props.value.id}
       onMouseEnter={props.onMouseEnter}
       onMouseLeave={props.onMouseLeave}
     >
-      <Tippy content={props.value.value} disabled={!props.small}>
-        <div
+      <Tippy content={props.value.value}>
+        <span
           className={css`
             margin-right: ${iconMargin}px;
           `}
         >
-          <IconVisualizationCircle color={props.value.color} width={iconSize} height={iconSize} />
-        </div>
+          <IconVisualizationCircle
+            color={props.value.color}
+            width={iconSize}
+            height={iconSize}
+            className={css`
+              vertical-align: top;
+            `}
+          />
+        </span>
       </Tippy>
-      {props.small ? null : props.value.value}
+      {props.value.value}
     </li>
   )
 }

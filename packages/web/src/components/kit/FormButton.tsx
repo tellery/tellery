@@ -1,17 +1,20 @@
 import { css, cx } from '@emotion/css'
 import type { ButtonHTMLAttributes } from 'react'
 import { ThemingVariables } from '@app/styles'
+import { CircularLoading } from '../CircularLoading'
 
 export function FormButton(
   props: ButtonHTMLAttributes<HTMLButtonElement> & {
     variant: 'primary' | 'secondary' | 'danger'
+    loading?: boolean
   }
 ) {
-  const { className, ...restProps } = props
+  const { className, children, disabled, loading, ...restProps } = props
 
   return (
     <button
       {...restProps}
+      disabled={loading || disabled}
       className={cx(
         css`
           outline: none;
@@ -52,6 +55,8 @@ export function FormButton(
         }[props.variant],
         className
       )}
-    />
+    >
+      {loading ? <CircularLoading size={30} color={ThemingVariables.colors.text[1]} /> : children}
+    </button>
   )
 }
