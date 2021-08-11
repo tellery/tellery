@@ -191,7 +191,7 @@ export abstract class DefaultOperation implements IOperation {
   }
 
   protected getStringArray(entity: IOperationEntity, path: string[]): string[] {
-    if (!_(entity).has(path)) {
+    if (_.isNil(_(entity).get(path))) {
       // force initialize entity
       _.set(entity, path, [])
     }
