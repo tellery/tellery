@@ -37,7 +37,7 @@ export class DbtService {
     operatorId: string,
     workspaceId: string,
     profile: string,
-  ) {
+  ): Promise<void> {
     await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
     const metadata = await connectorManager.pullRepo(profile)
     await this.updateDbtBlocksByMetadata(workspaceId, operatorId, metadata)
@@ -48,13 +48,13 @@ export class DbtService {
     operatorId: string,
     workspaceId: string,
     profile: string,
-  ) {
+  ): Promise<void> {
     await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
     const exportedQuestionBlocks = await this.loadAllDbtBlockDescendent(workspaceId)
     await connectorManager.pushRepo(profile, exportedQuestionBlocks)
   }
 
-  async listCurrentDbtBlocks(workspaceId: string) {
+  async listCurrentDbtBlocks(workspaceId: string): Promise<BlockEntity[]> {
     const models = await getRepository(BlockEntity).find({
       type: BlockType.DBT,
       workspaceId,
@@ -130,10 +130,10 @@ export class DbtService {
             if (!refBlock) {
               name = `tellery_transclusion.${blockId}`
             } else if (refBlock.getType() === BlockType.DBT) {
-                name = (refBlock as DbtBlock).getRef()
-              } else {
-                name = `{{ ref('${translatedDbtNames[refBlock.id]}') }}`
-              }
+              name = (refBlock as DbtBlock).getRef()
+            } else {
+              name = `{{ ref('${translatedDbtNames[refBlock.id]}') }}`
+            }
             return originalSql.substring(start, end) + name
           })
           .join('')
@@ -158,7 +158,7 @@ export class DbtService {
     workspaceId: string,
     operatorId: string,
     metadata: DbtMetadata[],
-  ) {
+  ): Promise<void> {
     const currentDbtBlocksByName = _.keyBy(
       await this.listCurrentDbtBlocks(workspaceId),
       (b) => _.get(b, 'content.name') as string,
@@ -205,11 +205,10 @@ export class DbtService {
         const oldMeta = _.get(block, 'content')
         if (_.isEqual(newMeta, oldMeta)) {
           return null
-        } 
-          _.set(block, 'content', newMeta)
-          _.set(block, 'lastEditedById', operatorId)
-          return block
-        
+        }
+        _.set(block, 'content', { ...newMeta, title: [[newMeta.name]] })
+        _.set(block, 'lastEditedById', operatorId)
+        return block
       })
       .compact()
       .value()
