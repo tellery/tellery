@@ -9,10 +9,9 @@ import "google/protobuf/empty.proto";
 
 service Dbt {
   rpc GenerateKeyPair (GenerateKeyPairRequest) returns (GenerateKeyPairResponse);
-  rpc PullRepo (PullRepoRequest) returns (google.protobuf.Empty);
+  rpc PullRepo (PullRepoRequest) returns (PullRepoResponse);
   rpc PushRepo (PushRepoRequest) returns (google.protobuf.Empty);
   rpc RefreshWorkspace (google.protobuf.Empty) returns (google.protobuf.Empty);
-  rpc ListDbtBlocks (ListDbtBlocksRequest) returns (ListDbtBlocksResponse);
 }
 
 message GenerateKeyPairRequest {
@@ -27,17 +26,13 @@ message PullRepoRequest {
   string profile = 1;
 }
 
+message PullRepoResponse {
+  repeated DbtBlock blocks = 1;
+}
+
 message PushRepoRequest {
   string profile = 1;
   repeated QuestionBlockContent blocks = 2;
-}
-
-message ListDbtBlocksRequest {
-  string profile = 1;
-}
-
-message ListDbtBlocksResponse {
-  repeated DbtBlock blocks = 1;
 }
 
 message DbtBlock {

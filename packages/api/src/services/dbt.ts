@@ -39,7 +39,8 @@ export class DbtService {
     profile: string,
   ) {
     await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
-    return connectorManager.pullRepo(profile)
+    const metadata = await connectorManager.pullRepo(profile)
+    await this.updateDbtBlocksByMetadata(workspaceId, operatorId, metadata)
   }
 
   async pushRepo(
@@ -53,23 +54,10 @@ export class DbtService {
     await connectorManager.pushRepo(profile, exportedQuestionBlocks)
   }
 
-  async updateDbtBlocks(
-    connectorManager: IConnectorManager,
-    operatorId: string,
-    workspaceId: string,
-    profile: string,
-  ) {
-    await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
-
-    const metadata = await connectorManager.listDbtBlocks(profile)
-    console.log('metadata: ', metadata)
-    await this.updateDbtBlocksByMetadata(workspaceId, operatorId, metadata)
-  }
-
   async listCurrentDbtBlocks(workspaceId: string) {
     const models = await getRepository(BlockEntity).find({
       type: BlockType.DBT,
-      workspaceId: workspaceId,
+      workspaceId,
       alive: true,
     })
     return _(models).value()
@@ -141,13 +129,11 @@ export class DbtService {
             let name: string
             if (!refBlock) {
               name = `tellery_transclusion.${blockId}`
-            } else {
-              if (refBlock.getType() === BlockType.DBT) {
+            } else if (refBlock.getType() === BlockType.DBT) {
                 name = (refBlock as DbtBlock).getRef()
               } else {
                 name = `{{ ref('${translatedDbtNames[refBlock.id]}') }}`
               }
-            }
             return originalSql.substring(start, end) + name
           })
           .join('')
@@ -219,11 +205,11 @@ export class DbtService {
         const oldMeta = _.get(block, 'content')
         if (_.isEqual(newMeta, oldMeta)) {
           return null
-        } else {
+        } 
           _.set(block, 'content', newMeta)
           _.set(block, 'lastEditedById', operatorId)
           return block
-        }
+        
       })
       .compact()
       .value()

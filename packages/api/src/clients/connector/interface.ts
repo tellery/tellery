@@ -98,11 +98,11 @@ export interface IConnectorManager {
   generateKeyPair(profile: string): Promise<string>
 
   /**
-   * pull dbt repo
+   * pull dbt repo and retrieve dbt metadata
    * @param profile profile name
-   * @returns public key
+   * @returns dbt metadata
    */
-  pullRepo(profile: string): Promise<void>
+  pullRepo(profile: string): Promise<DbtMetadata[]>
 
   /**
    * push blocks that are descendance of dbt blocks (as dbt models) into its repo
@@ -110,11 +110,4 @@ export interface IConnectorManager {
    * @param blocks blocks that are descendance of dbtBlocks
    */
   pushRepo(profile: string, blocks: ExportedBlockMetadata[]): Promise<void>
-
-  /**
-   * retrieve the metadata of dbt sources and models
-   * @param profile profile name
-   * @returns dbt metadata
-   */
-  listDbtBlocks(profile: string): Promise<DbtMetadata[]>
 }

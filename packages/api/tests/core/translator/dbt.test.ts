@@ -1,7 +1,6 @@
 import '../../../src/core/block/init'
 
 import test from 'ava'
-import _ from 'lodash'
 
 import { translate } from '../../../src/core/translator/dbt'
 import { BlockParentType } from '../../../src/types/block'

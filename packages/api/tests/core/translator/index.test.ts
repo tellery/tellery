@@ -11,7 +11,6 @@ import { CyclicTransclusionError } from '../../../src/error/error'
 import { BlockParentType, BlockType } from '../../../src/types/block'
 import { buildSqlFromGraph, sqlMacro, translate } from '../../../src/core/translator'
 import { DirectedGraph } from '../../../src/utils/directedgraph'
-import { Block, register } from '../../../src/core/block'
 
 test.before(async () => {
   await createDatabaseCon()

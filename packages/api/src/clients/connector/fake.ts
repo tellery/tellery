@@ -66,15 +66,11 @@ export class FakeManager implements IConnectorManager {
     return 'fakePublicKey'
   }
 
-  async pullRepo(_profile: string): Promise<void> {
-    return
+  async pullRepo(_profile: string): Promise<DbtMetadata[]> {
+    return []
   }
 
   async pushRepo(_profile: string, _blocks: ExportedBlockMetadata[]): Promise<void> {
-    return
-  }
-
-  async listDbtBlocks(_profile: string): Promise<DbtMetadata[]> {
-    return []
+    throw new Error('Method not implemented.')
   }
 }

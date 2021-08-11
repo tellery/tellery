@@ -1,5 +1,7 @@
 import test from 'ava'
 import { nanoid } from 'nanoid'
+import { getConnection, getRepository } from 'typeorm'
+import _ from 'lodash'
 import { register } from '../../src/core/block'
 import { createDatabaseCon } from '../../src/clients/db/orm'
 import { DbtBlock } from '../../src/core/block/dbt'
@@ -9,8 +11,6 @@ import BlockEntity from '../../src/entities/block'
 import { DbtService } from '../../src/services/dbt'
 import { BlockParentType, BlockType } from '../../src/types/block'
 import { DbtMetadata } from '../../src/types/dbt'
-import { getConnection, getRepository } from 'typeorm'
-import _ from 'lodash'
 import { set, uuid } from '../testutils'
 import { BlockOperation } from '../../src/core/block/operation'
 
@@ -28,7 +28,7 @@ function generateDbtBlock(metadata: DbtMetadata, workspaceId: string) {
   Object.assign(entity, {
     id,
     interKey: id,
-    workspaceId: workspaceId,
+    workspaceId,
     storyId: 'test',
     parentId: workspaceId,
     parentTable: BlockParentType.WORKSPACE,
@@ -55,7 +55,7 @@ function generateQuestionOp(title: string, sql: string): [string, any] {
       parentTable: BlockParentType.BLOCK,
       content: {
         title: [[title]],
-        sql: sql,
+        sql,
       },
       alive: true,
       createdById: uuid(),
@@ -63,7 +63,7 @@ function generateQuestionOp(title: string, sql: string): [string, any] {
   ]
 }
 
-const metadata_source_event: DbtMetadata = {
+const metadataSourceEvent: DbtMetadata = {
   name: 'event',
   description: 'just event table',
   relationName: 'test.event',
@@ -73,7 +73,7 @@ const metadata_source_event: DbtMetadata = {
   sourceTable: 'event',
 }
 
-const metadata_source_user: DbtMetadata = {
+const metadataSourceUser: DbtMetadata = {
   name: 'user',
   description: 'user table',
   relationName: 'test.user',
@@ -83,7 +83,7 @@ const metadata_source_user: DbtMetadata = {
   sourceTable: 'user',
 }
 
-const metadata_source_order: DbtMetadata = {
+const metadataSourceOrder: DbtMetadata = {
   name: 'order',
   description: 'order table',
   relationName: 'test.order',
@@ -93,7 +93,7 @@ const metadata_source_order: DbtMetadata = {
   sourceTable: 'order',
 }
 
-const metadata_model_dau: DbtMetadata = {
+const metadataModelDau: DbtMetadata = {
   name: 'dau',
   description: 'dau',
   relationName: '',
@@ -116,7 +116,7 @@ const metadata_model_dau: DbtMetadata = {
 test.serial('list current dbt blocks', async (t) => {
   // create blocks first
   const workspaceId = nanoid()
-  const entities = _([metadata_source_event, metadata_source_user, metadata_model_dau])
+  const entities = _([metadataSourceEvent, metadataSourceUser, metadataModelDau])
     .map((e) => generateDbtBlock(e, workspaceId))
     .value()
   await getRepository(BlockEntity).save(entities)
@@ -130,7 +130,7 @@ test.serial('list current dbt blocks', async (t) => {
 test('push exported metadata', async (t) => {
   // create blocks first
   const workspaceId = nanoid()
-  const entities = _([metadata_source_event, metadata_model_dau])
+  const entities = _([metadataSourceEvent, metadataModelDau])
     .map((e) => generateDbtBlock(e, workspaceId))
     .value()
   await getRepository(BlockEntity).save(entities)
@@ -192,7 +192,7 @@ test('push exported metadata', async (t) => {
 test('update dbt blocks', async (t) => {
   const workspaceId = nanoid()
   // create blocks first
-  const entities = _([metadata_source_user, metadata_source_event, metadata_source_order])
+  const entities = _([metadataSourceUser, metadataSourceEvent, metadataSourceOrder])
     .map((e) => generateDbtBlock(e, workspaceId))
     .value()
   await getRepository(BlockEntity).save(entities)
@@ -200,11 +200,11 @@ test('update dbt blocks', async (t) => {
   const newMetadata = [
     // delete source order
     // keep source event
-    metadata_source_event,
+    metadataSourceEvent,
     // modify metadata_source_user
-    { ...metadata_source_user, description: 'user table!!' },
+    { ...metadataSourceUser, description: 'user table!!' },
     // insert model dau
-    metadata_model_dau,
+    metadataModelDau,
   ]
 
   await dbtService.updateDbtBlocksByMetadata(workspaceId, 'test', newMetadata)

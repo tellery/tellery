@@ -13,16 +13,23 @@ class DbtService : DbtCoroutineGrpc.DbtImplBase() {
             assert(!Strings.isNullOrEmpty(req.profile)) { "Profile name cannot be null or empty." }
 
             val publicKey = DbtManager.generateRepoKeyPair(req.profile)
-            GenerateKeyPairResponse.newBuilder().setPublicKey(publicKey).build()
+
+            GenerateKeyPairResponse {
+                this.publicKey = publicKey
+            }
         }
     }
 
-    override suspend fun pullRepo(request: PullRepoRequest): Empty {
+    override suspend fun pullRepo(request: PullRepoRequest): PullRepoResponse {
         return withErrorWrapper(request) { req ->
             assert(!Strings.isNullOrEmpty(req.profile)) { "Profile name cannot be null or empty." }
 
             DbtManager.pullRepo(req.profile)
-            Empty.getDefaultInstance()
+            val blocks = DbtManager.listBlocks(req.profile)
+
+            PullRepoResponse {
+                addAllBlocks(blocks)
+            }
         }
     }
 
@@ -40,15 +47,6 @@ class DbtService : DbtCoroutineGrpc.DbtImplBase() {
         return withErrorWrapper(request) {
             DbtManager.initDbtWorkspace()
             Empty.getDefaultInstance()
-        }
-    }
-
-    override suspend fun listDbtBlocks(request: ListDbtBlocksRequest): ListDbtBlocksResponse {
-        return withErrorWrapper(request) { req ->
-            assert(!Strings.isNullOrEmpty(req.profile)) { "Profile name cannot be null or empty." }
-
-            val blocks = DbtManager.listBlocks(request.profile)
-            ListDbtBlocksResponse.newBuilder().addAllBlocks(blocks).build()
         }
     }
 }

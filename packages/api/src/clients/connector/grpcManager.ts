@@ -1,6 +1,7 @@
 import { Transform, TransformCallback } from 'stream'
 import { credentials, ChannelCredentials } from 'grpc'
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb'
+import _ from 'lodash'
 import { Profile, TypeField, Collection, Database, AvailableConfig } from '../../types/connector'
 import { AuthType, AuthData } from '../../types/auth'
 import {
@@ -24,13 +25,11 @@ import { DbtClient } from '../../protobufs/dbt_grpc_pb'
 import {
   GenerateKeyPairRequest,
   DbtBlock,
-  ListDbtBlocksRequest,
   PullRepoRequest,
   PushRepoRequest,
   QuestionBlockContent,
 } from '../../protobufs/dbt_pb'
 import { DbtMetadata, ExportedBlockMetadata } from '../../types/dbt'
-import _ from 'lodash'
 
 const grpcConnectorStorage = new Map<string, ConnectorManager>()
 
@@ -217,23 +216,9 @@ export class ConnectorManager implements IConnectorManager {
     return res.getPublickey()
   }
 
-  async pullRepo(profile: string): Promise<void> {
+  async pullRepo(profile: string): Promise<DbtMetadata[]> {
     const request = new PullRepoRequest().setProfile(profile)
-    await beautyCall(this.dbtClient.pullRepo, this.dbtClient, request)
-  }
-
-  async pushRepo(profile: string, blocks: ExportedBlockMetadata[]): Promise<void> {
-    const request = new PushRepoRequest()
-      .setProfile(profile)
-      .setBlocksList(
-        blocks.map(({ sql, name }) => new QuestionBlockContent().setSql(sql).setName(name)),
-      )
-    await beautyCall(this.dbtClient.pushRepo, this.dbtClient, request)
-  }
-
-  async listDbtBlocks(profile: string): Promise<DbtMetadata[]> {
-    const request = new ListDbtBlocksRequest().setProfile(profile)
-    const res = await beautyCall(this.dbtClient.listDbtBlocks, this.dbtClient, request)
+    const res = await beautyCall(this.dbtClient.pullRepo, this.dbtClient, request)
     return res.getBlocksList().map(
       (raw) =>
         // remove blank values
@@ -248,6 +233,15 @@ export class ConnectorManager implements IConnectorManager {
           sourceTable: raw.getSourcetable(),
         }) as DbtMetadata,
     )
+  }
+
+  async pushRepo(profile: string, blocks: ExportedBlockMetadata[]): Promise<void> {
+    const request = new PushRepoRequest()
+      .setProfile(profile)
+      .setBlocksList(
+        blocks.map(({ sql, name }) => new QuestionBlockContent().setSql(sql).setName(name)),
+      )
+    await beautyCall(this.dbtClient.pushRepo, this.dbtClient, request)
   }
 }
 

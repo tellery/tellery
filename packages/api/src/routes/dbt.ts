@@ -1,11 +1,11 @@
 import { plainToClass } from 'class-transformer'
 import { IsDefined } from 'class-validator'
 import { Context } from 'koa'
+import Router from 'koa-router'
 import { getIConnectorManagerFromDB } from '../clients/connector'
 import { validate } from '../utils/http'
 import { mustGetUser } from '../utils/user'
 import dbtService from '../services/dbt'
-import Router from 'koa-router'
 
 class GenerateKeyPairRequest {
   @IsDefined()
@@ -30,17 +30,6 @@ class PullRepoRequest {
 }
 
 class PushRepoRequest {
-  @IsDefined()
-  workspaceId!: string
-
-  @IsDefined()
-  connectorId!: string
-
-  @IsDefined()
-  profile!: string
-}
-
-class UpdateDbtBlocksRequest {
   @IsDefined()
   workspaceId!: string
 
@@ -83,21 +72,10 @@ async function pushRepo(ctx: Context) {
   ctx.body = {}
 }
 
-async function updateDbtBlocks(ctx: Context) {
-  const payload = plainToClass(UpdateDbtBlocksRequest, ctx.request.body)
-  await validate(ctx, payload)
-  const user = mustGetUser(ctx)
-  const { workspaceId, connectorId, profile } = payload
-  const manager = await getIConnectorManagerFromDB(connectorId)
-  await dbtService.updateDbtBlocks(manager, user.id, workspaceId, profile)
-  ctx.body = {}
-}
-
 const router = new Router()
 
 router.post('/generateKeyPair', generateKeyPair)
 router.post('/pullRepo', pullRepo)
 router.post('/pushRepo', pushRepo)
-router.post('/updateDbtBlocks', updateDbtBlocks)
 
 export default router
