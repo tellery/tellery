@@ -21,6 +21,12 @@ export function LegendContent(props: Props) {
       className={css`
         width: 100%;
         overflow-x: auto;
+        & .ps__rail-x {
+          height: 9px !important;
+        }
+        & .ps__thumb-x {
+          height: 5px !important;
+        }
       `}
     >
       <ul
@@ -31,9 +37,6 @@ export function LegendContent(props: Props) {
           line-height: ${fontSize}px;
           height: ${fontSize + 4}px;
           width: max-content;
-          &::-webkit-scrollbar {
-            display: none;
-          }
         `}
         style={{
           textAlign: props.align,
