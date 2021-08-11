@@ -101,6 +101,7 @@ object DbtManager {
             try {
                 cloneRemoteRepo(repo)
             } catch (ex: Exception) {
+                logger.error("Clone repository meeting some problem.", ex)
                 repo.gitRepoFolder.deleteOnExit()
             }
             updateTelleryModelConfig(repo)
