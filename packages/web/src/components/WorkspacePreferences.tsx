@@ -107,7 +107,8 @@ export function WorkspacePreferences(props: { onClose(): void }) {
           width: 100%;
           margin-top: 5px;
         `}
-        disabled={handleWorkspaceUpdate.status === 'pending' || disabled}
+        disabled={disabled}
+        loading={handleWorkspaceUpdate.status === 'pending'}
       >
         Update
       </FormButton>

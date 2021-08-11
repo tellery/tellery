@@ -45,7 +45,8 @@ export default function Confirm() {
                 margin-top: 5px;
                 width: 100%;
               `}
-              disabled={!code || handleUserConfirm.status === 'pending'}
+              disabled={!code}
+              loading={handleUserConfirm.status === 'pending'}
               onClick={() => {
                 if (code) {
                   handleUserConfirm.execute({ code })

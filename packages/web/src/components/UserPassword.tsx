@@ -133,7 +133,7 @@ export default function UserPassword(props: { onClose(): void }) {
           className={css`
             flex: 1;
           `}
-          disabled={handleUpdateUser.status === 'pending'}
+          loading={handleUpdateUser.status === 'pending'}
         >
           Update password
         </FormButton>
