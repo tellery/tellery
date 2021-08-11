@@ -1,20 +1,82 @@
-import { useBlockHovering } from '@app/hooks/useBlockHovering'
-import { css, cx } from '@emotion/css'
 import { MenuItem } from '@app/components/MenuItem'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import scrollIntoView from 'scroll-into-view-if-needed'
+import { useBlockHovering } from '@app/hooks/useBlockHovering'
 import { ThemingVariables } from '@app/styles'
 import { CodeBlockLang, CodeBlockLangDisplayName, Editor } from '@app/types'
+import { css, cx } from '@emotion/css'
+import 'highlight.js/styles/default.css'
+import { lowlight } from 'lowlight'
+import type { LowlightElementSpan, Text as LowLightText } from 'lowlight/lib/core'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import scrollIntoView from 'scroll-into-view-if-needed'
+import invariant from 'tiny-invariant'
+// import { mergeTokens, splitBlockTokens } from '..'
+import { BlockRenderer } from '../BlockBase/BlockRenderer'
 import { ContentEditable } from '../BlockBase/ContentEditable'
 import { EditorPopover } from '../EditorPopover'
-import { useEditor } from '../hooks'
+import { mergeTokens, splitTokenAndMarkIndex, tokensToText } from '../helpers'
+import { useEditor, useLocalSelection } from '../hooks'
 import { BlockComponent, registerBlock } from './utils'
+
+const getSplitedTokens = (node: LowLightText | LowlightElementSpan, classnames: string[]): Editor.Token[] => {
+  if (node.type === 'element') {
+    const currentClassnames = [...classnames, ...node.properties.className]
+    return node.children
+      .map((child) => getSplitedTokens(child, currentClassnames))
+      .reduce((a, c) => {
+        a.push(...c)
+        return a
+      }, [])
+  } else {
+    const splitedText = node.value.split('')
+    return splitedText.map((char) => [char, [[Editor.InlineType.LocalClassnames, ...classnames]]] as Editor.Token)
+  }
+}
+
+const getHighlightedTokens = (tokens: Editor.Token[], language: string) => {
+  const tokensText = tokensToText(tokens)
+  const root = lowlight.highlight(language, tokensText)
+
+  const highlightedSplitedTokens: Editor.Token[] = root.children
+    .map((child) => getSplitedTokens(child, []))
+    .reduce((a, c) => {
+      a.push(...c)
+      return a
+    }, [])
+  const splitedMarkedTokens = splitTokenAndMarkIndex(tokens)
+  console.log(splitedMarkedTokens, highlightedSplitedTokens)
+  invariant(
+    highlightedSplitedTokens.length === splitedMarkedTokens.length,
+    'highlightedSplitedTokens is not equal to splitedTokens'
+  )
+  const hilightedTokens: Editor.Token[] = []
+  for (let i = 0; i < splitedMarkedTokens.length; i++) {
+    const currentToken = splitedMarkedTokens[i]
+    const classnames = (highlightedSplitedTokens[i][1] as Editor.TokenType[])[0].slice(1) as string[]
+    hilightedTokens[i] = [
+      currentToken[0],
+      [...(currentToken[1] ?? []), [Editor.InlineType.LocalClassnames, ...classnames]]
+    ]
+  }
+  return mergeTokens(hilightedTokens)
+}
+
+const codeBlockRenderer = (language: string = 'SQL') => {
+  return (tokens: Editor.Token[], assestsMap: Record<string, Editor.BaseBlock>) => {
+    const highlightedMarkedTokens = getHighlightedTokens(tokens, language)
+    return BlockRenderer(highlightedMarkedTokens, assestsMap)
+  }
+}
 
 const CodeBlock: BlockComponent<
   React.FC<{
-    block: Editor.Block
+    block: Editor.CodeBlock
   }>
 > = ({ block }) => {
+  const localSelection = useLocalSelection(block.id)
+  const languageRender = useMemo(() => {
+    return codeBlockRenderer(block.content.lang)
+  }, [block.content.lang])
+
   return (
     <>
       <div
@@ -27,12 +89,31 @@ const CodeBlock: BlockComponent<
             background-color: ${ThemingVariables.colors.primary[5]};
             font-family: monospace;
             white-space: pre;
+            overflow: auto;
             position: relative;
           `
         )}
+        onKeyDown={(e) => {
+          if (!localSelection) return
+          if (e.key === 'Enter') {
+            document.execCommand('insertLineBreak')
+            e.preventDefault()
+            e.stopPropagation()
+          } else if (e.key === 'Tab') {
+            e.preventDefault()
+            e.stopPropagation()
+            if (e.shiftKey) return
+            // TODO: custom insert text will insert after linebreak
+            document.execCommand('insertText', false, '  ')
+            // const [tokens1, tokens2] = splitBlockTokens(block.content?.title || [], localSelection)
+            // editor?.setBlockValue?.(block.id, (block) => {
+            //   block!.content!.title = mergeTokens([...tokens1, ['  '], ...tokens2])
+            // })
+          }
+        }}
       >
         <CodeBlockOperation block={block as Editor.CodeBlock} />
-        <ContentEditable block={block} placeHolderStrategy="never"></ContentEditable>
+        <ContentEditable block={block} placeHolderStrategy="never" tokensRenderer={languageRender}></ContentEditable>
       </div>
     </>
   )

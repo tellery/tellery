@@ -25,9 +25,17 @@ export type Permissions = Permission[]
 export enum CodeBlockLang {
   TypeScipt = 'TypeScript',
   JavaScript = 'JavaScript',
-  SQL = 'SQL',
-  PGSQL = 'PostgreSQL',
-  SQLMore = 'SQLMore'
+  SQL = 'SQL'
+  // PGSQL = 'PostgreSQL',
+  // SQLMore = 'SQLMore'
+}
+
+export const CodeBlockLangDisplayName = {
+  [CodeBlockLang.TypeScipt]: 'TypeScript',
+  [CodeBlockLang.JavaScript]: 'JavaScript',
+  [CodeBlockLang.SQL]: 'SQL'
+  // [CodeBlockLang.PGSQL]: 'PostgreSQL'
+  // [CodeBlockLang.SQLMore]: 'SQL More'
 }
 
 export type Snapshot = {
@@ -41,14 +49,6 @@ export type Snapshot = {
   createdAt?: string
 }
 
-export const CodeBlockLangDisplayName = {
-  [CodeBlockLang.TypeScipt]: 'TypeScript',
-  [CodeBlockLang.JavaScript]: 'JavaScript',
-  [CodeBlockLang.SQL]: 'SQL',
-  [CodeBlockLang.PGSQL]: 'PostgreSQL',
-  [CodeBlockLang.SQLMore]: 'SQL More'
-}
-
 export namespace Editor {
   export enum InlineType {
     Link = 'a',
@@ -59,7 +59,11 @@ export namespace Editor {
     Preformatted = 'p',
     Hightlighted = 'h',
     Reference = 'r',
-    Code = 'c'
+    Code = 'c',
+
+    // Temp useage only
+    LocalClassnames = 'localClassnames',
+    LocalIndex = 'localIndex'
   }
   export enum BlockType {
     BulletList = 'bulleted_list',
@@ -110,7 +114,7 @@ export namespace Editor {
     BLOCK = 'block'
   }
 
-  export type TokenType = [InlineType, ...string[]]
+  export type TokenType = [InlineType, ...(string | number)[]]
 
   export type Token = [string, TokenType[]?]
 

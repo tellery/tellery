@@ -8,6 +8,7 @@ export class TextSearchIndexing1623219476808 implements MigrationInterface {
 
   private readonly regIndexName = 'searchable_text_trgm_idx'
 
+  // used to convert the string to binary to solve the problem of regular search for non-unicode characters
   private readonly textSendFunctionName = 'textsend_i'
 
   public async up(queryRunner: QueryRunner): Promise<void> {

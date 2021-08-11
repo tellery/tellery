@@ -1,7 +1,7 @@
 import test from 'ava'
 
 import { createDatabaseCon } from '../../../src/clients/db/orm'
-import metabase from '../../../src/thridParty/metabase'
+import metabase from '../../../src/thirdParty/metabase'
 import { createMetabaseSecret } from '../../testutils'
 
 test.before(async () => {

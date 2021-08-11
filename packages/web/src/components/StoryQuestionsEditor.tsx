@@ -4,8 +4,6 @@ import {
   IconCommonDownstream,
   IconCommonError,
   IconCommonMetrics,
-  IconCommonMore,
-  IconCommonQuestion,
   IconCommonRun,
   IconCommonSave,
   IconCommonSql,
@@ -49,7 +47,6 @@ import { CircularLoading } from './CircularLoading'
 import { BlockTitle, useGetBlockTitleTextSnapshot } from './editor'
 import type { SetBlock } from './editor/types'
 import IconButton from './kit/IconButton'
-import { MenuItem } from './MenuItem'
 import QuestionDownstreams from './QuestionDownstreams'
 import { charts } from './v11n/charts'
 import { Config, Type } from './v11n/types'
@@ -563,7 +560,6 @@ export const StoryQuestionEditor: React.FC<{
       setQuestionBlocksMap((blocksMap) => {
         const oldConfig = visualizationConfig
         const newConfig = typeof update === 'function' ? update(oldConfig ?? undefined) : update
-        console.log('old config', oldConfig, 'new config', newConfig)
         return {
           ...blocksMap,
           [id]: {
@@ -697,12 +693,27 @@ export const StoryQuestionEditor: React.FC<{
         workspaceId: workspace.id
       })
 
-      setBlock(block.id, (draftBlock) => {
-        draftBlock.content!.snapshotId = snapshotId
-      })
+      if (!readonly) {
+        setBlock(block.id, (draftBlock) => {
+          draftBlock.content!.snapshotId = snapshotId
+        })
+      }
     }
     setMode('VIS')
-  }, [block, sql, executeSQL, workspace, isDraftSql, setMode, setSnapshotId, originalBlock, setBlock])
+  }, [
+    block,
+    sql,
+    executeSQL,
+    workspace.id,
+    workspace.preferences.connectorId,
+    workspace.preferences.profile,
+    isDraftSql,
+    setMode,
+    setSnapshotId,
+    originalBlock,
+    readonly,
+    setBlock
+  ])
 
   const cancelExecuteSql = useCallback(() => {
     if (block?.id) {
@@ -722,7 +733,6 @@ export const StoryQuestionEditor: React.FC<{
         {
           hotkeys: ['mod+enter', 'ctrl+enter'],
           handler: (e) => {
-            console.log('mod + enter')
             e.preventDefault()
             e.stopPropagation()
             run()
@@ -894,64 +904,6 @@ export const StoryQuestionEditor: React.FC<{
             onClick={save}
             color={ThemingVariables.colors.primary[1]}
           />
-          <Tippy
-            content={
-              <div
-                className={cx(
-                  css`
-                    background: ${ThemingVariables.colors.gray[5]};
-                    box-shadow: ${ThemingVariables.boxShadows[0]};
-                    border-radius: 8px;
-                    padding: 8px;
-                    width: 260px;
-                    display: block;
-                    cursor: pointer;
-                  `
-                )}
-              >
-                <MenuItem
-                  icon={
-                    block.type === Editor.BlockType.Metric ? (
-                      <IconCommonQuestion color={ThemingVariables.colors.text[0]} />
-                    ) : (
-                      <IconCommonMetrics color={ThemingVariables.colors.text[0]} />
-                    )
-                  }
-                  title={`Convert to ${block.type === Editor.BlockType.Metric ? 'question' : 'metric'}`}
-                  onClick={() => {
-                    setBlock(block.id, (draftBlock) => {
-                      if (draftBlock.type === Editor.BlockType.Question) {
-                        draftBlock.type = Editor.BlockType.Metric
-                      } else if (draftBlock.type === Editor.BlockType.Metric) {
-                        draftBlock.type = Editor.BlockType.Question
-                      }
-                    })
-                  }}
-                />
-              </div>
-            }
-            placement="bottom"
-            hideOnClick={true}
-            theme="tellery"
-            animation="fade"
-            duration={150}
-            arrow={false}
-            interactive
-            trigger="click"
-            popperOptions={{
-              modifiers: [
-                {
-                  name: 'offset',
-                  enabled: true,
-                  options: {
-                    offset: [10, 20]
-                  }
-                }
-              ]
-            }}
-          >
-            <IconButton icon={IconCommonMore} color={ThemingVariables.colors.primary[1]} />
-          </Tippy>
         </div>
       </div>
       <div
@@ -987,45 +939,51 @@ export const StoryQuestionEditor: React.FC<{
             }
           `}
         >
-          <IconButton
-            icon={IconCommonSql}
-            className={css`
-              &::after {
-                display: ${mode === 'SQL' ? 'visible' : 'none'};
-              }
-            `}
-            color={mode === 'SQL' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
-            onClick={() => {
-              setMode('SQL')
-            }}
-          />
-          {snapshot?.data && (
+          <Tippy content="Edit SQL" arrow={false} placement="right" delay={300}>
             <IconButton
-              icon={IconVisualizationSetting}
+              icon={IconCommonSql}
               className={css`
                 &::after {
-                  display: ${mode === 'VIS' ? 'visible' : 'none'};
+                  display: ${mode === 'SQL' ? 'visible' : 'none'};
                 }
               `}
-              color={mode === 'VIS' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
+              color={mode === 'SQL' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
               onClick={() => {
-                setMode('VIS')
+                setMode('SQL')
               }}
             />
+          </Tippy>
+          {snapshot?.data && (
+            <Tippy content="Visualization options" arrow={false} placement="right" delay={300}>
+              <IconButton
+                icon={IconVisualizationSetting}
+                className={css`
+                  &::after {
+                    display: ${mode === 'VIS' ? 'visible' : 'none'};
+                  }
+                `}
+                color={mode === 'VIS' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
+                onClick={() => {
+                  setMode('VIS')
+                }}
+              />
+            </Tippy>
           )}
           {downstreams.length === 0 || (
-            <IconButton
-              icon={IconCommonDownstream}
-              className={css`
-                &::after {
-                  display: ${mode === 'DOWNSTREAM' ? 'visible' : 'none'};
-                }
-              `}
-              color={mode === 'DOWNSTREAM' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
-              onClick={() => {
-                setMode('DOWNSTREAM')
-              }}
-            />
+            <Tippy content="Downstreams" arrow={false} placement="right" delay={300}>
+              <IconButton
+                icon={IconCommonDownstream}
+                className={css`
+                  &::after {
+                    display: ${mode === 'DOWNSTREAM' ? 'visible' : 'none'};
+                  }
+                `}
+                color={mode === 'DOWNSTREAM' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
+                onClick={() => {
+                  setMode('DOWNSTREAM')
+                }}
+              />
+            </Tippy>
           )}
         </div>
         {mode === 'SQL' && (

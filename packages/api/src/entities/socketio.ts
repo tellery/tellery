@@ -13,5 +13,5 @@ export class SocketIOAttachments extends BaseEntity {
   createdAt!: Date
 
   @Column('bytea')
-  payload!: object
+  payload!: unknown
 }

@@ -107,14 +107,13 @@ async function mgetResources(ctx: Context) {
     })
     .value()
 
-  const fieldEditor = (val: any) => {
+  const fieldEditor = (val: any) =>
     // switch (val.resourceType) {
     //   // set pinned field
     //   case 'block':
     //     return { ...val, pinned: _(view?.pinnedList).includes(val.id) }
     // }
-    return val
-  }
+    val
 
   const map = _(await Promise.all(asyncFunctions))
     .flatMap()
@@ -183,7 +182,9 @@ async function referenceCompletion(ctx: Context) {
     searchResults: srs,
   }
 
+  // eslint-disable-next-line no-restricted-syntax
   for (const sr of srs) {
+    // eslint-disable-next-line no-restricted-syntax
     for (const rs of rss) {
       if (rs.highlights[sr]) {
         results.highlights[sr] = rs.highlights[sr]

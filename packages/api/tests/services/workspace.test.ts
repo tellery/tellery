@@ -4,7 +4,7 @@ import { nanoid } from 'nanoid'
 import { getRepository, In } from 'typeorm'
 
 import { createDatabaseCon } from '../../src/clients/db/orm'
-import { FakePermission, getIPermission } from '../../src/core/permission'
+import { FakePermission } from '../../src/core/permission'
 import { Workspace } from '../../src/core/workspace'
 import { UserEntity } from '../../src/entities/user'
 import { WorkspaceEntity } from '../../src/entities/workspace'

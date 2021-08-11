@@ -21,7 +21,7 @@ class Metabase {
   async generateToken(
     site: string,
     resource: { dashboard?: number; question?: number },
-    params: object = {},
+    params: unknown = {},
   ) {
     const payload = {
       resource,

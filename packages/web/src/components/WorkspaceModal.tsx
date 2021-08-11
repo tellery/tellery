@@ -6,11 +6,13 @@ import { ThemingVariables } from '@app/styles'
 import { css, cx } from '@emotion/css'
 import { motion } from 'framer-motion'
 import React, { useRef, useState } from 'react'
+import { WorkspaceIntegrations } from './WorkspaceIntegrations'
 
 enum Tabs {
   Preferences = 'Preferences',
   Members = 'Members',
-  Databases = 'Databases'
+  Databases = 'Databases',
+  Integrations = 'Integrations'
 }
 
 interface ModalProps {
@@ -122,6 +124,7 @@ export function WorkspaceModal(props: ModalProps) {
         {tab === Tabs.Preferences ? <WorkspacePreferences onClose={props.onClose} /> : null}
         {tab === Tabs.Members ? <WorkspaceMembers onClose={props.onClose} /> : null}
         {tab === Tabs.Databases ? <WorkspaceDatabases onClose={props.onClose} /> : null}
+        {tab === Tabs.Integrations ? <WorkspaceIntegrations /> : null}
       </div>
     </motion.div>
   )

@@ -45,7 +45,7 @@ export class FakeManager implements IConnectorManager {
     return new Readable()
   }
 
-  cancelQuery(_id: string) {
+  cancelQuery(_id: string): void {
     throw new Error('Method not implemented.')
   }
 

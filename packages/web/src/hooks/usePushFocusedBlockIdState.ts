@@ -7,16 +7,18 @@ export const usePushFocusedBlockIdState = () => {
   const storyId = useStoryPathParams()
 
   const scrollToBlock = useCallback(
-    (blockId: string, blockStoryId?: string, openMenu?: boolean) => {
+    (blockId: string, blockStoryId: string = '', openMenu: boolean = false, select: boolean = true) => {
       if (blockStoryId === storyId) {
         history.push(`#${blockId}`, {
           focusedBlockId: blockId,
-          openMenu: openMenu
+          openMenu: openMenu,
+          select: select
         })
       } else {
         history.push('#', {
           focusedBlockId: blockId,
-          openMenu: openMenu
+          openMenu: openMenu,
+          select: select
         })
       }
     },

@@ -10,27 +10,42 @@ import React, { useEffect, useMemo, useState } from 'react'
 export function StoryVisits(props: { storyId: string; className?: string }) {
   const { storyId } = props
   const { data: visits, refetch } = useStoryVisits(props.storyId)
-  const { data: usersMap } = useMgetUsers(visits?.map((visit) => visit.userId))
   const socket = useSocketInstance()
   const [activeIds, setActiveIds] = useState<string[]>([])
   const user = useLoggedUser()
+  const visitsIds = useMemo(() => {
+    return [user.id, ...(visits ?? [])?.map((visit) => visit.userId)]
+  }, [visits, user.id])
+  const { data: usersMap } = useMgetUsers(visitsIds)
 
   const sortedVisits = useMemo(() => {
     if (!visits) return undefined
     const userIndex = visits.findIndex((visit) => visit.userId === user.id)
-    if (userIndex !== -1) {
-      return [visits[userIndex], ...visits.slice(0, userIndex), ...visits.slice(userIndex + 1)]
-    } else {
-      return [
-        {
-          storyId: storyId,
-          userId: user.id,
-          lastVisitTimestamp: new Date().getTime()
-        },
-        ...visits
-      ]
-    }
-  }, [storyId, user.id, visits])
+    const currentUser =
+      userIndex !== -1
+        ? visits[userIndex]
+        : {
+            storyId: storyId,
+            userId: user.id,
+            lastVisitTimestamp: new Date().getTime()
+          }
+    const restVisits = userIndex === -1 ? visits : [...visits.slice(0, userIndex), ...visits.slice(userIndex + 1)]
+
+    return [
+      currentUser,
+      ...restVisits.sort((a, b) => {
+        const valueOfA = activeIds.includes(a.userId)
+        const valueOfB = activeIds.includes(b.userId)
+        if (valueOfA && valueOfB) {
+          return 0
+        } else if (valueOfA) {
+          return -1
+        } else {
+          return 1
+        }
+      })
+    ]
+  }, [activeIds, storyId, user.id, visits])
 
   useEffect(() => {
     if (!socket) return

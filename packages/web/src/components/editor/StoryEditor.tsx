@@ -4,7 +4,6 @@ import { useFetchStoryChunk } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { Operation, useCommit, useCommitHistory } from '@app/hooks/useCommit'
-import { usePermissions } from '@app/hooks/usePermissions'
 import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
 import { useSelectionArea } from '@app/hooks/useSelectionArea'
 import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
@@ -203,9 +202,21 @@ const _StoryEditor: React.FC<{
   const location = useLocation()
 
   useEffect(() => {
+    const focusTitle = (location.state as any)?.focusTitle
+    if (focusTitle) {
+      blockAdminValue.getBlockInstanceById(storyId).then(({ wrapperElement }) => {
+        setTimeout(() => {
+          setCaretToStart(wrapperElement.querySelector("[contenteditable='true']"))
+        }, 100)
+      })
+    }
+  }, [blockAdminValue, location, setSelectedBlocks, storyId])
+
+  useEffect(() => {
     if (!inited) return
     const blockId = location.hash.slice(1) || (location.state as any)?.focusedBlockId
     const openMenu = !!(location.state as any)?.openMenu
+    const select = !!(location.state as any)?.select
 
     if (!blockId) return
     // TODO: if block not belong to this story...
@@ -216,17 +227,13 @@ const _StoryEditor: React.FC<{
           behavior: 'smooth',
           block: 'center',
           inline: 'nearest',
-          boundary: rootBlock.type === Editor.BlockType.Story ? editorRef.current?.parentElement : undefined
+          boundary: editorRef.current?.parentElement
         })
-        // actions.forEach(({ el, top, left }) => {
-        //   el.scrollTop = top + 100
-        //   el.scrollLeft = left
-        // })
         if (openMenu) {
           blockRef.current.openMenu()
         }
       }, 100)
-      setSelectedBlocks([blockId as string])
+      select && setSelectedBlocks([blockId as string])
     })
   }, [blockAdminValue, inited, setSelectedBlocks, location.state, location.hash, rootBlock.type])
 
@@ -368,11 +375,11 @@ const _StoryEditor: React.FC<{
       return
     }
 
-    logger('lastinput', lastInputChar)
+    // logger('lastinput', lastInputChar)
     const splitedTokens = splitToken(currentBlock.content?.title ?? [])
     const transformData = getTransformedTypeAndPrefixLength(splitedTokens, 1, selectionState, lastInputChar)
     if (!transformData) return
-    logger('transform', transformData)
+    // logger('transform', transformData)
 
     const prefixLength = transformData ? (transformData[1] as number) : 0
     const newType = transformData ? (transformData[0] as Editor.BlockType) : null
@@ -1027,7 +1034,7 @@ const _StoryEditor: React.FC<{
         setHoverBlockId(null)
       } else {
         const rootBlock = findRootBlock(container)
-        const id = rootBlock?.dataset.blockId
+        const id = rootBlock?.dataset?.blockId
         const THERESHOLD = 20
         if (isSelectingRef.current && mouseDownEventRef.current) {
           if (
@@ -1418,10 +1425,7 @@ const _StoryEditor: React.FC<{
                         {rootBlock.children && (
                           <ContentBlocks blockIds={rootBlock.children} parentType={rootBlock.type} readonly={locked} />
                         )}
-                        <EditorEmptyStateEndPlaceHolder
-                          onClick={createFirstOrLastBlockHandler}
-                          height={rootBlock.type === Editor.BlockType.Story ? 272 : 72}
-                        />
+                        <EditorEmptyStateEndPlaceHolder onClick={createFirstOrLastBlockHandler} height={272} />
                         {!locked && <BlockTextOperationMenu currentBlockId={focusingBlockId} />}
                         {props.bottom && (
                           <div

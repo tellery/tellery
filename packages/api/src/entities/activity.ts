@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { Column, Entity, Index } from 'typeorm'
 import { ActivityCommandType, ActivityResourceType } from '../types/activity'
 

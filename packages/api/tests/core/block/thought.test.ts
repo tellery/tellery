@@ -14,8 +14,8 @@ test.before(async () => {
   await createDatabaseCon()
 })
 
-test('setThought', async (t) => {
-  return getConnection().transaction(async (manager) => {
+test('setThought', async (t) =>
+  getConnection().transaction(async (manager) => {
     const uid = uuid()
     const op = new BlockOperation(uid, 'test', manager)
     const id = nanoid()
@@ -54,11 +54,10 @@ test('setThought', async (t) => {
     t.deepEqual(thought2?.children, ['a'], 'thought2 content is incorrect')
 
     await manager.getRepository(BlockEntity).delete(id)
-  })
-})
+  }))
 
-test('set thoughts with duplicated datetime', async (t) => {
-  return getConnection().transaction(async (manager) => {
+test('set thoughts with duplicated datetime', async (t) =>
+  getConnection().transaction(async (manager) => {
     const uid = uuid()
     const op = new BlockOperation(uid, 'test', manager)
     const id1 = nanoid()
@@ -101,11 +100,10 @@ test('set thoughts with duplicated datetime', async (t) => {
     } catch (err) {
       console.debug(err)
     }
-  })
-})
+  }))
 
-test('set thoughts with duplicated datetime by different users', async (t) => {
-  return getConnection().transaction(async (manager) => {
+test('set thoughts with duplicated datetime by different users', async (t) =>
+  getConnection().transaction(async (manager) => {
     const uid1 = uuid()
     const uid2 = uuid()
     const op1 = new BlockOperation(uid1, 'test', manager)
@@ -156,5 +154,4 @@ test('set thoughts with duplicated datetime by different users', async (t) => {
     t.deepEqual(thought2?.version, 1)
 
     await manager.getRepository(BlockEntity).delete([id1, id2])
-  })
-})
+  }))

@@ -74,32 +74,6 @@ export const ContentBlocks: React.FC<{
   )
 }
 
-export const StandaloneContentBlock: React.FC<{
-  block: Editor.BaseBlock
-  small?: boolean
-  parentType: Editor.BlockType
-  readonly?: boolean
-  draggable?: boolean
-  highlightedBlockId?: string
-}> = (props) => {
-  const { small = false, readonly = false, draggable = true, highlightedBlockId } = props
-
-  const behavior = useMemo(() => {
-    return {
-      small,
-      readonly,
-      draggable,
-      highlightedBlockId
-    }
-  }, [small, readonly, draggable, highlightedBlockId])
-
-  return (
-    <BlockBehaviorConext.Provider value={behavior}>
-      <ContentBlockInner block={props.block} parentType={props.parentType} />
-    </BlockBehaviorConext.Provider>
-  )
-}
-
 export const _ContentBlockPure: React.FC<{
   id: string
   parentType: Editor.BlockType
@@ -140,7 +114,33 @@ export const ContentBlockInner: React.FC<{
   }
 
   if (block.type === Editor.BlockType.Story) {
-    return <TitleBlock block={block} />
+    return (
+      <div
+        data-block-id={block.id}
+        ref={ref}
+        className={cx(
+          css`
+            position: relative;
+            font-size: 2em;
+            font-weight: bold;
+            box-sizing: border-box;
+            border: solid 1px transparent;
+            outline: none;
+            max-width: 100%;
+            width: 100%;
+            margin: 0 auto 20px auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            caret-color: rgb(55, 53, 47);
+            text-align: left;
+          `,
+          'tellery-block',
+          'no-select'
+        )}
+      >
+        <TitleBlock block={block} />
+      </div>
+    )
   }
 
   return (
@@ -247,9 +247,9 @@ const getBlockClassNames = (blockType: Editor.BlockType, isSelecteable: boolean)
       --line-height-em: 1.5em;
       --text-color: ${ThemingVariables.colors.text[0]};
     `,
+    'no-select',
     isSelecteable && 'block-selectble',
     'tellery-block',
-    'no-select',
     `tellery-${blockType}-block`,
     BLOCK_WRAPPER_CLASS.has(blockType) && BLOCK_WRAPPER_CLASS.get(blockType)
   ]

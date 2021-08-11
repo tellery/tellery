@@ -12,6 +12,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { SideBarContentLayout } from './SideBarContentLayout'
 import { Calendar } from './Calendar'
 import { FormButton } from './kit/FormButton'
+import { useLoggedUser } from '@app/hooks/useAuth'
 
 export const SideBarThoughtsSection = () => {
   const { data: thoughts, refetch: refetchThoughts } = useAllThoughts()
@@ -23,6 +24,7 @@ export const SideBarThoughtsSection = () => {
   const commit = useCommit()
   const openStory = useOpenStory()
   const [date, setDate] = useState(new Date())
+  const user = useLoggedUser()
   const createTodaysNotes = useCallback(async () => {
     const id = nanoid()
     await commit({
@@ -41,6 +43,7 @@ export const SideBarThoughtsSection = () => {
               parentTable: 'workspace',
               content: { date: today },
               children: [],
+              permissions: [{ role: 'manager', type: 'user', id: user.id }],
               type: 'thought',
               storyId: id,
               version: 0
@@ -51,7 +54,8 @@ export const SideBarThoughtsSection = () => {
     })
     openStory(id, {})
     refetchThoughts()
-  }, [commit, openStory, refetchThoughts, today, workspace.id])
+  }, [commit, openStory, refetchThoughts, today, user.id, workspace.id])
+
   const showCreateTodaysNotes = useMemo(() => {
     if (thoughts === undefined) return false
     if (thoughts.length >= 1 && thoughts[0].date === today) {

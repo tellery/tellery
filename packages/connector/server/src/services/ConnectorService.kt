@@ -18,7 +18,7 @@ import io.tellery.connectors.annotations.DbtFields
 import io.tellery.entities.*
 import io.tellery.grpc.*
 import io.tellery.types.SQLType
-import io.tellery.utils.DateAsTimestampSerializer
+import io.tellery.utils.TimestampSerializer
 import io.tellery.utils.toDisplayType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -27,6 +27,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.consumeEach
 import java.nio.charset.StandardCharsets.UTF_8
+import java.sql.Time
 import java.sql.Date
 import java.sql.Timestamp
 import kotlin.coroutines.CoroutineContext
@@ -40,8 +41,9 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
 
     private val serializer = GsonBuilder()
         .serializeSpecialFloatingPointValues()
-        .registerTypeAdapter(Date::class.java, DateAsTimestampSerializer())
-        .registerTypeAdapter(Timestamp::class.java, DateAsTimestampSerializer())
+        .registerTypeAdapter(Time::class.java, TimestampSerializer())
+        .registerTypeAdapter(Date::class.java, TimestampSerializer())
+        .registerTypeAdapter(Timestamp::class.java, TimestampSerializer())
         .create()
 
     private val secretMask = "**TellerySecretField**"

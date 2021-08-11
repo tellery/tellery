@@ -1,13 +1,13 @@
+import { BlockSnapshot, getBlockFromSnapshot } from '@app/store/block'
+import { Editor } from '@app/types'
+import { DEFAULT_TITLE, TelleryGlyph, TELLERY_MIME_TYPES } from '@app/utils'
 import dayjs from 'dayjs'
 import { dequal } from 'dequal'
 import invariant from 'tiny-invariant'
-import { BlockSnapshot, getBlockFromSnapshot } from '@app/store/block'
-import { Editor } from '@app/types'
-import { DEFAULT_TITLE, TELLERY_MIME_TYPES } from '@app/utils'
-import { TellerySelection, TellerySelectionType } from './tellerySelection'
 import { isReferenceToken } from '../BlockBase/ContentEditable'
 import { isQuestionLikeBlock } from '../Blocks/utils'
-import { getSubsetOfBlocksSnapshot } from '../utils'
+import { getSubsetOfBlocksSnapshot, TOKEN_MAP } from '../utils'
+import { TellerySelection, TellerySelectionType } from './tellerySelection'
 
 export const mergeTokens = (tokens: Editor.Token[]) => {
   return tokens.reduce((acc: Editor.Token[], current: Editor.Token) => {
@@ -201,6 +201,18 @@ export const splitToken = (title?: Editor.Token[]) => {
   )
 }
 
+export const splitTokenAndMarkIndex = (title?: Editor.Token[]) => {
+  return (
+    title?.reduce((acc: Editor.Token[], token, index) => {
+      const splitedToken = token[0]
+        .split('')
+        .map((text): Editor.Token => [text, [[Editor.InlineType.LocalIndex, index], ...(token[1] ?? [])]])
+      acc.push(...splitedToken)
+      return acc
+    }, []) || []
+  )
+}
+
 export const blockTitleToText = (block: Editor.BaseBlock, snapshot: BlockSnapshot): string => {
   if (isQuestionLikeBlock(block.type) || block.type === Editor.BlockType.Story) {
     if (!block.content?.title?.length) {
@@ -213,7 +225,7 @@ export const blockTitleToText = (block: Editor.BaseBlock, snapshot: BlockSnapsho
   return text
 }
 
-export const tokensToText = (tokens: Editor.Token[] = [], snapshot: BlockSnapshot): string => {
+export const tokensToText = (tokens: Editor.Token[] = [], snapshot?: BlockSnapshot): string => {
   return tokens
     .map((token) => {
       const { reference: referenceEntity } = extractEntitiesFromToken(token)
@@ -221,12 +233,15 @@ export const tokensToText = (tokens: Editor.Token[] = [], snapshot: BlockSnapsho
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const [_prefix, type, id] = referenceEntity
         if (type === 's') {
-          try {
-            const block = getBlockFromSnapshot(id, snapshot)
-            return blockTitleToText(block, snapshot)
-          } catch {
-            return `[[${id}]]`
+          if (snapshot) {
+            try {
+              const block = getBlockFromSnapshot(id as string, snapshot)
+              return blockTitleToText(block, snapshot)
+            } catch {
+              return TelleryGlyph.BI_LINK
+            }
           }
+          return TelleryGlyph.BI_LINK
         }
         return ''
       }
@@ -268,7 +283,6 @@ export const tokenPosition2SplitedTokenPosition = (
     if (tokenText) {
       splitedOffset += tokenText.length
     }
-    console.log('tokenPosition2SplitedTokenPosition', i, tokenText, splitedOffset)
   }
   splitedOffset += offset
   return splitedOffset
@@ -276,7 +290,6 @@ export const tokenPosition2SplitedTokenPosition = (
 
 export const splitedTokenPosition2TokenPosition = (tokens: Editor.Token[], offset: number) => {
   let splitedOffset = offset < 0 ? 0 : offset
-  console.log('tokens and offset', tokens, offset)
   for (let i = 0; i < tokens.length; i++) {
     const tokenText = tokens?.[i]?.[0]
 
@@ -351,17 +364,21 @@ export const marksArrayToMarksMap = (marks: Editor.TokenType[]) => {
     marks?.reduce((a, c) => {
       a[c[0]] = c.slice(1) || []
       return a
-    }, {} as { [key: string]: string[] }) || {}
+    }, {} as { [key: string]: (string | number)[] }) || {}
   return marksMap
 }
 
-export const marksMapToMarksArray = (map: { [key: string]: string[] }) => {
+export const marksMapToMarksArray = (map: { [key: string]: (string | number)[] }) => {
   const keys = Object.keys(map) as Editor.InlineType[]
   const marks: Editor.TokenType[] = keys.map((key) => [key, ...map[key]])
   return sortMarks(marks)
 }
 
-export const addMark = (marks: Editor.TokenType[] | undefined | null, mark: Editor.InlineType, args: string[]) => {
+export const addMark = (
+  marks: Editor.TokenType[] | undefined | null,
+  mark: Editor.InlineType,
+  args: (string | number)[]
+) => {
   const marksMap = marksArrayToMarksMap(marks || [])
   marksMap[mark] = args
   const uniqueMarks = marksMapToMarksArray(marksMap)
@@ -396,34 +413,40 @@ export const isNonSelectbleToken = (token: Editor.Token) => {
 }
 
 export const extractEntitiesFromToken = (token: Editor.Token) => {
-  const linkEntity = token[1]?.filter((mark) => mark[0] === Editor.InlineType.Link)[0]
-  const referenceEntity = token[1]?.filter((mark) => mark[0] === Editor.InlineType.Reference)[0]
-  return {
-    link: linkEntity,
-    reference: referenceEntity
+  const entities: Record<string, Editor.TokenType | undefined> = {
+    link: undefined,
+    reference: undefined,
+    classNames: undefined,
+    index: undefined
   }
+  const tokenTypes = token[1]
+  if (!tokenTypes) return entities
+  for (let i = 0; i < tokenTypes.length; i++) {
+    const tokenType = tokenTypes[i]
+    const mark = tokenType[0]
+    switch (mark) {
+      case Editor.InlineType.Link: {
+        entities.link = tokenType
+        break
+      }
+      case Editor.InlineType.Reference: {
+        entities.reference = tokenType
+        break
+      }
+      case Editor.InlineType.LocalClassnames: {
+        entities.classNames = tokenType
+        break
+      }
+      case Editor.InlineType.LocalIndex: {
+        entities.index = tokenType
+        break
+      }
+    }
+  }
+
+  return entities
 }
 
-const TOKEN_MAP: { [key: string]: { type: Editor.BlockType } } = {
-  '# ': { type: Editor.BlockType.Header },
-  '## ': { type: Editor.BlockType.SubHeader },
-  '### ': { type: Editor.BlockType.SubSubHeader },
-  '- ': { type: Editor.BlockType.BulletList },
-  '* ': { type: Editor.BlockType.BulletList },
-  '> ': { type: Editor.BlockType.Quote },
-  '》 ': { type: Editor.BlockType.Quote },
-  '---': { type: Editor.BlockType.Divider },
-  '[]': { type: Editor.BlockType.Todo },
-  '【】': { type: Editor.BlockType.Todo },
-  '```': { type: Editor.BlockType.Code },
-  '···': { type: Editor.BlockType.Code },
-  '>> ': { type: Editor.BlockType.Toggle },
-  '》》 ': { type: Editor.BlockType.Toggle },
-  '?? ': { type: Editor.BlockType.Question },
-  '？？ ': { type: Editor.BlockType.Question },
-  '1. ': { type: Editor.BlockType.NumberedList },
-  '1。': { type: Editor.BlockType.NumberedList }
-}
 export const getTransformedTypeAndPrefixLength = (
   tokens: Editor.Token[],
   changedLength: number,

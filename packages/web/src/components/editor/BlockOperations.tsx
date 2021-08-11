@@ -114,8 +114,6 @@ export const _BlockOperations: React.FC<{
   const blockHovring = useBlockHovering(blockId)
   const [isDragging, setIsDragging] = useState(false)
 
-  // console.log('block operations', blockHovring, isDragging)
-
   return (
     <>
       <BlockOperationPopover id={blockId} />

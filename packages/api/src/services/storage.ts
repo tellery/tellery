@@ -1,5 +1,4 @@
 import config from 'config'
-import * as _ from 'lodash'
 
 import { getIPermission, IPermission } from '../core/permission'
 import { getObjectStorageByName } from '../clients/objectStorage'

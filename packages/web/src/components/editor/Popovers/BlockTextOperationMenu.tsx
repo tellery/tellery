@@ -51,6 +51,7 @@ import { Editor, Story } from '@app/types'
 import { EditorPopover } from '../EditorPopover'
 import { useEditor, useGetBlockTitleTextSnapshot } from '../hooks'
 import { isTextBlock } from '../Blocks/utils'
+import { TelleryGlyph } from '@app/utils'
 const MARK_TYPES = Object.values(Editor.InlineType)
 
 export const BlockTextOperationMenu = (props: { currentBlockId: string | null }) => {
@@ -191,7 +192,7 @@ export const BlockTextOperationMenuInner = ({
             // clear other marks if is Reference mark
             if (mark === Editor.InlineType.Reference) {
               const uniqueMarks = addMark([], mark, args)
-              return [' ', uniqueMarks]
+              return [TelleryGlyph.BI_LINK, uniqueMarks]
             } else {
               const uniqueMarks = addMark(marks, mark, args)
               return [token[0], uniqueMarks]
@@ -240,7 +241,7 @@ export const BlockTextOperationMenuInner = ({
           const entity = extractEntitiesFromToken(token)
           const uniqueMarks = removeMark(marks, Editor.InlineType.Reference)
           invariant(entity.reference, 'reference is null')
-          const block = getBlockFromSnapshot(entity.reference[2], snapshot)
+          const block = getBlockFromSnapshot(entity.reference[2] as string, snapshot)
           const tokenText = entity.reference ? getBlockTitle(block) ?? ' ' : token[0]
           if (uniqueMarks) {
             return [tokenText, uniqueMarks]
@@ -294,7 +295,7 @@ export const BlockTextOperationMenuInner = ({
         const splitedTokens = splitToken(currentBlock?.content?.title || [])
         const transformedTokens = applyTransformOnSplitedTokens(splitedTokens, tokenRange, (): Editor.Token => {
           const uniqueMarks = addMark([], Editor.InlineType.Reference, ['s', storyId])
-          return [' ', uniqueMarks]
+          return [TelleryGlyph.BI_LINK, uniqueMarks]
         })
         const mergedTokens = mergeTokens([
           ...transformedTokens.slice(0, tokenRange.start + 1),

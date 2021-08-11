@@ -5,9 +5,11 @@ import { ThemingVariables } from '@app/styles'
 import { css, cx } from '@emotion/css'
 import { motion } from 'framer-motion'
 import { useRef, useState } from 'react'
+import UserPassword from './UserPassword'
 
 enum Tabs {
-  Account = 'Account'
+  Account = 'Account',
+  Password = 'Password'
 }
 
 export function UserModal(props: { onClose(): void }) {
@@ -113,6 +115,7 @@ export function UserModal(props: { onClose(): void }) {
           </ul>
         </div>
         {tab === Tabs.Account ? <UserAccount onClose={props.onClose} /> : null}
+        {tab === Tabs.Password ? <UserPassword onClose={props.onClose} /> : null}
       </div>
     </motion.div>
   )

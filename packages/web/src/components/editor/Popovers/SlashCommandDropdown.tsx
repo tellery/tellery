@@ -1,8 +1,6 @@
-import { useHover } from '@app/hooks'
-import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
-import { css, cx } from '@emotion/css'
 import {
   IconCommonLink,
+  IconCommonQuestion,
   IconMenuBulletedList,
   IconMenuCode,
   IconMenuDivider,
@@ -10,25 +8,27 @@ import {
   IconMenuH2,
   IconMenuH3,
   IconMenuNumberList,
-  IconCommonQuestion,
   IconMenuQuote,
   IconMenuToDo,
   IconMenuToggleList,
   IconMenuUpload
 } from '@app/assets/icons'
-import debug from 'debug'
+import { useHover } from '@app/hooks'
 import { useBlockSuspense } from '@app/hooks/api'
-import invariant from 'tiny-invariant'
-import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
-import scrollIntoView from 'scroll-into-view-if-needed'
+import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
+import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
+import { css, cx } from '@emotion/css'
+import debug from 'debug'
+import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import scrollIntoView from 'scroll-into-view-if-needed'
+import invariant from 'tiny-invariant'
 import { mergeTokens, splitToken, tokenPosition2SplitedTokenPosition } from '..'
+import { isQuestionLikeBlock } from '../Blocks/utils'
 import { EditorPopover } from '../EditorPopover'
 import { TellerySelection, tellerySelection2Native, TellerySelectionType } from '../helpers/tellerySelection'
 import { useEditableContextMenu, useEditor } from '../hooks'
-import { isQuestionLikeBlock } from '../Blocks/utils'
-import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
 
 const logger = debug('tellery:slashCommand')
 
@@ -145,8 +145,9 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
           focus: { blockId, offset: 0, nodeIndex: 0 }
         })
       }
-      focusBlockHandler(blockId, block.storyId, isQuestionLikeBlock(blockType))
-
+      if (isQuestionLikeBlock(blockType)) {
+        focusBlockHandler(blockId, block.storyId, true, false)
+      }
       setOpen(false)
     },
     [editor, focusBlockHandler, id, setOpen]
@@ -233,6 +234,11 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
         title: 'Line Divider',
         action: createOrToggleBlock(Editor.BlockType.Divider),
         icon: <IconMenuDivider color={ThemingVariables.colors.text[0]} />
+      },
+      {
+        title: 'Block Equation (Beta)',
+        action: createOrToggleBlock(Editor.BlockType.Equation),
+        icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
       }
     ].filter((item) => item.title.toLowerCase().indexOf(keyword.toLowerCase()) !== -1)
   }, [createOrToggleBlock, keyword])

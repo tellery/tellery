@@ -4,7 +4,7 @@ export function str2Date(str?: string): Date | undefined {
   return str && _(str).isString() ? new Date(str) : undefined
 }
 
-export function strOrDate2number(str ?: string | Date) : number | undefined {
+export function strOrDate2number(str?: string | Date): number | undefined {
   if (!str) {
     return
   }

@@ -6,6 +6,7 @@ import { NotificationOpt } from '../../clients/socket/interface'
 import { BroadCastArgs, BroadCastEvent, BroadCastValue } from '../../types/socket'
 import { getCacheManager } from '../../utils/cache'
 import { ISessionService, StorySessionService, WorkspaceSessionService } from './session'
+import { Emitter } from '../types'
 
 enum SocketEvent {
   NOTIFICATION = 'notification',
@@ -17,14 +18,14 @@ enum SocketEvent {
 export class NotificationService {
   nio: Namespace
 
-  workspaceSession: ISessionService
+  private workspaceSession: ISessionService
 
-  storySession: ISessionService
+  private storySession: ISessionService
 
-  constructor(s: Namespace) {
-    this.nio = s
-    this.workspaceSession = new WorkspaceSessionService(s)
-    this.storySession = new StorySessionService(s)
+  constructor(nio: Namespace, e: Emitter) {
+    this.workspaceSession = new WorkspaceSessionService(e)
+    this.storySession = new StorySessionService(e)
+    this.nio = nio
   }
 
   get cache() {

@@ -197,10 +197,12 @@ function stringCompare(t: ExecutionContext<any>, a: string, b: string) {
   const tags = [' ', '\n', '\t']
 
   const splitAndJoin = (str: string): string => {
+    let currStr = str
+    // eslint-disable-next-line no-restricted-syntax
     for (const tag of tags) {
-      str = str.split(tag).join(' ')
+      currStr = currStr.split(tag).join(' ')
     }
-    return _(str).split(' ').compact().join(' ')
+    return _(currStr).split(' ').compact().join(' ')
   }
   t.deepEqual(splitAndJoin(a), splitAndJoin(b))
 }

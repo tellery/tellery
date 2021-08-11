@@ -21,7 +21,14 @@ import { queryClient } from '@app/utils'
 import { emitBlockUpdate } from '@app/utils/remoteStoreObserver'
 import { compact } from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { QueryObserverResult, useInfiniteQuery, useMutation, useQuery, UseQueryOptions } from 'react-query'
+import {
+  QueryObserverResult,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  UseQueryOptions
+} from 'react-query'
 import { useRecoilCallback, useRecoilValue, useRecoilValueLoadable, waitForAll, waitForAny } from 'recoil'
 import invariant from 'tiny-invariant'
 import { blockUpdater, TelleryBlockAtom, TelleryUserAtom } from '../store/block'
@@ -61,7 +68,6 @@ export const useUpdateBlocks = () => {
 export const useFetchStoryChunk = <T extends Editor.BaseBlock = Story>(id: string, suspense: boolean = true): T => {
   const updateBlocks = useUpdateBlocks()
   const workspace = useWorkspace()
-  // console.log('fetch story chunk', id)
   useQuery<Record<string, Editor.Block>>(
     ['story', 'chunk', workspace, id],
     async () =>
@@ -71,13 +77,7 @@ export const useFetchStoryChunk = <T extends Editor.BaseBlock = Story>(id: strin
           storyId: id
         })
         .then(({ data: { blocks } }) => {
-          console.log('fetch story chunk', id)
-          console.log('useFetchStoryChunk update blocks')
-
           updateBlocks(blocks)
-          // Object.values(blocks).forEach((block) => {
-          //   emitBlockUpdate(block as Editor.BaseBlock)
-          // })
           return blocks
         }),
     { suspense: suspense }
@@ -162,7 +162,7 @@ export function useSearchBlocks<T extends Editor.BlockType>(
 ) {
   const workspace = useWorkspace()
   return useQuery<SearchBlockResult<T>>(
-    ['search', 'block', keyword, limit, type],
+    ['search', 'block', type, keyword, limit],
     async () =>
       searchBlocks(keyword, limit, workspace.id, type).then((results) => {
         const blocks = results.blocks as Record<string, Editor.Block>
@@ -181,6 +181,14 @@ export function useSearchMetrics(
   options?: UseQueryOptions<SearchBlockResult<Editor.BlockType.Metric>>
 ) {
   return useSearchBlocks(keyword, limit, Editor.BlockType.Metric, options)
+}
+
+export const useRefetchMetrics = () => {
+  const queryClient = useQueryClient()
+  const refetch = useCallback(() => {
+    queryClient.refetchQueries(['search', 'block', Editor.BlockType.Metric])
+  }, [queryClient])
+  return refetch
 }
 
 export const useListDatabases = () => {
@@ -273,7 +281,6 @@ export const useMgetEntities = (entities: { type: ResourceType; args: EntityRequ
     const resultMap = isSuccess
       ? queries.reduce(
           (acc, query) => {
-            console.log(query.data)
             if (query.data?.id) {
               acc[query.data.resourceType][query.data.id] = query.data
             }
@@ -367,7 +374,6 @@ export const useUser = (id: string | null): { data?: User; error?: { statusCode?
   const [state, setState] = useState({})
 
   useEffect(() => {
-    console.log(atom.contents, id, 'use user', atom.state)
     if (!id) {
       return
     }
@@ -658,6 +664,89 @@ export function useConnectorsUpsertProfile(connectorId: string) {
   )
   return useAsync(handleUpdateProfile)
 }
+
+/**
+ * dbt start
+ */
+
+export function useGenerateKeyPair(
+  connectorId: string,
+  profile?: ProfileConfig,
+  dbtProjectName?: string,
+  gitUrl?: string
+) {
+  const workspace = useWorkspace()
+  const handleGenerateKeyPair = useCallback(async () => {
+    if (!profile || !dbtProjectName || !gitUrl) {
+      return
+    }
+    await request.post('/api/connectors/upsertProfile', {
+      ...profile,
+      configs: { ...profile.configs, 'Dbt Project Name': dbtProjectName, 'Git Url': gitUrl },
+      workspaceId: workspace.id,
+      connectorId
+    })
+    await request.post('/api/connectors/dbt/generateKeyPair', {
+      profile: profile.name,
+      workspaceId: workspace.id,
+      connectorId
+    })
+  }, [connectorId, dbtProjectName, gitUrl, profile, workspace.id])
+  return useAsync(handleGenerateKeyPair)
+}
+
+export function useRevokeKeyPair(connectorId: string, profile?: ProfileConfig) {
+  const workspace = useWorkspace()
+  const handleRevokeKeyPair = useCallback(async () => {
+    if (!profile) {
+      return
+    }
+    delete profile.configs['Dbt Project Name']
+    delete profile.configs['Git Url']
+    delete profile.configs['Public Key']
+    await request.post('/api/connectors/upsertProfile', {
+      ...profile,
+      configs: profile.configs,
+      workspaceId: workspace.id,
+      connectorId
+    })
+  }, [connectorId, profile, workspace.id])
+  return useAsync(handleRevokeKeyPair)
+}
+
+export function usePushRepo(connectorId: string, profile?: string) {
+  const workspace = useWorkspace()
+  const handlePushRepo = useCallback(async () => {
+    if (!profile) {
+      return
+    }
+    await request.post('/api/connectors/dbt/pushRepo', {
+      profile,
+      workspaceId: workspace.id,
+      connectorId
+    })
+  }, [connectorId, profile, workspace.id])
+  return useAsync(handlePushRepo)
+}
+
+export function usePullRepo(connectorId: string, profile?: string) {
+  const workspace = useWorkspace()
+  const handlePullRepo = useCallback(async () => {
+    if (!profile) {
+      return
+    }
+    await request.post('/api/connectors/dbt/pullRepo', {
+      profile,
+      workspaceId: workspace.id,
+      connectorId
+    })
+  }, [connectorId, profile, workspace.id])
+  return useAsync(handlePullRepo)
+}
+
+/**
+ * dbt end
+ */
 
 export const useAllThoughts = () => {
   const workspace = useWorkspace()

@@ -6,7 +6,7 @@ import { TelleryBaseEntity } from './base'
 import { WorkspaceEntity } from './workspace'
 
 @Entity({ name: 'workspace_members' })
-@Index(['workspaceId', 'userId'], { unique: true })
+@Index(['userId', 'workspaceId'], { unique: true })
 export class WorkspaceMemberEntity extends TelleryBaseEntity {
   @Column()
   @Generated('uuid')
@@ -18,7 +18,6 @@ export class WorkspaceMemberEntity extends TelleryBaseEntity {
   workspace!: WorkspaceEntity
 
   @Column()
-  @Index()
   userId!: string
 
   @Column({ enum: PermissionWorkspaceRole })

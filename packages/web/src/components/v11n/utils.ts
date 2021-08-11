@@ -4,7 +4,12 @@ import { DisplayType } from './types'
 
 const numberFormat = Intl.NumberFormat([], { maximumFractionDigits: 17 })
 
+export function formatDateTime(time: number | string | Date): string {
+  return dayjs(time).format('YYYY-MM-DD HH:mm:ss')
+}
+
 export function formatTime(time: number | string | Date): string {
+  // return dayjs(time).format('HH:mm:ss') TODO: change in future
   return dayjs(time).format('YYYY-MM-DD HH:mm:ss')
 }
 
@@ -13,11 +18,14 @@ export function formatDate(time: number | string | Date): string {
 }
 
 export function formatRecord(value: unknown, type?: DisplayType, noNumberSplitter = false): string {
-  if (type === DisplayType.TIME) {
-    return formatTime(new Date(value as number))
+  if (type === DisplayType.DATETIME) {
+    return formatDateTime(new Date(value as number))
   }
   if (type === DisplayType.DATE) {
     return formatDate(new Date(value as number))
+  }
+  if (type === DisplayType.TIME) {
+    return formatTime(new Date(value as number))
   }
   if (isNumeric(type) && typeof value === 'number') {
     return noNumberSplitter ? value.toString() : numberFormat.format(value)
@@ -89,10 +97,21 @@ export function createTrend<T extends { [key: string]: number }>(data: T[], xKey
 export function isNumeric(displayType?: DisplayType) {
   return (
     displayType &&
-    [DisplayType.FLOAT, DisplayType.BIGINT, DisplayType.INT, DisplayType.TIME, DisplayType.DATE].includes(displayType)
+    [
+      DisplayType.FLOAT,
+      DisplayType.BIGINT,
+      DisplayType.INT,
+      DisplayType.DATETIME,
+      DisplayType.DATE,
+      DisplayType.TIME
+    ].includes(displayType)
   )
 }
 
 export function isContinuous(displayType?: DisplayType) {
-  return displayType === DisplayType.FLOAT || displayType === DisplayType.TIME
+  return displayType && [DisplayType.FLOAT, DisplayType.DATETIME, DisplayType.TIME].includes(displayType)
+}
+
+export function isTimeSeries(displayType?: DisplayType) {
+  return displayType && [DisplayType.DATETIME, DisplayType.DATE, DisplayType.TIME].includes(displayType)
 }

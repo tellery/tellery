@@ -1,6 +1,7 @@
 import _ from 'lodash'
-import { Namespace, Socket } from 'socket.io'
+import { Socket } from 'socket.io'
 import { getCacheManager } from '../../utils/cache'
+import { Emitter } from '../types'
 
 export interface ISessionService {
   enter(id: string, socket: Socket): Promise<void>
@@ -17,12 +18,12 @@ export interface ISessionService {
 }
 
 export class StorySessionService implements ISessionService {
-  private readonly nio: Namespace
+  private readonly emitter: Emitter
 
   private readonly onlineTTL = 3600
 
-  constructor(nio: Namespace) {
-    this.nio = nio
+  constructor(emitter: Emitter) {
+    this.emitter = emitter
   }
 
   get cache() {
@@ -33,7 +34,7 @@ export class StorySessionService implements ISessionService {
     await this.updateOnlineCache(storyId, (val) =>
       _([val, socket.id]).flatMap().compact().uniq().value(),
     )
-    socket.join(this.getRoomKey(storyId))
+    socket.join(this.getRoomKey(storyId))?.catch((err) => console.error(err))
   }
 
   async leave(storyId: string, socket: Socket): Promise<void> {
@@ -43,11 +44,11 @@ export class StorySessionService implements ISessionService {
         .value(),
     )
 
-    socket.leave(this.getRoomKey(storyId))
+    socket.leave(this.getRoomKey(storyId))?.catch((err) => console.error(err))
   }
 
-  async emit(storyId: string, event: string, val: any): Promise<boolean> {
-    return this.nio.to(this.getRoomKey(storyId)).emit(event, val)
+  async emit(storyId: string, event: string, val: unknown): Promise<boolean> {
+    return this.emitter.to(this.getRoomKey(storyId)).emit(event, val)
   }
 
   async getOnlineList(storyId: string): Promise<string[]> {
@@ -76,22 +77,22 @@ export class StorySessionService implements ISessionService {
 }
 
 export class WorkspaceSessionService implements ISessionService {
-  private readonly nio: Namespace
+  private readonly emitter: Emitter
 
-  constructor(nio: Namespace) {
-    this.nio = nio
+  constructor(emitter: Emitter) {
+    this.emitter = emitter
   }
 
   async enter(workspaceId: string, socket: Socket): Promise<void> {
-    socket.join(this.getRoomKey(workspaceId))
+    socket.join(this.getRoomKey(workspaceId))?.catch((err) => console.error(err))
   }
 
   async leave(workspaceId: string, socket: Socket): Promise<void> {
-    socket.leave(this.getRoomKey(workspaceId))
+    socket.leave(this.getRoomKey(workspaceId))?.catch((err) => console.error(err))
   }
 
-  async emit(workspaceId: string, event: string, val: any): Promise<boolean> {
-    return this.nio.to(this.getRoomKey(workspaceId)).emit(event, val)
+  async emit(workspaceId: string, event: string, val: unknown): Promise<boolean> {
+    return this.emitter.to(this.getRoomKey(workspaceId)).emit(event, val)
   }
 
   getOnlineList(): Promise<string[]> {

@@ -15,7 +15,6 @@ export enum FileType {
 
 const getFileType = (file: File) => {
   if (file.type === 'text/csv') {
-    console.log('file', file.type)
     return FileType.CSV
   } else if (
     file.type === 'application/vnd.ms-excel' ||

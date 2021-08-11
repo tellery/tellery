@@ -36,7 +36,7 @@ export const BlockContentOverview = (props: { block: Editor.Block }) => {
         `
       )}
     >
-      {block.content?.title && <ContentEditable block={block} key={block.id} readonly />}
+      {block.content?.title && <ContentEditable block={block} key={block.id} readonly disableTextAlign />}
     </div>
   )
 }

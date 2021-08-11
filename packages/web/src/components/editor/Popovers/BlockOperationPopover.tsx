@@ -60,7 +60,7 @@ export const BlockOperationPopover = (props: { id: string; children?: ReactNode 
   const [referenceElement, setReferenceElement] = useState<HTMLDivElement | null>(null)
   const editor = useEditor<Editor.Block>()
 
-  const close = useCallback(() => {
+  const closeHandler = useCallback(() => {
     setReferenceElement(null)
     setOpen(false)
   }, [setOpen])
@@ -70,9 +70,9 @@ export const BlockOperationPopover = (props: { id: string; children?: ReactNode 
       const blockElement = getBlockWrapElementById(props.id ?? null)
       blockElement && setReferenceElement(blockElement)
     } else {
-      close()
+      closeHandler()
     }
-  }, [props.id, setOpen, open, editor, close])
+  }, [props.id, setOpen, open, editor, closeHandler])
 
   return (
     <EditorPopover
@@ -95,13 +95,13 @@ export const BlockOperationPopover = (props: { id: string; children?: ReactNode 
           `
         )}
       >
-        {open && id && <BlockPopoverInner id={id} close={close} />}
+        {open && id && <BlockPopoverInner id={id} requestClose={closeHandler} />}
       </div>
     </EditorPopover>
   )
 }
 
-export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({ id, close }) => {
+export const BlockPopoverInner: React.FC<{ id: string; requestClose: () => void }> = ({ id, requestClose }) => {
   const block = useBlockSuspense(id)
   const { data: user } = useUser(block?.lastEditedById ?? null)
   const editor = useEditor<Editor.Block>()
@@ -138,7 +138,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
               }
             })
             toast('Link Copied')
-            close()
+            requestClose()
           }
         },
         {
@@ -150,7 +150,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
             const selection = editor?.getSelection()
             editor?.duplicateHandler(selection?.type === TellerySelectionType.Block ? selection.selectedBlocks : [id])
 
-            close()
+            requestClose()
           }
         }
       ],
@@ -161,7 +161,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
           action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault()
             e.stopPropagation()
-            close()
+            requestClose()
             invariant(editor, 'editor context is null')
             const newBlock = editor?.insertNewEmptyBlock(Editor.BlockType.Text, id, 'top')
             invariant(newBlock, 'block not created')
@@ -180,7 +180,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
           action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault()
             e.stopPropagation()
-            close()
+            requestClose()
 
             invariant(editor, 'editor context is null')
 
@@ -219,7 +219,7 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
           action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault()
             e.stopPropagation()
-            close()
+            requestClose()
 
             // TODO: a workaround to transition
             setTimeout(() => {
@@ -236,7 +236,6 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
       //     e.stopPropagation()
       //     close()
       //     copy(block?.id ?? '')
-      //     toast('Id Copied')
       //   }
       // },
       // {
@@ -247,11 +246,10 @@ export const BlockPopoverInner: React.FC<{ id: string; close: () => void }> = ({
       //     e.stopPropagation()
       //     close()
       //     copy(JSON.stringify(block ?? {}))
-      //     toast('Id Copied')
       //   }
       // }
     ]
-  }, [block, close, deleteBlockHandler, editor, id])
+  }, [block, deleteBlockHandler, editor, focusBlockHandler, id, requestClose])
 
   return (
     <>

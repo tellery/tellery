@@ -37,7 +37,6 @@ export const queryClient = new QueryClient({
   }
 })
 export function snapshotToCSV(snpshot: Data) {
-  console.log(snpshot.records, snpshot.fields)
   return new TextEncoder().encode(
     Papa.unparse({
       fields: snpshot.fields.map((field) => field.name),
@@ -50,6 +49,10 @@ export function snapshotToCSV(snpshot: Data) {
 
 export function getOwnerDocument(target: Event['target']) {
   return target instanceof HTMLElement ? target.ownerDocument : document
+}
+
+export enum TelleryGlyph {
+  BI_LINK = '\ue000'
 }
 
 export { isUrl }

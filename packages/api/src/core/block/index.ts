@@ -20,10 +20,10 @@ export type BlockConstructor = new (
   parentId: string,
   parentTable: BlockParentType,
   storyId: string,
-  content: Object,
+  content: Record<string, unknown>,
   alive: boolean,
   version: number,
-  format?: Object,
+  format?: Record<string, unknown>,
   children?: string[],
   createdById?: string,
   lastEditedById?: string,
@@ -33,7 +33,7 @@ export type BlockConstructor = new (
 
 const constructs: { [k: string]: BlockConstructor } = {}
 
-export function register(type: BlockType, c: BlockConstructor) {
+export function register(type: BlockType, c: BlockConstructor): void {
   constructs[type] = c
 }
 
@@ -60,9 +60,9 @@ export abstract class Block extends Entity {
 
   parentTable: BlockParentType
 
-  content: Object
+  content: Record<string, unknown>
 
-  format?: Object
+  format?: Record<string, unknown>
 
   children?: string[]
 
@@ -77,10 +77,10 @@ export abstract class Block extends Entity {
     parentId: string,
     parentTable: BlockParentType,
     storyId: string,
-    content: Object,
+    content: Record<string, unknown>,
     alive: boolean,
     version: number,
-    format?: Object,
+    format?: Record<string, unknown>,
     children?: string[],
     createdById?: string,
     lastEditedById?: string,
@@ -132,7 +132,7 @@ export abstract class Block extends Entity {
     return []
   }
 
-  getEntityType() {
+  getEntityType(): EntityType {
     return EntityType.BLOCK
   }
 
@@ -177,16 +177,16 @@ export abstract class Block extends Entity {
     }
   }
 
-  static fromEntity(block: BlockEntity) {
+  static fromEntity(block: BlockEntity): Block {
     const b = new (getBlockConstructor(block.type))(
       block.id,
       block.parentId,
       block.parentTable,
       block.storyId,
-      block.content,
+      block.content as Record<string, unknown>,
       block.alive,
       block.version,
-      block.format,
+      block.format as Record<string, unknown>,
       block.children,
       block.createdById,
       block.lastEditedById,
@@ -198,7 +198,7 @@ export abstract class Block extends Entity {
     return b
   }
 
-  static fromEntitySafely(block: BlockEntity) {
+  static fromEntitySafely(block: BlockEntity): Block | undefined {
     try {
       return Block.fromEntity(block)
     } catch (err) {
@@ -206,7 +206,7 @@ export abstract class Block extends Entity {
     }
   }
 
-  static fromBlock(block: Block, newType?: BlockType) {
+  static fromBlock(block: Block, newType?: BlockType): Block {
     return new (getBlockConstructor(newType || block.getType()))(
       block.id,
       block.parentId,
@@ -224,7 +224,7 @@ export abstract class Block extends Entity {
     )
   }
 
-  static fromArgs(args: any) {
+  static fromArgs(args: unknown): Block {
     return new (getBlockConstructor(_.get(args, 'type')))(
       _.get(args, 'id'),
       _.get(args, 'parentId'),
@@ -273,7 +273,7 @@ export abstract class Block extends Entity {
   /**
    * set the value in the content by path, e.g. path = ["a", "b", "c"] => this.content.set("a.b.c", args)
    */
-  setContentByPath(path: string[], args: any): void {
+  setContentByPath(path: string[], args: unknown): void {
     setByPath(this, path, args, (a) => {
       const newBlock = Block.fromArgs(a)
       Object.assign(this, newBlock)
@@ -317,7 +317,7 @@ export abstract class Block extends Entity {
    * if the `alive` field of a block were set to be false, all `alive` field of downstream blocks should also be set to false, and the alive status for links where source / target meet those blocks should also be updated
    * if the `alive` field of a block were set to be true (from false), all `alive` field of downstream blocks (here defined only by `children` field) should also be set to true, and the alive status for links where source / target meet those blocks should also be updated
    */
-  protected async syncBlocksAlive(manager: EntityManager, origin?: Block) {
+  protected async syncBlocksAlive(manager: EntityManager, origin?: Block): Promise<void> {
     // if `origin.children` does not exists, it is not a nested block
     if (!origin || !origin.children) {
       return
@@ -357,15 +357,15 @@ export abstract class Block extends Entity {
     return this.alive === target
   }
 
-  protected isBeingDeleted(origin: { alive: boolean }) {
+  protected isBeingDeleted(origin: { alive: boolean }): boolean {
     return origin.alive && this.isAliveEqual(false)
   }
 
-  protected isBeingReverted(origin: { alive: boolean }) {
+  protected isBeingReverted(origin: { alive: boolean }): boolean {
     return !origin.alive && this.isAliveEqual(true)
   }
 
-  protected isBeingCreated(origin?: Block) {
+  protected isBeingCreated(origin?: Block): boolean {
     return !origin
   }
 }
@@ -409,7 +409,7 @@ export async function cascadeUpdateBlocks<T extends TelleryBaseEntity>(
   rootBlockId: string,
   updateClause: UpdateQueryBuilder<T>,
   blockIdField: keyof T = 'id',
-) {
+): Promise<void> {
   const [updateSql, params] = updateClause
     .where(`${updateClause.alias}."${blockIdField}" in (SELECT id FROM result)`)
     .getQueryAndParameters()

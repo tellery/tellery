@@ -12,9 +12,9 @@ import { Editor, Story, Thought } from '@app/types'
 import { DEFAULT_TITLE } from '@app/utils'
 import { css } from '@emotion/css'
 import styled from '@emotion/styled'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { Helmet } from 'react-helmet'
-import { useLocation, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 
 const _Page: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -32,37 +32,62 @@ const _Page: React.FC = () => {
   return (
     <>
       <VerticalLayout>
-        <React.Suspense
-          fallback={
+        <div
+          className={css`
+            display: flex;
+            flex: 1;
+            align-items: stretch;
+            overflow: hidden;
+          `}
+        >
+          <div
+            className={css`
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              justify-content: stretch;
+              overflow: hidden;
+            `}
+          >
             <div
               className={css`
                 height: 44px;
-                background: ${ThemingVariables.colors.gray[5]};
-                box-shadow: 0px 1px 0px ${ThemingVariables.colors.gray[1]};
                 flex-shrink: 0;
+                position: relative;
               `}
-            ></div>
-          }
-        >
-          <StoryHeader storyId={id} />
-        </React.Suspense>
-        <Layout>
-          <div
-            className={css`
-              width: 240px;
-            `}
-          >
-            <React.Suspense fallback={<div></div>}>
-              <SideBarMetricsSection />
-            </React.Suspense>
+            >
+              <React.Suspense
+                fallback={
+                  <div
+                    className={css`
+                      background: ${ThemingVariables.colors.gray[5]};
+                      box-shadow: 0px 1px 0px ${ThemingVariables.colors.gray[1]};
+                    `}
+                  ></div>
+                }
+              >
+                <StoryHeader storyId={id} key={id} />
+              </React.Suspense>
+            </div>
+            <Layout>
+              <div
+                className={css`
+                  width: 240px;
+                `}
+              >
+                <React.Suspense fallback={<div></div>}>
+                  <SideBarMetricsSection />
+                </React.Suspense>
+              </div>
+              <StoryContainer>
+                <React.Suspense fallback={<BlockingUI blocking size={50} />}>
+                  <StoryContent storyId={id} />
+                </React.Suspense>
+              </StoryContainer>
+            </Layout>
           </div>
-          <StoryContainer>
-            <React.Suspense fallback={<BlockingUI blocking size={50} />}>
-              <StoryContent storyId={id} />
-            </React.Suspense>
-          </StoryContainer>
           <SecondaryEditor />
-        </Layout>
+        </div>
         <StoryQuestionsEditor />
       </VerticalLayout>
     </>
@@ -76,6 +101,7 @@ const StoryContent: React.FC<{ storyId: string }> = ({ storyId }) => {
     <>
       {storyBlock.type === Editor.BlockType.Story && (
         <StoryEditor
+          key={storyId}
           storyId={storyId}
           className={css`
             @media (max-width: 700px) {
@@ -89,6 +115,7 @@ const StoryContent: React.FC<{ storyId: string }> = ({ storyId }) => {
       {storyBlock.type === Editor.BlockType.Thought && (
         <>
           <StoryEditor
+            key={storyId}
             storyId={storyId}
             fullWidth
             className={css`
@@ -125,7 +152,8 @@ const StoryHeader: React.FC<{ storyId: string }> = ({ storyId }) => {
             padding: 0 25px;
             width: 100%;
             z-index: 1000;
-            height: 44px;
+            flex-shrink: 0;
+            height: 100%;
             background-color: #fff;
           `}
         >
@@ -146,10 +174,10 @@ const VerticalLayout = styled.div`
 `
 const Layout = styled.div`
   display: flex;
-  height: 100%;
   justify-content: flex-start;
   position: relative;
   overflow: hidden;
+  flex: 1;
 `
 
 const StoryContainer = styled.div`
@@ -159,7 +187,6 @@ const StoryContainer = styled.div`
   flex: 1;
   align-self: stretch;
   overflow: hidden;
-  height: 100%;
 `
 
 export default _Page

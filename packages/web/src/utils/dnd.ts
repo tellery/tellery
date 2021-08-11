@@ -9,6 +9,7 @@ export enum DnDItemTypes {
 export type DndItemDataBlockType = {
   type: DnDItemTypes.Block
   blockData: Editor.BaseBlock
+  originalBlockId: string
 }
 
 export type DndItemDataFileType = {

@@ -34,8 +34,31 @@ export type TelleryInlineSelection = {
 
 export type TellerySelection = (TelleryBlockSelection | TelleryInlineSelection) & { storyId: string }
 
+const getNodeContentOffset = (child: Node, node: Node) => {
+  let nodeOffset = 0
+  const visitor = (node: Node | null) => {
+    if (node && node.textContent) {
+      nodeOffset += node.textContent.length
+    }
+  }
+  const traverse = (node: Node | null, target: Node | null) => {
+    if (!node) return
+    if (node === target) return
+    let i = node.childNodes.length
+    while (i--) {
+      traverse(node.childNodes[i], target)
+    }
+    if (i === 0) {
+      visitor(node)
+    }
+  }
+  traverse(child, node)
+  return nodeOffset
+}
+
 const findNodePositionAndOffset = (node: Node, offset: number) => {
   let root: HTMLElement = node as HTMLElement
+
   while (true) {
     if (root && root.nodeType === Node.ELEMENT_NODE && (root as HTMLElement)?.dataset.root) {
       break
@@ -46,42 +69,35 @@ const findNodePositionAndOffset = (node: Node, offset: number) => {
       break
     }
   }
+
   const childIter = root.childNodes.values()
-  let i = 0
   if (node === root) {
     return [offset, 0]
   }
+  let i = -1
+  let tokenAccOffset = 0
   while (true) {
     const iterRes = childIter.next()
     if (iterRes.done) {
       break
     }
     const child = iterRes.value as HTMLElement
+
+    const tokenIndex = child.dataset?.tokenIndex ? parseInt(child.dataset?.tokenIndex) : i + 1
+    if (tokenIndex !== i) {
+      i = tokenIndex
+      tokenAccOffset = 0
+    }
+
     if (child === node) {
       return [i, offset]
     }
     if (child?.contains?.(node)) {
-      let accOffset = offset
-      const visitor = (node: Node | null) => {
-        if (node && node.textContent) {
-          accOffset += node.textContent.length
-        }
-      }
-      const traverse = (node: Node | null, target: Node | null) => {
-        if (!node) return
-        if (node === target) return
-        let i = node.childNodes.length
-        while (i--) {
-          traverse(node.childNodes[i], target)
-        }
-        if (i === 0) {
-          visitor(node)
-        }
-      }
-      traverse(child, node)
+      const accOffset = offset + tokenAccOffset + getNodeContentOffset(child, node)
       return [i, accOffset]
+    } else {
+      tokenAccOffset += child.textContent?.length ?? 0
     }
-    i++
   }
 
   if (offset === 0) {
@@ -119,31 +135,69 @@ export const nativeSelection2Tellery = (block: Editor.Block): TellerySelection |
   }
 }
 
-const findNodeAtIndex = (container: HTMLElement, index: number) => {
-  const tokenElement = container.childNodes.item(index)
-  if (!tokenElement) {
-    return container
+const findNodesAtIndex = (container: HTMLElement, index: number, offset: number) => {
+  const defaultResult = {
+    node: container,
+    offset: index
   }
-  const nodeStack = [tokenElement]
+
+  const tokenElements: HTMLElement[] = []
+  const childNodes = [...container.childNodes]
+  let currentIndex = -1
+  for (let i = 0; i < childNodes.length; i++) {
+    const currentNode = childNodes[i] as HTMLElement
+    const tokenIndex = currentNode.dataset?.tokenIndex ? parseInt(currentNode.dataset?.tokenIndex) : currentIndex + 1
+    if (tokenIndex === index) {
+      tokenElements.push(currentNode)
+    } else {
+      currentIndex = tokenIndex
+    }
+
+    if (currentIndex > index) break
+  }
+
+  if (tokenElements.length === 0) {
+    return defaultResult
+  }
+  const nodeStack = tokenElements
+  const resultNodes: HTMLElement[] = []
   let node
 
-  while ((node = nodeStack.pop())) {
+  while ((node = nodeStack.shift())) {
     if (node.nodeType === Node.ELEMENT_NODE) {
       if ((node as HTMLElement).getAttribute('contenteditable') === 'false') {
-        return null
+        return defaultResult
       }
     }
     if (node.nodeType === Node.TEXT_NODE) {
-      return node
+      resultNodes.push(node)
     } else {
       let i = node.childNodes.length
       while (i--) {
-        nodeStack.push(node.childNodes[i])
+        nodeStack.unshift(node.childNodes[i] as HTMLElement)
       }
     }
   }
 
-  return container
+  if (resultNodes.length === 0) {
+    return defaultResult
+  }
+
+  let accOffset = 0
+  while (resultNodes.length) {
+    const currentNode = resultNodes.shift()!
+    const currentNodeLength = currentNode?.textContent?.length ?? 0
+    if (accOffset + currentNodeLength >= offset) {
+      return {
+        node: currentNode,
+        offset: offset - accOffset
+      }
+    } else {
+      accOffset += currentNodeLength
+    }
+  }
+
+  return defaultResult
 }
 
 export const tellerySelection2Native = (sel?: TellerySelection): Range | null => {
@@ -166,20 +220,13 @@ export const tellerySelection2Native = (sel?: TellerySelection): Range | null =>
 
   const doc = containerEl.ownerDocument
   const range = doc.createRange()
-  const startNode = findNodeAtIndex(containerEl, sel.anchor.nodeIndex)
-  if (startNode === null) {
-    range.setStart(containerEl, sel.anchor.nodeIndex)
-  } else {
-    range.setStart(startNode, sel.anchor.offset)
-  }
-  const endNode = findNodeAtIndex(containerEl, sel.focus.nodeIndex)
-  if (endNode === null) {
-    range.setEnd(containerEl, sel.focus.nodeIndex)
-  } else {
-    range.setEnd(endNode, sel.focus.offset)
-  }
+  const start = findNodesAtIndex(containerEl, sel.anchor.nodeIndex, sel.anchor.offset)
 
-  if (startNode === endNode && startNode === containerEl) {
+  range.setStart(start.node, start.offset)
+  const end = findNodesAtIndex(containerEl, sel.focus.nodeIndex, sel.focus.offset)
+  range.setEnd(end.node, end.offset)
+
+  if (start.node === end.node && start.node === containerEl) {
     return getElementEndPoint(containerEl)
   }
 

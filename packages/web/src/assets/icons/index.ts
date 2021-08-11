@@ -23,6 +23,7 @@ import IconCommonDrag from './common/drag.svg?component'
 import IconCommonEdit from './common/edit.svg?component'
 import IconCommonError from './common/error.svg?component'
 import IconCommonFold from './common/fold.svg?component'
+import IconCommonHome from './common/home.svg?component'
 import IconCommonLike from './common/like.svg?component'
 import IconCommonLink from './common/link.svg?component'
 import IconCommonLock from './common/lock.svg?component'
@@ -43,6 +44,7 @@ import IconCommonStarFill from './common/star_fill.svg?component'
 import IconCommonStar from './common/star.svg?component'
 import IconCommonStoryBlock from './common/story_block.svg?component'
 import IconCommonThoughts from './common/thoughts.svg?component'
+import IconCommonTurn from './common/turn.svg?component'
 import IconCommonUnlock from './common/unlock.svg?component'
 import IconCommonView from './common/view.svg?component'
 import IconFontBold from './font/bold.svg?component'
@@ -126,6 +128,7 @@ export {
   IconCommonEdit,
   IconCommonError,
   IconCommonFold,
+  IconCommonHome,
   IconCommonLike,
   IconCommonLink,
   IconCommonLock,
@@ -146,6 +149,7 @@ export {
   IconCommonStar,
   IconCommonStoryBlock,
   IconCommonThoughts,
+  IconCommonTurn,
   IconCommonUnlock,
   IconCommonView,
   IconFontBold,

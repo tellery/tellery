@@ -1,6 +1,6 @@
 import { css, cx } from '@emotion/css'
 import { slice } from 'lodash'
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { IconCommonArrowDropDown, IconMenuHide, IconMenuShow } from '@app/assets/icons'
 import { ThemingVariables } from '@app/styles'
 import { ConfigLabel } from '../components/ConfigLabel'
@@ -63,8 +63,7 @@ export const table: Chart<Type.TABLE> = {
           renderItem={(item) => (
             <div
               className={css`
-                flex: 1;
-                width: 0;
+                width: 100%;
                 padding-right: 10px;
                 font-size: 14px;
                 font-weight: 400;
@@ -73,13 +72,23 @@ export const table: Chart<Type.TABLE> = {
                 justify-content: space-between;
               `}
             >
-              {item}
+              <div
+                className={css`
+                  flex: 1;
+                  width: 0;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  margin-right: 5px;
+                `}
+              >
+                {item}
+              </div>
               {props.config.columnVisibility[item] === false ? (
                 <IconButton
                   icon={IconMenuHide}
                   color={ThemingVariables.colors.text[0]}
                   className={css`
-                    cursor: pointer;
+                    flex-shrink: 0;
                   `}
                   onClick={() => {
                     props.onConfigChange('columnVisibility', {
@@ -93,7 +102,7 @@ export const table: Chart<Type.TABLE> = {
                   icon={IconMenuShow}
                   color={ThemingVariables.colors.text[0]}
                   className={css`
-                    cursor: pointer;
+                    flex-shrink: 0;
                   `}
                   onClick={() => {
                     props.onConfigChange('columnVisibility', {
@@ -144,6 +153,19 @@ export const table: Chart<Type.TABLE> = {
       () => slice(props.data.records, page * pageSize, (page + 1) * pageSize),
       [page, pageSize, props.data.records]
     )
+    const from = useMemo(
+      () => props.data.records.length && page * pageSize + 1,
+      [page, pageSize, props.data.records.length]
+    )
+    const to = useMemo(
+      () => Math.min((page + 1) * pageSize, props.data.records.length),
+      [page, pageSize, props.data.records.length]
+    )
+    useEffect(() => {
+      if (from > to) {
+        setPage(0)
+      }
+    }, [from, to])
 
     return (
       <div
@@ -274,8 +296,7 @@ export const table: Chart<Type.TABLE> = {
               transform: rotate(90deg);
             `}
           />
-          {props.data.records.length && page * pageSize + 1}&nbsp;~&nbsp;
-          {Math.min((page + 1) * pageSize, props.data.records.length)}
+          {from}&nbsp;~&nbsp;{to}
           <IconButton
             icon={IconCommonArrowDropDown}
             disabled={page >= pageCount - 1}

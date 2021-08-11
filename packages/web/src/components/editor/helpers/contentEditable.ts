@@ -1,6 +1,8 @@
 import { Editor } from '@app/types'
+import { TelleryGlyph } from '@app/utils'
 import { dequal } from 'dequal'
 import invariant from 'tiny-invariant'
+import { isNonSelectbleToken } from '.'
 
 export const saveSelection = function (containerEl: HTMLElement) {
   // const doc = containerEl.ownerDocument
@@ -219,40 +221,58 @@ export const getSelectionFragment = () => {
   return body as Element
 }
 
-export const deserializaToken = (el: Element, block: Editor.Block): Editor.Token => {
-  if (el.nodeType === 3) {
-    return [el.textContent as string]
-  } else if (el.nodeType !== 1) {
-    return ['']
-  }
+export const deserialize = (el: Element, block: Editor.Block): Editor.Token[] => {
+  const node = el
+  const childrenNodeArray = Array.from(node.childNodes)
+  const children: Editor.Token[] = []
 
-  switch (el.nodeName) {
-    case 'BR':
-      return ['\n']
-    default: {
-      const tokenIndexStr = (el as HTMLElement).dataset.tokenIndex
-      if (tokenIndexStr) {
-        const tokenIndex = parseInt(tokenIndexStr, 10)
-        const token = block?.content?.title?.[tokenIndex]
-        if (!token) return ['error']
-        const hasReference = token[1] && token[1].some((marks) => marks[0] === Editor.InlineType.Reference)
-        if (hasReference) {
-          return [' ', token[1]]
-        }
-        return [el.textContent as string, token[1]]
+  for (let i = 0; i < childrenNodeArray.length; i++) {
+    const currentNode = childrenNodeArray[i]
+    if (currentNode.nodeType === Node.TEXT_NODE) {
+      children.push([currentNode.textContent as string])
+      continue
+    } else if (currentNode.nodeType !== Node.ELEMENT_NODE) {
+      children.push([''])
+      continue
+    }
+
+    switch (currentNode.nodeName) {
+      case 'BR': {
+        children.push(['\n'])
+        break
       }
-      return [el.textContent as string]
+      default: {
+        const tokenIndexStr = (currentNode as HTMLElement).dataset.tokenIndex
+        if (tokenIndexStr) {
+          const tokenIndex = parseInt(tokenIndexStr, 10)
+          const token = block?.content?.title?.[tokenIndex]
+          invariant(token, 'token is undefined')
+
+          const hasReference = token[1] && token[1].some((marks) => marks[0] === Editor.InlineType.Reference)
+          if (hasReference) {
+            children.push([TelleryGlyph.BI_LINK, token[1]])
+            break
+          }
+          if (children[i]) {
+            children[i] = [(children[i][0] + currentNode.textContent) as string, token[1]]
+          } else {
+            children.push([currentNode.textContent as string, token[1]])
+          }
+          break
+        }
+        children.push([currentNode.textContent as string])
+        break
+      }
     }
   }
-}
-
-export const deserialize = (el: Element, block: Editor.Block): Editor.Token[] => {
-  const childrenNodesArray = Array.from(el.childNodes)
-  const children = childrenNodesArray.map((childnode) => deserializaToken(childnode as Element, block))
 
   if (el.tagName === 'BODY' || (el.nodeType === Node.ELEMENT_NODE && (el as HTMLElement).dataset.root)) {
     if (dequal(children[children.length - 1], ['\n'])) {
-      return children.slice(0, children.length - 1)
+      const previousToken = children[children.length - 2]
+      if (previousToken && isNonSelectbleToken(previousToken)) {
+        return children.slice(0, children.length - 1)
+      }
+      return children
     } else {
       return children
     }

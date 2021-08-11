@@ -1,10 +1,14 @@
 import {
   IconCommonCopy,
   IconCommonError,
+  IconCommonLink,
+  IconCommonMetrics,
   IconCommonMore,
   IconCommonRefresh,
   IconCommonSql,
+  IconCommonTurn,
   IconMenuDownload,
+  IconMenuDuplicate,
   IconMiscNoResult,
   IconVisualizationSetting
 } from '@app/assets/icons'
@@ -23,7 +27,7 @@ import { useInterval } from '@app/hooks/useInterval'
 import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
 import { ThemingVariables } from '@app/styles'
 import { Editor, Snapshot } from '@app/types'
-import { DEFAULT_TITLE, snapshotToCSV } from '@app/utils'
+import { DEFAULT_TITLE, snapshotToCSV, TELLERY_MIME_TYPES } from '@app/utils'
 import { css, cx, keyframes } from '@emotion/css'
 import Tippy from '@tippyjs/react'
 import copy from 'copy-to-clipboard'
@@ -33,12 +37,14 @@ import { useSelect } from 'downshift'
 import { AnimatePresence, motion, usePresence } from 'framer-motion'
 import html2canvas from 'html2canvas'
 import React, { ReactNode, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
+import { toast } from 'react-toastify'
 import invariant from 'tiny-invariant'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
 import { BlockResizer } from '../BlockBase/BlockResizer'
 import { ContentEditable } from '../BlockBase/ContentEditable'
 import { DebouncedResizeBlock } from '../DebouncedResizeBlock'
 import { EditorPopover } from '../EditorPopover'
+import { TellerySelectionType } from '../helpers'
 import { getBlockImageById } from '../helpers/contentEditable'
 import { useEditor, useLocalSelection } from '../hooks'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
@@ -584,7 +590,7 @@ const QuestionBlockStatus: React.FC<{
         >
           <div
             className={css`
-              > {
+              > * {
                 margin-right: 5px;
               }
             `}
@@ -714,6 +720,43 @@ export const MoreDropdownSelect: React.FC<{
   const operations = useMemo(() => {
     return [
       {
+        title: 'Copy link',
+        icon: <IconCommonLink color={ThemingVariables.colors.text[0]} />,
+        action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+          e.preventDefault()
+          e.stopPropagation()
+          copy('placeholder', {
+            onCopy: (clipboardData) => {
+              invariant(block, 'block is null')
+              const dataTranser = clipboardData as DataTransfer
+              if (!block.storyId) return
+
+              dataTranser.setData(
+                TELLERY_MIME_TYPES.BLOCK_REF,
+                JSON.stringify({ blockId: block.id, storyId: block.storyId })
+              )
+              dataTranser.setData(
+                'text/plain',
+                `${window.location.protocol}//${window.location.host}/story/${block?.storyId}#${block.id}`
+              )
+            }
+          })
+          toast('Link copied')
+        }
+      },
+      !readonly && {
+        title: 'Duplicate',
+        icon: <IconMenuDuplicate color={ThemingVariables.colors.text[0]} />,
+        action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+          e.preventDefault()
+          e.stopPropagation()
+          const selection = editor?.getSelection()
+          editor?.duplicateHandler(
+            selection?.type === TellerySelectionType.Block ? selection.selectedBlocks : [block.id]
+          )
+        }
+      },
+      {
         title: 'Download as CSV',
         icon: <IconMenuDownload color={ThemingVariables.colors.text[0]} />,
         action: () => {
@@ -725,7 +768,7 @@ export const MoreDropdownSelect: React.FC<{
         }
       },
       {
-        title: 'Download as Image',
+        title: 'Download as image',
         icon: <IconMenuDownload color={ThemingVariables.colors.text[0]} />,
         action: async () => {
           const elementSVG = getBlockImageById(block.id)
@@ -746,17 +789,28 @@ export const MoreDropdownSelect: React.FC<{
           copy(sql)
         }
       },
-      !readonly && {
-        title: 'Convert to Snapshot',
-        icon: <IconCommonCopy color={ThemingVariables.colors.text[0]} />,
-        action: () => {
-          editor?.setBlockValue?.(block.id, (draftBlock) => {
-            draftBlock.type = Editor.BlockType.QuestionSnapshot
-          })
+      !readonly &&
+        block.type === Editor.BlockType.Question && {
+          title: 'Convert to snapshot',
+          icon: <IconCommonTurn color={ThemingVariables.colors.text[0]} />,
+          action: () => {
+            editor?.setBlockValue?.(block.id, (draftBlock) => {
+              draftBlock.type = Editor.BlockType.QuestionSnapshot
+            })
+          }
+        },
+      !readonly &&
+        block.type === Editor.BlockType.Question && {
+          title: 'Convert to metric',
+          icon: <IconCommonMetrics color={ThemingVariables.colors.text[0]} />,
+          action: () => {
+            editor?.setBlockValue?.(block.id, (draftBlock) => {
+              draftBlock.type = Editor.BlockType.Metric
+            })
+          }
         }
-      }
     ].filter((x) => !!x) as OperationInterface[]
-  }, [block.id, editor, readonly, snapshot?.data, sql])
+  }, [block, editor, readonly, snapshot?.data, sql])
 
   const { isOpen, openMenu, getToggleButtonProps, getMenuProps, highlightedIndex, getItemProps, closeMenu } = useSelect(
     { items: operations }

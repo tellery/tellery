@@ -92,7 +92,7 @@ export const StoryConfigPopOver: React.FC<{
       const newStoryId = nanoid()
       await blockTranscation.duplicateStory(story.id, newStoryId)
       openStory(newStoryId, { isAltKeyPressed: e.altKey })
-      toast.success('Story Copied')
+      toast.success('Story copied')
     },
     [blockTranscation, openStory, story.id]
   )
@@ -143,7 +143,7 @@ export const StoryConfigPopOver: React.FC<{
         title="Copy link"
         onClick={() => {
           copy(window.location.href)
-          toast.success('Link Copied')
+          toast.success('Link copied')
           // setOpen(false)
         }}
       />
@@ -155,7 +155,7 @@ export const StoryConfigPopOver: React.FC<{
       {permissions.canWrite && (
         <MenuItem
           icon={<IconMenuShow color={ThemingVariables.colors.text[0]} />}
-          title="Workspace Readonly"
+          title="Workspace readonly"
           onClick={(e) => {
             e.preventDefault()
             setWorkspacePermission(readOnlyStatus ? 'manager' : 'commentator')

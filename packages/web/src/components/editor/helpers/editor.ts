@@ -134,7 +134,7 @@ export const findRootBlock = (node: Node) => {
     if (root === null) {
       return null
     }
-    if (root.nodeType === Node.ELEMENT_NODE && (root as HTMLElement)?.dataset.blockId) {
+    if (root.nodeType === Node.ELEMENT_NODE && (root as HTMLElement)?.dataset?.blockId) {
       return root as HTMLElement
     }
     root = root.parentElement

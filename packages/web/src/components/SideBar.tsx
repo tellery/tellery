@@ -1,6 +1,7 @@
 import {
   IconCommonAdd,
   IconCommonAllQuestion,
+  IconCommonHome,
   IconCommonSearch,
   IconCommonSetting,
   IconCommonStar,
@@ -21,6 +22,7 @@ import { useUpdateAtom } from 'jotai/utils'
 import { nanoid } from 'nanoid'
 import React, { ReactNode, useCallback, useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
+import { MainSideBarTabHeader } from './MainSideBarTabHeader'
 import { SideBarAllStoriesSection } from './SideBarAllStoriesSection'
 import { SideBarPinnedStoriesSection } from './SideBarPinnedStoriesSection'
 import { SideBarThoughtsSection } from './SideBarThoughtsSection'
@@ -50,26 +52,18 @@ export const SideBar = () => {
 }
 
 const SideBarContents = {
-  PINNED: {
-    icon: IconCommonStar,
-    // hoverTitle: 'Pinned Stories',
-    content: <SideBarPinnedStoriesSection />
-  },
   ALL_STORIES: {
     icon: IconCommonAllQuestion,
-    // hoverTitle: 'All Stories',
     content: <SideBarAllStoriesSection />
+  },
+  PINNED: {
+    icon: IconCommonStar,
+    content: <SideBarPinnedStoriesSection />
   },
   THOUGHTS: {
     icon: IconCommonThoughts,
-    // hoverTitle: 'My Thoughts',
     content: <SideBarThoughtsSection />
   }
-  // METRICS: {
-  //   icon: IconCommonMetrics,
-  //   hoverTitle: 'Metrics',
-  //   content: <SideBarMetricsSection />
-  // }
 }
 
 const SideBarContent: React.FC = () => {
@@ -81,7 +75,6 @@ const SideBarContent: React.FC = () => {
   const history = useHistory()
   const workspace = useWorkspace()
   const { data: profiles } = useConnectorsListProfiles(workspace.preferences.connectorId)
-  const blockTranscations = useBlockTranscations()
   const setOmniboxShow = useUpdateAtom(omniboxShowState)
 
   const hasNoProfile = profiles?.length === 0
@@ -101,12 +94,6 @@ const SideBarContent: React.FC = () => {
       showSettingsModal()
     }
   }, [hasNoProfile, showSettingsModal])
-
-  const handleCreateNewSotry = useCallback(async () => {
-    const id = nanoid()
-    await blockTranscations.createNewStory({ id: id })
-    history.push(`/story/${id}`)
-  }, [blockTranscations, history])
 
   return (
     <div
@@ -159,7 +146,7 @@ const SideBarContent: React.FC = () => {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { content: _content, ...rest } = SideBarContents[key]
             return (
-              <MainSideBarItem
+              <MainSideBarTabHeader
                 key={id}
                 {...rest}
                 onClick={() => {}}
@@ -185,7 +172,14 @@ const SideBarContent: React.FC = () => {
               setOmniboxShow(true)
             }}
           />
-          <MainSideBarItem icon={IconCommonAdd} hoverTitle="Create a new story" onClick={handleCreateNewSotry} />
+          <MainSideBarItem
+            icon={IconCommonHome}
+            hoverTitle="Home"
+            onClick={() => {
+              history.push('/stories')
+            }}
+          />
+          {/* <MainSideBarItem icon={IconCommonAdd} hoverTitle="Create a new story" onClick={handleCreateNewSotry} /> */}
           <MainSideBarItem icon={IconCommonSetting} hoverTitle="Settings" onClick={showSettingsModal} />
         </div>
       </div>

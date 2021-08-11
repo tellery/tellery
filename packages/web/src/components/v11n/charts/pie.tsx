@@ -7,7 +7,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 import { DisplayType, Type } from '../types'
 import type { Chart } from './base'
 import { LegendContentVertical } from '../components/LegendContentVertical'
-import { formatRecord, isNumeric } from '../utils'
+import { formatRecord, isNumeric, isTimeSeries } from '../utils'
 import { ConfigButton } from '../components/ConfigButton'
 import { ConfigLabel } from '../components/ConfigLabel'
 import { ConfigSelect } from '../components/ConfigSelect'
@@ -24,6 +24,8 @@ enum Tab {
   DATA = 'Data',
   DISPLAY = 'Display'
 }
+
+const opacity = 0.15
 
 const OTHERS_KEY = 'Others'
 
@@ -43,10 +45,7 @@ export const pie: Chart<Type.PIE> = {
 
       dimension: data.fields.find(({ displayType }) => displayType === DisplayType.STRING)?.name || '',
       measurement:
-        data.fields.find(
-          ({ displayType }) =>
-            isNumeric(displayType) && displayType !== DisplayType.TIME && displayType !== DisplayType.DATE
-        )?.name || '',
+        data.fields.find(({ displayType }) => isNumeric(displayType) && !isTimeSeries(displayType))?.name || '',
       minPercentage: 1,
 
       showLegend: true,
@@ -230,7 +229,7 @@ export const pie: Chart<Type.PIE> = {
                     margin-top: 10px;
                     font-size: 14px;
                     font-weight: 400;
-                    opacity: 0.3;
+                    opacity: ${opacity};
                     cursor: pointer;
 
                     &:hover {
@@ -379,7 +378,7 @@ export const pie: Chart<Type.PIE> = {
                   ? ThemingVariables.colors.visualizationOther
                   : ThemingVariables.colors.visualization[color]
               }
-              opacity={hoverDataKey === undefined || hoverDataKey === key ? 1 : 0.3}
+              opacity={hoverDataKey === undefined || hoverDataKey === key ? 1 : opacity}
               onMouseEnter={() => {
                 setHoverDataKey(key)
               }}

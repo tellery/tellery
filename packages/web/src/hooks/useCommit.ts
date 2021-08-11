@@ -197,7 +197,6 @@ export const commit = async ({
       shouldReformat,
       userId
     })
-    logger('revered operations', reversedOperations)
     if (!UNDO_STACK[storyId]) {
       UNDO_STACK[storyId] = []
     }
@@ -212,7 +211,7 @@ export const commit = async ({
 
     endTranscation()
 
-    logger('commit transcation end', transcation)
+    logger('commit transcation end')
     return new Promise((resolve, reject) => {
       TranscationPromiseMap[transcation.id] = {
         resolve,

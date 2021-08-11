@@ -49,7 +49,7 @@ async function main() {
     interKey: storyId,
     parentId: workspace.id,
     parentTable: BlockParentType.WORKSPACE,
-    storyId: storyId,
+    storyId,
     content: {
       title: [['Welcome to Tellery']],
     },
@@ -67,11 +67,11 @@ async function main() {
     interKey: questionId,
     parentId: story.id,
     parentTable: BlockParentType.BLOCK,
-    storyId: storyId,
+    storyId,
     content: {
       title: [['Iris sample data']],
       sql: 'select * from iris_data',
-      snapshotId: snapshotId,
+      snapshotId,
       visualization: {
         keys: ['sepal_length', 'sepal_width', 'petal_length', 'petal_width', 'variety'],
         type: 'Pie',
@@ -98,7 +98,7 @@ async function main() {
 
   Object.assign(snapshot, {
     id: snapshotId,
-    questionId: questionId,
+    questionId,
     sql: _.get(question, 'content.sql'),
     data: {
       records: [

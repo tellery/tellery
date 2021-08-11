@@ -52,7 +52,7 @@ async function main() {
   })
 
   return workspaceService.updateWorkspacePreferences(superUser.id, workspace.id, {
-    connectorId: connectorId,
+    connectorId,
     profile: 'default',
     dbImportsTo: 'sample',
   })

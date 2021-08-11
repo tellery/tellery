@@ -21,8 +21,8 @@ test.before(async () => {
   await createDatabaseCon()
 })
 
-test('set block', async (t) => {
-  return getConnection().transaction(async (manager) => {
+test('set block', async (t) =>
+  getConnection().transaction(async (manager) => {
     const id = nanoid()
     const uid = uuid()
     const op = new BlockOperation(uid, 'test', manager)
@@ -54,12 +54,11 @@ test('set block', async (t) => {
     t.deepEqual(block?.createdById, uid)
     t.deepEqual(block?.workspaceId, 'test')
     t.deepEqual(block?.searchableText, 'field1')
-    t.deepEqual(Array.from(block?.permissions!), defaultPermissions)
+    t.deepEqual(Array.from(block?.permissions ?? []), defaultPermissions)
     t.deepEqual(_.get(block?.children, 0), 'child')
     t.deepEqual(block?.format, { width: 100 })
     t.is(block?.alive, true)
-  })
-})
+  }))
 
 test('set block by path', async (t) => {
   const [{ id }] = await mockBlocks(1)
@@ -256,8 +255,8 @@ test('set permissions with invalid args', async (t) => {
   })
 })
 
-test('convert question block to metric block', async (t) => {
-  return getConnection().transaction(async (manager) => {
+test('convert question block to metric block', async (t) =>
+  getConnection().transaction(async (manager) => {
     const op = new BlockOperation(uuid(), 'test', manager)
     const qid = nanoid()
     const sid = nanoid()
@@ -289,5 +288,4 @@ test('convert question block to metric block', async (t) => {
     const metric = await manager.getRepository(BlockEntity).findOneOrFail(qid)
     t.is(metric.type, BlockType.METRIC)
     t.deepEqual(question.content, metric.content)
-  })
-})
+  }))

@@ -28,7 +28,7 @@ export default function UserAccount(props: { onClose(): void }) {
     setValue,
     formState: { errors },
     handleSubmit
-  } = useForm<User & { currentPassword?: string; newPassword?: string; repeatPassword?: string }>({
+  } = useForm<User>({
     defaultValues: user,
     mode: 'onBlur'
   })
@@ -47,13 +47,15 @@ export default function UserAccount(props: { onClose(): void }) {
     }
   }, [handleLogoutUser.status])
   const avatar = watch('avatar')
-  const newPassword = watch('newPassword')
 
   return (
     <form
       className={css`
         flex: 1;
+        height: 100%;
         padding: 30px 32px 16px;
+        display: flex;
+        flex-direction: column;
       `}
       onSubmit={handleSubmit(handleUpdateUser.execute)}
     >
@@ -109,64 +111,11 @@ export default function UserAccount(props: { onClose(): void }) {
         <FormInput {...register('name', { required: 'required' })} error={errors.name} />
         <ErrorMessage errors={errors} name="name" render={FormError} />
       </div>
-      {user?.status === 'active' ? (
-        <div
-          className={css`
-            margin-top: 16px;
-          `}
-        >
-          <FormLabel>Current password</FormLabel>
-          <FormInput
-            {...register('currentPassword')}
-            type="password"
-            autoComplete="current-password"
-            error={errors.currentPassword}
-          />
-          <ErrorMessage errors={errors} name="currentPassword" render={FormError} />
-        </div>
-      ) : null}
       <div
         className={css`
-          margin-top: 16px;
+          flex: 1;
         `}
-      >
-        <FormLabel>New password</FormLabel>
-        <FormInput
-          {...register('newPassword', {
-            minLength: { value: 8, message: 'min 8 chars' },
-            maxLength: { value: 25, message: 'max 25 chars' },
-            validate: (v) =>
-              v
-                ? /[a-z]+/.test(v)
-                  ? /[A-Z]+/.test(v)
-                    ? /[0-9]+/.test(v)
-                      ? true
-                      : 'at least a number'
-                    : 'at least an uppercase char'
-                  : 'at least a lowercase char'
-                : true
-          })}
-          autoComplete="new-password"
-          type="password"
-          error={errors.newPassword}
-        />
-        <ErrorMessage errors={errors} name="newPassword" render={FormError} />
-      </div>
-      <div
-        className={css`
-          margin-top: 16px;
-        `}
-      >
-        <FormLabel>Repeat password</FormLabel>
-        <FormInput
-          {...register('repeatPassword', {
-            validate: (v) => (v === newPassword ? true : 'password mismatch')
-          })}
-          type="password"
-          error={errors.repeatPassword}
-        />
-        <ErrorMessage errors={errors} name="repeatPassword" render={FormError} />
-      </div>
+      />
       <div
         className={css`
           display: flex;

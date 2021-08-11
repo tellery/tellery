@@ -4,6 +4,7 @@
 /* Use this file to declare any custom file extensions for importing */
 /* Use this folder to also add/extend a package d.ts file, if needed. */
 import type React from 'react'
+import type katex from '@types/katex'
 /* CSS MODULES */
 declare module '*.module.css' {
   const classes: { [key: string]: string }
@@ -60,6 +61,10 @@ declare module '*.png' {
   export default ref
 }
 
+declare module 'katex/dist/katex.mjs' {
+  export default katex
+}
+
 /* CUSTOM: ADD YOUR OWN HERE */
 
 declare global {
@@ -67,6 +72,7 @@ declare global {
     const content: React.ForwardRefExoticComponent<React.SVGAttributes<SVGElement>>
     export default content
   }
+
   interface ImportMeta {
     env: {
       GITHUB_AUTH_TOKEN: string

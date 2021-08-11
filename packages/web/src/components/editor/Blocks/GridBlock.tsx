@@ -183,7 +183,6 @@ const ColumnBlock: BlockComponent<
   const blockisDraggingRef = useRef(false)
 
   const onResizeDragEnd = useCallback(() => {
-    console.log('resize end')
     setIsDragging(false)
     updateWidths()
     x.stop()
