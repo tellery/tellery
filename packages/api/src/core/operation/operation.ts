@@ -153,29 +153,28 @@ export abstract class DefaultOperation implements IOperation {
     path: string[],
     flag: 'before' | 'after',
     targetId?: string,
-  ) {
+  ): Promise<IOperationEntity> {
     let position = !targetId && flag === 'before' ? 0 : -1
-    const val = this.getStringArray(entity, path) ?? []
-
+    const val = this.getStringArray(entity, path)
     if (targetId) {
-      position = _(val).indexOf(targetId!)
+      position = _(val).indexOf(targetId)
       if (flag === 'after') {
         position++
       }
     }
-    _(entity).get(path)?.splice(position, 0, operateeId)
+    this.getStringArray(entity, path).splice(position, 0, operateeId)
     const array = this.getStringArray(entity, path)
-    if (!_(array).isEmpty() && _.uniq(array).length !== array!.length) {
+    if (!_(array).isEmpty() && _.uniq(array).length !== array.length) {
       throw new InvalidArgumentError(`the <${path}> of ${entity} has duplicate values`)
     }
     return entity
   }
 
-  protected isBeingDeleted(query: IOperationEntity, origin: { alive: boolean }) {
+  protected isBeingDeleted(query: IOperationEntity, origin: { alive: boolean }): boolean {
     return origin.alive && this.isAliveEqual(query, false)
   }
 
-  protected isBeingReverted(query: IOperationEntity, origin: { alive: boolean }) {
+  protected isBeingReverted(query: IOperationEntity, origin: { alive: boolean }): boolean {
     return !origin.alive && this.isAliveEqual(query, true)
   }
 
@@ -191,7 +190,11 @@ export abstract class DefaultOperation implements IOperation {
     return _(path).compact().join('.')
   }
 
-  protected getStringArray(entity: IOperationEntity, path: string[]): string[] | undefined {
+  protected getStringArray(entity: IOperationEntity, path: string[]): string[] {
+    if (!_(entity).has(path)) {
+      // force initialize entity
+      _.set(entity, path, [])
+    }
     return _(entity).get(path)
   }
 
