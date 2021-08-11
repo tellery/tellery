@@ -319,7 +319,11 @@ export const pie: Chart<Type.PIE> = {
           <Legend
             verticalAlign="middle"
             align="left"
-            wrapperStyle={{ width: `calc(${(1 - ratio) * 100}% - 10px)`, height: '100%', overflowY: 'hidden' }}
+            wrapperStyle={{
+              width: `calc(${(1 - ratio) * 100}% - 10px)`,
+              height: Math.min(props.config.slices.length * 21, props.dimensions.height),
+              overflowY: 'hidden'
+            }}
             payload={props.config.slices.map((slice) => ({
               id: slice.key,
               value: slice.title,
