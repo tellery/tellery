@@ -30,7 +30,7 @@ import { ConfigInput } from '../components/ConfigInput'
 import { ConfigSelect } from '../components/ConfigSelect'
 import { LegendContent } from '../components/LegendContent'
 import { fontFamily } from '../constants'
-import { createTrend, formatNumber, formatRecord, isContinuous, isNumeric, isTimeSeries } from '../utils'
+import { createTrend, formatNumber, formatRecord, isNumeric, isTimeSeries } from '../utils'
 import { MoreSettingPopover } from '../components/MoreSettingPopover'
 import { TelleryThemeLight, ThemingVariables } from '@app/styles'
 import { SVG2DataURI } from '@app/lib/svg'
@@ -105,7 +105,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
       referenceYAxis: 'left',
 
       xLabel: x?.name || '',
-      xType: x ? (isContinuous(x.displayType) ? 'linear' : 'ordinal') : undefined,
+      xType: x ? (isNumeric(x.displayType) ? 'linear' : 'ordinal') : undefined,
       yLabel: y?.name || '',
       yScale: 'auto',
       yRangeMin: 0,
@@ -244,7 +244,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                     mapAxis2Label(axise),
                     calcLabel(value, axise),
                     'xType',
-                    value.length > 1 ? 'ordinal' : isContinuous(displayTypes[value[0]]) ? 'linear' : 'ordinal'
+                    value.length > 1 ? 'ordinal' : isNumeric(displayTypes[value[0]]) ? 'linear' : 'ordinal'
                   )
                 } else {
                   onConfigChange(axise, value, mapAxis2Label(axise), calcLabel(value, axise))
@@ -291,7 +291,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                           mapAxis2Label(axise),
                           calcLabel(array, axise),
                           'xType',
-                          array.length > 1 ? 'ordinal' : isContinuous(displayTypes[array[0]]) ? 'linear' : 'ordinal'
+                          array.length > 1 ? 'ordinal' : isNumeric(displayTypes[array[0]]) ? 'linear' : 'ordinal'
                         )
                       } else {
                         onConfigChange(axise, array, mapAxis2Label(axise), calcLabel(array, axise))
@@ -885,7 +885,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                 ? 'number'
                 : props.config.xType === 'ordinal'
                 ? 'category'
-                : isContinuous(xDisplayType)
+                : isNumeric(xDisplayType)
                 ? 'number'
                 : 'category'
             }

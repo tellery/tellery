@@ -23,7 +23,7 @@ import { ConfigLabel } from '../components/ConfigLabel'
 import { ConfigSelectWithClear } from '../components/ConfigSelectWithClear'
 import { ConfigSelect } from '../components/ConfigSelect'
 import { CustomTooltip } from '../components/CustomTooltip'
-import { formatNumber, formatRecord, isContinuous, isNumeric, isTimeSeries } from '../utils'
+import { formatNumber, formatRecord, isNumeric, isTimeSeries } from '../utils'
 import { LegendContent } from '../components/LegendContent'
 import { ColorSelector } from '../components/ColorSelector'
 import { ThemingVariables } from '@app/styles'
@@ -81,7 +81,7 @@ export const scatter: Chart<Type.SCATTER> = {
       referenceYValue: undefined,
 
       xLabel: x?.name || '',
-      xType: x ? (isContinuous(x.displayType) ? 'linear' : 'ordinal') : undefined,
+      xType: x ? (isNumeric(x.displayType) ? 'linear' : 'ordinal') : undefined,
       yLabel: y?.name || '',
       yScale: 'auto',
       yRangeMin: 0,
@@ -149,7 +149,7 @@ export const scatter: Chart<Type.SCATTER> = {
                   if (!isNumeric(props.data.fields.find((field) => field.name === props.config.xAxis)?.displayType)) {
                     onConfigChange('referenceXLabel', '', 'referenceXValue', undefined)
                   }
-                  onConfigChange('xAxis', xAxis, 'xType', isContinuous(displayTypes[xAxis]) ? 'linear' : 'ordinal')
+                  onConfigChange('xAxis', xAxis, 'xType', isNumeric(displayTypes[xAxis]) ? 'linear' : 'ordinal')
                 }}
                 placeholder="Please select"
               />
@@ -471,7 +471,7 @@ export const scatter: Chart<Type.SCATTER> = {
                 ? 'number'
                 : props.config.xType === 'ordinal'
                 ? 'category'
-                : isContinuous(xDisplayType)
+                : isNumeric(xDisplayType)
                 ? 'number'
                 : 'category'
             }
