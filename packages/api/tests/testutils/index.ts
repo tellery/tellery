@@ -81,7 +81,7 @@ export async function mockQuestions(
           title: [[nanoid()]],
           sql: 'select * from order limit 1',
         },
-        type: BlockType.QUESTION,
+        type: BlockType.SQL,
         children: [],
         alive: true,
       })

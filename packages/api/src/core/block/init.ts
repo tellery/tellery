@@ -23,7 +23,8 @@ import { ImageBlock } from './image'
 import { MetabaseBlock } from './metabse'
 import { NumberListBlock } from './numberList'
 import { ObservablehqBlock } from './observeablehq'
-import { QuestionBlock } from './question'
+import { SqlBlock } from './sql'
+import { VisualizationBlock } from './visualization'
 import { QuoteBlock } from './quote'
 import { RowBlock } from './row'
 import { StoryBlock } from './story'
@@ -37,6 +38,9 @@ import { TweetBlock } from './tweet'
 import { VideoBlock } from './video'
 import { YouTubeBlock } from './youtube'
 import { MetricBlock } from './metric'
+import { SnapshotBlock } from './snapshot'
+import { VariableBlock } from './variable'
+// deprecated
 
 // record all block types
 const blockConstructors = {
@@ -53,8 +57,9 @@ const blockConstructors = {
   [BlockType.NUMBERED_LIST]: NumberListBlock,
   [BlockType.STORY]: StoryBlock,
   [BlockType.EMBED]: FigmaBlock,
-  [BlockType.QUESTION]: QuestionBlock,
+  [BlockType.SQL]: SqlBlock,
   [BlockType.METRIC]: MetricBlock,
+  [BlockType.VISUALIZATION]: VisualizationBlock,
   [BlockType.QUOTE]: QuoteBlock,
   [BlockType.TABLE]: TableBlock,
   [BlockType.TEXT]: TextBlock,
@@ -77,6 +82,11 @@ const blockConstructors = {
   [BlockType.STORY_LINK]: StoryLinkBlock,
   [BlockType.TWEET]: TweetBlock,
   [BlockType.YOUTUBE]: YouTubeBlock,
+  [BlockType.SNAPSHOT]: SnapshotBlock,
+  [BlockType.VARIABLE]: VariableBlock,
+
+  // deprecated
+  [BlockType.QUESTION]: SqlBlock,
 }
 
 _(blockConstructors).forEach((v, k) => {

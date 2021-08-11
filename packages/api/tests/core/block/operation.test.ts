@@ -267,7 +267,7 @@ test('convert question block to metric block', async (t) =>
       {
         id: qid,
         workspaceId: 'xxx',
-        type: BlockType.QUESTION,
+        type: BlockType.SQL,
         storyId: sid,
         parentId: 'test',
         parentTable: 'workspace',

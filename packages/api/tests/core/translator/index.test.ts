@@ -40,7 +40,7 @@ test('translate', async (t) => {
       title: [[nanoid()]],
       sql: `select * from order_x`,
     },
-    type: BlockType.QUESTION,
+    type: BlockType.SQL,
     children: [],
     alive: true,
   })
@@ -87,7 +87,7 @@ test('translate duplicate references', async (t) => {
       title: [[nanoid()]],
       sql: `select * from order_x`,
     },
-    type: BlockType.QUESTION,
+    type: BlockType.SQL,
     children: [],
     alive: true,
   })
@@ -120,7 +120,7 @@ test('cyclic assemble', async (t) => {
       title: [[nanoid()]],
       sql: `select * from {{${blockId2}}}`,
     },
-    type: BlockType.QUESTION,
+    type: BlockType.SQL,
     children: [],
     alive: true,
   })
@@ -136,7 +136,7 @@ test('cyclic assemble', async (t) => {
       title: [[nanoid()]],
       sql: `select * from {{${blockId1}}}`,
     },
-    type: BlockType.QUESTION,
+    type: BlockType.SQL,
     children: [],
     alive: true,
   })

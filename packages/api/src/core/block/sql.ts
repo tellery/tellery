@@ -1,11 +1,11 @@
 import _ from 'lodash'
-import { DataSource } from './interfaces/dataSource'
 import { BlockType } from '../../types/block'
 import { Token } from '../../types/token'
 import { Link } from '../link'
 import { extractPartialQueries } from '../translator'
 import { LinkType } from '../../types/link'
 import { Block, getPlainTextFromTokens } from '.'
+import { DataSource, Transclusible } from './interfaces'
 
 type SqlBlockContent = {
   title: Token[]
@@ -14,7 +14,7 @@ type SqlBlockContent = {
   sql: string
 }
 
-export class SqlBlock extends Block implements DataSource {
+export class SqlBlock extends Block implements DataSource, Transclusible {
   static type = BlockType.SQL
 
   getType(): BlockType {

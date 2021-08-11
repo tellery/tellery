@@ -7,7 +7,7 @@ import { QuestionBlock } from '../block/question'
  */
 function match(block: Block): boolean {
   // metric block extends question block
-  return block.getType() === BlockType.QUESTION || block.getType() === BlockType.METRIC
+  return block.getType() === BlockType.SQL || block.getType() === BlockType.METRIC
 }
 
 /**

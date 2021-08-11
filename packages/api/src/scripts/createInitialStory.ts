@@ -37,6 +37,9 @@ async function main() {
   const question = new BlockEntity()
   const questionId = nanoid()
 
+  const visualization = new BlockEntity()
+  const visualizationId = nanoid()
+
   const snapshot = new SnapshotEntity()
   const snapshotId = nanoid()
 
@@ -54,7 +57,8 @@ async function main() {
       title: [['Welcome to Tellery']],
     },
     type: BlockType.STORY,
-    children: [questionId],
+    children: [visualizationId],
+    resources: [questionId],
     permissions: readonlyForWorkspace(superUser.id),
     createdById: superUser.id,
     lastEditedById: superUser.id,
@@ -72,6 +76,24 @@ async function main() {
       title: [['Iris sample data']],
       sql: 'select * from iris_data',
       snapshotId,
+    },
+    permissions: readonlyForWorkspace(superUser.id),
+    createdById: superUser.id,
+    lastEditedById: superUser.id,
+    type: BlockType.SQL,
+    children: [],
+    resources: [],
+    alive: true,
+  })
+
+  Object.assign(visualization, {
+    id: visualizationId,
+    workspaceId: workspace.id,
+    interKey: visualizationId,
+    parentId: story.id,
+    parentTable: BlockParentType.BLOCK,
+    storyId,
+    content: {
       visualization: {
         keys: ['sepal_length', 'sepal_width', 'petal_length', 'petal_width', 'variety'],
         type: 'Pie',
@@ -91,8 +113,9 @@ async function main() {
     createdById: superUser.id,
     lastEditedById: superUser.id,
     format: { width: 0.7, aspectRatio: 1.7777777777777777 },
-    type: BlockType.QUESTION,
+    type: BlockType.SQL,
     children: [],
+    resources: [],
     alive: true,
   })
 

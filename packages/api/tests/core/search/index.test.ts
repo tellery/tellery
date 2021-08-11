@@ -268,7 +268,7 @@ test('search blocks by sql', async (t) => {
         parentId: sid,
         parentTable: BlockParentType.BLOCK,
         storyId: sid,
-        type: BlockType.QUESTION,
+        type: BlockType.SQL,
         content: {
           title: [[`this is a block used for testing ${nanoid()}`]],
           sql: 'select * from blocks',

@@ -10,7 +10,8 @@ import { mustGetUser } from '../utils/user'
 import { GlobalSearchRequest } from './global'
 
 /**
- * search question blocks by title
+ * search question blocks by sql
+ * TODO: deprecate sql search or add metric into searched result
  */
 async function search(ctx: Context) {
   const payload = plainToClass(GlobalSearchRequest, ctx.request.body)
@@ -22,9 +23,9 @@ async function search(ctx: Context) {
     user.id,
     payload.workspaceId,
     payload.keyword,
-    [SearchableResourceType._QUESTION_BLOCK_SQL],
+    [SearchableResourceType._SQL],
     payload.limit,
-    { ...payload.filters, type: BlockType.QUESTION },
+    { ...payload.filters, type: BlockType.SQL },
   )
   ctx.body = res
 }

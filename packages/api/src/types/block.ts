@@ -29,6 +29,7 @@ enum BlockType {
   SQL = 'sql',
   VISUALIZATION = 'visualization',
   SNAPSHOT = 'snapshot',
+  VARIABLE = 'variable',
 
   // embeds
   EMBED = 'embed',
@@ -45,6 +46,7 @@ enum BlockType {
 
   // deprecated
   QUESTION = 'question',
+  QUESTION_SNAPSHOT = 'question_snapshot',
 }
 
 enum BlockParentType {
