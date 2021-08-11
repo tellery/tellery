@@ -202,7 +202,12 @@ object DbtManager {
         val manifest: Manifest = jsonMapper.readValue(manifestFile)
 
         val models = manifest.nodes.values
-            .filter { it.config.enabled && it.resourceType == "model" }
+            .filter {
+                it.config.enabled
+                        && it.resourceType == "model"
+                        && it.path != null
+                        && !it.path.startsWith("tellery/")
+            }
             .map { it.toDbtBlock() }
 
         val sources = manifest.sources.values
