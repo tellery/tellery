@@ -24,7 +24,7 @@ const GridBlock: BlockComponent<
   }>
 > = ({ block }) => {
   const ref = useRef<HTMLDivElement | null>(null)
-  const dimensions = useDimensions(ref, 250)
+  const dimensions = useDimensions(ref.current, 250)
   const [isDragging, setIsDragging] = useState(false)
   const [widths, setWidths] = useState<number[]>([])
   const blockChildren = useMgetBlocksSuspense(block.children ?? [])
