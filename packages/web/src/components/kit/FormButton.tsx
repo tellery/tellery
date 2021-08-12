@@ -17,6 +17,7 @@ export function FormButton(
       disabled={loading || disabled}
       className={cx(
         css`
+          position: relative;
           outline: none;
           text-align: center;
           vertical-align: middle;
@@ -28,7 +29,7 @@ export function FormButton(
           &:disabled {
             font-weight: unset;
             cursor: not-allowed;
-            color: ${ThemingVariables.colors.text[1]};
+            color: ${loading ? ThemingVariables.colors.gray[1] : ThemingVariables.colors.text[1]};
             background-color: ${ThemingVariables.colors.gray[1]};
             border: 1px solid ${ThemingVariables.colors.gray[1]};
           }
@@ -56,7 +57,18 @@ export function FormButton(
         className
       )}
     >
-      {loading ? <CircularLoading size={30} color={ThemingVariables.colors.text[1]} /> : children}
+      {children}
+      {loading ? (
+        <CircularLoading
+          size={30}
+          color={ThemingVariables.colors.text[1]}
+          className={css`
+            position: absolute;
+            left: calc(50% - 15px);
+            top: calc(50% - 15px);
+          `}
+        />
+      ) : null}
     </button>
   )
 }
