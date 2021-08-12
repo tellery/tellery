@@ -1,9 +1,9 @@
-import { useState, RefObject, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { throttle } from 'lodash'
 import { dequal } from 'dequal'
 
 export function useDimensions<T extends HTMLElement>(
-  ref: RefObject<T>,
+  element: T | undefined | null,
   throttleMs: number,
   enable: boolean = true
 ): {
@@ -11,7 +11,7 @@ export function useDimensions<T extends HTMLElement>(
   width: number
 } {
   const [dimensions, setDimensions] = useState(
-    ref.current?.getBoundingClientRect() || {
+    element?.getBoundingClientRect() || {
       width: 0,
       height: 0
     }
@@ -20,7 +20,7 @@ export function useDimensions<T extends HTMLElement>(
   const handleResize = useCallback(
     throttle(
       (entries: ResizeObserverEntry[]) => {
-        if (entries[0]?.target === ref.current) {
+        if (entries[0]?.target === element) {
           setDimensions((oldDimensions) => {
             const newDimensions = {
               width: entries[0].contentRect.width,
@@ -37,17 +37,16 @@ export function useDimensions<T extends HTMLElement>(
     [throttleMs]
   )
   useEffect(() => {
-    if (!ref.current || !enable) {
+    if (!element || !enable) {
       return
     }
-    const { current } = ref
     // setDimensions(current.getBoundingClientRect())
     const observer = new ResizeObserver(handleResize)
-    observer.observe(current, { box: 'border-box' })
+    observer.observe(element, { box: 'border-box' })
     return () => {
-      observer.unobserve(current)
+      observer.unobserve(element)
     }
-  }, [ref, handleResize, enable])
+  }, [element, handleResize, enable])
 
   return dimensions
 }

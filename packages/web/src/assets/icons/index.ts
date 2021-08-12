@@ -17,6 +17,7 @@ import IconCommonCheckboxFill from './common/checkbox/fill.svg?component'
 import IconCommonCloseCircle from './common/close_circle.svg?component'
 import IconCommonClose from './common/close.svg?component'
 import IconCommonCopy from './common/copy.svg?component'
+import IconCommonDbt from './common/dbt.svg?component'
 import IconCommonDot from './common/dot.svg?component'
 import IconCommonDownstream from './common/downstream.svg?component'
 import IconCommonDrag from './common/drag.svg?component'
@@ -122,6 +123,7 @@ export {
   IconCommonCloseCircle,
   IconCommonClose,
   IconCommonCopy,
+  IconCommonDbt,
   IconCommonDot,
   IconCommonDownstream,
   IconCommonDrag,

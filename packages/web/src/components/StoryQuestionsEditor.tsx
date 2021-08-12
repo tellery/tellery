@@ -1,6 +1,7 @@
 import {
   IconCommonArrowDropDown,
   IconCommonClose,
+  IconCommonDbt,
   IconCommonDownstream,
   IconCommonError,
   IconCommonMetrics,
@@ -50,6 +51,9 @@ import IconButton from './kit/IconButton'
 import QuestionDownstreams from './QuestionDownstreams'
 import { charts } from './v11n/charts'
 import { Config, Type } from './v11n/types'
+import MonacoEditor from '@monaco-editor/react'
+import { omit } from 'lodash'
+import YAML from 'yaml'
 
 type Mode = 'SQL' | 'VIS' | 'DOWNSTREAM'
 
@@ -781,6 +785,7 @@ export const StoryQuestionEditor: React.FC<{
   const scrollToBlock = useCallback(() => {
     pushFocusedBlockIdState(block.id, block.storyId)
   }, [block.id, block.storyId, pushFocusedBlockIdState])
+  const isDBT = block.type === Editor.BlockType.DBT
 
   return (
     <TabPanel
@@ -835,7 +840,7 @@ export const StoryQuestionEditor: React.FC<{
               align-items: center;
             `}
           >
-            {story && (
+            {story && !isDBT && (
               <>
                 <a
                   className={css`
@@ -873,38 +878,40 @@ export const StoryQuestionEditor: React.FC<{
             ) : null}
           </div>
         </div>
-        <div
-          className={css`
-            display: inline-flex;
-            align-items: center;
-            > * {
-              margin: 0 10px;
-            }
-          `}
-        >
-          {mode === 'SQL' && (sqlError || sqlSidePanel) && (
+        {isDBT ? null : (
+          <div
+            className={css`
+              display: inline-flex;
+              align-items: center;
+              > * {
+                margin: 0 10px;
+              }
+            `}
+          >
+            {mode === 'SQL' && (sqlError || sqlSidePanel) && (
+              <IconButton
+                icon={IconCommonError}
+                color={ThemingVariables.colors.negative[0]}
+                onClick={() => {
+                  setSqlSidePanel(!sqlSidePanel)
+                }}
+              />
+            )}
             <IconButton
-              icon={IconCommonError}
-              color={ThemingVariables.colors.negative[0]}
-              onClick={() => {
-                setSqlSidePanel(!sqlSidePanel)
-              }}
+              hoverContent={mutatingCount !== 0 ? 'Cancel Query' : 'Execute Query'}
+              icon={mutatingCount !== 0 ? IconCommonClose : IconCommonRun}
+              color={ThemingVariables.colors.primary[1]}
+              onClick={mutatingCount !== 0 ? cancelExecuteSql : run}
             />
-          )}
-          <IconButton
-            hoverContent={mutatingCount !== 0 ? 'Cancel Query' : 'Execute Query'}
-            icon={mutatingCount !== 0 ? IconCommonClose : IconCommonRun}
-            color={ThemingVariables.colors.primary[1]}
-            onClick={mutatingCount !== 0 ? cancelExecuteSql : run}
-          />
-          <IconButton
-            hoverContent="Save"
-            disabled={!isDraft || readonly === true}
-            icon={IconCommonSave}
-            onClick={save}
-            color={ThemingVariables.colors.primary[1]}
-          />
-        </div>
+            <IconButton
+              hoverContent="Save"
+              disabled={!isDraft || readonly === true}
+              icon={IconCommonSave}
+              onClick={save}
+              color={ThemingVariables.colors.primary[1]}
+            />
+          </div>
+        )}
       </div>
       <div
         className={css`
@@ -939,9 +946,9 @@ export const StoryQuestionEditor: React.FC<{
             }
           `}
         >
-          <Tippy content="Edit SQL" arrow={false} placement="right" delay={300}>
+          <Tippy content={isDBT ? 'View DBT' : 'Edit SQL'} arrow={false} placement="right" delay={300}>
             <IconButton
-              icon={IconCommonSql}
+              icon={isDBT ? IconCommonDbt : IconCommonSql}
               className={css`
                 &::after {
                   display: ${mode === 'SQL' ? 'visible' : 'none'};
@@ -988,21 +995,36 @@ export const StoryQuestionEditor: React.FC<{
         </div>
         {mode === 'SQL' && (
           <>
-            <SQLEditor
-              className={css`
-                flex: 1;
-                width: 0 !important;
-              `}
-              blockId={block.id}
-              value={sql}
-              padding={{ top: 20, bottom: 0 }}
-              languageId={profileType}
-              onChange={(e) => {
-                setSql(e)
-              }}
-              onRun={run}
-              onSave={save}
-            />
+            {isDBT ? (
+              <MonacoEditor
+                language="yaml"
+                value={YAML.stringify(omit(block.content, 'title'))}
+                options={{
+                  readOnly: true,
+                  padding: { top: 20, bottom: 0 }
+                }}
+                wrapperClassName={css`
+                  flex: 1;
+                  width: 0 !important;
+                `}
+              />
+            ) : (
+              <SQLEditor
+                className={css`
+                  flex: 1;
+                  width: 0 !important;
+                `}
+                blockId={block.id}
+                value={sql}
+                padding={{ top: 20, bottom: 0 }}
+                languageId={profileType}
+                onChange={(e) => {
+                  setSql(e)
+                }}
+                onRun={run}
+                onSave={save}
+              />
+            )}
             {sqlSidePanel && (
               <div
                 className={css`
