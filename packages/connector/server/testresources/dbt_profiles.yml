@@ -3,47 +3,42 @@ projectA:
   outputs:
     dev:
       type: "snowflake"
-      dbname: "tellery_dbname"
-      warehouse: "tellery_warehouse"
-      schema: "tellery_schema"
       account: "xy12345.us-ease-2.aws"
       user: "abc"
       password: "def"
+      database: "dbt"
+      schema: "PUBLIC"
+      warehouse: "dbt_wh"
   target: "dev"
 projectB:
   outputs:
     dev:
       type: "redshift"
-      dbname: "my_db"
-      warehouse: "tellery_warehouse"
-      schema: "tellery_schema"
       host: "examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com"
       port: 5439
       user: "abc"
       password: "def"
+      dbname: "my_db"
+      schema: "PUBLIC"
   target: "dev"
 projectC:
   outputs:
     dev:
       type: "postgres"
-      dbname: "my_db"
-      warehouse: "tellery_warehouse"
-      schema: "tellery_schema"
       host: "127.0.0.1"
       port: 5432
       user: "abc"
       password: "def"
+      dbname: "my_db"
+      schema: "PUBLIC"
   target: "dev"
 projectE:
   outputs:
     dev:
       type: "bigquery"
-      dbname: "tellery_dbname"
-      warehouse: "tellery_warehouse"
-      schema: "tellery_schema"
       method: "service-account-json"
       priority: "interactive"
-      dataset: "tellery_dataset"
+      dataset: "DBT"
       project: "test"
       keyfile_json:
         type: "service_account"

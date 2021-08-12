@@ -11,7 +11,7 @@ import java.util.*
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Dbt(type = "BigQuery")
-class BigQueryDbtProfile(profile: Profile) : BaseDbtProfile(profile) {
+class BigQueryDbtProfile(profile: Profile) : BaseDbtProfile() {
 
     private val gson = Gson()
 
@@ -27,10 +27,10 @@ class BigQueryDbtProfile(profile: Profile) : BaseDbtProfile(profile) {
         this.type = "bigquery"
         this.method = "service-account-json"
         this.priority = "interactive"
-        this.dataset = "tellery_dataset"
+        this.dataset = getValueOrThrowException(profile, BigQueryFields.DATASET)
         val jsonBody = Base64
             .getDecoder()
-            .decode(profile.configs[BigQueryFields.KEY_FILE])
+            .decode(getValueOrThrowException(profile, BigQueryFields.KEY_FILE))
             .decodeToString()
         this.keyfileJson = gson.fromJson(jsonBody, BigQueryConnector.BigQueryKeyBody::class.java)
         this.project = keyfileJson.projectId

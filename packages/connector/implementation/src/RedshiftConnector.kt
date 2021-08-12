@@ -39,6 +39,12 @@ import java.sql.Connection
             required = true
         ),
         Config(
+            name = RedshiftFields.SCHEMA,
+            type = ConfigType.STRING,
+            description = "The schema that tellery will connect to in the database",
+            hint = "PUBLIC"
+        ),
+        Config(
             name = RedshiftFields.USERNAME,
             type = ConfigType.STRING,
             description = "The username (role) you used to connect to your Redshift cluster (created when initializing Redshift cluster)",

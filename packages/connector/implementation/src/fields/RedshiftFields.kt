@@ -4,6 +4,7 @@ object RedshiftFields {
     const val ENDPOINT = "Endpoint"
     const val PORT = "Port"
     const val DATABASE = "Database"
+    const val SCHEMA = "Schema"
     const val USERNAME = "Username"
     const val PASSWORD = "Password"
     const val S3_ACCESS_KEY = "S3 Access Key"
