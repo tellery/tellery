@@ -54,12 +54,12 @@ export class DbtBlock extends Block {
 
   // used for generating downstream tasks, to correctly specify the reference type
   getRef(): string {
-    const { type, name, sourceTable } = this.getContent()
+    const { type, name, sourceName } = this.getContent()
     switch (type) {
       case 'model':
         return `{{ ref('${name}') }}`
       case 'source':
-        return `{{ source('${name}', '${sourceTable}') }}`
+        return `{{ source('${sourceName}', '${name}') }}`
       default:
         throw DBTError.unspecifiedTypeError()
     }

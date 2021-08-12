@@ -70,7 +70,7 @@ const metadataSourceEvent: DbtMetadata = {
   compiledSql: '?',
   type: 'source',
   materialized: 'table',
-  sourceTable: 'event',
+  sourceName: 'event',
 }
 
 const metadataSourceUser: DbtMetadata = {
@@ -80,7 +80,7 @@ const metadataSourceUser: DbtMetadata = {
   compiledSql: '?',
   type: 'source',
   materialized: 'table',
-  sourceTable: 'user',
+  sourceName: 'user',
 }
 
 const metadataSourceOrder: DbtMetadata = {
@@ -90,7 +90,7 @@ const metadataSourceOrder: DbtMetadata = {
   compiledSql: '?',
   type: 'source',
   materialized: 'table',
-  sourceTable: 'order',
+  sourceName: 'order',
 }
 
 const metadataModelDau: DbtMetadata = {

@@ -6,7 +6,7 @@ type DbtMetadata = {
   compiledSql: string
   type: 'unspecified' | 'source' | 'model'
   materialized: 'unknown' | 'view' | 'table' | 'incremental' | 'ephemeral'
-  sourceTable?: string
+  sourceName?: string
 }
 
 type ExportedBlockMetadata = {

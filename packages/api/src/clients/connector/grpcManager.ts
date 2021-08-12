@@ -230,7 +230,7 @@ export class ConnectorManager implements IConnectorManager {
           compiledSql: raw.getCompiledsql(),
           type: getEnumKey(DbtBlock.Type, raw.getType()).toLowerCase(),
           materialized: getEnumKey(DbtBlock.Materialization, raw.getMaterialized()).toLowerCase(),
-          sourceTable: raw.getSourcetable(),
+          sourceName: raw.getSourcename(),
         }) as DbtMetadata,
     )
   }
