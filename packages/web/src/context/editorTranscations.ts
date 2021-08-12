@@ -779,12 +779,12 @@ export const setBlockTitleTranscation = ({
   return createTranscation({ operations })
 }
 
-export const setBlockTranscation = ({
+export const setBlockOperations = <T extends Editor.BaseBlock>({
   oldBlock,
   newBlock
 }: {
-  oldBlock: Editor.BaseBlock
-  newBlock: Editor.BaseBlock
+  oldBlock: T
+  newBlock: T
 }) => {
   const operations: Operation[] = []
   const id = oldBlock.id
@@ -815,5 +815,15 @@ export const setBlockTranscation = ({
       id: id
     })
   }
-  return createTranscation({ operations })
+  return operations
+}
+
+export const setBlockTranscation = <T extends Editor.BaseBlock>({
+  oldBlock,
+  newBlock
+}: {
+  oldBlock: T
+  newBlock: T
+}) => {
+  return createTranscation({ operations: setBlockOperations({ oldBlock, newBlock }) })
 }

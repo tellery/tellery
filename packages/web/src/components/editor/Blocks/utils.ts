@@ -43,7 +43,7 @@ export const isVisualizationBlock = (blockType: Editor.BlockType) => {
 }
 
 export const isExecuteableBlockType = (blockType: Editor.BlockType) => {
-  return !!Blocks[blockType]?.meta.isExecuteable
+  return blockType === Editor.BlockType.SQL
 }
 
 export const isBlockHasChildren = (block: Editor.BaseBlock) => {

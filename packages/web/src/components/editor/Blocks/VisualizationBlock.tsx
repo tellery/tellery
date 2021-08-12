@@ -78,11 +78,9 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
   const { block } = props
   const elementRef = useRef<HTMLDivElement | null>(null)
   const [blockFocusing, setBlockFocusing] = useState(false)
-
   const questionEditor = useQuestionEditor()
   const commit = useCommit()
   const snapshot = useBlockSnapshot()
-
   const dataAssetId = block.content?.dataAssetId
 
   useImperativeHandle(
@@ -107,7 +105,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
       })
     }
 
-    if (!block.content?.dataAssetId) {
+    if (!dataAssetId) {
       const newSqlBlock = createEmptyBlock({
         type: Editor.BlockType.SQL,
         storyId: block.storyId!,
@@ -133,6 +131,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
         storyId: block.storyId!
       })
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -170,7 +169,8 @@ const VisualizationBlockContent: React.FC<{
 }> = ({ dataAssetId, block, blockFocusing, wrapperRef, blockFormat, parentType }) => {
   const dataAssetBlock = useBlockSuspense<Editor.DataAssetBlock>(dataAssetId)
   const snapshotId = dataAssetBlock?.content?.snapshotId
-
+  const commit = useCommit()
+  const storyBlock = useBlockSuspense(block.storyId!)
   const onClickOutSide = useCallback(() => {
     setTitleEditing(false)
   }, [])
@@ -179,7 +179,7 @@ const VisualizationBlockContent: React.FC<{
   const mutatingCount = useSnapshotMutating(dataAssetBlock.id)
 
   useEffect(() => {
-    if (dataAssetBlock.id === block.id && !snapshotId && dataAssetBlock.content?.sql && mutatingCount === 0) {
+    if (dataAssetBlock.id && !snapshotId && dataAssetBlock.content?.sql && mutatingCount === 0) {
       mutateSnapshot.execute(dataAssetBlock)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -193,6 +193,20 @@ const VisualizationBlockContent: React.FC<{
   const localSelection = useLocalSelection(block.id)
   const isInputFocusing = !!localSelection
   const contentRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (dataAssetId && !storyBlock.resources?.includes(dataAssetId)) {
+      commit({
+        transcation: createTranscation({
+          operations: [
+            { cmd: 'listBefore', path: ['resources'], args: { id: dataAssetId }, table: 'block', id: storyBlock.id }
+          ]
+        }),
+        storyId: block.storyId!
+      })
+    }
+  }, [block.storyId, commit, dataAssetId, storyBlock.id, storyBlock.resources])
+
   return (
     <>
       <QuestionBlockButtons
@@ -565,7 +579,7 @@ const QuestionBlockStatus: React.FC<{
         >
           {loading
             ? dayjs(nowTimeStamp).subtract(mutatingStartTimeStamp).format('mm:ss')
-            : snapshot?.createdAt || dataAssetBlock.content?.lastRunAt
+            : snapshot?.createdAt ?? dataAssetBlock.content?.lastRunAt
             ? dayjs(dataAssetBlock.content?.lastRunAt ?? snapshot?.createdAt).fromNow()
             : ''}
         </div>
@@ -863,7 +877,9 @@ const TitleButtonsInner: React.FC<{
           loading={loading}
           hoverContent="Refresh"
           className={QuestionBlockIconButton}
-          onClick={loading ? () => mutateSnapshot.cancel(block.id) : () => mutateSnapshot.execute(block)}
+          onClick={
+            loading ? () => mutateSnapshot.cancel(dataAssetBlock.id) : () => mutateSnapshot.execute(dataAssetBlock)
+          }
         />
       )}
       <IconButton

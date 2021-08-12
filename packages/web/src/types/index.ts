@@ -197,7 +197,7 @@ export namespace Editor {
   }
 
   export interface ImageBlock extends ContentBlock {
-    content: ContentBlock['content'] & {
+    content?: ContentBlock['content'] & {
       fileKey?: string
       imageInfo?: ImageInfo
     }

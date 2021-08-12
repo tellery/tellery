@@ -66,7 +66,8 @@ const undo = <T = Env>({
     const [patchedOperations, reversedOperations] = applyOperations(transcation.operations, {
       recoilCallback,
       shouldReformat: false,
-      userId
+      userId,
+      storyId
     })
     // recoilCallback.set(TelleryStorySelectionAtom(storyId), selection)
     if (!REDO_STACK[storyId]) {
@@ -115,7 +116,8 @@ const redo = <T = Env>({
   const [patchedOperations, reversedOperations] = applyOperations(transcation.operations, {
     recoilCallback,
     userId,
-    shouldReformat: false
+    shouldReformat: false,
+    storyId
   })
   if (!UNDO_STACK[storyId]) {
     UNDO_STACK[storyId] = []
@@ -195,7 +197,8 @@ export const commit = async ({
     const [patchedOperations, reversedOperations] = applyOperations(transcation.operations, {
       recoilCallback,
       shouldReformat,
-      userId
+      userId,
+      storyId
     })
     if (!UNDO_STACK[storyId]) {
       UNDO_STACK[storyId] = []
@@ -387,6 +390,10 @@ const applyOperations = (
           updatedBlock = { ...updatedBlock, [arrayKey]: [] }
         }
 
+        const isnertedBlock = getBlockFromStoreMap((operation.args as any).id, tempMap)
+
+        invariant(isnertedBlock, 'isnertedBlock is undefined')
+
         reversedOperations.push({
           cmd: 'listRemove',
           path: operation.path,
@@ -424,13 +431,15 @@ const applyOperations = (
 
         shouldReformat && pushReformatColumnsOperations(operations, i, updatedBlock)
 
-        operations.splice(i + 1, 0, {
-          cmd: 'update',
-          id: (operation.args as any).id,
-          args: updatedBlock.id,
-          table: 'block',
-          path: ['parentId']
-        })
+        if (options.storyId && isnertedBlock.storyId === options.storyId) {
+          operations.splice(i + 1, 0, {
+            cmd: 'update',
+            id: (operation.args as any).id,
+            args: updatedBlock.id,
+            table: 'block',
+            path: ['parentId']
+          })
+        }
         break
       }
       default:

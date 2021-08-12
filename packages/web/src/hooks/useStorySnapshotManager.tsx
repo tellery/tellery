@@ -9,9 +9,10 @@ import { nanoid } from 'nanoid'
 import React, { useCallback, useContext, useEffect, useMemo } from 'react'
 import { useIsMutating, useQueryClient } from 'react-query'
 import invariant from 'tiny-invariant'
+import { useBlockSuspense } from './api'
 import { useCommit } from './useCommit'
-import { useStoryBlocksMap } from './useStoryBlock'
 import { useStoryPermissions } from './useStoryPermissions'
+import { useStoryResources } from './useStoryResources'
 
 export const useRefreshSnapshot = () => {
   const commit = useCommit()
@@ -135,14 +136,15 @@ export const useRefreshSnapshot = () => {
 }
 
 export const useStorySnapshotManagerProvider = (storyId: string) => {
-  const storyBlocksMap = useStoryBlocksMap(storyId)
-
+  const resourcesBlocks = useStoryResources(storyId)
+  const storyBlock = useBlockSuspense<Story>(storyId)
   const executeableQuestionBlocks = useMemo(() => {
-    if (!storyBlocksMap) return []
-    return Object.values(storyBlocksMap).filter((block) => isExecuteableBlockType(block.type))
-  }, [storyBlocksMap])
+    return resourcesBlocks.filter((block) => isExecuteableBlockType(block.type))
+  }, [resourcesBlocks])
 
-  const refreshOnInit = (storyBlocksMap?.[storyId] as Story)?.format?.refreshOnOpen
+  console.log('useStorySnapshotManagerProvider', executeableQuestionBlocks)
+
+  const refreshOnInit = storyBlock?.format?.refreshOnOpen
   const permissions = useStoryPermissions(storyId)
   const refreshSnapshot = useRefreshSnapshot()
 
@@ -194,9 +196,9 @@ export const useStorySnapshotManager = () => {
   return context
 }
 
-export const useSnapshotMutating = (originalBlockId: string) => {
+export const useSnapshotMutating = (blockId: string) => {
   const refreshingSnapshot = useIsMutating({
-    predicate: (mutation) => (mutation.options.mutationKey as string)?.endsWith(originalBlockId)
+    predicate: (mutation) => (mutation.options.mutationKey as string)?.endsWith(blockId)
   })
 
   return refreshingSnapshot
