@@ -1,4 +1,4 @@
-import { IconCommonMetrics, IconCommonQuestion } from '@app/assets/icons'
+import { IconCommonDbt, IconCommonMetrics, IconCommonQuestion } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useBlockSuspense, useSearchDBTBlocks, useSearchMetrics } from '@app/hooks/api'
 import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
@@ -134,9 +134,15 @@ const DataAssetItem: React.FC<{ block: Editor.BaseBlock; currentStoryId: string 
             margin-right: 8px;
           `}
         />
-      ) : null}
-
-      {block.type !== Editor.BlockType.Metric && (
+      ) : block.type === Editor.BlockType.DBT ? (
+        <IconCommonDbt
+          color={ThemingVariables.colors.gray[0]}
+          className={css`
+            flex-shrink: 0;
+            margin-right: 8px;
+          `}
+        />
+      ) : (
         <IconCommonQuestion
           color={ThemingVariables.colors.gray[0]}
           className={css`
