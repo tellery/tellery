@@ -52,6 +52,7 @@ import { charts } from './v11n/charts'
 import { Config, Type } from './v11n/types'
 import MonacoEditor from '@monaco-editor/react'
 import { omit } from 'lodash'
+import YAML from 'yaml'
 
 type Mode = 'SQL' | 'VIS' | 'DOWNSTREAM'
 
@@ -995,8 +996,8 @@ export const StoryQuestionEditor: React.FC<{
           <>
             {isDBT ? (
               <MonacoEditor
-                language="json"
-                value={JSON.stringify(omit(block.content, 'title'), null, 2)}
+                language="yaml"
+                value={YAML.stringify(omit(block.content, 'title'))}
                 options={{
                   readOnly: true,
                   padding: { top: 20, bottom: 0 }
