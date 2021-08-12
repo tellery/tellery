@@ -60,7 +60,7 @@ message DbtBlock {
   string compiledSql = 7;
   Materialization materialized = 8;
   // Only for source
-  string sourceTable = 9;
+  string sourceName = 9;
 }
 
 message QuestionBlockContent {
