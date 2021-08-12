@@ -65,6 +65,15 @@ const TocQuestionItem: React.FC<{ blockId: string; storyId: string }> = ({ block
           `}
         />
       ) : null}
+      {block.type === Editor.BlockType.DBT ? (
+        <IconCommonDbt
+          color={ThemingVariables.colors.gray[0]}
+          className={css`
+            flex-shrink: 0;
+            margin-right: 8px;
+          `}
+        />
+      ) : null}
       <span
         className={css`
           font-size: 12px;
