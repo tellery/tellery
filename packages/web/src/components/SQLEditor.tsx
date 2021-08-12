@@ -326,7 +326,9 @@ function TransclusionContentWidget(props: {
                     if (!block.storyId) {
                       return
                     }
-                    openStoryHandler(block.storyId, { blockId: block.id, isAltKeyPressed: true })
+                    if (block.parentTable !== Editor.BlockParentType.WORKSPACE) {
+                      openStoryHandler(block.storyId, { blockId: block.id, isAltKeyPressed: true })
+                    }
                     open({ mode: 'SQL', storyId: block.storyId, blockId: block.id })
                   }}
                 >
