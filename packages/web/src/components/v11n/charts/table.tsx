@@ -1,12 +1,12 @@
 import { css, cx } from '@emotion/css'
 import { slice } from 'lodash'
 import React, { useMemo, useState, useEffect } from 'react'
-import { IconCommonArrowDropDown, IconMenuHide, IconMenuShow } from '@app/assets/icons'
+import { IconCommonArrowUnfold, IconMenuHide, IconMenuShow } from '@app/assets/icons'
 import { ThemingVariables } from '@app/styles'
 import { ConfigLabel } from '../components/ConfigLabel'
 import { SortableList } from '../components/SortableList'
 import { Type } from '../types'
-import { formatRecord, isNumeric } from '../utils'
+import { formatRecord, isNumeric, isTimeSeries } from '../utils'
 import type { Chart } from './base'
 import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 import IconButton from '@app/components/kit/IconButton'
@@ -14,6 +14,8 @@ import Tippy from '@tippyjs/react'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 
 const TABLE_ROW_HEIGHT_MIN = 30
+
+const VERTICAL_BORDER_WITDH = 0
 
 export const table: Chart<Type.TABLE> = {
   type: Type.TABLE,
@@ -146,7 +148,7 @@ export const table: Chart<Type.TABLE> = {
     )
     const displayTypes = useDataFieldsDisplayType(props.data.fields)
     const pageSize = Math.max(Math.floor((props.dimensions.height - 1) / (TABLE_ROW_HEIGHT_MIN + 1)) - 2, 1)
-    const tableRowHeight = (props.dimensions.height - 1) / (pageSize + 2) - 1
+    const tableRowHeight = (props.dimensions.height - VERTICAL_BORDER_WITDH) / (pageSize + 2) - VERTICAL_BORDER_WITDH
     const pageCount = Math.ceil(props.data.records.length / pageSize)
     const [page, setPage] = useState(0)
     const data = useMemo(
@@ -175,7 +177,6 @@ export const table: Chart<Type.TABLE> = {
           position: relative;
           display: flex;
           flex-direction: column;
-          border: 1px solid ${ThemingVariables.colors.gray[1]};
           background: ${ThemingVariables.colors.gray[5]};
           font-size: 14px;
           color: ${ThemingVariables.colors.text[0]};
@@ -194,21 +195,14 @@ export const table: Chart<Type.TABLE> = {
                 max-height: 100%;
                 border-collapse: collapse;
                 border: none;
-                td,
-                th {
-                  border: 1px solid ${ThemingVariables.colors.gray[1]};
+                tr:nth-child(even) {
+                  background: ${ThemingVariables.colors.primary[5]};
                 }
-                tr:first-child td,
-                th {
-                  border-top: none;
+                td {
+                  border-left: 1px solid ${ThemingVariables.colors.gray[1]};
                 }
-                tr td:first-child,
-                th:first-child {
+                tr td:first-child {
                   border-left: none;
-                }
-                tr td:last-child,
-                th:last-child {
-                  border-right: none;
                 }
               `}
             >
@@ -220,11 +214,11 @@ export const table: Chart<Type.TABLE> = {
                       className={css`
                         height: ${tableRowHeight}px;
                         padding: 0 10px;
-                        font-weight: 600;
-                        background: ${ThemingVariables.colors.primary[4]};
+                        background: ${ThemingVariables.colors.primary[3]};
+                        font-weight: normal;
                         white-space: nowrap;
                       `}
-                      align={isNumeric(column.displayType) ? 'right' : 'left'}
+                      align={isNumeric(column.displayType) && !isTimeSeries(column.displayType) ? 'right' : 'left'}
                     >
                       <Tippy content={column.sqlType}>
                         <span>{column.name}</span>
@@ -275,6 +269,7 @@ export const table: Chart<Type.TABLE> = {
             justify-content: space-between;
             padding: 0 10px;
             user-select: none;
+            background: ${ThemingVariables.colors.primary[4]};
           `}
         >
           {props.data.records.length}&nbsp;rows
@@ -284,7 +279,7 @@ export const table: Chart<Type.TABLE> = {
             `}
           />
           <IconButton
-            icon={IconCommonArrowDropDown}
+            icon={IconCommonArrowUnfold}
             disabled={page <= 0}
             color={ThemingVariables.colors.text[0]}
             onClick={() => {
@@ -292,21 +287,20 @@ export const table: Chart<Type.TABLE> = {
             }}
             className={css`
               margin-left: 10px;
-              margin-right: 5px;
-              transform: rotate(90deg);
+              margin-right: 10px;
+              transform: rotate(180deg);
             `}
           />
-          {from}&nbsp;~&nbsp;{to}
+          {from}~{to}
           <IconButton
-            icon={IconCommonArrowDropDown}
+            icon={IconCommonArrowUnfold}
             disabled={page >= pageCount - 1}
             color={ThemingVariables.colors.text[0]}
             onClick={() => {
               setPage((old) => old + 1)
             }}
             className={css`
-              margin-left: 5px;
-              transform: rotate(270deg);
+              margin-left: 10px;
             `}
           />
         </div>
