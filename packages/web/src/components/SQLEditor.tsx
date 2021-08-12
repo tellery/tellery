@@ -226,7 +226,6 @@ function TransclusionContentWidget(props: {
   const title = getBlockTitle(block)
   const [visible, setVisible] = useState(false)
   const isDBT = block.type === Editor.BlockType.DBT
-  console.log(isDBT, block.content?.sql && props.languageId && visible)
 
   return el
     ? createPortal(
