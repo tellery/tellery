@@ -1,6 +1,7 @@
 import {
   IconCommonArrowDropDown,
   IconCommonClose,
+  IconCommonDbt,
   IconCommonDownstream,
   IconCommonError,
   IconCommonMetrics,
@@ -947,7 +948,7 @@ export const StoryQuestionEditor: React.FC<{
         >
           <Tippy content={isDBT ? 'View DBT' : 'Edit SQL'} arrow={false} placement="right" delay={300}>
             <IconButton
-              icon={IconCommonSql}
+              icon={isDBT ? IconCommonDbt : IconCommonSql}
               className={css`
                 &::after {
                   display: ${mode === 'SQL' ? 'visible' : 'none'};
