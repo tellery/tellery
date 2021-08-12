@@ -1,5 +1,5 @@
 import type React from 'react'
-import type { Editor } from '@app/types'
+import { Editor } from '@app/types'
 
 export type BlockComponent<P = {}> = P & {
   meta: {
@@ -24,8 +24,13 @@ export const isTextBlock = (blockType: Editor.BlockType) => {
   return !!Blocks[blockType]?.meta.isText
 }
 
+// TODO: remove later
 export const isQuestionLikeBlock = (blockType: Editor.BlockType) => {
-  return !!Blocks[blockType]?.meta.isQuestion
+  return isVisualizationBlock(blockType)
+}
+
+export const isVisualizationBlock = (blockType: Editor.BlockType) => {
+  return blockType === Editor.BlockType.Visualization
 }
 
 export const isExecuteableBlockType = (blockType: Editor.BlockType) => {

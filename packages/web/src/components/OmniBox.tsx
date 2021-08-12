@@ -78,7 +78,7 @@ export function OmniBox() {
             id: block.id,
             storyId: block.storyId,
             type: ResultType.QUESTION,
-            text: (block as Editor.QuestionBlock).content?.sql,
+            text: (block as Editor.SQLBlock).content?.sql,
             html: data.highlights[block.id],
             subText: getBlockTitle(block)
           }

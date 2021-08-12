@@ -6,7 +6,7 @@ import type { Editor } from '@app/types'
 import { ContentEditable } from './BlockBase/ContentEditable'
 import { BlockTitle } from '.'
 
-export const BlockContentOverview = (props: { block: Editor.Block }) => {
+export const BlockContentOverview = (props: { block: Editor.BaseBlock }) => {
   const { block } = props
   return (
     <div

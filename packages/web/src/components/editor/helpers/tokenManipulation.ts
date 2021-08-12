@@ -82,7 +82,7 @@ export const applyTransformOnSplitedTokens = (
 export const getBlockOrTokensFromSelection = (
   block: Editor.Block,
   selection: TellerySelection
-): Editor.Block | Editor.Token[] => {
+): Editor.BaseBlock | Editor.Token[] => {
   if (selection.type === TellerySelectionType.Inline) {
     const tokens = block?.content?.title || []
     const splitedTokens = splitToken(tokens)

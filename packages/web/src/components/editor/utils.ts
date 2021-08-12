@@ -53,8 +53,8 @@ export const TOKEN_MAP: { [key: string]: { type: Editor.BlockType } } = {
   '···': { type: Editor.BlockType.Code },
   '>> ': { type: Editor.BlockType.Toggle },
   '》》 ': { type: Editor.BlockType.Toggle },
-  '?? ': { type: Editor.BlockType.Question },
-  '？？ ': { type: Editor.BlockType.Question },
+  '?? ': { type: Editor.BlockType.Visualization },
+  '？？ ': { type: Editor.BlockType.Visualization },
   '1. ': { type: Editor.BlockType.NumberedList },
   '1。': { type: Editor.BlockType.NumberedList },
   '$$ ': { type: Editor.BlockType.Equation }

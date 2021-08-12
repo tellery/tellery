@@ -89,7 +89,7 @@ export const questionEditorOpenState = atom<boolean>({ key: 'questionEditorOpenS
 
 export const questionEditorActiveIdState = atom<string | null>({ key: 'questionEditorActiveIdState', default: null })
 
-const updateOldDraft = (oldDraft?: EditorDraft, block?: Editor.QuestionBlock) => {
+const updateOldDraft = (oldDraft?: EditorDraft, block?: Editor.SQLLikeBlock) => {
   if (!oldDraft) return undefined
 
   const updatedDraft = emitFalsyObject({
@@ -468,8 +468,10 @@ export const StoryQuestionEditor: React.FC<{
   // block: Editor.QuestionBlock
   // originalBlock: Editor.QuestionBlock
 }> = ({ id, setActiveId, tab }) => {
-  const block = useBlockSuspense<Editor.QuestionBlock>(id)
-  const originalBlock = useBlockSuspense<Editor.QuestionBlock>(id)
+  const block = useBlockSuspense<Editor.VisualizationBlock | Editor.SQLLikeBlock>(id)
+  const visualizationBlock: Editor.VisualizationBlock | null =
+    block.type === Editor.BlockType.Visualization ? block : null
+  const sqlBlock = useBlockSuspense<Editor.SQLLikeBlock>(visualizationBlock?.content?.dataAssetId ?? id)
   const [questionBlocksMap, setQuestionBlocksMap] = useRecoilState(questionEditorBlockMapState)
   const [sqlSidePanel, setSqlSidePanel] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -483,9 +485,10 @@ export const StoryQuestionEditor: React.FC<{
 
   const commit = useCommit()
 
-  const setBlock = useCallback<SetBlock<Editor.QuestionBlock>>(
+  const setVisualizationBlock = useCallback<SetBlock<Editor.VisualizationBlock>>(
     (id, update) => {
-      const oldBlock = block
+      if (!visualizationBlock) return
+      const oldBlock = visualizationBlock
       const newBlock = produce(oldBlock, update)
 
       commit({
@@ -493,18 +496,31 @@ export const StoryQuestionEditor: React.FC<{
         storyId: oldBlock.storyId!
       })
     },
-    [commit, block]
+    [commit, visualizationBlock]
   )
 
-  const permissions = useStoryPermissions(block.storyId ?? block.id)
+  const setSqlBlock = useCallback<SetBlock<Editor.SQLLikeBlock>>(
+    (id, update) => {
+      const oldBlock = sqlBlock
+      const newBlock = produce(oldBlock, update)
+
+      commit({
+        transcation: setBlockTranscation({ oldBlock, newBlock }),
+        storyId: sqlBlock.storyId!
+      })
+    },
+    [commit, sqlBlock]
+  )
+
+  const permissions = useStoryPermissions(visualizationBlock?.storyId ?? block.id)
 
   const mode = questionBlockState?.mode ?? 'VIS'
   const readonly = permissions.readonly
   const isDraftSql = !!questionBlockState?.draft?.sql
   const isDraft = !!questionBlockState?.draft
-  const originalSQL = originalBlock?.content?.sql
+  const originalSQL = sqlBlock?.content?.sql
   const sql = questionBlockState?.draft?.sql ?? originalSQL ?? ''
-  const snapShotId = questionBlockState?.draft?.snapshotId ?? originalBlock?.content?.snapshotId
+  const snapShotId = questionBlockState?.draft?.snapshotId ?? sqlBlock?.content?.snapshotId
   // const visConfig = questionBlockState?.draft?.visConfig ?? block?.content?.visualization
 
   const { data: snapshot, isFetched: isSnapshotFetched, isIdle: isSnapshotIdle } = useSnapshot(snapShotId)
@@ -628,14 +644,16 @@ export const StoryQuestionEditor: React.FC<{
       toast.error('question is readonly')
       return
     }
-    setBlock(block.id, (draftBlock) => {
+    setSqlBlock(sqlBlock.id, (draftBlock) => {
       draftBlock.content!.sql = sql
       draftBlock.content!.snapshotId = snapShotId
-      draftBlock.content!.visualization = visualizationConfig
       draftBlock.content!.error = null
       draftBlock.content!.lastRunAt = Date.now()
     })
-  }, [block, isDraft, readonly, sql, setBlock, snapShotId, visualizationConfig])
+    setVisualizationBlock(block.id, (draftBlock) => {
+      draftBlock.content!.visualization = visualizationConfig
+    })
+  }, [block, isDraft, readonly, setSqlBlock, sqlBlock.id, setVisualizationBlock, sql, snapShotId, visualizationConfig])
 
   const [sqlError, setSQLError] = useState<string | null>(null)
 
@@ -678,7 +696,7 @@ export const StoryQuestionEditor: React.FC<{
       setSnapshotId(snapshotId)
     } else {
       const originalBlockId = block.id
-      invariant(originalBlock, 'originalBlock is undefined')
+      invariant(sqlBlock, 'originalBlock is undefined')
       // mutateBlock(
       //   originalBlockId,
       //   { ...originalBlock, content: { ...originalBlock.content, snapshotId: snapshotId } },
@@ -694,7 +712,7 @@ export const StoryQuestionEditor: React.FC<{
       })
 
       if (!readonly) {
-        setBlock(block.id, (draftBlock) => {
+        setSqlBlock(sqlBlock.id, (draftBlock: Editor.SQLLikeBlock) => {
           draftBlock.content!.snapshotId = snapshotId
         })
       }
@@ -710,9 +728,9 @@ export const StoryQuestionEditor: React.FC<{
     isDraftSql,
     setMode,
     setSnapshotId,
-    originalBlock,
+    sqlBlock,
     readonly,
-    setBlock
+    setSqlBlock
   ])
 
   const cancelExecuteSql = useCallback(() => {

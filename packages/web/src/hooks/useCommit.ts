@@ -380,8 +380,11 @@ const applyOperations = (
       case 'listBefore': {
         logger('list after or before', operation, updatedBlock)
         invariant(updatedBlock, 'Block is not defined')
-        if (updatedBlock.children === undefined) {
-          updatedBlock = { ...updatedBlock, children: [] }
+
+        const arrayKey = operation.path[0] as 'children' | 'resources'
+
+        if (!updatedBlock[arrayKey]) {
+          updatedBlock = { ...updatedBlock, [arrayKey]: [] }
         }
 
         reversedOperations.push({
@@ -392,26 +395,28 @@ const applyOperations = (
           id: operation.id
         })
 
-        invariant(updatedBlock.children, 'children is undefined')
+        console.log(updatedBlock)
+
+        invariant(updatedBlock[arrayKey], 'children is undefined')
         if (operation.cmd === 'listAfter') {
           invariant((operation.args as any).after, 'after id must not be undefined')
 
-          const index = updatedBlock.children.findIndex((id) => id === (operation.args as any).after)
+          const index = updatedBlock[arrayKey]!.findIndex((id) => id === (operation.args as any).after)
 
           logger('listafter', index)
 
           updatedBlock = update(updatedBlock, {
             children: {
-              $splice: [[index === -1 ? updatedBlock.children.length : index + 1, 0, (operation.args as any).id]]
+              $splice: [[index === -1 ? updatedBlock![arrayKey]!.length : index + 1, 0, (operation.args as any).id]]
             }
           })
 
           logger('listafter', updatedBlock)
         } else {
-          const index = updatedBlock.children.findIndex((id) => id === (operation.args as any).before)
+          const index = updatedBlock[arrayKey]?.findIndex((id) => id === (operation.args as any).before)
 
           updatedBlock = update(updatedBlock, {
-            children: {
+            [arrayKey]: {
               $splice: [[index === -1 ? 0 : index, 0, (operation.args as any).id]]
             }
           })
@@ -585,7 +590,7 @@ const appendNormalizeLayoutOperations = async (
   operations.splice(index + 1, 0, ..._operations)
 }
 
-const pushReformatColumnsOperations = (operations: Operation[], index: number, rowBlock: Editor.Block) => {
+const pushReformatColumnsOperations = (operations: Operation[], index: number, rowBlock: Editor.BaseBlock) => {
   const _operations: Operation[] = []
   if (rowBlock.type === Editor.BlockType.Row) {
     rowBlock.children?.forEach((id) => {

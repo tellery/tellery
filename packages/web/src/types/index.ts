@@ -77,8 +77,6 @@ export namespace Editor {
     Image = 'image',
     NumberedList = 'numbered_list',
     Page = 'page',
-    Metric = 'metric',
-    Question = 'question',
     Quote = 'quote',
     Table = 'table',
     Text = 'text',
@@ -92,8 +90,11 @@ export namespace Editor {
     Thought = 'thought',
     Bookmark = 'bookmark',
     StoryLink = 'story_link',
-    QuestionReference = 'question_reference',
-    QuestionSnapshot = 'question_snapshot',
+    Visualization = 'visualization',
+    SnapshotBlock = 'snapshot',
+    Metric = 'metric',
+    // TODO: compact code, change to SQL
+    SQL = 'sql',
 
     // embeds
     Embed = 'embed',
@@ -122,13 +123,18 @@ export namespace Editor {
     title: Token[]
   }
 
-  export type QuestionBlockContent = {
+  export type SQLBlockContent = {
     forkedFromId?: string
     snapshotId?: string
     visualization?: Config<Type>
     sql?: string
     lastRunAt?: number
     error?: string | null
+  }
+
+  export type VisualizationBlockContent = {
+    visualization?: Config<Type>
+    dataAssetId?: string
   }
 
   export type CodeBlockContent = {
@@ -149,6 +155,7 @@ export namespace Editor {
     parentTable: BlockParentType
     version: number
     children?: string[]
+    resources?: string[]
     alive: boolean
     permissions: Permission[]
     content?: {
@@ -165,8 +172,20 @@ export namespace Editor {
     }
   }
 
-  export interface QuestionBlock extends ContentBlock {
-    content?: ContentBlock['content'] & QuestionBlockContent
+  export interface SQLBlock extends ContentBlock {
+    content?: ContentBlock['content'] & SQLBlockContent
+  }
+
+  export interface MetricBlock extends SQLBlock {}
+
+  export interface SnapshotBlock extends SQLBlock {}
+
+  export type SQLLikeBlock = SQLBlock | MetricBlock
+
+  export type DataAssetBlock = SQLBlock | SnapshotBlock | MetricBlock
+
+  export interface VisualizationBlock extends ContentBlock {
+    content?: ContentBlock['content'] & VisualizationBlockContent
   }
 
   export interface TodoBlock extends ContentBlock {
@@ -205,8 +224,6 @@ export namespace Editor {
       publicToken?: string
     }
   }
-
-  export type Block = ImageBlock | QuestionBlock | ContentBlock
 }
 
 export interface ImageInfo {
@@ -246,7 +263,7 @@ export interface Thought extends Editor.BaseBlock {
 
 export type Ref = { blockId: string; storyId: string }
 
-export type Asset = Story | Editor.Block
+export type Asset = Story | Editor.BaseBlock
 
 export type BackLinks = {
   forwardRefs: Ref[]

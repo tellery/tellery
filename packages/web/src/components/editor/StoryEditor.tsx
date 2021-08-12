@@ -38,7 +38,7 @@ import {
   tokenPosition2SplitedTokenPosition
 } from '.'
 import { ThoughtItemHeader } from '../ThoughtItem'
-import { isBlockHasChildren, isQuestionLikeBlock, isTextBlock } from './Blocks/utils'
+import { isBlockHasChildren, isQuestionLikeBlock, isTextBlock, isVisualizationBlock } from './Blocks/utils'
 import { ContentBlocks } from './ContentBlock'
 import {
   canOutdention,
@@ -244,7 +244,7 @@ const _StoryEditor: React.FC<{
   useOnClickOutside(editorRef, blurEditor)
 
   const setSelectionAtBlockStart = useCallback(
-    (block: Editor.Block) => {
+    (block: Editor.BaseBlock) => {
       if (isTextBlock(block.type)) {
         setSelectionState({
           storyId,
@@ -270,7 +270,7 @@ const _StoryEditor: React.FC<{
 
   const createFirstOrLastBlockHandler = useCallback(() => {
     if (!permissions.canWrite) return
-    const newBlock = createEmptyBlock<Editor.Block>({
+    const newBlock = createEmptyBlock<Editor.BaseBlock>({
       type: Editor.BlockType.Text,
       storyId,
       parentId: storyId
@@ -338,8 +338,8 @@ const _StoryEditor: React.FC<{
           block.content.title = mergeTokens(splitedTokens.slice(removePrefixCount))
         }
         // TODO: use middleware
-        if (isQuestionLikeBlock(type)) {
-          const newBlock = createEmptyBlock({ type: Editor.BlockType.Question })
+        if (isVisualizationBlock(type)) {
+          const newBlock = createEmptyBlock({ type: Editor.BlockType.Visualization })
           ;(block.content as any).sql = ''
           block.format = newBlock.format
         }
@@ -350,7 +350,12 @@ const _StoryEditor: React.FC<{
   )
 
   const insertNewEmptyBlock = useCallback(
-    (blockType: Editor.BlockType, targetBlockId: string, direction: 'top' | 'bottom' | 'child' = 'bottom') => {
+    (
+      blockType: Editor.BlockType,
+      targetBlockId: string,
+      direction: 'top' | 'bottom' | 'child' = 'bottom',
+      path = 'children'
+    ) => {
       const newBlock = createEmptyBlock({ type: blockType, storyId: storyId, parentId: storyId })
       blockTranscations.insertBlocks(storyId, {
         blocksFragment: {
@@ -358,7 +363,8 @@ const _StoryEditor: React.FC<{
           data: { [newBlock.id]: newBlock }
         },
         direction: direction,
-        targetBlockId: targetBlockId
+        targetBlockId: targetBlockId,
+        path
       })
       return newBlock
     },
@@ -385,7 +391,7 @@ const _StoryEditor: React.FC<{
     const newType = transformData ? (transformData[0] as Editor.BlockType) : null
 
     switch (newType) {
-      case Editor.BlockType.Question: {
+      case Editor.BlockType.Visualization: {
         toggleBlockType(currentBlock.id, newType, prefixLength)
         blockAdminValue.getBlockInstanceById(currentBlock.id).then((instance) => {
           instance.blockRef.current.openMenu()
@@ -746,7 +752,7 @@ const _StoryEditor: React.FC<{
                   direction: 'top'
                 })
               } else if (isCaretAtEnd(element)) {
-                const getNextBlockType = (block: Editor.Block) => {
+                const getNextBlockType = (block: Editor.BaseBlock) => {
                   if (block.type === Editor.BlockType.BulletList) {
                     return Editor.BlockType.BulletList
                   }
@@ -1071,7 +1077,7 @@ const _StoryEditor: React.FC<{
         e.preventDefault()
         invariant(selectionState?.type === TellerySelectionType.Inline, 'selection state is not inline')
         const files = e.clipboardData.files
-        const fileBlocks: Editor.Block[] = [...files].map(() =>
+        const fileBlocks: Editor.BaseBlock[] = [...files].map(() =>
           createEmptyBlock({
             type: Editor.BlockType.File,
             storyId,
@@ -1383,7 +1389,7 @@ const _StoryEditor: React.FC<{
                         `}
                       />
                     )}
-                    {(rootBlock as Editor.Block).type === Editor.BlockType.Story && (
+                    {(rootBlock as Editor.BaseBlock).type === Editor.BlockType.Story && (
                       <ContentBlocks blockIds={[storyId]} parentType={rootBlock.type} readonly={locked}></ContentBlocks>
                     )}
                   </div>

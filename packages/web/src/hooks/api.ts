@@ -49,7 +49,7 @@ export const useStory = (id: string) => {
 
 export const useUpdateBlocks = () => {
   const updateBlocks = useRecoilCallback(
-    (recoilInterface) => (blocks: Record<string, Editor.Block>) => {
+    (recoilInterface) => (blocks: Record<string, Editor.BaseBlock>) => {
       Object.values(blocks).forEach((block) => {
         const targetAtom = TelleryBlockAtom(block.id)
         const loadable = recoilInterface.snapshot.getInfo_UNSTABLE(targetAtom).loadable
@@ -68,7 +68,7 @@ export const useUpdateBlocks = () => {
 export const useFetchStoryChunk = <T extends Editor.BaseBlock = Story>(id: string, suspense: boolean = true): T => {
   const updateBlocks = useUpdateBlocks()
   const workspace = useWorkspace()
-  useQuery<Record<string, Editor.Block>>(
+  useQuery<Record<string, Editor.BaseBlock>>(
     ['story', 'chunk', workspace, id],
     async () =>
       request
@@ -165,8 +165,8 @@ export function useSearchBlocks<T extends Editor.BlockType>(
     ['search', 'block', type, keyword, limit],
     async () =>
       searchBlocks(keyword, limit, workspace.id, type).then((results) => {
-        const blocks = results.blocks as Record<string, Editor.Block>
-        Object.values(blocks).forEach((block: Editor.Block) => {
+        const blocks = results.blocks as Record<string, Editor.BaseBlock>
+        Object.values(blocks).forEach((block: Editor.BaseBlock) => {
           emitBlockUpdate(block)
         })
         return results
@@ -301,7 +301,7 @@ export const useMgetEntities = (entities: { type: ResourceType; args: EntityRequ
   return useMemo(() => ({ queries, isSuccess, data }), [data, isSuccess, queries])
 }
 
-export const useMgetBlocks = (ids?: string[]): { data?: Record<string, Editor.Block>; isSuccess?: boolean } => {
+export const useMgetBlocks = (ids?: string[]): { data?: Record<string, Editor.BaseBlock>; isSuccess?: boolean } => {
   const atoms = useRecoilValueLoadable(waitForAll(ids?.map((id) => TelleryBlockAtom(id)) ?? []))
   const [state, setState] = useState({})
 
@@ -319,7 +319,7 @@ export const useMgetBlocks = (ids?: string[]): { data?: Record<string, Editor.Bl
               acc[block.id] = block
             }
             return acc
-          }, {} as { [key: string]: Editor.Block }),
+          }, {} as { [key: string]: Editor.BaseBlock }),
           isSuccess: true
         })
         break
@@ -332,7 +332,7 @@ export const useMgetBlocks = (ids?: string[]): { data?: Record<string, Editor.Bl
   return state
 }
 
-export const useMgetBlocksAny = (ids?: string[]): { data?: Record<string, Editor.Block>; isSuccess?: boolean } => {
+export const useMgetBlocksAny = (ids?: string[]): { data?: Record<string, Editor.BaseBlock>; isSuccess?: boolean } => {
   const atoms = useRecoilValueLoadable(waitForAny(ids?.map((id) => TelleryBlockAtom(id)) ?? []))
   const [state, setState] = useState({})
 
@@ -350,7 +350,7 @@ export const useMgetBlocksAny = (ids?: string[]): { data?: Record<string, Editor
               acc[block.id] = block
             }
             return acc
-          }, {} as { [key: string]: Editor.Block }),
+          }, {} as { [key: string]: Editor.BaseBlock }),
           isSuccess: true
         })
         break
@@ -420,7 +420,7 @@ export const useMgetUsers = (ids?: string[]): { data?: Record<string, User>; isS
   return state
 }
 
-export const useBlockSuspense = <T extends Editor.BaseBlock = Editor.Block>(id: string): T => {
+export const useBlockSuspense = <T extends Editor.BaseBlock = Editor.BaseBlock>(id: string): T => {
   const atom = useRecoilValue(TelleryBlockAtom(id))
 
   invariant(atom, 'atom is undefined')
@@ -428,7 +428,7 @@ export const useBlockSuspense = <T extends Editor.BaseBlock = Editor.Block>(id: 
   return atom as unknown as T
 }
 
-export const useBlock = <T extends Editor.BaseBlock = Editor.Block>(
+export const useBlock = <T extends Editor.BaseBlock = Editor.BaseBlock>(
   id: string
 ): { data?: T; error?: { statusCode?: number } } => {
   const atom = useRecoilValueLoadable(TelleryBlockAtom(id))

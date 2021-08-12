@@ -2,7 +2,7 @@ import { IconCommonMetrics, IconCommonQuestion } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useBlockSuspense, useSearchMetrics } from '@app/hooks/api'
 import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
-import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
+import { useStoryResources } from '@app/hooks/useStoryResources'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { DndItemDataBlockType, DnDItemTypes } from '@app/utils/dnd'
@@ -10,13 +10,11 @@ import { useDraggable } from '@dnd-kit/core'
 import { css, cx } from '@emotion/css'
 import { Tab } from '@headlessui/react'
 import React, { Fragment, useMemo } from 'react'
+import ContentLoader from 'react-content-loader'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import { useStoryPathParams } from '../hooks/useStoryPathParams'
 import { useGetBlockTitleTextSnapshot } from './editor'
-import { isQuestionLikeBlock } from './editor/Blocks/utils'
-import { getFilteredOrderdSubsetOfBlocks } from './editor/utils'
 import { useQuestionEditor } from './StoryQuestionsEditor'
-import ContentLoader from 'react-content-loader'
 
 const SideBarLoader: React.FC = () => {
   return (
@@ -26,7 +24,7 @@ const SideBarLoader: React.FC = () => {
   )
 }
 
-const TocQuestionItem: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
+const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
   const block = useBlockSuspense(blockId)
   const getBlockTitle = useGetBlockTitleTextSnapshot()
   const pushFocusedBlockIdState = usePushFocusedBlockIdState()
@@ -47,7 +45,7 @@ const TocQuestionItem: React.FC<{ blockId: string; storyId: string }> = ({ block
         pushFocusedBlockIdState(block.id, block.storyId)
       }}
     >
-      {block.type === Editor.BlockType.Question || block.type === Editor.BlockType.QuestionSnapshot ? (
+      {block.type === Editor.BlockType.SQL || block.type === Editor.BlockType.SnapshotBlock ? (
         <IconCommonQuestion
           color={ThemingVariables.colors.gray[0]}
           className={css`
@@ -82,7 +80,7 @@ const TocQuestionItem: React.FC<{ blockId: string; storyId: string }> = ({ block
 }
 
 const DataAssetItem: React.FC<{ blockId: string; currentStoryId: string }> = ({ blockId, currentStoryId }) => {
-  const block = useBlockSuspense<Editor.QuestionBlock>(blockId)
+  const block = useBlockSuspense<Editor.DataAssetBlock>(blockId)
   const getBlockTitle = useGetBlockTitleTextSnapshot()
 
   const { attributes, listeners, setNodeRef } = useDraggable({
@@ -90,15 +88,12 @@ const DataAssetItem: React.FC<{ blockId: string; currentStoryId: string }> = ({ 
     data: {
       type: DnDItemTypes.Block,
       originalBlockId: blockId,
-      blockData: createEmptyBlock<Editor.QuestionBlock>({
-        type: Editor.BlockType.Question,
+      blockData: createEmptyBlock<Editor.VisualizationBlock>({
+        type: Editor.BlockType.Visualization,
         storyId: currentStoryId,
         parentId: currentStoryId,
         content: {
-          title: block.content?.title,
-          sql: `select * from {{${blockId}}}`,
-          visualization: block.content?.visualization,
-          snapshotId: block.content?.snapshotId
+          dataAssetId: blockId
         }
       })
     } as DndItemDataBlockType
@@ -127,7 +122,7 @@ const DataAssetItem: React.FC<{ blockId: string; currentStoryId: string }> = ({ 
         questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
       }}
     >
-      {block.type === Editor.BlockType.Question ? (
+      {block.type === Editor.BlockType.SQL || block.type === Editor.BlockType.SnapshotBlock ? (
         <IconCommonQuestion
           color={ThemingVariables.colors.gray[0]}
           className={css`
@@ -164,15 +159,15 @@ const DataAssetItem: React.FC<{ blockId: string; currentStoryId: string }> = ({ 
 const CurrentStoryQuestions: React.FC = () => {
   const storyId = useStoryPathParams()
 
-  return storyId ? <StoryQuestions storyId={storyId} /> : null
+  return storyId ? (
+    <React.Suspense fallback={<></>}>
+      <StoryResources storyId={storyId} />{' '}
+    </React.Suspense>
+  ) : null
 }
 
-const StoryQuestions: React.FC<{ storyId: string }> = ({ storyId }) => {
-  const storyBlocksMap = useStoryBlocksMap(storyId)
-  const questionLikeBlocks = useMemo(() => {
-    if (!storyBlocksMap) return []
-    return getFilteredOrderdSubsetOfBlocks(storyBlocksMap, storyId, (block) => isQuestionLikeBlock(block.type))
-  }, [storyBlocksMap, storyId])
+const StoryResources: React.FC<{ storyId: string }> = ({ storyId }) => {
+  const resourceBlocks = useStoryResources(storyId)
 
   if (!storyId) return null
 
@@ -185,8 +180,8 @@ const StoryQuestions: React.FC<{ storyId: string }> = ({ storyId }) => {
       options={{ suppressScrollX: true }}
     >
       <div>
-        {questionLikeBlocks.map((block) => {
-          return <TocQuestionItem key={block.id} blockId={block.id} storyId={storyId} />
+        {resourceBlocks.map((block) => {
+          return <StoryDataAssetItem key={block.id} blockId={block.id} storyId={storyId} />
         })}
       </div>
     </PerfectScrollbar>

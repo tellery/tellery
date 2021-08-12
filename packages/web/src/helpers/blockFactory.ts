@@ -33,12 +33,11 @@ export const createEmptyBlock = <T extends Editor.BaseBlock = Editor.BaseBlock>(
   } as unknown as T
 
   switch (args.type) {
-    case Editor.BlockType.Question: {
+    case Editor.BlockType.Visualization: {
       return {
         ...commonParts,
         ...{
           content: {
-            sql: (args as Editor.QuestionBlock).content?.sql ?? '',
             ...commonParts.content
           },
           format: {
