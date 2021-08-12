@@ -38,6 +38,12 @@ import java.sql.Connection
             required = true
         ),
         Config(
+            name = PostgreSQLFields.SCHEMA,
+            type = ConfigType.STRING,
+            description = "The schema that tellery will connect to in the database",
+            hint = "PUBLIC"
+        ),
+        Config(
             name = PostgreSQLFields.USERNAME,
             type = ConfigType.STRING,
             description = "The username (role) you used to connect to your database",

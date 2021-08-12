@@ -7,4 +7,6 @@ object SnowflakeFields {
     const val PASSWORD = "Password"
     const val ROLE = "Role"
     const val WAREHOUSE = "Warehouse"
+    const val DATABASE = "Database"
+    const val SCHEMA = "Schema"
 }

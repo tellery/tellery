@@ -7,12 +7,14 @@ import io.tellery.entities.Profile
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Dbt(type = "PostgreSQL")
-class PostgreSQLDbtProfile(profile: Profile) : BaseDbtProfile(profile) {
+class PostgreSQLDbtProfile(profile: Profile) : BaseDbtProfile() {
 
     val host: String
     val port: Int
     val user: String
     val password: String
+    val dbname: String
+    val schema: String
 
     init {
         this.type = "postgres"
@@ -21,5 +23,6 @@ class PostgreSQLDbtProfile(profile: Profile) : BaseDbtProfile(profile) {
         this.user = getValueOrThrowException(profile, PostgreSQLFields.USERNAME)
         this.password = getValueOrThrowException(profile, PostgreSQLFields.PASSWORD)
         this.dbname = getValueOrThrowException(profile, PostgreSQLFields.DATABASE)
+        this.schema = getValueOrThrowException(profile, PostgreSQLFields.SCHEMA)
     }
 }

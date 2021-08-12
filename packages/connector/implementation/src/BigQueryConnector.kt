@@ -34,6 +34,12 @@ import kotlin.coroutines.resumeWithException
             description = "Upload your key file right here. For instruction see here: https://cloud.google.com/bigquery/docs/quickstarts/quickstart-client-libraries",
             hint = "",
             required = true
+        ),
+        Config(
+            name = BigQueryFields.DATASET,
+            type = ConfigType.STRING,
+            description = "The dataset that tellery will connect to in the data warehouse",
+            hint = "PUBLIC"
         )
     ]
 )
