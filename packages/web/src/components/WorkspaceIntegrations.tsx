@@ -205,7 +205,8 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
                 width: 70px;
               `}
               onClick={handlePushRepo.execute}
-              loading={handlePullRepo.status === 'pending' || handlePushRepo.status === 'pending'}
+              loading={handlePushRepo.status === 'pending'}
+              disabled={handlePullRepo.status === 'pending'}
             >
               Push
             </FormButton>
@@ -216,7 +217,8 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
                 width: 70px;
               `}
               onClick={handlePullRepo.execute}
-              loading={handlePullRepo.status === 'pending' || handlePushRepo.status === 'pending'}
+              loading={handlePullRepo.status === 'pending'}
+              disabled={handlePushRepo.status === 'pending'}
             >
               Pull
             </FormButton>
