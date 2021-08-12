@@ -42,7 +42,7 @@ data class DbtModel(
             else -> DbtBlock.Materialization.UNKNOWN
         }
 
-        if (sourceName != null) builder.sourceTable = sourceName
+        if (sourceName != null) builder.sourceName = sourceName
         // Relation name is null when the materialized of table is ephemeral
         if (relationName != null) builder.relationName = relationName
         return builder.build()
