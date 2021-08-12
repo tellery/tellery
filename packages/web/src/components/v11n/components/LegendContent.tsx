@@ -12,7 +12,7 @@ const iconSize = 14
 
 const iconMargin = 4
 
-const itemMargin = 10
+const itemMargin = 15
 
 export function LegendContent(props: Props) {
   return (
