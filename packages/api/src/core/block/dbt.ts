@@ -38,7 +38,10 @@ export class DbtBlock extends Block {
    * For ephemeral, actually this can be considered as a name-based transclusion (though it happens in the level of DBT), just return the compiled SQL.
    */
   getSql(): string {
-    const { materialized, compiledSql, relationName } = this.getContent()
+    const { type, materialized, compiledSql, relationName } = this.getContent()
+    if (type === 'source') {
+      return `SELECT * from ${relationName}`
+    }
     switch (materialized) {
       case 'unknown':
         throw DBTError.unknownMaterializationError()
