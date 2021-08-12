@@ -81,11 +81,21 @@ class SnowflakeConnector : JDBCConnector() {
     override val defaultSchema = null
 
     override fun buildConnectionStr(profile: Profile): String {
-        val accountName = profile.configs["Account Name"]
-        val regionId = profile.configs["Region Id"]
+        val accountName = profile.configs[SnowflakeFields.ACCOUNT_NAME]
+        val regionId = profile.configs[SnowflakeFields.REGION_ID]
+        val role = profile.configs[SnowflakeFields.ROLE]
+        val warehouse = profile.configs[SnowflakeFields.WAREHOUSE]
+        val database = profile.configs[SnowflakeFields.DATABASE]
+        val schema = profile.configs[SnowflakeFields.SCHEMA]
         return "jdbc:snowflake://${accountName}.${regionId}.snowflakecomputing.com/${
             buildOptionalsFromConfigs(
-                profile.configs.filterKeys { it in setOf("Role", "Warehouse") })
+                mapOf(
+                    "role" to role,
+                    "db" to database,
+                    "schema" to schema,
+                    "warehouse" to warehouse
+                )
+            )
         }"
     }
 

@@ -54,7 +54,7 @@ class BigQueryConnector : BaseConnector() {
     private val executor = Executors.newFixedThreadPool(10)
 
     override fun initByProfile(profile: Profile) {
-        val jsonBody = Base64.getDecoder().decode(profile.configs["Key File"]).decodeToString()
+        val jsonBody = Base64.getDecoder().decode(profile.configs[BigQueryFields.KEY_FILE]).decodeToString()
         val keyfileBody = gson.fromJson(jsonBody, BigQueryKeyBody::class.java)
         bigQueryOpts = BigQueryOptions.newBuilder().setCredentials(keyfileBody.toCreds()).build()
         bigQueryClient = bigQueryOpts.service

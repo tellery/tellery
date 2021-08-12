@@ -9,6 +9,7 @@ import io.tellery.entities.ImportFailureException
 import io.tellery.entities.Profile
 import io.tellery.entities.TypeField
 import io.tellery.utils.S3Storage
+import io.tellery.utils.buildOptionalsFromConfigs
 import io.tellery.utils.readCSV
 import io.tellery.utils.toSQLType
 import java.sql.Connection
@@ -41,7 +42,7 @@ import java.sql.Connection
         Config(
             name = RedshiftFields.SCHEMA,
             type = ConfigType.STRING,
-            description = "The schema that tellery will connect to in the database",
+            description = "The schema that tellery will connect to in the database (only used for dbt connection)",
             hint = "PUBLIC"
         ),
         Config(
@@ -101,9 +102,9 @@ class RedshiftConnector : JDBCConnector() {
     private var s3Client: S3Storage? = null
 
     override fun buildConnectionStr(profile: Profile): String {
-        val endpoint = profile.configs["Endpoint"]
-        val port = profile.configs["Port"]
-        val database = profile.configs["Database"]
+        val endpoint = profile.configs[RedshiftFields.ENDPOINT]
+        val port = profile.configs[RedshiftFields.PORT]
+        val database = profile.configs[RedshiftFields.DATABASE]
         return "jdbc:redshift://${endpoint}:${port}/${database}"
     }
 
