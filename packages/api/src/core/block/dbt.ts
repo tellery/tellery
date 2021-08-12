@@ -1,6 +1,6 @@
 import { Block, getPlainTextFromTokens } from '.'
 import { DBTError } from '../../error/error'
-import { BlockType } from '../../types/block'
+import { BlockParentType, BlockType } from '../../types/block'
 import { DbtMetadata } from '../../types/dbt'
 import { Token } from '../../types/token'
 import { Link } from '../link'
@@ -14,6 +14,11 @@ export class DbtBlock extends Block {
 
   getType(): BlockType {
     return DbtBlock.type
+  }
+
+  // Since dbt blocks should only belong to workspace (instead of a specific story / block, its parent type is workspace)
+  getParentType(): BlockParentType {
+    return BlockParentType.WORKSPACE
   }
 
   getPlainText(): string | undefined {
