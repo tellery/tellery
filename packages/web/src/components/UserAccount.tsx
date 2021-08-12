@@ -134,7 +134,7 @@ export default function UserAccount(props: { onClose(): void }) {
               handleLogoutUser.execute()
             }
           }}
-          disabled={handleLogoutUser.status === 'pending'}
+          loading={handleLogoutUser.status === 'pending'}
         >
           Logout
         </FormButton>
@@ -144,7 +144,7 @@ export default function UserAccount(props: { onClose(): void }) {
           className={css`
             flex: 1;
           `}
-          disabled={handleUpdateUser.status === 'pending'}
+          loading={handleUpdateUser.status === 'pending'}
         >
           Update
         </FormButton>

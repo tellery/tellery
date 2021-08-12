@@ -93,8 +93,8 @@ export namespace Editor {
     Visualization = 'visualization',
     SnapshotBlock = 'snapshot',
     Metric = 'metric',
-    // TODO: compact code, change to SQL
     SQL = 'sql',
+    DBT = 'dbt',
 
     // embeds
     Embed = 'embed',

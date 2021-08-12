@@ -183,6 +183,14 @@ export function useSearchMetrics(
   return useSearchBlocks(keyword, limit, Editor.BlockType.Metric, options)
 }
 
+export function useSearchDBTBlocks(
+  keyword: string,
+  limit: number,
+  options?: UseQueryOptions<SearchBlockResult<Editor.BlockType.DBT>>
+) {
+  return useSearchBlocks(keyword, limit, Editor.BlockType.DBT, options)
+}
+
 export const useRefetchMetrics = () => {
   const queryClient = useQueryClient()
   const refetch = useCallback(() => {
