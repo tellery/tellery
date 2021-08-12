@@ -82,6 +82,7 @@ export class DbtService {
     )
       .map((b) => QuestionBlock.fromEntitySafely(b))
       .compact()
+      .filter((b) => b.alive)
       .value() as QuestionBlock[]
 
     // load story blocks for fulfilling name

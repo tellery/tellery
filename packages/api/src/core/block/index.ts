@@ -198,6 +198,9 @@ export abstract class Block extends Entity {
     return b
   }
 
+  /**
+   * In case of loading a unregistered block type
+   */
   static fromEntitySafely(block: BlockEntity): Block | undefined {
     try {
       return Block.fromEntity(block)
