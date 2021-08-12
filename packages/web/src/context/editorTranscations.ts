@@ -299,6 +299,7 @@ export const duplicateStoryTranscation = ({
       alive: true,
       parentId: wroskapceId,
       parentTable: 'workspace',
+      resources: [],
       content: { ...story.content, title: mergeTokens([[`copy of `], ...(story.content?.title ?? [])]) },
       children: [],
       createdById: story.createdById,

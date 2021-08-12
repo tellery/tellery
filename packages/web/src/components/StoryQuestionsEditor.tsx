@@ -531,11 +531,11 @@ export const StoryQuestionEditor: React.FC<{
         ...blocksMap,
         [id]: {
           ...blocksMap[id],
-          draft: updateOldDraft(blocksMap[id].draft, block)
+          draft: updateOldDraft(updateOldDraft(blocksMap[id].draft, visualizationBlock ?? sqlBlock), sqlBlock)
         }
       }
     })
-  }, [block, id, setQuestionBlocksMap])
+  }, [sqlBlock, visualizationBlock, id, setQuestionBlocksMap])
 
   const setSql = useCallback(
     (sql) => {
@@ -971,7 +971,7 @@ export const StoryQuestionEditor: React.FC<{
               }}
             />
           </Tippy>
-          {snapshot?.data && (
+          {block.type === Editor.BlockType.Visualization && (
             <Tippy content="Visualization options" arrow={false} placement="right" delay={300}>
               <IconButton
                 icon={IconVisualizationSetting}

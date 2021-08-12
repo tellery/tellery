@@ -12,7 +12,7 @@ import {
   searchBlocks,
   sqlRequest
 } from '@app/api'
-import { isQuestionLikeBlock } from '@app/components/editor/Blocks/utils'
+import { isDataAssetBlock } from '@app/components/editor/Blocks/utils'
 import { useAsync } from '@app/hooks'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import type { AvailableConfig, BackLinks, ProfileConfig, Snapshot, Story, UserInfo, Workspace } from '@app/types'
@@ -501,7 +501,7 @@ export const useQuestionDownstreams = (id?: string) => {
       compact(
         links?.backwardRefs
           ?.map(({ blockId }) => blocks?.[blockId])
-          .filter((block) => block && isQuestionLikeBlock(block.type))
+          .filter((block) => block && isDataAssetBlock(block.type))
       ),
     [blocks, links?.backwardRefs]
   )

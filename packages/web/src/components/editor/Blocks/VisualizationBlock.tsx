@@ -324,7 +324,7 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
   const visualizationConfig = useMemo(() => {
     // ensure snapshot data is valid
     if (snapshot?.data && typeof snapshot?.data === 'object' && !snapshot.data.errMsg) {
-      return visualization || charts[Type.TABLE].initializeConfig(snapshot.data, {})
+      return visualization ?? charts[Type.TABLE].initializeConfig(snapshot.data, {})
     } else {
       return undefined
     }

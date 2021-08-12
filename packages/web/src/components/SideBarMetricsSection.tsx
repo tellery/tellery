@@ -1,7 +1,6 @@
 import { IconCommonMetrics, IconCommonQuestion } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useBlockSuspense, useSearchDBTBlocks, useSearchMetrics } from '@app/hooks/api'
-import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
 import { useStoryResources } from '@app/hooks/useStoryResources'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
@@ -27,8 +26,8 @@ const SideBarLoader: React.FC = () => {
 const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
   const block = useBlockSuspense(blockId)
   const getBlockTitle = useGetBlockTitleTextSnapshot()
-  const pushFocusedBlockIdState = usePushFocusedBlockIdState()
-
+  // const pushFocusedBlockIdState = usePushFocusedBlockIdState()
+  const questionEditor = useQuestionEditor()
   return (
     <div
       className={css`
@@ -42,7 +41,8 @@ const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ bl
         }
       `}
       onClick={() => {
-        pushFocusedBlockIdState(block.id, block.storyId)
+        questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
+        // pushFocusedBlockIdState(block.id, block.storyId)
       }}
     >
       {block.type === Editor.BlockType.SQL || block.type === Editor.BlockType.SnapshotBlock ? (

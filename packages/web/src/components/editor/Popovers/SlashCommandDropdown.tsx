@@ -25,7 +25,7 @@ import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'rea
 import scrollIntoView from 'scroll-into-view-if-needed'
 import invariant from 'tiny-invariant'
 import { mergeTokens, splitToken, tokenPosition2SplitedTokenPosition } from '..'
-import { isQuestionLikeBlock, isVisualizationBlock } from '../Blocks/utils'
+import { isVisualizationBlock } from '../Blocks/utils'
 import { EditorPopover } from '../EditorPopover'
 import { TellerySelection, tellerySelection2Native, TellerySelectionType } from '../helpers/tellerySelection'
 import { useEditableContextMenu, useEditor } from '../hooks'
