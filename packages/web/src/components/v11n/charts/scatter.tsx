@@ -15,7 +15,7 @@ import {
 } from '@tellery/recharts'
 import { groupBy, orderBy } from 'lodash'
 import PerfectScrollbar from 'react-perfect-scrollbar'
-import { useTextWidth } from '@imagemarker/use-text-width'
+import { useTextWidth } from '@tag0/use-text-width'
 import { DisplayType, Type } from '../types'
 import type { Chart } from './base'
 import { ConfigButton } from '../components/ConfigButton'

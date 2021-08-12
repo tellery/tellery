@@ -1,7 +1,7 @@
 import { css, cx } from '@emotion/css'
 import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState, MouseEvent } from 'react'
 import { sortBy, keyBy, compact, upperFirst, sum, mapValues, tail, head } from 'lodash'
-import { useTextWidth } from '@imagemarker/use-text-width'
+import { useTextWidth } from '@tag0/use-text-width'
 import { nanoid } from 'nanoid'
 import {
   Area,
