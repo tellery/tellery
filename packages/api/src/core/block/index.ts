@@ -323,24 +323,29 @@ export abstract class Block extends Entity {
 
   /**
    * sync the alive field of current block with its downstream blocks and corresponding links
-   * if the `alive` field of a block were set to be false, all `alive` field of downstream blocks should also be set to false, and the alive status for links where source / target meet those blocks should also be updated
-   * if the `alive` field of a block were set to be true (from false), all `alive` field of downstream blocks (here defined only by `children` field) should also be set to true, and the alive status for links where source / target meet those blocks should also be updated
+   * - downstream blocks are defined by `children` and `resources`
+   * - if the `alive` field of a block were set to be false,
+   *   all `alive` field of downstream blocks should also be set to false,
+   *   and the alive status for links where source / target meet those blocks should also be updated
+   * - if the `alive` field of a block were set to be true (from false),
+   *   all `alive` field of downstream blocks should also be set to true,
+   *   and the alive status for links where source / target meet those blocks should also be updated
    */
   protected async syncBlocksAlive(manager: EntityManager, origin?: Block): Promise<void> {
-    // if `origin.children` does not exists, it is not a nested block
-    if (!origin || !origin.children) {
+    // if `origin.children` and `origin.resources` does not exists, it is not a nested block
+    if (!origin || (!origin.children && !origin.resources)) {
       return
     }
     if (this.isBeingDeleted(origin)) {
       await Promise.all([
-        this.updateChildrenAlive(manager, origin, false),
+        this.updateDownstreamAlive(manager, origin, false),
         updateSourceLinkAlive(manager, origin.id, false),
         updateTargetLinkAlive(manager, origin.id, false),
       ])
     }
     if (this.isBeingReverted(origin)) {
       await Promise.all([
-        this.updateChildrenAlive(manager, origin, true),
+        this.updateDownstreamAlive(manager, origin, true),
         updateSourceLinkAlive(manager, origin.id, true),
         updateTargetLinkAlive(manager, origin.id, true),
       ])
@@ -349,29 +354,27 @@ export abstract class Block extends Entity {
 
   /**
    * update the `alive` field of all downstream blocks of a certain block
+   * includes `children` and `resources`
+   * Note that only children and resources **in the same story** (storyId matches) would be update (in case of introducing external resource)
    */
-  private async updateChildrenAlive(
+  private async updateDownstreamAlive(
     manager: EntityManager,
     origin: Block,
     alive: boolean,
   ): Promise<void> {
-    if (_.isEmpty(origin.children)) {
+    if (_.isEmpty(origin.children) && _.isEmpty(origin.resources)) {
       return
     }
     const updateClause = createQueryBuilder(BlockEntity, 'blocks').update().set({ alive })
     await cascadeUpdateBlocks(manager, origin.id, updateClause)
   }
 
-  private isAliveEqual(target: boolean): boolean {
-    return this.alive === target
-  }
-
   protected isBeingDeleted(origin: { alive: boolean }): boolean {
-    return origin.alive && this.isAliveEqual(false)
+    return origin.alive && !this.alive
   }
 
   protected isBeingReverted(origin: { alive: boolean }): boolean {
-    return !origin.alive && this.isAliveEqual(true)
+    return !origin.alive && this.alive
   }
 
   protected isBeingCreated(origin?: Block): boolean {
@@ -409,8 +412,9 @@ export function getPlainTextFromTokens(tokens: Token[]): string | undefined {
 }
 
 /**
- * recursively take all children blocks of the root block corresponding to rootBlockId, then apply update clause on it
+ * recursively take all children and resources blocks of the root block corresponding to rootBlockId, then apply update clause on it
  * Note: there must be a correct alias for updateClause
+ * Note2: only blocks that possesses the same storyId with the rootBlock would be updated
  * blockIdField denotes the field name corresponding to the blockId taking out (i.e. the field which joined with blockId)
  */
 export async function cascadeUpdateBlocks<T extends TelleryBaseEntity>(
@@ -427,7 +431,8 @@ export async function cascadeUpdateBlocks<T extends TelleryBaseEntity>(
     `WITH RECURSIVE result AS (
         SELECT id, children, resources FROM blocks WHERE id = $${
           params.length + 1
-        } UNION ALL SELECT origin.id, origin.children, origin.resources FROM result JOIN blocks origin ON origin.id = ANY(result.children) or origin.id = ANY(result.resources)
+        } UNION ALL SELECT origin.id, origin.children, origin.resources FROM result JOIN blocks origin
+        ON origin.id = ANY(result.children) OR origin.id = ANY(result.resources) AND origin.storyId = result.storyId
       )
       ${updateSql}`,
     [...params, rootBlockId],
