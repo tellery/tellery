@@ -213,7 +213,7 @@ export function SQLEditor(props: {
 function TransclusionContentWidget(props: {
   blockId: string
   languageId?: string
-  value: Editor.QuestionBlock
+  value: Editor.SQLBlock
   length: number
   index: number
 }) {

@@ -49,7 +49,7 @@ export const VariableAtomFamily = selectorFamily<any, { storyId: string; formula
 
       for (const variableName in variableMap) {
         const blockId = variableMap[variableName]
-        const block = (await get(TelleryBlockAtom(blockId))) as Editor.QuestionBlock
+        const block = (await get(TelleryBlockAtom(blockId))) as Editor.SQLBlock
 
         if (!block) return NaN
 

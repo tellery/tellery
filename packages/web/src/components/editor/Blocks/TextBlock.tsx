@@ -6,7 +6,7 @@ import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import { BlockComponent, registerBlock } from './utils'
 
 interface TextBlockProps {
-  block: Editor.Block
+  block: Editor.BaseBlock
   children: ReactNode
 }
 

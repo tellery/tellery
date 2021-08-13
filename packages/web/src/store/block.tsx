@@ -6,7 +6,7 @@ import { blockIdGenerator } from '@app/utils'
 import { subscribeBlockUpdate } from '@app/utils/remoteStoreObserver'
 import debug from 'debug'
 import { cloneDeep } from 'lodash'
-import { atomFamily, DefaultValue, selectorFamily, useRecoilCallback } from 'recoil'
+import { atomFamily, DefaultValue, selectorFamily, useRecoilCallback, Snapshot as RecoilSnapshot } from 'recoil'
 import invariant from 'tiny-invariant'
 import { WorkspaceIdAtom } from '../hooks/useWorkspaceIdAtom'
 
@@ -165,7 +165,7 @@ export const getBlockFromStoreMap = (blockId: string, snapshot: BlockSnapshot): 
   return snapshot.get(blockId)
 }
 
-export const getBlockFromSnapshotAsync = async (blockId: string, snapshot: Snapshot) => {
+export const getBlockFromSnapshotAsync = async (blockId: string, snapshot: RecoilSnapshot) => {
   const targetBlock = await snapshot.getPromise(TelleryBlockAtom(blockId))
   return targetBlock ? cloneDeep(targetBlock) : undefined
 }

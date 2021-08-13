@@ -35,7 +35,9 @@ import { MoreSettingPopover } from '../components/MoreSettingPopover'
 import { ShapeSelector } from '../components/ShapeSelector'
 import { SortableList } from '../components/SortableList'
 import { fontFamily } from '../constants'
+import { Type, DisplayType, ComboShape, ComboStack, Config } from '../types'
 import { createTrend, formatNumber, formatRecord, isNumeric, isTimeSeries } from '../utils'
+import type { Chart } from './base'
 
 const splitter = ', '
 

@@ -180,7 +180,7 @@ export const getDuplicatedBlocksFragment = (
 export const getDuplicatedBlocks = (
   blocks: Editor.BaseBlock[],
   storyId: string,
-  resourceMapping: Record<string, string>
+  resourceMapping?: Record<string, string>
 ) => {
   const duplicatedBlocks = blocks.map((block) => {
     if (block.type === Editor.BlockType.Visualization) {
@@ -192,7 +192,7 @@ export const getDuplicatedBlocks = (
         parentId: storyId,
         content: {
           ...fragBlock.content,
-          dataAssetId: originalDataAssetId ? resourceMapping[originalDataAssetId] : undefined
+          dataAssetId: originalDataAssetId ? resourceMapping?.[originalDataAssetId] : undefined
         },
         children: fragBlock.children,
         format: fragBlock.format
@@ -315,7 +315,7 @@ export const duplicateStoryTranscation = ({
   const oldResources = story.resources?.map((id) => getBlockFromSnapshot(id, snapshot)) ?? []
   const newResources = oldResources.map((block) => {
     if (block.storyId === storyId) {
-      const newId = nanoid()
+      const newId = blockIdGenerator()
       resourceMapping[block.id] = newId
       return createEmptyBlock({ ...block, id: newId, storyId: newStoryId, parentId: newStoryId })
     } else {

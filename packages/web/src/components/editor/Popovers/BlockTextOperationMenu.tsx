@@ -34,6 +34,7 @@ import {
 import { createTranscation } from '@app/context/editorTranscations'
 import { useBlockSuspense } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
+import { useStoryResources } from '@app/hooks/useStoryResources'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
@@ -961,7 +962,7 @@ const FormulaResultRenderer: React.FC<{ storyId: string; formula: string }> = ({
 }
 
 const InlineFormulaInput: React.FC<{ storyId: string }> = ({ storyId }) => {
-  const currentQuestions = useStoryQustions(storyId)
+  const currentResources = useStoryResources(storyId)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
   const [formula, setFormula] = useState('')
 
@@ -1074,9 +1075,9 @@ const InlineFormulaInput: React.FC<{ storyId: string }> = ({ storyId }) => {
           >
             Data Assets
           </div>
-          {currentQuestions.map((question) => (
+          {currentResources.map((resource) => (
             <div
-              key={question.id}
+              key={resource.id}
               className={css`
                 cursor: pointer;
                 padding: 5px;
@@ -1086,10 +1087,10 @@ const InlineFormulaInput: React.FC<{ storyId: string }> = ({ storyId }) => {
               `}
               onClick={(e) => {
                 e.preventDefault()
-                document.execCommand('insertText', false, `{{${question.id}}}[1,1]`)
+                document.execCommand('insertText', false, `{{${resource.id}}}[1,1]`)
               }}
             >
-              {getBlockTitle(question)}
+              {getBlockTitle(resource)}
             </div>
           ))}
         </div>
