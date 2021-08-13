@@ -39,7 +39,8 @@ import kotlin.coroutines.resumeWithException
             name = BigQueryFields.DATASET,
             type = ConfigType.STRING,
             description = "The dataset that tellery will connect to in the data warehouse",
-            hint = "PUBLIC"
+            hint = "PUBLIC",
+            fillHint = true,
         )
     ]
 )

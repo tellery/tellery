@@ -58,19 +58,21 @@ import java.sql.Connection
             type = ConfigType.STRING,
             description = "The virtual warehouse to use once connected by default",
             hint = "COMPUTE_WH",
+            fillHint = true,
         ),
         Config(
             name = SnowflakeFields.DATABASE,
             type = ConfigType.STRING,
             description = "The database that tellery will connect to",
-            hint = "",
-            required = true
+            hint = "SNOWFLAKE_SAMPLE_DATA",
+            required = true,
         ),
         Config(
             name = SnowflakeFields.SCHEMA,
             type = ConfigType.STRING,
             description = "The schema that tellery will connect to in the database",
-            hint = "PUBLIC"
+            hint = "PUBLIC",
+            fillHint = true
         )
     ]
 )

@@ -88,7 +88,15 @@ export class ConnectorManager implements IConnectorManager {
     const configs = await beautyCall(this.client.getAvailableConfigs, this.client, new Empty())
     return configs.getAvailableconfigsList().map((cfg) => ({
       type: cfg.getType(),
-      configs: cfg.getConfigsList().map((i) => i.toObject()),
+      configs: cfg.getConfigsList().map((i) => ({
+        name: i.getName(),
+        type: i.getType(),
+        description: i.getDescription(),
+        hint: i.getHint(),
+        required: i.getRequired(),
+        secret: i.getSecret(),
+        fillHint: i.getFillhint(),
+      })),
     }))
   }
 

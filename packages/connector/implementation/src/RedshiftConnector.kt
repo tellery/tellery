@@ -9,7 +9,6 @@ import io.tellery.entities.ImportFailureException
 import io.tellery.entities.Profile
 import io.tellery.entities.TypeField
 import io.tellery.utils.S3Storage
-import io.tellery.utils.buildOptionalsFromConfigs
 import io.tellery.utils.readCSV
 import io.tellery.utils.toSQLType
 import java.sql.Connection
@@ -43,7 +42,8 @@ import java.sql.Connection
             name = RedshiftFields.SCHEMA,
             type = ConfigType.STRING,
             description = "The schema that tellery will connect to in the database (only used for dbt connection)",
-            hint = "PUBLIC"
+            hint = "PUBLIC",
+            fillHint = true,
         ),
         Config(
             name = RedshiftFields.USERNAME,

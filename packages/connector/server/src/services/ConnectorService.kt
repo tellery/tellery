@@ -56,6 +56,7 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
             hint = confAnnotation.hint
             required = confAnnotation.required
             secret = confAnnotation.secret
+            fillHint = confAnnotation.fillHint
         }
     }
 

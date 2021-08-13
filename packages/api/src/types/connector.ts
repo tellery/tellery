@@ -7,6 +7,7 @@ type Config = {
   hint?: string
   required: boolean
   secret: boolean
+  fillHint: boolean
 }
 
 type AvailableConfig = {
