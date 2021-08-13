@@ -59,6 +59,7 @@ dependencies {
     implementation("com.github.marcoferrer.krotoplus:kroto-plus-message:$krotoplusVersion")
     implementation("com.github.marcoferrer.krotoplus:kroto-plus-test:$krotoplusVersion")
     implementation("com.google.protobuf:protobuf-java:$protobufVersion")
+    implementation("com.google.protobuf:protobuf-java-util:$protobufVersion")
     implementation("org.eclipse.jgit:org.eclipse.jgit:$jgitVersion")
     implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:$jgitVersion")
     implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:$jgitVersion")

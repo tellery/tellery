@@ -29,6 +29,7 @@ import io.tellery.grpc.DbtBlock
 import io.tellery.grpc.QuestionBlockContent
 import mu.KotlinLogging
 import org.apache.commons.io.FileUtils
+import org.jetbrains.annotations.TestOnly
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStream
@@ -40,7 +41,7 @@ import java.util.function.Consumer
 
 object DbtManager {
 
-    private val rootFolder: File
+    private var rootFolder: File
     private val keyFolder: File
     private val profileFile: File = File(System.getProperty("user.home") + "/.dbt/profiles.yml")
     private val mapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
@@ -102,7 +103,7 @@ object DbtManager {
                 cloneRemoteRepo(repo)
             } catch (ex: Exception) {
                 logger.error("Clone repository meeting some problem.", ex)
-                repo.gitRepoFolder.deleteOnExit()
+                repo.gitRepoFolder.delete()
             }
             updateTelleryModelConfig(repo)
         }
@@ -166,6 +167,11 @@ object DbtManager {
         return EXTERNAL_CONFIG_FIELDS.all { profile.configs.containsKey(it) }
     }
 
+    @TestOnly
+    fun updateRootFolder(testRootFolder: File) {
+        rootFolder = testRootFolder
+    }
+
     @VisibleForTesting
     fun updateProjectConfig(projectConfig: JsonNode, name: String) {
         assertInternalError(
@@ -217,23 +223,12 @@ object DbtManager {
         return models + sources
     }
 
-    private fun updateTelleryModelConfig(repo: DbtRepository) {
-        val projectConfigFile = File(repo.gitRepoFolder, "dbt_project.yml");
-        val projectConfig = mapper.readTree(projectConfigFile)
-        updateProjectConfig(
-            projectConfig,
-            repo.profile.configs[Constants.PROFILE_DBT_PROJECT_FIELD]!!
-        )
-
-        checkoutMasterAndPull(repo)
-        overwriteFile(projectConfigFile, mapper.writeValueAsString(projectConfig))
-        commitAndPush(repo, "Update the dbt_project.yml by tellery.")
-    }
-
-    private fun overwriteDiffModels(name: String, blocks: List<QuestionBlockContent>) {
+    @VisibleForTesting
+    fun overwriteDiffModels(name: String, blocks: List<QuestionBlockContent>) {
         val telleryModelFolder = File(rootFolder.absolutePath + "/$name/models/tellery")
         forceMkdir(telleryModelFolder)
 
+        // Create and overwrite SQL files using tellery blocks.
         blocks.forEach { b ->
             val sqlFile = File(telleryModelFolder, "${b.name}.sql")
             if (sqlFile.exists()) {
@@ -245,6 +240,27 @@ object DbtManager {
                 overwriteFile(sqlFile, b.sql)
             }
         }
+
+        // Remove redundant SQL files.
+        val blockNames = blocks.map { "${it.name}.sql" }
+        telleryModelFolder.listFiles()!!.forEach { f ->
+            if (!blockNames.contains(f.name)) {
+                f.delete()
+            }
+        }
+    }
+
+    private fun updateTelleryModelConfig(repo: DbtRepository) {
+        val projectConfigFile = File(repo.gitRepoFolder, "dbt_project.yml");
+        val projectConfig = mapper.readTree(projectConfigFile)
+        updateProjectConfig(
+            projectConfig,
+            repo.profile.configs[Constants.PROFILE_DBT_PROJECT_FIELD]!!
+        )
+
+        checkoutMasterAndPull(repo)
+        overwriteFile(projectConfigFile, mapper.writeValueAsString(projectConfig))
+        commitAndPush(repo, "Update the dbt_project.yml by tellery.")
     }
 
     private fun getProfileByName(name: String): Profile {
