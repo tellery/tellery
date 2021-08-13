@@ -31,9 +31,8 @@ export const Diagram = (props: {
 }) => {
   const chart = useChart(props.config?.type)
   const ref = useRef<HTMLDivElement>(null)
-  const nativeDimensions = useDimensions(ref.current, 0, !props.dimensions)
+  const nativeDimensions = useDimensions(ref, 0, !props.dimensions)
   const chartDimensions = props.dimensions ?? nativeDimensions
-
   const diagram = useMemo(() => {
     return chart && props.data ? (
       <chart.Diagram dimensions={chartDimensions} data={props.data} config={props.config as never} />
