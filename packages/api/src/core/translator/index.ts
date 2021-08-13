@@ -78,6 +78,7 @@ async function loadSqlFromBlocks(blockIds: string[]): Promise<{ [k: string]: str
   return _(records)
     .keyBy('id')
     .mapValues((b) => {
+      // eslint-disable-next-line no-restricted-syntax
       for (const translator of translators) {
         if (translator.match(b)) {
           return translator.translate(b)
@@ -107,9 +108,10 @@ async function buildGraph(sql: string): Promise<DirectedGraph<SQLPieces, string>
       .filter((bid) => !res.hasNode(bid))
       .value()
 
+    // eslint-disable-next-line no-await-in-loop
     const notIncludedSqls = await loadSqlFromBlocks(notIncludedBlockIds)
 
-    _(notIncludedSqls).forEach((s, key) => queue.push({ key, node: sqlMacro(s) }))
+    _(notIncludedSqls).forEach((s, currKey) => queue.push({ key: currKey, node: sqlMacro(s) }))
   }
   return res
 }

@@ -94,6 +94,7 @@ export namespace Editor {
     StoryLink = 'story_link',
     QuestionReference = 'question_reference',
     QuestionSnapshot = 'question_snapshot',
+    DBT = 'dbt',
 
     // embeds
     Embed = 'embed',

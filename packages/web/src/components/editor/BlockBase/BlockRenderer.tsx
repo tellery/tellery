@@ -8,16 +8,13 @@ import { Editor, Story } from '@app/types'
 import { blockTitleToText, extractEntitiesFromToken, isNonSelectbleToken } from '../helpers/tokenManipulation'
 
 export const COLORS = {
-  blue: ThemingVariables.colors.visualization[0],
-  orange: ThemingVariables.colors.visualization[1],
-  yellow: ThemingVariables.colors.visualization[2],
-  green: ThemingVariables.colors.visualization[3],
-  pink: ThemingVariables.colors.visualization[4],
-  red: ThemingVariables.colors.visualization[5],
-  teal: ThemingVariables.colors.visualization[6],
-  brown: ThemingVariables.colors.visualization[8],
-  purple: ThemingVariables.colors.visualization[9],
-  gray: ThemingVariables.colors.gray[0]
+  blue: ThemingVariables.colors.palette.blue,
+  orange: ThemingVariables.colors.palette.orange,
+  yellow: ThemingVariables.colors.palette.yellow,
+  green: ThemingVariables.colors.palette.green,
+  pink: ThemingVariables.colors.palette.pink,
+  purple: ThemingVariables.colors.palette.purple,
+  gray: ThemingVariables.colors.palette.gray
 }
 
 export const INLINE_STYLES = new Map([

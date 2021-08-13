@@ -37,7 +37,6 @@ export function MainSideBarTabHeader(props: {
           className={cx(
             sideBarContainerStyle,
             css`
-              &:hover,
               &:active,
               &[data-active='true'] {
                 background: ${ThemingVariables.colors.gray[3]};

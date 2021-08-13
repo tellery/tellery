@@ -6,7 +6,7 @@ import _, { random } from 'lodash'
 import { nanoid } from 'nanoid'
 import { Socket } from 'socket.io'
 import { io } from 'socket.io-client'
-import { getConnection, getRepository, In } from 'typeorm'
+import { getConnection, getRepository } from 'typeorm'
 
 import app from '../src'
 import { createDatabaseCon } from '../src/clients/db/orm'
@@ -34,8 +34,9 @@ test.before.cb((t: ExecutionContext<any>) => {
 
   t.context.server.listen(port, () => {
     t.context.prefixUrl = `http://localhost:${port}`
-    // @ts-ignore
-    createDatabaseCon().then(() => t.end())
+    createDatabaseCon()
+      .then(() => (t as any).end())
+      .catch((err) => console.error(err))
   })
 })
 
@@ -54,8 +55,7 @@ test.beforeEach.cb((t: ExecutionContext<any>) => {
   })
   socket.on('connect', () => {
     t.context.client = socket
-    // @ts-ignore
-    t.end()
+    ;(t as any).end()
   })
 })
 
@@ -216,13 +216,13 @@ test.serial('test receive notification for multi client', async (t: ExecutionCon
   await Bluebird.delay(delay)
   // success
   // NOTE: update entity is global broadcast now
-  getNotificationService().sendUpdateEntityEvent('test', 'success', [
-    { id: 'success', type: 'block' },
-  ])
+  getNotificationService()
+    .sendUpdateEntityEvent('test', 'success', [{ id: 'success', type: 'block' }])
+    .catch((err) => console.log(err))
   // failure，should not receive this，different namespace
-  getNotificationService().sendUpdateEntityEvent('test2', 'failure', [
-    { id: 'failure', type: 'block' },
-  ])
+  getNotificationService()
+    .sendUpdateEntityEvent('test2', 'failure', [{ id: 'failure', type: 'block' }])
+    .catch((err) => console.log(err))
 
   client2.on('notification', (notification: any) => {
     if (_(notification).get('type') !== 'updateEntity') {
@@ -817,6 +817,7 @@ test.serial('reference completion', async (t: ExecutionContext<any>) => {
   const qid = nanoid()
   const mid1 = nanoid()
   const mid2 = nanoid()
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const workspaceId = uuid()
   // here nanoid() will be word cutting
   const title = `searchable title`

@@ -94,6 +94,12 @@ const SideBarContent: React.FC = () => {
   }, [hasNoProfile, showSettingsModal])
   const { t } = useTranslation()
 
+  useEffect(() => {
+    if (!isHovering) {
+      setActiveSideBarTab(null)
+    }
+  }, [isHovering])
+
   return (
     <div
       className={css`
@@ -148,8 +154,7 @@ const SideBarContent: React.FC = () => {
               <MainSideBarTabHeader
                 key={id}
                 {...rest}
-                onClick={() => {}}
-                onHover={() => {
+                onClick={() => {
                   setActiveSideBarTab(key)
                 }}
                 active={activeSideBarTab === id}
@@ -182,7 +187,7 @@ const SideBarContent: React.FC = () => {
           <MainSideBarItem icon={IconCommonSetting} hoverTitle={t`Settings`} onClick={showSettingsModal} />
         </div>
       </div>
-      <FloatingSideBar show={isHovering}>
+      <FloatingSideBar show={isHovering && !!activeSideBarTab}>
         {activeSideBarTab && SideBarContents[activeSideBarTab].content}
       </FloatingSideBar>
 

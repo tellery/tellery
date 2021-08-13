@@ -1,6 +1,6 @@
 import { Context, Next } from 'koa'
 
-export default async function error(ctx: Context, next: Next) {
+export default async function error(ctx: Context, next: Next): Promise<void> {
   try {
     await next()
   } catch (err) {

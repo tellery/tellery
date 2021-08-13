@@ -148,7 +148,8 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
         `}
         variant="primary"
         onClick={handleSubmit(handleUpsertProfile.execute)}
-        disabled={handleUpsertProfile.status === 'pending' || disabled}
+        disabled={disabled}
+        loading={handleUpsertProfile.status === 'pending'}
       >
         Update
       </FormButton>

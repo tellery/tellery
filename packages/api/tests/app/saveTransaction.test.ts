@@ -21,8 +21,9 @@ test.before.cb((t: ExecutionContext<any>) => {
 
   t.context.server.listen(port, () => {
     t.context.prefixUrl = `http://localhost:${port}`
-    // @ts-ignore
-    createDatabaseCon().then(() => t.end())
+    createDatabaseCon()
+      .then(() => (t as any).end())
+      .catch((err) => console.error(err))
   })
 })
 
@@ -41,8 +42,7 @@ test.beforeEach.cb((t: ExecutionContext<any>) => {
   })
   socket.on('connect', () => {
     t.context.client = socket
-    // @ts-ignore
-    t.end()
+    ;(t as any).end()
   })
 })
 

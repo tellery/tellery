@@ -2,6 +2,16 @@ import React, { useContext } from 'react'
 import { kebabCase, cloneDeep } from 'lodash'
 export interface TelleryTheme {
   colors: {
+    palette: {
+      blue: string
+      cyan: string
+      gray: string
+      yellow: string
+      purple: string
+      orange: string
+      pink: string
+      green: string
+    }
     text: string[]
     gray: string[]
     code: string[]
@@ -21,6 +31,16 @@ export interface TelleryTheme {
  */
 export const TelleryThemeLight: TelleryTheme = {
   colors: {
+    palette: {
+      blue: '#5B8FF9',
+      cyan: '#61DDAA',
+      gray: '#65789B',
+      yellow: '#F6BD16',
+      purple: '#7262fd',
+      orange: '#F6903D',
+      pink: '#F08BB4',
+      green: '#008685'
+    },
     text: ['#333333', '#999999', '#CCCCCC'],
     gray: ['#BABABA', '#DEDEDE', '#EFEFEF', '#F7F7F7', '#FBFBFB', '#FFFFFF'],
     primary: ['#002072', '#002FA7', '#ADBCE3', '#D6DEF1', '#EBEEF8', '#F5F7FB'],
@@ -31,18 +51,18 @@ export const TelleryThemeLight: TelleryTheme = {
     warning: ['#F9C226', '#FDEFC8'],
     // https://blueprintjs.com/docs/#core/colors.extended-colors
     visualization: [
-      '#669EFF',
-      '#FF6E4A',
-      '#FFC940',
-      '#62D96B',
-      '#C274C2',
-      '#14CCBD',
-      '#FF66A1',
-      '#D1F26D',
-      '#C99765',
-      '#AD99FF'
+      '#5B8FF9',
+      '#61DDAA',
+      '#65789B',
+      '#F6BD16',
+      '#7262fd',
+      '#78D3F8',
+      '#9661BC',
+      '#F6903D',
+      '#008685',
+      '#F08BB4'
     ],
-    visualizationOther: '#BFCCD6'
+    visualizationOther: '#DEDEDE'
   },
   boxShadows: ['0px 1px 4px rgba(0, 0, 0, 0.08), 0px 1px 2px rgba(0, 0, 0, 0.08), 0px 4px 12px rgba(0, 0, 0, 0.16)']
 }

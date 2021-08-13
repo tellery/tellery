@@ -16,8 +16,8 @@ test.before(async () => {
   await createDatabaseCon()
 })
 
-test('setTextBlockLinks', async (t) => {
-  return getConnection().transaction(async (manager) => {
+test('setTextBlockLinks', async (t) =>
+  getConnection().transaction(async (manager) => {
     const op = new BlockOperation(uuid(), 'test', manager)
 
     const id = nanoid()
@@ -92,11 +92,10 @@ test('setTextBlockLinks', async (t) => {
     )
     await manager.getRepository(LinkEntity).delete({ sourceBlockId: id })
     await manager.getRepository(BlockEntity).delete([id, ..._(stories).map('id').value()])
-  })
-})
+  }))
 
-test('deleteBlockShouldAlsoRemoveLinks', async (t) => {
-  return getConnection().transaction(async (manager) => {
+test('deleteBlockShouldAlsoRemoveLinks', async (t) =>
+  getConnection().transaction(async (manager) => {
     const op = new BlockOperation(uuid(), 'test', manager)
 
     const id = nanoid()
@@ -153,5 +152,4 @@ test('deleteBlockShouldAlsoRemoveLinks', async (t) => {
     )
     await manager.getRepository(LinkEntity).delete({ sourceBlockId: id })
     await manager.getRepository(BlockEntity).delete([id, ..._(stories).map('id').value()])
-  })
-})
+  }))

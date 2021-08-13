@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, MouseEvent } from 'react'
 import { orderBy, sumBy } from 'lodash'
 import { css } from '@emotion/css'
 import { Pie, Label, PieChart, Tooltip, Legend, Cell } from '@tellery/recharts'
-import { useTextWidth } from '@imagemarker/use-text-width'
+import { useTextWidth } from '@tag0/use-text-width'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import { DisplayType, Type } from '../types'
 import type { Chart } from './base'
@@ -299,7 +299,8 @@ export const pie: Chart<Type.PIE> = {
     const totalStr = formatRecord(total, displayTypes[measurement])
     const totalWidth = useTextWidth({ text: totalStr, font: `18px ${fontFamily}` })
     const showTotal =
-      props.config.showTotal && totalWidth < Math.min(props.dimensions.width, props.dimensions.height) / 2
+      props.config.showTotal && totalWidth < Math.min(props.dimensions.width, props.dimensions.height) / 2 - 10
+    const showLegend = props.config.showLegend && props.dimensions.width - props.dimensions.height >= 100
 
     return (
       <PieChart
@@ -314,11 +315,15 @@ export const pie: Chart<Type.PIE> = {
           }
         `}
       >
-        {props.config.showLegend && ratio <= 0.9 ? (
+        {showLegend ? (
           <Legend
             verticalAlign="middle"
             align="left"
-            wrapperStyle={{ width: `calc(${(1 - ratio) * 100}% - 10px)`, maxHeight: '100%', overflowY: 'auto' }}
+            wrapperStyle={{
+              width: `calc(${(1 - ratio) * 100}% - 10px)`,
+              height: Math.min(props.config.slices.length * 21, props.dimensions.height),
+              overflowY: 'hidden'
+            }}
             payload={props.config.slices.map((slice) => ({
               id: slice.key,
               value: slice.title,
@@ -360,7 +365,7 @@ export const pie: Chart<Type.PIE> = {
           data={data}
           dataKey="value"
           nameKey="key"
-          cx={props.config.showLegend ? `${(1 - ratio / 2) * 100}%` : '50%'}
+          cx={showLegend ? `${(1 - ratio / 2) * 100}%` : '50%'}
           cy="50%"
           innerRadius="50%"
           outerRadius="100%"

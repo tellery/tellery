@@ -29,16 +29,14 @@ export function SortableItem(props: { id: string; children: ReactNode }) {
         height: 36px;
         width: 185px;
         margin: 5px;
-        z-index: 10000;
 
-        &:hover > span {
+        &:hover > svg {
           opacity: 1;
         }
       `}
       ref={setNodeRef}
       style={style}
       {...attributes}
-      {...listeners}
     >
       <IconCommonDrag
         color={ThemingVariables.colors.gray[0]}
@@ -50,6 +48,7 @@ export function SortableItem(props: { id: string; children: ReactNode }) {
             cursor: grabbing;
           }
         `}
+        {...listeners}
       />
       {props.children}
     </div>

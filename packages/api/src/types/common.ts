@@ -1,6 +1,6 @@
 import { IsDefined } from 'class-validator'
 
-export interface JsonArray extends Array<AnyJson> {}
+export type JsonArray = Array<AnyJson>
 
 export type AnyJson = boolean | number | string | null | JsonArray | JsonMap
 
