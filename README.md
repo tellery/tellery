@@ -22,21 +22,20 @@
 </p>
 
 
-Tellery helps data teams explore, analyze and share analytics in one place. 
+Tellery allows you abstract essential data transformation/business logic, and reuse it in future contexts through metrics. Metrics are maintainable and shareable data models across dashboards and reports. They are defined consistently and always up to date.
 
 
-Want an anomalies investigation? A campaign-oriented dashboard? A feature-specific analysis? Tellery brings words and data into one flexible surface. You can customize your deliverables for your own needs. 
+To deliver better value of the metrics, Tellery comes with a bucket of building blocks and rich text styling features. Want a real-time dashboard? A feature-specific analysis? An anomalies investigation? You can tailor it to your need to unlock the value of data.
 
 
 ## Features
 
-
-- Familiar notebook interface where you can organize visualizations with [drag-and-drop](https://tellery.io/docs/how-to-use/create-story) ease
-- Make analytical narratives using [Markdown](https://tellery.io/docs/how-to-use/shortcut#markdown-styling) syntax
-- [Declare metrics](https://tellery.io/docs/how-to-use/question-referencing) using SQL and reuse them in multiple places 
+- Declare data transformation/metrics using SQL and reuse them everywhere
+- Familiar notebook interface where you can organize charts and texts with drag-and-drop ease
 - A modern SQL editor with multi-tabs and auto-complete
-- A workflow for [managing unformed analyses](https://tellery.io/docs/how-to-use/create-thought)
-- Collaborative by nature and built for web
+- Write analytical narratives using Markdown syntax
+- Capture exploratory analyses and associate them with bi-directional links
+- Collaborate and review work in real-time with multiplayer
 
 
 ## Supported databases
@@ -45,21 +44,53 @@ Want an anomalies investigation? A campaign-oriented dashboard? A feature-specif
 - [Community-supported connectors](https://github.com/tellery/community-supported-connectors)
 
 
-## Getting started
-
-- Try this [online demo](https://demo.tellery.io) 
-- Install the [demo project](https://tellery.io/docs/getting-started/quick-setup) (run locally with docker)
-- Read the [documentation](https://tellery.io/docs/)
-
-
 ## Recording
 
 ![Tellery Product Usage Recording](https://tellery.io/img/home/tellery-usage-recording.gif)
 
 
+
+## Getting started
+
+
+### Try demo
+
+
+Try this [online demo](https://demo.tellery.io) where you can click around and see Tellery in action - no installation required!
+
+
+### Run the demo project with docker
+
+Open your terminal, and run:
+
+```bash
+# Clone the Tellery repo
+git clone https://github.com/tellery/tellery.git
+
+# Change directories into the demo directory
+cd tellery/deploy/compose
+
+# View or edit config file (optional)
+# vim .env
+
+# Run docker compose
+docker-compose up
+```
+You can now access it on http://localhost:8000.
+
+The default account is `admin@tellery.local` and password is `tellery`.
+
+## Next step
+
+Learn how to start analysis with Tellery:
+
+- [Configure a database](https://tellery.io/docs/how-to-use/configure-database/) to connect to your own dataset
+- [Create a new story](https://tellery.io/docs/how-to-use/create-story)
+
+
 ## Community support
 
-- Join the chat on [Slack](https://join.slack.com/t/telleryio/shared_invite/zt-s37tgvo7-QBdpggK_uG6QqJVWhSXlFg)
+- Looking to get answers to questions? Join the chat on [Slack](https://join.slack.com/t/telleryio/shared_invite/zt-s37tgvo7-QBdpggK_uG6QqJVWhSXlFg)
 - Read all the latest news on [Twitter](https://twitter.com/telleryhq)
 
 ## Reporting bugs and contributing code
