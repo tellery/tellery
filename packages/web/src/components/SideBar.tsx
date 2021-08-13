@@ -1,5 +1,4 @@
 import {
-  IconCommonAdd,
   IconCommonAllQuestion,
   IconCommonHome,
   IconCommonSearch,
@@ -11,7 +10,6 @@ import { MainSideBarItem } from '@app/components/MainSideBarItem'
 import { useHover } from '@app/hooks'
 import { useConnectorsListProfiles } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
-import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useSideBarConfig } from '@app/hooks/useSideBarConfig'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { omniboxShowState } from '@app/store'
@@ -19,7 +17,6 @@ import { ThemingVariables } from '@app/styles'
 import { css, cx } from '@emotion/css'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useUpdateAtom } from 'jotai/utils'
-import { nanoid } from 'nanoid'
 import React, { ReactNode, useCallback, useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { MainSideBarTabHeader } from './MainSideBarTabHeader'
