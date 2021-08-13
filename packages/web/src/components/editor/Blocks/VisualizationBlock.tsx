@@ -41,6 +41,7 @@ import html2canvas from 'html2canvas'
 import React, { ReactNode, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { toast } from 'react-toastify'
 import invariant from 'tiny-invariant'
+import { BlockingUI } from '../BlockBase/BlockingUIBlock'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
 import { BlockResizer } from '../BlockBase/BlockResizer'
 import { ContentEditable } from '../BlockBase/ContentEditable'
@@ -217,10 +218,9 @@ const VisualizationBlockContent: React.FC<{
       <QuestionBlockHeader
         setTitleEditing={setTitleEditing}
         titleEditing={titleEditing || isInputFocusing}
-        block={block}
         dataAssetBlock={dataAssetBlock}
       />
-      <QuestionBlockStatus snapshotId={snapshotId} block={block} dataAssetBlock={dataAssetBlock} />
+      <QuestionBlockStatus dataAssetBlock={dataAssetBlock} />
       <motion.div
         style={{
           paddingTop: blockFormat.paddingTop
@@ -236,7 +236,9 @@ const VisualizationBlockContent: React.FC<{
           setTitleEditing(false)
         }}
       >
-        <QuestionBlockBody ref={contentRef} snapshotId={snapshotId} visualization={visualization} />
+        <React.Suspense fallback={<BlockingUI blocking />}>
+          <QuestionBlockBody ref={contentRef} snapshotId={snapshotId} visualization={visualization} />
+        </React.Suspense>
         {readonly === false && (
           <BlockResizer
             blockFormat={blockFormat}
@@ -277,7 +279,6 @@ export const QuestionBlockButtons: React.FC<{
   show: boolean
   dataAssetId: string
 }> = ({ block, show, dataAssetBlock }) => {
-  const snapshot = useSnapshot(dataAssetBlock?.content?.snapshotId)
   const { small } = useBlockBehavior()
 
   return (
@@ -394,10 +395,9 @@ const QuestionBlockBody = React.forwardRef(_QuestionBlockBody)
 
 const QuestionBlockHeader: React.FC<{
   setTitleEditing: React.Dispatch<React.SetStateAction<boolean>>
-  block: Editor.VisualizationBlock
   titleEditing: boolean
   dataAssetBlock: Editor.DataAssetBlock
-}> = ({ setTitleEditing, block, titleEditing, dataAssetBlock }) => {
+}> = ({ setTitleEditing, titleEditing, dataAssetBlock }) => {
   const { readonly } = useBlockBehavior()
 
   return (
@@ -455,26 +455,11 @@ const QuestionBlockHeader: React.FC<{
 }
 
 const QuestionBlockStatus: React.FC<{
-  block: Editor.VisualizationBlock
   dataAssetBlock: Editor.DataAssetBlock
-  snapshotId?: string
-}> = ({ block, dataAssetBlock, snapshotId }) => {
-  const snapshot = useSnapshot(snapshotId)
+}> = ({ dataAssetBlock }) => {
   const mutatingCount = useSnapshotMutating(dataAssetBlock.id)
-  const [mutatingStartTimeStamp, setMutatingStartTimeStamp] = useState(0)
-  const [nowTimeStamp, setNowTimeStamp] = useState(0)
+
   const loading = mutatingCount !== 0
-
-  useEffect(() => {
-    if (loading) {
-      setNowTimeStamp(Date.now())
-      setMutatingStartTimeStamp(Date.now())
-    }
-  }, [loading])
-
-  useInterval(() => {
-    setNowTimeStamp(Date.now())
-  }, 1000)
 
   return (
     <>
@@ -564,13 +549,40 @@ const QuestionBlockStatus: React.FC<{
             display: inline-flex;
           `}
         >
-          {loading
-            ? dayjs(nowTimeStamp).subtract(mutatingStartTimeStamp).format('mm:ss')
-            : snapshot?.createdAt ?? dataAssetBlock.content?.lastRunAt
-            ? dayjs(dataAssetBlock.content?.lastRunAt ?? snapshot?.createdAt).fromNow()
-            : ''}
+          <React.Suspense fallback={<></>}>
+            <SnapshotUpdatedAt loading={loading} dataAssetBlock={dataAssetBlock} />
+          </React.Suspense>
         </div>
       </div>
+    </>
+  )
+}
+
+export const SnapshotUpdatedAt: React.FC<{
+  loading: boolean
+  dataAssetBlock: Editor.DataAssetBlock
+}> = ({ loading, dataAssetBlock }) => {
+  const snapshot = useSnapshot(dataAssetBlock.content?.snapshotId)
+  const [mutatingStartTimeStamp, setMutatingStartTimeStamp] = useState(0)
+  const [nowTimeStamp, setNowTimeStamp] = useState(0)
+  useEffect(() => {
+    if (loading) {
+      setNowTimeStamp(Date.now())
+      setMutatingStartTimeStamp(Date.now())
+    }
+  }, [loading])
+
+  useInterval(() => {
+    setNowTimeStamp(Date.now())
+  }, 1000)
+
+  return (
+    <>
+      {loading
+        ? dayjs(nowTimeStamp).subtract(mutatingStartTimeStamp).format('mm:ss')
+        : snapshot?.createdAt ?? dataAssetBlock.content?.lastRunAt
+        ? dayjs(dataAssetBlock.content?.lastRunAt ?? snapshot?.createdAt).fromNow()
+        : ''}
     </>
   )
 }
@@ -872,7 +884,7 @@ const TitleButtonsInner: React.FC<{
   const [isPresent, safeToRemove] = usePresence()
   const questionEditor = useQuestionEditor()
   const mutateSnapshot = useRefreshSnapshot()
-  const mutatingCount = useSnapshotMutating(block.id)
+  const mutatingCount = useSnapshotMutating(dataAssetBlock.id)
   const loading = mutatingCount !== 0
 
   useEffect(() => {

@@ -146,11 +146,10 @@ export const useRefreshSnapshot = () => {
 export const useStorySnapshotManagerProvider = (storyId: string) => {
   const resourcesBlocks = useStoryResources(storyId)
   const storyBlock = useBlockSuspense<Story>(storyId)
+
   const executeableQuestionBlocks = useMemo(() => {
     return resourcesBlocks.filter((block) => isExecuteableBlockType(block.type))
   }, [resourcesBlocks])
-
-  console.log('useStorySnapshotManagerProvider', executeableQuestionBlocks)
 
   const refreshOnInit = storyBlock?.format?.refreshOnOpen
   const permissions = useStoryPermissions(storyId)
