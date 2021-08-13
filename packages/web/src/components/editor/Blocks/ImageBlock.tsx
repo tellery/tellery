@@ -1,16 +1,16 @@
+import { useWorkspace } from '@app/hooks/useWorkspace'
+import { Editor } from '@app/types'
+import { fileLoader } from '@app/utils'
 import { css } from '@emotion/css'
 import styled from '@emotion/styled'
 import { motion } from 'framer-motion'
 import React, { useEffect, useRef } from 'react'
-import { Editor } from '@app/types'
-import { fileLoader } from '@app/utils'
 import { BlockResizer } from '../BlockBase/BlockResizer'
+import { UploadFilePlaceHolder } from '../BlockBase/UploadFilePlaceHolder'
 import { useEditor } from '../hooks'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
-import { UploadFilePlaceHolder } from '../BlockBase/UploadFilePlaceHolder'
-import { useWorkspace } from '@app/hooks/useWorkspace'
-import { registerBlock, BlockComponent } from './utils'
+import { BlockComponent, registerBlock } from './utils'
 
 const Image = styled.img`
   width: 100%;
@@ -42,11 +42,11 @@ const ImageBlock: BlockComponent<
       })
     }
     // TODO: COMPACT CODE, remove later
-    if (!block.format?.aspectRatio && block.content.imageInfo) {
+    if (!block.format?.aspectRatio && block.content?.imageInfo) {
       editor?.setBlockValue?.(block.id, (block) => {
         block.format = {
           width: 1,
-          aspectRatio: block.content.imageInfo!.width / block.content.imageInfo!.height
+          aspectRatio: block.content!.imageInfo!.width / block.content!.imageInfo!.height
         }
       })
     }

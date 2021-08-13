@@ -1,5 +1,4 @@
 import { IconCommonError, IconCommonRefresh, IconMiscNoResult } from '@app/assets/icons'
-import { BlockingUI } from '@app/components/editor/BlockBase/BlockingUIBlock'
 import { charts } from '@app/components/v11n/charts'
 import { Config, Type } from '@app/components/v11n/types'
 import { useSnapshot } from '@app/hooks/api'
@@ -159,12 +158,7 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
   HTMLDivElement | null,
   { snapshotId?: string; visualization?: Config<Type> }
 > = ({ snapshotId, visualization }, ref) => {
-  const {
-    data: snapshot,
-    isFetched: isSnapshotFetched,
-    isIdle: isSnapshotIdle,
-    isPreviousData
-  } = useSnapshot(snapshotId)
+  const snapshot = useSnapshot(snapshotId)
 
   const visualizationConfig = useMemo(() => {
     // ensure snapshot data is valid
@@ -176,61 +170,59 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
   }, [snapshot, visualization])
 
   return (
-    <BlockingUI blocking={isSnapshotIdle === false && isSnapshotFetched === false && isPreviousData === false}>
-      <div
-        ref={ref}
-        onCopy={(e) => {
-          e.stopPropagation()
-        }}
-        onClick={(e) => {
-          e.stopPropagation()
-        }}
-        className={css`
-          height: 100%;
-          width: 100%;
-          min-height: 100px;
-          min-width: 100px;
-          user-select: text;
-          position: absolute;
-          padding: 0 20px;
-          left: 0;
-          top: 0;
-        `}
-      >
-        {visualizationConfig && snapshot?.data && snapshot.data.fields ? (
-          <LazyRenderDiagram data={snapshot?.data} config={visualizationConfig} />
-        ) : (
+    <div
+      ref={ref}
+      onCopy={(e) => {
+        e.stopPropagation()
+      }}
+      onClick={(e) => {
+        e.stopPropagation()
+      }}
+      className={css`
+        height: 100%;
+        width: 100%;
+        min-height: 100px;
+        min-width: 100px;
+        user-select: text;
+        position: absolute;
+        padding: 0 20px;
+        left: 0;
+        top: 0;
+      `}
+    >
+      {visualizationConfig && snapshot?.data && snapshot.data.fields ? (
+        <LazyRenderDiagram data={snapshot?.data} config={visualizationConfig} />
+      ) : (
+        <div
+          className={css`
+            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+          `}
+        >
+          <IconMiscNoResult />
           <div
             className={css`
-              height: 100%;
-              position: absolute;
-              left: 0;
-              top: 0;
-              width: 100%;
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: center;
+              font-style: normal;
+              font-weight: 500;
+              font-size: 14px;
+              line-height: 17px;
+              color: ${ThemingVariables.colors.primary[1]};
+              opacity: 0.3;
+              margin-top: 10px;
             `}
           >
-            <IconMiscNoResult />
-            <div
-              className={css`
-                font-style: normal;
-                font-weight: 500;
-                font-size: 14px;
-                line-height: 17px;
-                color: ${ThemingVariables.colors.primary[1]};
-                opacity: 0.3;
-                margin-top: 10px;
-              `}
-            >
-              No Result
-            </div>
+            No Result
           </div>
-        )}
-      </div>
-    </BlockingUI>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -303,7 +295,7 @@ const QuestionBlockStatus: React.FC<{
   dataAssetBlock: Editor.DataAssetBlock
   snapshotId?: string
 }> = ({ block, dataAssetBlock, snapshotId }) => {
-  const { data: snapshot } = useSnapshot(snapshotId)
+  const snapshot = useSnapshot(snapshotId)
   const mutatingCount = useSnapshotMutating(dataAssetBlock.id)
   const [mutatingStartTimeStamp, setMutatingStartTimeStamp] = useState(0)
   const [nowTimeStamp, setNowTimeStamp] = useState(0)

@@ -225,6 +225,16 @@ export namespace Editor {
       publicToken?: string
     }
   }
+
+  export type Block =
+    | MetabaseBlock
+    | EmbedBlock
+    | FileBlock
+    | ImageBlock
+    | CodeBlock
+    | TodoBlock
+    | DataAssetBlock
+    | VisualizationBlock
 }
 
 export interface ImageInfo {

@@ -107,7 +107,7 @@ const findNodePositionAndOffset = (node: Node, offset: number) => {
   }
 }
 
-export const nativeSelection2Tellery = (block: Editor.Block): TellerySelection | null => {
+export const nativeSelection2Tellery = (block: Editor.BaseBlock): TellerySelection | null => {
   const _sel = document.getSelection()
   const range = _sel?.rangeCount && _sel?.getRangeAt(0)
   if (!range) {

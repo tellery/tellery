@@ -221,7 +221,7 @@ export const getSelectionFragment = () => {
   return body as Element
 }
 
-export const deserialize = (el: Element, block: Editor.Block): Editor.Token[] => {
+export const deserialize = (el: Element, block: Editor.BaseBlock): Editor.Token[] => {
   const node = el
   const childrenNodeArray = Array.from(node.childNodes)
   const children: Editor.Token[] = []

@@ -84,7 +84,7 @@ export const _BlockReferenceDropdownInner: React.FC<
   BlockReferenceDropDownInterface & { referenceRange: null | Range | HTMLElement }
 > = (props) => {
   const { id, keyword, open, setOpen, blockRef, selection, referenceRange } = props
-  const editor = useEditor<Editor.Block>()
+  const editor = useEditor<Editor.BaseBlock>()
   const currentBlock = useBlockSuspense(id)
   // const [referenceRange, setReferenceRange] = useState<null | Range>(null)
 
@@ -102,7 +102,7 @@ export const _BlockReferenceDropdownInner: React.FC<
   const searchResultClickHandler = useCallback(
     async (index) => {
       if (currentBlock?.content?.title) {
-        const exec = async (currentBlock: Editor.Block) => {
+        const exec = async (currentBlock: Editor.BaseBlock) => {
           if (selection?.type === TellerySelectionType.Block) return
           const tokens = currentBlock?.content?.title ?? []
           const splitedTokens = splitToken(tokens)

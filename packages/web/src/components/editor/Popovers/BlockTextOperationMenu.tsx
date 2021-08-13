@@ -131,7 +131,7 @@ export const BlockTextOperationMenuInner = ({
   range: Range | null
   selectionString: string
 }) => {
-  const editor = useEditor<Editor.Block>()
+  const editor = useEditor<Editor.BaseBlock>()
   const currentBlock = useBlockSuspense(currentBlockId)
   const [modalRef, setModalRef] = useState<HTMLDivElement | null>(null)
   const [inlineEditing, setInlineEditing] = useState(false)
