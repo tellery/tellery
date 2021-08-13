@@ -101,7 +101,7 @@ export class DbtService {
         const storyTitle = storiesByKey[b.storyId]?.getPlainText()
         const blockTitle = b.getPlainText() ?? b.id
         return (storyTitle ? `${storyTitle}-${blockTitle}` : blockTitle)
-          .replace(' ', '_')
+          .replace(/ /g, '_')
           .toLowerCase()
       })
       .value()
