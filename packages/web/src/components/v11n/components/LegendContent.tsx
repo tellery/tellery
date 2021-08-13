@@ -1,5 +1,5 @@
 import { css, cx } from '@emotion/css'
-import { MouseEvent, useState } from 'react'
+import { MouseEvent, useRef } from 'react'
 import type { Props, Payload } from '@tellery/recharts/types/component/DefaultLegendContent'
 import { IconVisualizationCircle } from '@app/assets/icons'
 import { ThemingVariables } from '@app/styles'
@@ -18,18 +18,21 @@ const iconMargin = 4
 const itemMargin = 15
 
 export function LegendContent(props: Props) {
-  const [container, setContainer] = useState<HTMLElement>()
+  const ref = useRef<HTMLElement>(null)
   const textWidth = useTextWidth({
     text: props.payload?.map((item) => item.value).join(''),
     font: `${fontSize}px ${fontFamily}`
   })
-  const { width: containerWidth } = useDimensions(container, 0)
+  const { width: containerWidth } = useDimensions(ref, 0)
   const additionalWidth = props.payload ? props.payload.length * (iconMargin + iconSize + itemMargin) : 0
   const isSmall = textWidth + additionalWidth > containerWidth
 
   return (
     <PerfectScrollbar
-      containerRef={setContainer}
+      containerRef={(el) => {
+        // @ts-ignore
+        ref.current = el
+      }}
       options={{ suppressScrollY: true }}
       className={css`
         width: 100%;
