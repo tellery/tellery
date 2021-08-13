@@ -1,23 +1,7 @@
-import { IconCommonPin } from '@app/assets/icons'
-import { useSideBarConfig } from '@app/hooks/useSideBarConfig'
 import { ThemingVariables } from '@app/styles'
 import { css } from '@emotion/css'
 import styled from '@emotion/styled'
 import React, { ReactNode } from 'react'
-import IconButton from './kit/IconButton'
-
-export const PinnSideBarButton: React.FC = () => {
-  const [sidebarConfig, setSidebarConfig] = useSideBarConfig()
-  return (
-    <IconButton
-      icon={IconCommonPin}
-      color={sidebarConfig.folded ? ThemingVariables.colors.text[1] : ThemingVariables.colors.text[0]}
-      onClick={() => {
-        setSidebarConfig((oldConfig) => ({ ...oldConfig, folded: !oldConfig.folded }))
-      }}
-    />
-  )
-}
 
 export const SideBarContentLayout: React.FC<{ title: ReactNode }> = ({ children, title }) => {
   return (
@@ -37,9 +21,7 @@ export const SideBarContentLayout: React.FC<{ title: ReactNode }> = ({ children,
             justify-content: flex-end;
             padding: 16px;
           `}
-        >
-          <PinnSideBarButton />
-        </div>
+        ></div>
         <SideBarTitle>{title}</SideBarTitle>
         <div
           className={css`

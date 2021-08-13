@@ -63,10 +63,9 @@ export function SliceSelector(props: {
           display: flex;
           align-items: center;
           justify-content: center;
+          background-color: ${ThemingVariables.colors.visualization[props.value.color] ||
+          ThemingVariables.colors.visualizationOther};
         `}
-        style={{
-          backgroundColor: ThemingVariables.colors.visualization[props.value.color]
-        }}
         onClick={() => {
           setOpen(true)
         }}

@@ -15,7 +15,7 @@ import {
 } from '@tellery/recharts'
 import { groupBy, orderBy } from 'lodash'
 import PerfectScrollbar from 'react-perfect-scrollbar'
-import { useTextWidth } from '@imagemarker/use-text-width'
+import { useTextWidth } from '@tag0/use-text-width'
 import { DisplayType, Type } from '../types'
 import type { Chart } from './base'
 import { ConfigButton } from '../components/ConfigButton'
@@ -418,7 +418,7 @@ export const scatter: Chart<Type.SCATTER> = {
           `}
           margin={{
             top: 0,
-            bottom: showXLabel ? 10 : -10,
+            bottom: showXLabel ? 15 : -10,
             left: !props.config.yAxis || showYLabel ? 2 : -20,
             right: 2
           }}
@@ -454,12 +454,15 @@ export const scatter: Chart<Type.SCATTER> = {
           ) : null}
           <XAxis
             dataKey={props.config.xAxis}
+            tickLine={false}
+            tickMargin={10}
+            axisLine={{ stroke: ThemingVariables.colors.gray[0] }}
             label={
               showXLabel
                 ? {
                     value: props.config.xLabel,
                     position: 'insideBottom',
-                    offset: -8,
+                    offset: -15,
                     color: ThemingVariables.colors.text[0]
                   }
                 : undefined
@@ -480,6 +483,8 @@ export const scatter: Chart<Type.SCATTER> = {
           <YAxis
             dataKey={props.config.yAxis}
             allowDuplicatedCategory={true}
+            tickLine={false}
+            axisLine={{ stroke: ThemingVariables.colors.gray[0] }}
             label={
               showYLabel
                 ? {

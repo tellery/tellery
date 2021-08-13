@@ -51,18 +51,18 @@ export const TelleryThemeLight: TelleryTheme = {
     warning: ['#F9C226', '#FDEFC8'],
     // https://blueprintjs.com/docs/#core/colors.extended-colors
     visualization: [
-      '#669EFF',
-      '#FF6E4A',
-      '#FFC940',
-      '#62D96B',
-      '#C274C2',
-      '#14CCBD',
-      '#FF66A1',
-      '#D1F26D',
-      '#C99765',
-      '#AD99FF'
+      '#5B8FF9',
+      '#61DDAA',
+      '#65789B',
+      '#F6BD16',
+      '#7262fd',
+      '#78D3F8',
+      '#9661BC',
+      '#F6903D',
+      '#008685',
+      '#F08BB4'
     ],
-    visualizationOther: '#BFCCD6'
+    visualizationOther: '#DEDEDE'
   },
   boxShadows: ['0px 1px 4px rgba(0, 0, 0, 0.08), 0px 1px 2px rgba(0, 0, 0, 0.08), 0px 4px 12px rgba(0, 0, 0, 0.16)']
 }

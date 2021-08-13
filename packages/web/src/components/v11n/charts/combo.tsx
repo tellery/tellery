@@ -1,7 +1,7 @@
 import { css, cx } from '@emotion/css'
 import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState, MouseEvent } from 'react'
 import { sortBy, keyBy, compact, upperFirst, sum, mapValues, tail, head } from 'lodash'
-import { useTextWidth } from '@imagemarker/use-text-width'
+import { useTextWidth } from '@tag0/use-text-width'
 import { nanoid } from 'nanoid'
 import {
   Area,
@@ -857,7 +857,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
           `}
           margin={{
             top: 0,
-            bottom: showXLabel ? 10 : -10,
+            bottom: showXLabel ? 15 : -10,
             left: !props.config.yAxises.length || showYLabel ? 2 : -20,
             right: !props.config.y2Axises.length || showY2Label ? 2 : -20
           }}
@@ -867,12 +867,15 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
           ) : null}
           <XAxis
             dataKey="key"
+            tickLine={false}
+            tickMargin={10}
+            axisLine={{ stroke: ThemingVariables.colors.gray[0] }}
             label={
               showXLabel
                 ? {
                     value: props.config.xLabel,
                     position: 'insideBottom',
-                    offset: -8,
+                    offset: -15,
                     color: ThemingVariables.colors.text[0]
                   }
                 : undefined
@@ -895,6 +898,8 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
             yAxisId="left"
             hide={props.config.yAxises.length === 0}
             allowDuplicatedCategory={true}
+            tickLine={false}
+            axisLine={{ stroke: ThemingVariables.colors.gray[0] }}
             label={
               showYLabel
                 ? {
@@ -929,6 +934,8 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
             yAxisId="right"
             hide={props.config.y2Axises.length === 0}
             allowDuplicatedCategory={true}
+            tickLine={false}
+            axisLine={{ stroke: ThemingVariables.colors.gray[0] }}
             label={
               showY2Label
                 ? {
