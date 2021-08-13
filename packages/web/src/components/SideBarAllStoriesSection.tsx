@@ -9,6 +9,7 @@ import { css } from '@emotion/css'
 import Tippy from '@tippyjs/react'
 import dayjs from 'dayjs'
 import React, { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import { useHistory } from 'react-router-dom'
 import { CircularLoading } from './CircularLoading'
@@ -17,6 +18,7 @@ import { SideBarContentLayout } from './SideBarContentLayout'
 import type { StoryListItemValue } from './StoryListItem'
 
 export const SideBarAllStoriesSection = () => {
+  const { t } = useTranslation()
   const { data: workspaceView } = useWorkspaceView()
   const [keyword, setKeyword] = useState('')
   const { data, fetchNextPage, refetch, status, hasNextPage, isLoading, isFetchingNextPage } = useStoriesSearch(keyword)
@@ -61,7 +63,7 @@ export const SideBarAllStoriesSection = () => {
   )
 
   return (
-    <SideBarContentLayout title="Stories">
+    <SideBarContentLayout title={t(`Stories`)}>
       <div
         className={css`
           display: flex;
@@ -79,7 +81,7 @@ export const SideBarAllStoriesSection = () => {
           `}
         >
           <SideBarSearch
-            placeholder="Search"
+            placeholder={t`Search`}
             onChange={(e) => {
               setKeyword(e.target.value)
             }}
@@ -134,9 +136,10 @@ const NewStoryButton = () => {
       focusTitle: true
     })
   }, [blockTranscations, history])
+  const { t } = useTranslation()
 
   return (
-    <Tippy content={'Create a new story'} hideOnClick={false} arrow={false} placement="right">
+    <Tippy content={t`Create a new story`} hideOnClick={false} arrow={false} placement="right">
       <div
         className={css`
           background: #ffffff;

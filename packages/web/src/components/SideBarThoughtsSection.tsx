@@ -10,6 +10,7 @@ import { blockIdGenerator } from '@app/utils'
 import { css } from '@emotion/css'
 import dayjs from 'dayjs'
 import React, { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Calendar } from './Calendar'
 import { FormButton } from './kit/FormButton'
 import { SideBarContentLayout } from './SideBarContentLayout'
@@ -64,9 +65,10 @@ export const SideBarThoughtsSection = () => {
     }
     return true
   }, [thoughts, today])
+  const { t } = useTranslation()
 
   return (
-    <SideBarContentLayout title="Thoughts">
+    <SideBarContentLayout title={t`Thoughts`}>
       <FormButton
         variant="secondary"
         className={css`
@@ -86,7 +88,7 @@ export const SideBarThoughtsSection = () => {
             margin-right: 4px;
           `}
         />
-        <span>Capture today&apos;s thought</span>
+        <span>{t`Capture today's thought`}</span>
       </FormButton>
       <Calendar
         value={date}
