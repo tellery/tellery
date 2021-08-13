@@ -340,37 +340,6 @@ export const useMgetBlocks = (ids?: string[]): { data?: Record<string, Editor.Ba
   return state
 }
 
-export const useMgetBlocksAny = (ids?: string[]): { data?: Record<string, Editor.BaseBlock>; isSuccess?: boolean } => {
-  const atoms = useRecoilValueLoadable(waitForAny(ids?.map((id) => TelleryBlockAtom(id)) ?? []))
-  const [state, setState] = useState({})
-
-  useEffect(() => {
-    if (!ids || !ids.length) {
-      setState({})
-      return
-    }
-    switch (atoms.state) {
-      case 'hasValue':
-        setState({
-          data: atoms.contents.reduce((acc, atom) => {
-            if (atom.state === 'hasValue') {
-              const block = atom.contents
-              acc[block.id] = block
-            }
-            return acc
-          }, {} as { [key: string]: Editor.BaseBlock }),
-          isSuccess: true
-        })
-        break
-      case 'loading':
-        setState({})
-        break
-    }
-  }, [atoms, ids])
-
-  return state
-}
-
 export const useMgetBlocksSuspense = (ids: string[]): Editor.BaseBlock[] => {
   const atoms = useRecoilValue(waitForAll(ids.map((id) => TelleryBlockAtom(id))))
 

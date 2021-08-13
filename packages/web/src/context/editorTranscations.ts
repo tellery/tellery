@@ -349,7 +349,8 @@ export const duplicateStoryTranscation = ({
       content: { ...story.content, title: mergeTokens([[`copy of `], ...(story.content?.title ?? [])]) },
       children: [],
       type: Editor.BlockType.Story,
-      storyId: newStoryId
+      storyId: newStoryId,
+      format: { ...story.format }
     }),
     table: 'block'
   })

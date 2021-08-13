@@ -61,6 +61,7 @@ export namespace Editor {
     Code = 'c',
     Equation = 'e',
     Variable = 'v',
+    Formula = 'f',
 
     // Temp useage only
     LocalClassnames = 'localClassnames',

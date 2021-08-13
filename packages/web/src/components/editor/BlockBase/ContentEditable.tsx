@@ -1,6 +1,5 @@
 import { deserialize, restoreRange, saveSelection } from '@app/components/editor/helpers/contentEditable'
 import { useOpenStory, usePrevious } from '@app/hooks'
-import { useMgetBlocksAny } from '@app/hooks/api'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
@@ -25,6 +24,7 @@ import {
   tokenPosition2SplitedTokenPosition
 } from '../helpers/tokenManipulation'
 import { useEditor, useLocalSelection } from '../hooks'
+import { useBlockTitleAssets } from '../hooks/useBlockTitleAssets'
 import { BlockReferenceDropdown } from '../Popovers/BlockReferenceDropdown'
 import { SlashCommandDropdown } from '../Popovers/SlashCommandDropdown'
 import { BlockRenderer } from './BlockRenderer'
@@ -78,35 +78,14 @@ const _ContentEditable: React.ForwardRefRenderFunction<
   const openStoryHandler = useOpenStory()
 
   const titleTokens = useMemo(() => block?.content?.title || [], [block?.content?.title])
-
-  const dependsAssetsKeys = useMemo(() => {
-    return titleTokens
-      ?.filter((token) => {
-        return token[1]?.some((mark) => mark[0] === Editor.InlineType.Reference)
-      })
-      .map((token) => {
-        const { reference: referenceEntity } = extractEntitiesFromToken(token)
-        if (referenceEntity) {
-          const id = referenceEntity[2]
-          if (referenceEntity[1] === 's') {
-            return id
-          }
-        }
-        return null
-      })
-      .filter((x) => x !== null) as string[]
-  }, [titleTokens])
-
-  const { data: dependsAssetsResult } = useMgetBlocksAny(dependsAssetsKeys)
-  // const dependsAssetsResult = useMgetBlocksSuspense(dependsAssetsKeys)
+  const blockTitleAssets = useBlockTitleAssets(block.storyId!, block.id)
 
   useEffect(() => {
     if (!isComposing.current && titleTokens) {
-      const targetHtml = tokensRenderer(titleTokens, dependsAssetsResult ?? {})
-      // logger('setLeavesHtml', titleTokens, dependsAssetsResult)
+      const targetHtml = tokensRenderer(titleTokens, blockTitleAssets ?? {})
       setLeavesHtml(targetHtml)
     }
-  }, [titleTokens, dependsAssetsResult, tokensRenderer])
+  }, [titleTokens, blockTitleAssets, tokensRenderer])
 
   useEffect(() => {
     if (readonly) return

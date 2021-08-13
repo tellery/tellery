@@ -39,7 +39,7 @@ import { useWorkspace } from '@app/hooks/useWorkspace'
 import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor, Story } from '@app/types'
-import { blockIdGenerator, TelleryGlyph } from '@app/utils'
+import { blockIdGenerator, DEFAULT_TITLE, TelleryGlyph } from '@app/utils'
 import { css } from '@emotion/css'
 import styled from '@emotion/styled'
 import Tippy from '@tippyjs/react'
@@ -51,7 +51,6 @@ import invariant from 'tiny-invariant'
 import { isTextBlock } from '../Blocks/utils'
 import { EditorPopover } from '../EditorPopover'
 import { useEditor, useGetBlockTitleTextSnapshot } from '../hooks'
-import { useStoryQustions } from '../hooks/useStoryQustions'
 import { useVariable } from '../hooks/useVariable'
 
 const MARK_TYPES = Object.values(Editor.InlineType)
@@ -229,6 +228,7 @@ export const BlockTextOperationMenuInner = ({
   const snapshot = useBlockSnapshot()
   const getBlockTitle = useGetBlockTitleTextSnapshot()
   const commit = useCommit()
+
   const toggleReference = useCallback(async () => {
     if (!tokenRange || !currentBlock) {
       return
@@ -244,7 +244,7 @@ export const BlockTextOperationMenuInner = ({
           const uniqueMarks = removeMark(marks, Editor.InlineType.Reference)
           invariant(entity.reference, 'reference is null')
           const block = getBlockFromSnapshot(entity.reference[2] as string, snapshot)
-          const tokenText = entity.reference ? getBlockTitle(block) ?? ' ' : token[0]
+          const tokenText = entity.reference ? getBlockTitle(block) ?? DEFAULT_TITLE : token[0]
           if (uniqueMarks) {
             return [tokenText, uniqueMarks]
           } else {
@@ -310,74 +310,37 @@ export const BlockTextOperationMenuInner = ({
     }
   }, [commit, currentBlock, editor, getBlockTitle, markdMap, selectionString, snapshot, tokenRange, workspace.id])
 
-  const editEquation = useCallback(async (equation: string) => {
-    if (!tokenRange || !currentBlock) {
-      return
-    }
-    if (markdMap.get(Editor.InlineType.Equation)) {
-      const splitedTokens = splitToken(currentBlock?.content?.title || [])
-      const transformedTokens = applyTransformOnSplitedTokens(
-        splitedTokens,
-        tokenRange,
-        (token: Editor.Token): Editor.Token => {
-          const marks = token[1]
-          const entity = extractEntitiesFromToken(token)
-          const uniqueMarks = removeMark(marks, Editor.InlineType.Reference)
-          invariant(entity.reference, 'reference is null')
-          const block = getBlockFromSnapshot(entity.reference[2] as string, snapshot)
-          const tokenText = entity.reference ? getBlockTitle(block) ?? ' ' : token[0]
-          if (uniqueMarks) {
-            return [tokenText, uniqueMarks]
-          } else {
-            return [tokenText]
-          }
-        }
-      )
-      const mergedTokens = mergeTokens(transformedTokens)
-      editor?.setBlockValue?.(currentBlock.id, (block) => {
-        block!.content!.title = mergedTokens
-      })
-    } else {
-      const title = selectionString
-      let story = (await getStoriesByTitle({ title, workspaceId: workspace.id }))?.[0]
-
-      if (!story) {
-        const id = blockIdGenerator()
-        // TODO: use create block factory
-        story = {
-          id: id,
-          alive: true,
-          parentId: workspace.id,
-          parentTable: Editor.BlockParentType.WORKSPACE,
-          format: {},
-          content: { title: [[title]] },
-          children: [],
-          type: Editor.BlockType.Story,
-          storyId: id,
-          version: 0
-        } as unknown as Story
-
-        // TODO: use a transcation
-        await commit({
-          storyId: currentBlock.storyId!,
-          transcation: createTranscation({
-            operations: [
-              {
-                cmd: 'set',
-                id: id,
-                path: [],
-                table: 'block',
-                args: story
-              }
-            ]
-          })
-        })
+  const editFormula = useCallback(
+    async (formula: string) => {
+      if (!tokenRange || !currentBlock) {
+        return
       }
-      if (story) {
-        const storyId = story.id
+      if (markdMap.get(Editor.InlineType.Formula)) {
+        const splitedTokens = splitToken(currentBlock?.content?.title || [])
+        const transformedTokens = applyTransformOnSplitedTokens(
+          splitedTokens,
+          tokenRange,
+          (token: Editor.Token): Editor.Token => {
+            const marks = token[1]
+            const entity = extractEntitiesFromToken(token)
+            const uniqueMarks = removeMark(marks, Editor.InlineType.Formula)
+            invariant(entity.fomula, 'reference is null')
+            const tokenText = entity.fomula[1] as string
+            if (uniqueMarks) {
+              return [tokenText, uniqueMarks]
+            } else {
+              return [tokenText]
+            }
+          }
+        )
+        const mergedTokens = mergeTokens(transformedTokens)
+        editor?.setBlockValue?.(currentBlock.id, (block) => {
+          block!.content!.title = mergedTokens
+        })
+      } else {
         const splitedTokens = splitToken(currentBlock?.content?.title || [])
         const transformedTokens = applyTransformOnSplitedTokens(splitedTokens, tokenRange, (): Editor.Token => {
-          const uniqueMarks = addMark([], Editor.InlineType.Reference, ['s', storyId])
+          const uniqueMarks = addMark([], Editor.InlineType.Formula, [formula])
           return [TelleryGlyph.EQUATION, uniqueMarks]
         })
         const mergedTokens = mergeTokens([
@@ -388,8 +351,9 @@ export const BlockTextOperationMenuInner = ({
           block!.content!.title = mergedTokens
         })
       }
-    }
-  }, [])
+    },
+    [currentBlock, editor, markdMap, tokenRange]
+  )
 
   useEffect(() => {
     const onKeyDown = (e: globalThis.KeyboardEvent) => {
@@ -541,7 +505,7 @@ export const BlockTextOperationMenuInner = ({
         <VerticalDivider />
         <InlineFormulaPopover
           setInlineEditing={setInlineEditing}
-          markHandler={markHandler}
+          editHandler={editFormula}
           referenceRange={range}
           storyId={currentBlock.storyId!}
         />
@@ -961,10 +925,15 @@ const FormulaResultRenderer: React.FC<{ storyId: string; formula: string }> = ({
   }
 }
 
-const InlineFormulaInput: React.FC<{ storyId: string }> = ({ storyId }) => {
+const InlineFormulaInput: React.FC<{
+  storyId: string
+  editHandler: (formula: string) => void
+  setOpen: (open: boolean) => void
+}> = ({ storyId, editHandler, setOpen }) => {
   const currentResources = useStoryResources(storyId)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
   const [formula, setFormula] = useState('')
+  const editor = useEditor()
 
   useEffect(() => {
     inputRef.current?.focus()
@@ -1024,24 +993,23 @@ const InlineFormulaInput: React.FC<{ storyId: string }> = ({ storyId }) => {
               setFormula(e.currentTarget.value)
               // setLink(e.currentTarget.value)
             }}
-            // onKeyDown={(e) => {
-            //   e.stopPropagation()
-            //   if (e.key === 'Enter') {
-            //     e.preventDefault()
-            //     props.markHandler(Editor.InlineType.Equation, [link], link.length === 0)
-            //     props.setInlineEditing(false)
-            //     editor?.setSelectionState((state) => {
-            //       if (state?.type === TellerySelectionType.Inline) {
-            //         return {
-            //           ...state,
-            //           anchor: state.focus
-            //         }
-            //       }
-            //       return state
-            //     })
-            //     setOpen(false)
-            //   }
-            // }}
+            onKeyDown={(e) => {
+              e.stopPropagation()
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                editHandler(formula)
+                editor?.setSelectionState((state) => {
+                  if (state?.type === TellerySelectionType.Inline) {
+                    return {
+                      ...state,
+                      anchor: state.focus
+                    }
+                  }
+                  return state
+                })
+                setOpen(false)
+              }
+            }}
           ></textarea>
           <div
             className={css`
@@ -1065,6 +1033,8 @@ const InlineFormulaInput: React.FC<{ storyId: string }> = ({ storyId }) => {
             > * + * {
               margin-top: 5px;
             }
+            max-height: 200px;
+            overflow-y: auto;
           `}
         >
           <div
@@ -1100,9 +1070,9 @@ const InlineFormulaInput: React.FC<{ storyId: string }> = ({ storyId }) => {
 }
 
 const InlineFormulaPopover = (props: {
-  markHandler: (type: Editor.InlineType, links: string[], isFirstLink: boolean) => void
   setInlineEditing: (editing: boolean) => void
   referenceRange: Range | null
+  editHandler: (formula: string) => void
   storyId: string
 }) => {
   const [open, setOpen] = useState(false)
@@ -1125,7 +1095,7 @@ const InlineFormulaPopover = (props: {
         }}
       />
       <EditorPopover referenceElement={props.referenceRange} open={open} setOpen={setOpen} disableClickThrough>
-        <InlineFormulaInput storyId={props.storyId} />
+        <InlineFormulaInput storyId={props.storyId} editHandler={props.editHandler} setOpen={setOpen} />
       </EditorPopover>
     </>
   )

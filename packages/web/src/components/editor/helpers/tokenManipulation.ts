@@ -405,8 +405,8 @@ export const toggleMark = (marks: Editor.TokenType[] | undefined | null, mark: E
 }
 
 export const isNonSelectbleToken = (token: Editor.Token) => {
-  const { reference } = extractEntitiesFromToken(token)
-  if (reference) {
+  const { reference, formula } = extractEntitiesFromToken(token)
+  if (reference || formula) {
     return true
   }
   return false
@@ -418,7 +418,8 @@ export const extractEntitiesFromToken = (token: Editor.Token) => {
     reference: undefined,
     classNames: undefined,
     index: undefined,
-    equation: undefined
+    equation: undefined,
+    formula: undefined
   }
   const tokenTypes = token[1]
   if (!tokenTypes) return entities
@@ -444,6 +445,10 @@ export const extractEntitiesFromToken = (token: Editor.Token) => {
       }
       case Editor.InlineType.Equation: {
         entities.equation = tokenType
+        break
+      }
+      case Editor.InlineType.Formula: {
+        entities.formula = tokenType
         break
       }
     }

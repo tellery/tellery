@@ -1,13 +1,11 @@
-import { Editor } from '@app/types'
+import type { Editor } from '@app/types'
 import { TelleryGlyph } from '@app/utils'
 import { dequal } from 'dequal'
 import invariant from 'tiny-invariant'
 import { isNonSelectbleToken } from '.'
+import { extractEntitiesFromToken } from './tokenManipulation'
 
 export const saveSelection = function (containerEl: HTMLElement) {
-  // const doc = containerEl.ownerDocument
-  // const win = doc.defaultView
-  // const range = win?.getSelection()?.getRangeAt(0)
   const _sel = document.getSelection()
   const range = _sel?.rangeCount && _sel?.getRangeAt(0)
   if (!range) {
@@ -248,11 +246,16 @@ export const deserialize = (el: Element, block: Editor.BaseBlock): Editor.Token[
           const token = block?.content?.title?.[tokenIndex]
           invariant(token, 'token is undefined')
 
-          const hasReference = token[1] && token[1].some((marks) => marks[0] === Editor.InlineType.Reference)
-          if (hasReference) {
+          const entities = extractEntitiesFromToken(token)
+
+          if (entities.reference) {
             children.push([TelleryGlyph.BI_LINK, token[1]])
             break
+          } else if (entities.formula) {
+            children.push([TelleryGlyph.EQUATION, token[1]])
+            break
           }
+
           if (children[i]) {
             children[i] = [(children[i][0] + currentNode.textContent) as string, token[1]]
           } else {
