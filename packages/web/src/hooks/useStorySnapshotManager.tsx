@@ -9,9 +9,10 @@ import dayjs from 'dayjs'
 import React, { useCallback, useContext, useEffect, useMemo } from 'react'
 import { useIsMutating, useQueryClient } from 'react-query'
 import invariant from 'tiny-invariant'
+import { useBlockSuspense } from './api'
 import { useCommit } from './useCommit'
-import { useStoryBlocksMap } from './useStoryBlock'
 import { useStoryPermissions } from './useStoryPermissions'
+import { useStoryResources } from './useStoryResources'
 
 export const useRefreshSnapshot = () => {
   const commit = useCommit()
@@ -20,9 +21,9 @@ export const useRefreshSnapshot = () => {
   const createSnapshot = useCreateSnapshot()
 
   const execute = useCallback(
-    (questionBlock: Editor.QuestionBlock) => {
-      const originalBlockId = questionBlock.id
-      const sql = questionBlock.content?.sql ?? ''
+    (dataAssetBlock: Editor.DataAssetBlock) => {
+      const originalBlockId = dataAssetBlock.id
+      const sql = dataAssetBlock.content?.sql ?? ''
       const mutationCount = queryClient
         .getMutationCache()
         .getAll()
@@ -42,12 +43,12 @@ export const useRefreshSnapshot = () => {
           connectorId: workspace.preferences.connectorId!,
           profile: workspace.preferences.profile!
         },
-        mutationKey: ['story', questionBlock.storyId, questionBlock.id, originalBlockId].join('/'),
+        mutationKey: ['story', dataAssetBlock.storyId, dataAssetBlock.id, originalBlockId].join('/'),
         onSuccess: async (data) => {
           if (typeof data !== 'object' || data.errMsg) {
             // const snapshotId = questionBlock.content!.snapshotId
             commit({
-              storyId: questionBlock.storyId!,
+              storyId: dataAssetBlock.storyId!,
               transcation: createTranscation({
                 operations: [
                   {
@@ -78,7 +79,7 @@ export const useRefreshSnapshot = () => {
             workspaceId: workspace.id
           })
           commit({
-            storyId: questionBlock.storyId!,
+            storyId: dataAssetBlock.storyId!,
             transcation: createTranscation({
               operations: [
                 {
@@ -108,7 +109,14 @@ export const useRefreshSnapshot = () => {
         }
       })
     },
-    [commit, queryClient, workspace.id, workspace.preferences.connectorId, workspace.preferences.profile]
+    [
+      commit,
+      createSnapshot,
+      queryClient,
+      workspace.id,
+      workspace.preferences.connectorId,
+      workspace.preferences.profile
+    ]
   )
 
   const cancel = useCallback(
@@ -136,20 +144,21 @@ export const useRefreshSnapshot = () => {
 }
 
 export const useStorySnapshotManagerProvider = (storyId: string) => {
-  const storyBlocksMap = useStoryBlocksMap(storyId)
-
+  const resourcesBlocks = useStoryResources(storyId)
+  const storyBlock = useBlockSuspense<Story>(storyId)
   const executeableQuestionBlocks = useMemo(() => {
-    if (!storyBlocksMap) return []
-    return Object.values(storyBlocksMap).filter((block) => isExecuteableBlockType(block.type))
-  }, [storyBlocksMap])
+    return resourcesBlocks.filter((block) => isExecuteableBlockType(block.type))
+  }, [resourcesBlocks])
 
-  const refreshOnInit = (storyBlocksMap?.[storyId] as Story)?.format?.refreshOnOpen
+  console.log('useStorySnapshotManagerProvider', executeableQuestionBlocks)
+
+  const refreshOnInit = storyBlock?.format?.refreshOnOpen
   const permissions = useStoryPermissions(storyId)
   const refreshSnapshot = useRefreshSnapshot()
 
   useEffect(() => {
     if (refreshOnInit && permissions.canWrite) {
-      executeableQuestionBlocks.forEach((questionBlock: Editor.QuestionBlock) => {
+      executeableQuestionBlocks.forEach((questionBlock: Editor.DataAssetBlock) => {
         if (dayjs().diff(dayjs(questionBlock.content?.lastRunAt ?? 0)) > 1000 * 5 * 60) {
           refreshSnapshot.execute(questionBlock)
         }
@@ -159,13 +168,13 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
   }, [refreshOnInit, refreshSnapshot])
 
   const runAll = useCallback(() => {
-    executeableQuestionBlocks.forEach((questionBlock: Editor.QuestionBlock) => {
+    executeableQuestionBlocks.forEach((questionBlock: Editor.DataAssetBlock) => {
       refreshSnapshot.execute(questionBlock)
     })
   }, [executeableQuestionBlocks, refreshSnapshot])
 
   const cancelAll = useCallback(() => {
-    executeableQuestionBlocks.forEach((questionBlock: Editor.QuestionBlock) => {
+    executeableQuestionBlocks.forEach((questionBlock: Editor.DataAssetBlock) => {
       refreshSnapshot.cancel(questionBlock.id)
     })
   }, [executeableQuestionBlocks, refreshSnapshot])
@@ -195,15 +204,15 @@ export const useStorySnapshotManager = () => {
   return context
 }
 
-export const useSnapshotMutating = (originalBlockId: string) => {
+export const useSnapshotMutating = (blockId: string) => {
   const refreshingSnapshot = useIsMutating({
-    predicate: (mutation) => (mutation.options.mutationKey as string)?.endsWith(originalBlockId)
+    predicate: (mutation) => (mutation.options.mutationKey as string)?.endsWith(blockId)
   })
 
   return refreshingSnapshot
 }
 
 export interface SnapshotMutation {
-  execute: (questionBlock: Editor.QuestionBlock) => void
+  execute: (questionBlock: Editor.DataAssetBlock) => void
   cancel: (blockId: string) => void
 }

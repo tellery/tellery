@@ -15,7 +15,7 @@ import {
 } from '@tellery/recharts'
 import { groupBy, orderBy } from 'lodash'
 import PerfectScrollbar from 'react-perfect-scrollbar'
-import { useTextWidth } from '@imagemarker/use-text-width'
+import { useTextWidth } from '@tag0/use-text-width'
 import { DisplayType, Type } from '../types'
 import type { Chart } from './base'
 import { ConfigButton } from '../components/ConfigButton'
@@ -23,7 +23,7 @@ import { ConfigLabel } from '../components/ConfigLabel'
 import { ConfigSelectWithClear } from '../components/ConfigSelectWithClear'
 import { ConfigSelect } from '../components/ConfigSelect'
 import { CustomTooltip } from '../components/CustomTooltip'
-import { formatNumber, formatRecord, isContinuous, isNumeric, isTimeSeries } from '../utils'
+import { formatNumber, formatRecord, isNumeric, isTimeSeries } from '../utils'
 import { LegendContent } from '../components/LegendContent'
 import { ColorSelector } from '../components/ColorSelector'
 import { ThemingVariables } from '@app/styles'
@@ -81,7 +81,7 @@ export const scatter: Chart<Type.SCATTER> = {
       referenceYValue: undefined,
 
       xLabel: x?.name || '',
-      xType: x ? (isContinuous(x.displayType) ? 'linear' : 'ordinal') : undefined,
+      xType: x ? (isNumeric(x.displayType) ? 'linear' : 'ordinal') : undefined,
       yLabel: y?.name || '',
       yScale: 'auto',
       yRangeMin: 0,
@@ -149,7 +149,7 @@ export const scatter: Chart<Type.SCATTER> = {
                   if (!isNumeric(props.data.fields.find((field) => field.name === props.config.xAxis)?.displayType)) {
                     onConfigChange('referenceXLabel', '', 'referenceXValue', undefined)
                   }
-                  onConfigChange('xAxis', xAxis, 'xType', isContinuous(displayTypes[xAxis]) ? 'linear' : 'ordinal')
+                  onConfigChange('xAxis', xAxis, 'xType', isNumeric(displayTypes[xAxis]) ? 'linear' : 'ordinal')
                 }}
                 placeholder="Please select"
               />
@@ -174,7 +174,7 @@ export const scatter: Chart<Type.SCATTER> = {
                     color
                       ? Object.keys(groupBy(records, color)).map((c, index) => ({
                           key: c,
-                          color: index % ThemingVariables.colors.visualization.length
+                          color: index
                         }))
                       : []
                   )
@@ -418,7 +418,7 @@ export const scatter: Chart<Type.SCATTER> = {
           `}
           margin={{
             top: 0,
-            bottom: showXLabel ? 10 : -10,
+            bottom: showXLabel ? 15 : -10,
             left: !props.config.yAxis || showYLabel ? 2 : -20,
             right: 2
           }}
@@ -436,7 +436,10 @@ export const scatter: Chart<Type.SCATTER> = {
                 name: color.key,
                 dataKey: color.key,
                 value: color.key,
-                color: ThemingVariables.colors.visualization[color.color]
+                color:
+                  color.color >= ThemingVariables.colors.visualization.length
+                    ? ThemingVariables.colors.visualizationOther
+                    : ThemingVariables.colors.visualization[color.color]
               }))}
               onMouseEnter={
                 ((value: { value: string }) => {
@@ -451,12 +454,15 @@ export const scatter: Chart<Type.SCATTER> = {
           ) : null}
           <XAxis
             dataKey={props.config.xAxis}
+            tickLine={false}
+            tickMargin={10}
+            axisLine={{ stroke: ThemingVariables.colors.gray[0] }}
             label={
               showXLabel
                 ? {
                     value: props.config.xLabel,
                     position: 'insideBottom',
-                    offset: -8,
+                    offset: -15,
                     color: ThemingVariables.colors.text[0]
                   }
                 : undefined
@@ -468,7 +474,7 @@ export const scatter: Chart<Type.SCATTER> = {
                 ? 'number'
                 : props.config.xType === 'ordinal'
                 ? 'category'
-                : isContinuous(xDisplayType)
+                : isNumeric(xDisplayType)
                 ? 'number'
                 : 'category'
             }
@@ -477,6 +483,8 @@ export const scatter: Chart<Type.SCATTER> = {
           <YAxis
             dataKey={props.config.yAxis}
             allowDuplicatedCategory={true}
+            tickLine={false}
+            axisLine={{ stroke: ThemingVariables.colors.gray[0] }}
             label={
               showYLabel
                 ? {
@@ -527,7 +535,11 @@ export const scatter: Chart<Type.SCATTER> = {
                   return (
                     <Cell
                       key={`cell-${index}`}
-                      fill={ThemingVariables.colors.visualization[color.color]}
+                      fill={
+                        color.color >= ThemingVariables.colors.visualization.length
+                          ? ThemingVariables.colors.visualizationOther
+                          : ThemingVariables.colors.visualization[color.color]
+                      }
                       opacity={hoverDataKey === undefined || hoverDataKey === color.key ? 1 : opacity}
                       onMouseEnter={() => {
                         setHoverDataKey(color.key)

@@ -79,7 +79,8 @@ export default function Login() {
             className={css`
               width: 100%;
             `}
-            disabled={!email || !password || handleUserLogin.status === 'pending'}
+            disabled={!email || !password}
+            loading={handleUserLogin.status === 'pending'}
           >
             Login
           </FormButton>

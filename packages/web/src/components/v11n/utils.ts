@@ -108,10 +108,6 @@ export function isNumeric(displayType?: DisplayType) {
   )
 }
 
-export function isContinuous(displayType?: DisplayType) {
-  return displayType && [DisplayType.FLOAT, DisplayType.DATETIME, DisplayType.TIME].includes(displayType)
-}
-
 export function isTimeSeries(displayType?: DisplayType) {
   return displayType && [DisplayType.DATETIME, DisplayType.DATE, DisplayType.TIME].includes(displayType)
 }

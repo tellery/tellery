@@ -155,13 +155,13 @@ export const logger = debug('tellery:api')
 //   printBranch(rootId, '')
 // }
 
-export const getBlockFromSnapshot = (blockId: string, snapshot: BlockSnapshot): Editor.Block => {
+export const getBlockFromSnapshot = (blockId: string, snapshot: BlockSnapshot): Editor.BaseBlock => {
   const block = snapshot.get(blockId)
   invariant(block, `blockLoadable ${blockId} is undefined`)
   return block
 }
 
-export const getBlockFromStoreMap = (blockId: string, snapshot: BlockSnapshot): Editor.Block | undefined => {
+export const getBlockFromStoreMap = (blockId: string, snapshot: BlockSnapshot): Editor.BaseBlock | undefined => {
   return snapshot.get(blockId)
 }
 

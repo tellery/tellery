@@ -5,7 +5,7 @@ import { SVG2DataURI } from '@app/lib/svg'
 import { TelleryThemeLight, ThemingVariables } from '@app/styles'
 import { blockIdGenerator } from '@app/utils'
 import { css, cx } from '@emotion/css'
-import { useTextWidth } from '@imagemarker/use-text-width'
+import { useTextWidth } from '@tag0/use-text-width'
 import {
   Area,
   Bar,
@@ -35,9 +35,7 @@ import { MoreSettingPopover } from '../components/MoreSettingPopover'
 import { ShapeSelector } from '../components/ShapeSelector'
 import { SortableList } from '../components/SortableList'
 import { fontFamily } from '../constants'
-import { ComboShape, ComboStack, Config, DisplayType, Type } from '../types'
-import { createTrend, formatNumber, formatRecord, isContinuous, isNumeric, isTimeSeries } from '../utils'
-import type { Chart } from './base'
+import { createTrend, formatNumber, formatRecord, isNumeric, isTimeSeries } from '../utils'
 
 const splitter = ', '
 
@@ -105,7 +103,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
       referenceYAxis: 'left',
 
       xLabel: x?.name || '',
-      xType: x ? (isContinuous(x.displayType) ? 'linear' : 'ordinal') : undefined,
+      xType: x ? (isNumeric(x.displayType) ? 'linear' : 'ordinal') : undefined,
       yLabel: y?.name || '',
       yScale: 'auto',
       yRangeMin: 0,
@@ -219,7 +217,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
           )
           .map((shape, index) => ({
             ...shape,
-            color: index % ThemingVariables.colors.visualization.length
+            color: index
           })) as Config<Type.COMBO>['shapes']
       )
     }, [onConfigChange, shapes, props.config.shapes])
@@ -238,12 +236,13 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                 if (axise === 'dimensions') {
                   onConfigChange(axise, value)
                 } else if (axise === 'xAxises') {
-                  console.log(value, displayTypes[value[0]])
                   onConfigChange(
                     axise,
                     value,
+                    mapAxis2Label(axise),
+                    calcLabel(value, axise),
                     'xType',
-                    value.length > 1 ? 'ordinal' : isContinuous(displayTypes[value[0]]) ? 'linear' : 'ordinal'
+                    value.length > 1 ? 'ordinal' : isNumeric(displayTypes[value[0]]) ? 'linear' : 'ordinal'
                   )
                 } else {
                   onConfigChange(axise, value, mapAxis2Label(axise), calcLabel(value, axise))
@@ -287,8 +286,10 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                         onConfigChange(
                           axise,
                           array,
+                          mapAxis2Label(axise),
+                          calcLabel(array, axise),
                           'xType',
-                          array.length > 1 ? 'ordinal' : isContinuous(displayTypes[array[0]]) ? 'linear' : 'ordinal'
+                          array.length > 1 ? 'ordinal' : isNumeric(displayTypes[array[0]]) ? 'linear' : 'ordinal'
                         )
                       } else {
                         onConfigChange(axise, array, mapAxis2Label(axise), calcLabel(array, axise))
@@ -834,6 +835,19 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
       () => (props.config.xAxises.length === 1 ? displayTypes[props.config.xAxises[0]] : undefined),
       [displayTypes, props.config.xAxises]
     )
+    const sortedShapes = useMemo(
+      () =>
+        sortBy(
+          [...props.config.shapes].reverse(),
+          (shape) =>
+            ({
+              [ComboShape.LINE]: 3,
+              [ComboShape.AREA]: 2,
+              [ComboShape.BAR]: 1
+            }[groups[shape.groupId]?.shape!])
+        ),
+      [groups, props.config.shapes]
+    )
 
     return (
       <ResponsiveContainer>
@@ -854,7 +868,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
           `}
           margin={{
             top: 0,
-            bottom: showXLabel ? 10 : -10,
+            bottom: showXLabel ? 15 : -10,
             left: !props.config.yAxises.length || showYLabel ? 2 : -20,
             right: !props.config.y2Axises.length || showY2Label ? 2 : -20
           }}
@@ -864,12 +878,15 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
           ) : null}
           <XAxis
             dataKey="key"
+            tickLine={false}
+            tickMargin={10}
+            axisLine={{ stroke: ThemingVariables.colors.gray[0] }}
             label={
               showXLabel
                 ? {
                     value: props.config.xLabel,
                     position: 'insideBottom',
-                    offset: -8,
+                    offset: -15,
                     color: ThemingVariables.colors.text[0]
                   }
                 : undefined
@@ -882,7 +899,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                 ? 'number'
                 : props.config.xType === 'ordinal'
                 ? 'category'
-                : isContinuous(xDisplayType)
+                : isNumeric(xDisplayType)
                 ? 'number'
                 : 'category'
             }
@@ -892,6 +909,8 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
             yAxisId="left"
             hide={props.config.yAxises.length === 0}
             allowDuplicatedCategory={true}
+            tickLine={false}
+            axisLine={{ stroke: ThemingVariables.colors.gray[0] }}
             label={
               showYLabel
                 ? {
@@ -926,6 +945,8 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
             yAxisId="right"
             hide={props.config.y2Axises.length === 0}
             allowDuplicatedCategory={true}
+            tickLine={false}
+            axisLine={{ stroke: ThemingVariables.colors.gray[0] }}
             label={
               showY2Label
                 ? {
@@ -995,7 +1016,10 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                 id: shape.key,
                 value: shape.title,
                 type: 'circle',
-                color: ThemingVariables.colors.visualization[shape.color],
+                color:
+                  shape.color >= ThemingVariables.colors.visualization.length
+                    ? ThemingVariables.colors.visualizationOther
+                    : ThemingVariables.colors.visualization[shape.color],
                 dataKey: valueKey(shape.key),
                 yAxisId: calcYAxisId(shape.groupId)
               }))}
@@ -1010,19 +1034,15 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
               content={LegendContent}
             />
           ) : null}
-          {sortBy(
-            props.config.shapes,
-            (shape) =>
-              ({
-                [ComboShape.LINE]: 3,
-                [ComboShape.AREA]: 2,
-                [ComboShape.BAR]: 1
-              }[groups[shape.groupId]?.shape!])
-          ).map(({ key, groupId, color }) => {
+          {sortedShapes.map(({ key, groupId, color: colorIndex }) => {
             const group = groups[groupId]
             if (!group) {
               return null
             }
+            const color =
+              colorIndex >= ThemingVariables.colors.visualization.length
+                ? ThemingVariables.colors.visualizationOther
+                : ThemingVariables.colors.visualization[colorIndex]
             const stackId = {
               [ComboStack.NONE]: undefined,
               [ComboStack.STACK]: group.key,
@@ -1036,7 +1056,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                 dataKey={valueKey(key)}
                 connectNulls={group.connectNulls}
                 name={key}
-                stroke={ThemingVariables.colors.visualization[color]}
+                stroke={color}
                 isAnimationActive={false}
                 opacity={hoverDataKey === undefined || hoverDataKey === valueKey(key) ? 1 : opacity}
                 dot={{
@@ -1050,7 +1070,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                   hoverDataKey === valueKey(key)
                     ? {
                         strokeWidth: 0,
-                        fill: ThemingVariables.colors.visualization[color],
+                        fill: color,
                         onMouseEnter: () => {
                           setHoverDataKey(valueKey(key))
                         },
@@ -1074,10 +1094,10 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                 stackId={stackId}
                 yAxisId={calcYAxisId(group.key)}
                 dataKey={valueKey(key)}
-                stroke={ThemingVariables.colors.visualization[color]}
+                stroke={color}
                 strokeWidth={2}
                 stopOpacity={hoverDataKey === undefined || hoverDataKey === valueKey(key) ? 1 : opacity}
-                fill={ThemingVariables.colors.visualization[color]}
+                fill={color}
                 fillOpacity={opacity}
                 isAnimationActive={false}
                 opacity={hoverDataKey === undefined || hoverDataKey === valueKey(key) ? 1 : opacity}
@@ -1093,7 +1113,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                   hoverDataKey === valueKey(key)
                     ? {
                         strokeWidth: 0,
-                        fill: ThemingVariables.colors.visualization[color],
+                        fill: color,
                         onMouseEnter: () => {
                           setHoverDataKey(valueKey(key))
                         },
@@ -1117,7 +1137,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                 dataKey={valueKey(key)}
                 strokeWidth={0}
                 maxBarSize={props.config.xType === 'linear' ? 20 : undefined}
-                fill={ThemingVariables.colors.visualization[color]}
+                fill={color}
                 isAnimationActive={false}
                 opacity={hoverDataKey === undefined || hoverDataKey === valueKey(key) ? 1 : opacity}
                 onMouseEnter={() => {

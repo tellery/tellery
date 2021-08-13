@@ -9,7 +9,7 @@ import { dequal } from 'dequal'
 import produce from 'immer'
 import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import invariant from 'tiny-invariant'
-import { isQuestionLikeBlock } from '../Blocks/utils'
+import { isVisualizationBlock } from '../Blocks/utils'
 import {
   nativeSelection2Tellery,
   TellerySelection,
@@ -424,7 +424,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
                 localSelection.focus.offset === 0
               ) {
                 e.preventDefault()
-                if (isQuestionLikeBlock(block.type)) {
+                if (isVisualizationBlock(block.type)) {
                   e.stopPropagation()
                 } else if (block.type !== Editor.BlockType.Text && block.type !== Editor.BlockType.Story) {
                   editor?.toggleBlockType(block.id, Editor.BlockType.Text, 0)

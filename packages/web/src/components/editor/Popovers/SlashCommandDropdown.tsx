@@ -25,7 +25,7 @@ import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'rea
 import scrollIntoView from 'scroll-into-view-if-needed'
 import invariant from 'tiny-invariant'
 import { mergeTokens, splitToken, tokenPosition2SplitedTokenPosition } from '..'
-import { isQuestionLikeBlock } from '../Blocks/utils'
+import { isVisualizationBlock } from '../Blocks/utils'
 import { EditorPopover } from '../EditorPopover'
 import { TellerySelection, tellerySelection2Native, TellerySelectionType } from '../helpers/tellerySelection'
 import { useEditableContextMenu, useEditor } from '../hooks'
@@ -97,7 +97,7 @@ const isEmptyTitleBlock = (block: Editor.BaseBlock) => {
 
 export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props) => {
   const { id, keyword, setOpen, blockRef, referenceRange, selection, open } = props
-  const editor = useEditor<Editor.Block>()
+  const editor = useEditor()
   // const [selectedResultIndex, setSelectedResultIndex] = useState(0)
   const currentBlock = useBlockSuspense(id)
   const focusBlockHandler = usePushFocusedBlockIdState()
@@ -145,9 +145,11 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
           focus: { blockId, offset: 0, nodeIndex: 0 }
         })
       }
-      if (isQuestionLikeBlock(blockType)) {
+
+      if (isVisualizationBlock(blockType)) {
         focusBlockHandler(blockId, block.storyId, true, false)
       }
+
       setOpen(false)
     },
     [editor, focusBlockHandler, id, setOpen]
@@ -162,7 +164,7 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
       // },
       {
         title: 'Question',
-        action: createOrToggleBlock(Editor.BlockType.Question),
+        action: createOrToggleBlock(Editor.BlockType.Visualization),
         icon: <IconCommonQuestion color={ThemingVariables.colors.text[0]} />
       },
       {

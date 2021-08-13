@@ -2,7 +2,7 @@ import { saveTranscations } from '@app/api'
 import {
   createTranscation,
   duplicateStoryTranscation,
-  insertBlocksAndMoveTranscation,
+  insertBlocksAndMoveOperations,
   moveBlocksTranscation
 } from '@app/context/editorTranscations'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
@@ -76,22 +76,27 @@ export const useBlockTranscationProvider = () => {
       {
         blocksFragment,
         targetBlockId,
-        direction
+        direction,
+        path = 'children'
       }: {
         blocksFragment: { children: string[]; data: Record<string, Editor.BaseBlock> }
         targetBlockId: string
         direction: 'top' | 'left' | 'bottom' | 'right' | 'child'
+        path?: 'children' | 'resources'
       }
     ) => {
       return commit({
         transcation: (snapshot) => {
           logger('insert block')
-          return insertBlocksAndMoveTranscation({
-            storyId,
-            blocksFragment,
-            targetBlockId,
-            direction,
-            snapshot
+          return createTranscation({
+            operations: insertBlocksAndMoveOperations({
+              storyId,
+              blocksFragment,
+              targetBlockId,
+              direction,
+              snapshot,
+              path
+            })
           })
         },
         storyId

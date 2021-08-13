@@ -18,7 +18,7 @@ export const createTranscation = ({ operations }: { operations: Operation[] }) =
 
 export const getIndentionOperations = (
   block: Editor.BaseBlock,
-  previousBlock: Editor.Block,
+  previousBlock: Editor.BaseBlock,
   parentBlock: Editor.BaseBlock,
   blockIds: string[]
 ) => {
@@ -177,23 +177,43 @@ export const getDuplicatedBlocksFragment = (
   }
 }
 
-export const getDuplicatedBlocks = (blocks: Editor.BaseBlock[], storyId: string) => {
+export const getDuplicatedBlocks = (
+  blocks: Editor.BaseBlock[],
+  storyId: string,
+  resourceMapping: Record<string, string>
+) => {
   const duplicatedBlocks = blocks.map((block) => {
-    const fragBlock = block
-    return createEmptyBlock({
-      type: fragBlock.type,
-      storyId,
-      parentId: storyId,
-      content: fragBlock.content,
-      children: fragBlock.children,
-      format: fragBlock.format
-    })
+    if (block.type === Editor.BlockType.Visualization) {
+      const fragBlock = block as Editor.VisualizationBlock
+      const originalDataAssetId = fragBlock.content?.dataAssetId
+      return createEmptyBlock<Editor.VisualizationBlock>({
+        type: fragBlock.type,
+        storyId,
+        parentId: storyId,
+        content: {
+          ...fragBlock.content,
+          dataAssetId: originalDataAssetId ? resourceMapping[originalDataAssetId] : undefined
+        },
+        children: fragBlock.children,
+        format: fragBlock.format
+      })
+    } else {
+      const fragBlock = block
+      return createEmptyBlock({
+        type: fragBlock.type,
+        storyId,
+        parentId: storyId,
+        content: fragBlock.content,
+        children: fragBlock.children,
+        format: fragBlock.format
+      })
+    }
   })
 
   return duplicatedBlocks
 }
 
-export const insertBlockAfterTranscation = ({ block, after }: { block: Editor.Block; after?: string }) => {
+export const insertBlockAfterTranscation = ({ block, after }: { block: Editor.BaseBlock; after?: string }) => {
   return createTranscation({
     operations: [
       { cmd: 'set', id: block.id, path: [], args: block, table: 'block' },
@@ -226,11 +246,12 @@ export const addInsertBlockOperations = (
   targetParentBlockId: string,
   targetStoryId: string,
   operations: Operation[],
-  snapshot: BlockSnapshot
+  snapshot: BlockSnapshot,
+  resourceMapping?: Record<string, string>
 ) => {
   // const block = getBlockFromGlobalStore(blockId)
   const blocks = blockIds.map((id) => getBlockFromSnapshot(id, snapshot))
-  const duplicatedBlocks = getDuplicatedBlocks(blocks, targetStoryId)
+  const duplicatedBlocks = getDuplicatedBlocks(blocks, targetStoryId, resourceMapping)
   let afterId = ''
 
   for (let i = 0; i < duplicatedBlocks.length; i++) {
@@ -270,7 +291,7 @@ export const addInsertBlockOperations = (
     }
     afterId = block.id
 
-    addInsertBlockOperations(blocks[i].children ?? [], block.id, targetStoryId, operations, snapshot)
+    addInsertBlockOperations(blocks[i].children ?? [], block.id, targetStoryId, operations, snapshot, resourceMapping)
   }
 
   return operations
@@ -289,28 +310,51 @@ export const duplicateStoryTranscation = ({
 }) => {
   const operations: Operation[] = []
   const story = getBlockFromSnapshot(storyId, snapshot)
-  // const newStory = createEmptyBlock(story.type, storyId, story.parentId, fragBlock.content, fragBlock.format)
+
+  const resourceMapping: Record<string, string> = {}
+  const oldResources = story.resources?.map((id) => getBlockFromSnapshot(id, snapshot)) ?? []
+  const newResources = oldResources.map((block) => {
+    if (block.storyId === storyId) {
+      const newId = nanoid()
+      resourceMapping[block.id] = newId
+      return createEmptyBlock({ ...block, id: newId, storyId: newStoryId, parentId: newStoryId })
+    } else {
+      resourceMapping[block.id] = block.id
+      return block
+    }
+  })
+
+  for (const resourceBlock of newResources) {
+    if (resourceBlock.storyId === newStoryId) {
+      operations.push({
+        cmd: 'set',
+        id: resourceBlock.id,
+        path: [],
+        args: resourceBlock,
+        table: 'block'
+      })
+    }
+  }
+
   operations.push({
     cmd: 'set',
     id: newStoryId,
     path: [],
-    args: {
+    args: createEmptyBlock({
       id: newStoryId,
       alive: true,
       parentId: wroskapceId,
-      parentTable: 'workspace',
+      parentTable: Editor.BlockParentType.WORKSPACE,
+      resources: newResources.map((block) => block.id),
       content: { ...story.content, title: mergeTokens([[`copy of `], ...(story.content?.title ?? [])]) },
       children: [],
-      createdById: story.createdById,
-      createdAt: story.createdAt,
-      type: 'story',
-      storyId: newStoryId,
-      version: 0
-    },
+      type: Editor.BlockType.Story,
+      storyId: newStoryId
+    }),
     table: 'block'
   })
 
-  addInsertBlockOperations(story.children ?? [], newStoryId, newStoryId, operations, snapshot)
+  addInsertBlockOperations(story.children ?? [], newStoryId, newStoryId, operations, snapshot, resourceMapping)
   // blocks.push(story)
   const transcation = createTranscation({ operations })
 
@@ -324,18 +368,20 @@ const getMappedSnapshot = (snapshot: BlockSnapshot, mapper: (snapshot: BlockSnap
   return newSnapshot
 }
 
-export const insertBlocksAndMoveTranscation = ({
+export const insertBlocksAndMoveOperations = ({
   blocksFragment,
   targetBlockId,
   storyId,
   direction,
-  snapshot
+  snapshot,
+  path = 'children'
 }: {
   blocksFragment: { children: string[]; data: Record<string, Editor.BaseBlock> }
   targetBlockId: string
   storyId: string
   direction: 'top' | 'left' | 'bottom' | 'right' | 'child'
   snapshot: BlockSnapshot
+  path: 'children' | 'resources'
 }) => {
   const operations: Operation[] = []
 
@@ -358,10 +404,11 @@ export const insertBlocksAndMoveTranscation = ({
       storyId,
       direction,
       deleteSourceBlock: false,
-      snapshot: newSnapshot
+      snapshot: newSnapshot,
+      path
     }).operations
   )
-  return createTranscation({ operations })
+  return operations
 }
 
 export const moveBlocksTranscation = ({
@@ -370,7 +417,8 @@ export const moveBlocksTranscation = ({
   storyId,
   direction,
   deleteSourceBlock = true,
-  snapshot
+  snapshot,
+  path = 'children'
 }: {
   sourceBlockIds: string[]
   targetBlockId: string
@@ -378,6 +426,7 @@ export const moveBlocksTranscation = ({
   direction: 'top' | 'left' | 'bottom' | 'right' | 'child'
   deleteSourceBlock: boolean
   snapshot: BlockSnapshot
+  path?: 'children' | 'resources'
 }) => {
   const operations: Operation[] = []
   const sourceBlocks = sourceBlockIds.map((id) => getBlockFromSnapshot(id, snapshot))
@@ -397,7 +446,7 @@ export const moveBlocksTranscation = ({
           {
             cmd: 'listRemove',
             id: getBlockFromSnapshot(sourceBlock.id, snapshot).parentId,
-            path: ['children'],
+            path: [path],
             args: { id: sourceBlock.id },
             table: 'block'
           }
@@ -415,7 +464,7 @@ export const moveBlocksTranscation = ({
               before: targetBlockId
             },
             table: 'block',
-            path: ['children']
+            path: [path]
           }
         ]
       )
@@ -431,7 +480,7 @@ export const moveBlocksTranscation = ({
               after: targetBlockId
             },
             table: 'block',
-            path: ['children']
+            path: [path]
           }
         ]
       )
@@ -449,7 +498,7 @@ export const moveBlocksTranscation = ({
             {
               cmd: 'listRemove',
               id: getBlockFromSnapshot(sourceBlock.id, snapshot).parentId,
-              path: ['children'],
+              path: [path],
               args: { id: sourceBlock.id },
               table: 'block'
             }
@@ -482,7 +531,7 @@ export const moveBlocksTranscation = ({
               id: sourceBlock.id
             },
             table: 'block',
-            path: ['children']
+            path: [path]
           }
         ]
       )
@@ -497,7 +546,7 @@ export const moveBlocksTranscation = ({
                 before: targetBlockId
               },
               table: 'block',
-              path: ['children']
+              path: [path]
             }
           ]
         )
@@ -513,7 +562,7 @@ export const moveBlocksTranscation = ({
                 after: targetBlockId
               },
               table: 'block',
-              path: ['children']
+              path: [path]
             }
           ]
         )
@@ -552,7 +601,7 @@ export const moveBlocksTranscation = ({
               after: targetBlockId
             },
             table: 'block',
-            path: ['children']
+            path: [path]
           }
         ]
       )
@@ -563,7 +612,7 @@ export const moveBlocksTranscation = ({
             {
               cmd: 'listRemove',
               id: getBlockFromSnapshot(sourceBlock.id, snapshot).parentId,
-              path: ['children'],
+              path: [path],
               args: { id: sourceBlock.id },
               table: 'block'
             }
@@ -574,7 +623,7 @@ export const moveBlocksTranscation = ({
           {
             cmd: 'listRemove',
             id: getBlockFromSnapshot(targetBlock.id, snapshot).parentId,
-            path: ['children'],
+            path: [path],
             args: { id: targetBlock.id },
             table: 'block'
           }
@@ -611,7 +660,7 @@ export const moveBlocksTranscation = ({
             id: rowBlock.id,
             args: { id: columnBlockA.id },
             table: 'block',
-            path: ['children']
+            path: [path]
           }
         ]
       )
@@ -623,7 +672,7 @@ export const moveBlocksTranscation = ({
             id: rowBlock.id,
             args: { id: columnBlockB.id, after: columnBlockA.id },
             table: 'block',
-            path: ['children']
+            path: [path]
           }
         ]
       )
@@ -636,7 +685,7 @@ export const moveBlocksTranscation = ({
               id: columnBlockA.id,
               args: { id: sourceBlock.id },
               table: 'block',
-              path: ['children']
+              path: [path]
             }
           ]
         )
@@ -647,7 +696,7 @@ export const moveBlocksTranscation = ({
               id: columnBlockB.id,
               args: { id: targetBlock.id },
               table: 'block',
-              path: ['children']
+              path: [path]
             }
           ]
         )
@@ -660,7 +709,7 @@ export const moveBlocksTranscation = ({
               id: columnBlockA.id,
               args: { id: targetBlock.id },
               table: 'block',
-              path: ['children']
+              path: [path]
             }
           ]
         )
@@ -671,7 +720,7 @@ export const moveBlocksTranscation = ({
               id: columnBlockB.id,
               args: { id: sourceBlock.id },
               table: 'block',
-              path: ['children']
+              path: [path]
             }
           ]
         )
@@ -686,7 +735,7 @@ export const moveBlocksTranscation = ({
           id: targetBlockId,
           args: { id: sourceBlock.id },
           table: 'block',
-          path: ['children']
+          path: [path]
         }
       ]
     )
@@ -705,7 +754,7 @@ export const moveBlocksTranscation = ({
         operations.push({
           cmd: 'listRemove',
           id: getBlockFromSnapshot(block.id, snapshot).parentId,
-          path: ['children'],
+          path: [path],
           args: { id: block.id },
           table: 'block'
         })
@@ -720,7 +769,7 @@ export const moveBlocksTranscation = ({
               after: afterId
             },
             table: 'block',
-            path: ['children']
+            path: [path]
           }
         ]
       )
@@ -731,7 +780,7 @@ export const moveBlocksTranscation = ({
   return createTranscation({ operations })
 }
 
-export const insertBlocksTranscation = ({ blocks, after }: { blocks: Editor.Block[]; after: string }) => {
+export const insertBlocksTranscation = ({ blocks, after }: { blocks: Editor.BaseBlock[]; after: string }) => {
   const operations: Operation[] = []
   let afterId = after
   for (let i = 0; i < blocks.length; i++) {
@@ -756,8 +805,8 @@ export const setBlockTitleTranscation = ({
   oldBlock,
   newBlock
 }: {
-  oldBlock: Editor.Block
-  newBlock: Editor.Block
+  oldBlock: Editor.BaseBlock
+  newBlock: Editor.BaseBlock
 }) => {
   const operations: Operation[] = []
   const id = oldBlock.id
@@ -773,7 +822,13 @@ export const setBlockTitleTranscation = ({
   return createTranscation({ operations })
 }
 
-export const setBlockTranscation = ({ oldBlock, newBlock }: { oldBlock: Editor.Block; newBlock: Editor.Block }) => {
+export const setBlockOperations = <T extends Editor.BaseBlock>({
+  oldBlock,
+  newBlock
+}: {
+  oldBlock: T
+  newBlock: T
+}) => {
   const operations: Operation[] = []
   const id = oldBlock.id
   if (dequal(oldBlock.content, newBlock.content) === false) {
@@ -803,5 +858,15 @@ export const setBlockTranscation = ({ oldBlock, newBlock }: { oldBlock: Editor.B
       id: id
     })
   }
-  return createTranscation({ operations })
+  return operations
+}
+
+export const setBlockTranscation = <T extends Editor.BaseBlock>({
+  oldBlock,
+  newBlock
+}: {
+  oldBlock: T
+  newBlock: T
+}) => {
+  return createTranscation({ operations: setBlockOperations({ oldBlock, newBlock }) })
 }
