@@ -177,17 +177,37 @@ export const getDuplicatedBlocksFragment = (
   }
 }
 
-export const getDuplicatedBlocks = (blocks: Editor.BaseBlock[], storyId: string) => {
+export const getDuplicatedBlocks = (
+  blocks: Editor.BaseBlock[],
+  storyId: string,
+  resourceMapping: Record<string, string>
+) => {
   const duplicatedBlocks = blocks.map((block) => {
-    const fragBlock = block
-    return createEmptyBlock({
-      type: fragBlock.type,
-      storyId,
-      parentId: storyId,
-      content: fragBlock.content,
-      children: fragBlock.children,
-      format: fragBlock.format
-    })
+    if (block.type === Editor.BlockType.Visualization) {
+      const fragBlock = block as Editor.VisualizationBlock
+      const originalDataAssetId = fragBlock.content?.dataAssetId
+      return createEmptyBlock<Editor.VisualizationBlock>({
+        type: fragBlock.type,
+        storyId,
+        parentId: storyId,
+        content: {
+          ...fragBlock.content,
+          dataAssetId: originalDataAssetId ? resourceMapping[originalDataAssetId] : undefined
+        },
+        children: fragBlock.children,
+        format: fragBlock.format
+      })
+    } else {
+      const fragBlock = block
+      return createEmptyBlock({
+        type: fragBlock.type,
+        storyId,
+        parentId: storyId,
+        content: fragBlock.content,
+        children: fragBlock.children,
+        format: fragBlock.format
+      })
+    }
   })
 
   return duplicatedBlocks
@@ -226,11 +246,12 @@ export const addInsertBlockOperations = (
   targetParentBlockId: string,
   targetStoryId: string,
   operations: Operation[],
-  snapshot: BlockSnapshot
+  snapshot: BlockSnapshot,
+  resourceMapping?: Record<string, string>
 ) => {
   // const block = getBlockFromGlobalStore(blockId)
   const blocks = blockIds.map((id) => getBlockFromSnapshot(id, snapshot))
-  const duplicatedBlocks = getDuplicatedBlocks(blocks, targetStoryId)
+  const duplicatedBlocks = getDuplicatedBlocks(blocks, targetStoryId, resourceMapping)
   let afterId = ''
 
   for (let i = 0; i < duplicatedBlocks.length; i++) {
@@ -270,7 +291,7 @@ export const addInsertBlockOperations = (
     }
     afterId = block.id
 
-    addInsertBlockOperations(blocks[i].children ?? [], block.id, targetStoryId, operations, snapshot)
+    addInsertBlockOperations(blocks[i].children ?? [], block.id, targetStoryId, operations, snapshot, resourceMapping)
   }
 
   return operations
@@ -289,29 +310,51 @@ export const duplicateStoryTranscation = ({
 }) => {
   const operations: Operation[] = []
   const story = getBlockFromSnapshot(storyId, snapshot)
-  // const newStory = createEmptyBlock(story.type, storyId, story.parentId, fragBlock.content, fragBlock.format)
+
+  const resourceMapping: Record<string, string> = {}
+  const oldResources = story.resources?.map((id) => getBlockFromSnapshot(id, snapshot)) ?? []
+  const newResources = oldResources.map((block) => {
+    if (block.storyId === storyId) {
+      const newId = nanoid()
+      resourceMapping[block.id] = newId
+      return createEmptyBlock({ ...block, id: newId, storyId: newStoryId, parentId: newStoryId })
+    } else {
+      resourceMapping[block.id] = block.id
+      return block
+    }
+  })
+
+  for (const resourceBlock of newResources) {
+    if (resourceBlock.storyId === newStoryId) {
+      operations.push({
+        cmd: 'set',
+        id: resourceBlock.id,
+        path: [],
+        args: resourceBlock,
+        table: 'block'
+      })
+    }
+  }
+
   operations.push({
     cmd: 'set',
     id: newStoryId,
     path: [],
-    args: {
+    args: createEmptyBlock({
       id: newStoryId,
       alive: true,
       parentId: wroskapceId,
-      parentTable: 'workspace',
-      resources: [],
+      parentTable: Editor.BlockParentType.WORKSPACE,
+      resources: newResources.map((block) => block.id),
       content: { ...story.content, title: mergeTokens([[`copy of `], ...(story.content?.title ?? [])]) },
       children: [],
-      createdById: story.createdById,
-      createdAt: story.createdAt,
-      type: 'story',
-      storyId: newStoryId,
-      version: 0
-    },
+      type: Editor.BlockType.Story,
+      storyId: newStoryId
+    }),
     table: 'block'
   })
 
-  addInsertBlockOperations(story.children ?? [], newStoryId, newStoryId, operations, snapshot)
+  addInsertBlockOperations(story.children ?? [], newStoryId, newStoryId, operations, snapshot, resourceMapping)
   // blocks.push(story)
   const transcation = createTranscation({ operations })
 
