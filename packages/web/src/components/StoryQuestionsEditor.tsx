@@ -45,6 +45,7 @@ import invariant from 'tiny-invariant'
 import { setBlockTranscation } from '../context/editorTranscations'
 import { CircularLoading } from './CircularLoading'
 import { BlockTitle, useGetBlockTitleTextSnapshot } from './editor'
+import { isExecuteableBlockType } from './editor/Blocks/utils'
 import type { SetBlock } from './editor/types'
 import IconButton from './kit/IconButton'
 import QuestionDownstreams from './QuestionDownstreams'
@@ -665,13 +666,16 @@ export const StoryQuestionEditor: React.FC<{
     [profiles, workspace.preferences.profile]
   )
   const run = useCallback(async () => {
-    if (!block) return
+    if (!sqlBlock) return
     if (!sql) return
 
+    if (!isExecuteableBlockType(sqlBlock.type)) {
+      return
+    }
     const data = await executeSQL.mutateAsync({
       workspaceId: workspace.id,
       sql,
-      questionId: block.id,
+      questionId: sqlBlock.id,
       connectorId: workspace.preferences.connectorId!,
       profile: workspace.preferences.profile!
     })
@@ -688,14 +692,14 @@ export const StoryQuestionEditor: React.FC<{
       // TODO: fix snap shot question id
       await applyCreateSnapshotOperation({
         snapshotId,
-        questionId: block.id,
+        questionId: sqlBlock.id,
         sql: sql,
         data: data,
         workspaceId: workspace.id
       })
       setSnapshotId(snapshotId)
     } else {
-      const originalBlockId = block.id
+      const originalBlockId = sqlBlock.id
       invariant(sqlBlock, 'originalBlock is undefined')
       // mutateBlock(
       //   originalBlockId,
@@ -719,7 +723,6 @@ export const StoryQuestionEditor: React.FC<{
     }
     setMode('VIS')
   }, [
-    block,
     sql,
     executeSQL,
     workspace.id,
@@ -799,6 +802,8 @@ export const StoryQuestionEditor: React.FC<{
   const scrollToBlock = useCallback(() => {
     pushFocusedBlockIdState(block.id, block.storyId)
   }, [block.id, block.storyId, pushFocusedBlockIdState])
+
+  const sqlReadOnly = readonly || sqlBlock.type === Editor.BlockType.SnapshotBlock
 
   return (
     <TabPanel
@@ -909,12 +914,14 @@ export const StoryQuestionEditor: React.FC<{
               }}
             />
           )}
-          <IconButton
-            hoverContent={mutatingCount !== 0 ? 'Cancel Query' : 'Execute Query'}
-            icon={mutatingCount !== 0 ? IconCommonClose : IconCommonRun}
-            color={ThemingVariables.colors.primary[1]}
-            onClick={mutatingCount !== 0 ? cancelExecuteSql : run}
-          />
+          {isExecuteableBlockType(sqlBlock.type) && (
+            <IconButton
+              hoverContent={mutatingCount !== 0 ? 'Cancel Query' : 'Execute Query'}
+              icon={mutatingCount !== 0 ? IconCommonClose : IconCommonRun}
+              color={ThemingVariables.colors.primary[1]}
+              onClick={mutatingCount !== 0 ? cancelExecuteSql : run}
+            />
+          )}
           <IconButton
             hoverContent="Save"
             disabled={!isDraft || readonly === true}
@@ -1018,6 +1025,7 @@ export const StoryQuestionEditor: React.FC<{
               onChange={(e) => {
                 setSql(e)
               }}
+              readOnly={sqlReadOnly}
               onRun={run}
               onSave={save}
             />

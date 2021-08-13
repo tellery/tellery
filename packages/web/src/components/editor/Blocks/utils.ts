@@ -10,6 +10,7 @@ export type BlockComponent<P = {}> = P & {
     forwardRef?: boolean
     isQuestion?: boolean
     isResizeable?: boolean
+    isDataAsset?: boolean
     isExecuteable?: boolean
   }
 }
@@ -30,12 +31,7 @@ export const isQuestionLikeBlock = (blockType: Editor.BlockType) => {
 }
 
 export const isDataAssetBlock = (blockType: Editor.BlockType) => {
-  return (
-    blockType === Editor.BlockType.SQL ||
-    blockType === Editor.BlockType.DBT ||
-    blockType === Editor.BlockType.SnapshotBlock ||
-    blockType === Editor.BlockType.Thought
-  )
+  return !!Blocks[blockType]?.meta.isDataAsset
 }
 
 export const isVisualizationBlock = (blockType: Editor.BlockType) => {
@@ -43,7 +39,7 @@ export const isVisualizationBlock = (blockType: Editor.BlockType) => {
 }
 
 export const isExecuteableBlockType = (blockType: Editor.BlockType) => {
-  return blockType === Editor.BlockType.SQL
+  return !!Blocks[blockType]?.meta.isExecuteable
 }
 
 export const isBlockHasChildren = (block: Editor.BaseBlock) => {

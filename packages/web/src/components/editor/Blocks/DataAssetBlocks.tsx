@@ -121,29 +121,39 @@ const DataAssetBlockTablePreview = React.forwardRef(_DataAssetBlockTablePreview)
   React.ForwardRefExoticComponent<QuestionBlockProps & React.RefAttributes<any>>
 >
 
+const SnapshotBlock = React.forwardRef(_DataAssetBlockTablePreview) as BlockComponent<
+  React.ForwardRefExoticComponent<QuestionBlockProps & React.RefAttributes<any>>
+>
+
 DataAssetBlockTablePreviewExecuteable.meta = {
   isText: false,
   forwardRef: true,
   hasChildren: false,
-  isQuestion: true,
-  isResizeable: true,
-  isExecuteable: true
+  isExecuteable: true,
+  isDataAsset: true
 }
 
 DataAssetBlockTablePreview.meta = {
   isText: false,
   forwardRef: true,
   hasChildren: false,
-  isQuestion: true,
-  isResizeable: true,
-  isExecuteable: true
+  isExecuteable: true,
+  isDataAsset: true
+}
+
+SnapshotBlock.meta = {
+  isText: false,
+  forwardRef: true,
+  hasChildren: false,
+  isExecuteable: false,
+  isDataAsset: true
 }
 
 registerBlock(Editor.BlockType.SQL, DataAssetBlockTablePreviewExecuteable)
 registerBlock(Editor.BlockType.Metric, DataAssetBlockTablePreviewExecuteable)
 
 registerBlock(Editor.BlockType.DBT, DataAssetBlockTablePreview)
-registerBlock(Editor.BlockType.SnapshotBlock, DataAssetBlockTablePreview)
+registerBlock(Editor.BlockType.SnapshotBlock, SnapshotBlock)
 
 const _QuestionBlockBody: React.ForwardRefRenderFunction<
   HTMLDivElement | null,

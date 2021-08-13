@@ -28,6 +28,23 @@ const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ bl
   const getBlockTitle = useGetBlockTitleTextSnapshot()
   // const pushFocusedBlockIdState = usePushFocusedBlockIdState()
   const questionEditor = useQuestionEditor()
+
+  const { attributes, listeners, setNodeRef } = useDraggable({
+    id: `drag-${block.id}`,
+    data: {
+      type: DnDItemTypes.Block,
+      originalBlockId: block.id,
+      blockData: createEmptyBlock<Editor.VisualizationBlock>({
+        type: Editor.BlockType.Visualization,
+        storyId: storyId,
+        parentId: storyId,
+        content: {
+          dataAssetId: block.id
+        }
+      })
+    } as DndItemDataBlockType
+  })
+
   return (
     <div
       className={css`
@@ -40,6 +57,9 @@ const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ bl
           background: ${ThemingVariables.colors.primary[5]};
         }
       `}
+      {...listeners}
+      {...attributes}
+      ref={setNodeRef}
       onClick={() => {
         questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
         // pushFocusedBlockIdState(block.id, block.storyId)

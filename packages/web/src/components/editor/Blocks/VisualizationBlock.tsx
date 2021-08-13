@@ -54,7 +54,7 @@ import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
 import type { OperationInterface } from '../Popovers/BlockOperationPopover'
 import { DEFAULT_QUESTION_BLOCK_ASPECT_RATIO, DEFAULT_QUESTION_BLOCK_WIDTH } from '../utils'
-import { BlockComponent, registerBlock } from './utils'
+import { BlockComponent, isExecuteableBlockType, registerBlock } from './utils'
 
 const FOOTER_HEIGHT = 20
 
@@ -666,6 +666,8 @@ export const MoreDropdownSelect: React.FC<{
   const editor = useEditor<Editor.VisualizationBlock>()
   const { readonly } = useBlockBehavior()
 
+  const canConvertDataAsset = !readonly && dataAssetBlock.storyId === block.storyId
+
   const operations = useMemo(() => {
     return [
       {
@@ -738,7 +740,7 @@ export const MoreDropdownSelect: React.FC<{
           copy(sql)
         }
       },
-      !readonly &&
+      canConvertDataAsset &&
         dataAssetBlock.type !== Editor.BlockType.SnapshotBlock && {
           title: 'Convert to snapshot',
           icon: <IconCommonTurn color={ThemingVariables.colors.text[0]} />,
@@ -748,7 +750,17 @@ export const MoreDropdownSelect: React.FC<{
             })
           }
         },
-      !readonly &&
+      canConvertDataAsset &&
+        dataAssetBlock.type !== Editor.BlockType.SQL && {
+          title: 'Convert to SQL',
+          icon: <IconCommonTurn color={ThemingVariables.colors.text[0]} />,
+          action: () => {
+            editor?.setBlockValue?.(dataAssetBlock.id, (draftBlock) => {
+              draftBlock.type = Editor.BlockType.SQL
+            })
+          }
+        },
+      canConvertDataAsset &&
         dataAssetBlock.type === Editor.BlockType.SQL && {
           title: 'Convert to metric',
           icon: <IconCommonMetrics color={ThemingVariables.colors.text[0]} />,
@@ -759,7 +771,7 @@ export const MoreDropdownSelect: React.FC<{
           }
         }
     ].filter((x) => !!x) as OperationInterface[]
-  }, [block, dataAssetBlock.id, dataAssetBlock.type, editor, readonly, snapshot?.data, sql])
+  }, [block, canConvertDataAsset, dataAssetBlock.id, dataAssetBlock.type, editor, readonly, snapshot?.data, sql])
 
   const { isOpen, openMenu, getToggleButtonProps, getMenuProps, highlightedIndex, getItemProps, closeMenu } = useSelect(
     { items: operations }
@@ -871,7 +883,7 @@ const TitleButtonsInner: React.FC<{
 
   return (
     <>
-      {!readonly && (
+      {!readonly && isExecuteableBlockType(dataAssetBlock.type) && (
         <RefreshButton
           color={ThemingVariables.colors.primary[1]}
           loading={loading}
