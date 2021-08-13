@@ -299,4 +299,5 @@ export type AvailableConfig = {
   description: string
   required: boolean
   secret: boolean
+  fillHint: boolean
 }

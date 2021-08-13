@@ -232,6 +232,7 @@ function Config(props: { value: AvailableConfig; register: UseFormRegister<Profi
           required={config.required}
           type={config.secret ? 'password' : config.type === 'NUMBER' ? 'number' : 'text'}
           placeholder={config.hint}
+          defaultValue={config.fillHint ? config.hint : undefined}
           disabled={props.disabled}
         />
       )}
