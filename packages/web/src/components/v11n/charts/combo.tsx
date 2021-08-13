@@ -837,6 +837,19 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
       () => (props.config.xAxises.length === 1 ? displayTypes[props.config.xAxises[0]] : undefined),
       [displayTypes, props.config.xAxises]
     )
+    const sortedShapes = useMemo(
+      () =>
+        sortBy(
+          [...props.config.shapes].reverse(),
+          (shape) =>
+            ({
+              [ComboShape.LINE]: 3,
+              [ComboShape.AREA]: 2,
+              [ComboShape.BAR]: 1
+            }[groups[shape.groupId]?.shape!])
+        ),
+      [groups, props.config.shapes]
+    )
 
     return (
       <ResponsiveContainer>
@@ -1023,15 +1036,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
               content={LegendContent}
             />
           ) : null}
-          {sortBy(
-            props.config.shapes,
-            (shape) =>
-              ({
-                [ComboShape.LINE]: 3,
-                [ComboShape.AREA]: 2,
-                [ComboShape.BAR]: 1
-              }[groups[shape.groupId]?.shape!])
-          ).map(({ key, groupId, color: colorIndex }) => {
+          {sortedShapes.map(({ key, groupId, color: colorIndex }) => {
             const group = groups[groupId]
             if (!group) {
               return null
