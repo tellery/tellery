@@ -5,7 +5,7 @@ import { useMgetBlocks } from '@app/hooks/api'
 import { transclusionRegex } from '@app/hooks/useSqlEditor'
 import { SVG2DataURI } from '@app/lib/svg'
 import { ThemingVariables } from '@app/styles'
-import type { Editor } from '@app/types'
+import { Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
 import MonacoEditor, { useMonaco } from '@monaco-editor/react'
 import Tippy from '@tippyjs/react'
@@ -16,13 +16,20 @@ import { createPortal } from 'react-dom'
 import { useGetBlockTitleTextSnapshot } from './editor'
 import { useQuestionEditor } from './StoryQuestionsEditor'
 import { SQLViewer } from './SQLViewer'
+import { useGetBlock } from '../hooks/useGetBlock'
 
 const STORY_BLOCK_REGEX = new RegExp(`${window.location.protocol}//${window.location.host}/story/(\\S+)#(\\S+)`)
 
-const trasnformPasteText = (text: string) => {
+const trasnformPasteText = async (text: string, getBlock: (blockId: string) => Promise<Editor.BaseBlock>) => {
   if (STORY_BLOCK_REGEX.test(text)) {
     const matches = STORY_BLOCK_REGEX.exec(text)!
-    return `{{${matches[2]}}}`
+    const blockId = matches[2]
+    const block = await getBlock(blockId)
+    if (block.type === Editor.BlockType.Visualization) {
+      if ((block as Editor.VisualizationBlock).content?.dataAssetId)
+        return `{{${(block as Editor.VisualizationBlock).content?.dataAssetId}}}`
+    }
+    return `{{${block.id}}}`
   }
 }
 
@@ -43,6 +50,8 @@ export function SQLEditor(props: {
   const [editor, setEditor] = useState<editor.IStandaloneCodeEditor>()
   const { onRun, onSave } = props
   const monaco = useMonaco()
+
+  const getBlock = useGetBlock()
   useEffect(() => {
     if (!editor || !monaco) {
       return
@@ -51,19 +60,20 @@ export function SQLEditor(props: {
       const pastedString = editor.getModel()?.getValueInRange(e.range)
       if (!pastedString) return
 
-      const transformedText = trasnformPasteText(pastedString)
-      if (transformedText) {
-        editor.setSelection(e.range)
-        const id = { major: 1, minor: 1 }
-        const text = transformedText
-        const op = { identifier: id, range: e.range, text: text, forceMoveMarkers: true }
-        editor.executeEdits('transform-pasted-text', [op])
-      }
+      trasnformPasteText(pastedString, getBlock).then((transformedText) => {
+        if (transformedText) {
+          editor.setSelection(e.range)
+          const id = { major: 1, minor: 1 }
+          const text = transformedText
+          const op = { identifier: id, range: e.range, text: text, forceMoveMarkers: true }
+          editor.executeEdits('transform-pasted-text', [op])
+        }
+      })
     })
 
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, () => onSave?.())
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => onRun?.())
-  }, [editor, monaco, onRun, onSave])
+  }, [editor, getBlock, monaco, onRun, onSave])
   const { onChange } = props
   const handleChange = useCallback(
     (value: string | undefined) => {
