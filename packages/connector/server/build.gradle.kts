@@ -21,7 +21,7 @@ plugins {
     kotlin("jvm")
     id("com.google.protobuf") version "0.8.17"
     id("com.github.marcoferrer.kroto-plus") version "0.6.1"
-    id("com.google.cloud.tools.jib") version "3.1.2"
+    id("com.google.cloud.tools.jib") version "3.1.3"
 }
 
 application {
