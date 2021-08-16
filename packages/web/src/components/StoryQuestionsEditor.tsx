@@ -279,7 +279,11 @@ const TabHeader: React.FC<{ blockId: string; hovering: boolean }> = ({ blockId, 
     [activeId, opendQuestionBlockIds, questionBlocksMap, setActiveId, setQuestionBlocksMap]
   )
 
-  const block = useBlockSuspense(blockId)
+  const block = useBlockSuspense<Editor.SQLLikeBlock | Editor.VisualizationBlock>(blockId)
+
+  const sqlBlock = useBlockSuspense<Editor.SQLLikeBlock>(
+    (block as Editor.VisualizationBlock)?.content?.dataAssetId ?? blockId
+  )
 
   const mutatingCount = useDraftBlockMutating(blockId)
 
@@ -296,7 +300,7 @@ const TabHeader: React.FC<{ blockId: string; hovering: boolean }> = ({ blockId, 
           box-sizing: border-box;
         `}
         // ref={ref}
-        title={getBlockTitle(block)}
+        title={getBlockTitle(sqlBlock)}
       >
         {mutatingCount !== 0 && <CircularLoading size={20} color={ThemingVariables.colors.primary[1]} />}
         <div
@@ -307,7 +311,7 @@ const TabHeader: React.FC<{ blockId: string; hovering: boolean }> = ({ blockId, 
             white-space: nowrap;
           `}
         >
-          <BlockTitle block={block} />
+          <BlockTitle block={sqlBlock} />
         </div>
       </div>
       <DraftStatus
@@ -885,7 +889,7 @@ export const StoryQuestionEditor: React.FC<{
               `}
               onClick={scrollToBlock}
             >
-              <BlockTitle block={block} />
+              <BlockTitle block={sqlBlock} />
             </span>
             {block.type === Editor.BlockType.Metric ? (
               <IconCommonMetrics
