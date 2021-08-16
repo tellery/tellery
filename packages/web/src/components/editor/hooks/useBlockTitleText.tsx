@@ -1,32 +1,12 @@
-import { useMgetBlocksSuspense } from '@app/hooks/api'
-import { useMemo } from 'react'
 import { useBlockSnapshot } from '@app/store/block'
-import { Editor } from '@app/types'
-import { blockTitleToText, extractEntitiesFromToken } from '../helpers'
+import type { Editor } from '@app/types'
+import { useMemo } from 'react'
+import { blockTitleToText } from '../helpers'
+import { useBlockTitleAssets } from './useBlockTitleAssets'
 
 export const useBlockTitleToText = (block: Editor.BaseBlock) => {
-  const tokens = useMemo(() => block.content?.title ?? [], [block.content?.title])
   const snapshot = useBlockSnapshot()
-
-  const dependsAssetsKeys = useMemo(() => {
-    return tokens
-      ?.filter((token) => {
-        return token[1]?.some((mark) => mark[0] === Editor.InlineType.Reference)
-      })
-      .map((token) => {
-        const { reference: referenceEntity } = extractEntitiesFromToken(token)
-        if (referenceEntity) {
-          const id = referenceEntity[2]
-          if (referenceEntity[1] === 's') {
-            return id
-          }
-        }
-        return null
-      })
-      .filter((x) => x !== null) as string[]
-  }, [tokens])
-
-  const assets = useMgetBlocksSuspense(dependsAssetsKeys)
+  const assets = useBlockTitleAssets(block.storyId!, block.id)
 
   return useMemo(() => {
     return blockTitleToText(block, snapshot)

@@ -58,7 +58,7 @@ export const BlockOperationPopover = (props: { id: string; children?: ReactNode 
 
   const [open, setOpen] = useAtom(editorTransformBlockPopoverState(id))
   const [referenceElement, setReferenceElement] = useState<HTMLDivElement | null>(null)
-  const editor = useEditor<Editor.Block>()
+  const editor = useEditor<Editor.BaseBlock>()
 
   const closeHandler = useCallback(() => {
     setReferenceElement(null)
@@ -102,9 +102,9 @@ export const BlockOperationPopover = (props: { id: string; children?: ReactNode 
 }
 
 export const BlockPopoverInner: React.FC<{ id: string; requestClose: () => void }> = ({ id, requestClose }) => {
-  const block = useBlockSuspense(id)
+  const block = useBlockSuspense<Editor.ContentBlock>(id)
   const { data: user } = useUser(block?.lastEditedById ?? null)
-  const editor = useEditor<Editor.Block>()
+  const editor = useEditor<Editor.ContentBlock>()
   const blockTranscations = useBlockTranscations()
 
   const deleteBlockHandler = useCallback(() => {

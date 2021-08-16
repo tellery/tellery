@@ -1,16 +1,15 @@
 import { IconCommonAdd } from '@app/assets/icons'
 import { SecondaryEditor } from '@app/components/editor'
-
 import { StoryQuestionsEditor } from '@app/components/StoryQuestionsEditor'
 import { createTranscation } from '@app/context/editorTranscations'
-import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useSearchParams } from '@app/hooks'
 import { useAllThoughts } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { ThemingVariables } from '@app/styles'
+import { blockIdGenerator } from '@app/utils'
 import { css } from '@emotion/css'
 import dayjs from 'dayjs'
-import { nanoid } from 'nanoid'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import { ThoughtContainer, ThoughtHeader, ThoughtItem, ThoughtTitle } from '../components/ThoughtItem'
@@ -54,7 +53,7 @@ function Thoughts() {
   const workspace = useWorkspace()
 
   const createTodaysNotes = useCallback(async () => {
-    const id = nanoid()
+    const id = blockIdGenerator()
     await commit({
       storyId: id,
       transcation: createTranscation({

@@ -1,8 +1,11 @@
+import { IconCommonAdd, IconCommonArrowDropDown, IconCommonClose } from '@app/assets/icons'
+import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
+import { useCrossFilter, useDataRecords } from '@app/hooks/useDataRecords'
+import { SVG2DataURI } from '@app/lib/svg'
+import { TelleryThemeLight, ThemingVariables } from '@app/styles'
+import { blockIdGenerator } from '@app/utils'
 import { css, cx } from '@emotion/css'
-import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState, MouseEvent } from 'react'
-import { sortBy, keyBy, compact, upperFirst, sum, mapValues, tail, head } from 'lodash'
 import { useTextWidth } from '@tag0/use-text-width'
-import { nanoid } from 'nanoid'
 import {
   Area,
   Bar,
@@ -18,26 +21,23 @@ import {
 } from '@tellery/recharts'
 import type { Path } from 'd3-path'
 import type { CurveGenerator } from 'd3-shape'
+import { compact, head, keyBy, mapValues, sortBy, sum, tail, upperFirst } from 'lodash'
+import React, { MouseEvent, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import PerfectScrollbar from 'react-perfect-scrollbar'
-import { ComboShape, ComboStack, Config, DisplayType, Type } from '../types'
-import type { Chart } from './base'
-import { ConfigLabel } from '../components/ConfigLabel'
-import { SortableList } from '../components/SortableList'
-import { ConfigNumericInput } from '../components/ConfigNumericInput'
 import { ConfigButton } from '../components/ConfigButton'
-import { ShapeSelector } from '../components/ShapeSelector'
 import { ConfigInput } from '../components/ConfigInput'
+import { ConfigLabel } from '../components/ConfigLabel'
+import { ConfigNumericInput } from '../components/ConfigNumericInput'
 import { ConfigSelect } from '../components/ConfigSelect'
-import { LegendContent } from '../components/LegendContent'
-import { fontFamily } from '../constants'
-import { createTrend, formatNumber, formatRecord, isNumeric, isTimeSeries } from '../utils'
-import { MoreSettingPopover } from '../components/MoreSettingPopover'
-import { TelleryThemeLight, ThemingVariables } from '@app/styles'
-import { SVG2DataURI } from '@app/lib/svg'
-import { IconCommonArrowDropDown, IconCommonClose, IconCommonAdd } from '@app/assets/icons'
 import { CustomTooltip } from '../components/CustomTooltip'
-import { useCrossFilter, useDataRecords } from '@app/hooks/useDataRecords'
-import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
+import { LegendContent } from '../components/LegendContent'
+import { MoreSettingPopover } from '../components/MoreSettingPopover'
+import { ShapeSelector } from '../components/ShapeSelector'
+import { SortableList } from '../components/SortableList'
+import { fontFamily } from '../constants'
+import { Type, DisplayType, ComboShape, ComboStack, Config } from '../types'
+import { createTrend, formatNumber, formatRecord, isNumeric, isTimeSeries } from '../utils'
+import type { Chart } from './base'
 
 const splitter = ', '
 
@@ -789,7 +789,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
         }, {}),
       [props.config]
     )
-    const trendSuffix = useMemo(() => nanoid(), [])
+    const trendSuffix = useMemo(() => blockIdGenerator(), [])
     const yLabelOffset = useTextWidth({ text: props.config.yLabel, font: `14px ${fontFamily}` }) / 2
     const y2LabelOffset = useTextWidth({ text: props.config.y2Label, font: `14px ${fontFamily}` }) / 2
     const groups = useMemo<{

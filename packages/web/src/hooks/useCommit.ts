@@ -66,7 +66,8 @@ const undo = <T = Env>({
     const [patchedOperations, reversedOperations] = applyOperations(transcation.operations, {
       recoilCallback,
       shouldReformat: false,
-      userId
+      userId,
+      storyId
     })
     // recoilCallback.set(TelleryStorySelectionAtom(storyId), selection)
     if (!REDO_STACK[storyId]) {
@@ -115,7 +116,8 @@ const redo = <T = Env>({
   const [patchedOperations, reversedOperations] = applyOperations(transcation.operations, {
     recoilCallback,
     userId,
-    shouldReformat: false
+    shouldReformat: false,
+    storyId
   })
   if (!UNDO_STACK[storyId]) {
     UNDO_STACK[storyId] = []
@@ -195,7 +197,8 @@ export const commit = async ({
     const [patchedOperations, reversedOperations] = applyOperations(transcation.operations, {
       recoilCallback,
       shouldReformat,
-      userId
+      userId,
+      storyId
     })
     if (!UNDO_STACK[storyId]) {
       UNDO_STACK[storyId] = []
@@ -380,9 +383,16 @@ const applyOperations = (
       case 'listBefore': {
         logger('list after or before', operation, updatedBlock)
         invariant(updatedBlock, 'Block is not defined')
-        if (updatedBlock.children === undefined) {
-          updatedBlock = { ...updatedBlock, children: [] }
+
+        const arrayKey = operation.path[0] as 'children' | 'resources'
+
+        if (!updatedBlock[arrayKey]) {
+          updatedBlock = { ...updatedBlock, [arrayKey]: [] }
         }
+
+        const isnertedBlock = getBlockFromStoreMap((operation.args as any).id, tempMap)
+
+        invariant(isnertedBlock, 'isnertedBlock is undefined')
 
         reversedOperations.push({
           cmd: 'listRemove',
@@ -392,26 +402,28 @@ const applyOperations = (
           id: operation.id
         })
 
-        invariant(updatedBlock.children, 'children is undefined')
+        console.log(updatedBlock)
+
+        invariant(updatedBlock[arrayKey], 'children is undefined')
         if (operation.cmd === 'listAfter') {
           invariant((operation.args as any).after, 'after id must not be undefined')
 
-          const index = updatedBlock.children.findIndex((id) => id === (operation.args as any).after)
+          const index = updatedBlock[arrayKey]!.findIndex((id) => id === (operation.args as any).after)
 
           logger('listafter', index)
 
           updatedBlock = update(updatedBlock, {
             children: {
-              $splice: [[index === -1 ? updatedBlock.children.length : index + 1, 0, (operation.args as any).id]]
+              $splice: [[index === -1 ? updatedBlock![arrayKey]!.length : index + 1, 0, (operation.args as any).id]]
             }
           })
 
           logger('listafter', updatedBlock)
         } else {
-          const index = updatedBlock.children.findIndex((id) => id === (operation.args as any).before)
+          const index = updatedBlock[arrayKey]?.findIndex((id) => id === (operation.args as any).before)
 
           updatedBlock = update(updatedBlock, {
-            children: {
+            [arrayKey]: {
               $splice: [[index === -1 ? 0 : index, 0, (operation.args as any).id]]
             }
           })
@@ -419,13 +431,15 @@ const applyOperations = (
 
         shouldReformat && pushReformatColumnsOperations(operations, i, updatedBlock)
 
-        operations.splice(i + 1, 0, {
-          cmd: 'update',
-          id: (operation.args as any).id,
-          args: updatedBlock.id,
-          table: 'block',
-          path: ['parentId']
-        })
+        if (options.storyId && isnertedBlock.storyId === options.storyId) {
+          operations.splice(i + 1, 0, {
+            cmd: 'update',
+            id: (operation.args as any).id,
+            args: updatedBlock.id,
+            table: 'block',
+            path: ['parentId']
+          })
+        }
         break
       }
       default:
@@ -585,7 +599,7 @@ const appendNormalizeLayoutOperations = async (
   operations.splice(index + 1, 0, ..._operations)
 }
 
-const pushReformatColumnsOperations = (operations: Operation[], index: number, rowBlock: Editor.Block) => {
+const pushReformatColumnsOperations = (operations: Operation[], index: number, rowBlock: Editor.BaseBlock) => {
   const _operations: Operation[] = []
   if (rowBlock.type === Editor.BlockType.Row) {
     rowBlock.children?.forEach((id) => {

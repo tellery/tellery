@@ -1,22 +1,21 @@
 import { IconCommonAdd, IconCommonSearch } from '@app/assets/icons'
 import { useOpenStory } from '@app/hooks'
 import { useStoriesSearch, useWorkspaceView } from '@app/hooks/api'
+import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
+import { useStoryPathParams } from '@app/hooks/useStoryPathParams'
 import { ThemingVariables } from '@app/styles'
-import { DEFAULT_TITLE } from '@app/utils'
+import { blockIdGenerator, DEFAULT_TITLE } from '@app/utils'
 import { css } from '@emotion/css'
+import Tippy from '@tippyjs/react'
 import dayjs from 'dayjs'
 import React, { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import PerfectScrollbar from 'react-perfect-scrollbar'
+import { useHistory } from 'react-router-dom'
 import { CircularLoading } from './CircularLoading'
 import { useGetBlockTitleTextSnapshot } from './editor'
 import { SideBarContentLayout } from './SideBarContentLayout'
 import type { StoryListItemValue } from './StoryListItem'
-import PerfectScrollbar from 'react-perfect-scrollbar'
-import { useStoryPathParams } from '@app/hooks/useStoryPathParams'
-import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
-import { nanoid } from 'nanoid'
-import { useHistory } from 'react-router-dom'
-import Tippy from '@tippyjs/react'
-import { useTranslation } from 'react-i18next'
 
 export const SideBarAllStoriesSection = () => {
   const { t } = useTranslation()
@@ -131,7 +130,7 @@ const NewStoryButton = () => {
   const history = useHistory()
 
   const handleCreateNewSotry = useCallback(async () => {
-    const id = nanoid()
+    const id = blockIdGenerator()
     await blockTranscations.createNewStory({ id: id })
     history.push(`/story/${id}`, {
       focusTitle: true

@@ -1,19 +1,19 @@
 import { IconCommonAdd } from '@app/assets/icons'
 import { createTranscation } from '@app/context/editorTranscations'
-import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useOpenStory } from '@app/hooks'
 import { useAllThoughts } from '@app/hooks/api'
+import { useLoggedUser } from '@app/hooks/useAuth'
 import { useCommit } from '@app/hooks/useCommit'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { ThemingVariables } from '@app/styles'
+import { blockIdGenerator } from '@app/utils'
 import { css } from '@emotion/css'
 import dayjs from 'dayjs'
-import { nanoid } from 'nanoid'
 import React, { useCallback, useMemo, useState } from 'react'
-import { SideBarContentLayout } from './SideBarContentLayout'
+import { useTranslation } from 'react-i18next'
 import { Calendar } from './Calendar'
 import { FormButton } from './kit/FormButton'
-import { useLoggedUser } from '@app/hooks/useAuth'
-import { useTranslation } from 'react-i18next'
+import { SideBarContentLayout } from './SideBarContentLayout'
 
 export const SideBarThoughtsSection = () => {
   const { data: thoughts, refetch: refetchThoughts } = useAllThoughts()
@@ -27,7 +27,8 @@ export const SideBarThoughtsSection = () => {
   const [date, setDate] = useState(new Date())
   const user = useLoggedUser()
   const createTodaysNotes = useCallback(async () => {
-    const id = nanoid()
+    const id = blockIdGenerator()
+
     await commit({
       storyId: id,
       transcation: createTranscation({

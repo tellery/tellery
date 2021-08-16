@@ -1,12 +1,10 @@
-import { css, cx } from '@emotion/css'
-import React from 'react'
-import { IconVisualizationTable } from '@app/assets/icons'
 import { ThemingVariables } from '@app/styles'
 import type { Editor } from '@app/types'
+import { css, cx } from '@emotion/css'
+import React from 'react'
 import { ContentEditable } from './BlockBase/ContentEditable'
-import { BlockTitle } from '.'
 
-export const BlockContentOverview = (props: { block: Editor.Block }) => {
+export const BlockContentOverview = (props: { block: Editor.BaseBlock }) => {
   const { block } = props
   return (
     <div
@@ -37,28 +35,6 @@ export const BlockContentOverview = (props: { block: Editor.Block }) => {
       )}
     >
       {block.content?.title && <ContentEditable block={block} key={block.id} readonly disableTextAlign />}
-    </div>
-  )
-}
-
-export const SimpleQuestionBlock = (props: { block: Editor.QuestionBlock }) => {
-  const { block } = props
-  return (
-    <div
-      className={css`
-        display: inline-flex;
-        align-items: center;
-        font-size: 14px;
-        background-color: ${ThemingVariables.colors.primary[4]};
-        padding: 5px;
-        border-radius: 5px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      `}
-    >
-      <IconVisualizationTable />
-      <BlockTitle block={block} />
     </div>
   )
 }

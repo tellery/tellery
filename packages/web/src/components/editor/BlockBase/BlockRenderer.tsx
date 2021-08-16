@@ -80,6 +80,17 @@ export const INLINE_WRAPPER_STYLE = new Map([
       textDecoration: 'inherit',
       userSelect: 'text'
     })
+  ],
+  [
+    Editor.InlineType.Formula,
+    (...args: string[]): CSSProperties => ({
+      cursor: 'pointer',
+      color: ThemingVariables.colors.primary[1],
+      wordWrap: 'break-word',
+      textDecoration: 'inherit',
+      borderBottom: 'dashed 1px currentColor',
+      userSelect: 'text'
+    })
   ]
 ])
 
@@ -130,10 +141,25 @@ export const Token = ({
     link: linkEntity,
     reference: referenceEntity,
     index: localIndex,
-    classNames: localClassNames
+    classNames: localClassNames,
+    formula: formulaEntity
   } = extractEntitiesFromToken(token)
   const realIndex = (localIndex?.[1] as number) ?? index
   const classNames = localClassNames ? localClassNames.slice(1).join(' ') ?? '' : undefined
+
+  if (formulaEntity) {
+    const styleGen = INLINE_WRAPPER_STYLE.get(Editor.InlineType.Formula)!
+
+    return (
+      <>
+        <a data-token-index={realIndex} contentEditable={false} style={styleGen()} className={classNames}>
+          <span style={{ whiteSpace: 'nowrap' }}></span>
+          {assetsMap[formulaEntity[1]] ?? 'loading...'}
+          <span style={{ whiteSpace: 'nowrap' }}></span>
+        </a>
+      </>
+    )
+  }
 
   if (linkEntity) {
     const styleGen = INLINE_WRAPPER_STYLE.get(Editor.InlineType.Link)!

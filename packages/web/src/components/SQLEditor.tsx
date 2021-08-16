@@ -30,6 +30,7 @@ export function SQLEditor(props: {
   blockId: string
   languageId?: string
   value: string
+  readOnly?: boolean
   onChange(value: string): void
   padding?: {
     top: number
@@ -74,6 +75,7 @@ export function SQLEditor(props: {
     () => ({
       folding: true,
       wordWrap: 'on',
+      readOnly: props.readOnly,
       contextmenu: false,
       scrollbar: { verticalScrollbarSize: 0, horizontalSliderSize: 0 },
       minimap: { enabled: false },
@@ -82,7 +84,7 @@ export function SQLEditor(props: {
       lineHeight: 18,
       fontSize: 12
     }),
-    [props.padding]
+    [props.padding, props.readOnly]
   )
   const workspace = useWorkspace()
   const [matches, setMatches] = useState<editor.FindMatch[]>([])
@@ -211,7 +213,7 @@ export function SQLEditor(props: {
 function TransclusionContentWidget(props: {
   blockId: string
   languageId?: string
-  value: Editor.QuestionBlock
+  value: Editor.SQLBlock
   length: number
   index: number
 }) {

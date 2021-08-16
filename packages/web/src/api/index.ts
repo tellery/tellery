@@ -95,8 +95,8 @@ export const getStoriesByTitle = async ({
 
 export type SearchBlockResult<T> = {
   blocks: {
-    [key: string]: T extends Editor.BlockType.Question
-      ? Editor.QuestionBlock
+    [key: string]: T extends Editor.BlockType.Visualization
+      ? Editor.VisualizationBlock
       : T extends Editor.BlockType.Story
       ? Story
       : T extends Editor.BlockType.Thought
@@ -193,7 +193,7 @@ export const fetchEntities = debounce((items: EntityRequestItems, workspaceId: s
               resolve(res.data?.[type]?.[id] ?? { alive: false })
               break
             case 'blocks': {
-              const remoteBlock = res.data?.[type]?.[id] as Editor.Block | undefined
+              const remoteBlock = res.data?.[type]?.[id] as Editor.BaseBlock | undefined
               if (remoteBlock === undefined) {
                 const emptyBlock = createDeletedBlock(id)
                 resolve(emptyBlock)
@@ -332,7 +332,7 @@ export const sqlRequest = ({
 
 export type ResourceType = 'block' | 'user' | 'link'
 
-export type Entity = (User | Editor.Block | Story | Thought) & { resourceType: string }
+export type Entity = (User | Editor.BaseBlock | Story | Thought) & { resourceType: string }
 
 export function saveTranscations(transcations: Transcation[]) {
   return request.post('/api/operations/saveTransactions', {

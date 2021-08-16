@@ -2,17 +2,17 @@ import { saveTranscations } from '@app/api'
 import {
   createTranscation,
   duplicateStoryTranscation,
-  insertBlocksAndMoveTranscation,
+  insertBlocksAndMoveOperations,
   moveBlocksTranscation
 } from '@app/context/editorTranscations'
-import { useWorkspace } from '@app/hooks/useWorkspace'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { getBlockFromSnapshot } from '@app/store/block'
 import { Editor, Permission } from '@app/types'
+import { blockIdGenerator } from '@app/utils'
 import debug from 'debug'
-import invariant from 'tiny-invariant'
-import { nanoid } from 'nanoid'
 import React, { useCallback, useContext } from 'react'
+import invariant from 'tiny-invariant'
 import { Operation, useCommit } from './useCommit'
 
 export const logger = debug('tellery:blocktranscations')
@@ -41,7 +41,7 @@ export const useBlockTranscationProvider = () => {
 
   const createNewStory = useCallback(
     async (props?: { id: string; title?: string }) => {
-      const id = props?.id ? props.id : nanoid()
+      const id = props?.id ? props.id : blockIdGenerator()
       const title = props?.title ? props.title : undefined
       return commit({
         storyId: id,
@@ -76,22 +76,27 @@ export const useBlockTranscationProvider = () => {
       {
         blocksFragment,
         targetBlockId,
-        direction
+        direction,
+        path = 'children'
       }: {
         blocksFragment: { children: string[]; data: Record<string, Editor.BaseBlock> }
         targetBlockId: string
         direction: 'top' | 'left' | 'bottom' | 'right' | 'child'
+        path?: 'children' | 'resources'
       }
     ) => {
       return commit({
         transcation: (snapshot) => {
           logger('insert block')
-          return insertBlocksAndMoveTranscation({
-            storyId,
-            blocksFragment,
-            targetBlockId,
-            direction,
-            snapshot
+          return createTranscation({
+            operations: insertBlocksAndMoveOperations({
+              storyId,
+              blocksFragment,
+              targetBlockId,
+              direction,
+              snapshot,
+              path
+            })
           })
         },
         storyId
