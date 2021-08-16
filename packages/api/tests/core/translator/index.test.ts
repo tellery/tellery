@@ -27,12 +27,12 @@ test('translate', async (t) => {
   register('dbt' as BlockType, DBTBlock)
 
   const storyId = nanoid()
-  const questionBlockId = nanoid()
+  const sqlBlockId = nanoid()
   const dbtBlockId = nanoid()
   await getRepository(BlockEntity).save({
-    id: questionBlockId,
+    id: sqlBlockId,
     workspaceId: 'test',
-    interKey: questionBlockId,
+    interKey: sqlBlockId,
     parentId: 'test',
     parentTable: BlockParentType.BLOCK,
     storyId,
@@ -59,7 +59,7 @@ test('translate', async (t) => {
     children: [],
     alive: true,
   })
-  const sql = `select * from {{${questionBlockId} as t1}} left join {{${dbtBlockId} as t2}}`
+  const sql = `select * from {{${sqlBlockId} as t1}} left join {{${dbtBlockId} as t2}}`
 
   const sqlBody = await translate(sql)
 
@@ -68,18 +68,18 @@ test('translate', async (t) => {
     sqlBody,
     `WITH t1 AS ( select * from order_x ), t2 AS ( select * from table2 ) select * from t1 left join t2`,
   )
-  await getRepository(BlockEntity).delete([questionBlockId, dbtBlockId])
+  await getRepository(BlockEntity).delete([sqlBlockId, dbtBlockId])
 })
 
 test('translate duplicate references', async (t) => {
   register('dbt' as BlockType, DBTBlock)
 
   const storyId = nanoid()
-  const questionBlockId = nanoid()
+  const sqlBlockId = nanoid()
   await getRepository(BlockEntity).save({
-    id: questionBlockId,
+    id: sqlBlockId,
     workspaceId: 'test',
-    interKey: questionBlockId,
+    interKey: sqlBlockId,
     parentId: 'test',
     parentTable: BlockParentType.BLOCK,
     storyId,
@@ -92,7 +92,7 @@ test('translate duplicate references', async (t) => {
     alive: true,
   })
 
-  const sql = `select * from {{${questionBlockId} as t1}} left join {{${questionBlockId} as t2}}`
+  const sql = `select * from {{${sqlBlockId} as t1}} left join {{${sqlBlockId} as t2}}`
 
   const sqlBody = await translate(sql)
 
@@ -101,7 +101,7 @@ test('translate duplicate references', async (t) => {
     sqlBody,
     `WITH t1 AS ( select * from order_x ), t2 AS ( select * from order_x ) select * from t1 left join t2`,
   )
-  await getRepository(BlockEntity).delete([questionBlockId])
+  await getRepository(BlockEntity).delete([sqlBlockId])
 })
 
 test('cyclic assemble', async (t) => {

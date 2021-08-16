@@ -6,6 +6,7 @@ import { LinkType } from '../../types/link'
 import { isLinkToken, LinkToken, tag, Token } from '../../types/token'
 import { cascadeUpdateBlocks } from '../block'
 import { Entity } from '../common'
+import { extractPartialQueries } from '../translator'
 
 /**
  * inline reference token: ['any string', [['r', 's/b/q', 'nanoid']]]
@@ -40,6 +41,19 @@ export function getLinksFromToken(input: Token[]): Link[] {
   } catch (e) {
     return []
   }
+}
+
+export function getLinksFromSql(input?: string): Link[] {
+  if (!input) {
+    return []
+  }
+  const partialQueries = extractPartialQueries(input)
+  const links = _.map(partialQueries, ({ blockId }) => ({
+    blockId,
+    type: LinkType.QUESTION,
+  }))
+  // extract questions it referred by transclusion from its sql
+  return _.uniqBy(links, 'blockId')
 }
 
 export async function updateSourceLinkAlive(

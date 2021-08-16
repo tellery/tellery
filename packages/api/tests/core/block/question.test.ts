@@ -1,12 +1,12 @@
 import test from 'ava'
 import { nanoid } from 'nanoid'
 
-import { QuestionBlock } from '../../../src/core/block/question'
+import { SqlBlock } from '../../../src/core/block/sql'
 import { BlockParentType } from '../../../src/types/block'
 import { LinkType } from '../../../src/types/link'
 
 test('getLinksFromSql', (t) => {
-  const block = new QuestionBlock(
+  const block = new SqlBlock(
     nanoid(),
     nanoid(),
     BlockParentType.BLOCK,

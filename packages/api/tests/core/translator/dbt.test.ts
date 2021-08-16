@@ -3,13 +3,13 @@ import '../../../src/core/block/init'
 import test from 'ava'
 import _ from 'lodash'
 
-import { QuestionBlock } from '../../../src/core/block/question'
+import { SqlBlock } from '../../../src/core/block/sql'
 import { translate } from '../../../src/core/translator/dbt'
 import { BlockParentType } from '../../../src/types/block'
 
 test('dbt translate (ephemeral)', async (t) => {
   const compiledSql = 'select col from arbitrary_table'
-  const dbtBlock = new QuestionBlock(
+  const dbtBlock = new SqlBlock(
     'id',
     'parentId',
     BlockParentType.BLOCK,
@@ -26,7 +26,7 @@ test('dbt translate (ephemeral)', async (t) => {
 })
 
 test('dbt translate (other)', async (t) => {
-  const dbtBlock = new QuestionBlock(
+  const dbtBlock = new SqlBlock(
     'id',
     'parentId',
     BlockParentType.BLOCK,

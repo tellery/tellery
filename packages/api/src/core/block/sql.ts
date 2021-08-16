@@ -1,9 +1,6 @@
-import _ from 'lodash'
 import { BlockType } from '../../types/block'
 import { Token } from '../../types/token'
-import { Link } from '../link'
-import { extractPartialQueries } from '../translator'
-import { LinkType } from '../../types/link'
+import { getLinksFromSql, Link } from '../link'
 import { Block, getPlainTextFromTokens } from '.'
 import { DataSource, Transclusible } from './interfaces'
 
@@ -34,17 +31,7 @@ export class SqlBlock extends Block implements DataSource, Transclusible {
     if (!this.alive) {
       return []
     }
-    const input = this.getSql()
-    if (!input) {
-      return []
-    }
-    const partialQueries = extractPartialQueries(input)
-    const links = _.map(partialQueries, ({ blockId }) => ({
-      blockId,
-      type: LinkType.QUESTION,
-    }))
-    // extract questions it referred by transclusion from its sql
-    return _.uniqBy(links, 'blockId')
+    return getLinksFromSql(this.getSql())
   }
 
   getSql(): string {
