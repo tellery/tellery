@@ -61,8 +61,8 @@ function calcLabel(array: string[], axise: 'xAxises' | 'yAxises' | 'y2Axises') {
   return array.length === 1 || axise === 'xAxises' ? array[0] : ''
 }
 
-function calcYAxisId(groupId: string) {
-  return ['left', 'right'].includes(groupId) ? groupId : 'left'
+function calcYAxisId(groupId: string): 'left' | 'right' {
+  return ['left', 'right'].includes(groupId) ? (groupId as 'left' | 'right') : 'left'
 }
 
 function valueKey(key?: string) {
@@ -895,7 +895,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
             }
             stroke={ThemingVariables.colors.text[1]}
             tickFormatter={(tick) => formatRecord(tick, xDisplayType)}
-            padding={props.config.xType === 'linear' ? { right: 16, left: 16 } : undefined}
+            padding={groups.left?.shape === ComboShape.BAR || groups.right?.shape === ComboShape.BAR ? 'gap' : 'no-gap'}
             type={
               props.config.xType === 'linear'
                 ? 'number'
@@ -1138,7 +1138,6 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                 yAxisId={calcYAxisId(group.key)}
                 dataKey={valueKey(key)}
                 strokeWidth={0}
-                maxBarSize={props.config.xType === 'linear' ? 20 : undefined}
                 fill={color}
                 isAnimationActive={false}
                 opacity={hoverDataKey === undefined || hoverDataKey === valueKey(key) ? 1 : opacity}
