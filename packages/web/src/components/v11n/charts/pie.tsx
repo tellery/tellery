@@ -347,6 +347,7 @@ export const pie: Chart<Type.PIE> = {
         <Tooltip
           wrapperStyle={{ zIndex: 9999999 }}
           isAnimationActive={false}
+          allowEscapeViewBox={{ x: false, y: true }}
           content={
             <CustomTooltip
               displayTypes={displayTypes}

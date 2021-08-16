@@ -983,6 +983,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
             cursor={false}
             wrapperStyle={{ zIndex: 9999999 }}
             isAnimationActive={false}
+            allowEscapeViewBox={{ x: false, y: true }}
             content={
               <CustomTooltip
                 displayTypes={displayTypes}
