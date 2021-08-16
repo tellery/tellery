@@ -97,7 +97,7 @@ object ConnectorManager {
                     ) {
                         try {
                             func.callSuspend(connector, database, collection, schema, content)
-                        } catch (e: InvocationTargetException){
+                        } catch (e: InvocationTargetException) {
                             throw e.targetException
                         }
                     }

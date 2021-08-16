@@ -8,6 +8,7 @@ import io.tellery.connectors.annotations.Dbt
 import io.tellery.connectors.profiles.BaseDbtProfile
 import io.tellery.entities.Profile
 import io.tellery.utils.allSubclasses
+import mu.KotlinLogging
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.hasAnnotation
@@ -15,6 +16,7 @@ import kotlin.reflect.full.primaryConstructor
 
 object ProfileManager {
 
+    private val logger = KotlinLogging.logger {}
     private val MAPPER = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
     private val TYPE_TO_CLAZZ: Map<String, KClass<out BaseDbtProfile>> =
         BaseDbtProfile::class.allSubclasses
@@ -24,17 +26,24 @@ object ProfileManager {
     fun batchToDbtProfile(profiles: List<Profile>): String {
         val profileMap = profiles
             .filter { isDbtProfile(it) }
-            .associate {
-                it.configs[Constants.PROFILE_DBT_PROJECT_FIELD] to Entity(
-                    Entity.Output(toDbtProfile(it))
-                )
+            .associate { profile ->
+                toDbtProfile(profile).let {
+                    profile.configs[Constants.PROFILE_DBT_PROJECT_FIELD] to
+                            if (it == null) it else Entity(Entity.Output(it))
+                }
             }
         return MAPPER.writeValueAsString(profileMap)
     }
 
-    private fun toDbtProfile(profile: Profile): BaseDbtProfile {
-        val clazz = TYPE_TO_CLAZZ[profile.type]
-            ?: throw RuntimeException("The type is not supported now: ${profile.type}")
-        return clazz.primaryConstructor!!.call(profile)
+    private fun toDbtProfile(profile: Profile): BaseDbtProfile? {
+        // TODO: try-catch is used to handle old version profile, it will be remove next version.
+        return try {
+            val clazz = TYPE_TO_CLAZZ[profile.type]
+                ?: throw RuntimeException("The type is not supported now: ${profile.type}")
+            clazz.primaryConstructor!!.call(profile)
+        } catch (e: Exception) {
+            logger.error("Construct dbt profile meeting some problem.", e)
+            null
+        }
     }
 }
