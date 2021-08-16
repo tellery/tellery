@@ -88,7 +88,7 @@ async function upload(ctx: Context) {
     content: buffer,
     contentType,
     size,
-    metadata: { name },
+    metadata: { name: name ?? key },
   })
 
   ctx.body = {

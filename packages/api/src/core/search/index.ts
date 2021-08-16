@@ -56,7 +56,7 @@ export async function search(
             skip,
             limit,
           )
-        case SearchableResourceType._QUESTION_BLOCK_SQL:
+        case SearchableResourceType._SQL:
           return iSearch.searchBlocksBySql(
             text,
             getFiltersByType ? await getFiltersByType(SearchableResourceType.BLOCK) : undefined,

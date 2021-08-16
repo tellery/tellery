@@ -80,7 +80,7 @@ export enum SearchableResourceType {
   BLOCK = 'block',
   USER = 'user',
   // internal: this will only search question block's sql
-  _QUESTION_BLOCK_SQL = '_question_sql',
+  _SQL = '_sql',
 }
 
 export interface SearchFilter {

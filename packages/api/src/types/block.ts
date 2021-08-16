@@ -13,7 +13,6 @@ enum BlockType {
   IMAGE = 'image',
   NUMBERED_LIST = 'numbered_list',
   STORY = 'story',
-  QUESTION = 'question',
   METRIC = 'metric',
   QUOTE = 'quote',
   TABLE = 'table',
@@ -27,8 +26,10 @@ enum BlockType {
   COLUMN = 'column',
   BOOKMARK = 'bookmark',
   STORY_LINK = 'story_link',
-  QUESTION_REFERENCE = 'question_reference',
-  QUESTION_SNAPSHOT = 'question_snapshot',
+  SQL = 'sql',
+  VISUALIZATION = 'visualization',
+  SNAPSHOT = 'snapshot',
+  VARIABLE = 'variable',
 
   // embeds
   EMBED = 'embed',
@@ -43,10 +44,9 @@ enum BlockType {
   OBSERVEABLEHQ = 'observablehq',
   YOUTUBE = 'youtube',
 
-  // Deprecated
-  DEPRECATED_RICH_TEXT = 'RICH_TEXT',
-  DEPRECATED_QUESTION = 'QUESTION',
-  DEPRECATED_IMAGE = 'IMAGE',
+  // deprecated
+  QUESTION = 'question',
+  QUESTION_SNAPSHOT = 'question_snapshot',
 }
 
 enum BlockParentType {
@@ -54,9 +54,6 @@ enum BlockParentType {
   BLOCK = 'block',
 }
 
-/**
- * the leading R stands for Response
- */
 type BlockDTO = {
   id: string
   type: BlockType
@@ -66,6 +63,7 @@ type BlockDTO = {
   content: any
   format?: any
   children?: string[]
+  resources?: string[]
   createdAt: number
   updatedAt: number
   permissions: PermissionsDTO

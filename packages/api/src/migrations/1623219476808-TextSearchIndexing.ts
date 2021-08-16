@@ -35,26 +35,25 @@ export class TextSearchIndexing1623219476808 implements MigrationInterface {
     )
 
     // create gin index on question blocks
+    const typeInjection = [BlockType.SQL, BlockType.METRIC].map((t) => `'${t}'`).join(', ')
     await queryRunner.query(
       `CREATE INDEX IF NOT EXISTS ${this.getIndexName(
         cfg,
-      )}_sql ON blocks USING GIN (to_tsvector('${p}', "blocks"."content"->>'sql')) WHERE type='${
-        BlockType.QUESTION
-      }';`,
+      )}_sql ON blocks USING GIN (to_tsvector('${p}', "blocks"."content"->>'sql')) WHERE type = ANY(ARRAY[${typeInjection}]);`,
     )
 
     // regex index
     await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS pg_trgm;`)
     await queryRunner.query(`
-      CREATE OR REPLACE FUNCTION ${this.textSendFunctionName} (text) RETURNS bytea AS $$    
-        select textsend(lower($1));    
+      CREATE OR REPLACE FUNCTION ${this.textSendFunctionName} (text) RETURNS bytea AS $$
+        select textsend(lower($1));
       $$ LANGUAGE sql STRICT IMMUTABLE;`)
     await queryRunner.query(
       `CREATE INDEX ${this.regIndexName} ON blocks USING GIN(text(${this.textSendFunctionName}("searchableText")) gin_trgm_ops);`,
     )
     // create gin index on question blocks
     await queryRunner.query(
-      `CREATE INDEX ${this.regIndexName}_sql ON blocks USING GIN(text(${this.textSendFunctionName}("content"->>'sql')) gin_trgm_ops);`,
+      `CREATE INDEX ${this.regIndexName}_sql ON blocks USING GIN(text(${this.textSendFunctionName}("content"->>'sql')) gin_trgm_ops) WHERE type = ANY(ARRAY[${typeInjection}]);`,
     )
   }
 
