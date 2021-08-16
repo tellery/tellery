@@ -895,7 +895,9 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
             }
             stroke={ThemingVariables.colors.text[1]}
             tickFormatter={(tick) => formatRecord(tick, xDisplayType)}
-            padding={groups.left?.shape === ComboShape.BAR || groups.right?.shape === ComboShape.BAR ? 'gap' : 'no-gap'}
+            padding={
+              groups.left?.shape === ComboShape.BAR || groups.right?.shape === ComboShape.BAR ? 'gap' : undefined
+            }
             type={
               props.config.xType === 'linear'
                 ? 'number'
