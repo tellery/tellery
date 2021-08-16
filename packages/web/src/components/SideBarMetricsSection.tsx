@@ -10,6 +10,7 @@ import { css, cx } from '@emotion/css'
 import { Tab } from '@headlessui/react'
 import React, { Fragment, useMemo } from 'react'
 import ContentLoader from 'react-content-loader'
+import { useTranslation } from 'react-i18next'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import { useStoryPathParams } from '../hooks/useStoryPathParams'
 import { useGetBlockTitleTextSnapshot } from './editor'
@@ -243,15 +244,18 @@ const AllMetrics: React.FC = () => {
   )
 }
 
-const TABS = [
-  { name: 'Current Page', Component: <CurrentStoryQuestions /> },
-  {
-    name: 'All Metrics',
-    Component: <AllMetrics />
-  }
-]
-
 export const SideBarMetricsSection = () => {
+  const { t } = useTranslation()
+  const TABS = useMemo(
+    () => [
+      { name: t`Current Page`, Component: <CurrentStoryQuestions /> },
+      {
+        name: t`Data Assets`,
+        Component: <AllMetrics />
+      }
+    ],
+    [t]
+  )
   return (
     <div
       className={css`
