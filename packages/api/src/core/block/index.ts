@@ -429,9 +429,9 @@ export async function cascadeUpdateBlocks<T extends TelleryBaseEntity>(
 
   return manager.query(
     `WITH RECURSIVE result AS (
-        SELECT id, children, resources FROM blocks WHERE id = $${
+        SELECT id, children, resources, "storyId" FROM blocks WHERE id = $${
           params.length + 1
-        } UNION ALL SELECT origin.id, origin.children, origin.resources FROM result JOIN blocks origin
+        } UNION ALL SELECT origin.id, origin.children, origin.resources, origin."storyId" FROM result JOIN blocks origin
         ON origin.id = ANY(result.children) OR origin.id = ANY(result.resources) AND origin."storyId" = result."storyId"
       )
       ${updateSql}`,
