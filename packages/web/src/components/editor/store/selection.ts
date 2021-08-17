@@ -62,5 +62,8 @@ export const TelleryStorySelection = selectorFamily<TellerySelection | null, str
       }
 
       set(TelleryStorySelectionAtom(storyId), newSelection)
-    }
+    },
+  cachePolicy_UNSTABLE: {
+    eviction: 'most-recent'
+  }
 })

@@ -39,7 +39,10 @@ export const TelleryBlockAtom = atomFamily<Editor.BaseBlock, string>({
         invariant(workspaceId, 'workspaceId is null')
         const response = await fetchBlock(blockId, workspaceId)
         return response
-      }
+      },
+    cachePolicy_UNSTABLE: {
+      eviction: 'most-recent'
+    }
   }),
   effects_UNSTABLE: (blocId: string) => [
     (param) => {
@@ -74,7 +77,10 @@ export const TellerySnapshotAtom = atomFamily<Snapshot | null, string | null>({
         invariant(workspaceId, 'workspaceId is null')
         const response = await fetchSnapshot(snapshotId, workspaceId)
         return response
-      }
+      },
+    cachePolicy_UNSTABLE: {
+      eviction: 'most-recent'
+    }
   })
 })
 
@@ -96,7 +102,10 @@ export const TelleryStoryBlocks = selectorFamily<Record<string, Editor.BaseBlock
       }
 
       return result
-    }
+    },
+  cachePolicy_UNSTABLE: {
+    eviction: 'most-recent'
+  }
 })
 
 export const TelleryUserAtom = atomFamily({
@@ -113,7 +122,10 @@ export const TelleryUserAtom = atomFamily({
         invariant(workspaceId, 'workspaceId is null')
         const response = await fetchUser(userId, workspaceId)
         return response
-      }
+      },
+    cachePolicy_UNSTABLE: {
+      eviction: 'most-recent'
+    }
   })
 })
 

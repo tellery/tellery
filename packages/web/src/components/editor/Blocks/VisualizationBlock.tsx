@@ -797,7 +797,7 @@ export const MoreDropdownSelect: React.FC<{
         }
       },
       !readonly && {
-        title: 'Unlink from current SQL',
+        title: 'Fork from current SQL',
         icon: <IconCommonUnlink color={ThemingVariables.colors.text[0]} />,
         action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
           e.preventDefault()
@@ -851,7 +851,7 @@ export const MoreDropdownSelect: React.FC<{
         },
       canConvertDataAsset &&
         dataAssetBlock.type === Editor.BlockType.SnapshotBlock && {
-          title: 'Unfroze Data',
+          title: 'Unfreeze Data',
           icon: <IconCommonUnlock color={ThemingVariables.colors.text[0]} />,
           action: () => {
             editor?.setBlockValue?.(dataAssetBlock.id, (draftBlock) => {

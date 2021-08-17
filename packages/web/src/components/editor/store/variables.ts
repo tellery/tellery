@@ -70,5 +70,8 @@ export const VariableAtomFamily = selectorFamily<any, { storyId: string; formula
       } catch (err) {
         return NaN
       }
-    }
+    },
+  cachePolicy_UNSTABLE: {
+    eviction: 'most-recent'
+  }
 })

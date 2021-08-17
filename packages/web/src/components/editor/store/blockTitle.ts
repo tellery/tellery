@@ -29,5 +29,8 @@ export const BlockTitleAssetsAtoms = selectorFamily<Record<string, any>, { block
       }
 
       return result
-    }
+    },
+  cachePolicy_UNSTABLE: {
+    eviction: 'most-recent'
+  }
 })

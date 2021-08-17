@@ -12,7 +12,10 @@ export const StoryResourcesAtom = selectorFamily<Editor.BaseBlock[], string>({
       const resources = resourceIds.map((id) => get(TelleryBlockAtom(id)))
 
       return resources
-    }
+    },
+  cachePolicy_UNSTABLE: {
+    eviction: 'most-recent'
+  }
 })
 
 export const useStoryResources = (storyId: string) => {
