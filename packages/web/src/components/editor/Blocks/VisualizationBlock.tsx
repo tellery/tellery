@@ -851,7 +851,7 @@ export const MoreDropdownSelect: React.FC<{
         },
       canConvertDataAsset &&
         dataAssetBlock.type === Editor.BlockType.SnapshotBlock && {
-          title: 'Unfreeze Data',
+          title: 'Unfreeze data',
           icon: <IconCommonUnlock color={ThemingVariables.colors.text[0]} />,
           action: () => {
             editor?.setBlockValue?.(dataAssetBlock.id, (draftBlock) => {
