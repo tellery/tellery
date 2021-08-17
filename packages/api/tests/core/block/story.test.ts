@@ -151,24 +151,30 @@ test('update multi children indexes', async (t) => {
 
 test('update children blocks alive', async (t) => {
   const [{ id: sid }] = await mockStories(1)
-  const [{ id: bid }] = await mockBlocks(1)
+  const [{ id: bid }] = await mockBlocks(1, sid)
+  const [{ id: bid2 }] = await mockBlocks(1)
   return getConnection().transaction(async (manager) => {
     const op = new BlockOperation(uuid(), 'test', manager)
 
     // set story
-    await update(op, sid, { children: [bid] }, [])
+    await update(op, sid, { children: [bid, bid2] }, [])
 
     // delete story
     await set(op, sid, false, ['alive'])
 
     let block = await manager.getRepository(BlockEntity).findOne(bid)
+    // this block has different storyId with sid, so it won't be deleted
+    let block2 = await manager.getRepository(BlockEntity).findOne(bid2)
     t.is(block?.alive, false)
+    t.is(block2?.alive, true)
 
     // revert story
     await set(op, sid, true, ['alive'])
 
     block = await manager.getRepository(BlockEntity).findOne(bid)
+    block2 = await manager.getRepository(BlockEntity).findOne(bid2)
     t.is(block?.alive, true)
+    t.is(block2?.alive, true)
   })
 })
 
