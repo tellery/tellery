@@ -25,6 +25,7 @@ import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useOnClickOutside, useOnScreen } from '@app/hooks'
 import { useBlockSuspense, useGetSnapshot, useSnapshot, useUser } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
+import { useGetBlock } from '@app/hooks/useGetBlock'
 import { useInterval } from '@app/hooks/useInterval'
 import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
 import { useBlockSnapshot } from '@app/store/block'
@@ -39,7 +40,17 @@ import download from 'downloadjs'
 import { useSelect } from 'downshift'
 import { AnimatePresence, motion, usePresence } from 'framer-motion'
 import html2canvas from 'html2canvas'
-import React, { ReactNode, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
+import React, {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+  useContext,
+  useMemo
+} from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import invariant from 'tiny-invariant'
@@ -75,25 +86,74 @@ interface QuestionBlockProps {
   parentType: Editor.BlockType
 }
 
+const useVisulizationBlockInstructionsProvider = (block: Editor.VisualizationBlock) => {
+  const commit = useCommit()
+  const getBlock = useGetBlock()
+  const questionEditor = useQuestionEditor()
+  const snapshot = useBlockSnapshot()
+  const dataAssetId = block.content?.dataAssetId
+
+  const instructions = useMemo(
+    () => ({
+      openMenu: () => {
+        questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
+      },
+      unLink: async () => {
+        if (!dataAssetId) return
+        const dataAssetBlock = await getBlock(dataAssetId)
+        const newSqlBlock = createEmptyBlock({
+          type: Editor.BlockType.SQL,
+          storyId: block.storyId!,
+          parentId: block.storyId!,
+          content: { ...dataAssetBlock.content }
+        })
+        commit({
+          transcation: createTranscation({
+            operations: [
+              ...insertBlocksAndMoveOperations({
+                storyId: block.storyId!,
+                blocksFragment: {
+                  children: [newSqlBlock.id],
+                  data: { [newSqlBlock.id]: newSqlBlock }
+                },
+                targetBlockId: block.storyId!,
+                direction: 'child',
+                snapshot,
+                path: 'resources'
+              }),
+              { cmd: 'set', path: ['content', 'dataAssetId'], args: newSqlBlock.id, table: 'block', id: block.id }
+            ]
+          }),
+          storyId: block.storyId!
+        })
+      }
+    }),
+    [block.id, block.storyId, commit, dataAssetId, getBlock, questionEditor, snapshot]
+  )
+  return instructions
+}
+
+const VisulizationInstructionsContext = React.createContext<ReturnType<
+  typeof useVisulizationBlockInstructionsProvider
+> | null>(null)
+
+const useVisulizationBlockInstructions = () => {
+  const context = useContext(VisulizationInstructionsContext)
+  return context
+}
+
 const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProps> = (props, ref) => {
   const editor = useEditor<Editor.VisualizationBlock>()
   const { block } = props
   const elementRef = useRef<HTMLDivElement | null>(null)
   const [blockFocusing, setBlockFocusing] = useState(false)
-  const questionEditor = useQuestionEditor()
   const commit = useCommit()
   const snapshot = useBlockSnapshot()
   const dataAssetId = block.content?.dataAssetId
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      openMenu: () => {
-        questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
-      }
-    }),
-    [block.id, block.storyId, questionEditor]
-  )
+  const instructions = useVisulizationBlockInstructionsProvider(block)
+
+  useImperativeHandle(ref, () => instructions, [instructions])
 
   useEffect(() => {
     if (!block.content) {
@@ -138,26 +198,28 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
   }, [])
 
   return (
-    <div
-      ref={elementRef}
-      className={QuestionsBlockContainer}
-      tabIndex={-1}
-      onFocus={() => setBlockFocusing(true)}
-      onBlur={() => setBlockFocusing(false)}
-    >
-      {dataAssetId === undefined ? (
-        <BlockPlaceHolder loading={false} text="New Question" />
-      ) : (
-        <VisualizationBlockContent
-          dataAssetId={dataAssetId}
-          block={block}
-          wrapperRef={elementRef}
-          blockFocusing={blockFocusing}
-          blockFormat={props.blockFormat}
-          parentType={props.parentType}
-        />
-      )}
-    </div>
+    <VisulizationInstructionsContext.Provider value={instructions}>
+      <div
+        ref={elementRef}
+        className={QuestionsBlockContainer}
+        tabIndex={-1}
+        onFocus={() => setBlockFocusing(true)}
+        onBlur={() => setBlockFocusing(false)}
+      >
+        {dataAssetId === undefined ? (
+          <BlockPlaceHolder loading={false} text="New Question" />
+        ) : (
+          <VisualizationBlockContent
+            dataAssetId={dataAssetId}
+            block={block}
+            wrapperRef={elementRef}
+            blockFocusing={blockFocusing}
+            blockFormat={props.blockFormat}
+            parentType={props.parentType}
+          />
+        )}
+      </div>
+    </VisulizationInstructionsContext.Provider>
   )
 }
 
@@ -406,6 +468,7 @@ const QuestionBlockHeader: React.FC<{
   readonly: boolean
   dataAssetBlock: Editor.DataAssetBlock
 }> = ({ setTitleEditing, titleEditing, dataAssetBlock, readonly, isReference }) => {
+  const { t } = useTranslation()
   return (
     <>
       <div
@@ -418,13 +481,15 @@ const QuestionBlockHeader: React.FC<{
         `}
       >
         {isReference && (
-          <Link to={`/story/${dataAssetBlock.storyId}`}>
-            <IconCommonBackLink
-              className={css`
-                margin-right: 5px;
-              `}
-            />
-          </Link>
+          <Tippy content={t`Click to navigate to the original story`} arrow={false}>
+            <Link to={`/story/${dataAssetBlock.storyId}`}>
+              <IconCommonBackLink
+                className={css`
+                  margin-right: 5px;
+                `}
+              />
+            </Link>
+          </Tippy>
         )}
         <div
           className={css`
@@ -678,10 +743,9 @@ export const MoreDropdownSelect: React.FC<{
   const { data: user } = useUser(block?.lastEditedById ?? null)
   const editor = useEditor<Editor.VisualizationBlock>()
   const { readonly } = useBlockBehavior()
-
   const canConvertDataAsset = !readonly && dataAssetBlock.storyId === block.storyId
-
   const getSnapshot = useGetSnapshot()
+  const instructions = useVisulizationBlockInstructions()
 
   const operations = useMemo(() => {
     return [
@@ -720,6 +784,15 @@ export const MoreDropdownSelect: React.FC<{
           editor?.duplicateHandler(
             selection?.type === TellerySelectionType.Block ? selection.selectedBlocks : [block.id]
           )
+        }
+      },
+      !readonly && {
+        title: 'Unlink from current SQL',
+        icon: <IconCommonTurn color={ThemingVariables.colors.text[0]} />,
+        action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+          e.preventDefault()
+          e.stopPropagation()
+          instructions?.unLink()
         }
       },
       {
@@ -795,6 +868,7 @@ export const MoreDropdownSelect: React.FC<{
     dataAssetBlock.type,
     editor,
     getSnapshot,
+    instructions,
     readonly,
     sql
   ])

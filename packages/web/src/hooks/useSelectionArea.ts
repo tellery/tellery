@@ -1,6 +1,6 @@
 import SelectionArea from '@tellery/viselect-vanilla'
 import { memoize } from 'lodash'
-import { useEffect, useRef, useState } from 'react'
+import { useDebugValue, useEffect, useRef, useState } from 'react'
 
 const getBlockId = memoize((element: HTMLElement) => {
   return element.dataset.blockId as string
@@ -10,6 +10,8 @@ export function useSelectionArea(selectBlocks: (blockIds: string[] | null) => vo
   const selectionRef = useRef<SelectionArea | null>(null)
   const [selecting, setSelecting] = useState(false)
   const containerRef = useRef<HTMLDivElement | null>(null)
+
+  useDebugValue('useSelectionArea')
 
   useEffect(() => {
     const selection = (

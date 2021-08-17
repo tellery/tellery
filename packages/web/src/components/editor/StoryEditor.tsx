@@ -592,6 +592,8 @@ const _StoryEditor: React.FC<{
 
   const focusBlockHandler = usePushFocusedBlockIdState()
 
+  // const afterDuplicate = useCallback(() => {},[])
+
   const duplicateHandler = useCallback(
     (blockIds: string[]) => {
       if (blockIds.length === 0) return

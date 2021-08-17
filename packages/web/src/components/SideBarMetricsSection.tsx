@@ -15,6 +15,7 @@ import { DndItemDataBlockType, DnDItemTypes } from '@app/utils/dnd'
 import { useDraggable } from '@dnd-kit/core'
 import { css, cx } from '@emotion/css'
 import { Tab } from '@headlessui/react'
+import Tippy from '@tippyjs/react'
 import React, { Fragment, useMemo } from 'react'
 import ContentLoader from 'react-content-loader'
 import { useTranslation } from 'react-i18next'
@@ -55,6 +56,7 @@ const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ bl
   })
 
   const openStory = useOpenStory()
+  const { t } = useTranslation()
 
   return (
     <div
@@ -121,9 +123,11 @@ const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ bl
         {getBlockTitle(block)}
       </span>
       {block.storyId !== storyId && (
-        <Link to={`/story/${block.storyId}`}>
-          <IconCommonBackLink color={ThemingVariables.colors.gray[0]} width="16px" height="16px" />
-        </Link>
+        <Tippy content={t`Click to navigate to the original story`} arrow={false} placement="right">
+          <Link to={`/story/${block.storyId}`}>
+            <IconCommonBackLink color={ThemingVariables.colors.gray[0]} width="16px" height="16px" />
+          </Link>
+        </Tippy>
       )}
     </div>
   )
