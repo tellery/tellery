@@ -50,7 +50,7 @@ dependencies {
     api("com.michael-bull.kotlin-coroutines-jdbc:kotlin-coroutines-jdbc:1.0.2")
 
     api("com.aventrix.jnanoid:jnanoid:2.0.0")
-    api("com.amazonaws:aws-java-sdk-s3:1.12.42")
+    api("com.amazonaws:aws-java-sdk-s3:1.12.48")
     api("com.github.doyaaaaaken:kotlin-csv-jvm:0.15.2")
 
     api("com.github.kittinunf.fuel:fuel:2.3.1")
@@ -74,13 +74,15 @@ publishing {
             name = "GithubPackages"
             url = uri("https://maven.pkg.github.com/tellery/tellery")
             credentials {
-                username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USERNAME")
-                password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+                username =
+                    project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USERNAME")
+                password =
+                    project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
             }
         }
     }
     publications {
-        create<MavenPublication>("maven"){
+        create<MavenPublication>("maven") {
             groupId = project.group.toString()
             artifactId = "connector-interface"
             version = System.getenv("RELEASE_VERSION") ?: "$snapshotVersion-SNAPSHOT"
