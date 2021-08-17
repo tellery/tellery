@@ -1,5 +1,6 @@
-import { IconCommonMetrics, IconCommonQuestion } from '@app/assets/icons'
+import { IconCommonBackLink, IconCommonMetrics, IconCommonQuestion } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
+import { useOpenStory } from '@app/hooks'
 import { useBlockSuspense, useSearchDBTBlocks, useSearchMetrics } from '@app/hooks/api'
 import { useStoryResources } from '@app/hooks/useStoryResources'
 import { ThemingVariables } from '@app/styles'
@@ -12,6 +13,7 @@ import React, { Fragment, useMemo } from 'react'
 import ContentLoader from 'react-content-loader'
 import { useTranslation } from 'react-i18next'
 import PerfectScrollbar from 'react-perfect-scrollbar'
+import { Link } from 'react-router-dom'
 import { useStoryPathParams } from '../hooks/useStoryPathParams'
 import { useGetBlockTitleTextSnapshot } from './editor'
 import { useQuestionEditor } from './StoryQuestionsEditor'
@@ -46,6 +48,8 @@ const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ bl
     } as DndItemDataBlockType
   })
 
+  const openStory = useOpenStory()
+
   return (
     <div
       className={css`
@@ -62,7 +66,11 @@ const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ bl
       {...attributes}
       ref={setNodeRef}
       onClick={() => {
-        questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
+        if (block.storyId === storyId) {
+          questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
+        } else {
+          openStory(block.storyId!)
+        }
         // pushFocusedBlockIdState(block.id, block.storyId)
       }}
     >
@@ -88,6 +96,7 @@ const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ bl
         className={css`
           font-size: 12px;
           line-height: 14px;
+          flex: 1;
           color: ${ThemingVariables.colors.text[0]};
           white-space: nowrap;
           overflow: hidden;
@@ -96,6 +105,11 @@ const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ bl
       >
         {getBlockTitle(block)}
       </span>
+      {block.storyId !== storyId && (
+        <Link to={`/story/${block.storyId}`}>
+          <IconCommonBackLink color={ThemingVariables.colors.gray[0]} width="16px" height="16px" />
+        </Link>
+      )}
     </div>
   )
 }

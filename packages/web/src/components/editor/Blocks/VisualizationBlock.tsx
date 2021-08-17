@@ -1,4 +1,5 @@
 import {
+  IconCommonBackLink,
   IconCommonCopy,
   IconCommonError,
   IconCommonLink,
@@ -39,6 +40,7 @@ import { useSelect } from 'downshift'
 import { AnimatePresence, motion, usePresence } from 'framer-motion'
 import html2canvas from 'html2canvas'
 import React, { ReactNode, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import invariant from 'tiny-invariant'
 import { BlockingUI } from '../BlockBase/BlockingUIBlock'
@@ -207,6 +209,8 @@ const VisualizationBlockContent: React.FC<{
     }
   }, [block.storyId, commit, dataAssetId, storyBlock.id, storyBlock.resources])
 
+  const isReferenceDataAssetBlock = dataAssetBlock.storyId !== block.storyId
+
   return (
     <>
       <QuestionBlockButtons
@@ -217,6 +221,8 @@ const VisualizationBlockContent: React.FC<{
       />
       <QuestionBlockHeader
         setTitleEditing={setTitleEditing}
+        isReference={isReferenceDataAssetBlock}
+        readonly={isReferenceDataAssetBlock || titleEditing === false || readonly}
         titleEditing={titleEditing || isInputFocusing}
         dataAssetBlock={dataAssetBlock}
       />
@@ -396,10 +402,10 @@ const QuestionBlockBody = React.forwardRef(_QuestionBlockBody)
 const QuestionBlockHeader: React.FC<{
   setTitleEditing: React.Dispatch<React.SetStateAction<boolean>>
   titleEditing: boolean
+  isReference: boolean
+  readonly: boolean
   dataAssetBlock: Editor.DataAssetBlock
-}> = ({ setTitleEditing, titleEditing, dataAssetBlock }) => {
-  const { readonly } = useBlockBehavior()
-
+}> = ({ setTitleEditing, titleEditing, dataAssetBlock, readonly, isReference }) => {
   return (
     <>
       <div
@@ -411,6 +417,15 @@ const QuestionBlockHeader: React.FC<{
           padding: 20px 20px 0 20px;
         `}
       >
+        {isReference && (
+          <Link to={`/story/${dataAssetBlock.storyId}`}>
+            <IconCommonBackLink
+              className={css`
+                margin-right: 5px;
+              `}
+            />
+          </Link>
+        )}
         <div
           className={css`
             display: flex;
@@ -442,7 +457,7 @@ const QuestionBlockHeader: React.FC<{
               disableReferenceDropdown
               disableSlashCommand
               disableTextToolBar
-              readonly={titleEditing === false || readonly}
+              readonly={readonly}
               maxLines={titleEditing ? undefined : 1}
               placeHolderText={DEFAULT_TITLE}
               placeHolderStrategy={'always'}

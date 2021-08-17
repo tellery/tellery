@@ -808,7 +808,8 @@ export const StoryQuestionEditor: React.FC<{
     pushFocusedBlockIdState(block.id, block.storyId)
   }, [block.id, block.storyId, pushFocusedBlockIdState])
 
-  const sqlReadOnly = readonly || sqlBlock.type === Editor.BlockType.SnapshotBlock
+  const sqlReadOnly =
+    readonly || sqlBlock.type === Editor.BlockType.SnapshotBlock || sqlBlock.storyId !== visualizationBlock?.storyId
 
   return (
     <TabPanel
