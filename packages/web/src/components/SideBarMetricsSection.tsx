@@ -3,7 +3,8 @@ import {
   IconCommonSql,
   IconCommonBackLink,
   IconCommonMetrics,
-  IconCommonQuestion
+  IconCommonQuestion,
+  IconCommonLock
 } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useOpenStory } from '@app/hooks'
@@ -127,6 +128,13 @@ const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ bl
           <Link to={`/story/${block.storyId}`}>
             <IconCommonBackLink color={ThemingVariables.colors.gray[0]} width="16px" height="16px" />
           </Link>
+        </Tippy>
+      )}
+      {block.type === Editor.BlockType.SnapshotBlock && (
+        <Tippy content={t`Frozen data`} arrow={false} placement="right">
+          <div>
+            <IconCommonLock color={ThemingVariables.colors.gray[0]} width="16px" height="16px" />
+          </div>
         </Tippy>
       )}
     </div>

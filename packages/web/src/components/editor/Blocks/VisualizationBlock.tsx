@@ -3,11 +3,14 @@ import {
   IconCommonCopy,
   IconCommonError,
   IconCommonLink,
+  IconCommonLock,
   IconCommonMetrics,
   IconCommonMore,
   IconCommonRefresh,
   IconCommonSql,
   IconCommonTurn,
+  IconCommonUnlink,
+  IconCommonUnlock,
   IconMenuDownload,
   IconMenuDuplicate,
   IconMiscNoResult,
@@ -788,7 +791,7 @@ export const MoreDropdownSelect: React.FC<{
       },
       !readonly && {
         title: 'Unlink from current SQL',
-        icon: <IconCommonTurn color={ThemingVariables.colors.text[0]} />,
+        icon: <IconCommonUnlink color={ThemingVariables.colors.text[0]} />,
         action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
           e.preventDefault()
           e.stopPropagation()
@@ -831,8 +834,8 @@ export const MoreDropdownSelect: React.FC<{
       },
       canConvertDataAsset &&
         dataAssetBlock.type === Editor.BlockType.SQL && {
-          title: 'Convert to snapshot',
-          icon: <IconCommonTurn color={ThemingVariables.colors.text[0]} />,
+          title: 'Freeze data',
+          icon: <IconCommonLock color={ThemingVariables.colors.text[0]} />,
           action: () => {
             editor?.setBlockValue?.(dataAssetBlock.id, (draftBlock) => {
               draftBlock.type = Editor.BlockType.SnapshotBlock
@@ -841,8 +844,8 @@ export const MoreDropdownSelect: React.FC<{
         },
       canConvertDataAsset &&
         dataAssetBlock.type === Editor.BlockType.SnapshotBlock && {
-          title: 'Convert to SQL',
-          icon: <IconCommonTurn color={ThemingVariables.colors.text[0]} />,
+          title: 'Unfroze Data',
+          icon: <IconCommonUnlock color={ThemingVariables.colors.text[0]} />,
           action: () => {
             editor?.setBlockValue?.(dataAssetBlock.id, (draftBlock) => {
               draftBlock.type = Editor.BlockType.SQL
