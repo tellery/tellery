@@ -221,7 +221,8 @@ export const useCreateSnapshot = () => {
           sql
         })
         return applyTransactionsAsync(transactions)
-      }
+      },
+    []
   )
   return create
 }

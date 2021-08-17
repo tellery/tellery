@@ -248,7 +248,7 @@ export function StoryListItem(props: {
                 color: ${ThemingVariables.colors.text[0]};
               `}
             >
-              {dayjs(props.value.updatedAt).format('YYYY-MM-DD')}
+              {dayjs(props.value.updatedAt).format('YYYY.MM.DD')}
             </span>
             {props.large ? (
               <span

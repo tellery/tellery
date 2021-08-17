@@ -10,10 +10,32 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import App from './App'
 import { env } from './env'
 import './i18n'
+import Stats from 'stats.js'
 
 env.DEV && debug.enable('tellery:*')
 
 dayjs.extend(relativeTime)
+
+const initStats = () => {
+  const stats = new Stats()
+  stats.showPanel(0) // 0: fps, 1: ms, 2: mb, 3+: custom
+  stats.dom.setAttribute(
+    'style',
+    'position: fixed; left: 0px; top: 50%; cursor: pointer; opacity: 0.9; z-index: 10000;'
+  )
+  document.body.appendChild(stats.dom)
+
+  function animate() {
+    stats.begin()
+    stats.end()
+
+    requestAnimationFrame(animate)
+  }
+
+  requestAnimationFrame(animate)
+}
+
+env.DEV && initStats()
 
 Sentry.init({
   dsn: env.SENTRY_DSN,
