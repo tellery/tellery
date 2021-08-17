@@ -1,6 +1,7 @@
 import { getStoriesByTitle } from '@app/api'
 import {
   IconCommonArrowDropDown,
+  IconCommonFormula,
   IconCommonLink,
   IconFontBold,
   IconFontCode,
@@ -1086,7 +1087,7 @@ const InlineFormulaPopover = (props: {
     <>
       <OperationButtonWithHoverContent
         active={false}
-        icon={IconFontCode}
+        icon={IconCommonFormula}
         hoverContent="Inline formula"
         type={Editor.InlineType.Variable}
         onClick={() => {
