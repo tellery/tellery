@@ -21,6 +21,7 @@ import { Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
 import debug from 'debug'
 import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useHoverDirty } from 'react-use'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import invariant from 'tiny-invariant'
 import { mergeTokens, splitToken, tokenPosition2SplitedTokenPosition } from '..'
@@ -261,7 +262,7 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
     [id, operations, removeBlockSlashCommandText, snapshot]
   )
 
-  const [selectedResultIndex, setSelectedResultIndex] = useEditableContextMenu(
+  const [selectedResultIndex, setSelectedResultIndex, navigatingMode] = useEditableContextMenu(
     open,
     useMemo(
       () =>
@@ -297,6 +298,7 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
             title={operation.title}
             icon={operation.icon}
             index={index}
+            navigatingMode={navigatingMode}
             active={selectedResultIndex === index}
             onClick={() => execSelectedOperation(index)}
             setIndex={setSelectedResultIndex}
@@ -314,10 +316,13 @@ interface BlockMenuItemProps {
   active?: boolean
   setIndex: (index: number) => void
   index: number
+  navigatingMode: 'mouse' | 'keyboard'
 }
 
 const BlockMenuItem = (props: BlockMenuItemProps) => {
   const ref = useRef<HTMLDivElement>(null)
+  const hover = useHoverDirty(ref, true)
+
   useEffect(() => {
     if (props.active && ref.current) {
       scrollIntoView(ref.current, {
@@ -327,6 +332,12 @@ const BlockMenuItem = (props: BlockMenuItemProps) => {
       })
     }
   }, [props.active, ref])
+
+  useEffect(() => {
+    if (props.navigatingMode === 'mouse' && hover) {
+      props.setIndex(props.index)
+    }
+  }, [hover, props, props.navigatingMode])
 
   return (
     <div
@@ -348,9 +359,6 @@ const BlockMenuItem = (props: BlockMenuItemProps) => {
           overflow: hidden;
           display: flex;
           align-items: center;
-          &:hover {
-            background: ${ThemingVariables.colors.primary[4]};
-          }
           &:active {
             background: ${ThemingVariables.colors.primary[3]};
           }

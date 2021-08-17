@@ -21,6 +21,7 @@ import produce from 'immer'
 import isHotkey from 'is-hotkey'
 import React, { CSSProperties, memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { useEvent } from 'react-use'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import invariant from 'tiny-invariant'
@@ -619,6 +620,8 @@ const _StoryEditor: React.FC<{
       const currentBlock = duplicatedBlocksFragment.data[lastBlockId]
       const blockId = currentBlock.id
       focusBlockHandler(blockId, currentBlock.storyId, isQuestionLikeBlock(currentBlock.type))
+      // toast(<div>dsfsdfsdfsfdsf</div>, {})
+      // toast('duplicate success')
 
       return duplicatedBlocksFragment
     },
