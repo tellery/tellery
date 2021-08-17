@@ -24,6 +24,7 @@ import IconCommonDrag from './common/drag.svg?component'
 import IconCommonEdit from './common/edit.svg?component'
 import IconCommonError from './common/error.svg?component'
 import IconCommonFold from './common/fold.svg?component'
+import IconCommonFormula from './common/formula.svg?component'
 import IconCommonHome from './common/home.svg?component'
 import IconCommonLike from './common/like.svg?component'
 import IconCommonLink from './common/link.svg?component'
@@ -130,6 +131,7 @@ export {
   IconCommonEdit,
   IconCommonError,
   IconCommonFold,
+  IconCommonFormula,
   IconCommonHome,
   IconCommonLike,
   IconCommonLink,

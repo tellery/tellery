@@ -55,7 +55,7 @@ export const findPreviousTextBlock = (blockId: string, snapshot: BlockSnapshot) 
   return null
 }
 
-export const findNextTextBlock = (blockId: string, snapshot: BlockSnapshot): Editor.Block | null => {
+export const findNextTextBlock = (blockId: string, snapshot: BlockSnapshot): Editor.BaseBlock | null => {
   const block = getBlockFromSnapshot(blockId, snapshot)
   const parentBlock = getBlockFromSnapshot(block.parentId, snapshot)
   const index = parentBlock.children!.findIndex((id) => id === blockId)

@@ -1,27 +1,26 @@
-import { useHover } from '@app/hooks'
-import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
-import { DEFAULT_TITLE, TelleryGlyph } from '@app/utils'
-import { css } from '@emotion/css'
 import { IconCommonAdd, IconCommonStoryBlock } from '@app/assets/icons'
 import {
   mergeTokens,
   splitToken,
   tokenPosition2SplitedTokenPosition
 } from '@app/components/editor/helpers/tokenManipulation'
-
-import { motion } from 'framer-motion'
+import { useHover } from '@app/hooks'
 import { useBlockSuspense, useSearchBlocks } from '@app/hooks/api'
-import invariant from 'tiny-invariant'
-import { nanoid } from 'nanoid'
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
-import scrollIntoView from 'scroll-into-view-if-needed'
+import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
+import { blockIdGenerator, DEFAULT_TITLE, TelleryGlyph } from '@app/utils'
+import { css } from '@emotion/css'
+import { motion } from 'framer-motion'
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import scrollIntoView from 'scroll-into-view-if-needed'
+import invariant from 'tiny-invariant'
 import { BlockTitle } from '..'
 import { EditorPopover } from '../EditorPopover'
 import { TellerySelection, tellerySelection2Native, TellerySelectionType } from '../helpers/tellerySelection'
 import { useEditor, useGetBlockTitleTextSnapshot } from '../hooks'
 import { useEditableContextMenu } from '../hooks/useEditableContextMenu'
+
 interface BlockReferenceDropDownInterface {
   open: boolean
   id: string
@@ -85,7 +84,7 @@ export const _BlockReferenceDropdownInner: React.FC<
   BlockReferenceDropDownInterface & { referenceRange: null | Range | HTMLElement }
 > = (props) => {
   const { id, keyword, open, setOpen, blockRef, selection, referenceRange } = props
-  const editor = useEditor<Editor.Block>()
+  const editor = useEditor<Editor.BaseBlock>()
   const currentBlock = useBlockSuspense(id)
   // const [referenceRange, setReferenceRange] = useState<null | Range>(null)
 
@@ -103,7 +102,7 @@ export const _BlockReferenceDropdownInner: React.FC<
   const searchResultClickHandler = useCallback(
     async (index) => {
       if (currentBlock?.content?.title) {
-        const exec = async (currentBlock: Editor.Block) => {
+        const exec = async (currentBlock: Editor.BaseBlock) => {
           if (selection?.type === TellerySelectionType.Block) return
           const tokens = currentBlock?.content?.title ?? []
           const splitedTokens = splitToken(tokens)
@@ -122,7 +121,7 @@ export const _BlockReferenceDropdownInner: React.FC<
           const start = textStart - 2
           const getNewToken = async (index: number): Promise<Editor.Token> => {
             if (index <= 0 || !stories) {
-              const newStoryId = nanoid()
+              const newStoryId = blockIdGenerator()
               const title = keyword ?? DEFAULT_TITLE
               await blockTranscations.createNewStory({ id: newStoryId, title })
               return [TelleryGlyph.BI_LINK, [[Editor.InlineType.Reference, 's', `${newStoryId}`]]]

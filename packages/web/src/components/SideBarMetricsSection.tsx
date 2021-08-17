@@ -1,8 +1,8 @@
-import { IconCommonDbt, IconCommonMetrics, IconCommonQuestion } from '@app/assets/icons'
+import { IconCommonDbt, IconCommonBackLink, IconCommonMetrics, IconCommonQuestion, IconVisualizationTable } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
+import { useOpenStory } from '@app/hooks'
 import { useBlockSuspense, useSearchDBTBlocks, useSearchMetrics } from '@app/hooks/api'
-import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
-import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
+import { useStoryResources } from '@app/hooks/useStoryResources'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { DndItemDataBlockType, DnDItemTypes } from '@app/utils/dnd'
@@ -10,13 +10,13 @@ import { useDraggable } from '@dnd-kit/core'
 import { css, cx } from '@emotion/css'
 import { Tab } from '@headlessui/react'
 import React, { Fragment, useMemo } from 'react'
+import ContentLoader from 'react-content-loader'
+import { useTranslation } from 'react-i18next'
 import PerfectScrollbar from 'react-perfect-scrollbar'
+import { Link } from 'react-router-dom'
 import { useStoryPathParams } from '../hooks/useStoryPathParams'
 import { useGetBlockTitleTextSnapshot } from './editor'
-import { isQuestionLikeBlock } from './editor/Blocks/utils'
-import { getFilteredOrderdSubsetOfBlocks } from './editor/utils'
 import { useQuestionEditor } from './StoryQuestionsEditor'
-import ContentLoader from 'react-content-loader'
 
 const SideBarLoader: React.FC = () => {
   return (
@@ -26,10 +26,29 @@ const SideBarLoader: React.FC = () => {
   )
 }
 
-const TocQuestionItem: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
+const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
   const block = useBlockSuspense(blockId)
   const getBlockTitle = useGetBlockTitleTextSnapshot()
-  const pushFocusedBlockIdState = usePushFocusedBlockIdState()
+  // const pushFocusedBlockIdState = usePushFocusedBlockIdState()
+  const questionEditor = useQuestionEditor()
+
+  const { attributes, listeners, setNodeRef } = useDraggable({
+    id: `drag-${block.id}`,
+    data: {
+      type: DnDItemTypes.Block,
+      originalBlockId: block.id,
+      blockData: createEmptyBlock<Editor.VisualizationBlock>({
+        type: Editor.BlockType.Visualization,
+        storyId: storyId,
+        parentId: storyId,
+        content: {
+          dataAssetId: block.id
+        }
+      })
+    } as DndItemDataBlockType
+  })
+
+  const openStory = useOpenStory()
 
   return (
     <div
@@ -43,12 +62,20 @@ const TocQuestionItem: React.FC<{ blockId: string; storyId: string }> = ({ block
           background: ${ThemingVariables.colors.primary[5]};
         }
       `}
+      {...listeners}
+      {...attributes}
+      ref={setNodeRef}
       onClick={() => {
-        pushFocusedBlockIdState(block.id, block.storyId)
+        if (block.storyId === storyId) {
+          questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
+        } else {
+          openStory(block.storyId!)
+        }
+        // pushFocusedBlockIdState(block.id, block.storyId)
       }}
     >
-      {block.type === Editor.BlockType.Question || block.type === Editor.BlockType.QuestionSnapshot ? (
-        <IconCommonQuestion
+      {block.type === Editor.BlockType.SQL || block.type === Editor.BlockType.SnapshotBlock ? (
+        <IconVisualizationTable
           color={ThemingVariables.colors.gray[0]}
           className={css`
             flex-shrink: 0;
@@ -78,6 +105,7 @@ const TocQuestionItem: React.FC<{ blockId: string; storyId: string }> = ({ block
         className={css`
           font-size: 12px;
           line-height: 14px;
+          flex: 1;
           color: ${ThemingVariables.colors.text[0]};
           white-space: nowrap;
           overflow: hidden;
@@ -86,6 +114,11 @@ const TocQuestionItem: React.FC<{ blockId: string; storyId: string }> = ({ block
       >
         {getBlockTitle(block)}
       </span>
+      {block.storyId !== storyId && (
+        <Link to={`/story/${block.storyId}`}>
+          <IconCommonBackLink color={ThemingVariables.colors.gray[0]} width="16px" height="16px" />
+        </Link>
+      )}
     </div>
   )
 }
@@ -98,15 +131,12 @@ const DataAssetItem: React.FC<{ block: Editor.BaseBlock; currentStoryId: string 
     data: {
       type: DnDItemTypes.Block,
       originalBlockId: block.id,
-      blockData: createEmptyBlock<Editor.QuestionBlock>({
-        type: Editor.BlockType.Question,
+      blockData: createEmptyBlock<Editor.VisualizationBlock>({
+        type: Editor.BlockType.Visualization,
         storyId: currentStoryId,
         parentId: currentStoryId,
         content: {
-          title: block.content?.title,
-          sql: `select * from {{${block.id}}}`,
-          visualization: (block.content as any)?.visualization,
-          snapshotId: (block.content as any)?.snapshotId
+          dataAssetId: block.id
         }
       })
     } as DndItemDataBlockType
@@ -180,15 +210,15 @@ const DataAssetItem: React.FC<{ block: Editor.BaseBlock; currentStoryId: string 
 const CurrentStoryQuestions: React.FC = () => {
   const storyId = useStoryPathParams()
 
-  return storyId ? <StoryQuestions storyId={storyId} /> : null
+  return storyId ? (
+    <React.Suspense fallback={<></>}>
+      <StoryResources storyId={storyId} />{' '}
+    </React.Suspense>
+  ) : null
 }
 
-const StoryQuestions: React.FC<{ storyId: string }> = ({ storyId }) => {
-  const storyBlocksMap = useStoryBlocksMap(storyId)
-  const questionLikeBlocks = useMemo(() => {
-    if (!storyBlocksMap) return []
-    return getFilteredOrderdSubsetOfBlocks(storyBlocksMap, storyId, (block) => isQuestionLikeBlock(block.type))
-  }, [storyBlocksMap, storyId])
+const StoryResources: React.FC<{ storyId: string }> = ({ storyId }) => {
+  const resourceBlocks = useStoryResources(storyId)
 
   if (!storyId) return null
 
@@ -201,8 +231,8 @@ const StoryQuestions: React.FC<{ storyId: string }> = ({ storyId }) => {
       options={{ suppressScrollX: true }}
     >
       <div>
-        {questionLikeBlocks.map((block) => {
-          return <TocQuestionItem key={block.id} blockId={block.id} storyId={storyId} />
+        {resourceBlocks.map((block) => {
+          return <StoryDataAssetItem key={block.id} blockId={block.id} storyId={storyId} />
         })}
       </div>
     </PerfectScrollbar>
@@ -245,15 +275,18 @@ const AllMetrics: React.FC = () => {
   )
 }
 
-const TABS = [
-  { name: 'Current Page', Component: <CurrentStoryQuestions /> },
-  {
-    name: 'All Metrics',
-    Component: <AllMetrics />
-  }
-]
-
 export const SideBarMetricsSection = () => {
+  const { t } = useTranslation()
+  const TABS = useMemo(
+    () => [
+      { name: t`Current Page`, Component: <CurrentStoryQuestions /> },
+      {
+        name: t`Data Assets`,
+        Component: <AllMetrics />
+      }
+    ],
+    [t]
+  )
   return (
     <div
       className={css`

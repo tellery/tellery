@@ -24,10 +24,10 @@ export type EditorContextInterface<BlockType> = {
   duplicateHandler: (blockIds: string[]) => Editor.BaseBlock[] | undefined
 }
 
-export const useEditor = <BlockType extends unknown>() => {
+export const useEditor = <BlockType extends Editor.BaseBlock>() => {
   const editor = useContext(EditorContext)
 
   return editor as EditorContextInterface<BlockType> | null
 }
 
-export const EditorContext = React.createContext<EditorContextInterface<Editor.Block> | null>(null)
+export const EditorContext = React.createContext<EditorContextInterface<Editor.BaseBlock> | null>(null)

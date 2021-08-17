@@ -5,7 +5,7 @@ import dayjs from 'dayjs'
 import { dequal } from 'dequal'
 import invariant from 'tiny-invariant'
 import { isReferenceToken } from '../BlockBase/ContentEditable'
-import { isQuestionLikeBlock } from '../Blocks/utils'
+import { isDataAssetBlock, isVisualizationBlock } from '../Blocks/utils'
 import { getSubsetOfBlocksSnapshot, TOKEN_MAP } from '../utils'
 import { TellerySelection, TellerySelectionType } from './tellerySelection'
 
@@ -80,9 +80,9 @@ export const applyTransformOnSplitedTokens = (
 
 // TODO: Fix Me
 export const getBlockOrTokensFromSelection = (
-  block: Editor.Block,
+  block: Editor.BaseBlock,
   selection: TellerySelection
-): Editor.Block | Editor.Token[] => {
+): Editor.BaseBlock | Editor.Token[] => {
   if (selection.type === TellerySelectionType.Inline) {
     const tokens = block?.content?.title || []
     const splitedTokens = splitToken(tokens)
@@ -170,7 +170,7 @@ export const convertBlocksOrTokensToPureText = (
   return 'tellery'
 }
 
-export const sanitizeContent = (content?: Editor.Block['content']) => {
+export const sanitizeContent = (content?: Editor.BaseBlock['content']) => {
   if (content?.title) {
     return { ...content, title: sanitizeToken(content.title || []) }
   } else {
@@ -214,7 +214,7 @@ export const splitTokenAndMarkIndex = (title?: Editor.Token[]) => {
 }
 
 export const blockTitleToText = (block: Editor.BaseBlock, snapshot: BlockSnapshot): string => {
-  if (isQuestionLikeBlock(block.type) || block.type === Editor.BlockType.Story) {
+  if (isDataAssetBlock(block.type) || isVisualizationBlock(block.type) || block.type === Editor.BlockType.Story) {
     if (!block.content?.title?.length) {
       return DEFAULT_TITLE
     }
@@ -405,8 +405,8 @@ export const toggleMark = (marks: Editor.TokenType[] | undefined | null, mark: E
 }
 
 export const isNonSelectbleToken = (token: Editor.Token) => {
-  const { reference } = extractEntitiesFromToken(token)
-  if (reference) {
+  const { reference, formula } = extractEntitiesFromToken(token)
+  if (reference || formula) {
     return true
   }
   return false
@@ -417,7 +417,9 @@ export const extractEntitiesFromToken = (token: Editor.Token) => {
     link: undefined,
     reference: undefined,
     classNames: undefined,
-    index: undefined
+    index: undefined,
+    equation: undefined,
+    formula: undefined
   }
   const tokenTypes = token[1]
   if (!tokenTypes) return entities
@@ -439,6 +441,14 @@ export const extractEntitiesFromToken = (token: Editor.Token) => {
       }
       case Editor.InlineType.LocalIndex: {
         entities.index = tokenType
+        break
+      }
+      case Editor.InlineType.Equation: {
+        entities.equation = tokenType
+        break
+      }
+      case Editor.InlineType.Formula: {
+        entities.formula = tokenType
         break
       }
     }

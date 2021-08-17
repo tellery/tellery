@@ -450,7 +450,7 @@ test.serial('post /api/mgetResources', async (t: ExecutionContext<any>) => {
     parentTable: BlockParentType.BLOCK,
     permissions: defaultPermissions,
     storyId: targetStory.id,
-    type: BlockType.QUESTION,
+    type: BlockType.SQL,
     children: [],
     content: {
       title: [[nanoid()]],
@@ -604,7 +604,7 @@ test.serial('mget load story', async (t: ExecutionContext<any>) => {
       {
         id: qid,
         workspaceId: 'xxx',
-        type: BlockType.QUESTION,
+        type: BlockType.SQL,
         storyId: sid1,
         parentId: 'test',
         parentTable: 'workspace',
@@ -682,7 +682,7 @@ test.serial('global search', async (t: ExecutionContext<any>) => {
       {
         id: qid,
         workspaceId: 'xxx',
-        type: BlockType.QUESTION,
+        type: BlockType.SQL,
         storyId: sid1,
         parentId: 'test',
         parentTable: 'workspace',
@@ -718,7 +718,7 @@ test.serial('global search', async (t: ExecutionContext<any>) => {
       keyword: title,
       types: [SearchableResourceType.BLOCK],
       filters: {
-        type: BlockType.QUESTION,
+        type: BlockType.SQL,
       },
       limit: 20,
     },
@@ -763,7 +763,7 @@ test.serial('search question blocks by sql', async (t: ExecutionContext<any>) =>
       {
         id: qid,
         workspaceId: 'xxx',
-        type: BlockType.QUESTION,
+        type: BlockType.SQL,
         storyId: sid1,
         parentId: 'test',
         parentTable: 'workspace',
@@ -777,7 +777,7 @@ test.serial('search question blocks by sql', async (t: ExecutionContext<any>) =>
     )
   })
 
-  // only return question blocks
+  // only return sql blocks
   const searchQuestions: any = await got<any>('api/questions/search', {
     prefixUrl: t.context.prefixUrl,
     method: 'POST',
@@ -793,10 +793,10 @@ test.serial('search question blocks by sql', async (t: ExecutionContext<any>) =>
     undefined,
   )
 
-  // all results are question blocks
+  // all results are sql blocks
   _(searchQuestions.results.searchResults)
     .map((r) => searchQuestions.results.blocks[r].type)
-    .forEach((type) => t.is(type, BlockType.QUESTION))
+    .forEach((type) => t.is(type, BlockType.SQL))
 
   // not find with title
   const searchWithoutSql: any = await got<any>('api/questions/search', {
@@ -849,7 +849,7 @@ test.serial('reference completion', async (t: ExecutionContext<any>) => {
       {
         id: qid,
         workspaceId,
-        type: BlockType.QUESTION,
+        type: BlockType.SQL,
         storyId: sid1,
         parentId: workspaceId,
         parentTable: 'workspace',
@@ -915,10 +915,10 @@ test.serial('reference completion', async (t: ExecutionContext<any>) => {
   const blocks3 = completionRes3.results.blocks
   t.is(srs3.length, 3)
   // first two are metric blocks
-  t.is(blocks3[srs3[0]].type, 'metric')
-  t.is(blocks3[srs3[1]].type, 'metric')
-  // last one is question block
-  t.is(blocks3[srs3[2]].type, 'question')
+  t.is(blocks3[srs3[0]].type, BlockType.METRIC)
+  t.is(blocks3[srs3[1]].type, BlockType.METRIC)
+  // last one is sql block
+  t.is(blocks3[srs3[2]].type, BlockType.SQL)
   // contains story blocks
   t.not(blocks3[sid1], undefined)
 

@@ -1,13 +1,13 @@
 import { BlockType } from '../../types/block'
 import { Block } from '../block'
-import { QuestionBlock } from '../block/question'
+import { SqlBlock } from '../block/sql'
 
 /**
  * Only match Question blocks
  */
 function match(block: Block): boolean {
   // metric block extends question block
-  return block.getType() === BlockType.QUESTION || block.getType() === BlockType.METRIC
+  return block.getType() === BlockType.SQL || block.getType() === BlockType.METRIC
 }
 
 /**
@@ -15,7 +15,7 @@ function match(block: Block): boolean {
  * In Question Block, we get its original SQL directly through the getSql method
  */
 function translate(block: Block): string {
-  return (block as QuestionBlock).getSql()
+  return (block as SqlBlock).getSql()
 }
 
 export { match, translate }

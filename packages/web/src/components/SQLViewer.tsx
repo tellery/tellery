@@ -148,12 +148,7 @@ export function SQLViewer(props: {
   )
 }
 
-function TransclusionContentWidget(props: {
-  blockId: string
-  value: Editor.QuestionBlock
-  length: number
-  index: number
-}) {
+function TransclusionContentWidget(props: { blockId: string; value: Editor.SQLBlock; length: number; index: number }) {
   const { value: block } = props
   const getBlockTitle = useGetBlockTitleTextSnapshot()
   const el = document.querySelector(

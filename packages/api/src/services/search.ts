@@ -38,7 +38,7 @@ export class SearchService {
     ): Promise<SearchFilter> => {
       let query: SearchFilter
       switch (type) {
-        case SearchableResourceType.BLOCK || SearchableResourceType._QUESTION_BLOCK_SQL:
+        case SearchableResourceType.BLOCK || SearchableResourceType._SQL:
           const permissionFilter = await this.permission.getSearchBlocksQuery(
             operatorId,
             workspaceId,

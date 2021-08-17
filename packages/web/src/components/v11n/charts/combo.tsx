@@ -1,8 +1,12 @@
+import { IconCommonAdd, IconCommonArrowDropDown, IconCommonClose } from '@app/assets/icons'
+import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
+import { useCrossFilter, useDataRecords } from '@app/hooks/useDataRecords'
+import i18n from '@app/i18n'
+import { SVG2DataURI } from '@app/lib/svg'
+import { TelleryThemeLight, ThemingVariables } from '@app/styles'
+import { blockIdGenerator } from '@app/utils'
 import { css, cx } from '@emotion/css'
-import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState, MouseEvent } from 'react'
-import { sortBy, keyBy, compact, upperFirst, sum, mapValues, tail, head } from 'lodash'
 import { useTextWidth } from '@tag0/use-text-width'
-import { nanoid } from 'nanoid'
 import {
   Area,
   Bar,
@@ -18,26 +22,23 @@ import {
 } from '@tellery/recharts'
 import type { Path } from 'd3-path'
 import type { CurveGenerator } from 'd3-shape'
+import { compact, head, keyBy, mapValues, sortBy, sum, tail, upperFirst } from 'lodash'
+import React, { MouseEvent, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import PerfectScrollbar from 'react-perfect-scrollbar'
-import { ComboShape, ComboStack, Config, DisplayType, Type } from '../types'
-import type { Chart } from './base'
-import { ConfigLabel } from '../components/ConfigLabel'
-import { SortableList } from '../components/SortableList'
-import { ConfigNumericInput } from '../components/ConfigNumericInput'
 import { ConfigButton } from '../components/ConfigButton'
-import { ShapeSelector } from '../components/ShapeSelector'
 import { ConfigInput } from '../components/ConfigInput'
+import { ConfigLabel } from '../components/ConfigLabel'
+import { ConfigNumericInput } from '../components/ConfigNumericInput'
 import { ConfigSelect } from '../components/ConfigSelect'
-import { LegendContent } from '../components/LegendContent'
-import { fontFamily } from '../constants'
-import { createTrend, formatNumber, formatRecord, isNumeric, isTimeSeries } from '../utils'
-import { MoreSettingPopover } from '../components/MoreSettingPopover'
-import { TelleryThemeLight, ThemingVariables } from '@app/styles'
-import { SVG2DataURI } from '@app/lib/svg'
-import { IconCommonArrowDropDown, IconCommonClose, IconCommonAdd } from '@app/assets/icons'
 import { CustomTooltip } from '../components/CustomTooltip'
-import { useCrossFilter, useDataRecords } from '@app/hooks/useDataRecords'
-import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
+import { LegendContent } from '../components/LegendContent'
+import { MoreSettingPopover } from '../components/MoreSettingPopover'
+import { ShapeSelector } from '../components/ShapeSelector'
+import { SortableList } from '../components/SortableList'
+import { fontFamily } from '../constants'
+import { Type, DisplayType, ComboShape, ComboStack, Config } from '../types'
+import { createTrend, formatNumber, formatRecord, isNumeric, isTimeSeries } from '../utils'
+import type { Chart } from './base'
 
 const splitter = ', '
 
@@ -49,7 +50,7 @@ enum Tab {
   AXIS = 'Axis'
 }
 
-const numberformat = new Intl.NumberFormat([], { maximumFractionDigits: 2 })
+const numberformat = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 2 })
 
 const scaleTypes = ['auto', 'linear', 'pow', 'sqrt', 'log']
 
@@ -61,8 +62,8 @@ function calcLabel(array: string[], axise: 'xAxises' | 'yAxises' | 'y2Axises') {
   return array.length === 1 || axise === 'xAxises' ? array[0] : ''
 }
 
-function calcYAxisId(groupId: string) {
-  return ['left', 'right'].includes(groupId) ? groupId : 'left'
+function calcYAxisId(groupId: string): 'left' | 'right' {
+  return ['left', 'right'].includes(groupId) ? (groupId as 'left' | 'right') : 'left'
 }
 
 function valueKey(key?: string) {
@@ -789,7 +790,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
         }, {}),
       [props.config]
     )
-    const trendSuffix = useMemo(() => nanoid(), [])
+    const trendSuffix = useMemo(() => blockIdGenerator(), [])
     const yLabelOffset = useTextWidth({ text: props.config.yLabel, font: `14px ${fontFamily}` }) / 2
     const y2LabelOffset = useTextWidth({ text: props.config.y2Label, font: `14px ${fontFamily}` }) / 2
     const groups = useMemo<{
@@ -837,6 +838,37 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
       () => (props.config.xAxises.length === 1 ? displayTypes[props.config.xAxises[0]] : undefined),
       [displayTypes, props.config.xAxises]
     )
+    const sortedShapes = useMemo(
+      () =>
+        sortBy(
+          [...props.config.shapes].reverse(),
+          (shape) =>
+            ({
+              [ComboShape.LINE]: 3,
+              [ComboShape.AREA]: 2,
+              [ComboShape.BAR]: 1
+            }[groups[shape.groupId]?.shape!])
+        ),
+      [groups, props.config.shapes]
+    )
+    const padding = useMemo(() => {
+      if (groups.left?.shape === ComboShape.BAR || groups.right?.shape === ComboShape.BAR) {
+        const barsCount =
+          (groups.left?.stackType === ComboStack.NONE && groups.left?.shape === ComboShape.BAR
+            ? props.config.shapes.filter((group) => group.groupId === 'left').length
+            : 0) +
+          (groups.right?.stackType === ComboStack.NONE && groups.right?.shape === ComboShape.BAR
+            ? props.config.shapes.filter((group) => group.groupId === 'right').length
+            : 0)
+        return barsCount === 1
+          ? 'gap'
+          : {
+              left: props.dimensions.width / result100.length / (barsCount || 1) + 10,
+              right: props.dimensions.width / result100.length / (barsCount || 1) + 10
+            }
+      }
+      return undefined
+    }, [groups.left, groups.right, props.config.shapes, props.dimensions.width, result100.length])
 
     return (
       <ResponsiveContainer>
@@ -882,7 +914,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
             }
             stroke={ThemingVariables.colors.text[1]}
             tickFormatter={(tick) => formatRecord(tick, xDisplayType)}
-            padding={props.config.xType === 'linear' ? { right: 16, left: 16 } : undefined}
+            padding={padding}
             type={
               props.config.xType === 'linear'
                 ? 'number'
@@ -970,6 +1002,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
             cursor={false}
             wrapperStyle={{ zIndex: 9999999 }}
             isAnimationActive={false}
+            allowEscapeViewBox={{ x: false, y: true }}
             content={
               <CustomTooltip
                 displayTypes={displayTypes}
@@ -1023,15 +1056,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
               content={LegendContent}
             />
           ) : null}
-          {sortBy(
-            props.config.shapes,
-            (shape) =>
-              ({
-                [ComboShape.LINE]: 3,
-                [ComboShape.AREA]: 2,
-                [ComboShape.BAR]: 1
-              }[groups[shape.groupId]?.shape!])
-          ).map(({ key, groupId, color: colorIndex }) => {
+          {sortedShapes.map(({ key, groupId, color: colorIndex }) => {
             const group = groups[groupId]
             if (!group) {
               return null
@@ -1133,7 +1158,6 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                 yAxisId={calcYAxisId(group.key)}
                 dataKey={valueKey(key)}
                 strokeWidth={0}
-                maxBarSize={props.config.xType === 'linear' ? 20 : undefined}
                 fill={color}
                 isAnimationActive={false}
                 opacity={hoverDataKey === undefined || hoverDataKey === valueKey(key) ? 1 : opacity}

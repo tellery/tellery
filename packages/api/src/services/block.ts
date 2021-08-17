@@ -36,11 +36,16 @@ export class BlockService {
         }
         return b
       })
-      .filter(
-        (b1) =>
-          b1.parentTable === BlockParentType.WORKSPACE ||
-          (_(blocks).find((b2) => b1.parentId === b2.id)?.children || []).includes(b1.id),
-      )
+      .filter((b1) => {
+        if (b1.parentTable === BlockParentType.WORKSPACE) {
+          return true
+        }
+        const parentBlock = _(blocks).find((b2) => b1.parentId === b2.id)
+        return (
+          (parentBlock?.children ?? []).includes(b1.id) ||
+          (parentBlock?.resources ?? []).includes(b1.id)
+        )
+      })
       .value()
   }
 

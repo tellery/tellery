@@ -6,6 +6,7 @@ import { css } from '@emotion/css'
 import dayjs from 'dayjs'
 import React from 'react'
 import ContentLoader from 'react-content-loader'
+import { useTranslation } from 'react-i18next'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import { useGetBlockTitleTextSnapshot } from './editor'
 import { SideBarContentLayout } from './SideBarContentLayout'
@@ -20,9 +21,9 @@ const SideBarLoader: React.FC = () => {
 
 export const SideBarPinnedStoriesSection = () => {
   const { data: workspaceView } = useWorkspaceView()
-
+  const { t } = useTranslation()
   return (
-    <SideBarContentLayout title={'Favorites'}>
+    <SideBarContentLayout title={t`Favorites`}>
       {workspaceView?.pinnedList && <WorkspaceItems storyIds={workspaceView?.pinnedList} />}
     </SideBarContentLayout>
   )

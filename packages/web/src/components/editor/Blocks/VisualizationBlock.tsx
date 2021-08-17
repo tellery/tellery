@@ -1,4 +1,5 @@
 import {
+  IconCommonBackLink,
   IconCommonCopy,
   IconCommonError,
   IconCommonLink,
@@ -12,7 +13,6 @@ import {
   IconMiscNoResult,
   IconVisualizationSetting
 } from '@app/assets/icons'
-import { BlockingUI } from '@app/components/editor/BlockBase/BlockingUIBlock'
 import IconButton from '@app/components/kit/IconButton'
 import { MenuItem } from '@app/components/MenuItem'
 import { MenuItemDivider } from '@app/components/MenuItemDivider'
@@ -21,12 +21,15 @@ import { useQuestionEditor } from '@app/components/StoryQuestionsEditor'
 import { Diagram } from '@app/components/v11n'
 import { charts } from '@app/components/v11n/charts'
 import { Config, Data, Type } from '@app/components/v11n/types'
+import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useOnClickOutside, useOnScreen } from '@app/hooks'
-import { useBlockSuspense, useSnapshot, useUser } from '@app/hooks/api'
+import { useBlockSuspense, useGetSnapshot, useSnapshot, useUser } from '@app/hooks/api'
+import { useCommit } from '@app/hooks/useCommit'
 import { useInterval } from '@app/hooks/useInterval'
 import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
+import { useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
-import { Editor, Snapshot } from '@app/types'
+import { Editor } from '@app/types'
 import { DEFAULT_TITLE, snapshotToCSV, TELLERY_MIME_TYPES } from '@app/utils'
 import { css, cx, keyframes } from '@emotion/css'
 import Tippy from '@tippyjs/react'
@@ -37,21 +40,23 @@ import { useSelect } from 'downshift'
 import { AnimatePresence, motion, usePresence } from 'framer-motion'
 import html2canvas from 'html2canvas'
 import React, { ReactNode, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import invariant from 'tiny-invariant'
+import { BlockingUI } from '../BlockBase/BlockingUIBlock'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
 import { BlockResizer } from '../BlockBase/BlockResizer'
 import { ContentEditable } from '../BlockBase/ContentEditable'
 import { DebouncedResizeBlock } from '../DebouncedResizeBlock'
 import { EditorPopover } from '../EditorPopover'
-import { TellerySelectionType } from '../helpers'
+import { createTranscation, insertBlocksAndMoveOperations, TellerySelectionType } from '../helpers'
 import { getBlockImageById } from '../helpers/contentEditable'
 import { useEditor, useLocalSelection } from '../hooks'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
 import type { OperationInterface } from '../Popovers/BlockOperationPopover'
 import { DEFAULT_QUESTION_BLOCK_ASPECT_RATIO, DEFAULT_QUESTION_BLOCK_WIDTH } from '../utils'
-import { BlockComponent, registerBlock } from './utils'
+import { BlockComponent, isExecuteableBlockType, registerBlock } from './utils'
 
 const FOOTER_HEIGHT = 20
 
@@ -65,23 +70,20 @@ const rotateAnimation = keyframes`
 `
 
 interface QuestionBlockProps {
-  block: Editor.QuestionBlock
+  block: Editor.VisualizationBlock
   blockFormat: BlockFormatInterface
   parentType: Editor.BlockType
 }
 
-const _QuestionBlock: React.ForwardRefRenderFunction<any, QuestionBlockProps> = (props, ref) => {
-  const editor = useEditor<Editor.QuestionBlock>()
+const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProps> = (props, ref) => {
+  const editor = useEditor<Editor.VisualizationBlock>()
   const { block } = props
-  const { readonly } = useBlockBehavior()
   const elementRef = useRef<HTMLDivElement | null>(null)
-  const contentRef = useRef<HTMLDivElement | null>(null)
-  const originalBlock = useBlockSuspense<Editor.QuestionBlock>(block.id)
-  const questionEditor = useQuestionEditor()
-  const [titleEditing, setTitleEditing] = useState(false)
   const [blockFocusing, setBlockFocusing] = useState(false)
-  const localSelection = useLocalSelection(block.id)
-  const isInputFocusing = !!localSelection
+  const questionEditor = useQuestionEditor()
+  const commit = useCommit()
+  const snapshot = useBlockSnapshot()
+  const dataAssetId = block.content?.dataAssetId
 
   useImperativeHandle(
     ref,
@@ -93,12 +95,6 @@ const _QuestionBlock: React.ForwardRefRenderFunction<any, QuestionBlockProps> = 
     [block.id, block.storyId, questionEditor]
   )
 
-  const onClickOutSide = useCallback(() => {
-    setTitleEditing(false)
-  }, [])
-
-  useOnClickOutside(elementRef, onClickOutSide)
-
   useEffect(() => {
     if (!block.content) {
       // setIsPopoverOpen(true)
@@ -110,23 +106,34 @@ const _QuestionBlock: React.ForwardRefRenderFunction<any, QuestionBlockProps> = 
         }
       })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
-  const isEmptyBlock = useMemo(() => {
-    return block.content?.sql === undefined
-  }, [block.content?.sql])
-
-  const snapshotId = originalBlock?.content?.snapshotId
-  const visualization = block.content?.visualization
-
-  const mutateSnapshot = useRefreshSnapshot()
-  const mutatingCount = useSnapshotMutating(originalBlock.id)
-
-  useEffect(() => {
-    if (originalBlock.id === block.id && !snapshotId && originalBlock.content?.sql && mutatingCount === 0) {
-      mutateSnapshot.execute(originalBlock)
+    if (!dataAssetId) {
+      const newSqlBlock = createEmptyBlock({
+        type: Editor.BlockType.SQL,
+        storyId: block.storyId!,
+        parentId: block.storyId!
+      })
+      commit({
+        transcation: createTranscation({
+          operations: [
+            ...insertBlocksAndMoveOperations({
+              storyId: block.storyId!,
+              blocksFragment: {
+                children: [newSqlBlock.id],
+                data: { [newSqlBlock.id]: newSqlBlock }
+              },
+              targetBlockId: block.storyId!,
+              direction: 'child',
+              snapshot,
+              path: 'resources'
+            }),
+            { cmd: 'set', path: ['content', 'dataAssetId'], args: newSqlBlock.id, table: 'block', id: block.id }
+          ]
+        }),
+        storyId: block.storyId!
+      })
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -138,191 +145,130 @@ const _QuestionBlock: React.ForwardRefRenderFunction<any, QuestionBlockProps> = 
       onFocus={() => setBlockFocusing(true)}
       onBlur={() => setBlockFocusing(false)}
     >
-      {isEmptyBlock ? (
+      {dataAssetId === undefined ? (
         <BlockPlaceHolder loading={false} text="New Question" />
       ) : (
-        originalBlock && (
-          <>
-            <QuestionBlockHeader
-              setTitleEditing={setTitleEditing}
-              titleEditing={titleEditing || isInputFocusing}
-              block={block}
-            />
-            <QuestionBlockStatus snapshotId={snapshotId} block={block} originalBlock={originalBlock} />
-            <motion.div
-              style={{
-                paddingTop: props.blockFormat.paddingTop
-              }}
-              transition={{ duration: 0 }}
-              className={css`
-                position: relative;
-                display: inline-block;
-                width: 100%;
-                min-height: 100px;
-              `}
-              onClick={() => {
-                setTitleEditing(false)
-              }}
-            >
-              <QuestionBlockBody ref={contentRef} snapshotId={snapshotId} visualization={visualization} />
-              {readonly === false && (
-                <BlockResizer
-                  blockFormat={props.blockFormat}
-                  contentRef={contentRef}
-                  parentType={props.parentType}
-                  blockId={block.id}
-                  offsetY={FOOTER_HEIGHT}
-                />
-              )}
-            </motion.div>
-            <div
-              className={css`
-                height: ${FOOTER_HEIGHT}px;
-              `}
-            />
-          </>
-        )
-      )}
-      <QuestionBlockButtons blockId={block.id} show={blockFocusing} />
-      {/* 
-      {!readonly && ref.current && (
-        <NewQuestionPopover
-          open={isPopoverOpen}
-          setOpen={setIsPopoverOpen}
+        <VisualizationBlockContent
+          dataAssetId={dataAssetId}
           block={block}
-          referneceElement={ref.current}
+          wrapperRef={elementRef}
+          blockFocusing={blockFocusing}
+          blockFormat={props.blockFormat}
+          parentType={props.parentType}
         />
-      )} */}
+      )}
     </div>
   )
 }
 
-const _QuestionSnapshotBlock: React.ForwardRefRenderFunction<any, QuestionBlockProps> = (props, ref) => {
-  const editor = useEditor<Editor.QuestionBlock>()
-  const { block } = props
-  const { readonly } = useBlockBehavior()
-  const elementRef = useRef<HTMLDivElement | null>(null)
-  const contentRef = useRef<HTMLDivElement | null>(null)
-  const originalBlock = useBlockSuspense<Editor.QuestionBlock>(block.id)
-  const [titleEditing, setTitleEditing] = useState(false)
-  const localSelection = useLocalSelection(block.id)
-  const isInputFocusing = !!localSelection
-
-  useImperativeHandle(
-    ref,
-    () => ({
-      openMenu: () => {}
-    }),
-    []
-  )
-
+const VisualizationBlockContent: React.FC<{
+  dataAssetId: string
+  block: Editor.VisualizationBlock
+  wrapperRef: React.MutableRefObject<HTMLDivElement | null>
+  blockFocusing: boolean
+  blockFormat: BlockFormatInterface
+  parentType: Editor.BlockType
+}> = ({ dataAssetId, block, blockFocusing, wrapperRef, blockFormat, parentType }) => {
+  const dataAssetBlock = useBlockSuspense<Editor.DataAssetBlock>(dataAssetId)
+  const snapshotId = dataAssetBlock?.content?.snapshotId
+  const commit = useCommit()
+  const storyBlock = useBlockSuspense(block.storyId!)
   const onClickOutSide = useCallback(() => {
     setTitleEditing(false)
   }, [])
 
-  useOnClickOutside(elementRef, onClickOutSide)
+  const mutateSnapshot = useRefreshSnapshot()
+  const mutatingCount = useSnapshotMutating(dataAssetBlock.id)
 
   useEffect(() => {
-    if (!block.content) {
-      // setIsPopoverOpen(true)
-      editor?.setBlockValue?.(block.id, (draftBlock) => {
-        draftBlock.content = { title: [] }
-        draftBlock.format = {
-          width: DEFAULT_QUESTION_BLOCK_WIDTH,
-          aspectRatio: DEFAULT_QUESTION_BLOCK_ASPECT_RATIO
-        }
-      })
+    if (dataAssetBlock.id && !snapshotId && dataAssetBlock.content?.sql && mutatingCount === 0) {
+      mutateSnapshot.execute(dataAssetBlock)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const isEmptyBlock = useMemo(() => {
-    return block.content?.sql === undefined
-  }, [block.content?.sql])
-
-  const snapshotId = originalBlock?.content?.snapshotId
   const visualization = block.content?.visualization
 
-  const mutateSnapshot = useRefreshSnapshot()
-  const mutatingCount = useSnapshotMutating(originalBlock.id)
+  useOnClickOutside(wrapperRef, onClickOutSide)
+  const { readonly } = useBlockBehavior()
+  const [titleEditing, setTitleEditing] = useState(false)
+  const localSelection = useLocalSelection(block.id)
+  const isInputFocusing = !!localSelection
+  const contentRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    if (originalBlock.id === block.id && !snapshotId && originalBlock.content?.sql && mutatingCount === 0) {
-      mutateSnapshot.execute(originalBlock)
+    if (dataAssetId && !storyBlock.resources?.includes(dataAssetId)) {
+      commit({
+        transcation: createTranscation({
+          operations: [
+            { cmd: 'listBefore', path: ['resources'], args: { id: dataAssetId }, table: 'block', id: storyBlock.id }
+          ]
+        }),
+        storyId: block.storyId!
+      })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [block.storyId, commit, dataAssetId, storyBlock.id, storyBlock.resources])
+
+  const isReferenceDataAssetBlock = dataAssetBlock.storyId !== block.storyId
 
   return (
-    <div ref={elementRef} className={QuestionsBlockContainer} tabIndex={-1}>
-      {isEmptyBlock ? (
-        <BlockPlaceHolder loading={false} text="New Question" />
-      ) : (
-        originalBlock && (
-          <>
-            <QuestionBlockHeader
-              setTitleEditing={setTitleEditing}
-              titleEditing={titleEditing || isInputFocusing}
-              block={block}
-            />
-            <QuestionBlockStatus snapshotId={snapshotId} block={block} originalBlock={originalBlock} />
-            <motion.div
-              style={{
-                paddingTop: props.blockFormat.paddingTop
-              }}
-              transition={{ duration: 0 }}
-              className={css`
-                position: relative;
-                display: inline-block;
-                width: 100%;
-                min-height: 100px;
-              `}
-              onClick={() => {
-                setTitleEditing(false)
-              }}
-            >
-              <QuestionBlockBody ref={contentRef} snapshotId={snapshotId} visualization={visualization} />
-              {readonly === false && (
-                <BlockResizer
-                  blockFormat={props.blockFormat}
-                  contentRef={contentRef}
-                  parentType={props.parentType}
-                  blockId={block.id}
-                  offsetY={FOOTER_HEIGHT}
-                />
-              )}
-            </motion.div>
-            <div
-              className={css`
-                height: ${FOOTER_HEIGHT}px;
-              `}
-            />
-          </>
-        )
-      )}
-    </div>
+    <>
+      <QuestionBlockButtons
+        block={block}
+        dataAssetBlock={dataAssetBlock}
+        show={blockFocusing}
+        dataAssetId={dataAssetId}
+      />
+      <QuestionBlockHeader
+        setTitleEditing={setTitleEditing}
+        isReference={isReferenceDataAssetBlock}
+        readonly={isReferenceDataAssetBlock || titleEditing === false || readonly}
+        titleEditing={titleEditing || isInputFocusing}
+        dataAssetBlock={dataAssetBlock}
+      />
+      <QuestionBlockStatus dataAssetBlock={dataAssetBlock} />
+      <motion.div
+        style={{
+          paddingTop: blockFormat.paddingTop
+        }}
+        transition={{ duration: 0 }}
+        className={css`
+          position: relative;
+          display: inline-block;
+          width: 100%;
+          min-height: 100px;
+        `}
+        onClick={() => {
+          setTitleEditing(false)
+        }}
+      >
+        <React.Suspense fallback={<BlockingUI blocking />}>
+          <QuestionBlockBody ref={contentRef} snapshotId={snapshotId} visualization={visualization} />
+        </React.Suspense>
+        {readonly === false && (
+          <BlockResizer
+            blockFormat={blockFormat}
+            contentRef={contentRef}
+            parentType={parentType}
+            blockId={block.id}
+            offsetY={FOOTER_HEIGHT}
+          />
+        )}
+      </motion.div>
+      <div
+        className={css`
+          height: ${FOOTER_HEIGHT}px;
+        `}
+      />
+    </>
   )
 }
 
-const QuestionSnapshotBlock = React.forwardRef(_QuestionSnapshotBlock) as BlockComponent<
+const VisualizationBlock = React.forwardRef(_VisualizationBlock) as BlockComponent<
   React.ForwardRefExoticComponent<QuestionBlockProps & React.RefAttributes<any>>
 >
 
-QuestionSnapshotBlock.meta = {
-  isText: true,
-  forwardRef: true,
-  hasChildren: false,
-  isQuestion: true,
-  isResizeable: true,
-  isExecuteable: false
-}
-registerBlock(Editor.BlockType.QuestionSnapshot, QuestionSnapshotBlock)
-
-const QuestionBlock = React.forwardRef(_QuestionBlock) as BlockComponent<
-  React.ForwardRefExoticComponent<QuestionBlockProps & React.RefAttributes<any>>
->
-
-QuestionBlock.meta = {
+VisualizationBlock.meta = {
   isText: true,
   forwardRef: true,
   hasChildren: false,
@@ -331,12 +277,14 @@ QuestionBlock.meta = {
   isExecuteable: true
 }
 
-registerBlock(Editor.BlockType.Question, QuestionBlock)
-registerBlock(Editor.BlockType.Metric, QuestionBlock)
+registerBlock(Editor.BlockType.Visualization, VisualizationBlock)
 
-export const QuestionBlockButtons: React.FC<{ blockId: string; show: boolean }> = ({ blockId, show }) => {
-  const block = useBlockSuspense<Editor.QuestionBlock>(blockId)
-  const { data: snapshot } = useSnapshot(block?.content?.snapshotId)
+export const QuestionBlockButtons: React.FC<{
+  block: Editor.VisualizationBlock
+  dataAssetBlock: Editor.DataAssetBlock
+  show: boolean
+  dataAssetId: string
+}> = ({ block, show, dataAssetBlock }) => {
   const { small } = useBlockBehavior()
 
   return (
@@ -370,7 +318,7 @@ export const QuestionBlockButtons: React.FC<{ blockId: string; show: boolean }> 
             opacity: 1;
           `}
         >
-          <TitleButtonsInner snapshot={snapshot} block={block} sql={block.content?.sql ?? ''} />
+          <TitleButtonsInner block={block} dataAssetBlock={dataAssetBlock} sql={dataAssetBlock.content?.sql ?? ''} />
         </motion.div>
       )}
     </AnimatePresence>
@@ -381,78 +329,71 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
   HTMLDivElement | null,
   { snapshotId?: string; visualization?: Config<Type> }
 > = ({ snapshotId, visualization }, ref) => {
-  const {
-    data: snapshot,
-    isFetched: isSnapshotFetched,
-    isIdle: isSnapshotIdle,
-    isPreviousData
-  } = useSnapshot(snapshotId)
+  const snapshot = useSnapshot(snapshotId)
 
   const visualizationConfig = useMemo(() => {
     // ensure snapshot data is valid
     if (snapshot?.data && typeof snapshot?.data === 'object' && !snapshot.data.errMsg) {
-      return visualization || charts[Type.TABLE].initializeConfig(snapshot.data, {})
+      return visualization ?? charts[Type.TABLE].initializeConfig(snapshot.data, {})
     } else {
       return undefined
     }
   }, [snapshot, visualization])
 
   return (
-    <BlockingUI blocking={isSnapshotIdle === false && isSnapshotFetched === false && isPreviousData === false}>
-      <div
-        ref={ref}
-        onCopy={(e) => {
-          e.stopPropagation()
-        }}
-        onClick={(e) => {
-          e.stopPropagation()
-        }}
-        className={css`
-          height: 100%;
-          width: 100%;
-          min-height: 100px;
-          min-width: 100px;
-          user-select: text;
-          position: absolute;
-          padding: 0 20px;
-          left: 0;
-          top: 0;
-        `}
-      >
-        {visualizationConfig && snapshot?.data && snapshot.data.fields ? (
-          <LazyRenderDiagram data={snapshot?.data} config={visualizationConfig} />
-        ) : (
+    <div
+      ref={ref}
+      onCopy={(e) => {
+        e.stopPropagation()
+      }}
+      onClick={(e) => {
+        e.stopPropagation()
+      }}
+      className={css`
+        height: 100%;
+        width: 100%;
+        min-height: 100px;
+        min-width: 100px;
+        user-select: text;
+        position: absolute;
+        padding: 0 20px;
+        left: 0;
+        top: 0;
+      `}
+    >
+      {visualizationConfig && snapshot?.data && snapshot.data.fields ? (
+        <LazyRenderDiagram data={snapshot?.data} config={visualizationConfig} />
+      ) : (
+        <div
+          className={css`
+            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+          `}
+        >
+          <IconMiscNoResult />
           <div
             className={css`
-              height: 100%;
-              position: absolute;
-              left: 0;
-              top: 0;
-              width: 100%;
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: center;
+              font-style: normal;
+              font-weight: 500;
+              font-size: 14px;
+              line-height: 17px;
+              color: ${ThemingVariables.colors.primary[1]};
+              opacity: 0.3;
+              margin-top: 10px;
             `}
           >
-            <IconMiscNoResult />
-            <div
-              className={css`
-                font-style: normal;
-                font-weight: 500;
-                font-size: 14px;
-                line-height: 17px;
-                color: ${ThemingVariables.colors.primary[1]};
-                opacity: 0.3;
-                margin-top: 10px;
-              `}
-            >
-              No Result
-            </div>
+            No Result
           </div>
-        )}
-      </div>
-    </BlockingUI>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -460,11 +401,11 @@ const QuestionBlockBody = React.forwardRef(_QuestionBlockBody)
 
 const QuestionBlockHeader: React.FC<{
   setTitleEditing: React.Dispatch<React.SetStateAction<boolean>>
-  block: Editor.QuestionBlock
   titleEditing: boolean
-}> = ({ setTitleEditing, block, titleEditing }) => {
-  const { readonly } = useBlockBehavior()
-
+  isReference: boolean
+  readonly: boolean
+  dataAssetBlock: Editor.DataAssetBlock
+}> = ({ setTitleEditing, titleEditing, dataAssetBlock, readonly, isReference }) => {
   return (
     <>
       <div
@@ -476,6 +417,15 @@ const QuestionBlockHeader: React.FC<{
           padding: 20px 20px 0 20px;
         `}
       >
+        {isReference && (
+          <Link to={`/story/${dataAssetBlock.storyId}`}>
+            <IconCommonBackLink
+              className={css`
+                margin-right: 5px;
+              `}
+            />
+          </Link>
+        )}
         <div
           className={css`
             display: flex;
@@ -503,11 +453,11 @@ const QuestionBlockHeader: React.FC<{
             }}
           >
             <ContentEditable
-              block={block}
+              block={dataAssetBlock}
               disableReferenceDropdown
               disableSlashCommand
               disableTextToolBar
-              readonly={titleEditing === false || readonly}
+              readonly={readonly}
               maxLines={titleEditing ? undefined : 1}
               placeHolderText={DEFAULT_TITLE}
               placeHolderStrategy={'always'}
@@ -520,26 +470,11 @@ const QuestionBlockHeader: React.FC<{
 }
 
 const QuestionBlockStatus: React.FC<{
-  block: Editor.QuestionBlock
-  originalBlock: Editor.QuestionBlock
-  snapshotId?: string
-}> = ({ block, originalBlock, snapshotId }) => {
-  const { data: snapshot } = useSnapshot(snapshotId)
-  const mutatingCount = useSnapshotMutating(originalBlock.id)
-  const [mutatingStartTimeStamp, setMutatingStartTimeStamp] = useState(0)
-  const [nowTimeStamp, setNowTimeStamp] = useState(0)
+  dataAssetBlock: Editor.DataAssetBlock
+}> = ({ dataAssetBlock }) => {
+  const mutatingCount = useSnapshotMutating(dataAssetBlock.id)
+
   const loading = mutatingCount !== 0
-
-  useEffect(() => {
-    if (loading) {
-      setNowTimeStamp(Date.now())
-      setMutatingStartTimeStamp(Date.now())
-    }
-  }, [loading])
-
-  useInterval(() => {
-    setNowTimeStamp(Date.now())
-  }, 1000)
 
   return (
     <>
@@ -556,14 +491,14 @@ const QuestionBlockStatus: React.FC<{
       >
         <Tippy
           content={
-            block.content?.error ? (
+            dataAssetBlock.content?.error ? (
               <div
                 className={css`
                   max-height: 100px;
                   overflow: auto;
                 `}
               >
-                {block.content?.error}
+                {dataAssetBlock.content?.error}
               </div>
             ) : (
               'loading...'
@@ -606,7 +541,7 @@ const QuestionBlockStatus: React.FC<{
                   `}
                 />
               </>
-            ) : block.content?.error ? (
+            ) : dataAssetBlock.content?.error ? (
               <>
                 <IconCommonError width="12px" height="12px" fill={ThemingVariables.colors.negative[0]} />
               </>
@@ -629,13 +564,40 @@ const QuestionBlockStatus: React.FC<{
             display: inline-flex;
           `}
         >
-          {loading
-            ? dayjs(nowTimeStamp).subtract(mutatingStartTimeStamp).format('mm:ss')
-            : snapshot?.createdAt || block.content?.lastRunAt
-            ? dayjs(block.content?.lastRunAt ?? snapshot?.createdAt).fromNow()
-            : ''}
+          <React.Suspense fallback={<></>}>
+            <SnapshotUpdatedAt loading={loading} dataAssetBlock={dataAssetBlock} />
+          </React.Suspense>
         </div>
       </div>
+    </>
+  )
+}
+
+export const SnapshotUpdatedAt: React.FC<{
+  loading: boolean
+  dataAssetBlock: Editor.DataAssetBlock
+}> = ({ loading, dataAssetBlock }) => {
+  const snapshot = useSnapshot(dataAssetBlock.content?.snapshotId)
+  const [mutatingStartTimeStamp, setMutatingStartTimeStamp] = useState(0)
+  const [nowTimeStamp, setNowTimeStamp] = useState(0)
+  useEffect(() => {
+    if (loading) {
+      setNowTimeStamp(Date.now())
+      setMutatingStartTimeStamp(Date.now())
+    }
+  }, [loading])
+
+  useInterval(() => {
+    setNowTimeStamp(Date.now())
+  }, 1000)
+
+  return (
+    <>
+      {loading
+        ? dayjs(nowTimeStamp).subtract(mutatingStartTimeStamp).format('mm:ss')
+        : snapshot?.createdAt ?? dataAssetBlock.content?.lastRunAt
+        ? dayjs(dataAssetBlock.content?.lastRunAt ?? snapshot?.createdAt).fromNow()
+        : ''}
     </>
   )
 }
@@ -705,17 +667,21 @@ export const LazyRenderDiagram: React.FC<{ data?: Data; config: Config<Type> }> 
 }
 
 export const MoreDropdownSelect: React.FC<{
-  snapshot?: Snapshot
-  block: Editor.Block
+  block: Editor.VisualizationBlock
   sql: string
   hoverContent: ReactNode
   className?: string
+  dataAssetBlock: Editor.DataAssetBlock
   setIsActive: (active: boolean) => void
-}> = ({ snapshot, block, sql, setIsActive, className, hoverContent }) => {
+}> = ({ block, sql, setIsActive, className, hoverContent, dataAssetBlock }) => {
   const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null)
   const { data: user } = useUser(block?.lastEditedById ?? null)
-  const editor = useEditor<Editor.QuestionBlock>()
+  const editor = useEditor<Editor.VisualizationBlock>()
   const { readonly } = useBlockBehavior()
+
+  const canConvertDataAsset = !readonly && dataAssetBlock.storyId === block.storyId
+
+  const getSnapshot = useGetSnapshot()
 
   const operations = useMemo(() => {
     return [
@@ -759,7 +725,8 @@ export const MoreDropdownSelect: React.FC<{
       {
         title: 'Download as CSV',
         icon: <IconMenuDownload color={ThemingVariables.colors.text[0]} />,
-        action: () => {
+        action: async () => {
+          const snapshot = await getSnapshot({ snapshotId: dataAssetBlock?.content?.snapshotId })
           const snapshotData = snapshot?.data
           invariant(snapshotData, 'snapshotData is null')
           const csvString = snapshotToCSV(snapshotData)
@@ -789,28 +756,48 @@ export const MoreDropdownSelect: React.FC<{
           copy(sql)
         }
       },
-      !readonly &&
-        block.type === Editor.BlockType.Question && {
+      canConvertDataAsset &&
+        dataAssetBlock.type !== Editor.BlockType.SnapshotBlock && {
           title: 'Convert to snapshot',
           icon: <IconCommonTurn color={ThemingVariables.colors.text[0]} />,
           action: () => {
-            editor?.setBlockValue?.(block.id, (draftBlock) => {
-              draftBlock.type = Editor.BlockType.QuestionSnapshot
+            editor?.setBlockValue?.(dataAssetBlock.id, (draftBlock) => {
+              draftBlock.type = Editor.BlockType.SnapshotBlock
             })
           }
         },
-      !readonly &&
-        block.type === Editor.BlockType.Question && {
+      canConvertDataAsset &&
+        dataAssetBlock.type !== Editor.BlockType.SQL && {
+          title: 'Convert to SQL',
+          icon: <IconCommonTurn color={ThemingVariables.colors.text[0]} />,
+          action: () => {
+            editor?.setBlockValue?.(dataAssetBlock.id, (draftBlock) => {
+              draftBlock.type = Editor.BlockType.SQL
+            })
+          }
+        },
+      canConvertDataAsset &&
+        dataAssetBlock.type === Editor.BlockType.SQL && {
           title: 'Convert to metric',
           icon: <IconCommonMetrics color={ThemingVariables.colors.text[0]} />,
           action: () => {
-            editor?.setBlockValue?.(block.id, (draftBlock) => {
+            editor?.setBlockValue?.(dataAssetBlock.id, (draftBlock) => {
               draftBlock.type = Editor.BlockType.Metric
             })
           }
         }
     ].filter((x) => !!x) as OperationInterface[]
-  }, [block, editor, readonly, snapshot?.data, sql])
+  }, [
+    block,
+    canConvertDataAsset,
+    dataAssetBlock?.content?.snapshotId,
+    dataAssetBlock.id,
+    dataAssetBlock.type,
+    editor,
+    getSnapshot,
+    readonly,
+    sql
+  ])
 
   const { isOpen, openMenu, getToggleButtonProps, getMenuProps, highlightedIndex, getItemProps, closeMenu } = useSelect(
     { items: operations }
@@ -903,16 +890,16 @@ export const MoreDropdownSelect: React.FC<{
 }
 
 const TitleButtonsInner: React.FC<{
-  snapshot: Snapshot | undefined
-  block: Editor.Block
+  block: Editor.VisualizationBlock
+  dataAssetBlock: Editor.DataAssetBlock
   sql: string
-}> = ({ snapshot, block, sql }) => {
+}> = ({ block, sql, dataAssetBlock }) => {
   const { readonly } = useBlockBehavior()
   const [isActive, setIsActive] = useState(false)
   const [isPresent, safeToRemove] = usePresence()
   const questionEditor = useQuestionEditor()
   const mutateSnapshot = useRefreshSnapshot()
-  const mutatingCount = useSnapshotMutating(block.id)
+  const mutatingCount = useSnapshotMutating(dataAssetBlock.id)
   const loading = mutatingCount !== 0
 
   useEffect(() => {
@@ -921,13 +908,15 @@ const TitleButtonsInner: React.FC<{
 
   return (
     <>
-      {!readonly && (
+      {!readonly && isExecuteableBlockType(dataAssetBlock.type) && (
         <RefreshButton
           color={ThemingVariables.colors.primary[1]}
           loading={loading}
           hoverContent="Refresh"
           className={QuestionBlockIconButton}
-          onClick={loading ? () => mutateSnapshot.cancel(block.id) : () => mutateSnapshot.execute(block)}
+          onClick={
+            loading ? () => mutateSnapshot.cancel(dataAssetBlock.id) : () => mutateSnapshot.execute(dataAssetBlock)
+          }
         />
       )}
       <IconButton
@@ -947,10 +936,10 @@ const TitleButtonsInner: React.FC<{
       <MoreDropdownSelect
         hoverContent="More"
         className={QuestionBlockIconButton}
-        snapshot={snapshot}
         block={block}
         sql={sql}
         setIsActive={setIsActive}
+        dataAssetBlock={dataAssetBlock}
       />
     </>
   )

@@ -12,7 +12,7 @@ import {
   searchBlocks,
   sqlRequest
 } from '@app/api'
-import { isQuestionLikeBlock } from '@app/components/editor/Blocks/utils'
+import { isDataAssetBlock } from '@app/components/editor/Blocks/utils'
 import { useAsync } from '@app/hooks'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import type { AvailableConfig, BackLinks, ProfileConfig, Snapshot, Story, UserInfo, Workspace } from '@app/types'
@@ -31,7 +31,7 @@ import {
 } from 'react-query'
 import { useRecoilCallback, useRecoilValue, useRecoilValueLoadable, waitForAll, waitForAny } from 'recoil'
 import invariant from 'tiny-invariant'
-import { blockUpdater, TelleryBlockAtom, TelleryUserAtom } from '../store/block'
+import { blockUpdater, TelleryBlockAtom, TellerySnapshotAtom, TelleryUserAtom } from '../store/block'
 import { useBatchQueries } from './useBatchQueries'
 
 export type User = {
@@ -49,7 +49,7 @@ export const useStory = (id: string) => {
 
 export const useUpdateBlocks = () => {
   const updateBlocks = useRecoilCallback(
-    (recoilInterface) => (blocks: Record<string, Editor.Block>) => {
+    (recoilInterface) => (blocks: Record<string, Editor.BaseBlock>) => {
       Object.values(blocks).forEach((block) => {
         const targetAtom = TelleryBlockAtom(block.id)
         const loadable = recoilInterface.snapshot.getInfo_UNSTABLE(targetAtom).loadable
@@ -68,7 +68,7 @@ export const useUpdateBlocks = () => {
 export const useFetchStoryChunk = <T extends Editor.BaseBlock = Story>(id: string, suspense: boolean = true): T => {
   const updateBlocks = useUpdateBlocks()
   const workspace = useWorkspace()
-  useQuery<Record<string, Editor.Block>>(
+  useQuery<Record<string, Editor.BaseBlock>>(
     ['story', 'chunk', workspace, id],
     async () =>
       request
@@ -165,8 +165,8 @@ export function useSearchBlocks<T extends Editor.BlockType>(
     ['search', 'block', type, keyword, limit],
     async () =>
       searchBlocks(keyword, limit, workspace.id, type).then((results) => {
-        const blocks = results.blocks as Record<string, Editor.Block>
-        Object.values(blocks).forEach((block: Editor.Block) => {
+        const blocks = results.blocks as Record<string, Editor.BaseBlock>
+        Object.values(blocks).forEach((block: Editor.BaseBlock) => {
           emitBlockUpdate(block)
         })
         return results
@@ -309,7 +309,7 @@ export const useMgetEntities = (entities: { type: ResourceType; args: EntityRequ
   return useMemo(() => ({ queries, isSuccess, data }), [data, isSuccess, queries])
 }
 
-export const useMgetBlocks = (ids?: string[]): { data?: Record<string, Editor.Block>; isSuccess?: boolean } => {
+export const useMgetBlocks = (ids?: string[]): { data?: Record<string, Editor.BaseBlock>; isSuccess?: boolean } => {
   const atoms = useRecoilValueLoadable(waitForAll(ids?.map((id) => TelleryBlockAtom(id)) ?? []))
   const [state, setState] = useState({})
 
@@ -327,38 +327,7 @@ export const useMgetBlocks = (ids?: string[]): { data?: Record<string, Editor.Bl
               acc[block.id] = block
             }
             return acc
-          }, {} as { [key: string]: Editor.Block }),
-          isSuccess: true
-        })
-        break
-      case 'loading':
-        setState({})
-        break
-    }
-  }, [atoms, ids])
-
-  return state
-}
-
-export const useMgetBlocksAny = (ids?: string[]): { data?: Record<string, Editor.Block>; isSuccess?: boolean } => {
-  const atoms = useRecoilValueLoadable(waitForAny(ids?.map((id) => TelleryBlockAtom(id)) ?? []))
-  const [state, setState] = useState({})
-
-  useEffect(() => {
-    if (!ids || !ids.length) {
-      setState({})
-      return
-    }
-    switch (atoms.state) {
-      case 'hasValue':
-        setState({
-          data: atoms.contents.reduce((acc, atom) => {
-            if (atom.state === 'hasValue') {
-              const block = atom.contents
-              acc[block.id] = block
-            }
-            return acc
-          }, {} as { [key: string]: Editor.Block }),
+          }, {} as { [key: string]: Editor.BaseBlock }),
           isSuccess: true
         })
         break
@@ -428,7 +397,7 @@ export const useMgetUsers = (ids?: string[]): { data?: Record<string, User>; isS
   return state
 }
 
-export const useBlockSuspense = <T extends Editor.BaseBlock = Editor.Block>(id: string): T => {
+export const useBlockSuspense = <T extends Editor.BaseBlock = Editor.BaseBlock>(id: string): T => {
   const atom = useRecoilValue(TelleryBlockAtom(id))
 
   invariant(atom, 'atom is undefined')
@@ -436,7 +405,7 @@ export const useBlockSuspense = <T extends Editor.BaseBlock = Editor.Block>(id: 
   return atom as unknown as T
 }
 
-export const useBlock = <T extends Editor.BaseBlock = Editor.Block>(
+export const useBlock = <T extends Editor.BaseBlock = Editor.BaseBlock>(
   id: string
 ): { data?: T; error?: { statusCode?: number } } => {
   const atom = useRecoilValueLoadable(TelleryBlockAtom(id))
@@ -464,13 +433,29 @@ export const useBlock = <T extends Editor.BaseBlock = Editor.Block>(
   return state
 }
 
-export const useSnapshot = (id: string = '') => {
-  const workspace = useWorkspace()
+export const useSnapshot = (id: string | null = null) => {
+  const atom = useRecoilValue(TellerySnapshotAtom(id))
 
-  return useQuery<Snapshot>(['snapshot', id], () => fetchSnapshot(id, workspace.id), {
-    enabled: !!id,
-    keepPreviousData: true
-  })
+  return atom
+  // const workspace = useWorkspace()
+
+  // return useQuery<Snapshot>(['snapshot', id], () => fetchSnapshot(id, workspace.id), {
+  //   enabled: !!id,
+  //   keepPreviousData: true
+  // })
+}
+
+export const useGetSnapshot = () => {
+  // const snapshot = useSnapshot(block?.content?.snapshotId)
+  const getSnapshot = useRecoilCallback(
+    (recoilCallback) =>
+      async ({ snapshotId }: { snapshotId?: string }) => {
+        const snapshot = await recoilCallback.snapshot.getPromise(TellerySnapshotAtom(snapshotId ?? null))
+        return snapshot
+      },
+    []
+  )
+  return getSnapshot
 }
 
 export const useQuestionBackLinks = (id: string = '') => {
@@ -501,7 +486,7 @@ export const useQuestionDownstreams = (id?: string) => {
       compact(
         links?.backwardRefs
           ?.map(({ blockId }) => blocks?.[blockId])
-          .filter((block) => block && isQuestionLikeBlock(block.type))
+          .filter((block) => block && isDataAssetBlock(block.type))
       ),
     [blocks, links?.backwardRefs]
   )

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, RefObject } from 'react'
 import { throttle } from 'lodash'
 import { dequal } from 'dequal'
 

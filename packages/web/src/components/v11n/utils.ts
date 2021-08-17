@@ -1,8 +1,9 @@
+import i18n from '@app/i18n'
 import dayjs from 'dayjs'
 
 import { DisplayType } from './types'
 
-const numberFormat = Intl.NumberFormat([], { maximumFractionDigits: 17 })
+const numberFormat = Intl.NumberFormat(i18n.language, { maximumFractionDigits: 17 })
 
 export function formatDateTime(time: number | string | Date): string {
   return dayjs(time).format('YYYY-MM-DD HH:mm:ss')

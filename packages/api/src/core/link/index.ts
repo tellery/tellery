@@ -6,6 +6,7 @@ import { LinkType } from '../../types/link'
 import { isLinkToken, LinkToken, tag, Token } from '../../types/token'
 import { cascadeUpdateBlocks } from '../block'
 import { Entity } from '../common'
+import { extractPartialQueries } from '../translator'
 
 /**
  * inline reference token: ['any string', [['r', 's/b/q', 'nanoid']]]
@@ -42,11 +43,24 @@ export function getLinksFromToken(input: Token[]): Link[] {
   }
 }
 
+export function getLinksFromSql(input?: string): Link[] {
+  if (!input) {
+    return []
+  }
+  const partialQueries = extractPartialQueries(input)
+  const links = _.map(partialQueries, ({ blockId }) => ({
+    blockId,
+    type: LinkType.QUESTION,
+  }))
+  // extract questions it referred by transclusion from its sql
+  return _.uniqBy(links, 'blockId')
+}
+
 export async function updateSourceLinkAlive(
   manager: EntityManager,
   sourceBlockId: string,
   sourceAlive = true,
-) {
+): Promise<void> {
   const updateClause = createQueryBuilder(LinkEntity, 'links').update().set({ sourceAlive })
 
   await cascadeUpdateBlocks(manager, sourceBlockId, updateClause, 'sourceBlockId')
@@ -56,7 +70,7 @@ export async function updateTargetLinkAlive(
   manager: EntityManager,
   targetBlockId: string,
   targetAlive = true,
-) {
+): Promise<void> {
   const updateClause = createQueryBuilder(LinkEntity, 'links').update().set({ targetAlive })
 
   await cascadeUpdateBlocks(manager, targetBlockId, updateClause, 'targetBlockId')
@@ -65,7 +79,7 @@ export async function updateTargetLinkAlive(
 export async function loadLinkEntitiesByStoryIds(
   ids: string[],
   options: { loadAll?: boolean; manager?: EntityManager } = {},
-) {
+): Promise<LinkEntity[]> {
   const { loadAll, manager } = options
   const subQuery = loadAll ? '' : 'AND links.targetAlive = true AND links.sourceAlive = true'
   return (manager ? manager.getRepository(LinkEntity) : getRepository(LinkEntity))
@@ -80,7 +94,7 @@ export async function loadLinkEntitiesByStoryIds(
 export async function loadLinkEntitiesByBlockIds(
   ids: string[],
   options: { loadAll?: boolean; manager?: EntityManager } = {},
-) {
+): Promise<LinkEntity[]> {
   const { loadAll, manager } = options
   const subQuery = loadAll ? '' : 'AND links.targetAlive = true AND links.sourceAlive = true'
   return (manager ? manager.getRepository(LinkEntity) : getRepository(LinkEntity))

@@ -509,6 +509,7 @@ export const scatter: Chart<Type.SCATTER> = {
             cursor={false}
             wrapperStyle={{ zIndex: 9999999 }}
             isAnimationActive={false}
+            allowEscapeViewBox={{ x: false, y: true }}
             content={
               <CustomTooltip
                 displayTypes={displayTypes}

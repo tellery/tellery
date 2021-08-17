@@ -1,7 +1,3 @@
-import { useLoggedUser } from '@app/hooks/useAuth'
-import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
-import { useCommit } from '@app/hooks/useCommit'
-import { css, cx } from '@emotion/css'
 import {
   IconCommonCopy,
   IconCommonLock,
@@ -14,18 +10,22 @@ import FormSwitch from '@app/components/kit/FormSwitch'
 import { MenuItem } from '@app/components/MenuItem'
 import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { createTranscation } from '@app/context/editorTranscations'
-import copy from 'copy-to-clipboard'
-import dayjs from 'dayjs'
+import { env } from '@app/env'
 import { useOpenStory } from '@app/hooks'
 import { useUser } from '@app/hooks/api'
-import { nanoid } from 'nanoid'
+import { useLoggedUser } from '@app/hooks/useAuth'
+import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
+import { useCommit } from '@app/hooks/useCommit'
+import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
+import { ThemingVariables } from '@app/styles'
+import type { Permission, PermissionEntityRole, Story } from '@app/types'
+import { blockIdGenerator } from '@app/utils'
+import { css, cx } from '@emotion/css'
+import copy from 'copy-to-clipboard'
+import dayjs from 'dayjs'
 import React, { useCallback } from 'react'
 import { useHistory } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { ThemingVariables } from '@app/styles'
-import type { Permission, PermissionEntityRole, Story } from '@app/types'
-import { env } from '@app/env'
-import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 
 const upsertPermission = (permissions: Permission[], permission: Permission): Permission[] => {
   const filteredPermission = permissions.filter(
@@ -89,7 +89,7 @@ export const StoryConfigPopOver: React.FC<{
 
   const duplicateStoryHandler = useCallback(
     async (e) => {
-      const newStoryId = nanoid()
+      const newStoryId = blockIdGenerator()
       await blockTranscation.duplicateStory(story.id, newStoryId)
       openStory(newStoryId, { isAltKeyPressed: e.altKey })
       toast.success('Story copied')

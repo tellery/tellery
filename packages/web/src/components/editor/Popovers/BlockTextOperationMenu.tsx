@@ -1,11 +1,7 @@
-import { useWorkspace } from '@app/hooks/useWorkspace'
-import { useCommit } from '@app/hooks/useCommit'
-import { css } from '@emotion/css'
-import styled from '@emotion/styled'
-import Tippy from '@tippyjs/react'
 import { getStoriesByTitle } from '@app/api'
 import {
   IconCommonArrowDropDown,
+  IconCommonFormula,
   IconCommonLink,
   IconFontBold,
   IconFontCode,
@@ -36,22 +32,28 @@ import {
   splitToken,
   tokenPosition2SplitedTokenPosition
 } from '@app/components/editor/helpers/tokenManipulation'
-
 import { createTranscation } from '@app/context/editorTranscations'
-import { AnimatePresence, motion } from 'framer-motion'
 import { useBlockSuspense } from '@app/hooks/api'
-import invariant from 'tiny-invariant'
-import isHotkey from 'is-hotkey'
-import { nanoid } from 'nanoid'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { usePopper } from 'react-popper'
+import { useCommit } from '@app/hooks/useCommit'
+import { useStoryResources } from '@app/hooks/useStoryResources'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor, Story } from '@app/types'
+import { blockIdGenerator, DEFAULT_TITLE, TelleryGlyph } from '@app/utils'
+import { css } from '@emotion/css'
+import styled from '@emotion/styled'
+import Tippy from '@tippyjs/react'
+import { AnimatePresence, motion } from 'framer-motion'
+import isHotkey from 'is-hotkey'
+import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { usePopper } from 'react-popper'
+import invariant from 'tiny-invariant'
+import { isTextBlock } from '../Blocks/utils'
 import { EditorPopover } from '../EditorPopover'
 import { useEditor, useGetBlockTitleTextSnapshot } from '../hooks'
-import { isTextBlock } from '../Blocks/utils'
-import { TelleryGlyph } from '@app/utils'
+import { useVariable } from '../hooks/useVariable'
+
 const MARK_TYPES = Object.values(Editor.InlineType)
 
 export const BlockTextOperationMenu = (props: { currentBlockId: string | null }) => {
@@ -129,7 +131,7 @@ export const BlockTextOperationMenuInner = ({
   range: Range | null
   selectionString: string
 }) => {
-  const editor = useEditor<Editor.Block>()
+  const editor = useEditor<Editor.BaseBlock>()
   const currentBlock = useBlockSuspense(currentBlockId)
   const [modalRef, setModalRef] = useState<HTMLDivElement | null>(null)
   const [inlineEditing, setInlineEditing] = useState(false)
@@ -227,6 +229,7 @@ export const BlockTextOperationMenuInner = ({
   const snapshot = useBlockSnapshot()
   const getBlockTitle = useGetBlockTitleTextSnapshot()
   const commit = useCommit()
+
   const toggleReference = useCallback(async () => {
     if (!tokenRange || !currentBlock) {
       return
@@ -242,7 +245,7 @@ export const BlockTextOperationMenuInner = ({
           const uniqueMarks = removeMark(marks, Editor.InlineType.Reference)
           invariant(entity.reference, 'reference is null')
           const block = getBlockFromSnapshot(entity.reference[2] as string, snapshot)
-          const tokenText = entity.reference ? getBlockTitle(block) ?? ' ' : token[0]
+          const tokenText = entity.reference ? getBlockTitle(block) ?? DEFAULT_TITLE : token[0]
           if (uniqueMarks) {
             return [tokenText, uniqueMarks]
           } else {
@@ -259,7 +262,7 @@ export const BlockTextOperationMenuInner = ({
       let story = (await getStoriesByTitle({ title, workspaceId: workspace.id }))?.[0]
 
       if (!story) {
-        const id = nanoid()
+        const id = blockIdGenerator()
         // TODO: use create block factory
         story = {
           id: id,
@@ -307,6 +310,51 @@ export const BlockTextOperationMenuInner = ({
       }
     }
   }, [commit, currentBlock, editor, getBlockTitle, markdMap, selectionString, snapshot, tokenRange, workspace.id])
+
+  const editFormula = useCallback(
+    async (formula: string) => {
+      if (!tokenRange || !currentBlock) {
+        return
+      }
+      if (markdMap.get(Editor.InlineType.Formula)) {
+        const splitedTokens = splitToken(currentBlock?.content?.title || [])
+        const transformedTokens = applyTransformOnSplitedTokens(
+          splitedTokens,
+          tokenRange,
+          (token: Editor.Token): Editor.Token => {
+            const marks = token[1]
+            const entity = extractEntitiesFromToken(token)
+            const uniqueMarks = removeMark(marks, Editor.InlineType.Formula)
+            invariant(entity.fomula, 'reference is null')
+            const tokenText = entity.fomula[1] as string
+            if (uniqueMarks) {
+              return [tokenText, uniqueMarks]
+            } else {
+              return [tokenText]
+            }
+          }
+        )
+        const mergedTokens = mergeTokens(transformedTokens)
+        editor?.setBlockValue?.(currentBlock.id, (block) => {
+          block!.content!.title = mergedTokens
+        })
+      } else {
+        const splitedTokens = splitToken(currentBlock?.content?.title || [])
+        const transformedTokens = applyTransformOnSplitedTokens(splitedTokens, tokenRange, (): Editor.Token => {
+          const uniqueMarks = addMark([], Editor.InlineType.Formula, [formula])
+          return [TelleryGlyph.EQUATION, uniqueMarks]
+        })
+        const mergedTokens = mergeTokens([
+          ...transformedTokens.slice(0, tokenRange.start + 1),
+          ...transformedTokens.slice(tokenRange.end)
+        ])
+        editor?.setBlockValue?.(currentBlock.id, (block) => {
+          block!.content!.title = mergedTokens
+        })
+      }
+    },
+    [currentBlock, editor, markdMap, tokenRange]
+  )
 
   useEffect(() => {
     const onKeyDown = (e: globalThis.KeyboardEvent) => {
@@ -365,74 +413,6 @@ export const BlockTextOperationMenuInner = ({
     }
   }, [inlineEditing, markHandler, markdMap, selectedTokens, toggleReference])
 
-  const markButtons = useMemo(() => {
-    const buttons = [
-      {
-        type: Editor.InlineType.Bold,
-        icon: IconFontBold,
-        hoverContent: 'Bold',
-        onClick: () => markHandler(Editor.InlineType.Bold, [], !!markdMap.get(Editor.InlineType.Bold))
-      },
-      {
-        type: Editor.InlineType.Italic,
-        icon: IconFontItalic,
-        hoverContent: 'Italic',
-        onClick: () => markHandler(Editor.InlineType.Italic, [], !!markdMap.get(Editor.InlineType.Italic))
-      },
-      {
-        type: Editor.InlineType.Underline,
-        icon: IconFontUnderline,
-        hoverContent: 'Underline',
-        onClick: () => markHandler(Editor.InlineType.Underline, [], !!markdMap.get(Editor.InlineType.Underline))
-      },
-      {
-        type: Editor.InlineType.Strike,
-        icon: IconFontStrikethrough,
-        hoverContent: 'Strike-through',
-        onClick: () => markHandler(Editor.InlineType.Strike, [], !!markdMap.get(Editor.InlineType.Strike))
-      },
-      {
-        type: Editor.InlineType.Code,
-        icon: IconFontCode,
-        hoverContent: 'Inline code',
-        onClick: () => markHandler(Editor.InlineType.Code, [], !!markdMap.get(Editor.InlineType.Code))
-      },
-      {
-        type: Editor.InlineType.Reference,
-        icon: IconFontStory,
-        hoverContent: 'Reference story',
-        onClick: toggleReference
-      },
-      { type: 'DIVIDER' },
-      {
-        type: Editor.InlineType.Hightlighted,
-        icon: IconFontColor,
-        hoverContent: 'Highlight',
-        onClick: () => markHandler(Editor.InlineType.Hightlighted, [], !!markdMap.get(Editor.InlineType.Hightlighted))
-      }
-    ]
-
-    return buttons.map((button, index) => {
-      if (button.type === 'DIVIDER') {
-        return <VerticalDivider key={index} />
-      }
-      return (
-        <Tippy
-          key={button.type}
-          content={button.hoverContent}
-          hideOnClick={false}
-          animation="fade"
-          duration={150}
-          arrow={false}
-        >
-          <OperationButton active={markdMap.get(button.type as Editor.InlineType)} onClick={button.onClick}>
-            {button.icon!({ color: ThemingVariables.colors.text[0] })}
-          </OperationButton>
-        </Tippy>
-      )
-    })
-  }, [markHandler, markdMap, toggleReference])
-
   return (
     <div
       {...pop.attributes.popper}
@@ -480,12 +460,86 @@ export const BlockTextOperationMenuInner = ({
         />
         <VerticalDivider />
         <AddLinkOperation setInlineEditing={setInlineEditing} markHandler={markHandler} referenceRange={range} />
-
         <VerticalDivider />
-        {markButtons}
+        <OperationButtonWithHoverContent
+          type={Editor.InlineType.Bold}
+          hoverContent="Bold"
+          onClick={() => markHandler(Editor.InlineType.Bold, [], !!markdMap.get(Editor.InlineType.Bold))}
+          active={!!markdMap.get(Editor.InlineType.Bold)}
+          icon={IconFontBold}
+        />
+        <OperationButtonWithHoverContent
+          type={Editor.InlineType.Italic}
+          hoverContent="Italic"
+          onClick={() => markHandler(Editor.InlineType.Italic, [], !!markdMap.get(Editor.InlineType.Italic))}
+          active={!!markdMap.get(Editor.InlineType.Italic)}
+          icon={IconFontItalic}
+        />
+        <OperationButtonWithHoverContent
+          type={Editor.InlineType.Underline}
+          hoverContent="Underline"
+          onClick={() => markHandler(Editor.InlineType.Underline, [], !!markdMap.get(Editor.InlineType.Underline))}
+          active={!!markdMap.get(Editor.InlineType.Underline)}
+          icon={IconFontUnderline}
+        />
+        <OperationButtonWithHoverContent
+          type={Editor.InlineType.Strike}
+          hoverContent="Strike-through"
+          onClick={() => markHandler(Editor.InlineType.Strike, [], !!markdMap.get(Editor.InlineType.Strike))}
+          active={!!markdMap.get(Editor.InlineType.Strike)}
+          icon={IconFontStrikethrough}
+        />
+        <OperationButtonWithHoverContent
+          type={Editor.InlineType.Code}
+          hoverContent="Inline code"
+          onClick={() => markHandler(Editor.InlineType.Code, [], !!markdMap.get(Editor.InlineType.Code))}
+          active={!!markdMap.get(Editor.InlineType.Code)}
+          icon={IconFontCode}
+        />
+        <OperationButtonWithHoverContent
+          type={Editor.InlineType.Reference}
+          hoverContent="Reference story"
+          onClick={toggleReference}
+          active={!!markdMap.get(Editor.InlineType.Reference)}
+          icon={IconFontStory}
+        />
         <VerticalDivider />
+        <InlineFormulaPopover
+          setInlineEditing={setInlineEditing}
+          editHandler={editFormula}
+          referenceRange={range}
+          storyId={currentBlock.storyId!}
+        />
+        {/* <InlineEquationPopover setInlineEditing={setInlineEditing} markHandler={markHandler} referenceRange={range} /> */}
+        <OperationButtonWithHoverContent
+          type={Editor.InlineType.Hightlighted}
+          hoverContent="Highlight"
+          onClick={() =>
+            markHandler(Editor.InlineType.Hightlighted, [], !!markdMap.get(Editor.InlineType.Hightlighted))
+          }
+          active={!!markdMap.get(Editor.InlineType.Hightlighted)}
+          icon={IconFontColor}
+        />
       </motion.div>
     </div>
+  )
+}
+
+const OperationButtonWithHoverContent: React.FC<{
+  type: string
+  hoverContent: ReactNode
+  onClick: () => void
+  icon: React.ForwardRefExoticComponent<React.SVGAttributes<SVGElement>>
+  active: boolean
+}> = ({ type, hoverContent, onClick, active, icon }) => {
+  return (
+    <>
+      <Tippy key={type} content={hoverContent} hideOnClick={false} animation="fade" duration={150} arrow={false}>
+        <OperationButton active={active} onClick={onClick}>
+          {icon({ color: ThemingVariables.colors.text[0] })}
+        </OperationButton>
+      </Tippy>
+    </>
   )
 }
 
@@ -678,16 +732,6 @@ const AddLinkOperation = (props: {
           props.setInlineEditing(true)
         }}
       >
-        {/* <OperationButton
-              active={markdMap.get(Editor.InlineType.Link)}
-              onClick={() => {
-                markHandler(
-                  Editor.InlineType.Link,
-                  ['https://wwww.google.com.hk'],
-                  !!markdMap.get(Editor.InlineType.Link)
-                )
-              }}
-            > */}
         <IconCommonLink
           color={ThemingVariables.colors.text[0]}
           className={css`
@@ -764,6 +808,295 @@ const AddLinkOperation = (props: {
             ></input>
           </div>
         </div>
+      </EditorPopover>
+    </>
+  )
+}
+
+const InlineEquationPopover = (props: {
+  markHandler: (type: Editor.InlineType, links: string[], isFirstLink: boolean) => void
+  setInlineEditing: (editing: boolean) => void
+  referenceRange: Range | null
+}) => {
+  const [open, setOpen] = useState(false)
+  const [link, setLink] = useState('')
+  const inputRef = useRef<HTMLInputElement | null>(null)
+  const editor = useEditor()
+
+  useEffect(() => {
+    if (!open) {
+      props.setInlineEditing(false)
+    } else {
+      inputRef.current?.focus()
+    }
+  }, [open, props])
+
+  return (
+    <>
+      <OperationButtonWithHoverContent
+        active={false}
+        icon={IconFontCode}
+        hoverContent="Inline equation"
+        type={Editor.InlineType.Equation}
+        onClick={() => {
+          setOpen(true)
+          props.setInlineEditing(true)
+        }}
+      />
+      <EditorPopover referenceElement={props.referenceRange} open={open} setOpen={setOpen} disableClickThrough>
+        <div
+          className={css`
+            background: ${ThemingVariables.colors.gray[5]};
+            box-shadow: ${ThemingVariables.boxShadows[0]};
+            border-radius: 8px;
+            overflow: hidden;
+            user-select: none;
+            padding: 10px 10px;
+          `}
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+          }}
+        >
+          <div
+            className={css`
+              font-size: 14px;
+              color: ${ThemingVariables.colors.gray[1]};
+              background: ${ThemingVariables.colors.gray[5]};
+              border: 1px solid ${ThemingVariables.colors.gray[1]};
+              box-sizing: border-box;
+              font-size: 14px;
+              line-height: 17px;
+              color: ${ThemingVariables.colors.text[1]};
+            `}
+          >
+            <input
+              className={css`
+                outline: none;
+                border: none;
+                padding: 10px 10px;
+                user-select: none;
+              `}
+              onPaste={(e) => {
+                e.stopPropagation()
+              }}
+              ref={inputRef}
+              onSelect={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+              }}
+              placeholder="Input an equation"
+              onInput={(e) => {
+                setLink(e.currentTarget.value)
+              }}
+              onKeyDown={(e) => {
+                e.stopPropagation()
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  props.markHandler(Editor.InlineType.Equation, [link], link.length === 0)
+                  props.setInlineEditing(false)
+                  editor?.setSelectionState((state) => {
+                    if (state?.type === TellerySelectionType.Inline) {
+                      return {
+                        ...state,
+                        anchor: state.focus
+                      }
+                    }
+                    return state
+                  })
+                  setOpen(false)
+                }
+              }}
+            ></input>
+          </div>
+        </div>
+      </EditorPopover>
+    </>
+  )
+}
+
+const FormulaResultRenderer: React.FC<{ storyId: string; formula: string }> = ({ storyId, formula }) => {
+  const variableValue = useVariable(storyId, formula)
+  if (typeof variableValue === 'number') {
+    return <>{variableValue}</>
+  } else if (typeof variableValue === 'string') {
+    return <>{variableValue}</>
+  } else {
+    return <>{JSON.stringify(variableValue)}</>
+  }
+}
+
+const InlineFormulaInput: React.FC<{
+  storyId: string
+  editHandler: (formula: string) => void
+  setOpen: (open: boolean) => void
+}> = ({ storyId, editHandler, setOpen }) => {
+  const currentResources = useStoryResources(storyId)
+  const inputRef = useRef<HTMLTextAreaElement | null>(null)
+  const [formula, setFormula] = useState('')
+  const editor = useEditor()
+
+  useEffect(() => {
+    inputRef.current?.focus()
+  }, [])
+
+  const getBlockTitle = useGetBlockTitleTextSnapshot()
+
+  return (
+    <>
+      <div
+        className={css`
+          background: ${ThemingVariables.colors.gray[5]};
+          box-shadow: ${ThemingVariables.boxShadows[0]};
+          border-radius: 8px;
+          overflow: hidden;
+          user-select: none;
+          padding: 10px 10px;
+          color: ${ThemingVariables.colors.text[1]};
+        `}
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+        }}
+      >
+        <div
+          className={css`
+            font-size: 14px;
+            color: ${ThemingVariables.colors.gray[1]};
+            background: ${ThemingVariables.colors.gray[5]};
+            box-sizing: border-box;
+            font-size: 14px;
+            line-height: 17px;
+            color: ${ThemingVariables.colors.text[1]};
+            width: 420px;
+          `}
+        >
+          <textarea
+            className={css`
+              outline: none;
+              border: none;
+              padding: 10px 10px;
+              user-select: none;
+              resize: none;
+              min-height: 50px;
+              width: 100%;
+            `}
+            onPaste={(e) => {
+              e.stopPropagation()
+            }}
+            ref={inputRef}
+            onSelect={(e) => {
+              // e.preventDefault()
+              e.stopPropagation()
+            }}
+            placeholder="Input an formula"
+            onInput={(e) => {
+              setFormula(e.currentTarget.value)
+              // setLink(e.currentTarget.value)
+            }}
+            onKeyDown={(e) => {
+              e.stopPropagation()
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                editHandler(formula)
+                editor?.setSelectionState((state) => {
+                  if (state?.type === TellerySelectionType.Inline) {
+                    return {
+                      ...state,
+                      anchor: state.focus
+                    }
+                  }
+                  return state
+                })
+                setOpen(false)
+              }
+            }}
+          ></textarea>
+          <div
+            className={css`
+              background-color: ${ThemingVariables.colors.primary[5]};
+              padding: 10px;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+              width: 100%;
+            `}
+          >
+            =
+            <React.Suspense fallback={<div></div>}>
+              <FormulaResultRenderer storyId={storyId} formula={formula} />
+            </React.Suspense>
+          </div>
+        </div>
+        <div
+          className={css`
+            margin-top: 12px;
+            > * + * {
+              margin-top: 5px;
+            }
+            max-height: 200px;
+            overflow-y: auto;
+          `}
+        >
+          <div
+            className={css`
+              font-size: 12px;
+              color: ${ThemingVariables.colors.text[2]};
+            `}
+          >
+            Data Assets
+          </div>
+          {currentResources.map((resource) => (
+            <div
+              key={resource.id}
+              className={css`
+                cursor: pointer;
+                padding: 5px;
+                :hover {
+                  background-color: ${ThemingVariables.colors.primary[4]};
+                }
+              `}
+              onClick={(e) => {
+                e.preventDefault()
+                document.execCommand('insertText', false, `{{${resource.id}}}[1,1]`)
+              }}
+            >
+              {getBlockTitle(resource)}
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  )
+}
+
+const InlineFormulaPopover = (props: {
+  setInlineEditing: (editing: boolean) => void
+  referenceRange: Range | null
+  editHandler: (formula: string) => void
+  storyId: string
+}) => {
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    if (!open) {
+      props.setInlineEditing(false)
+    }
+  }, [open, props])
+  return (
+    <>
+      <OperationButtonWithHoverContent
+        active={false}
+        icon={IconCommonFormula}
+        hoverContent="Inline formula"
+        type={Editor.InlineType.Variable}
+        onClick={() => {
+          setOpen(true)
+          props.setInlineEditing(true)
+        }}
+      />
+      <EditorPopover referenceElement={props.referenceRange} open={open} setOpen={setOpen} disableClickThrough>
+        <InlineFormulaInput storyId={props.storyId} editHandler={props.editHandler} setOpen={setOpen} />
       </EditorPopover>
     </>
   )

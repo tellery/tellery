@@ -1,7 +1,7 @@
 import { BlockType } from '../../types/block'
-import { QuestionBlock } from './question'
+import { SqlBlock } from './sql'
 
-export class MetricBlock extends QuestionBlock {
+export class MetricBlock extends SqlBlock {
   static type = BlockType.METRIC
 
   getType(): BlockType {
