@@ -20,6 +20,7 @@ import FormLabel from './kit/FormLabel'
 import IconButton from './kit/IconButton'
 import { toast } from 'react-toastify'
 import Tippy from '@tippyjs/react'
+import { useLoggedUser } from '@app/hooks/useAuth'
 
 enum Integration {
   DBT = 'DBT'
@@ -38,6 +39,9 @@ export function WorkspaceIntegrations() {
     () => profiles?.find((p) => p.name === workspace?.preferences.profile),
     [profiles, workspace?.preferences.profile]
   )
+  const user = useLoggedUser()
+  const me = useMemo(() => workspace?.members.find(({ userId }) => userId === user.id), [user.id, workspace?.members])
+  const disabled = me?.role !== 'admin'
 
   return connector ? (
     <div
@@ -97,6 +101,7 @@ export function WorkspaceIntegrations() {
               <IconButton
                 icon={IconCommonArrowRight}
                 color={ThemingVariables.colors.gray[0]}
+                disabled={disabled}
                 onClick={() => {
                   setIntegration(Integration.DBT)
                 }}
@@ -104,6 +109,7 @@ export function WorkspaceIntegrations() {
             ) : (
               <FormButton
                 variant="primary"
+                disabled={disabled}
                 onClick={() => {
                   setIntegration(Integration.DBT)
                 }}
