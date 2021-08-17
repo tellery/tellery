@@ -494,6 +494,13 @@ const QuestionBlockHeader: React.FC<{
             </Link>
           </Tippy>
         )}
+        {dataAssetBlock.type === Editor.BlockType.SnapshotBlock && (
+          <IconCommonLock
+            className={css`
+              margin-right: 5px;
+            `}
+          />
+        )}
         <div
           className={css`
             display: flex;
