@@ -850,6 +850,19 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
         ),
       [groups, props.config.shapes]
     )
+    const padding = useMemo(() => {
+      if (groups.left?.shape === ComboShape.BAR || groups.right?.shape === ComboShape.BAR) {
+        const barsCount =
+          (groups.left?.stackType === ComboStack.NONE && groups.left?.shape === ComboShape.BAR
+            ? props.config.shapes.filter((group) => group.groupId === 'left').length
+            : 0) +
+          (groups.right?.stackType === ComboStack.NONE && groups.right?.shape === ComboShape.BAR
+            ? props.config.shapes.filter((group) => group.groupId === 'right').length
+            : 0)
+        return barsCount === 1 ? 'gap' : { left: barsCount * 5, right: barsCount * 5 }
+      }
+      return undefined
+    }, [groups.left, groups.right, props.config.shapes])
 
     return (
       <ResponsiveContainer>
@@ -895,9 +908,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
             }
             stroke={ThemingVariables.colors.text[1]}
             tickFormatter={(tick) => formatRecord(tick, xDisplayType)}
-            padding={
-              groups.left?.shape === ComboShape.BAR || groups.right?.shape === ComboShape.BAR ? 'gap' : undefined
-            }
+            padding={padding}
             type={
               props.config.xType === 'linear'
                 ? 'number'
