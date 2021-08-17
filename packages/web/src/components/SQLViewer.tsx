@@ -1,4 +1,4 @@
-import { IconCommonDbt, IconCommonQuestion } from '@app/assets/icons'
+import { IconCommonDbt, IconCommonSql } from '@app/assets/icons'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useMgetBlocks } from '@app/hooks/api'
 import { transclusionRegex } from '@app/hooks/useSqlEditor'
@@ -168,7 +168,7 @@ function TransclusionContentWidget(props: { blockId: string; value: Editor.SQLBl
             padding: 0 5px 0 23px;
             color: ${ThemingVariables.colors.text[0]};
             background-color: ${ThemingVariables.colors.primary[4]};
-            background-image: ${SVG2DataURI(isDBT ? IconCommonDbt : IconCommonQuestion)};
+            background-image: ${SVG2DataURI(isDBT ? IconCommonDbt : IconCommonSql)};
             background-size: 16px;
             background-repeat: no-repeat;
             background-position: 5px 50%;
