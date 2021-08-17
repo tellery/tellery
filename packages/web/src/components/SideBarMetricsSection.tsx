@@ -1,4 +1,4 @@
-import { IconCommonBackLink, IconCommonMetrics, IconCommonQuestion, IconVisualizationTable } from '@app/assets/icons'
+import { IconCommonBackLink, IconCommonMetrics, IconCommonQuestion, IconCommonSql } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useOpenStory } from '@app/hooks'
 import { useBlockSuspense, useSearchDBTBlocks, useSearchMetrics } from '@app/hooks/api'
@@ -75,7 +75,7 @@ const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ bl
       }}
     >
       {block.type === Editor.BlockType.SQL || block.type === Editor.BlockType.SnapshotBlock ? (
-        <IconVisualizationTable
+        <IconCommonSql
           color={ThemingVariables.colors.gray[0]}
           className={css`
             flex-shrink: 0;
