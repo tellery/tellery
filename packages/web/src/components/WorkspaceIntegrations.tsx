@@ -1,4 +1,4 @@
-import { IconCommonArrowLeft } from '@app/assets/icons'
+import { IconCommonArrowLeft, IconCommonArrowRight } from '@app/assets/icons'
 import {
   useConnectorsList,
   useConnectorsListProfiles,
@@ -62,22 +62,55 @@ export function WorkspaceIntegrations() {
           >
             Integrations
           </h2>
-          <h3
+          <div
             className={css`
-              margin: 0;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
             `}
           >
-            DBT
-          </h3>
-          <p>Use dbt and tellery to manage your data model</p>
-          <FormButton
-            variant={profile?.configs['Public Key'] ? 'secondary' : 'primary'}
-            onClick={() => {
-              setIntegration(Integration.DBT)
-            }}
-          >
-            {profile?.configs['Public Key'] ? 'View' : 'Connect'}
-          </FormButton>
+            <div>
+              <h3
+                className={css`
+                  margin: 4px 0 0 0;
+                  font-weight: 500;
+                  font-size: 14px;
+                  line-height: 17px;
+                  color: ${ThemingVariables.colors.text[0]};
+                `}
+              >
+                dbt
+              </h3>
+              <p
+                className={css`
+                  margin: 5px 0 0 0;
+                  font-size: 12px;
+                  line-height: 14px;
+                  color: ${ThemingVariables.colors.text[1]};
+                `}
+              >
+                Use dbt and tellery to manage your data model
+              </p>
+            </div>
+            {profile?.configs['Public Key'] ? (
+              <IconButton
+                icon={IconCommonArrowRight}
+                color={ThemingVariables.colors.gray[0]}
+                onClick={() => {
+                  setIntegration(Integration.DBT)
+                }}
+              />
+            ) : (
+              <FormButton
+                variant="primary"
+                onClick={() => {
+                  setIntegration(Integration.DBT)
+                }}
+              >
+                Connect
+              </FormButton>
+            )}
+          </div>
         </div>
       )}
       {integration === Integration.DBT ? (
@@ -123,7 +156,13 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
   const handlePushRepo = usePushRepo(props.connectorId, profile?.name)
 
   return (
-    <>
+    <div
+      className={css`
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      `}
+    >
       <div
         className={css`
           display: flex;
@@ -150,33 +189,14 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
             color: ${ThemingVariables.colors.text[0]};
           `}
         >
-          DBT
+          dbt
         </h2>
-        {profile?.configs['Public Key'] ? (
-          <span
-            className={css`
-              float: right;
-              font-weight: 600;
-              font-size: 14px;
-              line-height: 16px;
-              color: ${ThemingVariables.colors.primary[1]};
-              cursor: pointer;
-            `}
-            onClick={() => {
-              if (confirm('Revoke DBT?')) {
-                handleRevokeKeyPair.execute()
-              }
-            }}
-          >
-            Revoke
-          </span>
-        ) : null}
       </div>
       <FormLabel>Project name</FormLabel>
       <FormInput {...register('configs.Dbt Project Name')} disabled={!!profile?.configs['Dbt Project Name']} />
       <FormLabel
         className={css`
-          margin-top: 16px;
+          margin-top: 20px;
         `}
       >
         Git url
@@ -186,23 +206,50 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
         <>
           <FormLabel
             className={css`
-              margin-top: 16px;
+              margin-top: 20px;
             `}
           >
             Public key
           </FormLabel>
-          <FormInput {...register('configs.Public Key')} disabled={!!profile?.configs['Public Key']} />
           <div
             className={css`
-              margin-top: 16px;
+              display: flex;
+            `}
+          >
+            <FormInput {...register('configs.Public Key')} disabled={!!profile?.configs['Public Key']} />
+            <FormButton
+              variant="secondary"
+              disabled={!profile?.configs['Public Key']}
+              onClick={() => {
+                if (profile?.configs['Public Key']) {
+                  copy(profile.configs['Public Key'] as string)
+                  toast.success('Public key copied')
+                }
+              }}
+              className={css`
+                margin-left: 10px;
+                width: 80px;
+              `}
+            >
+              Copy
+            </FormButton>
+          </div>
+          <div
+            className={css`
+              flex: 1;
+            `}
+          />
+          <div
+            className={css`
+              width: 100%;
               display: flex;
             `}
           >
             <FormButton
-              variant="secondary"
+              variant="primary"
               className={css`
                 margin-right: 16px;
-                width: 70px;
+                flex: 1;
               `}
               onClick={handlePushRepo.execute}
               loading={handlePushRepo.status === 'pending'}
@@ -211,10 +258,10 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
               Push
             </FormButton>
             <FormButton
-              variant="secondary"
+              variant="primary"
               className={css`
                 margin-right: 16px;
-                width: 70px;
+                flex: 1;
               `}
               onClick={handlePullRepo.execute}
               loading={handlePullRepo.status === 'pending'}
@@ -222,37 +269,38 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
             >
               Pull
             </FormButton>
-            <div
-              className={css`
-                flex: 1;
-              `}
-            />
             <FormButton
-              variant="primary"
-              disabled={!profile?.configs['Public Key']}
+              variant="danger"
+              className={css`
+                width: 80px;
+              `}
+              disabled={handlePushRepo.status === 'pending'}
               onClick={() => {
-                if (profile?.configs['Public Key']) {
-                  copy(profile.configs['Public Key'] as string)
-                  toast.success('Public key copied')
+                if (confirm('Revoke dbt?')) {
+                  handleRevokeKeyPair.execute()
                 }
               }}
             >
-              Copy public key
+              Revoke
             </FormButton>
           </div>
         </>
       ) : (
-        <FormButton
-          variant="primary"
-          onClick={handleGenerateKeyPair.execute}
-          loading={handleGenerateKeyPair.status === 'pending'}
-          className={css`
-            margin-top: 16px;
-          `}
-        >
-          Compile
-        </FormButton>
+        <>
+          <div
+            className={css`
+              flex: 1;
+            `}
+          />
+          <FormButton
+            variant="primary"
+            onClick={handleGenerateKeyPair.execute}
+            loading={handleGenerateKeyPair.status === 'pending'}
+          >
+            Compile
+          </FormButton>
+        </>
       )}
-    </>
+    </div>
   )
 }
