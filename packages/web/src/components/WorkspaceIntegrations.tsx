@@ -19,6 +19,7 @@ import FormInput from './kit/FormInput'
 import FormLabel from './kit/FormLabel'
 import IconButton from './kit/IconButton'
 import { toast } from 'react-toastify'
+import Tippy from '@tippyjs/react'
 
 enum Integration {
   DBT = 'DBT'
@@ -194,14 +195,36 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
       </div>
       <FormLabel>Project name</FormLabel>
       <FormInput {...register('configs.Dbt Project Name')} disabled={!!profile?.configs['Dbt Project Name']} />
+      <span
+        className={css`
+          font-size: 12px;
+          line-height: 14px;
+          color: ${ThemingVariables.colors.text[2]};
+          margin-top: 5px;
+          display: block;
+        `}
+      >
+        The name needs to be the same as the dbt project name.
+      </span>
       <FormLabel
         className={css`
           margin-top: 20px;
         `}
       >
-        Git url
+        Git URL
       </FormLabel>
       <FormInput {...register('configs.Git Url')} disabled={!!profile?.configs['Git Url']} />
+      <span
+        className={css`
+          font-size: 12px;
+          line-height: 14px;
+          color: ${ThemingVariables.colors.text[2]};
+          margin-top: 5px;
+          display: block;
+        `}
+      >
+        Use the SSH version of your Git URL(beginning with git@).
+      </span>
       {profile?.configs['Public Key'] ? (
         <>
           <FormLabel
@@ -229,50 +252,91 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
               className={css`
                 margin-left: 10px;
                 width: 80px;
+                flex-shrink: 0;
               `}
             >
               Copy
             </FormButton>
           </div>
+          <span
+            className={css`
+              font-size: 12px;
+              line-height: 14px;
+              color: ${ThemingVariables.colors.text[2]};
+              margin-top: 5px;
+              display: block;
+            `}
+          >
+            Please copy the key to the “Deploy keys” in the github repository of this project.
+          </span>
           <div
             className={css`
               flex: 1;
             `}
           />
+          <span
+            className={css`
+              font-size: 12px;
+              line-height: 14px;
+              color: ${ThemingVariables.colors.text[2]};
+              margin-bottom: 10px;
+              display: block;
+            `}
+          >
+            🔴 Because the version is not a stable dbt version, you should merge PR after push immediately to avoid
+            conflicts.
+          </span>
           <div
             className={css`
               width: 100%;
               display: flex;
             `}
           >
-            <FormButton
-              variant="primary"
-              className={css`
-                margin-right: 16px;
-                flex: 1;
-              `}
-              onClick={handlePushRepo.execute}
-              loading={handlePushRepo.status === 'pending'}
-              disabled={handlePullRepo.status === 'pending'}
-            >
-              Push
-            </FormButton>
-            <FormButton
-              variant="primary"
-              className={css`
-                margin-right: 16px;
-                flex: 1;
-              `}
-              onClick={handlePullRepo.execute}
-              loading={handlePullRepo.status === 'pending'}
-              disabled={handlePushRepo.status === 'pending'}
-            >
-              Pull
-            </FormButton>
+            <Tippy content="Tellery will checkout a new branch, commit all new changes, and then push it to remote, so you are in a new branch after clicking the push button.">
+              <div
+                className={css`
+                  margin-right: 16px;
+                  flex: 1;
+                `}
+              >
+                <FormButton
+                  variant="primary"
+                  className={css`
+                    width: 100%;
+                  `}
+                  onClick={handlePushRepo.execute}
+                  loading={handlePushRepo.status === 'pending'}
+                  disabled={handlePullRepo.status === 'pending'}
+                >
+                  Push
+                </FormButton>
+              </div>
+            </Tippy>
+            <Tippy content="Check out the master branch and pull all new changes.">
+              <div
+                className={css`
+                  margin-right: 16px;
+                  flex: 1;
+                `}
+              >
+                <FormButton
+                  variant="primary"
+                  className={css`
+                    width: 100%;
+                  `}
+                  onClick={handlePullRepo.execute}
+                  loading={handlePullRepo.status === 'pending'}
+                  disabled={handlePushRepo.status === 'pending'}
+                >
+                  Pull
+                </FormButton>
+              </div>
+            </Tippy>
             <FormButton
               variant="danger"
               className={css`
                 width: 80px;
+                flex-shrink: 0;
               `}
               disabled={handlePushRepo.status === 'pending'}
               onClick={() => {
