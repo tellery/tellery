@@ -104,9 +104,9 @@ export const useBlockFormat = (block: Editor.Block) => {
         // invariant(typeof heightValue === 'number' && typeof widthValue === 'number', 'height or width invalid')
         logger('resize end', 'width', rect.width, 'parentWidth', parentWidth, 'height', rect.height)
         const newWidth = Math.max(rect.width / parentWidth, 1 / 6)
-        draftBlock.format.width = newWidth
+        draftBlock.format.width = Math.fround(newWidth)
         if (keepAspectRatio === false) {
-          draftBlock.format.aspectRatio = Math.max(rect.width / rect.height, 0.5)
+          draftBlock.format.aspectRatio = Math.fround(Math.max(rect.width / rect.height, 0.5))
         }
 
         logger(draftBlock.format.width, draftBlock.format.aspectRatio)

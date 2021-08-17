@@ -1002,6 +1002,7 @@ const _StoryEditor: React.FC<{
       setSelectionAtBlockStart,
       locked,
       deleteBackward,
+      getBlockLocalPreferences,
       createFirstOrLastBlockHandler,
       snapshot,
       toggleBlocksIndention,

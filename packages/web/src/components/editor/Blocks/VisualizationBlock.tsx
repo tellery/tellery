@@ -73,6 +73,7 @@ import { DEFAULT_QUESTION_BLOCK_ASPECT_RATIO, DEFAULT_QUESTION_BLOCK_WIDTH } fro
 import { BlockComponent, isExecuteableBlockType, registerBlock } from './utils'
 
 const FOOTER_HEIGHT = 20
+const BORDER_WIDTH = 4
 
 const rotateAnimation = keyframes`
   0% {
@@ -300,15 +301,17 @@ const VisualizationBlockContent: React.FC<{
         className={css`
           position: relative;
           display: inline-block;
-          width: 100%;
+          width: calc(100% + ${2 * BORDER_WIDTH + 2}px);
           min-height: 100px;
+          left: -${BORDER_WIDTH + 1}px;
         `}
+        ref={contentRef}
         onClick={() => {
           setTitleEditing(false)
         }}
       >
         <React.Suspense fallback={<BlockingUI blocking />}>
-          <QuestionBlockBody ref={contentRef} snapshotId={snapshotId} visualization={visualization} />
+          <QuestionBlockBody snapshotId={snapshotId} visualization={visualization} />
         </React.Suspense>
         {readonly === false && (
           <BlockResizer
@@ -1052,7 +1055,7 @@ const QuestionsBlockContainer = css`
   align-self: center;
   background-color: ${ThemingVariables.colors.gray[4]};
   border-radius: 20px;
-  border: 4px solid transparent;
+  border: ${BORDER_WIDTH}px solid transparent;
   :focus-within {
     border-color: ${ThemingVariables.colors.primary[3]};
     outline: none;
