@@ -63,7 +63,6 @@ export const _EditorPopoverContent = (props: PopoverProps) => {
   return createPortal(
     <div
       onClick={(e) => {
-        e.stopPropagation()
         props.setOpen(false)
       }}
       key="modal"
@@ -87,21 +86,12 @@ export const _EditorPopoverContent = (props: PopoverProps) => {
             pointer-events: auto;
           `
       )}
-      onMouseDown={(e) => {
-        e.stopPropagation()
-      }}
     >
       <div
         ref={setModalRef}
         {...pop.attributes.popper}
         style={pop.styles.popper as React.CSSProperties}
         onClick={(e) => {
-          e.stopPropagation()
-        }}
-        onMouseDown={(e) => {
-          e.stopPropagation()
-        }}
-        onTouchStart={(e) => {
           e.stopPropagation()
         }}
       >
