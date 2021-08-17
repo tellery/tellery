@@ -189,7 +189,7 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
             color: ${ThemingVariables.colors.text[0]};
           `}
         >
-          DBT
+          dbt
         </h2>
       </div>
       <FormLabel>Project name</FormLabel>
@@ -276,7 +276,7 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
               `}
               disabled={handlePushRepo.status === 'pending'}
               onClick={() => {
-                if (confirm('Revoke DBT?')) {
+                if (confirm('Revoke dbt?')) {
                   handleRevokeKeyPair.execute()
                 }
               }}
@@ -286,16 +286,20 @@ function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
           </div>
         </>
       ) : (
-        <FormButton
-          variant="primary"
-          onClick={handleGenerateKeyPair.execute}
-          loading={handleGenerateKeyPair.status === 'pending'}
-          className={css`
-            margin-top: 20px;
-          `}
-        >
-          Compile
-        </FormButton>
+        <>
+          <div
+            className={css`
+              flex: 1;
+            `}
+          />
+          <FormButton
+            variant="primary"
+            onClick={handleGenerateKeyPair.execute}
+            loading={handleGenerateKeyPair.status === 'pending'}
+          >
+            Compile
+          </FormButton>
+        </>
       )}
     </div>
   )
