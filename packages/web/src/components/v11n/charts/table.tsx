@@ -242,6 +242,7 @@ export const table: Chart<Type.TABLE> = {
                             text-overflow: ellipsis;
                             overflow: hidden;
                             max-width: 400px;
+                            font-variant-numeric: tabular-nums;
                           `,
                           record[column.order] === null
                             ? css`
