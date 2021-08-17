@@ -1,6 +1,7 @@
 import { IconCommonAdd, IconCommonArrowDropDown, IconCommonClose } from '@app/assets/icons'
 import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 import { useCrossFilter, useDataRecords } from '@app/hooks/useDataRecords'
+import i18n from '@app/i18n'
 import { SVG2DataURI } from '@app/lib/svg'
 import { TelleryThemeLight, ThemingVariables } from '@app/styles'
 import { blockIdGenerator } from '@app/utils'
@@ -49,7 +50,7 @@ enum Tab {
   AXIS = 'Axis'
 }
 
-const numberformat = new Intl.NumberFormat([], { maximumFractionDigits: 2 })
+const numberformat = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 2 })
 
 const scaleTypes = ['auto', 'linear', 'pow', 'sqrt', 'log']
 
