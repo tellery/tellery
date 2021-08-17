@@ -13,7 +13,6 @@ import {
   IconMenuToggleList,
   IconMenuUpload
 } from '@app/assets/icons'
-import { useHover } from '@app/hooks'
 import { useBlockSuspense } from '@app/hooks/api'
 import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
 import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
@@ -21,7 +20,7 @@ import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
 import debug from 'debug'
-import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import invariant from 'tiny-invariant'
 import { mergeTokens, splitToken, tokenPosition2SplitedTokenPosition } from '..'
@@ -308,15 +307,17 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
   )
 }
 
-const BlockMenuItem = (props: {
+interface BlockMenuItemProps {
   icon?: ReactNode
   title: string
   onClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   active?: boolean
   setIndex: (index: number) => void
   index: number
-}) => {
-  const [ref, hover] = useHover<HTMLDivElement>()
+}
+
+const BlockMenuItem = (props: BlockMenuItemProps) => {
+  const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (props.active && ref.current) {
       scrollIntoView(ref.current, {
@@ -326,13 +327,6 @@ const BlockMenuItem = (props: {
       })
     }
   }, [props.active, ref])
-
-  useEffect(() => {
-    if (hover) {
-      props.setIndex(props.index)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hover, props.setIndex])
 
   return (
     <div
@@ -354,9 +348,9 @@ const BlockMenuItem = (props: {
           overflow: hidden;
           display: flex;
           align-items: center;
-          /* &:hover {
+          &:hover {
             background: ${ThemingVariables.colors.primary[4]};
-          } */
+          }
           &:active {
             background: ${ThemingVariables.colors.primary[3]};
           }
