@@ -83,6 +83,15 @@ export function OmniBox() {
             subText: getBlockTitle(block)
           }
         }
+        if (block.type === Editor.BlockType.DBT) {
+          return {
+            id: block.id,
+            storyId: block.storyId,
+            type: ResultType.DBT,
+            text: getBlockTitle(block),
+            html: data.highlights[block.id]
+          }
+        }
         return {
           id: block.id,
           storyId: block.storyId,
@@ -324,7 +333,7 @@ export function OmniBox() {
                 </div>
               )}
             </PerfectScrollbar>
-            {items?.length ? (
+            {items[activeIndex]?.storyId && items[activeIndex].type !== ResultType.DBT ? (
               <div
                 className={css`
                   flex-shrink: 0;
@@ -336,16 +345,14 @@ export function OmniBox() {
                   overflow: hidden;
                 `}
               >
-                {items[activeIndex]?.storyId ? (
-                  <SmallStory
-                    className={css`
-                      height: 100%;
-                    `}
-                    color={ThemingVariables.colors.gray[3]}
-                    storyId={items[activeIndex].storyId!}
-                    blockId={items[activeIndex].type !== ResultType.MORE ? items[activeIndex].id : undefined}
-                  />
-                ) : null}
+                <SmallStory
+                  className={css`
+                    height: 100%;
+                  `}
+                  color={ThemingVariables.colors.gray[3]}
+                  storyId={items[activeIndex].storyId!}
+                  blockId={items[activeIndex].type !== ResultType.MORE ? items[activeIndex].id : undefined}
+                />
               </div>
             ) : null}
           </div>

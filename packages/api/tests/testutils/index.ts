@@ -74,8 +74,8 @@ export async function mockQuestions(
         id,
         workspaceId: workspaceId ?? 'test',
         interKey: id,
-        parentId: workspaceId ?? 'test',
-        parentTable: BlockParentType.WORKSPACE,
+        parentId: storyId ?? 'test',
+        parentTable: BlockParentType.BLOCK,
         storyId: storyId ?? 'storyId',
         content: {
           title: [[nanoid()]],

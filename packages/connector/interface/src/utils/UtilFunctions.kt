@@ -1,10 +1,7 @@
 package io.tellery.utils
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils
-import java.security.KeyFactory
 import java.security.MessageDigest
-import java.security.PrivateKey
-import java.security.spec.PKCS8EncodedKeySpec
 import java.util.*
 
 
@@ -26,10 +23,12 @@ fun ByteArray.toBase64(): String {
 }
 
 
-fun buildOptionalsFromConfigs(configs: Map<String, String>): String {
-    return if (configs.isEmpty()){
+fun buildOptionalsFromConfigs(configs: Map<String, String?>): String {
+    val filteredConfigs = configs.filterValues { it != null }
+    return if (filteredConfigs.isEmpty()) {
         ""
-    }else {
-        "?" + configs.entries.joinToString("&") { (k, v) -> "$k=$v"}
+    } else {
+        "?" + filteredConfigs.entries
+            .joinToString("&") { (k, v) -> "$k=$v" }
     }
 }

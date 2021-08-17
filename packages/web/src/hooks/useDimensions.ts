@@ -40,9 +40,9 @@ export function useDimensions<T extends HTMLElement>(
     if (!ref.current || !enable) {
       return
     }
-    const { current } = ref
     // setDimensions(current.getBoundingClientRect())
     const observer = new ResizeObserver(handleResize)
+    const { current } = ref
     observer.observe(current, { box: 'border-box' })
     return () => {
       observer.unobserve(current)

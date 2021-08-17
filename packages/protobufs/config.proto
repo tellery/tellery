@@ -17,6 +17,7 @@ message ConfigField {
   string hint = 4;
   bool required = 5;
   bool secret = 6;
+  bool fillHint = 7;
 }
 
 message AvailableConfig {

@@ -7,8 +7,11 @@
       "Region Id": "us-ease-2.aws",
       "Username": "abc",
       "Password": "def",
-      "DbtProjectName": "projectA",
-      "GitUrl": "git://xxxx"
+      "Database": "dbt",
+      "Schema": "PUBLIC",
+      "Warehouse": "dbt_wh",
+      "Dbt Project Name": "projectA",
+      "Git Url": "git://xxxx"
     }
   },
   {
@@ -20,8 +23,9 @@
       "Database": "my_db",
       "Username": "abc",
       "Password": "def",
-      "DbtProjectName": "projectB",
-      "GitUrl": "git://xxxx"
+      "Schema": "PUBLIC",
+      "Dbt Project Name": "projectB",
+      "Git Url": "git://xxxx"
     }
   },
   {
@@ -33,8 +37,9 @@
       "Database": "my_db",
       "Username": "abc",
       "Password": "def",
-      "DbtProjectName": "projectC",
-      "GitUrl": "git://xxxx"
+      "Schema": "PUBLIC",
+      "Dbt Project Name": "projectC",
+      "Git Url": "git://xxxx"
     }
   },
   {
@@ -45,7 +50,18 @@
       "Port": "5432",
       "Database": "my_db",
       "Username": "abc",
-      "Password": "def"
+      "Password": "def",
+      "Schema": "PUBLIC"
+    }
+  },
+  {
+    "type": "BigQuery",
+    "name": "profileE",
+    "configs": {
+      "Key File": "ewogICJ0eXBlIjogInNlcnZpY2VfYWNjb3VudCIsCiAgInByb2plY3RfaWQiOiAidGVzdCIsCiAgInByaXZhdGVfa2V5X2lkIjogIlBSSVZBVEVfS0VZX0lEIiwKICAicHJpdmF0ZV9rZXkiOiAiVEhJUyBJUyBQUklWQVRFIEtFWSIsCiAgImNsaWVudF9lbWFpbCI6ICJkYnQtdXNlckBteXRoaWMtaHVsbGluZy0zMDc5MDkuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLAogICJjbGllbnRfaWQiOiAiMTAwOTE2NTAzMzkwMTQ3MDUzNDA4IiwKICAiYXV0aF91cmkiOiAiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tL28vb2F1dGgyL2F1dGgiLAogICJ0b2tlbl91cmkiOiAiaHR0cHM6Ly9vYXV0aDIuZ29vZ2xlYXBpcy5jb20vdG9rZW4iLAogICJhdXRoX3Byb3ZpZGVyX3g1MDlfY2VydF91cmwiOiAiaHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vb2F1dGgyL3YxL2NlcnRzIiwKICAiY2xpZW50X3g1MDlfY2VydF91cmwiOiAiaHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vcm9ib3QvdjEvbWV0YWRhdGEveDUwOSIKfQ==",
+      "Dbt Project Name": "projectE",
+      "Git Url": "git://xxxx",
+      "Dataset": "DBT"
     }
   }
 ]

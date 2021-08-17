@@ -9,7 +9,8 @@ annotation class Config(
     val hint: String = "",
     val required: Boolean = false,
     val secret: Boolean = false,
-){
+    val fillHint: Boolean = false
+) {
     enum class ConfigType {
         STRING,
         NUMBER,

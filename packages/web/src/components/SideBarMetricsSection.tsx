@@ -1,4 +1,10 @@
-import { IconCommonBackLink, IconCommonMetrics, IconCommonQuestion, IconCommonSql } from '@app/assets/icons'
+import {
+  IconCommonDbt,
+  IconCommonBackLink,
+  IconCommonMetrics,
+  IconCommonQuestion,
+  IconVisualizationTable
+} from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useOpenStory } from '@app/hooks'
 import { useBlockSuspense, useSearchDBTBlocks, useSearchMetrics } from '@app/hooks/api'
@@ -92,6 +98,15 @@ const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ bl
           `}
         />
       ) : null}
+      {block.type === Editor.BlockType.DBT ? (
+        <IconCommonDbt
+          color={ThemingVariables.colors.gray[0]}
+          className={css`
+            flex-shrink: 0;
+            margin-right: 8px;
+          `}
+        />
+      ) : null}
       <span
         className={css`
           font-size: 12px;
@@ -158,6 +173,14 @@ const DataAssetItem: React.FC<{ block: Editor.BaseBlock; currentStoryId: string 
     >
       {block.type === Editor.BlockType.Metric ? (
         <IconCommonMetrics
+          color={ThemingVariables.colors.gray[0]}
+          className={css`
+            flex-shrink: 0;
+            margin-right: 8px;
+          `}
+        />
+      ) : block.type === Editor.BlockType.DBT ? (
+        <IconCommonDbt
           color={ThemingVariables.colors.gray[0]}
           className={css`
             flex-shrink: 0;

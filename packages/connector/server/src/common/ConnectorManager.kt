@@ -1,8 +1,11 @@
 package io.tellery.common
 
+import io.tellery.annotations.Config
 import io.tellery.annotations.Connector
 import io.tellery.annotations.HandleImport
 import io.tellery.connectors.BaseConnector
+import io.tellery.connectors.annotations.Dbt
+import io.tellery.connectors.profiles.BaseDbtProfile
 import io.tellery.entities.Profile
 import io.tellery.entities.ProfileNotFoundException
 import io.tellery.utils.allSubclasses
@@ -22,12 +25,13 @@ object ConnectorManager {
     private var profiles: ConcurrentHashMap<String, Profile> = ConcurrentHashMap()
     private var connectors: ConcurrentHashMap<String, BaseConnector> = ConcurrentHashMap()
     private lateinit var dbTypeToClassMap: Map<String, KClass<out BaseConnector>>
-    private lateinit var availableConfig: List<Connector>
+    private lateinit var availableConfig: List<AvailableConfigAnnotation>
 
     fun init() {
         loadConnectors()
         runBlocking {
-            val tasks = ConfigManager.profiles.map { async { initializeProfile(it) } }.toTypedArray()
+            val tasks =
+                ConfigManager.profiles.map { async { initializeProfile(it) } }.toTypedArray()
             awaitAll(*tasks)
         }
         ConfigManager.registerUpdateHandler { initializeProfile(it) }
@@ -43,9 +47,18 @@ object ConnectorManager {
             it.findAnnotation<Connector>()!!.type
         }
 
+        val dbTypeToDbtProfileClassMap = BaseDbtProfile::class.allSubclasses
+            .filter { it.hasAnnotation<Dbt>() }
+            .associateBy { it.findAnnotation<Dbt>()!!.type }
+
         logger.info { "Loaded Connectors ${dbTypeToClassMap.keys.joinToString(", ")}" }
-        availableConfig = loadedConnectorClasses.map { clazz ->
-            clazz.findAnnotation()!!
+        logger.info { "Loaded Dbt Profile ${dbTypeToDbtProfileClassMap.keys.joinToString(", ")}" }
+
+        availableConfig = dbTypeToClassMap.entries.map { entry ->
+            AvailableConfigAnnotation(
+                connector = entry.value.findAnnotation()!!,
+                dbt = dbTypeToDbtProfileClassMap[entry.key]?.findAnnotation()
+            )
         }
     }
 
@@ -84,7 +97,7 @@ object ConnectorManager {
                     ) {
                         try {
                             func.callSuspend(connector, database, collection, schema, content)
-                        } catch (e: InvocationTargetException){
+                        } catch (e: InvocationTargetException) {
                             throw e.targetException
                         }
                     }
@@ -103,12 +116,11 @@ object ConnectorManager {
         logger.info("removed profile {}", profileName)
     }
 
-
     fun getCurrentProfiles(): ConcurrentHashMap<String, Profile> {
         return profiles
     }
 
-    fun getAvailableConfigs(): List<Connector> {
+    fun getAvailableConfigs(): List<AvailableConfigAnnotation> {
         return availableConfig
     }
 
@@ -116,4 +128,11 @@ object ConnectorManager {
         return connectors[profileName] ?: throw ProfileNotFoundException(profileName)
     }
 
+    data class AvailableConfigAnnotation(val connector: Connector, val dbt: Dbt?) {
+        val type: String
+            get() = connector.type
+
+        val configs: Array<Config>
+            get() = connector.configs + (dbt?.configs ?: arrayOf())
+    }
 }

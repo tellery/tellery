@@ -4,6 +4,7 @@ import io.grpc.*
 import io.grpc.protobuf.services.ProtoReflectionService
 import io.grpc.util.*
 import io.tellery.common.*
+import io.tellery.common.dbt.DbtManager
 import io.tellery.services.*
 import mu.*
 import java.io.*
@@ -68,6 +69,7 @@ class ConnectorServer(
 
 fun main() {
     ConnectorManager.init()
+    DbtManager.initDbtWorkspace()
     val server = ConnectorServer(50051)
     server.start()
     server.blockUntilShutdown()

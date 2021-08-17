@@ -1,6 +1,7 @@
 import { Transform, TransformCallback } from 'stream'
 import { credentials, ChannelCredentials } from 'grpc'
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb'
+import _ from 'lodash'
 import { Profile, TypeField, Collection, Database, AvailableConfig } from '../../types/connector'
 import { AuthType, AuthData } from '../../types/auth'
 import {
@@ -20,6 +21,15 @@ import { DisplayType } from '../../protobufs/displayType_pb'
 import { ConnectorClient } from '../../protobufs/connector_grpc_pb'
 import { IConnectorManager } from './interface'
 import { beautyStream, beautyCall } from '../../utils/grpc'
+import { DbtClient } from '../../protobufs/dbt_grpc_pb'
+import {
+  GenerateKeyPairRequest,
+  DbtBlock,
+  PullRepoRequest,
+  PushRepoRequest,
+  QuestionBlockContent,
+} from '../../protobufs/dbt_pb'
+import { DbtMetadata, ExportedBlockMetadata } from '../../types/dbt'
 
 const grpcConnectorStorage = new Map<string, ConnectorManager>()
 
@@ -47,6 +57,8 @@ export function getGrpcConnector(
 export class ConnectorManager implements IConnectorManager {
   private client: ConnectorClient
 
+  private dbtClient: DbtClient
+
   private authType: AuthType
 
   private authData: AuthData
@@ -65,6 +77,7 @@ export class ConnectorManager implements IConnectorManager {
       throw new Error(`Invalid auth type for grpcConnector: ${authType}`)
     }
     this.client = new ConnectorClient(url, credential)
+    this.dbtClient = new DbtClient(url, credential)
   }
 
   public checkAuth(authType: AuthType, authData: AuthData): boolean {
@@ -75,7 +88,15 @@ export class ConnectorManager implements IConnectorManager {
     const configs = await beautyCall(this.client.getAvailableConfigs, this.client, new Empty())
     return configs.getAvailableconfigsList().map((cfg) => ({
       type: cfg.getType(),
-      configs: cfg.getConfigsList().map((i) => i.toObject()),
+      configs: cfg.getConfigsList().map((i) => ({
+        name: i.getName(),
+        type: i.getType(),
+        description: i.getDescription(),
+        hint: i.getHint(),
+        required: i.getRequired(),
+        secret: i.getSecret(),
+        fillHint: i.getFillhint(),
+      })),
     }))
   }
 
@@ -195,6 +216,40 @@ export class ConnectorManager implements IConnectorManager {
         importResult.hasSchema() ? `${importResult.getSchema()}.` : ''
       }${importResult.getCollection()}`,
     }
+  }
+
+  async generateKeyPair(profile: string): Promise<string> {
+    const request = new GenerateKeyPairRequest().setProfile(profile)
+    const res = await beautyCall(this.dbtClient.generateKeyPair, this.dbtClient, request)
+    return res.getPublickey()
+  }
+
+  async pullRepo(profile: string): Promise<DbtMetadata[]> {
+    const request = new PullRepoRequest().setProfile(profile)
+    const res = await beautyCall(this.dbtClient.pullRepo, this.dbtClient, request)
+    return res.getBlocksList().map(
+      (raw) =>
+        // remove blank values
+        _.pickBy({
+          name: raw.getName(),
+          description: raw.getDescription(),
+          relationName: raw.getRelationname(),
+          rawSql: raw.getRawsql(),
+          compiledSql: raw.getCompiledsql(),
+          type: getEnumKey(DbtBlock.Type, raw.getType()).toLowerCase(),
+          materialized: getEnumKey(DbtBlock.Materialization, raw.getMaterialized()).toLowerCase(),
+          sourceName: raw.getSourcename(),
+        }) as DbtMetadata,
+    )
+  }
+
+  async pushRepo(profile: string, blocks: ExportedBlockMetadata[]): Promise<void> {
+    const request = new PushRepoRequest()
+      .setProfile(profile)
+      .setBlocksList(
+        blocks.map(({ sql, name }) => new QuestionBlockContent().setSql(sql).setName(name)),
+      )
+    await beautyCall(this.dbtClient.pushRepo, this.dbtClient, request)
   }
 }
 

@@ -25,10 +25,11 @@ import io.tellery.common.dbt.model.Manifest
 import io.tellery.entities.DBTProfileNotConfiguredException
 import io.tellery.entities.DBTRepositoryNotExistsException
 import io.tellery.entities.Profile
-import io.tellery.grpc.Block
 import io.tellery.grpc.DbtBlock
-import io.tellery.utils.logger
+import io.tellery.grpc.QuestionBlockContent
+import mu.KotlinLogging
 import org.apache.commons.io.FileUtils
+import org.jetbrains.annotations.TestOnly
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStream
@@ -40,11 +41,12 @@ import java.util.function.Consumer
 
 object DbtManager {
 
-    private val rootFolder: File
+    private var rootFolder: File
     private val keyFolder: File
     private val profileFile: File = File(System.getProperty("user.home") + "/.dbt/profiles.yml")
     private val mapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
     private val jsonMapper = jacksonObjectMapper()
+    private val logger = KotlinLogging.logger {}
 
     init {
         val appConfig = ConfigFactory.load()
@@ -54,21 +56,32 @@ object DbtManager {
         keyFolder = ConfigManager.globalConfigDir.resolve(
             appConfig.getString("dbt.keyFolderPath") ?: throw DBTProfileNotConfiguredException()
         ).toFile()
-
-        initDbtWorkspace()
     }
 
-    fun createRepo(name: String): String {
+    fun getPublicKey(name: String): String? {
         val repo = DbtRepository(rootFolder, keyFolder, getProfileByName(name))
-        if (repoIsAlreadyExists(name)) {
-            logger.warn { "$name repository is in root folder, so ignore creating this repository." }
-            return generateRepoKeyPair(repo)
+        return if (repo.publicKey.exists()) {
+            repo.publicKey.readText()
+        } else {
+            null
+        }
+    }
+
+    fun generateRepoKeyPair(name: String): String {
+        val repo = DbtRepository(rootFolder, keyFolder, getProfileByName(name))
+
+        if (repo.publicKey.exists()) {
+            logger.warn { "The private key and public key exist." }
+            return repo.publicKey.readText()
         }
 
-        val publicKey = generateRepoKeyPair(repo)
-        cloneRemoteRepo(repo)
-        updateTelleryModelConfig(repo)
-        return publicKey
+        forceMkdir(repo.sshFolder)
+
+        val jsch = JSch()
+        val keyPair = KeyPair.genKeyPair(jsch, KeyPair.RSA, 2048)
+        keyPair.writePrivateKey(repo.privateKey.absolutePath)
+        keyPair.writePublicKey(repo.publicKey.absolutePath, "")
+        return repo.publicKey.readText()
     }
 
     fun removeRepo(name: String) {
@@ -83,26 +96,33 @@ object DbtManager {
     }
 
     fun pullRepo(name: String) {
+        val repo = DbtRepository(rootFolder, keyFolder, getProfileByName(name))
+
         if (!repoIsAlreadyExists(name)) {
-            throw DBTRepositoryNotExistsException(name)
+            try {
+                cloneRemoteRepo(repo)
+            } catch (ex: Exception) {
+                logger.error("Clone repository meeting some problem.", ex)
+                repo.gitRepoFolder.delete()
+            }
+            updateTelleryModelConfig(repo)
         }
 
-        val repo = DbtRepository(rootFolder, keyFolder, getProfileByName(name))
         checkoutMasterAndPull(repo)
     }
 
-    fun pushRepo(name: String, id2Block: Map<String, Block>) {
+    fun pushRepo(name: String, blocks: List<QuestionBlockContent>) {
         if (!repoIsAlreadyExists(name)) {
             throw DBTRepositoryNotExistsException(name)
         }
 
-        if (id2Block.isEmpty()) {
-            return;
+        if (blocks.isEmpty()) {
+            return
         }
 
         val repo = DbtRepository(rootFolder, keyFolder, getProfileByName(name))
         checkoutMasterAndPull(repo)
-        overwriteDiffModels(name, id2Block)
+        overwriteDiffModels(name, blocks)
         checkoutNewBranchAndCommitAndPush(repo)
     }
 
@@ -114,7 +134,7 @@ object DbtManager {
         val repo = DbtRepository(rootFolder, keyFolder, getProfileByName(name))
         val process =
             Runtime.getRuntime().exec("dbt compile", null, File(repo.gitRepoFolder.absolutePath))
-        val streamGobbler = StreamGobbler(process.inputStream) { logger.info(it) }
+        val streamGobbler = StreamGobbler(process.inputStream) { logger.debug(it) }
         Executors.newSingleThreadExecutor().submit(streamGobbler)
         val exitCode = process.waitFor()
         assertInternalError(exitCode == 0) { "The dbt command execution failed: dbt compile." }
@@ -126,13 +146,16 @@ object DbtManager {
     fun initDbtWorkspace() {
         forceMkdir(rootFolder)
         forceMkdir(keyFolder)
+        forceMkdir(profileFile.parentFile)
+        if (!profileFile.exists()) {
+            profileFile.createNewFile()
+        }
 
         reloadDbtProfiles(ConfigManager.profiles)
-        createRemoteRepos(ConfigManager.profiles)
     }
 
     fun reloadDbtProfiles(profiles: List<Profile>) {
-        val dbtProfiles = profiles.filter{ isDbtProfile(it) }
+        val dbtProfiles = profiles.filter { isDbtProfile(it) }
         if (dbtProfiles.isEmpty()) {
             return
         }
@@ -142,6 +165,11 @@ object DbtManager {
 
     fun isDbtProfile(profile: Profile): Boolean {
         return EXTERNAL_CONFIG_FIELDS.all { profile.configs.containsKey(it) }
+    }
+
+    @TestOnly
+    fun updateRootFolder(testRootFolder: File) {
+        rootFolder = testRootFolder
     }
 
     @VisibleForTesting
@@ -180,7 +208,12 @@ object DbtManager {
         val manifest: Manifest = jsonMapper.readValue(manifestFile)
 
         val models = manifest.nodes.values
-            .filter { it.config.enabled && it.resourceType == "model" }
+            .filter {
+                it.config.enabled
+                        && it.resourceType == "model"
+                        && it.path != null
+                        && !it.path.startsWith("tellery/")
+            }
             .map { it.toDbtBlock() }
 
         val sources = manifest.sources.values
@@ -188,6 +221,33 @@ object DbtManager {
             .map { it.toDbtBlock() }
 
         return models + sources
+    }
+
+    @VisibleForTesting
+    fun overwriteDiffModels(name: String, blocks: List<QuestionBlockContent>) {
+        val telleryModelFolder = File(rootFolder.absolutePath + "/$name/models/tellery")
+        forceMkdir(telleryModelFolder)
+
+        // Create and overwrite SQL files using tellery blocks.
+        blocks.forEach { b ->
+            val sqlFile = File(telleryModelFolder, "${b.name}.sql")
+            if (sqlFile.exists()) {
+                val sqlContext = sqlFile.readText()
+                if (sqlContext != b.sql) {
+                    overwriteFile(sqlFile, b.sql)
+                }
+            } else {
+                overwriteFile(sqlFile, b.sql)
+            }
+        }
+
+        // Remove redundant SQL files.
+        val blockNames = blocks.map { "${it.name}.sql" }
+        telleryModelFolder.listFiles()!!.forEach { f ->
+            if (!blockNames.contains(f.name)) {
+                f.delete()
+            }
+        }
     }
 
     private fun updateTelleryModelConfig(repo: DbtRepository) {
@@ -201,71 +261,6 @@ object DbtManager {
         checkoutMasterAndPull(repo)
         overwriteFile(projectConfigFile, mapper.writeValueAsString(projectConfig))
         commitAndPush(repo, "Update the dbt_project.yml by tellery.")
-    }
-
-    private fun generateRepoKeyPair(repo: DbtRepository): String {
-        if (repo.publicKey.exists() && repo.publicKey.exists()) {
-            logger.warn { "The private key and public key are exists." }
-            return repo.publicKey.readText()
-        }
-
-        forceMkdir(repo.sshFolder)
-
-        val jsch = JSch()
-        val keyPair = KeyPair.genKeyPair(jsch, KeyPair.RSA, 2048)
-        keyPair.writePrivateKey(repo.privateKey.absolutePath)
-        keyPair.writePublicKey(repo.publicKey.absolutePath, "")
-        return repo.publicKey.readText()
-    }
-
-    private fun createRemoteRepos(profiles: List<Profile>) {
-        val dbtProfiles = profiles.filter{ isDbtProfile(it) }
-        if (dbtProfiles.isEmpty()){
-            return
-        }
-        val repoFolders = rootFolder.list() ?: Collections.emptyList<String>().toTypedArray()
-        val keyFolders = keyFolder.list() ?: Collections.emptyList<String>().toTypedArray()
-
-        dbtProfiles
-            .filter { !keyFolders.contains(it.name) }
-            .forEach { generateRepoKeyPair(DbtRepository(rootFolder, keyFolder, it)) }
-
-        dbtProfiles
-            .filter { !repoFolders.contains(it.name) }
-            .forEach {
-                val repo = DbtRepository(rootFolder, keyFolder, it)
-                cloneRemoteRepo(repo)
-                updateTelleryModelConfig(repo)
-            }
-    }
-
-    private fun overwriteDiffModels(name: String, id2Block: Map<String, Block>) {
-        val name2Block = id2Block.entries.associate {
-            getBlockName(
-                it.value,
-                id2Block[it.value.storyId]
-            ) to it.value
-        }
-
-        val telleryModelFolder = File(rootFolder.absolutePath + "/$name/models/tellery")
-        forceMkdir(telleryModelFolder)
-
-        name2Block.entries.forEach {
-            val sqlFile = File(telleryModelFolder, "${it.key}.sql")
-            if (sqlFile.exists()) {
-                val sqlContext = sqlFile.readText()
-                if (sqlContext != it.value.content.sql) {
-                    overwriteFile(sqlFile, it.value.content.sql)
-                }
-            } else {
-                overwriteFile(sqlFile, it.value.content.sql)
-            }
-        }
-    }
-
-    private fun getBlockName(block: Block, storyBlock: Block?): String {
-        val storyPrefix = storyBlock?.content?.getTitle(0)?.replace(" ", "_")?.lowercase() ?: ""
-        return storyPrefix + "-" + block.content.getTitle(0).replace(" ", "_").lowercase()
     }
 
     private fun getProfileByName(name: String): Profile {

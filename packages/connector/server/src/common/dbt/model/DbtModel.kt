@@ -10,11 +10,14 @@ data class DbtModel(
     @JsonProperty("compiled_sql") val compiledSql: String?,
     @JsonProperty("resource_type") val resourceType: String,
     @JsonProperty("relation_name") val relationName: String?,
+    @JsonProperty("source_name") val sourceName: String?,
     @JsonProperty("unique_id") val uniqueId: String,
+    val name: String,
     val database: String,
     val schema: String,
     val description: String,
     val config: Config,
+    val path: String?
 ) {
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class Config(
@@ -25,9 +28,9 @@ data class DbtModel(
     fun toDbtBlock(): DbtBlock {
         val builder = DbtBlock.newBuilder()
             .setType(if (resourceType == "model") DbtBlock.Type.MODEL else DbtBlock.Type.SOURCE)
-            .setName(uniqueId)
+            .setName(name)
+            .setUniqueId(uniqueId)
             .setDescription(description)
-            .setRelationName(relationName)
 
         if (rawSql != null) builder.rawSql = rawSql
         if (compiledSql != null) builder.compiledSql = compiledSql
@@ -39,6 +42,9 @@ data class DbtModel(
             else -> DbtBlock.Materialization.UNKNOWN
         }
 
+        if (sourceName != null) builder.sourceName = sourceName
+        // Relation name is null when the materialized of table is ephemeral
+        if (relationName != null) builder.relationName = relationName
         return builder.build()
     }
 }

@@ -658,6 +658,89 @@ export function useConnectorsUpsertProfile(connectorId: string) {
   return useAsync(handleUpdateProfile)
 }
 
+/**
+ * dbt start
+ */
+
+export function useGenerateKeyPair(
+  connectorId: string,
+  profile?: ProfileConfig,
+  dbtProjectName?: string,
+  gitUrl?: string
+) {
+  const workspace = useWorkspace()
+  const handleGenerateKeyPair = useCallback(async () => {
+    if (!profile || !dbtProjectName || !gitUrl) {
+      return
+    }
+    await request.post('/api/connectors/upsertProfile', {
+      ...profile,
+      configs: { ...profile.configs, 'Dbt Project Name': dbtProjectName, 'Git Url': gitUrl },
+      workspaceId: workspace.id,
+      connectorId
+    })
+    await request.post('/api/connectors/dbt/generateKeyPair', {
+      profile: profile.name,
+      workspaceId: workspace.id,
+      connectorId
+    })
+  }, [connectorId, dbtProjectName, gitUrl, profile, workspace.id])
+  return useAsync(handleGenerateKeyPair)
+}
+
+export function useRevokeKeyPair(connectorId: string, profile?: ProfileConfig) {
+  const workspace = useWorkspace()
+  const handleRevokeKeyPair = useCallback(async () => {
+    if (!profile) {
+      return
+    }
+    delete profile.configs['Dbt Project Name']
+    delete profile.configs['Git Url']
+    delete profile.configs['Public Key']
+    await request.post('/api/connectors/upsertProfile', {
+      ...profile,
+      configs: profile.configs,
+      workspaceId: workspace.id,
+      connectorId
+    })
+  }, [connectorId, profile, workspace.id])
+  return useAsync(handleRevokeKeyPair)
+}
+
+export function usePushRepo(connectorId: string, profile?: string) {
+  const workspace = useWorkspace()
+  const handlePushRepo = useCallback(async () => {
+    if (!profile) {
+      return
+    }
+    await request.post('/api/connectors/dbt/pushRepo', {
+      profile,
+      workspaceId: workspace.id,
+      connectorId
+    })
+  }, [connectorId, profile, workspace.id])
+  return useAsync(handlePushRepo)
+}
+
+export function usePullRepo(connectorId: string, profile?: string) {
+  const workspace = useWorkspace()
+  const handlePullRepo = useCallback(async () => {
+    if (!profile) {
+      return
+    }
+    await request.post('/api/connectors/dbt/pullRepo', {
+      profile,
+      workspaceId: workspace.id,
+      connectorId
+    })
+  }, [connectorId, profile, workspace.id])
+  return useAsync(handlePullRepo)
+}
+
+/**
+ * dbt end
+ */
+
 export const useAllThoughts = () => {
   const workspace = useWorkspace()
   const result = useQuery(['thought', 'loadAll', workspace], async () => {

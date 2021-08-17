@@ -1,15 +1,14 @@
 import '../../../src/core/block/init'
 
 import test from 'ava'
-import _ from 'lodash'
 
-import { SqlBlock } from '../../../src/core/block/sql'
 import { translate } from '../../../src/core/translator/dbt'
 import { BlockParentType } from '../../../src/types/block'
+import { DbtBlock } from '../../../src/core/block/dbt'
 
 test('dbt translate (ephemeral)', async (t) => {
   const compiledSql = 'select col from arbitrary_table'
-  const dbtBlock = new SqlBlock(
+  const dbtBlock = new DbtBlock(
     'id',
     'parentId',
     BlockParentType.BLOCK,
@@ -18,15 +17,13 @@ test('dbt translate (ephemeral)', async (t) => {
     true,
     0,
   )
-  // hack
-  _.set(dbtBlock, 'type', 'dbt')
 
   const sql = translate(dbtBlock)
   t.is(sql, compiledSql)
 })
 
 test('dbt translate (other)', async (t) => {
-  const dbtBlock = new SqlBlock(
+  const dbtBlock = new DbtBlock(
     'id',
     'parentId',
     BlockParentType.BLOCK,
@@ -35,9 +32,7 @@ test('dbt translate (other)', async (t) => {
     true,
     0,
   )
-  // hack
-  _.set(dbtBlock, 'type', 'dbt')
 
   const sql = translate(dbtBlock)
-  t.is(sql, 'select * from dbname.event')
+  t.is(sql, 'SELECT * from dbname.event')
 })

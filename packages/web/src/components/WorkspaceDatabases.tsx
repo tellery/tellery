@@ -20,8 +20,12 @@ import FormFileButton from './kit/FormFileButton'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 
 export function WorkspaceDatabases(props: { onClose(): void }) {
+  const { data: workspace } = useWorkspaceDetail()
   const { data: connectors, refetch } = useConnectorsList()
-  const connector = connectors?.[0]
+  const connector = useMemo(
+    () => connectors?.find((c) => c.id === workspace?.preferences.connectorId),
+    [connectors, workspace?.preferences.connectorId]
+  )
   const { onClose } = props
   const handleClose = useCallback(() => {
     refetch()
@@ -47,8 +51,12 @@ export function WorkspaceDatabases(props: { onClose(): void }) {
 }
 
 function Connector(props: { id: string; url: string; name: string; onClose(): void }) {
+  const { data: workspace } = useWorkspaceDetail()
   const { data: profileConfigs, refetch } = useConnectorsListProfiles(props.id)
-  const profileConfig = profileConfigs?.[0]
+  const profileConfig = useMemo(
+    () => profileConfigs?.find((p) => p.name === workspace?.preferences.profile),
+    [profileConfigs, workspace?.preferences.profile]
+  )
   const { register, reset, handleSubmit, watch, setValue } = useForm<ProfileConfig>({
     defaultValues: profileConfig,
     mode: 'onBlur'
@@ -68,7 +76,6 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
     }
   }, [handleUpsertProfile.status, onClose, refetch])
   const user = useLoggedUser()
-  const { data: workspace } = useWorkspaceDetail()
   const me = useMemo(() => workspace?.members.find(({ userId }) => userId === user.id), [user.id, workspace?.members])
   const disabled = me?.role !== 'admin'
 
@@ -126,20 +133,23 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
           Name
         </FormLabel>
         <FormInput {...register('name')} /> */}
-          {availableConfig?.configs.map((config) =>
-            config.type === 'FILE' ? (
-              <FileConfig
-                key={config.name}
-                value={config}
-                setValue={(value) => {
-                  setValue(`configs.${config.name}`, value)
-                }}
-                disabled={disabled}
-              />
-            ) : (
-              <Config key={config.name} value={config} register={register} disabled={disabled} />
-            )
-          )}
+          {availableConfig?.configs
+            // TODO: disable these keys temporarily
+            .filter((config) => !['Dbt Project Name', 'Git Url', 'Public Key'].includes(config.name))
+            .map((config) =>
+              config.type === 'FILE' ? (
+                <FileConfig
+                  key={config.name}
+                  value={config}
+                  setValue={(value) => {
+                    setValue(`configs.${config.name}`, value)
+                  }}
+                  disabled={disabled}
+                />
+              ) : (
+                <Config key={config.name} value={config} register={register} disabled={disabled} />
+              )
+            )}
         </form>
       </PerfectScrollbar>
       <FormButton
@@ -222,6 +232,7 @@ function Config(props: { value: AvailableConfig; register: UseFormRegister<Profi
           required={config.required}
           type={config.secret ? 'password' : config.type === 'NUMBER' ? 'number' : 'text'}
           placeholder={config.hint}
+          defaultValue={config.fillHint ? config.hint : undefined}
           disabled={props.disabled}
         />
       )}

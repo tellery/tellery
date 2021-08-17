@@ -14,6 +14,7 @@ import io.tellery.common.withErrorWrapper
 import io.tellery.configs.AvailableConfig
 import io.tellery.configs.AvailableConfigs
 import io.tellery.configs.ConfigField
+import io.tellery.connectors.annotations.DbtFields
 import io.tellery.entities.*
 import io.tellery.grpc.*
 import io.tellery.types.SQLType
@@ -55,6 +56,7 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
             hint = confAnnotation.hint
             required = confAnnotation.required
             secret = confAnnotation.secret
+            fillHint = confAnnotation.fillHint
         }
     }
 
@@ -75,9 +77,16 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
         get() = Profiles {
             addAllProfiles(ConnectorManager.getCurrentProfiles().values.map {
                 val connectorMeta =
-                    ConnectorManager.getAvailableConfigs().find { cfg -> cfg.type == it.type }!!
+                    ConnectorManager.getAvailableConfigs()
+                        .find { cfg -> cfg.type == it.type }!!
                 val secretConfigs =
                     connectorMeta.configs.filter { it.secret }.map { it.name }.toSet()
+                val publicKey = if (DbtManager.isDbtProfile(it)) {
+                    DbtManager.getPublicKey(it.name)
+                } else {
+                    null
+                }
+
                 ProfileBody {
                     type = it.type
                     name = it.name
@@ -88,6 +97,10 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
                             k to v
                         }
                     })
+
+                    if (publicKey != null) {
+                        putConfigs(DbtFields.PUBLIC_KEY, publicKey)
+                    }
                 }
             })
         }

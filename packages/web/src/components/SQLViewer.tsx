@@ -1,10 +1,10 @@
-import { IconCommonQuestion } from '@app/assets/icons'
+import { IconCommonDbt, IconCommonQuestion } from '@app/assets/icons'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useMgetBlocks } from '@app/hooks/api'
 import { transclusionRegex } from '@app/hooks/useSqlEditor'
 import { SVG2DataURI } from '@app/lib/svg'
 import { ThemingVariables } from '@app/styles'
-import type { Editor } from '@app/types'
+import { Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
 import MonacoEditor from '@monaco-editor/react'
 import { compact, uniq } from 'lodash'
@@ -155,6 +155,7 @@ function TransclusionContentWidget(props: { blockId: string; value: Editor.SQLBl
     `[widgetid="content.widget.transclusion.view.${props.blockId}.${block.id}.${props.index}"]`
   )
   const title = getBlockTitle(block)
+  const isDBT = block.type === Editor.BlockType.DBT
 
   return el
     ? createPortal(
@@ -167,7 +168,7 @@ function TransclusionContentWidget(props: { blockId: string; value: Editor.SQLBl
             padding: 0 5px 0 23px;
             color: ${ThemingVariables.colors.text[0]};
             background-color: ${ThemingVariables.colors.primary[4]};
-            background-image: ${SVG2DataURI(IconCommonQuestion)};
+            background-image: ${SVG2DataURI(isDBT ? IconCommonDbt : IconCommonQuestion)};
             background-size: 16px;
             background-repeat: no-repeat;
             background-position: 5px 50%;

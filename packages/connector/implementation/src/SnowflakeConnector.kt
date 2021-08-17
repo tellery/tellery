@@ -4,6 +4,7 @@ import io.tellery.annotations.Config
 import io.tellery.annotations.Config.ConfigType
 import io.tellery.annotations.Connector
 import io.tellery.annotations.HandleImport
+import io.tellery.connectors.fields.SnowflakeFields
 import io.tellery.entities.CollectionField
 import io.tellery.entities.Profile
 import io.tellery.entities.TypeField
@@ -18,28 +19,28 @@ import java.sql.Connection
     type = "Snowflake",
     configs = [
         Config(
-            name = "Account Name",
+            name = SnowflakeFields.ACCOUNT_NAME,
             type = ConfigType.STRING,
             description = "Your Snowflake account name",
             hint = "xy12345",
             required = true
         ),
         Config(
-            name = "Region Id",
+            name = SnowflakeFields.REGION_ID,
             type = ConfigType.STRING,
             description = "Your region Id",
             hint = "us-ease-2.aws",
             required = true
         ),
         Config(
-            name = "Username",
+            name = SnowflakeFields.USERNAME,
             type = ConfigType.STRING,
             description = "Your Snowflake username",
             hint = "your_username",
             required = true,
         ),
         Config(
-            name = "Password",
+            name = SnowflakeFields.PASSWORD,
             type = ConfigType.STRING,
             description = "Your Snowflake password",
             hint = "",
@@ -47,16 +48,31 @@ import java.sql.Connection
             secret = true,
         ),
         Config(
-            name = "Role",
+            name = SnowflakeFields.ROLE,
             type = ConfigType.STRING,
             description = "The default access control role to use in the Snowflake session",
             hint = "SYSADMIN"
         ),
         Config(
-            name = "Warehouse",
+            name = SnowflakeFields.WAREHOUSE,
             type = ConfigType.STRING,
             description = "The virtual warehouse to use once connected by default",
-            hint = "COMPUTE_WH"
+            hint = "COMPUTE_WH",
+            fillHint = true,
+        ),
+        Config(
+            name = SnowflakeFields.DATABASE,
+            type = ConfigType.STRING,
+            description = "The database that tellery will connect to",
+            hint = "SNOWFLAKE_SAMPLE_DATA",
+            required = true,
+        ),
+        Config(
+            name = SnowflakeFields.SCHEMA,
+            type = ConfigType.STRING,
+            description = "The schema that tellery will connect to in the database",
+            hint = "PUBLIC",
+            fillHint = true
         )
     ]
 )
@@ -67,11 +83,21 @@ class SnowflakeConnector : JDBCConnector() {
     override val defaultSchema = null
 
     override fun buildConnectionStr(profile: Profile): String {
-        val accountName = profile.configs["Account Name"]
-        val regionId = profile.configs["Region Id"]
+        val accountName = profile.configs[SnowflakeFields.ACCOUNT_NAME]
+        val regionId = profile.configs[SnowflakeFields.REGION_ID]
+        val role = profile.configs[SnowflakeFields.ROLE]
+        val warehouse = profile.configs[SnowflakeFields.WAREHOUSE]
+        val database = profile.configs[SnowflakeFields.DATABASE]
+        val schema = profile.configs[SnowflakeFields.SCHEMA]
         return "jdbc:snowflake://${accountName}.${regionId}.snowflakecomputing.com/${
             buildOptionalsFromConfigs(
-                profile.configs.filterKeys { it in setOf("Role", "Warehouse") })
+                mapOf(
+                    "role" to role,
+                    "db" to database,
+                    "schema" to schema,
+                    "warehouse" to warehouse
+                )
+            )
         }"
     }
 

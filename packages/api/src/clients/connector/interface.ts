@@ -1,5 +1,6 @@
 import { Readable } from 'stream'
 import { Collection, Database, Profile, TypeField, AvailableConfig } from '../../types/connector'
+import { DbtMetadata, ExportedBlockMetadata } from '../../types/dbt'
 
 /**
  * interacting with tellery-connector
@@ -86,4 +87,27 @@ export interface IConnectorManager {
     collection: string,
     schema?: string,
   ): Promise<{ database: string; collection: string }>
+
+  // dbt related
+
+  /**
+   * generate key pair for pulling repo
+   * @param profile profile name
+   * @returns public key
+   */
+  generateKeyPair(profile: string): Promise<string>
+
+  /**
+   * pull dbt repo and retrieve dbt metadata
+   * @param profile profile name
+   * @returns dbt metadata
+   */
+  pullRepo(profile: string): Promise<DbtMetadata[]>
+
+  /**
+   * push blocks that are descendance of dbt blocks (as dbt models) into its repo
+   * @param profile profile name
+   * @param blocks blocks that are descendance of dbtBlocks
+   */
+  pushRepo(profile: string, blocks: ExportedBlockMetadata[]): Promise<void>
 }

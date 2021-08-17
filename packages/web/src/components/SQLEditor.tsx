@@ -1,4 +1,4 @@
-import { IconCommonQuestion } from '@app/assets/icons'
+import { IconCommonDbt, IconCommonQuestion } from '@app/assets/icons'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useOpenStory } from '@app/hooks'
 import { useMgetBlocks } from '@app/hooks/api'
@@ -9,13 +9,14 @@ import { Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
 import MonacoEditor, { useMonaco } from '@monaco-editor/react'
 import Tippy from '@tippyjs/react'
-import { compact, uniq } from 'lodash'
+import { compact, uniq, omit } from 'lodash'
 import type { editor } from 'monaco-editor/esm/vs/editor/editor.api'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useGetBlockTitleTextSnapshot } from './editor'
 import { useQuestionEditor } from './StoryQuestionsEditor'
 import { SQLViewer } from './SQLViewer'
+import YAML from 'yaml'
 import { useGetBlock } from '../hooks/useGetBlock'
 
 const STORY_BLOCK_REGEX = new RegExp(`${window.location.protocol}//${window.location.host}/story/(\\S+)#(\\S+)`)
@@ -236,6 +237,7 @@ function TransclusionContentWidget(props: {
   )
   const title = getBlockTitle(block)
   const [visible, setVisible] = useState(false)
+  const isDBT = block.type === Editor.BlockType.DBT
 
   return el
     ? createPortal(
@@ -267,12 +269,12 @@ function TransclusionContentWidget(props: {
               >
                 {title}
               </h4>
-              {block.content?.sql && props.languageId && visible ? (
-                <div
-                  className={css`
-                    height: 300px;
-                  `}
-                >
+              <div
+                className={css`
+                  height: 300px;
+                `}
+              >
+                {block.content?.sql && props.languageId && visible ? (
                   <SQLViewer
                     blockId={block.id}
                     languageId={props.languageId}
@@ -282,8 +284,34 @@ function TransclusionContentWidget(props: {
                       padding: 0 15px;
                     `}
                   />
-                </div>
-              ) : null}
+                ) : isDBT ? (
+                  <MonacoEditor
+                    language="yaml"
+                    value={YAML.stringify(omit(block.content, 'title'))}
+                    options={{
+                      folding: false,
+                      wordWrap: 'on',
+                      contextmenu: false,
+                      scrollbar: { verticalScrollbarSize: 0, horizontalSliderSize: 0 },
+                      minimap: { enabled: false },
+                      lineNumbers: 'off',
+                      renderLineHighlight: 'none',
+                      glyphMargin: false,
+                      lineNumbersMinChars: 0,
+                      lineDecorationsWidth: 0,
+                      padding: { top: 10, bottom: 10 },
+                      lineHeight: 18,
+                      fontSize: 12,
+                      readOnly: true,
+                      scrollBeyondLastLine: false,
+                      scrollBeyondLastColumn: 0
+                    }}
+                    wrapperClassName={css`
+                      padding: 0 15px;
+                    `}
+                  />
+                ) : null}
+              </div>
               <div
                 className={css`
                   border-top: 1px solid ${ThemingVariables.colors.gray[1]};
@@ -309,11 +337,13 @@ function TransclusionContentWidget(props: {
                     if (!block.storyId) {
                       return
                     }
-                    openStoryHandler(block.storyId, { blockId: block.id, isAltKeyPressed: true })
+                    if (block.parentTable !== Editor.BlockParentType.WORKSPACE) {
+                      openStoryHandler(block.storyId, { blockId: block.id, isAltKeyPressed: true })
+                    }
                     open({ mode: 'SQL', storyId: block.storyId, blockId: block.id })
                   }}
                 >
-                  Go to question
+                  Go to block
                 </span>
                 <span>⌘+click</span>
               </div>
@@ -333,7 +363,7 @@ function TransclusionContentWidget(props: {
               padding: 0 5px 0 23px;
               color: ${ThemingVariables.colors.text[0]};
               background-color: ${ThemingVariables.colors.primary[4]};
-              background-image: ${SVG2DataURI(IconCommonQuestion)};
+              background-image: ${SVG2DataURI(isDBT ? IconCommonDbt : IconCommonQuestion)};
               background-size: 16px;
               background-repeat: no-repeat;
               background-position: 5px 50%;
