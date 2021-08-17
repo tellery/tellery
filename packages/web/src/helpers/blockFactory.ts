@@ -43,7 +43,8 @@ export const createEmptyBlock = <T extends Editor.BaseBlock = Editor.BaseBlock>(
           },
           format: {
             width: DEFAULT_QUESTION_BLOCK_WIDTH,
-            aspectRatio: DEFAULT_QUESTION_BLOCK_ASPECT_RATIO
+            aspectRatio: DEFAULT_QUESTION_BLOCK_ASPECT_RATIO,
+            ...args.format
           }
         }
       }
