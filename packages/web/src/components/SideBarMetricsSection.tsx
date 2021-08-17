@@ -1,9 +1,9 @@
 import {
   IconCommonDbt,
+  IconCommonSql,
   IconCommonBackLink,
   IconCommonMetrics,
-  IconCommonQuestion,
-  IconVisualizationTable
+  IconCommonQuestion
 } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useOpenStory } from '@app/hooks'
