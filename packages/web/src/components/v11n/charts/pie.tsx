@@ -19,6 +19,7 @@ import { CustomTooltip } from '../components/CustomTooltip'
 import { fontFamily } from '../constants'
 import { useCrossFilter } from '@app/hooks/useDataRecords'
 import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
+import i18n from '@app/i18n'
 
 enum Tab {
   DATA = 'Data',
@@ -29,7 +30,7 @@ const opacity = 0.15
 
 const OTHERS_KEY = 'Others'
 
-const numberformat = new Intl.NumberFormat([], { maximumFractionDigits: 2 })
+const numberformat = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 2 })
 
 export const pie: Chart<Type.PIE> = {
   type: Type.PIE,

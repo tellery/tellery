@@ -5,8 +5,6 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 import { resources } from './locales'
 export const languages: string[] = ['en-US', 'zh-CN']
 
-console.log(resources)
-
 i18n
   // .use(Backend)
   .use(LanguageDetector)
@@ -22,3 +20,5 @@ i18n
       escapeValue: false
     }
   })
+
+export default i18n
