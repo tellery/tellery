@@ -499,6 +499,19 @@ const _StoryEditor: React.FC<{
       if (previousTextBlock && block.children?.length) {
         let afterId: string | null = null
         for (const childId of block.children) {
+          operations.push(
+            ...[
+              {
+                cmd: 'listRemove',
+                id: block.id,
+                path: ['children'],
+                args: {
+                  id: childId
+                },
+                table: 'block'
+              }
+            ]
+          )
           if (afterId === null) {
             operations.push(
               ...[
