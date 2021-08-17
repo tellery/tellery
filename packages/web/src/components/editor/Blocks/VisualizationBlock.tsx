@@ -830,7 +830,7 @@ export const MoreDropdownSelect: React.FC<{
         }
       },
       canConvertDataAsset &&
-        dataAssetBlock.type !== Editor.BlockType.SnapshotBlock && {
+        dataAssetBlock.type === Editor.BlockType.SQL && {
           title: 'Convert to snapshot',
           icon: <IconCommonTurn color={ThemingVariables.colors.text[0]} />,
           action: () => {
@@ -840,7 +840,7 @@ export const MoreDropdownSelect: React.FC<{
           }
         },
       canConvertDataAsset &&
-        dataAssetBlock.type !== Editor.BlockType.SQL && {
+        dataAssetBlock.type === Editor.BlockType.SnapshotBlock && {
           title: 'Convert to SQL',
           icon: <IconCommonTurn color={ThemingVariables.colors.text[0]} />,
           action: () => {
@@ -850,8 +850,18 @@ export const MoreDropdownSelect: React.FC<{
           }
         },
       canConvertDataAsset &&
+        dataAssetBlock.type === Editor.BlockType.Metric && {
+          title: 'Remove from data assets',
+          icon: <IconCommonTurn color={ThemingVariables.colors.text[0]} />,
+          action: () => {
+            editor?.setBlockValue?.(dataAssetBlock.id, (draftBlock) => {
+              draftBlock.type = Editor.BlockType.SQL
+            })
+          }
+        },
+      canConvertDataAsset &&
         dataAssetBlock.type === Editor.BlockType.SQL && {
-          title: 'Convert to metric',
+          title: 'Add to data assets',
           icon: <IconCommonMetrics color={ThemingVariables.colors.text[0]} />,
           action: () => {
             editor?.setBlockValue?.(dataAssetBlock.id, (draftBlock) => {
