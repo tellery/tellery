@@ -5,7 +5,7 @@ import _ from 'lodash'
 import { register } from '../../src/core/block'
 import { createDatabaseCon } from '../../src/clients/db/orm'
 import { DbtBlock } from '../../src/core/block/dbt'
-import { QuestionBlock } from '../../src/core/block/question'
+import { SqlBlock } from '../../src/core/block/sql'
 import { FakePermission } from '../../src/core/permission'
 import BlockEntity from '../../src/entities/block'
 import { DbtService } from '../../src/services/dbt'
@@ -19,7 +19,7 @@ const dbtService = new DbtService(new FakePermission())
 test.before(async () => {
   await createDatabaseCon()
   register(BlockType.DBT, DbtBlock)
-  register(BlockType.QUESTION, QuestionBlock)
+  register(BlockType.SQL, SqlBlock)
 })
 
 function generateDbtBlock(metadata: DbtMetadata, workspaceId: string) {
@@ -49,7 +49,7 @@ function generateQuestionOp(title: string, sql: string): [string, any] {
     id,
     {
       id,
-      type: BlockType.QUESTION,
+      type: BlockType.SQL,
       storyId: 'test',
       parentId: 'test',
       parentTable: BlockParentType.BLOCK,

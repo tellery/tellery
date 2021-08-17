@@ -5,7 +5,7 @@ import { getConnection, getRepository, In } from 'typeorm'
 import { IConnectorManager } from '../clients/connector/interface'
 import { Block, cascadeLoadBlocksByLink } from '../core/block'
 import { DbtBlock } from '../core/block/dbt'
-import { QuestionBlock } from '../core/block/question'
+import { SqlBlock } from '../core/block/sql'
 import { getIPermission, IPermission } from '../core/permission'
 import { extractPartialQueries } from '../core/translator'
 import BlockEntity from '../entities/block'
@@ -50,8 +50,8 @@ export class DbtService {
     profile: string,
   ): Promise<void> {
     await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
-    const exportedQuestionBlocks = await this.loadAllDbtBlockDescendent(workspaceId)
-    await connectorManager.pushRepo(profile, exportedQuestionBlocks)
+    const exportedSqlBlock = await this.loadAllDbtBlockDescendent(workspaceId)
+    await connectorManager.pushRepo(profile, exportedSqlBlock)
   }
 
   async listCurrentDbtBlocks(workspaceId: string): Promise<BlockEntity[]> {
@@ -77,13 +77,14 @@ export class DbtService {
       return []
     }
 
+    // TODO: support other data sources
     const blocks = _(
       await cascadeLoadBlocksByLink(_(dbtBlocks).map('id').value(), 'backward', LinkType.QUESTION),
     )
-      .map((b) => QuestionBlock.fromEntitySafely(b))
+      .map((b) => SqlBlock.fromEntitySafely(b))
       .compact()
       .filter((b) => b.alive)
-      .value() as QuestionBlock[]
+      .value() as SqlBlock[]
 
     // load story blocks for fulfilling name
     const storyIds = _(blocks).map('storyId').uniq().value()
