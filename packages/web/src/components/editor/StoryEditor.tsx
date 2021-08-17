@@ -496,6 +496,43 @@ const _StoryEditor: React.FC<{
         )
       }
 
+      if (previousTextBlock && block.children?.length) {
+        let afterId: string | null = null
+        for (const childId of block.children) {
+          if (afterId === null) {
+            operations.push(
+              ...[
+                {
+                  cmd: 'listBefore',
+                  id: previousTextBlock.id,
+                  path: ['children'],
+                  args: {
+                    id: childId
+                  },
+                  table: 'block'
+                }
+              ]
+            )
+          } else {
+            operations.push(
+              ...[
+                {
+                  cmd: 'listAfter',
+                  id: previousTextBlock.id,
+                  path: ['children'],
+                  args: {
+                    id: childId,
+                    after: afterId
+                  },
+                  table: 'block'
+                }
+              ]
+            )
+          }
+          afterId = childId
+        }
+      }
+
       // Nomatter merged or not, block will be deleted
       // expect first block
       const targetBlock = getBlockFromSnapshot(blockId, snapshot)

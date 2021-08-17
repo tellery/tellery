@@ -337,7 +337,7 @@ const VisualizationBlock = React.forwardRef(_VisualizationBlock) as BlockCompone
 >
 
 VisualizationBlock.meta = {
-  isText: true,
+  isText: false,
   forwardRef: true,
   hasChildren: false,
   isQuestion: true,
