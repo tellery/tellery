@@ -926,12 +926,6 @@ export const StoryQuestionEditor: React.FC<{
                 }}
               />
             )}
-            <IconButton
-              hoverContent={mutatingCount !== 0 ? 'Cancel Query' : 'Execute Query'}
-              icon={mutatingCount !== 0 ? IconCommonClose : IconCommonRun}
-              color={ThemingVariables.colors.primary[1]}
-              onClick={mutatingCount !== 0 ? cancelExecuteSql : run}
-            />
             {isExecuteableBlockType(sqlBlock.type) && (
               <IconButton
                 hoverContent={mutatingCount !== 0 ? 'Cancel Query' : 'Execute Query'}
