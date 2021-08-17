@@ -1,4 +1,10 @@
-import { IconCommonDbt, IconCommonBackLink, IconCommonMetrics, IconCommonQuestion, IconVisualizationTable } from '@app/assets/icons'
+import {
+  IconCommonDbt,
+  IconCommonBackLink,
+  IconCommonMetrics,
+  IconCommonQuestion,
+  IconVisualizationTable
+} from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useOpenStory } from '@app/hooks'
 import { useBlockSuspense, useSearchDBTBlocks, useSearchMetrics } from '@app/hooks/api'

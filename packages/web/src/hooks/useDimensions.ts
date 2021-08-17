@@ -3,7 +3,7 @@ import { throttle } from 'lodash'
 import { dequal } from 'dequal'
 
 export function useDimensions<T extends HTMLElement>(
-  element: T | undefined | null,
+  ref: RefObject<T>,
   throttleMs: number,
   enable: boolean = true
 ): {
@@ -11,7 +11,7 @@ export function useDimensions<T extends HTMLElement>(
   width: number
 } {
   const [dimensions, setDimensions] = useState(
-    element?.getBoundingClientRect() || {
+    ref.current?.getBoundingClientRect() || {
       width: 0,
       height: 0
     }
@@ -20,7 +20,7 @@ export function useDimensions<T extends HTMLElement>(
   const handleResize = useCallback(
     throttle(
       (entries: ResizeObserverEntry[]) => {
-        if (entries[0]?.target === element) {
+        if (entries[0]?.target === ref.current) {
           setDimensions((oldDimensions) => {
             const newDimensions = {
               width: entries[0].contentRect.width,
@@ -37,16 +37,17 @@ export function useDimensions<T extends HTMLElement>(
     [throttleMs]
   )
   useEffect(() => {
-    if (!element || !enable) {
+    if (!ref.current || !enable) {
       return
     }
     // setDimensions(current.getBoundingClientRect())
     const observer = new ResizeObserver(handleResize)
-    observer.observe(element, { box: 'border-box' })
+    const { current } = ref
+    observer.observe(current, { box: 'border-box' })
     return () => {
-      observer.unobserve(element)
+      observer.unobserve(current)
     }
-  }, [element, handleResize, enable])
+  }, [ref, handleResize, enable])
 
   return dimensions
 }

@@ -932,23 +932,23 @@ export const StoryQuestionEditor: React.FC<{
               color={ThemingVariables.colors.primary[1]}
               onClick={mutatingCount !== 0 ? cancelExecuteSql : run}
             />
-          )}
-          {isExecuteableBlockType(sqlBlock.type) && (
+            {isExecuteableBlockType(sqlBlock.type) && (
+              <IconButton
+                hoverContent={mutatingCount !== 0 ? 'Cancel Query' : 'Execute Query'}
+                icon={mutatingCount !== 0 ? IconCommonClose : IconCommonRun}
+                color={ThemingVariables.colors.primary[1]}
+                onClick={mutatingCount !== 0 ? cancelExecuteSql : run}
+              />
+            )}
             <IconButton
-              hoverContent={mutatingCount !== 0 ? 'Cancel Query' : 'Execute Query'}
-              icon={mutatingCount !== 0 ? IconCommonClose : IconCommonRun}
+              hoverContent="Save"
+              disabled={!isDraft || readonly === true}
+              icon={IconCommonSave}
+              onClick={save}
               color={ThemingVariables.colors.primary[1]}
-              onClick={mutatingCount !== 0 ? cancelExecuteSql : run}
             />
-          )}
-          <IconButton
-            hoverContent="Save"
-            disabled={!isDraft || readonly === true}
-            icon={IconCommonSave}
-            onClick={save}
-            color={ThemingVariables.colors.primary[1]}
-          />
-        </div>
+          </div>
+        )}
       </div>
       <div
         className={css`

@@ -1,5 +1,5 @@
 import { css, cx } from '@emotion/css'
-import { MouseEvent, useRef, useState } from 'react'
+import { MouseEvent, useRef } from 'react'
 import type { Props, Payload } from '@tellery/recharts/types/component/DefaultLegendContent'
 import { IconVisualizationCircle } from '@app/assets/icons'
 import { ThemingVariables } from '@app/styles'

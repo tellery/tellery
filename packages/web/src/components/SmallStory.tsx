@@ -12,8 +12,8 @@ import { BlockAdminContext, useBlockAdminProvider } from './editor/hooks/useBloc
 export function SmallStory(props: { storyId: string; blockId?: string; className?: string; color: string }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
-  const { height: containerHeight } = useDimensions(containerRef.current, 0)
-  const { height: contentHeight } = useDimensions(contentRef.current, 0)
+  const { height: containerHeight } = useDimensions(containerRef, 0)
+  const { height: contentHeight } = useDimensions(contentRef, 0)
 
   const isOverflow = useMemo(() => {
     return contentHeight > containerHeight
