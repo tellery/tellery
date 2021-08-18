@@ -445,19 +445,16 @@ const _StoryEditor: React.FC<{
   }, [blockTranscations, selectionState, setBlockValue, snapshot, storyId])
 
   const setClipboardWithFragment = useCallback(
-    (e: React.ClipboardEvent<HTMLDivElement>, snapshot: BlockSnapshot) => {
-      logger('on copy set', selectionState)
-      if (e.clipboardData && selectionState) {
+    (e: React.ClipboardEvent<HTMLDivElement>, fragment: any) => {
+      logger('on copy set')
+      if (e.clipboardData) {
         // const blocks = Object.values(editorState.blocksMap)
-        const fragment = getBlocksFragmentFromSelection(selectionState, snapshot)
-        logger('frag', fragment)
-        if (!fragment) return
         e.clipboardData.setData(fragment.type, JSON.stringify(fragment.value))
         e.clipboardData.setData('text/plain', convertBlocksOrTokensToPureText(fragment, snapshot))
         logger('set success', fragment)
       }
     },
-    [selectionState]
+    [snapshot]
   )
 
   const deleteBackward = useCallback(
@@ -592,28 +589,40 @@ const _StoryEditor: React.FC<{
     [commit, setSelectionState, snapshot, storyId]
   )
 
-  const doCut = useCallback(() => {
-    const selection = window.getSelection()
-    selection?.removeAllRanges()
-    copy('tellery', {
-      debug: true,
-      onCopy: (clipboardData) => {
-        setClipboardWithFragment({ clipboardData } as React.ClipboardEvent<HTMLDivElement>, snapshot)
-        deleteBlockFragmentFromSelection()
+  const doCut = useCallback(
+    (e: KeyboardEvent) => {
+      const selection = window.getSelection()
+      selection?.removeAllRanges()
+      const fragment = selectionState ? getBlocksFragmentFromSelection(selectionState, snapshot) : null
+      if (fragment) {
+        e.preventDefault()
       }
-    })
-  }, [deleteBlockFragmentFromSelection, setClipboardWithFragment, snapshot])
+      copy('tellery', {
+        debug: true,
+        onCopy: (clipboardData) => {
+          setClipboardWithFragment({ clipboardData } as React.ClipboardEvent<HTMLDivElement>, fragment)
+          deleteBlockFragmentFromSelection()
+        }
+      })
+    },
+    [deleteBlockFragmentFromSelection, selectionState, setClipboardWithFragment, snapshot]
+  )
 
-  const doCopy = useCallback(() => {
-    // const selection = window.getSelection()
-    // selection?.removeAllRanges()
-    copy('tellery', {
-      debug: true,
-      onCopy: (clipboardData) => {
-        setClipboardWithFragment({ clipboardData } as React.ClipboardEvent<HTMLDivElement>, snapshot)
+  const doCopy = useCallback(
+    (e: KeyboardEvent) => {
+      const fragment = selectionState ? getBlocksFragmentFromSelection(selectionState, snapshot) : null
+      if (fragment) {
+        e.preventDefault()
       }
-    })
-  }, [setClipboardWithFragment, snapshot])
+      copy('tellery', {
+        debug: true,
+        onCopy: (clipboardData) => {
+          setClipboardWithFragment({ clipboardData } as React.ClipboardEvent<HTMLDivElement>, fragment)
+        }
+      })
+    },
+    [selectionState, setClipboardWithFragment, snapshot]
+  )
 
   const toggleBlocksIndention = useCallback(
     (blockIds: string[], type: 'in' | 'out') => {
@@ -705,8 +714,7 @@ const _StoryEditor: React.FC<{
         {
           hotkeys: ['mod+x'],
           handler: (e) => {
-            e.preventDefault()
-            doCut()
+            doCut(e)
           }
         },
         {
@@ -725,8 +733,8 @@ const _StoryEditor: React.FC<{
         {
           hotkeys: ['mod+c'],
           handler: (e) => {
-            e.preventDefault()
-            doCopy()
+            // e.preventDefault()
+            doCopy(e)
           }
         },
         {
