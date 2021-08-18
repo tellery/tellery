@@ -51,44 +51,46 @@ const EquationBlock: BlockComponent<
   }, [block.content?.equation])
 
   return (
-    <div
-      className={css`
-        display: flex;
-        justify-content: center;
-        cursor: pointer;
-      `}
-      onClick={() => {
-        if (!readonly) {
-          editor?.selectBlocks([block.id])
-          setShowPopover(true)
-        }
-      }}
-      ref={ref}
-    >
-      {block.content?.equation && (
-        <div
-          className={css`
-            :hover {
-              background-color: ${ThemingVariables.colors.primary[4]};
-            }
-            flex: 1;
-            padding: 20px;
-            text-align: center;
-          `}
-          dangerouslySetInnerHTML={{ __html: equationHtml ?? block.content?.equation }}
-        ></div>
-      )}
-      {!block.content?.equation && (
-        <BlockPlaceHolder
-          onClick={() => {
-            if (!readonly) {
-              setShowPopover(true)
-            }
-          }}
-          text="Click to input an equation"
-          loading={false}
-        />
-      )}
+    <>
+      <div
+        className={css`
+          display: flex;
+          justify-content: center;
+          cursor: pointer;
+        `}
+        onClick={() => {
+          if (!readonly) {
+            editor?.selectBlocks([block.id])
+            setShowPopover(true)
+          }
+        }}
+        ref={ref}
+      >
+        {block.content?.equation && (
+          <div
+            className={css`
+              :hover {
+                background-color: ${ThemingVariables.colors.primary[4]};
+              }
+              flex: 1;
+              padding: 20px;
+              text-align: center;
+            `}
+            dangerouslySetInnerHTML={{ __html: equationHtml ?? block.content?.equation }}
+          ></div>
+        )}
+        {!block.content?.equation && (
+          <BlockPlaceHolder
+            onClick={() => {
+              if (!readonly) {
+                setShowPopover(true)
+              }
+            }}
+            text="Click to input an equation"
+            loading={false}
+          />
+        )}
+      </div>
       <EmbedBlockPopover
         open={showPopover}
         setOpen={setShowPopover}
@@ -96,7 +98,7 @@ const EquationBlock: BlockComponent<
         onSubmit={updateValue}
         initialValue={block.content?.equation}
       />
-    </div>
+    </>
   )
 }
 
