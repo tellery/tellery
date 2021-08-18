@@ -21,7 +21,7 @@ import produce from 'immer'
 import isHotkey from 'is-hotkey'
 import React, { CSSProperties, memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { useEvent } from 'react-use'
+import { useEvent, useScrollbarWidth } from 'react-use'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import invariant from 'tiny-invariant'
 import {
@@ -101,7 +101,7 @@ const _StoryEditor: React.FC<{
   const tellerySelectionRef = useRef<TellerySelection | null>(null)
   const [selectionState, setSelectionState] = useStorySelection(storyId)
   const [scrollLocked, setScrollLocked] = useState(false)
-  const [scrollbarWidth, setScrollbarWidth] = useState(0)
+  const scrollbarWidth = useScrollbarWidth()
   const isSelectingRef = useRef<DOMRect | null>(null)
   const mouseDownEventRef = useRef<MouseEvent | null>(null)
   const [lastInputChar, setLastInputChar] = useState<string | null>(null)
@@ -126,8 +126,6 @@ const _StoryEditor: React.FC<{
     setScrollLocked(lock)
     const editorElement = editorRef.current
     invariant(editorElement, 'editor is nullable')
-    const spareWidth = editorElement.getBoundingClientRect().width - editorElement?.clientWidth
-    setScrollbarWidth(spareWidth)
   }, [])
 
   const focusingBlockId = useMemo(() => {
