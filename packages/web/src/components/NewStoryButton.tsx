@@ -8,7 +8,7 @@ import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 
-export const NewStoryButton: React.FC<{ classname: string; tipPlacement: Placement }> = ({
+export const NewStoryButton: React.FC<{ classname: string; tipPlacement?: Placement }> = ({
   classname,
   tipPlacement = 'right'
 }) => {
