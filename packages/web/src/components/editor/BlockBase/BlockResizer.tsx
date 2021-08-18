@@ -21,7 +21,7 @@ export const BlockResizer: React.FC<{
       invariant(contentRef.current, 'content ref is null')
       blockFormat.onResizeDragEnd(event, info, {
         keepAspectRatio,
-        contentRef: contentRef.current
+        contentRef: contentRef
       })
     },
     [blockFormat, keepAspectRatio, contentRef]
@@ -31,7 +31,7 @@ export const BlockResizer: React.FC<{
     (event, info) => {
       const rect = contentRef.current?.getBoundingClientRect()
       invariant(rect, 'rect is null')
-      blockFormat.onResizeDragStart(event, info, { dimensions: rect })
+      blockFormat.onResizeDragStart(event, info, { dimensions: rect, contentRef: contentRef })
     },
     [blockFormat, contentRef]
   )

@@ -1,6 +1,6 @@
 import { MotionValue, PanInfo, useMotionValue, useTransform } from 'framer-motion'
 import invariant from 'tiny-invariant'
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { RefObject, useCallback, useMemo, useRef, useState } from 'react'
 import type { Editor } from '@app/types'
 import { useEditor } from '../hooks'
 import { stripUnit } from 'polished'
@@ -20,7 +20,7 @@ export type BlockFormatResizerDragEvent = (
       height: number
     }
     keepAspectRatio?: boolean
-    contentRef?: HTMLElement
+    contentRef?: RefObject<HTMLElement | null>
   }
 ) => void
 
@@ -38,6 +38,7 @@ export const useBlockFormat = (block: Editor.Block) => {
   const [isDragging, setIsDragging] = useState(false)
   const startDimensionRef = useRef<{ width: number; height: number } | null>(null)
   const editor = useEditor<Editor.Block>()
+  const maxWidthRef = useRef<number>(0)
 
   const x = useMotionValue(0)
   const y = useMotionValue(0)
@@ -48,7 +49,7 @@ export const useBlockFormat = (block: Editor.Block) => {
     const initWidth = startDimensionRef.current?.width ?? 0
     const newWidth = latestX * 2 + initWidth
     if (isDragging === false) return `${100 * (block.format?.width ?? 1)}%`
-    return Math.max(200, newWidth)
+    return Math.min(maxWidthRef.current, Math.max(200, newWidth))
   })
 
   const height = useTransform(y, (latestY) => {
@@ -65,18 +66,27 @@ export const useBlockFormat = (block: Editor.Block) => {
     }
   })
 
-  const onResizeDragStart: BlockFormatResizerDragEvent = useCallback((event, info, { dimensions }) => {
+  const onResizeDragStart: BlockFormatResizerDragEvent = useCallback((event, info, { dimensions, contentRef }) => {
     invariant(dimensions, 'dimensions is undefined')
-    logger('drag start')
     startDimensionRef.current = dimensions
+    const closetBlock = contentRef?.current?.closest('.tellery-block')
+    const parentElementRect = closetBlock?.parentElement?.getBoundingClientRect()
+    const parentWidth = parentElementRect?.width
+    maxWidthRef.current = parentWidth ?? 200
     setIsDragging(true)
   }, [])
 
   const onResizeDragEnd = useCallback(
-    (event, info, { keepAspectRatio, contentRef }: { keepAspectRatio: boolean; contentRef: HTMLDivElement }) => {
+    (
+      event,
+      info,
+      { keepAspectRatio, contentRef }: { keepAspectRatio: boolean; contentRef: RefObject<HTMLElement | null> }
+    ) => {
       invariant(editor, 'editor is null')
-      const rect = contentRef.getBoundingClientRect()
-      const blockElement = contentRef.closest('.tellery-block')
+      const element = contentRef.current
+      if (!element) return
+      const rect = element.getBoundingClientRect()
+      const blockElement = element.closest('.tellery-block')
       invariant(blockElement, 'blockElement is null')
       // const closetParent = blockElement.parentElement?.offsetWidth
 
@@ -104,12 +114,10 @@ export const useBlockFormat = (block: Editor.Block) => {
         // invariant(typeof heightValue === 'number' && typeof widthValue === 'number', 'height or width invalid')
         logger('resize end', 'width', rect.width, 'parentWidth', parentWidth, 'height', rect.height)
         const newWidth = Math.max(rect.width / parentWidth, 1 / 6)
-        draftBlock.format.width = Math.fround(newWidth)
+        draftBlock.format.width = newWidth
         if (keepAspectRatio === false) {
-          draftBlock.format.aspectRatio = Math.fround(Math.max(rect.width / rect.height, 0.5))
+          draftBlock.format.aspectRatio = Math.max((width.get() as number) / height.get(), 0.5)
         }
-
-        logger(draftBlock.format.width, draftBlock.format.aspectRatio)
       })
       startDimensionRef.current = null
       setIsDragging(false)
@@ -121,7 +129,7 @@ export const useBlockFormat = (block: Editor.Block) => {
         y.set(0)
       }, 0)
     },
-    [editor, block.id, x, y]
+    [editor, block.id, width, height, x, y]
   )
 
   return useMemo(
