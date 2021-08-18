@@ -303,7 +303,6 @@ const VisualizationBlockContent: React.FC<{
           display: inline-block;
           width: calc(100% + ${2 * BORDER_WIDTH + 2}px);
           min-height: 100px;
-          left: -${BORDER_WIDTH + 1}px;
         `}
         ref={contentRef}
         onClick={() => {
