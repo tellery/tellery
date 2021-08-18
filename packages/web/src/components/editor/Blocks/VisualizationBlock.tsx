@@ -423,7 +423,7 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
         min-width: 100px;
         user-select: text;
         position: absolute;
-        padding: 0 20px;
+        padding: 0 ${20 + BORDER_WIDTH}px;
         left: 0;
         top: 0;
       `}
