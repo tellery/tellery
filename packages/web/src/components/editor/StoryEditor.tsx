@@ -21,7 +21,6 @@ import produce from 'immer'
 import isHotkey from 'is-hotkey'
 import React, { CSSProperties, memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { toast } from 'react-toastify'
 import { useEvent } from 'react-use'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import invariant from 'tiny-invariant'
@@ -60,6 +59,7 @@ import {
   getTransformedSelection,
   getTransformedTypeAndPrefixLength,
   insertBlockAfterTranscation,
+  insertBlocksAndMoveOperations,
   isCaretAtEnd,
   isCaretAtStart,
   isSelectionAtFirstLine,
@@ -462,6 +462,7 @@ const _StoryEditor: React.FC<{
 
   const deleteBackward = useCallback(
     (unit: 'character', options: { selection: TellerySelection }) => {
+      console.log('delte backward')
       const operations: Operation[] = []
       const selectionState = options?.selection
       if (selectionState === null || selectionState.type === TellerySelectionType.Block) {
@@ -783,16 +784,13 @@ const _StoryEditor: React.FC<{
               const blockId = selectionState.anchor.blockId
               const block = getBlockFromSnapshot(blockId, snapshot)
               if (!block) return
-              if (block.type === Editor.BlockType.Story) {
-                if (!block.children?.length) {
-                  createFirstOrLastBlockHandler()
-                }
-                return
-              }
+
               const element = getBlockElementContentEditbleById(blockId)
               invariant(element, 'element not exist')
-              // const targetBlockId = block.type === Editor.BlockType.Story ? undefined : blockId
               if (isSelectionAtStart(selectionState)) {
+                if (block.type === Editor.BlockType.Story) {
+                  return
+                }
                 const newBlock = createEmptyBlock({
                   type: Editor.BlockType.Text,
                   storyId,
@@ -826,6 +824,9 @@ const _StoryEditor: React.FC<{
                   parentId: storyId
                 })
                 const getDirection = async (block: Editor.BaseBlock) => {
+                  if (block.type === Editor.BlockType.Story) {
+                    return 'child'
+                  }
                   if (block.type === Editor.BlockType.Toggle) {
                     const collapsedState = await getBlockLocalPreferences({ id: block.id, key: 'toggle' })
                     if (collapsedState) {
@@ -865,20 +866,17 @@ const _StoryEditor: React.FC<{
                         table: 'block',
                         path: ['content']
                       },
-                      {
-                        cmd: 'set',
-                        id: newBlock.id,
-                        args: newBlock,
-                        table: 'block',
-                        path: []
-                      },
-                      {
-                        cmd: 'listAfter',
-                        id: block.parentId,
-                        args: { id: newBlock.id, after: block.id },
-                        table: 'block',
-                        path: ['children']
-                      }
+                      ...insertBlocksAndMoveOperations({
+                        storyId,
+                        blocksFragment: {
+                          children: [newBlock.id],
+                          data: { [newBlock.id]: newBlock }
+                        },
+                        targetBlockId: block.id,
+                        direction: block.type === Editor.BlockType.Story ? 'child' : 'top',
+                        snapshot,
+                        path: 'children'
+                      })
                     ]
                   })
                 })
@@ -888,22 +886,6 @@ const _StoryEditor: React.FC<{
           }
         },
         { hotkeys: ['shift+enter'], handler: (e) => {} },
-        {
-          hotkeys: ['backspace'],
-          handler: (e) => {
-            if (isSelectionCollapsed(selectionState) && selectionState.type === TellerySelectionType.Inline) {
-              if (isSelectionAtStart(selectionState)) {
-                e.preventDefault()
-                deleteBackward('character', { selection: selectionState })
-              }
-            } else {
-              if (selectionState.type === TellerySelectionType.Block) {
-                e.preventDefault()
-                blockTranscations.removeBlocks(storyId, selectionState.selectedBlocks)
-              }
-            }
-          }
-        },
         {
           hotkeys: ['arrowup'],
           handler: (e) => {
@@ -1051,9 +1033,7 @@ const _StoryEditor: React.FC<{
       storyId,
       setSelectionAtBlockStart,
       locked,
-      deleteBackward,
       getBlockLocalPreferences,
-      createFirstOrLastBlockHandler,
       snapshot,
       toggleBlocksIndention,
       blockTranscations
