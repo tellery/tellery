@@ -19,7 +19,6 @@ function Thoughts() {
   const searchParams = useSearchParams()
   const { data: thoughts, refetch: refetchThoughts } = useAllThoughts()
   const commit = useCommit()
-
   useEffect(() => {
     if (thoughts) {
       let element = null
@@ -37,21 +36,15 @@ function Thoughts() {
       }
     }
   }, [searchParams, thoughts])
-
-  const today = useMemo(() => {
-    return dayjs().format('YYYY-MM-DD')
-  }, [])
-
   const showCreateTodaysNotes = useMemo(() => {
     if (thoughts === undefined) return false
+    const today = dayjs().format('YYYY-MM-DD')
     if (thoughts.length >= 1 && thoughts[0].date === today) {
       return false
     }
     return true
-  }, [thoughts, today])
-
+  }, [thoughts])
   const workspace = useWorkspace()
-
   const createTodaysNotes = useCallback(async () => {
     const id = blockIdGenerator()
     await commit({
@@ -68,7 +61,7 @@ function Thoughts() {
               alive: true,
               parentId: workspace.id, // workspaceId
               parentTable: 'workspace',
-              content: { date: today },
+              content: { date: dayjs().format('YYYY-MM-DD') },
               children: [],
               type: 'thought',
               storyId: id,
@@ -79,7 +72,7 @@ function Thoughts() {
       })
     })
     refetchThoughts()
-  }, [commit, refetchThoughts, today, workspace.id])
+  }, [commit, refetchThoughts, workspace.id])
 
   return (
     <div

@@ -17,10 +17,6 @@ import { SideBarContentLayout } from './SideBarContentLayout'
 
 export const SideBarThoughtsSection = () => {
   const { data: thoughts, refetch: refetchThoughts } = useAllThoughts()
-  const today = useMemo(() => {
-    return dayjs().format('YYYY-MM-DD')
-  }, [])
-
   const workspace = useWorkspace()
   const commit = useCommit()
   const openStory = useOpenStory()
@@ -28,7 +24,6 @@ export const SideBarThoughtsSection = () => {
   const user = useLoggedUser()
   const createTodaysNotes = useCallback(async () => {
     const id = blockIdGenerator()
-
     await commit({
       storyId: id,
       transcation: createTranscation({
@@ -43,7 +38,7 @@ export const SideBarThoughtsSection = () => {
               alive: true,
               parentId: workspace.id, // workspaceId
               parentTable: 'workspace',
-              content: { date: today },
+              content: { date: dayjs().format('YYYY-MM-DD') },
               children: [],
               permissions: [{ role: 'manager', type: 'user', id: user.id }],
               type: 'thought',
@@ -56,15 +51,15 @@ export const SideBarThoughtsSection = () => {
     })
     openStory(id, {})
     refetchThoughts()
-  }, [commit, openStory, refetchThoughts, today, user.id, workspace.id])
-
+  }, [commit, openStory, refetchThoughts, user.id, workspace.id])
   const showCreateTodaysNotes = useMemo(() => {
     if (thoughts === undefined) return false
+    const today = dayjs().format('YYYY-MM-DD')
     if (thoughts.length >= 1 && thoughts[0].date === today) {
       return false
     }
     return true
-  }, [thoughts, today])
+  }, [thoughts])
   const { t } = useTranslation()
 
   return (
