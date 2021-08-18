@@ -10,8 +10,8 @@
     <a href="https://tellery.io/docs/changelog">Changelog</a> |
     <a href="https://twitter.com/TelleryHQ">Twitter</a>
     <br /><br />
-    <a href="https://github.com/tellery/tellery/actions/workflows/docker-web.yml">
-        <img src="https://github.com/tellery/tellery/actions/workflows/docker-web.yml/badge.svg?branch=main" />
+    <a href="https://github.com/tellery/tellery/actions/workflows/docker-tellery.yml">
+        <img src="https://github.com/tellery/tellery/actions/workflows/docker-tellery.yml/badge.svg?branch=main" />
     </a>
     <a href="https://github.com/tellery/tellery/actions/workflows/codeql-analysis.yml">
         <img src="https://github.com/tellery/tellery/actions/workflows/codeql-analysis.yml/badge.svg" />
