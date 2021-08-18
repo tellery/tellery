@@ -9,20 +9,20 @@ import { useWorkspace } from '@app/hooks/useWorkspace'
 import { Editor } from '@app/types'
 
 export function useSqlEditor(languageId?: string) {
-  const monaco = useMonaco() || undefined
+  const monaco = useMonaco() ?? undefined
   useEffect(() => {
     if (languageId && monaco) {
       monaco.languages.register({ id: languageId })
     }
   }, [languageId, monaco])
-  useSqlEditorColor(languageId, monaco)
+  useSqlEditorColor(monaco)
   useSqlEditorLanguage(languageId, monaco)
   useSqlEditorTransclusion(languageId, monaco)
 }
 
-function useSqlEditorColor(languageId?: string, monaco?: Monaco) {
+function useSqlEditorColor(monaco?: Monaco) {
   useEffect(() => {
-    if (!monaco || !languageId) {
+    if (!monaco) {
       return
     }
     monaco.editor.defineTheme('tellery', {
@@ -30,14 +30,14 @@ function useSqlEditorColor(languageId?: string, monaco?: Monaco) {
       inherit: true,
       rules: [
         { background: '#FFFFFF' } as unknown as editor.ITokenThemeRule,
-        { token: `identifier.${languageId}`, foreground: '#333333' },
-        { token: `number.${languageId}`, foreground: '#333333' },
+        { token: 'identifier', foreground: '#333333' },
+        { token: 'number', foreground: '#333333' },
         { token: 'keyword', foreground: '#1480BD' },
-        { token: `predefined.${languageId}`, foreground: '#FF6157' },
-        { token: `string.${languageId}`, foreground: '#45B16A' },
-        { token: `operator.${languageId}`, foreground: '#AA5C31' },
-        { token: `delimiter.parenthesis.${languageId}`, foreground: '#B4B4B4' },
-        { token: `transclusion.${languageId}`, foreground: '#555555' },
+        { token: 'predefined', foreground: '#FF6157' },
+        { token: 'string', foreground: '#45B16A' },
+        { token: 'operator', foreground: '#AA5C31' },
+        { token: 'delimiter.parenthesis', foreground: '#B4B4B4' },
+        { token: 'transclusion', foreground: '#555555' },
         { token: 'comment', foreground: '#B4B4B4' }
       ],
       colors: {
@@ -49,7 +49,7 @@ function useSqlEditorColor(languageId?: string, monaco?: Monaco) {
         'editorLink.activeForeground': '#002FA7'
       }
     })
-  }, [monaco, languageId])
+  }, [monaco])
 }
 
 function useSqlEditorLanguage(languageId?: string, monaco?: Monaco) {
