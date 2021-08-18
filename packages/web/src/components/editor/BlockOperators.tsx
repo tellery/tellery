@@ -1,7 +1,7 @@
 import { css } from '@emotion/css'
 import { motion } from 'framer-motion'
 import type { User } from '@app/hooks/api'
-import React, { useContext } from 'react'
+import React from 'react'
 import { useBlockOperators } from './hooks/useStoryOperatorsProvider'
 import Avatar from '../Avatar'
 

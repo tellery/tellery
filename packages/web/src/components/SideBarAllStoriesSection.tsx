@@ -20,7 +20,7 @@ export const SideBarAllStoriesSection = () => {
   const { t } = useTranslation()
   const { data: workspaceView } = useWorkspaceView()
   const [keyword, setKeyword] = useState('')
-  const { data, fetchNextPage, refetch, status, hasNextPage, isLoading, isFetchingNextPage } = useStoriesSearch(keyword)
+  const { data, fetchNextPage, status, hasNextPage, isLoading, isFetchingNextPage } = useStoriesSearch(keyword)
   const getBlockTitle = useGetBlockTitleTextSnapshot()
 
   const items = useMemo<StoryListItemValue[]>(
