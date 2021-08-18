@@ -232,7 +232,8 @@ const _StoryEditor: React.FC<{
           blockRef.current.openMenu()
         }
       }, 100)
-      select && setSelectedBlocks([blockId as string])
+      // TODO: use a highlight animation
+      setSelectedBlocks([blockId as string])
     })
   }, [blockAdminValue, inited, setSelectedBlocks, location.state, location.hash, rootBlock.type])
 
