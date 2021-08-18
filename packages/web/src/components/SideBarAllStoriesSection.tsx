@@ -9,6 +9,7 @@ import dayjs from 'dayjs'
 import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import PerfectScrollbar from 'react-perfect-scrollbar'
+import Avatar from './Avatar'
 import { CircularLoading } from './CircularLoading'
 import { useGetBlockTitleTextSnapshot } from './editor'
 import { NewStoryButton } from './NewStoryButton'
@@ -223,12 +224,11 @@ export const StoryCard: React.FC<{ data: StoryListItemValue }> = ({ data }) => {
               overflow: hidden;
             `}
           >
-            <img
-              src={data.user?.avatar}
+            <Avatar
+              src={data.user.avatar}
+              name={data.user.name}
+              size={14}
               className={css`
-                height: 14px;
-                width: 14px;
-                border-radius: 50%;
                 background-color: #fff;
                 margin-right: 3px;
               `}

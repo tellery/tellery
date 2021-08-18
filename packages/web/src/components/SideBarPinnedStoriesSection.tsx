@@ -8,6 +8,7 @@ import React from 'react'
 import ContentLoader from 'react-content-loader'
 import { useTranslation } from 'react-i18next'
 import PerfectScrollbar from 'react-perfect-scrollbar'
+import Avatar from './Avatar'
 import { useGetBlockTitleTextSnapshot } from './editor'
 import { SideBarContentLayout } from './SideBarContentLayout'
 
@@ -134,12 +135,11 @@ export const StoryCard: React.FC<{ blockId: string }> = ({ blockId }) => {
               overflow: hidden;
             `}
           >
-            <img
-              src={user?.avatar}
+            <Avatar
+              src={user.avatar}
+              name={user.name}
+              size={14}
               className={css`
-                height: 14px;
-                width: 14px;
-                border-radius: 50%;
                 background-color: #fff;
                 margin-right: 3px;
               `}

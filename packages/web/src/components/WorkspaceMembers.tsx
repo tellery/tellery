@@ -24,6 +24,7 @@ import IconButton from './kit/IconButton'
 import { MenuItem } from './MenuItem'
 import { MenuItemDivider } from './MenuItemDivider'
 import PerfectScrollbar from 'react-perfect-scrollbar'
+import Avatar from './Avatar'
 
 type Role = Workspace['members'][0]['role']
 
@@ -317,12 +318,11 @@ function WorkspaceMember(props: {
         align-items: center;
       `}
     >
-      <img
+      <Avatar
         src={user.avatar}
-        width={36}
-        height={36}
+        name={user.name}
+        size={36}
         className={css`
-          border-radius: 100%;
           background-color: ${ThemingVariables.colors.gray[0]};
         `}
       />

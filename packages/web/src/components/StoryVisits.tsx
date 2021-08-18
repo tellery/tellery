@@ -2,10 +2,12 @@ import { useMgetUsers, useStoryVisits } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useSocketInstance } from '@app/hooks/useSocketContextProvider'
 import { ThemingVariables } from '@app/styles'
+import { css } from '@emotion/css'
 import styled from '@emotion/styled'
 import Tippy from '@tippyjs/react'
 import dayjs from 'dayjs'
 import React, { useEffect, useMemo, useState } from 'react'
+import Avatar from './Avatar'
 
 export function StoryVisits(props: { storyId: string; className?: string }) {
   const { storyId } = props
@@ -95,7 +97,14 @@ export function StoryVisits(props: { storyId: string; className?: string }) {
               key={visit.userId}
             >
               <AvatarWrapper index={index} key={visit.userId}>
-                <Avatar src={user.avatar} opacity={isActive ? 1 : 0.3} />
+                <Avatar
+                  src={user.avatar}
+                  name={user.name}
+                  size={32}
+                  className={css`
+                    opacity: ${isActive ? 1 : 0.3};
+                  `}
+                />
               </AvatarWrapper>
             </Tippy>
           )
@@ -118,11 +127,4 @@ const AvatarWrapper = styled.div<{ index: number }>`
   border: 2px solid ${ThemingVariables.colors.gray[5]};
   background-color: ${ThemingVariables.colors.gray[5]};
   z-index: ${(props) => props.index};
-`
-
-const Avatar = styled.img<{ opacity: number }>`
-  height: 32px;
-  width: 32px;
-  border-radius: 100%;
-  opacity: ${({ opacity }) => opacity};
 `

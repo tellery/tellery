@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import type { User } from '@app/hooks/api'
 import React, { useContext } from 'react'
 import { useBlockOperators } from './hooks/useStoryOperatorsProvider'
+import Avatar from '../Avatar'
 
 export const OperatorsAvatar: React.FC<{ blockId: string }> = ({ blockId }) => {
   const operators = useBlockOperators(blockId)
@@ -47,13 +48,15 @@ export const Operator = (props: { operator: User }) => {
       `}
       transition={spring}
     >
-      <img
+      <Avatar
+        src={props.operator.avatar}
+        name={props.operator.name}
+        size={30}
         className={css`
           height: 100%;
           width: 100%;
         `}
-        src={props?.operator.avatar}
-      ></img>
+      />
     </motion.div>
   )
 }
