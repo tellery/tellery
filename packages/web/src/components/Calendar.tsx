@@ -29,7 +29,7 @@ export const Calendar = forwardRef<
   const map = useMemo(
     () =>
       thoughts?.reduce<{ [date: string]: string }>((obj, thought) => {
-        obj[dayjs(thought.date).format('YYYY-MM-DD')] = thought.id
+        obj[thought.date] = thought.id
         return obj
       }, {}) || {},
     [thoughts]
