@@ -18,6 +18,7 @@ import { useQuestionEditor } from './StoryQuestionsEditor'
 import { SQLViewer } from './SQLViewer'
 import YAML from 'yaml'
 import { useGetBlock } from '../hooks/useGetBlock'
+import { CircularLoading } from './CircularLoading'
 
 const STORY_BLOCK_REGEX = new RegExp(`${window.location.protocol}//${window.location.host}/story/(\\S+)#(\\S+)`)
 
@@ -216,6 +217,7 @@ export function SQLEditor(props: {
         language={props.languageId}
         options={options}
         onMount={setEditor}
+        loading={<CircularLoading size={50} color={ThemingVariables.colors.gray[0]} />}
       />
     </>
   )
@@ -306,6 +308,7 @@ function TransclusionContentWidget(props: {
                       scrollBeyondLastLine: false,
                       scrollBeyondLastColumn: 0
                     }}
+                    loading={<CircularLoading size={50} color={ThemingVariables.colors.gray[0]} />}
                     wrapperClassName={css`
                       padding: 0 15px;
                     `}

@@ -1035,6 +1035,7 @@ export const StoryQuestionEditor: React.FC<{
                   readOnly: true,
                   padding: { top: 20, bottom: 0 }
                 }}
+                loading={<CircularLoading size={50} color={ThemingVariables.colors.gray[0]} />}
                 wrapperClassName={css`
                   flex: 1;
                   width: 0 !important;

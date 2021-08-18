@@ -12,6 +12,7 @@ import type { editor } from 'monaco-editor/esm/vs/editor/editor.api'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useGetBlockTitleTextSnapshot } from './editor'
+import { CircularLoading } from './CircularLoading'
 
 export function SQLViewer(props: {
   blockId: string
@@ -143,6 +144,7 @@ export function SQLViewer(props: {
         language={props.languageId}
         options={options}
         onMount={setEditor}
+        loading={<CircularLoading size={50} color={ThemingVariables.colors.gray[0]} />}
       />
     </>
   )
