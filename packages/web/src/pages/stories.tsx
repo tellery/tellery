@@ -15,6 +15,7 @@ import AutoSizer from 'react-virtualized-auto-sizer'
 import { areEqual, ListChildComponentProps, ListOnScrollProps, VariableSizeList } from 'react-window'
 import InfiniteLoader from 'react-window-infinite-loader'
 import { ThemingVariables } from '@app/styles'
+import { NewStoryButton } from '@app/components/NewStoryButton'
 
 const RenderItem = memo(function Item({ index, style, data }: ListChildComponentProps) {
   const { isItemLoaded, isFooter, items, workspaceView, refetch, refetchWorkspaceView, large, width } = data
@@ -195,36 +196,59 @@ const Page = () => {
               >
                 All Stories
               </motion.h1>
-              <motion.input
-                layoutId="input"
+              <motion.div
                 layout="position"
-                autoFocus={true}
+                layoutId="input"
                 className={css`
-                  flex-shrink: 0;
-                  width: 500px;
-                  height: 44px;
-                  background: ${ThemingVariables.colors.gray[5]};
-                  border: 1px solid ${ThemingVariables.colors.gray[1]};
-                  outline: none;
-                  box-sizing: border-box;
-                  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.08), 0px 1px 2px rgba(0, 0, 0, 0.08);
-                  border-radius: 8px;
-                  padding: 0 15px;
-                  background-repeat: no-repeat;
-                  background-position: calc(100% - 15px) 50%;
-
-                  &::placeholder {
-                    font-size: 16px;
-                    color: ${ThemingVariables.colors.gray[0]};
-                  }
+                  display: flex;
                 `}
-                style={{ backgroundImage: SVG2DataURI(IconCommonSearch) }}
-                placeholder="Search"
-                value={keyword}
-                onChange={(e) => {
-                  setKeyword(e.target.value)
-                }}
-              />
+              >
+                <input
+                  autoFocus={true}
+                  className={css`
+                    flex-shrink: 0;
+                    width: 500px;
+                    height: 44px;
+                    background: ${ThemingVariables.colors.gray[5]};
+                    border: 1px solid ${ThemingVariables.colors.gray[1]};
+                    outline: none;
+                    box-sizing: border-box;
+                    box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.08), 0px 1px 2px rgba(0, 0, 0, 0.08);
+                    border-radius: 8px;
+                    padding: 0 15px;
+                    background-repeat: no-repeat;
+                    background-position: calc(100% - 15px) 50%;
+
+                    &::placeholder {
+                      font-size: 16px;
+                      color: ${ThemingVariables.colors.gray[0]};
+                    }
+                  `}
+                  style={{ backgroundImage: SVG2DataURI(IconCommonSearch) }}
+                  placeholder="Search"
+                  value={keyword}
+                  onChange={(e) => {
+                    setKeyword(e.target.value)
+                  }}
+                />
+                <NewStoryButton
+                  tipPlacement="bottom"
+                  classname={css`
+                    background: #ffffff;
+                    border: 1px solid ${ThemingVariables.colors.gray[1]};
+                    box-sizing: border-box;
+                    border-radius: 8px;
+                    height: 44px;
+                    width: 44px;
+                    display: flex;
+                    margin-left: 10px;
+                    justify-content: center;
+                    align-items: center;
+                    box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.08), 0px 1px 2px rgba(0, 0, 0, 0.08);
+                    cursor: pointer;
+                  `}
+                />
+              </motion.div>
             </div>
             <motion.div
               layoutId="header"

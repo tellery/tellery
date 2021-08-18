@@ -1,19 +1,17 @@
-import { IconCommonAdd, IconCommonSearch } from '@app/assets/icons'
+import { IconCommonSearch } from '@app/assets/icons'
 import { useOpenStory } from '@app/hooks'
 import { useStoriesSearch, useWorkspaceView } from '@app/hooks/api'
-import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useStoryPathParams } from '@app/hooks/useStoryPathParams'
 import { ThemingVariables } from '@app/styles'
-import { blockIdGenerator, DEFAULT_TITLE } from '@app/utils'
+import { DEFAULT_TITLE } from '@app/utils'
 import { css } from '@emotion/css'
-import Tippy from '@tippyjs/react'
 import dayjs from 'dayjs'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import PerfectScrollbar from 'react-perfect-scrollbar'
-import { useHistory } from 'react-router-dom'
 import { CircularLoading } from './CircularLoading'
 import { useGetBlockTitleTextSnapshot } from './editor'
+import { NewStoryButton } from './NewStoryButton'
 import { SideBarContentLayout } from './SideBarContentLayout'
 import type { StoryListItemValue } from './StoryListItem'
 
@@ -86,7 +84,20 @@ export const SideBarAllStoriesSection = () => {
               setKeyword(e.target.value)
             }}
           />
-          <NewStoryButton />
+          <NewStoryButton
+            classname={css`
+              background: #ffffff;
+              border: 1px solid ${ThemingVariables.colors.gray[1]};
+              box-sizing: border-box;
+              border-radius: 8px;
+              height: 36px;
+              width: 36px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              cursor: pointer;
+            `}
+          />
         </div>
         <PerfectScrollbar
           className={css`
@@ -122,42 +133,6 @@ export const SideBarAllStoriesSection = () => {
         </PerfectScrollbar>
       </div>
     </SideBarContentLayout>
-  )
-}
-
-const NewStoryButton = () => {
-  const blockTranscations = useBlockTranscations()
-  const history = useHistory()
-
-  const handleCreateNewSotry = useCallback(async () => {
-    const id = blockIdGenerator()
-    await blockTranscations.createNewStory({ id: id })
-    history.push(`/story/${id}`, {
-      focusTitle: true
-    })
-  }, [blockTranscations, history])
-  const { t } = useTranslation()
-
-  return (
-    <Tippy content={t`Create a new story`} hideOnClick={false} arrow={false} placement="right">
-      <div
-        className={css`
-          background: #ffffff;
-          border: 1px solid ${ThemingVariables.colors.gray[1]};
-          box-sizing: border-box;
-          border-radius: 8px;
-          height: 36px;
-          width: 36px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          cursor: pointer;
-        `}
-        onClick={handleCreateNewSotry}
-      >
-        <IconCommonAdd width={20} height={20} color={ThemingVariables.colors.text[0]} />
-      </div>
-    </Tippy>
   )
 }
 
