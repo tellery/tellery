@@ -54,6 +54,7 @@ import { Config, Type } from './v11n/types'
 import MonacoEditor from '@monaco-editor/react'
 import { omit } from 'lodash'
 import YAML from 'yaml'
+import { BlockingUI } from './BlockingUI'
 
 type Mode = 'SQL' | 'VIS' | 'DOWNSTREAM'
 
@@ -434,7 +435,7 @@ export const EditorContent = () => {
         >
           {opendQuestionBlockIds?.map((id) => {
             return (
-              <React.Suspense key={id} fallback={<div>loading...</div>}>
+              <React.Suspense key={id} fallback={null}>
                 <QuestionTab id={id} isActive={id === activeId} tab={tab} onClick={() => setActiveId(id)} />
               </React.Suspense>
             )
@@ -461,7 +462,7 @@ export const EditorContent = () => {
         />
       </TabList>
       {opendQuestionBlockIds.map((id) => (
-        <React.Suspense key={id} fallback={<div>loading...</div>}>
+        <React.Suspense key={id} fallback={<BlockingUI blocking={true} />}>
           <StoryQuestionEditor tab={tab} id={id} setActiveId={setActiveId} />
         </React.Suspense>
       ))}
