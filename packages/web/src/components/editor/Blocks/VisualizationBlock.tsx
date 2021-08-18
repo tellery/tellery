@@ -9,10 +9,8 @@ import {
   IconCommonRefresh,
   IconCommonSql,
   IconCommonTurn,
-  IconCommonUnlink,
   IconCommonUnlock,
   IconMenuDownload,
-  IconMenuDuplicate,
   IconMiscNoResult,
   IconVisualizationSetting
 } from '@app/assets/icons'
@@ -46,12 +44,12 @@ import html2canvas from 'html2canvas'
 import React, {
   ReactNode,
   useCallback,
+  useContext,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
-  useState,
-  useContext,
-  useMemo
+  useState
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -63,7 +61,7 @@ import { BlockResizer } from '../BlockBase/BlockResizer'
 import { ContentEditable } from '../BlockBase/ContentEditable'
 import { DebouncedResizeBlock } from '../DebouncedResizeBlock'
 import { EditorPopover } from '../EditorPopover'
-import { createTranscation, insertBlocksAndMoveOperations, TellerySelectionType } from '../helpers'
+import { createTranscation, insertBlocksAndMoveOperations } from '../helpers'
 import { getBlockImageById } from '../helpers/contentEditable'
 import { useEditor, useLocalSelection } from '../hooks'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
@@ -786,27 +784,6 @@ export const MoreDropdownSelect: React.FC<{
           toast('Link copied')
         }
       },
-      !readonly && {
-        title: 'Duplicate',
-        icon: <IconMenuDuplicate color={ThemingVariables.colors.text[0]} />,
-        action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-          e.preventDefault()
-          e.stopPropagation()
-          const selection = editor?.getSelection()
-          editor?.duplicateHandler(
-            selection?.type === TellerySelectionType.Block ? selection.selectedBlocks : [block.id]
-          )
-        }
-      },
-      !readonly && {
-        title: 'Fork from current SQL',
-        icon: <IconCommonUnlink color={ThemingVariables.colors.text[0]} />,
-        action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-          e.preventDefault()
-          e.stopPropagation()
-          instructions?.unLink()
-        }
-      },
       {
         title: 'Download as CSV',
         icon: <IconMenuDownload color={ThemingVariables.colors.text[0]} />,
@@ -890,8 +867,6 @@ export const MoreDropdownSelect: React.FC<{
     dataAssetBlock.type,
     editor,
     getSnapshot,
-    instructions,
-    readonly,
     sql
   ])
 
