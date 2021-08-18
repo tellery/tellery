@@ -1,3 +1,4 @@
+import { IconMenuDuplicate } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useOnClickOutside } from '@app/hooks'
 import { useFetchStoryChunk } from '@app/hooks/api'
@@ -8,7 +9,7 @@ import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdStat
 import { useSelectionArea } from '@app/hooks/useSelectionArea'
 import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
 import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
-import { BlockSnapshot, getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
+import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor, Story, Thought } from '@app/types'
 import { isUrl, TELLERY_MIME_TYPES } from '@app/utils'
@@ -20,7 +21,9 @@ import { motion } from 'framer-motion'
 import produce from 'immer'
 import isHotkey from 'is-hotkey'
 import React, { CSSProperties, memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { useEvent, useScrollbarWidth } from 'react-use'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import invariant from 'tiny-invariant'
@@ -37,6 +40,7 @@ import {
   splitToken,
   tokenPosition2SplitedTokenPosition
 } from '.'
+import IconButton from '../kit/IconButton'
 import { ThoughtItemHeader } from '../ThoughtItem'
 import { isBlockHasChildren, isQuestionLikeBlock, isTextBlock, isVisualizationBlock } from './Blocks/utils'
 import { ContentBlocks } from './ContentBlock'
@@ -651,8 +655,62 @@ const _StoryEditor: React.FC<{
   }, [canWrite, rootBlock])
 
   const focusBlockHandler = usePushFocusedBlockIdState()
+  const { t } = useTranslation()
 
-  // const afterDuplicate = useCallback(() => {},[])
+  const afterDuplicateBlocks = useCallback(
+    (duplicatedBlocksFragment: { children: string[]; data: Record<string, Editor.BaseBlock> }) => {
+      const lastBlockId = duplicatedBlocksFragment.children[duplicatedBlocksFragment.children.length - 1]
+      const currentBlock = duplicatedBlocksFragment.data[lastBlockId]
+      const blockId = currentBlock.id
+
+      focusBlockHandler(blockId, currentBlock.storyId, false)
+      const visBlocks: Editor.VisualizationBlock[] = Object.values(duplicatedBlocksFragment.data).filter((block) =>
+        isVisualizationBlock(block.type)
+      )
+
+      const unlinkAll = () => {
+        visBlocks.forEach((block) => {
+          blockAdminValue.getBlockInstanceById(block.id).then(({ blockRef }) => {
+            const visBlockRef = blockRef.current as any
+            visBlockRef.unLink()
+            visBlockRef.openMenu()
+          })
+        })
+      }
+      if (visBlocks.length) {
+        toast(
+          <div
+            className={css`
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            `}
+          >
+            <div
+              className={css`
+                color: ${ThemingVariables.colors.text[1]};
+              `}
+            >
+              {t('You pasted {{count}} visualization block', { count: visBlocks.length })}
+            </div>
+            <IconButton
+              hoverContent={t`Duplicate data assets too`}
+              icon={IconMenuDuplicate}
+              color={ThemingVariables.colors.text[0]}
+              className={css`
+                margin-left: 20px;
+              `}
+              onClick={() => {
+                unlinkAll()
+              }}
+            />
+          </div>,
+          { position: 'bottom-center' }
+        )
+      }
+    },
+    [blockAdminValue, focusBlockHandler, t]
+  )
 
   const duplicateHandler = useCallback(
     (blockIds: string[]) => {
@@ -675,16 +733,13 @@ const _StoryEditor: React.FC<{
       })
 
       setSelectedBlocks(duplicatedBlocksFragment.children)
-      const lastBlockId = duplicatedBlocksFragment.children[duplicatedBlocksFragment.children.length - 1]
-      const currentBlock = duplicatedBlocksFragment.data[lastBlockId]
-      const blockId = currentBlock.id
-      focusBlockHandler(blockId, currentBlock.storyId, isQuestionLikeBlock(currentBlock.type))
-      // toast(<div>dsfsdfsdfsfdsf</div>, {})
+      afterDuplicateBlocks(duplicatedBlocksFragment)
+      // if(.some(block => isQu))
       // toast('duplicate success')
 
       return duplicatedBlocksFragment
     },
-    [blockTranscations, focusBlockHandler, setSelectedBlocks, snapshot, storyId]
+    [afterDuplicateBlocks, blockTranscations, setSelectedBlocks, snapshot, storyId]
   )
 
   const globalKeyDownHandler = useCallback(
@@ -1173,6 +1228,8 @@ const _StoryEditor: React.FC<{
           })
 
           setSelectedBlocks(duplicatedBlocksFragment.children)
+
+          afterDuplicateBlocks(duplicatedBlocksFragment)
         } else if (telleryTokenDataStr) {
           if (!selectionState) return
           if (isSelectionCollapsed(selectionState) && selectionState.type === TellerySelectionType.Inline) {
@@ -1270,7 +1327,8 @@ const _StoryEditor: React.FC<{
       setSelectedBlocks,
       setBlockValue,
       focusingBlockId,
-      setSelectionState
+      setSelectionState,
+      afterDuplicateBlocks
     ]
   )
 
