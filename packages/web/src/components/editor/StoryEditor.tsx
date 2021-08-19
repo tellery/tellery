@@ -946,7 +946,7 @@ const _StoryEditor: React.FC<{
                     ]
                   })
                 })
-                setSelectionAtBlockStart(newBlock)
+                setSelectionAtBlockStart(block)
               }
             }
           }
