@@ -5,6 +5,11 @@ html {
     'Segoe UI Emoji', 'Segoe UI Symbol';
   fill: currentcolor;
   -webkit-font-smoothing: auto;
+  height: -webkit-fill-available;
+}
+
+body {
+  overflow: hidden;
 }
 
 body,

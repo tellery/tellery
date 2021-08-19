@@ -4,6 +4,7 @@ import { NavigationHeader } from '@app/components/NavigationHeader'
 import { SideBarMetricsSection } from '@app/components/SideBarMetricsSection'
 import { StoryBackLinks } from '@app/components/StoryBackLinks'
 import { StoryQuestionsEditor } from '@app/components/StoryQuestionsEditor'
+import { useMediaQuery } from '@app/hooks'
 import { useBlockSuspense, useFetchStoryChunk, useRecordStoryVisits, useStoryPinnedStatus } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useWorkspace } from '@app/hooks/useWorkspace'
@@ -22,6 +23,8 @@ const _Page: React.FC = () => {
   const recordVisits = useRecordStoryVisits()
   const user = useLoggedUser()
   const workspace = useWorkspace()
+  const matches = useMediaQuery('only screen and (min-width: 700px)')
+
   useEffect(() => {
     if (id) {
       recordVisits.mutate({ workspaceId: workspace.id, storyId: id, userId: user.id })
@@ -70,15 +73,17 @@ const _Page: React.FC = () => {
               </React.Suspense>
             </div>
             <Layout>
-              <div
-                className={css`
-                  width: 240px;
-                `}
-              >
-                <React.Suspense fallback={<div></div>}>
-                  <SideBarMetricsSection />
-                </React.Suspense>
-              </div>
+              {matches && (
+                <div
+                  className={css`
+                    width: 240px;
+                  `}
+                >
+                  <React.Suspense fallback={<div></div>}>
+                    <SideBarMetricsSection />
+                  </React.Suspense>
+                </div>
+              )}
               <StoryContainer>
                 <React.Suspense fallback={<BlockingUI blocking size={50} />}>
                   <StoryContent storyId={id} />

@@ -224,13 +224,17 @@ const _StoryEditor: React.FC<{
     if (!blockId) return
     // TODO: if block not belong to this story...
     blockAdminValue.getBlockInstanceById(blockId).then(({ wrapperElement, blockRef }) => {
+      const scrollContainer = editorRef.current?.parentElement
+
+      invariant(scrollContainer, 'scrollContainer is falsy')
+
       setTimeout(() => {
         scrollIntoView(wrapperElement, {
           scrollMode: 'if-needed',
           behavior: 'smooth',
           block: 'center',
           inline: 'nearest',
-          boundary: editorRef.current?.parentElement
+          boundary: scrollContainer
         })
         if (openMenu) {
           blockRef.current.openMenu()
