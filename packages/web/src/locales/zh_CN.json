@@ -10,7 +10,7 @@
   "Capture today's thought": "记录今天的想法",
   "Current Page": "当前页面",
   "Data Assets": "数据资产",
-  "You pasted {{count}} visualization block": "已复制{{count}}个图表",
-  "You pasted {{count}} visualization block_plural": "已复制{{count}}个图表",
+  "You pasted {{count}} visualization block": "已复制 {{count}} 个图表",
+  "You pasted {{count}} visualization block_plural": "已复制 {{count}} 个图表",
   "Duplicate data assets too": "同时复制数据"
 }
