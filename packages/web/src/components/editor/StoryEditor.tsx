@@ -939,14 +939,14 @@ const _StoryEditor: React.FC<{
                           data: { [newBlock.id]: newBlock }
                         },
                         targetBlockId: block.id,
-                        direction: block.type === Editor.BlockType.Story ? 'child' : 'top',
+                        direction: block.type === Editor.BlockType.Story ? 'child' : 'bottom',
                         snapshot,
                         path: 'children'
                       })
                     ]
                   })
                 })
-                setSelectionAtBlockStart(block)
+                setSelectionAtBlockStart(newBlock)
               }
             }
           }
