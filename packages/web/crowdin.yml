@@ -1,0 +1,5 @@
+commit_message: "fix: New %language% translations from Crowdin [ci skip]"
+append_commit_message: false
+files:
+  - source: /src/locales/en_US.json
+    translation: /src/locales/%locale_with_underscore%.json
