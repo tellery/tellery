@@ -19,6 +19,9 @@
     <a href="/LICENSE">
         <img alt="license" src="https://img.shields.io/github/license/tellery/tellery?logo=apache" alt="license" />
     </a>
+    <a title="Crowdin" target="_blank" href="https://crowdin.com/project/tellery">
+        <img src="https://badges.crowdin.net/tellery/localized.svg">
+    </a>
 </p>
 
 
