@@ -154,7 +154,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
     // TODO: it just works
     if (willFlush) {
       try {
-        const range = tellerySelection2Native(localSelection!)
+        const range = tellerySelection2Native(localSelection!, editbleRef.current)
         range && restoreRange(range)
         logger('resotre range', range)
       } catch (e) {

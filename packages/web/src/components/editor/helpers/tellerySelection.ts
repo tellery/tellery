@@ -200,7 +200,7 @@ const findNodesAtIndex = (container: HTMLElement, index: number, offset: number)
   return defaultResult
 }
 
-export const tellerySelection2Native = (sel?: TellerySelection): Range | null => {
+export const tellerySelection2Native = (sel?: TellerySelection, containerEl?: HTMLElement | null): Range | null => {
   if (!sel) {
     return null
   }
@@ -209,25 +209,25 @@ export const tellerySelection2Native = (sel?: TellerySelection): Range | null =>
     return null
   }
 
-  const containerEl = getBlockElementContentEditbleById(sel.anchor.blockId)
-  if (!containerEl) {
+  const container = containerEl ?? getBlockElementContentEditbleById(sel.anchor.blockId)
+  if (!container) {
     return null
   }
 
   if (isSelectionAtStart(sel)) {
-    return getElementStartPoint(containerEl)
+    return getElementStartPoint(container)
   }
 
-  const doc = containerEl.ownerDocument
+  const doc = container.ownerDocument
   const range = doc.createRange()
-  const start = findNodesAtIndex(containerEl, sel.anchor.nodeIndex, sel.anchor.offset)
+  const start = findNodesAtIndex(container, sel.anchor.nodeIndex, sel.anchor.offset)
 
   range.setStart(start.node, start.offset)
-  const end = findNodesAtIndex(containerEl, sel.focus.nodeIndex, sel.focus.offset)
+  const end = findNodesAtIndex(container, sel.focus.nodeIndex, sel.focus.offset)
   range.setEnd(end.node, end.offset)
 
-  if (start.node === end.node && start.node === containerEl) {
-    return getElementEndPoint(containerEl)
+  if (start.node === end.node && start.node === container) {
+    return getElementEndPoint(container)
   }
 
   return range
