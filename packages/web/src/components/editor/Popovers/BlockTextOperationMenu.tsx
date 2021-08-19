@@ -102,7 +102,7 @@ export const BlockTextOperationMenu = (props: { currentBlockId: string | null })
     return () => {
       document.removeEventListener('mousedown', onMouseDown)
       document.removeEventListener('mouseup', onMouseUp)
-      document.addEventListener('keyup', onMouseUp)
+      document.removeEventListener('keyup', onMouseUp)
     }
   }, [])
 
