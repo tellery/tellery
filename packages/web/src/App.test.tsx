@@ -7,7 +7,7 @@ import { describe, it } from 'mocha'
 describe('<App>', () => {
   it('renders learn react link', () => {
     const { getByText } = render(<App />)
-    const linkElement = getByText(/learn react/i)
+    const linkElement = getByText(/Tellery/i)
     console.log(linkElement)
     expect(true)
   })
