@@ -34,6 +34,18 @@ export interface EditableRef {
   openSlashCommandMenu: () => void
 }
 
+const decodeHTML = function (html: string | null) {
+  if (typeof html === 'string') {
+    const txt = document.createElement('textarea')
+    txt.innerHTML = html
+    const value = txt.value
+    txt.remove()
+    return value
+  }
+
+  return ''
+}
+
 const _ContentEditable: React.ForwardRefRenderFunction<
   EditableRef,
   {
@@ -134,7 +146,8 @@ const _ContentEditable: React.ForwardRefRenderFunction<
       }, 0)
     }
     if (!isComposing.current && element) {
-      if (leavesHtml !== element.innerHTML && leavesHtml !== null) {
+      // leavesHTML is encoded, but innerHTML is decoded
+      if (leavesHtml !== null && decodeHTML(leavesHtml) !== element.innerHTML) {
         if (isFocusing && document.activeElement === element) {
           setWillFlush(true)
         }
