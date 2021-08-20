@@ -24,7 +24,6 @@ const replaceIdsWithVariable = (formula: string) => {
 
   while (true) {
     const match = result.match(BLOCK_ID_REGX)
-    console.log(match)
     if (match) {
       const blockId = match[1] as string
       const variableName = variableNameGen.next().value

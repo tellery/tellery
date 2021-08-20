@@ -54,7 +54,6 @@ export const TelleryBlockAtom = atomFamily<Editor.BaseBlock, string>({
         return value
       }
       param.onSet(onSet)
-
       const unsubscribe = subscribeBlockUpdate(blocId, (newValue) => {
         param.setSelf((oldValue) => onSet(newValue, oldValue))
       })

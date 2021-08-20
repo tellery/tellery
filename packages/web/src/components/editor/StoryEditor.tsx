@@ -327,7 +327,7 @@ const _StoryEditor: React.FC<{
           }
 
           logger('commit')
-          return setBlockTranscation({ oldBlock, newBlock })
+          return setBlockTranscation({ oldBlock, newBlock: newBlock })
         },
         storyId
       })
@@ -466,7 +466,6 @@ const _StoryEditor: React.FC<{
 
   const deleteBackward = useCallback(
     (unit: 'character', options: { selection: TellerySelection }) => {
-      console.log('delte backward')
       const operations: Operation[] = []
       const selectionState = options?.selection
       if (selectionState === null || selectionState.type === TellerySelectionType.Block) {
@@ -1369,6 +1368,7 @@ const _StoryEditor: React.FC<{
     setSelectedBlocks
   ])
 
+  // stay
   const editorClickHandler = useCallback<React.MouseEventHandler<HTMLDivElement>>(
     (e) => {
       // e.preventDefault()
