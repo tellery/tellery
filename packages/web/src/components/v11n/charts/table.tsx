@@ -220,7 +220,7 @@ export const table: Chart<Type.TABLE> = {
                       `}
                       align={isNumeric(column.displayType) && !isTimeSeries(column.displayType) ? 'right' : 'left'}
                     >
-                      <Tippy content={column.sqlType}>
+                      <Tippy content={column.sqlType} delay={300}>
                         <span>{column.name}</span>
                       </Tippy>
                     </th>
