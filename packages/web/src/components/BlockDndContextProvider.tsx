@@ -269,7 +269,6 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
               opacity: 0.5;
             `}
           >
-            画乛
             {isDragging && <React.Suspense fallback={<div>loading...</div>}>{previewData}</React.Suspense>}
           </DragOverlay>
         </DroppingAreaContext.Provider>
