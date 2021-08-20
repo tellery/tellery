@@ -538,7 +538,9 @@ export const scatter: Chart<Type.SCATTER> = {
                       key={`cell-${index}`}
                       fill={
                         color.color >= ThemingVariables.colors.visualization.length
-                          ? ThemingVariables.colors.visualizationOther
+                          ? hoverDataKey === color.key
+                            ? ThemingVariables.colors.visualizationOtherHighlight
+                            : ThemingVariables.colors.visualizationOther
                           : ThemingVariables.colors.visualization[color.color]
                       }
                       opacity={hoverDataKey === undefined || hoverDataKey === color.key ? 1 : opacity}

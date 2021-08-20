@@ -22,6 +22,7 @@ export interface TelleryTheme {
     warning: string[]
     visualization: string[]
     visualizationOther: string
+    visualizationOtherHighlight: string
   }
   boxShadows: string[]
 }
@@ -62,7 +63,8 @@ export const TelleryThemeLight: TelleryTheme = {
       '#008685',
       '#F08BB4'
     ],
-    visualizationOther: '#DEDEDE'
+    visualizationOther: '#DEDEDE',
+    visualizationOtherHighlight: '#999999'
   },
   boxShadows: ['0px 1px 4px rgba(0, 0, 0, 0.08), 0px 1px 2px rgba(0, 0, 0, 0.08), 0px 4px 12px rgba(0, 0, 0, 0.16)']
 }
