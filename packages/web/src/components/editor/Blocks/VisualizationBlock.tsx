@@ -32,7 +32,7 @@ import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnap
 import { useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
-import { DEFAULT_TITLE, snapshotToCSV, TELLERY_MIME_TYPES } from '@app/utils'
+import { snapshotToCSV, TELLERY_MIME_TYPES } from '@app/utils'
 import { css, cx, keyframes } from '@emotion/css'
 import styled from '@emotion/styled'
 import Tippy from '@tippyjs/react'
@@ -52,15 +52,15 @@ import React, {
   useRef,
   useState
 } from 'react'
+import DetectableOverflow from 'react-detectable-overflow'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { useHoverDirty } from 'react-use'
+import { useHoverDirty, useMeasure } from 'react-use'
 import invariant from 'tiny-invariant'
 import { BlockingUI } from '../BlockBase/BlockingUIBlock'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
 import { BlockResizer } from '../BlockBase/BlockResizer'
-import { ContentEditable } from '../BlockBase/ContentEditable'
 import { BlockTitle } from '../BlockTitle'
 import { DebouncedResizeBlock } from '../DebouncedResizeBlock'
 import { EditorPopover } from '../EditorPopover'
@@ -74,7 +74,7 @@ import { DEFAULT_QUESTION_BLOCK_ASPECT_RATIO, DEFAULT_QUESTION_BLOCK_WIDTH } fro
 import { BlockComponent, isExecuteableBlockType, registerBlock } from './utils'
 
 const FOOTER_HEIGHT = 20
-const BORDER_WIDTH = 4
+const BORDER_WIDTH = 0
 
 const rotateAnimation = keyframes`
   0% {
@@ -150,9 +150,10 @@ const useVisulizationBlockInstructions = () => {
 const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProps> = (props, ref) => {
   const editor = useEditor<Editor.VisualizationBlock>()
   const { block } = props
-  const elementRef = useRef<HTMLDivElement | null>(null)
   const commit = useCommit()
   const snapshot = useBlockSnapshot()
+  const [measureRef, rect] = useMeasure<HTMLDivElement>()
+  const elementRef = useRef<HTMLDivElement | null>(null)
   const dataAssetId = block.content?.dataAssetId
 
   const instructions = useVisulizationBlockInstructionsProvider(block)
@@ -201,16 +202,28 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const isHover = useHoverDirty(elementRef)
+
   return (
     <VisulizationInstructionsContext.Provider value={instructions}>
-      <div ref={elementRef} className={QuestionsBlockContainer} tabIndex={-1}>
+      <div
+        ref={(el) => {
+          measureRef(el as unknown as HTMLDivElement)
+          elementRef.current = el
+        }}
+        className={QuestionsBlockContainer}
+      >
+        <React.Suspense fallback={<></>}>
+          {block.content?.dataAssetId && <QuestionBlockHeader block={block} />}
+          <QuestionBlockButtons block={block} show={isHover} slim={rect.width < 260} />
+        </React.Suspense>
+
         {dataAssetId === undefined ? (
           <BlockPlaceHolder loading={false} text="New Question" />
         ) : (
           <VisualizationBlockContent
             dataAssetId={dataAssetId}
             block={block}
-            wrapperRef={elementRef}
             blockFormat={props.blockFormat}
             parentType={props.parentType}
           />
@@ -223,15 +236,13 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
 const VisualizationBlockContent: React.FC<{
   dataAssetId: string
   block: Editor.VisualizationBlock
-  wrapperRef: React.MutableRefObject<HTMLDivElement | null>
   blockFormat: BlockFormatInterface
   parentType: Editor.BlockType
-}> = ({ dataAssetId, block, wrapperRef, blockFormat, parentType }) => {
+}> = ({ dataAssetId, block, blockFormat, parentType }) => {
   const dataAssetBlock = useBlockSuspense<Editor.DataAssetBlock>(dataAssetId)
   const snapshotId = dataAssetBlock?.content?.snapshotId
   const commit = useCommit()
   const storyBlock = useBlockSuspense(block.storyId!)
-  const isHover = useHoverDirty(wrapperRef)
 
   const mutateSnapshot = useRefreshSnapshot()
   const mutatingCount = useSnapshotMutating(dataAssetBlock.id)
@@ -261,12 +272,8 @@ const VisualizationBlockContent: React.FC<{
     }
   }, [block.storyId, commit, dataAssetId, storyBlock.id, storyBlock.resources])
 
-  const isReferenceDataAssetBlock = dataAssetBlock.storyId !== block.storyId
-
   return (
     <>
-      <QuestionBlockButtons block={block} dataAssetBlock={dataAssetBlock} show={isHover} dataAssetId={dataAssetId} />
-      <QuestionBlockHeader isReference={isReferenceDataAssetBlock} dataAssetBlock={dataAssetBlock} />
       <QuestionBlockStatus dataAssetBlock={dataAssetBlock} />
       <motion.div
         style={{
@@ -320,10 +327,9 @@ registerBlock(Editor.BlockType.Visualization, VisualizationBlock)
 
 export const QuestionBlockButtons: React.FC<{
   block: Editor.VisualizationBlock
-  dataAssetBlock: Editor.DataAssetBlock
   show: boolean
-  dataAssetId: string
-}> = ({ block, show, dataAssetBlock }) => {
+  slim: boolean
+}> = ({ block, show, slim }) => {
   const { small } = useBlockBehavior()
 
   return (
@@ -345,7 +351,7 @@ export const QuestionBlockButtons: React.FC<{
             border-radius: 8px;
           `}
         >
-          <TitleButtonsInner block={block} dataAssetBlock={dataAssetBlock} sql={dataAssetBlock.content?.sql ?? ''} />
+          <TitleButtonsInner block={block} slim={slim} />
         </motion.div>
       )}
     </AnimatePresence>
@@ -427,10 +433,13 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
 const QuestionBlockBody = React.forwardRef(_QuestionBlockBody)
 
 const QuestionBlockHeader: React.FC<{
-  isReference: boolean
-  dataAssetBlock: Editor.DataAssetBlock
-}> = ({ dataAssetBlock, isReference }) => {
+  block: Editor.VisualizationBlock
+}> = ({ block }) => {
   const { t } = useTranslation()
+  const dataAssetBlock = useBlockSuspense(block.content?.dataAssetId!)
+  const isReference = dataAssetBlock.storyId !== block.storyId
+  const [disableTippy, setDisableTippy] = useState(true)
+
   return (
     <>
       <div
@@ -460,42 +469,36 @@ const QuestionBlockHeader: React.FC<{
             `}
           />
         )}
-        <div
-          className={css`
-            display: flex;
-            align-items: center;
-            flex: 1;
-          `}
+        <Tippy
+          content={<BlockTitle block={dataAssetBlock} />}
+          placement="top-start"
+          arrow={false}
+          delay={350}
+          disabled={disableTippy}
         >
-          <Tippy content={<BlockTitle block={dataAssetBlock} />} placement="top-start" arrow={false} delay={350}>
-            <div
-              className={cx(
-                css`
-                  font-style: normal;
-                  font-weight: 600;
-                  font-size: 1em;
-                  line-height: 1.2;
-                  color: ${ThemingVariables.colors.text[0]};
-                  flex: 1;
-                  align-self: stretch;
-                  position: relative;
-                  display: flex;
-                `
-              )}
+          <div
+            className={css`
+              font-style: normal;
+              font-weight: 600;
+              font-size: 1em;
+              line-height: 1.2;
+              color: ${ThemingVariables.colors.text[0]};
+              align-self: stretch;
+              position: relative;
+              display: flex;
+              overflow: hidden;
+            `}
+          >
+            <DetectableOverflow
+              className={css``}
+              onChange={(overflowed) => {
+                setDisableTippy(!overflowed)
+              }}
             >
-              <ContentEditable
-                block={dataAssetBlock}
-                disableReferenceDropdown
-                disableSlashCommand
-                disableTextToolBar
-                readonly={true}
-                maxLines={1}
-                placeHolderText={DEFAULT_TITLE}
-                placeHolderStrategy={'always'}
-              />
-            </div>
-          </Tippy>
-        </div>
+              <BlockTitle block={dataAssetBlock} />
+            </DetectableOverflow>
+          </div>
+        </Tippy>
       </div>
     </>
   )
@@ -700,21 +703,44 @@ export const LazyRenderDiagram: React.FC<{ data?: Data; config: Config<Type> }> 
 
 export const MoreDropdownSelect: React.FC<{
   block: Editor.VisualizationBlock
-  sql: string
   hoverContent: ReactNode
   className?: string
-  dataAssetBlock: Editor.DataAssetBlock
   setIsActive: (active: boolean) => void
-}> = ({ block, sql, setIsActive, className, hoverContent, dataAssetBlock }) => {
+}> = ({ block, setIsActive, className, hoverContent }) => {
   const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null)
   const { data: user } = useUser(block?.lastEditedById ?? null)
   const editor = useEditor<Editor.VisualizationBlock>()
   const { readonly } = useBlockBehavior()
+  const dataAssetBlock = useBlockSuspense<Editor.DataAssetBlock>(block.content?.dataAssetId!)
   const canConvertDataAsset = !readonly && dataAssetBlock.storyId === block.storyId
   const getSnapshot = useGetSnapshot()
+  const questionEditor = useQuestionEditor()
+  const { t } = useTranslation()
+  const mutateSnapshot = useRefreshSnapshot()
 
   const operations = useMemo(() => {
     return [
+      {
+        title: t`Refresh Query`,
+        icon: <IconCommonRefresh color={ThemingVariables.colors.text[0]} />,
+        action: () => {
+          mutateSnapshot.execute(dataAssetBlock)
+        }
+      },
+      {
+        title: t`Visualization options`,
+        icon: <IconVisualizationSetting color={ThemingVariables.colors.text[0]} />,
+        action: () => {
+          questionEditor.open({ mode: 'VIS', blockId: block.id, storyId: block.storyId! })
+        }
+      },
+      {
+        title: t`Edit SQL`,
+        icon: <IconCommonSql color={ThemingVariables.colors.text[0]} />,
+        action: () => {
+          questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
+        }
+      },
       {
         title: 'Copy link',
         icon: <IconCommonLink color={ThemingVariables.colors.text[0]} />,
@@ -771,7 +797,7 @@ export const MoreDropdownSelect: React.FC<{
         title: 'Copy SQL',
         icon: <IconCommonCopy color={ThemingVariables.colors.text[0]} />,
         action: () => {
-          copy(sql)
+          copy(dataAssetBlock.content?.sql ?? '')
         }
       },
       canConvertDataAsset &&
@@ -821,9 +847,10 @@ export const MoreDropdownSelect: React.FC<{
     dataAssetBlock?.content?.snapshotId,
     dataAssetBlock.id,
     dataAssetBlock.type,
+    questionEditor,
+    t,
     editor,
-    getSnapshot,
-    sql
+    getSnapshot
   ])
 
   const { isOpen, openMenu, getToggleButtonProps, getMenuProps, highlightedIndex, getItemProps, closeMenu } = useSelect(
@@ -917,19 +944,35 @@ export const MoreDropdownSelect: React.FC<{
   )
 }
 
-const TitleButtonsInner: React.FC<{
-  block: Editor.VisualizationBlock
-  dataAssetBlock: Editor.DataAssetBlock
-  sql: string
-}> = ({ block, sql, dataAssetBlock }) => {
+const VisBlockRefereshButton: React.FC<{ block: Editor.VisualizationBlock }> = ({ block }) => {
   const { t } = useTranslation()
+  const dataAssetBlock = useBlockSuspense(block.content!.dataAssetId!)
   const { readonly } = useBlockBehavior()
-  const [isActive, setIsActive] = useState(false)
-  const [isPresent, safeToRemove] = usePresence()
-  const questionEditor = useQuestionEditor()
   const mutateSnapshot = useRefreshSnapshot()
   const mutatingCount = useSnapshotMutating(dataAssetBlock.id)
   const loading = mutatingCount !== 0
+  return !readonly && isExecuteableBlockType(dataAssetBlock.type) ? (
+    <QuestionBlockIconButton>
+      <RefreshButton
+        color={ThemingVariables.colors.gray[5]}
+        loading={loading}
+        hoverContent={t`Refresh`}
+        onClick={
+          loading ? () => mutateSnapshot.cancel(dataAssetBlock.id) : () => mutateSnapshot.execute(dataAssetBlock)
+        }
+      />
+    </QuestionBlockIconButton>
+  ) : null
+}
+
+const TitleButtonsInner: React.FC<{
+  block: Editor.VisualizationBlock
+  slim: boolean
+}> = ({ block, slim }) => {
+  const { t } = useTranslation()
+  const [isActive, setIsActive] = useState(false)
+  const [isPresent, safeToRemove] = usePresence()
+  const questionEditor = useQuestionEditor()
 
   useEffect(() => {
     isActive === false && !isPresent && safeToRemove?.()
@@ -946,43 +989,32 @@ const TitleButtonsInner: React.FC<{
         }
       `}
     >
-      <QuestionBlockIconButton>
-        {!readonly && isExecuteableBlockType(dataAssetBlock.type) && (
-          <RefreshButton
-            color={ThemingVariables.colors.gray[5]}
-            loading={loading}
-            hoverContent={t`Refresh`}
-            onClick={
-              loading ? () => mutateSnapshot.cancel(dataAssetBlock.id) : () => mutateSnapshot.execute(dataAssetBlock)
-            }
-          />
-        )}
-      </QuestionBlockIconButton>
-      <QuestionBlockIconButton>
-        <IconButton
-          hoverContent={t`Visualization options`}
-          icon={IconVisualizationSetting}
-          color={ThemingVariables.colors.gray[5]}
-          onClick={() => questionEditor.open({ mode: 'VIS', blockId: block.id, storyId: block.storyId! })}
-        />
-      </QuestionBlockIconButton>
-      <QuestionBlockIconButton>
-        <IconButton
-          hoverContent={t`Edit SQL`}
-          icon={IconCommonSql}
-          color={ThemingVariables.colors.gray[5]}
-          onClick={() => questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })}
-        />
-      </QuestionBlockIconButton>
-      <QuestionBlockIconButton>
-        <MoreDropdownSelect
-          hoverContent={t`More`}
-          block={block}
-          sql={sql}
-          setIsActive={setIsActive}
-          dataAssetBlock={dataAssetBlock}
-        />
-      </QuestionBlockIconButton>
+      {slim === false && (
+        <>
+          {block.content?.dataAssetId && <VisBlockRefereshButton block={block} />}
+          <QuestionBlockIconButton>
+            <IconButton
+              hoverContent={t`Visualization options`}
+              icon={IconVisualizationSetting}
+              color={ThemingVariables.colors.gray[5]}
+              onClick={() => questionEditor.open({ mode: 'VIS', blockId: block.id, storyId: block.storyId! })}
+            />
+          </QuestionBlockIconButton>
+          <QuestionBlockIconButton>
+            <IconButton
+              hoverContent={t`Edit SQL`}
+              icon={IconCommonSql}
+              color={ThemingVariables.colors.gray[5]}
+              onClick={() => questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })}
+            />
+          </QuestionBlockIconButton>
+        </>
+      )}
+      {block.content?.dataAssetId && (
+        <QuestionBlockIconButton>
+          <MoreDropdownSelect hoverContent={t`More`} block={block} setIsActive={setIsActive} />
+        </QuestionBlockIconButton>
+      )}
     </div>
   )
 }
