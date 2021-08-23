@@ -23,7 +23,7 @@ import { Diagram } from '@app/components/v11n'
 import { charts } from '@app/components/v11n/charts'
 import { Config, Data, Type } from '@app/components/v11n/types'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
-import { useOnClickOutside, useOnScreen } from '@app/hooks'
+import { useOnScreen } from '@app/hooks'
 import { useBlockSuspense, useGetSnapshot, useSnapshot, useUser } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
 import { useGetBlock } from '@app/hooks/useGetBlock'
@@ -34,6 +34,7 @@ import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { DEFAULT_TITLE, snapshotToCSV, TELLERY_MIME_TYPES } from '@app/utils'
 import { css, cx, keyframes } from '@emotion/css'
+import styled from '@emotion/styled'
 import Tippy from '@tippyjs/react'
 import copy from 'copy-to-clipboard'
 import dayjs from 'dayjs'
@@ -54,16 +55,18 @@ import React, {
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import { useHoverDirty } from 'react-use'
 import invariant from 'tiny-invariant'
 import { BlockingUI } from '../BlockBase/BlockingUIBlock'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
 import { BlockResizer } from '../BlockBase/BlockResizer'
 import { ContentEditable } from '../BlockBase/ContentEditable'
+import { BlockTitle } from '../BlockTitle'
 import { DebouncedResizeBlock } from '../DebouncedResizeBlock'
 import { EditorPopover } from '../EditorPopover'
 import { createTranscation, insertBlocksAndMoveOperations } from '../helpers'
 import { getBlockImageById } from '../helpers/contentEditable'
-import { useEditor, useLocalSelection } from '../hooks'
+import { useEditor } from '../hooks'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
 import type { OperationInterface } from '../Popovers/BlockOperationPopover'
@@ -148,7 +151,6 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
   const editor = useEditor<Editor.VisualizationBlock>()
   const { block } = props
   const elementRef = useRef<HTMLDivElement | null>(null)
-  const [blockFocusing, setBlockFocusing] = useState(false)
   const commit = useCommit()
   const snapshot = useBlockSnapshot()
   const dataAssetId = block.content?.dataAssetId
@@ -201,13 +203,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
 
   return (
     <VisulizationInstructionsContext.Provider value={instructions}>
-      <div
-        ref={elementRef}
-        className={QuestionsBlockContainer}
-        tabIndex={-1}
-        onFocus={() => setBlockFocusing(true)}
-        onBlur={() => setBlockFocusing(false)}
-      >
+      <div ref={elementRef} className={QuestionsBlockContainer} tabIndex={-1}>
         {dataAssetId === undefined ? (
           <BlockPlaceHolder loading={false} text="New Question" />
         ) : (
@@ -215,7 +211,6 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
             dataAssetId={dataAssetId}
             block={block}
             wrapperRef={elementRef}
-            blockFocusing={blockFocusing}
             blockFormat={props.blockFormat}
             parentType={props.parentType}
           />
@@ -229,17 +224,14 @@ const VisualizationBlockContent: React.FC<{
   dataAssetId: string
   block: Editor.VisualizationBlock
   wrapperRef: React.MutableRefObject<HTMLDivElement | null>
-  blockFocusing: boolean
   blockFormat: BlockFormatInterface
   parentType: Editor.BlockType
-}> = ({ dataAssetId, block, blockFocusing, wrapperRef, blockFormat, parentType }) => {
+}> = ({ dataAssetId, block, wrapperRef, blockFormat, parentType }) => {
   const dataAssetBlock = useBlockSuspense<Editor.DataAssetBlock>(dataAssetId)
   const snapshotId = dataAssetBlock?.content?.snapshotId
   const commit = useCommit()
   const storyBlock = useBlockSuspense(block.storyId!)
-  const onClickOutSide = useCallback(() => {
-    setTitleEditing(false)
-  }, [])
+  const isHover = useHoverDirty(wrapperRef)
 
   const mutateSnapshot = useRefreshSnapshot()
   const mutatingCount = useSnapshotMutating(dataAssetBlock.id)
@@ -253,11 +245,7 @@ const VisualizationBlockContent: React.FC<{
 
   const visualization = block.content?.visualization
 
-  useOnClickOutside(wrapperRef, onClickOutSide)
   const { readonly } = useBlockBehavior()
-  const [titleEditing, setTitleEditing] = useState(false)
-  const localSelection = useLocalSelection(block.id)
-  const isInputFocusing = !!localSelection
   const contentRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -277,19 +265,8 @@ const VisualizationBlockContent: React.FC<{
 
   return (
     <>
-      <QuestionBlockButtons
-        block={block}
-        dataAssetBlock={dataAssetBlock}
-        show={blockFocusing}
-        dataAssetId={dataAssetId}
-      />
-      <QuestionBlockHeader
-        setTitleEditing={setTitleEditing}
-        isReference={isReferenceDataAssetBlock}
-        readonly={isReferenceDataAssetBlock || titleEditing === false || readonly}
-        titleEditing={titleEditing || isInputFocusing}
-        dataAssetBlock={dataAssetBlock}
-      />
+      <QuestionBlockButtons block={block} dataAssetBlock={dataAssetBlock} show={isHover} dataAssetId={dataAssetId} />
+      <QuestionBlockHeader isReference={isReferenceDataAssetBlock} dataAssetBlock={dataAssetBlock} />
       <QuestionBlockStatus dataAssetBlock={dataAssetBlock} />
       <motion.div
         style={{
@@ -303,9 +280,6 @@ const VisualizationBlockContent: React.FC<{
           min-height: 100px;
         `}
         ref={contentRef}
-        onClick={() => {
-          setTitleEditing(false)
-        }}
       >
         <React.Suspense fallback={<BlockingUI blocking />}>
           <QuestionBlockBody snapshotId={snapshotId} visualization={visualization} />
@@ -361,26 +335,14 @@ export const QuestionBlockButtons: React.FC<{
           exit={{ opacity: 0 }}
           transition={{ duration: 0.25 }}
           className={css`
-            background: #ffffff;
-            box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.08), 0px 1px 2px rgba(0, 0, 0, 0.08),
-              0px 4px 12px rgba(0, 0, 0, 0.16);
-            border-radius: 8px;
             position: absolute;
             right: 0;
             z-index: 1;
-            bottom: 100%;
-            margin-bottom: 13px;
+            top: 0;
+            margin: 10px;
             padding: 5px;
-            display: inline-flex;
-            align-items: center;
-            flex-shrink: 0;
-            > * + * {
-              margin-left: 10px;
-            }
-            > * {
-              cursor: pointer;
-            }
-            opacity: 1;
+            background: rgba(51, 51, 51, 0.7);
+            border-radius: 8px;
           `}
         >
           <TitleButtonsInner block={block} dataAssetBlock={dataAssetBlock} sql={dataAssetBlock.content?.sql ?? ''} />
@@ -465,12 +427,9 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
 const QuestionBlockBody = React.forwardRef(_QuestionBlockBody)
 
 const QuestionBlockHeader: React.FC<{
-  setTitleEditing: React.Dispatch<React.SetStateAction<boolean>>
-  titleEditing: boolean
   isReference: boolean
-  readonly: boolean
   dataAssetBlock: Editor.DataAssetBlock
-}> = ({ setTitleEditing, titleEditing, dataAssetBlock, readonly, isReference }) => {
+}> = ({ dataAssetBlock, isReference }) => {
   const { t } = useTranslation()
   return (
     <>
@@ -508,36 +467,34 @@ const QuestionBlockHeader: React.FC<{
             flex: 1;
           `}
         >
-          <div
-            className={cx(
-              css`
-                font-style: normal;
-                font-weight: 600;
-                font-size: 1em;
-                line-height: 1.2;
-                color: ${ThemingVariables.colors.text[0]};
-                flex: 1;
-                cursor: text;
-                align-self: stretch;
-                position: relative;
-                display: flex;
-              `
-            )}
-            onMouseDown={() => {
-              setTitleEditing(true)
-            }}
-          >
-            <ContentEditable
-              block={dataAssetBlock}
-              disableReferenceDropdown
-              disableSlashCommand
-              disableTextToolBar
-              readonly={readonly}
-              maxLines={titleEditing ? undefined : 1}
-              placeHolderText={DEFAULT_TITLE}
-              placeHolderStrategy={'always'}
-            />
-          </div>
+          <Tippy content={<BlockTitle block={dataAssetBlock} />} placement="top-start" arrow={false}>
+            <div
+              className={cx(
+                css`
+                  font-style: normal;
+                  font-weight: 600;
+                  font-size: 1em;
+                  line-height: 1.2;
+                  color: ${ThemingVariables.colors.text[0]};
+                  flex: 1;
+                  align-self: stretch;
+                  position: relative;
+                  display: flex;
+                `
+              )}
+            >
+              <ContentEditable
+                block={dataAssetBlock}
+                disableReferenceDropdown
+                disableSlashCommand
+                disableTextToolBar
+                readonly={true}
+                maxLines={1}
+                placeHolderText={DEFAULT_TITLE}
+                placeHolderStrategy={'always'}
+              />
+            </div>
+          </Tippy>
         </div>
       </div>
     </>
@@ -755,7 +712,6 @@ export const MoreDropdownSelect: React.FC<{
   const { readonly } = useBlockBehavior()
   const canConvertDataAsset = !readonly && dataAssetBlock.storyId === block.storyId
   const getSnapshot = useGetSnapshot()
-  const instructions = useVisulizationBlockInstructions()
 
   const operations = useMemo(() => {
     return [
@@ -885,7 +841,7 @@ export const MoreDropdownSelect: React.FC<{
       <IconButton
         hoverContent={hoverContent}
         icon={IconCommonMore}
-        color={ThemingVariables.colors.primary[1]}
+        color={ThemingVariables.colors.gray[5]}
         {...getToggleButtonProps({ ref: setReferenceElement })}
         className={cx(
           css`
@@ -898,6 +854,7 @@ export const MoreDropdownSelect: React.FC<{
             padding: 0;
             display: flex;
             align-items: center;
+            justify-content: center;
             cursor: pointer;
             background: transparent;
           `,
@@ -965,6 +922,7 @@ const TitleButtonsInner: React.FC<{
   dataAssetBlock: Editor.DataAssetBlock
   sql: string
 }> = ({ block, sql, dataAssetBlock }) => {
+  const { t } = useTranslation()
   const { readonly } = useBlockBehavior()
   const [isActive, setIsActive] = useState(false)
   const [isPresent, safeToRemove] = usePresence()
@@ -978,47 +936,70 @@ const TitleButtonsInner: React.FC<{
   }, [isActive, isPresent, safeToRemove])
 
   return (
-    <>
-      {!readonly && isExecuteableBlockType(dataAssetBlock.type) && (
-        <RefreshButton
-          color={ThemingVariables.colors.primary[1]}
-          loading={loading}
-          hoverContent="Refresh"
-          className={QuestionBlockIconButton}
-          onClick={
-            loading ? () => mutateSnapshot.cancel(dataAssetBlock.id) : () => mutateSnapshot.execute(dataAssetBlock)
-          }
+    <div
+      className={css`
+        display: inline-flex;
+        align-items: center;
+        flex-shrink: 0;
+        > * + * {
+          margin-left: 10px;
+        }
+      `}
+    >
+      <QuestionBlockIconButton>
+        {!readonly && isExecuteableBlockType(dataAssetBlock.type) && (
+          <RefreshButton
+            color={ThemingVariables.colors.gray[5]}
+            loading={loading}
+            hoverContent={t`Refresh`}
+            onClick={
+              loading ? () => mutateSnapshot.cancel(dataAssetBlock.id) : () => mutateSnapshot.execute(dataAssetBlock)
+            }
+          />
+        )}
+      </QuestionBlockIconButton>
+      <QuestionBlockIconButton>
+        <IconButton
+          hoverContent={t`Visualization options`}
+          icon={IconVisualizationSetting}
+          color={ThemingVariables.colors.gray[5]}
+          onClick={() => questionEditor.open({ mode: 'VIS', blockId: block.id, storyId: block.storyId! })}
         />
-      )}
-      <IconButton
-        hoverContent="Visualization options"
-        icon={IconVisualizationSetting}
-        color={ThemingVariables.colors.primary[1]}
-        className={QuestionBlockIconButton}
-        onClick={() => questionEditor.open({ mode: 'VIS', blockId: block.id, storyId: block.storyId! })}
-      />
-      <IconButton
-        hoverContent="Edit SQL"
-        className={QuestionBlockIconButton}
-        icon={IconCommonSql}
-        color={ThemingVariables.colors.primary[1]}
-        onClick={() => questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })}
-      />
-      <MoreDropdownSelect
-        hoverContent="More"
-        className={QuestionBlockIconButton}
-        block={block}
-        sql={sql}
-        setIsActive={setIsActive}
-        dataAssetBlock={dataAssetBlock}
-      />
-    </>
+      </QuestionBlockIconButton>
+      <QuestionBlockIconButton>
+        <IconButton
+          hoverContent={t`Edit SQL`}
+          icon={IconCommonSql}
+          color={ThemingVariables.colors.gray[5]}
+          onClick={() => questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })}
+        />
+      </QuestionBlockIconButton>
+      <QuestionBlockIconButton>
+        <MoreDropdownSelect
+          hoverContent={t`More`}
+          block={block}
+          sql={sql}
+          setIsActive={setIsActive}
+          dataAssetBlock={dataAssetBlock}
+        />
+      </QuestionBlockIconButton>
+    </div>
   )
 }
 
-const QuestionBlockIconButton = css`
-  width: 30px;
-  height: 30px;
+const QuestionBlockIconButton = styled.div`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  button {
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    border-radius: 8px;
+  }
+  button:hover {
+    background: ${ThemingVariables.colors.text[0]};
+  }
 `
 
 const QuestionsBlockContainer = css`
@@ -1029,9 +1010,4 @@ const QuestionsBlockContainer = css`
   align-self: center;
   background-color: ${ThemingVariables.colors.gray[4]};
   border-radius: 20px;
-  border: ${BORDER_WIDTH}px solid transparent;
-  :focus-within {
-    border-color: ${ThemingVariables.colors.primary[3]};
-    outline: none;
-  }
 `

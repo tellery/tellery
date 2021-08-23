@@ -182,7 +182,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
     logger('is focusing', isFocusing, localSelection)
     if (!isComposing.current && editbleRef.current && isFocusing) {
       editbleRef.current.normalize()
-      const newBlockTitle = deserialize(editbleRef.current, block)
+      const newBlockTitle = deserialize(editbleRef.current, block.content?.title)
       const oldSelection = localSelection
       const oldTokens = block.content?.title ?? []
 

@@ -1,6 +1,6 @@
-import { css, cx } from '@emotion/css'
 import { IconCommonRefresh } from '@app/assets/icons'
-import { motion, useAnimation } from 'framer-motion'
+import { cx } from '@emotion/css'
+import { useAnimation } from 'framer-motion'
 import React, { ReactNode, useEffect } from 'react'
 import IconButton from './kit/IconButton'
 
@@ -21,21 +21,14 @@ const _RefreshButton: React.ForwardRefRenderFunction<
   }, [controls, loading])
 
   return (
-    <motion.div
-      ref={ref}
-      animate={controls}
-      transition={{ type: 'tween', repeat: Infinity, duration: 0.75, ease: 'linear' }}
-      className={cx(
-        css`
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-        `,
-        className
-      )}
-    >
-      <IconButton hoverContent={hoverContent} icon={IconCommonRefresh} color={color} onClick={onClick} />
-    </motion.div>
+    <IconButton
+      className={cx(className)}
+      hoverContent={hoverContent}
+      icon={IconCommonRefresh}
+      color={color}
+      spin={loading}
+      onClick={onClick}
+    />
   )
 }
 

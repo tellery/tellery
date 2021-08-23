@@ -219,7 +219,7 @@ export const getSelectionFragment = () => {
   return body as Element
 }
 
-export const deserialize = (el: Element, block: Editor.BaseBlock): Editor.Token[] => {
+export const deserialize = (el: Element, tokens?: Editor.Token[]): Editor.Token[] => {
   const node = el
   const childrenNodeArray = Array.from(node.childNodes)
   const children: Editor.Token[] = []
@@ -243,7 +243,7 @@ export const deserialize = (el: Element, block: Editor.BaseBlock): Editor.Token[
         const tokenIndexStr = (currentNode as HTMLElement).dataset.tokenIndex
         if (tokenIndexStr) {
           const tokenIndex = parseInt(tokenIndexStr, 10)
-          const token = block?.content?.title?.[tokenIndex]
+          const token = tokens?.[tokenIndex]
           invariant(token, 'token is undefined')
 
           const entities = extractEntitiesFromToken(token)

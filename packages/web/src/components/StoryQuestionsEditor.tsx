@@ -1,9 +1,9 @@
 import {
-  IconCommonArrowDropDown,
   IconCommonClose,
   IconCommonDbt,
   IconCommonDownstream,
   IconCommonError,
+  IconCommonLock,
   IconCommonMetrics,
   IconCommonRun,
   IconCommonSave,
@@ -12,7 +12,7 @@ import {
 } from '@app/assets/icons'
 import { SQLEditor } from '@app/components/SQLEditor'
 import { Configuration } from '@app/components/v11n'
-import { useHover, useOpenStory, usePrevious } from '@app/hooks'
+import { useHover, usePrevious } from '@app/hooks'
 import {
   useBlockSuspense,
   useConnectorsListProfiles,
@@ -22,39 +22,39 @@ import {
 } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
 import { useLocalStorage } from '@app/hooks/useLocalStorage'
-import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
 import { useSqlEditor } from '@app/hooks/useSqlEditor'
 import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useCreateSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
-import { Editor, Story } from '@app/types'
-import { blockIdGenerator, DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
+import { Editor } from '@app/types'
+import { blockIdGenerator, DEFAULT_TITLE, DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
 import { css, cx } from '@emotion/css'
+import MonacoEditor from '@monaco-editor/react'
 import Tippy from '@tippyjs/react'
 import { dequal } from 'dequal'
 import { motion, useMotionValue, useTransform } from 'framer-motion'
 import { produce } from 'immer'
 import isHotkey from 'is-hotkey'
+import { omit } from 'lodash'
 import React, { SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useIsMutating } from 'react-query'
 import { toast } from 'react-toastify'
 import { Tab, TabList, TabPanel, TabStateReturn, useTabState } from 'reakit/Tab'
 import { atom, useRecoilCallback, useRecoilState } from 'recoil'
 import invariant from 'tiny-invariant'
+import YAML from 'yaml'
 import { setBlockTranscation } from '../context/editorTranscations'
+import { BlockingUI } from './BlockingUI'
 import { CircularLoading } from './CircularLoading'
-import { BlockTitle, useGetBlockTitleTextSnapshot } from './editor'
+import { BlockTitle, tokensToText, useGetBlockTitleTextSnapshot } from './editor'
+import { ContentEditablePureText } from './editor/BlockBase/ContentEditablePureText'
 import { isExecuteableBlockType } from './editor/Blocks/utils'
 import type { SetBlock } from './editor/types'
 import IconButton from './kit/IconButton'
 import QuestionDownstreams from './QuestionDownstreams'
 import { charts } from './v11n/charts'
 import { Config, Type } from './v11n/types'
-import MonacoEditor from '@monaco-editor/react'
-import { omit } from 'lodash'
-import YAML from 'yaml'
-import { BlockingUI } from './BlockingUI'
 
 type Mode = 'SQL' | 'VIS' | 'DOWNSTREAM'
 
@@ -74,6 +74,7 @@ interface EditorDraft {
   sql?: string
   visConfig?: Config<Type>
   snapshotId?: string
+  title?: Editor.Token[]
 }
 
 export const questionEditorBlockMapState = atom<
@@ -99,6 +100,7 @@ const updateOldDraft = (oldDraft?: EditorDraft, block?: Editor.SQLLikeBlock) => 
 
   const updatedDraft = emitFalsyObject({
     ...oldDraft,
+    title: dequal(oldDraft.title, block?.content?.title) === false ? oldDraft.title : undefined,
     sql: oldDraft.sql !== block?.content?.sql ? oldDraft.sql : undefined,
     visConfig: dequal(oldDraft.visConfig, block?.content?.visualization) === false ? oldDraft.visConfig : undefined,
     snapshotId: oldDraft.snapshotId !== block?.content?.snapshotId ? oldDraft.snapshotId : undefined
@@ -522,6 +524,7 @@ export const StoryQuestionEditor: React.FC<{
   )
 
   const permissions = useStoryPermissions(visualizationBlock?.storyId ?? block.id)
+  const [titleEditing, setTitleEditing] = useState(false)
 
   const mode = questionBlockState?.mode ?? 'VIS'
   const readonly = permissions.readonly
@@ -530,6 +533,7 @@ export const StoryQuestionEditor: React.FC<{
   const originalSQL = sqlBlock?.content?.sql
   const sql = questionBlockState?.draft?.sql ?? originalSQL ?? ''
   const snapShotId = questionBlockState?.draft?.snapshotId ?? sqlBlock?.content?.snapshotId
+  const queryTitle = questionBlockState?.draft?.title ?? sqlBlock?.content?.title
 
   const snapshot = useSnapshot(snapShotId)
 
@@ -544,6 +548,24 @@ export const StoryQuestionEditor: React.FC<{
       }
     })
   }, [sqlBlock, visualizationBlock, id, setQuestionBlocksMap])
+
+  const setTitle = useCallback(
+    (title: Editor.Token[]) => {
+      setQuestionBlocksMap((blocksMap) => {
+        return {
+          ...blocksMap,
+          [id]: {
+            ...blocksMap[id],
+            draft: emitFalsyObject({
+              ...blocksMap[id].draft,
+              title: dequal(title, sqlBlock?.content?.title) === false ? title : undefined
+            })
+          }
+        }
+      })
+    },
+    [id, setQuestionBlocksMap, sqlBlock?.content?.title]
+  )
 
   const setSql = useCallback(
     (sql) => {
@@ -656,12 +678,24 @@ export const StoryQuestionEditor: React.FC<{
       draftBlock.content!.sql = sql
       draftBlock.content!.snapshotId = snapShotId
       draftBlock.content!.error = null
+      draftBlock.content!.title = queryTitle ?? []
       draftBlock.content!.lastRunAt = Date.now()
     })
     setVisualizationBlock(block.id, (draftBlock) => {
       draftBlock.content!.visualization = visualizationConfig
     })
-  }, [block, isDraft, readonly, setSqlBlock, sqlBlock.id, setVisualizationBlock, sql, snapShotId, visualizationConfig])
+  }, [
+    block,
+    isDraft,
+    readonly,
+    setSqlBlock,
+    sqlBlock.id,
+    setVisualizationBlock,
+    sql,
+    snapShotId,
+    queryTitle,
+    visualizationConfig
+  ])
 
   const [sqlError, setSQLError] = useState<string | null>(null)
 
@@ -802,16 +836,9 @@ export const StoryQuestionEditor: React.FC<{
     [run, save, setMode]
   )
 
-  const story = useBlockSuspense<Story>(block.storyId!)
-
   const mutatingCount = useDraftBlockMutating(block.id)
-  const openStory = useOpenStory()
   const { data: downstreams } = useQuestionDownstreams(block.id)
-  const pushFocusedBlockIdState = usePushFocusedBlockIdState()
 
-  const scrollToBlock = useCallback(() => {
-    pushFocusedBlockIdState(block.id, block.storyId)
-  }, [block.id, block.storyId, pushFocusedBlockIdState])
   const isDBT = block.type === Editor.BlockType.DBT
 
   const sqlReadOnly =
@@ -853,12 +880,46 @@ export const StoryQuestionEditor: React.FC<{
             display: flex;
           `}
         >
-          <div
+          {sqlBlock.type === Editor.BlockType.Metric ? (
+            <IconCommonMetrics
+              color={ThemingVariables.colors.text[0]}
+              className={css`
+                margin-left: 10px;
+              `}
+            />
+          ) : null}
+          {sqlBlock.type === Editor.BlockType.SnapshotBlock ? (
+            <IconCommonLock
+              color={ThemingVariables.colors.text[0]}
+              className={css`
+                margin-left: 10px;
+              `}
+            />
+          ) : null}
+          {sqlBlock.type === Editor.BlockType.DBT ? (
+            <IconCommonDbt
+              color={ThemingVariables.colors.text[0]}
+              className={css`
+                margin-left: 10px;
+              `}
+            />
+          ) : null}
+          <ContentEditablePureText
+            tokens={queryTitle}
+            maxLines={1}
+            onChange={(tokens) => {
+              setTitle(tokens)
+            }}
+            placeHolderStrategy="always"
+            placeHolderText={DEFAULT_TITLE}
+            textAlign="center"
             className={css`
-              outline: none;
-              border: none;
               background: transparent;
-              font-style: normal;
+              text-align: center;
+              flex: 1;
+              min-width: 100px;
+              cursor: text;
+              background: transparent;
               font-weight: 500;
               font-size: 20px;
               text-align: center;
@@ -866,47 +927,8 @@ export const StoryQuestionEditor: React.FC<{
               font-size: 14px;
               line-height: 24px;
               color: ${ThemingVariables.colors.text[0]};
-              display: flex;
-              align-items: center;
             `}
-          >
-            {story && !isDBT && (
-              <>
-                <a
-                  className={css`
-                    cursor: pointer;
-                    color: ${ThemingVariables.colors.text[1]};
-                  `}
-                  onClick={(e) => {
-                    openStory(story.id, { blockId: block.id, isAltKeyPressed: e.altKey })
-                  }}
-                >
-                  <BlockTitle block={story} />
-                </a>
-                <IconCommonArrowDropDown
-                  className={css`
-                    transform: rotate(-90deg);
-                  `}
-                />
-              </>
-            )}
-            <span
-              className={css`
-                cursor: pointer;
-              `}
-              onClick={scrollToBlock}
-            >
-              <BlockTitle block={sqlBlock} />
-            </span>
-            {block.type === Editor.BlockType.Metric ? (
-              <IconCommonMetrics
-                color={ThemingVariables.colors.text[0]}
-                className={css`
-                  margin-left: 10px;
-                `}
-              />
-            ) : null}
-          </div>
+          ></ContentEditablePureText>
         </div>
         {isDBT ? null : (
           <div
@@ -927,14 +949,13 @@ export const StoryQuestionEditor: React.FC<{
                 }}
               />
             )}
-            {isExecuteableBlockType(sqlBlock.type) && (
-              <IconButton
-                hoverContent={mutatingCount !== 0 ? 'Cancel Query' : 'Execute Query'}
-                icon={mutatingCount !== 0 ? IconCommonClose : IconCommonRun}
-                color={ThemingVariables.colors.primary[1]}
-                onClick={mutatingCount !== 0 ? cancelExecuteSql : run}
-              />
-            )}
+            <IconButton
+              hoverContent={mutatingCount !== 0 ? 'Cancel Query' : 'Execute Query'}
+              icon={mutatingCount !== 0 ? IconCommonClose : IconCommonRun}
+              color={ThemingVariables.colors.primary[1]}
+              disabled={!isExecuteableBlockType(sqlBlock.type)}
+              onClick={mutatingCount !== 0 ? cancelExecuteSql : run}
+            />
             <IconButton
               hoverContent="Save"
               disabled={!isDraft || readonly === true}
