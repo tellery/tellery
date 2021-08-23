@@ -575,7 +575,6 @@ export const moveBlocksTranscation = ({
     } else {
       invariant(targetBlock.parentId === targetBlock.storyId, 'target block is not first class')
       invariant(targetBlock.type !== Editor.BlockType.Row, "row block can't be splited")
-      console.log('create new grid row')
       const rowBlock = createEmptyBlock({ type: Editor.BlockType.Row, storyId, parentId: targetBlock.parentId })
       const columnBlockA = createEmptyBlock({ type: Editor.BlockType.Column, storyId, parentId: rowBlock.id })
       const columnBlockB = createEmptyBlock({ type: Editor.BlockType.Column, storyId, parentId: rowBlock.id })
@@ -777,7 +776,6 @@ export const moveBlocksTranscation = ({
       afterId = block.id
     })
 
-  console.log('moveblock operations', operations)
   return createTranscation({ operations })
 }
 

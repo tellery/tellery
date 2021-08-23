@@ -67,13 +67,15 @@ const File2BlockProcessers: Record<
       content: {
         sql,
         title: [[title]]
-      }
+      },
+      storyId: block.storyId,
+      parentId: block.storyId
     })
     return createTranscation({
       operations: [
         {
           cmd: 'set',
-          id: block.id,
+          id: dataAssetBlock.id,
           path: [],
           args: dataAssetBlock,
           table: 'block'
@@ -84,7 +86,7 @@ const File2BlockProcessers: Record<
           path: ['resources'],
           table: 'block',
           args: {
-            id: block.id
+            id: dataAssetBlock.id
           }
         },
         ...setBlockOperations<Editor.VisualizationBlock>({
@@ -93,8 +95,7 @@ const File2BlockProcessers: Record<
             ...block,
             type: Editor.BlockType.Visualization,
             content: {
-              dataAssetId: dataAssetBlock.id,
-              title: [[title]]
+              dataAssetId: dataAssetBlock.id
             }
           }
         })

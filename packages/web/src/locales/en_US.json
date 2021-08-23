@@ -1,0 +1,16 @@
+{
+  "Search": "Search",
+  "brand": "Tellery",
+  "Settings": "Settings",
+  "Home": "Home",
+  "Stories": "Stories",
+  "Thoughts": "Thoughts",
+  "Favorites": "Favorites",
+  "Create a new story": "Create a new story",
+  "Capture today's thought": "Capture today's thought",
+  "Current Page": "Current Page",
+  "Data Assets": "Data Assets",
+  "You pasted {{count}} visualization block": "You pasted {{count}} visualization block",
+  "You pasted {{count}} visualization block_plural": "You pasted {{count}} visualization blocks",
+  "Duplicate data assets too": "Duplicate data assets at the same time"
+}

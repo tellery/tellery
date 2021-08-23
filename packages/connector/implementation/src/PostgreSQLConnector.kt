@@ -42,7 +42,7 @@ import java.sql.Connection
             name = PostgreSQLFields.SCHEMA,
             type = ConfigType.STRING,
             description = "The schema that tellery will connect to in the database",
-            hint = "PUBLIC",
+            hint = "public",
             fillHint = true,
         ),
         Config(

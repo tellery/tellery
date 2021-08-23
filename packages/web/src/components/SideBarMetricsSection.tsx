@@ -248,11 +248,9 @@ const StoryResources: React.FC<{ storyId: string }> = ({ storyId }) => {
       `}
       options={{ suppressScrollX: true }}
     >
-      <div>
-        {resourceBlocks.map((block) => {
-          return <StoryDataAssetItem key={block.id} blockId={block.id} storyId={storyId} />
-        })}
-      </div>
+      {resourceBlocks.map((block) => {
+        return <StoryDataAssetItem key={block.id} blockId={block.id} storyId={storyId} />
+      })}
     </PerfectScrollbar>
   )
 }
@@ -280,15 +278,13 @@ const AllMetrics: React.FC = () => {
       `}
       options={{ suppressScrollX: true }}
     >
-      <div>
-        {dataAssetBlocks.map((block) => {
-          return (
-            <React.Suspense key={block.id} fallback={<SideBarLoader />}>
-              <DataAssetItem block={block} currentStoryId={storyId!} />
-            </React.Suspense>
-          )
-        })}
-      </div>
+      {dataAssetBlocks.map((block) => {
+        return (
+          <React.Suspense key={block.id} fallback={<SideBarLoader />}>
+            <DataAssetItem block={block} currentStoryId={storyId!} />
+          </React.Suspense>
+        )
+      })}
     </PerfectScrollbar>
   )
 }

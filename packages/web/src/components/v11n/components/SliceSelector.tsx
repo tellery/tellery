@@ -41,6 +41,7 @@ export function SliceSelector(props: {
           flex: 1;
           width: 0;
           font-weight: 400;
+          text-overflow: ellipsis;
         `}
         value={props.value.title}
         onChange={(e) => {

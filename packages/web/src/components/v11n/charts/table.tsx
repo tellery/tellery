@@ -182,85 +182,84 @@ export const table: Chart<Type.TABLE> = {
           color: ${ThemingVariables.colors.text[0]};
         `}
       >
-        <div
+        <PerfectScrollbar
+          options={{ suppressScrollY: true }}
           className={css`
             flex: 1;
             width: 100%;
           `}
         >
-          <PerfectScrollbar options={{ suppressScrollY: true }}>
-            <table
-              className={css`
-                min-width: 100%;
-                max-height: 100%;
-                border-collapse: collapse;
-                border: none;
-                tr:nth-child(even) {
-                  background: ${ThemingVariables.colors.primary[5]};
-                }
-                td {
-                  border-left: 1px solid ${ThemingVariables.colors.gray[1]};
-                }
-                tr td:first-child {
-                  border-left: none;
-                }
-              `}
-            >
-              <thead>
-                <tr>
+          <table
+            className={css`
+              min-width: 100%;
+              max-height: 100%;
+              border-collapse: collapse;
+              border: none;
+              tr:nth-child(even) {
+                background: ${ThemingVariables.colors.primary[5]};
+              }
+              td {
+                border-left: 1px solid ${ThemingVariables.colors.gray[1]};
+              }
+              tr td:first-child {
+                border-left: none;
+              }
+            `}
+          >
+            <thead>
+              <tr>
+                {columns.map((column) => (
+                  <th
+                    key={column.name}
+                    className={css`
+                      height: ${tableRowHeight}px;
+                      padding: 0 10px;
+                      background: ${ThemingVariables.colors.primary[3]};
+                      font-weight: normal;
+                      white-space: nowrap;
+                    `}
+                    align={isNumeric(column.displayType) && !isTimeSeries(column.displayType) ? 'right' : 'left'}
+                  >
+                    <Tippy content={column.sqlType} delay={300}>
+                      <span>{column.name}</span>
+                    </Tippy>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((record, index) => (
+                <tr key={index.toString()}>
                   {columns.map((column) => (
-                    <th
+                    <td
                       key={column.name}
-                      className={css`
-                        height: ${tableRowHeight}px;
-                        padding: 0 10px;
-                        background: ${ThemingVariables.colors.primary[3]};
-                        font-weight: normal;
-                        white-space: nowrap;
-                      `}
-                      align={isNumeric(column.displayType) && !isTimeSeries(column.displayType) ? 'right' : 'left'}
+                      className={cx(
+                        css`
+                          height: ${tableRowHeight}px;
+                          padding: 0 10px;
+                          font-weight: normal;
+                          white-space: nowrap;
+                          text-overflow: ellipsis;
+                          overflow: hidden;
+                          max-width: 400px;
+                          font-variant-numeric: tabular-nums;
+                        `,
+                        record[column.order] === null
+                          ? css`
+                              color: ${ThemingVariables.colors.text[2]};
+                            `
+                          : undefined
+                      )}
+                      align={isNumeric(column.displayType) ? 'right' : 'left'}
                     >
-                      <Tippy content={column.sqlType}>
-                        <span>{column.name}</span>
-                      </Tippy>
-                    </th>
+                      {formatRecord(record[column.order], displayTypes[column.name])}
+                    </td>
                   ))}
                 </tr>
-              </thead>
-              <tbody>
-                {data.map((record, index) => (
-                  <tr key={index.toString()}>
-                    {columns.map((column) => (
-                      <td
-                        key={column.name}
-                        className={cx(
-                          css`
-                            height: ${tableRowHeight}px;
-                            padding: 0 10px;
-                            font-weight: normal;
-                            white-space: nowrap;
-                            text-overflow: ellipsis;
-                            overflow: hidden;
-                            max-width: 400px;
-                            font-variant-numeric: tabular-nums;
-                          `,
-                          record[column.order] === null
-                            ? css`
-                                color: ${ThemingVariables.colors.text[2]};
-                              `
-                            : undefined
-                        )}
-                        align={isNumeric(column.displayType) ? 'right' : 'left'}
-                      >
-                        {formatRecord(record[column.order], displayTypes[column.name])}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </PerfectScrollbar>
-        </div>
+              ))}
+            </tbody>
+          </table>
+        </PerfectScrollbar>
         <div
           className={css`
             height: ${tableRowHeight}px;

@@ -41,6 +41,7 @@ export function ShapeSelector(props: {
           width: 0;
           line-height: 1;
           font-weight: 400;
+          text-overflow: ellipsis;
         `}
         value={props.value.title}
         onChange={(e) => {

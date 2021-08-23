@@ -37,22 +37,17 @@ const WorkspaceItems: React.FC<{ storyIds: string[] }> = ({ storyIds }) => {
         flex: 1;
         overflow-y: auto;
         padding: 10px 8px 50px;
+        > * + * {
+          margin-top: 10px;
+        }
       `}
       options={{ suppressScrollX: true }}
     >
-      <div
-        className={css`
-          > * + * {
-            margin-top: 10px;
-          }
-        `}
-      >
-        {storyIds.map((storyId) => (
-          <React.Suspense key={storyId} fallback={<SideBarLoader />}>
-            <StoryCard blockId={storyId} />
-          </React.Suspense>
-        ))}
-      </div>
+      {storyIds.map((storyId) => (
+        <React.Suspense key={storyId} fallback={<SideBarLoader />}>
+          <StoryCard blockId={storyId} />
+        </React.Suspense>
+      ))}
     </PerfectScrollbar>
   )
 }

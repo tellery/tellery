@@ -44,6 +44,8 @@ export function ColorSelector(props: {
           width: 0;
           line-height: 1;
           font-weight: 400;
+          overflow: hidden;
+          text-overflow: ellipsis;
         `}
       >
         {props.value.key}

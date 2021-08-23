@@ -19,19 +19,25 @@
     <a href="/LICENSE">
         <img alt="license" src="https://img.shields.io/github/license/tellery/tellery?logo=apache" alt="license" />
     </a>
+    <a title="Crowdin" target="_blank" href="https://crowdin.com/project/tellery">
+        <img src="https://badges.crowdin.net/tellery/localized.svg">
+    </a>
 </p>
 
+Tellery is a BI tool connecting your data and team. As easy as using a notebook. As powerful as a data modelling tool.
 
-Tellery allows you abstract essential data transformation/business logic, and reuse it in future contexts through metrics. Metrics are maintainable and shareable data models across dashboards and reports. They are defined consistently and always up to date.
+
+Instead of querying on tables and columns directly, Tellery users can operate on [data assets](https://demo.tellery.io/story/vtkequmHGz5QBD9WjVflU), which are well-maintained models in your workspace. It makes your metrics more consistent and easier to maintain. 
 
 
-To deliver better value of the metrics, Tellery comes with a bucket of building blocks and rich text styling features. Want a real-time dashboard? A feature-specific analysis? An anomalies investigation? You can tailor it to your need to unlock the value of data.
+To deliver better value of the data assets, Tellery comes with a notebook interface and a bucket of building blocks. From reports to dashboards, you can tailor it to your need to unlock the value of data.
 
 
 ## Features
 
-- Declare data transformation/metrics using SQL and reuse them everywhere
-- Familiar notebook interface where you can organize charts and texts with drag-and-drop ease
+- Familiar notebook interface where you can create charts and texts with drag-and-drop ease
+- Declare data assets using SQL and reuse them everywhere 
+- Integrate with dbt repository and import dbt models as data assets
 - A modern SQL editor with multi-tabs and auto-complete
 - Write analytical narratives using Markdown syntax
 - Capture exploratory analyses and associate them with bi-directional links
@@ -91,8 +97,18 @@ Learn how to start analysis with Tellery:
 ## Community support
 
 - Looking to get answers to questions? Join the chat on [Slack](https://join.slack.com/t/telleryio/shared_invite/zt-s37tgvo7-QBdpggK_uG6QqJVWhSXlFg)
+- Want to report a bug or request a feature? Open an [issue](/issues/new).
 - Read all the latest news on [Twitter](https://twitter.com/telleryhq)
 
-## Reporting bugs and contributing code
 
-- Want to report a bug or request a feature? Open an [issue](/issues/new).
+## Contributing
+
+
+Contributions of any kind welcome! If you’re looking for ways to get started, here's a list of ways to help us improve Tellery:
+
+
+- Add a new database support in [community-supported connectors](https://github.com/tellery/community-supported-connectors)
+- [Translation](https://crowdin.com/project/tellery) into other languages
+- Issues with [good first issue](https://github.com/tellery/tellery/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) label
+- Bugs and issues listed on GitHub
+

@@ -402,8 +402,6 @@ const applyOperations = (
           id: operation.id
         })
 
-        console.log(updatedBlock)
-
         invariant(updatedBlock[arrayKey], 'children is undefined')
         if (operation.cmd === 'listAfter') {
           invariant((operation.args as any).after, 'after id must not be undefined')

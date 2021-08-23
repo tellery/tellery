@@ -1,7 +1,7 @@
-import enUS from './en-US.json'
-import zhCN from './zh-CN.json'
+import enUS from './en_US.json'
+import zhCN from './zh_CN.json'
 
 export const resources = {
-  'en-USE': { translation: enUS },
+  'en-US': { translation: enUS },
   'zh-CN': { translation: zhCN }
 }

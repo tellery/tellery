@@ -24,7 +24,7 @@ export const BlockContentOverview = (props: { block: Editor.BaseBlock }) => {
           word-break: break-word;
           caret-color: ${ThemingVariables.colors.text[0]};
           text-align: left;
-          color: ${ThemingVariables.colors.text[1]};
+          color: ${ThemingVariables.colors.text[0]};
           &:hover {
             background-color: ${ThemingVariables.colors.primary[4]};
           }

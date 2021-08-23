@@ -42,6 +42,7 @@ export const SideBar = () => {
           height: 100%;
           z-index: 9999;
           box-shadow: ${ThemingVariables.boxShadows[0]};
+          padding-left: env(safe-area-inset-left, 0px);
         `
       )}
     >

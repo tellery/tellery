@@ -42,7 +42,7 @@ import java.sql.Connection
             name = RedshiftFields.SCHEMA,
             type = ConfigType.STRING,
             description = "The schema that tellery will connect to in the database (only used for dbt connection)",
-            hint = "PUBLIC",
+            hint = "public",
             fillHint = true,
         ),
         Config(

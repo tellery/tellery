@@ -1063,7 +1063,9 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
             }
             const color =
               colorIndex >= ThemingVariables.colors.visualization.length
-                ? ThemingVariables.colors.visualizationOther
+                ? hoverDataKey === valueKey(key)
+                  ? ThemingVariables.colors.visualizationOtherHighlight
+                  : ThemingVariables.colors.visualizationOther
                 : ThemingVariables.colors.visualization[colorIndex]
             const stackId = {
               [ComboStack.NONE]: undefined,

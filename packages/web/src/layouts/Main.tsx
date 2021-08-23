@@ -10,8 +10,11 @@ export const Page = (props: { children: ReactNode }) => {
     <div
       className={css`
         display: flex;
-        height: 100vh;
         width: 100%;
+        height: 100vh;
+        /* mobile viewport bug fix */
+        /* height: -webkit-fill-available; */
+        /* overflow: hidden; */
         margin: 0;
       `}
     >

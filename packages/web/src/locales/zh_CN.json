@@ -1,0 +1,16 @@
+{
+  "Search": "搜索",
+  "brand": "Tellery",
+  "Settings": "设置",
+  "Home": "主页",
+  "Stories": "Stories",
+  "Thoughts": "想法",
+  "Favorites": "收藏",
+  "Create a new story": "新建Story",
+  "Capture today's thought": "记录今天的想法",
+  "Current Page": "当前页面",
+  "Data Assets": "数据资产",
+  "You pasted {{count}} visualization block": "已复制 {{count}} 个图表",
+  "You pasted {{count}} visualization block_plural": "已复制 {{count}} 个图表",
+  "Duplicate data assets too": "同时复制数据"
+}

@@ -382,7 +382,9 @@ export const pie: Chart<Type.PIE> = {
               key={key}
               fill={
                 key === OTHERS_KEY
-                  ? ThemingVariables.colors.visualizationOther
+                  ? hoverDataKey === key
+                    ? ThemingVariables.colors.visualizationOtherHighlight
+                    : ThemingVariables.colors.visualizationOther
                   : ThemingVariables.colors.visualization[color]
               }
               opacity={hoverDataKey === undefined || hoverDataKey === key ? 1 : opacity}
