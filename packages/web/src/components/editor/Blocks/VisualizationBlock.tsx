@@ -467,7 +467,7 @@ const QuestionBlockHeader: React.FC<{
             flex: 1;
           `}
         >
-          <Tippy content={<BlockTitle block={dataAssetBlock} />} placement="top-start" arrow={false}>
+          <Tippy content={<BlockTitle block={dataAssetBlock} />} placement="top-start" arrow={false} delay={350}>
             <div
               className={cx(
                 css`
