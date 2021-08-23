@@ -99,7 +99,7 @@ export function StoryVisits(props: { storyId: string; className?: string }) {
               <AvatarWrapper index={index} key={visit.userId}>
                 <Avatar
                   src={user.avatar}
-                  name={user.name}
+                  email={user.email}
                   size={32}
                   className={css`
                     opacity: ${isActive ? 1 : 0.3};

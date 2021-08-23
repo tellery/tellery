@@ -132,7 +132,7 @@ export const StoryCard: React.FC<{ blockId: string }> = ({ blockId }) => {
           >
             <Avatar
               src={user.avatar}
-              name={user.name}
+              email={user.email}
               size={14}
               className={css`
                 background-color: #fff;

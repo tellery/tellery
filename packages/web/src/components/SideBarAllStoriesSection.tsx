@@ -226,7 +226,7 @@ export const StoryCard: React.FC<{ data: StoryListItemValue }> = ({ data }) => {
           >
             <Avatar
               src={data.user.avatar}
-              name={data.user.name}
+              email={data.user.email}
               size={14}
               className={css`
                 background-color: #fff;

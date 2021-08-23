@@ -1,8 +1,7 @@
-import { ThemingVariables } from '@app/styles'
 import { cx, css } from '@emotion/css'
 import BoringAvatar from 'boring-avatars'
 
-export default function Avatar(props: { className?: string; size: number; name: string; src?: string }) {
+export default function Avatar(props: { className?: string; size: number; email: string; src?: string }) {
   return props.src ? (
     <img
       src={props.src}
@@ -27,10 +26,10 @@ export default function Avatar(props: { className?: string; size: number; name: 
     >
       <BoringAvatar
         size={props.size}
-        name={props.name}
+        name={props.email}
         square={false}
-        variant="pixel"
-        colors={ThemingVariables.colors.visualization}
+        variant="beam"
+        colors={['#E9EFFF', '#002FA7', '#005BC5', '#00B4FC', '#42FEFE']}
       />
     </div>
   )

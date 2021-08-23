@@ -320,7 +320,7 @@ function WorkspaceMember(props: {
     >
       <Avatar
         src={user.avatar}
-        name={user.name}
+        email={user.email}
         size={36}
         className={css`
           background-color: ${ThemingVariables.colors.gray[0]};

@@ -48,7 +48,7 @@ export default function UserAccount(props: { onClose(): void }) {
     }
   }, [handleLogoutUser.status])
   const avatar = watch('avatar')
-  const name = watch('name')
+  const email = watch('email')
 
   return (
     <form
@@ -83,7 +83,7 @@ export default function UserAccount(props: { onClose(): void }) {
       >
         <Avatar
           src={avatar}
-          name={name}
+          email={email}
           size={70}
           className={css`
             background: ${ThemingVariables.colors.gray[1]};

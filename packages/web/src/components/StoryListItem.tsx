@@ -155,7 +155,7 @@ export function StoryListItem(props: {
             <>
               <Avatar
                 src={props.value.user.avatar}
-                name={props.value.user.name}
+                email={props.value.user.email}
                 size={24}
                 className={css`
                   margin-right: 4px;

@@ -50,7 +50,7 @@ export const Operator = (props: { operator: User }) => {
     >
       <Avatar
         src={props.operator.avatar}
-        name={props.operator.name}
+        email={props.operator.email}
         size={30}
         className={css`
           height: 100%;

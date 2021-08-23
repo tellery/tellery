@@ -240,7 +240,7 @@ const UserSection: React.FC<{ onClick(): void }> = ({ onClick }) => {
       >
         <Avatar
           src={user.avatar}
-          name={user.name}
+          email={user.email}
           size={36}
           className={css`
             background: ${ThemingVariables.colors.gray[0]};
