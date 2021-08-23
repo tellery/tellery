@@ -36,7 +36,7 @@ import { useBatchQueries } from './useBatchQueries'
 
 export type User = {
   id: string
-  avatar: string
+  avatar?: string
   name: string
   email: string
   status: 'active' | 'confirmed' | 'verifying'

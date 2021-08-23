@@ -33,6 +33,7 @@
     "@types/stats.js": "^0.17.0",
     "@welldone-software/why-did-you-render": "^6.2.0",
     "axios": "^0.21.1",
+    "boring-avatars": "^1.5.8",
     "compute-scroll-into-view": "^1.0.17",
     "copy-to-clipboard": "^3.3.1",
     "crossfilter2": "^1.5.4",

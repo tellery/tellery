@@ -1,4 +1,3 @@
-import { randomInt } from 'crypto'
 import _ from 'lodash'
 import { nanoid } from 'nanoid'
 import { EntityManager, getConnection, getRepository, In } from 'typeorm'
@@ -83,7 +82,6 @@ export class UserService {
         r.create({
           username: email.split('@')[0] || email,
           email,
-          avatar: `/api/static/avatars/user-${randomInt(4)}.png`,
           password: '',
           status,
         }),

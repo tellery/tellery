@@ -284,7 +284,7 @@ export type BackLinks = {
 
 export interface UserInfo {
   id: string
-  avatar: string
+  avatar?: string
   name: string
   email: string
 }

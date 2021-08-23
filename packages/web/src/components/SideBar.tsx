@@ -19,6 +19,7 @@ import { useUpdateAtom } from 'jotai/utils'
 import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
+import Avatar from './Avatar'
 import { useClickAway } from 'react-use'
 import { MainSideBarTabHeader } from './MainSideBarTabHeader'
 import { SideBarAllStoriesSection } from './SideBarAllStoriesSection'
@@ -237,12 +238,11 @@ const UserSection: React.FC<{ onClick(): void }> = ({ onClick }) => {
         `}
         onClick={onClick}
       >
-        <img
+        <Avatar
           src={user.avatar}
+          name={user.name}
+          size={36}
           className={css`
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
             background: ${ThemingVariables.colors.gray[0]};
           `}
         />

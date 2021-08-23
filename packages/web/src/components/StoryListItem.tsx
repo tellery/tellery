@@ -8,6 +8,7 @@ import { ThemingVariables } from '@app/styles'
 import type { Editor, UserInfo } from '@app/types'
 import { Link } from 'react-router-dom'
 import IconButton from './kit/IconButton'
+import Avatar from './Avatar'
 
 export type StoryListItemValue = {
   id: string
@@ -152,14 +153,11 @@ export function StoryListItem(props: {
         >
           {props.value.user ? (
             <>
-              <img
+              <Avatar
                 src={props.value.user.avatar}
-                width={24}
-                height={24}
+                name={props.value.user.name}
+                size={24}
                 className={css`
-                  object-fit: cover;
-                  border-radius: 12px;
-                  overflow: hidden;
                   margin-right: 4px;
                   flex-shrink: 0;
                 `}
