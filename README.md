@@ -86,7 +86,13 @@ You can now access it on http://localhost:8000.
 
 The default account is `admin@tellery.local` and password is `tellery`.
 
-## Next step
+
+### Production setup
+
+- [Running your own Tellery with Kubernetes](https://tellery.io/docs/getting-started/production-setup)
+
+
+### Next step
 
 Learn how to start analysis with Tellery:
 
