@@ -16,6 +16,7 @@ import type { Story } from '@app/types'
 import { css } from '@emotion/css'
 import Tippy from '@tippyjs/react'
 import React, { memo, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useStorySnapshotManagerProvider } from '../hooks/useStorySnapshotManager'
 import IconButton from './kit/IconButton'
 import { RefreshButton } from './RefreshButton'
@@ -189,8 +190,9 @@ export const _NavigationHeader = (props: { storyId: string; title?: string; pinn
 
 export const RefreshAllQuestionBlockButton: React.FC<{ storyId: string }> = ({ storyId }) => {
   const storySnapshotManger = useStorySnapshotManagerProvider(storyId)
-
+  const { t } = useTranslation()
   if (storySnapshotManger.total <= 0) return null
+
   return (
     <div
       className={css`
@@ -205,8 +207,11 @@ export const RefreshAllQuestionBlockButton: React.FC<{ storyId: string }> = ({ s
       <RefreshButton
         hoverContent={
           storySnapshotManger.mutating !== 0
-            ? `Refreshing... ${storySnapshotManger.mutating}/${storySnapshotManger.total}, click to stop`
-            : `Refresh ${storySnapshotManger.total} Questions`
+            ? t(`Refreshing... {{mutatingCount}} / {{totalCount}}, click to stop`, {
+                mutatingCount: storySnapshotManger.mutating,
+                totalCount: storySnapshotManger.total
+              })
+            : t('Refresh {{count}} query', { count: storySnapshotManger.total })
         }
         color={ThemingVariables.colors.text[0]}
         loading={storySnapshotManger.mutating !== 0}

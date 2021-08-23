@@ -1,6 +1,5 @@
 import { IconMenuDuplicate } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
-import { useOnClickOutside } from '@app/hooks'
 import { useFetchStoryChunk } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
@@ -24,7 +23,7 @@ import React, { CSSProperties, memo, ReactNode, useCallback, useEffect, useMemo,
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { useEvent, useScrollbarWidth } from 'react-use'
+import { useClickAway, useEvent, useScrollbarWidth } from 'react-use'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import invariant from 'tiny-invariant'
 import {
@@ -249,7 +248,7 @@ const _StoryEditor: React.FC<{
     setSelectionState(null)
   }, [setSelectionState])
 
-  useOnClickOutside(editorRef, blurEditor)
+  useClickAway(editorRef, blurEditor)
 
   const setSelectionAtBlockStart = useCallback(
     (block: Editor.BaseBlock) => {
@@ -1114,12 +1113,14 @@ const _StoryEditor: React.FC<{
     logger('copy')
   }, [])
 
-  const onMouseUp = useCallback(() => {
+  const onMouseUp = useCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    if (e.defaultPrevented) return
     mouseDownEventRef.current = null
     isSelectingRef.current = null
   }, [])
 
   const onMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    if (e.defaultPrevented) return
     const rootBlock = findRootBlock(e.target as HTMLElement)
     const id = rootBlock?.dataset.blockId
     if (isSelectingRef.current) return
@@ -1574,12 +1575,10 @@ const EditorEmptyStatePlaceHolder = ({
       `}
       onClick={(e) => {
         e.preventDefault()
-        e.stopPropagation()
         onClick(e)
       }}
       onMouseDown={(e) => {
         e.preventDefault()
-        e.stopPropagation()
       }}
     >
       Click here or press Enter to continue with an empty story.
@@ -1604,11 +1603,9 @@ const EditorEmptyStateEndPlaceHolder = ({
       `}
       onMouseDown={(e) => {
         e.preventDefault()
-        e.stopPropagation()
       }}
       onClick={(e) => {
         e.preventDefault()
-        e.stopPropagation()
         onClick(e)
       }}
     ></div>

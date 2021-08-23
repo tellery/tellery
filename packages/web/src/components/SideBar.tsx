@@ -7,7 +7,6 @@ import {
   IconCommonThoughts
 } from '@app/assets/icons'
 import { MainSideBarItem } from '@app/components/MainSideBarItem'
-import { useHover } from '@app/hooks'
 import { useConnectorsListProfiles } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useSideBarConfig } from '@app/hooks/useSideBarConfig'
@@ -17,10 +16,11 @@ import { ThemingVariables } from '@app/styles'
 import { css, cx } from '@emotion/css'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useUpdateAtom } from 'jotai/utils'
-import React, { ReactNode, useCallback, useEffect, useState } from 'react'
+import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import Avatar from './Avatar'
+import { useClickAway } from 'react-use'
 import { MainSideBarTabHeader } from './MainSideBarTabHeader'
 import { SideBarAllStoriesSection } from './SideBarAllStoriesSection'
 import { SideBarPinnedStoriesSection } from './SideBarPinnedStoriesSection'
@@ -68,14 +68,17 @@ const SideBarContents = {
 
 const SideBarContent: React.FC = () => {
   const [modalContent, setModalContent] = useState<ReactNode>(null)
-  const [activeSideBarTab, setActiveSideBarTab] = useState<keyof typeof SideBarContents | null>('PINNED')
-
-  const [ref, isHovering] = useHover<HTMLDivElement>()
-
+  const [activeSideBarTab, setActiveSideBarTab] = useState<keyof typeof SideBarContents | null>(null)
+  const ref = useRef(null)
   const history = useHistory()
   const workspace = useWorkspace()
   const { data: profiles } = useConnectorsListProfiles(workspace.preferences.connectorId)
   const setOmniboxShow = useUpdateAtom(omniboxShowState)
+  const closeSideBar = useCallback(() => {
+    !!activeSideBarTab && setActiveSideBarTab(null)
+  }, [activeSideBarTab])
+
+  useClickAway(ref, closeSideBar)
 
   const hasNoProfile = profiles?.length === 0
 
@@ -95,12 +98,6 @@ const SideBarContent: React.FC = () => {
     }
   }, [hasNoProfile, showSettingsModal])
   const { t } = useTranslation()
-
-  useEffect(() => {
-    if (!isHovering) {
-      setActiveSideBarTab(null)
-    }
-  }, [isHovering])
 
   return (
     <div
@@ -176,6 +173,7 @@ const SideBarContent: React.FC = () => {
             hoverTitle={t`Search`}
             onClick={() => {
               setOmniboxShow(true)
+              closeSideBar()
             }}
           />
           <MainSideBarItem
@@ -183,13 +181,14 @@ const SideBarContent: React.FC = () => {
             hoverTitle={t`Home`}
             onClick={() => {
               history.push('/stories')
+              closeSideBar()
             }}
           />
           {/* <MainSideBarItem icon={IconCommonAdd} hoverTitle="Create a new story" onClick={handleCreateNewSotry} /> */}
           <MainSideBarItem icon={IconCommonSetting} hoverTitle={t`Settings`} onClick={showSettingsModal} />
         </div>
       </div>
-      <FloatingSideBar show={isHovering && !!activeSideBarTab}>
+      <FloatingSideBar show={!!activeSideBarTab}>
         {activeSideBarTab && SideBarContents[activeSideBarTab].content}
       </FloatingSideBar>
 

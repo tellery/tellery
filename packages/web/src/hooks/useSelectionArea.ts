@@ -44,6 +44,7 @@ export function useSelectionArea(selectBlocks: (blockIds: string[] | null) => vo
       }) as SelectionArea
     )
       .on('beforestart', ({ event }) => {
+        if (event?.defaultPrevented) return false
         const noSelect = event?.composedPath().find((element) => (element as Element).classList?.contains('no-select'))
 
         containerRef.current = (event?.target as HTMLElement).closest('.editor')
