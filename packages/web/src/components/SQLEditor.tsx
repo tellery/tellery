@@ -206,6 +206,10 @@ export function SQLEditor(props: {
             .scroll-decoration {
               display: none;
             }
+            .suggest-widget .monaco-list-row .highlight {
+              color: unset !important;
+              font-weight: unset !important;
+            }
           `
         )}
         wrapperClassName={props.className}
