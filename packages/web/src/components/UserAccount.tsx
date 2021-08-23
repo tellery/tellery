@@ -14,6 +14,7 @@ import FormError from './kit/FormError'
 import FormFileButton from './kit/FormFileButton'
 import FormInput from './kit/FormInput'
 import FormLabel from './kit/FormLabel'
+import Avatar from './Avatar'
 
 export default function UserAccount(props: { onClose(): void }) {
   const { user } = useAuth()
@@ -47,6 +48,7 @@ export default function UserAccount(props: { onClose(): void }) {
     }
   }, [handleLogoutUser.status])
   const avatar = watch('avatar')
+  const name = watch('name')
 
   return (
     <form
@@ -79,13 +81,12 @@ export default function UserAccount(props: { onClose(): void }) {
           border-bottom: 1px solid ${ThemingVariables.colors.gray[1]};
         `}
       >
-        <img
+        <Avatar
           src={avatar}
+          name={name}
+          size={70}
           className={css`
-            width: 70px;
-            height: 70px;
             background: ${ThemingVariables.colors.gray[1]};
-            border-radius: 50%;
           `}
         />
         <FormFileButton
