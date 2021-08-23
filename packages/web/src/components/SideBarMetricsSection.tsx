@@ -293,7 +293,7 @@ export const SideBarMetricsSection = () => {
   const { t } = useTranslation()
   const TABS = useMemo(
     () => [
-      { name: t`Current Page`, Component: <CurrentStoryQuestions /> },
+      { name: t`Queries`, Component: <CurrentStoryQuestions /> },
       {
         name: t`Data Assets`,
         Component: <AllMetrics />
