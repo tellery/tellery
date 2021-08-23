@@ -42,7 +42,7 @@
     "dequal": "^2.0.2",
     "downloadjs": "^1.4.7",
     "downshift": "^6.1.7",
-    "exceljs": "^4.2.1",
+    "exceljs": "^4.3.0",
     "focus-trap-react": "^8.7.1",
     "framer-motion": "^4.1.17",
     "html2canvas": "^1.3.2",
