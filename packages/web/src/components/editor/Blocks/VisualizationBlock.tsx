@@ -841,17 +841,7 @@ export const MoreDropdownSelect: React.FC<{
           }
         }
     ].filter((x) => !!x) as OperationInterface[]
-  }, [
-    block,
-    canConvertDataAsset,
-    dataAssetBlock?.content?.snapshotId,
-    dataAssetBlock.id,
-    dataAssetBlock.type,
-    questionEditor,
-    t,
-    editor,
-    getSnapshot
-  ])
+  }, [t, canConvertDataAsset, dataAssetBlock, mutateSnapshot, questionEditor, block, getSnapshot, editor])
 
   const { isOpen, openMenu, getToggleButtonProps, getMenuProps, highlightedIndex, getItemProps, closeMenu } = useSelect(
     { items: operations }
