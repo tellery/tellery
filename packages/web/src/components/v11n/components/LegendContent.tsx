@@ -103,7 +103,7 @@ function LegendItem(props: { value: Payload; isSmall: boolean; onMouseEnter(): v
       onMouseEnter={props.onMouseEnter}
       onMouseLeave={props.onMouseLeave}
     >
-      <Tippy content={props.value.value}>
+      <Tippy content={props.value.value} disabled={!props.isSmall} delay={100}>
         <span
           className={css`
             margin-right: ${iconMargin}px;
