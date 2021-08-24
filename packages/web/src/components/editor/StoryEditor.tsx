@@ -17,7 +17,6 @@ import copy from 'copy-to-clipboard'
 import debug from 'debug'
 import { dequal } from 'dequal'
 import { motion } from 'framer-motion'
-import produce from 'immer'
 import isHotkey from 'is-hotkey'
 import React, { CSSProperties, memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -68,7 +67,6 @@ import {
   isSelectionAtFirstLine,
   isSelectionAtLastLine,
   restoreRange,
-  setBlockTranscation,
   setCaretToEnd,
   setCaretToStart,
   TellerySelection,
@@ -83,9 +81,103 @@ import { useStorySelection } from './hooks/useStorySelection'
 import { useSetUploadResource } from './hooks/useUploadResource'
 import { BlockTextOperationMenu } from './Popovers/BlockTextOperationMenu'
 import { StoryBlockOperatorsProvider } from './StoryBlockOperatorsProvider'
-import type { SetBlock } from './types'
 import { getFilteredOrderdSubsetOfBlocks, getSubsetOfBlocksSnapshot } from './utils'
 const logger = debug('tellery:editor')
+
+const useEditorClipboardManager = (
+  storyId: string,
+  getSelection: () => TellerySelection | null,
+  updateBlockTitle: any
+) => {
+  const snapshot = useBlockSnapshot()
+  const blockTranscations = useBlockTranscations()
+
+  const setClipboardWithFragment = useCallback(
+    (e: React.ClipboardEvent<HTMLDivElement>, fragment: any) => {
+      logger('on copy set')
+      if (e.clipboardData) {
+        // const blocks = Object.values(editorState.blocksMap)
+        e.clipboardData.setData(fragment.type, JSON.stringify(fragment.value))
+        e.clipboardData.setData('text/plain', convertBlocksOrTokensToPureText(fragment, snapshot))
+        logger('set success', fragment)
+      }
+    },
+    [snapshot]
+  )
+
+  const deleteBlockFragmentFromSelection = useCallback(() => {
+    const selectionState = getSelection()
+    if (selectionState === null) return
+    if (selectionState?.type === TellerySelectionType.Inline) {
+      const block = getBlockFromSnapshot(selectionState.anchor.blockId, snapshot)
+      const tokens = block?.content?.title || []
+      const splitedTokens = splitToken(tokens)
+
+      const startPosition =
+        selectionState.anchor.blockId === block.id && selectionState.anchor.nodeIndex !== -1
+          ? tokenPosition2SplitedTokenPosition(tokens, selectionState.anchor.nodeIndex, selectionState.anchor.offset)
+          : null
+      const endPosition =
+        selectionState.focus.blockId === block.id && selectionState.anchor.nodeIndex !== -1
+          ? tokenPosition2SplitedTokenPosition(tokens, selectionState.focus.nodeIndex, selectionState.focus.offset)
+          : null
+
+      if (startPosition !== null && endPosition !== null) {
+        updateBlockTitle(
+          block.id,
+          mergeTokens([...splitedTokens.slice(0, startPosition), ...splitedTokens.slice(endPosition)])
+        )
+      }
+    } else {
+      blockTranscations.removeBlocks(storyId, selectionState.selectedBlocks)
+    }
+  }, [blockTranscations, getSelection, snapshot, storyId, updateBlockTitle])
+
+  const doCut = useCallback(
+    (e: KeyboardEvent) => {
+      const selection = window.getSelection()
+      selection?.removeAllRanges()
+      const selectionState = getSelection()
+      const fragment = selectionState ? getBlocksFragmentFromSelection(selectionState, snapshot) : null
+      if (fragment) {
+        e.preventDefault()
+      }
+      copy('tellery', {
+        debug: true,
+        onCopy: (clipboardData) => {
+          setClipboardWithFragment({ clipboardData } as React.ClipboardEvent<HTMLDivElement>, fragment)
+          deleteBlockFragmentFromSelection()
+        }
+      })
+    },
+    [deleteBlockFragmentFromSelection, getSelection, setClipboardWithFragment, snapshot]
+  )
+
+  const doCopy = useCallback(
+    (e: KeyboardEvent) => {
+      const selectionState = getSelection()
+      const fragment = selectionState ? getBlocksFragmentFromSelection(selectionState, snapshot) : null
+      if (fragment) {
+        e.preventDefault()
+      }
+      copy('tellery', {
+        debug: true,
+        onCopy: (clipboardData) => {
+          setClipboardWithFragment({ clipboardData } as React.ClipboardEvent<HTMLDivElement>, fragment)
+        }
+      })
+    },
+    [getSelection, setClipboardWithFragment, snapshot]
+  )
+
+  return useMemo(
+    () => ({
+      doCut,
+      doCopy
+    }),
+    []
+  )
+}
 
 const _StoryEditor: React.FC<{
   storyId: string
@@ -107,13 +199,16 @@ const _StoryEditor: React.FC<{
   const scrollbarWidth = useScrollbarWidth()
   const isSelectingRef = useRef<DOMRect | null>(null)
   const mouseDownEventRef = useRef<MouseEvent | null>(null)
-  const [lastInputChar, setLastInputChar] = useState<string | null>(null)
+  const lastInputCharRef = useRef<string | null>(null)
   const rootBlock = useFetchStoryChunk<Story | Thought>(storyId)
   const blocksMap = useStoryBlocksMap(storyId)
   const blocksMapsRef = useRef<Record<string, Editor.BaseBlock> | null>(null)
   const [inited, setInited] = useState(false)
   const permissions = useStoryPermissions(storyId)
   const canWrite = permissions.canWrite
+  const blockAdminValue = useBlockAdminProvider(storyId)
+  const snapshot = useBlockSnapshot()
+  const location = useLocation()
 
   const getBlockLocalPreferences = useGetBlockLocalPreferences()
   useEffect(() => {
@@ -122,8 +217,6 @@ const _StoryEditor: React.FC<{
       setInited(true)
     }
   }, [blocksMap])
-
-  const blockAdminValue = useBlockAdminProvider(storyId)
 
   const lockOrUnlockScroll = useCallback((lock: boolean) => {
     setScrollLocked(lock)
@@ -149,9 +242,7 @@ const _StoryEditor: React.FC<{
     return tellerySelectionRef.current
   }, [])
 
-  const snapshot = useBlockSnapshot()
-
-  const { selectionRef } = useSelectionArea(
+  const { selectionRef, triggerSelection } = useSelectionArea(
     useCallback(
       (blockIds) =>
         // blocksMapsRef may not been updated, wait for it
@@ -176,16 +267,6 @@ const _StoryEditor: React.FC<{
     )
   )
 
-  const triggerSelection = useCallback(
-    (event: globalThis.MouseEvent | globalThis.TouchEvent) => {
-      if (!selectionRef.current) {
-        return
-      }
-      selectionRef.current.trigger(event, true)
-    },
-    [selectionRef]
-  )
-
   const setSelectedBlocks = useCallback(
     (blockIds: string[]) => {
       if (blockIds.length === 0) {
@@ -200,8 +281,6 @@ const _StoryEditor: React.FC<{
     },
     [blockAdminValue, selectionRef, setSelectionState]
   )
-
-  const location = useLocation()
 
   useEffect(() => {
     const focusTitle = (location.state as any)?.focusTitle
@@ -296,64 +375,51 @@ const _StoryEditor: React.FC<{
     }
   }, [commit, permissions.canWrite, setSelectionAtBlockStart, snapshot, storyId])
 
-  const updateSelection = useCallback(
-    (newBlock: Editor.BaseBlock, oldBlock: Editor.BaseBlock) => {
-      setSelectionState((oldSelection) => {
-        if (oldSelection === null) return oldSelection
-        if (oldSelection.type !== TellerySelectionType.Inline) return oldSelection
-        if (oldSelection.anchor.blockId !== newBlock.id) return oldSelection
-        const newSelection = getTransformedSelection(
-          oldSelection,
-          oldBlock.content?.title ?? [],
-          newBlock.content?.title ?? []
-        )
-        return newSelection
-      })
-    },
-    [setSelectionState]
-  )
-
-  const setBlockValue = useCallback<SetBlock<Editor.BaseBlock>>(
-    (id, update) => {
+  const updateBlockProps = useCallback(
+    (blockId: string, path: string[], args: any) => {
       if (!permissions.canWrite) return
-      commit({
-        transcation: (snapshot) => {
-          const oldBlock = getBlockFromSnapshot(id, snapshot)
-          const newBlock = produce(oldBlock, update)
 
-          if (dequal(oldBlock.content?.title, newBlock.content?.title) === false) {
-            updateSelection(newBlock, oldBlock)
-          }
-
-          logger('commit')
-          return setBlockTranscation({ oldBlock, newBlock: newBlock })
-        },
-        storyId
-      })
+      return blockTranscations.updateBlockProps(storyId, blockId, path, args)
     },
-    [commit, permissions.canWrite, storyId, updateSelection]
+    [blockTranscations, permissions.canWrite, storyId]
   )
+
+  const updateBlockTitle = useCallback(
+    (blockId: string, tokens: Editor.Token[]) => {
+      const oldBlock = getBlockFromSnapshot(blockId, snapshot)
+      updateBlockProps(blockId, ['content', 'title'], tokens)
+      if (dequal(oldBlock.content?.title, tokens) === false) {
+        setSelectionState((oldSelection) => {
+          if (oldSelection === null) return oldSelection
+          if (oldSelection.type !== TellerySelectionType.Inline) return oldSelection
+          if (oldSelection.anchor.blockId !== blockId) return oldSelection
+          const newSelection = getTransformedSelection(oldSelection, oldBlock.content?.title ?? [], tokens ?? [])
+          return newSelection
+        })
+      }
+    },
+    [setSelectionState, snapshot, updateBlockProps]
+  )
+
+  const editorClipboardManager = useEditorClipboardManager(storyId, getSelection, updateBlockTitle)
 
   const toggleBlockType = useCallback(
     (id, type, removePrefixCount: number) => {
-      setBlockValue?.(id, (block) => {
-        if (block.type === Editor.BlockType.Story) return
-        invariant(block.content?.title, 'title is undefined')
-        const blockTitle: Editor.Token[] = block.content.title ?? []
+      const block = getBlockFromSnapshot(id, snapshot)
+      if (removePrefixCount) {
+        const blockTitle: Editor.Token[] = block?.content?.title ?? []
         const splitedTokens = splitToken(blockTitle)
-        if (removePrefixCount > 0) {
-          block.content.title = mergeTokens(splitedTokens.slice(removePrefixCount))
-        }
-        // TODO: use middleware
-        if (isVisualizationBlock(type)) {
-          const newBlock = createEmptyBlock({ type: Editor.BlockType.Visualization })
-          ;(block.content as any).sql = ''
-          block.format = newBlock.format
-        }
-        block.type = type
-      })
+        updateBlockTitle(id, mergeTokens(splitedTokens.slice(removePrefixCount)))
+      }
+      if (isVisualizationBlock(type)) {
+        const newBlock = createEmptyBlock({ type: Editor.BlockType.Visualization })
+        updateBlockProps(id, ['format'], newBlock.format)
+        updateBlockProps(id, ['type'], type)
+      } else {
+        updateBlockProps(id, ['type'], type)
+      }
     },
-    [setBlockValue]
+    [snapshot, updateBlockProps, updateBlockTitle]
   )
 
   const insertNewEmptyBlock = useCallback(
@@ -379,7 +445,7 @@ const _StoryEditor: React.FC<{
   )
 
   useEffect(() => {
-    if (selectionState?.type !== TellerySelectionType.Inline || !lastInputChar) {
+    if (selectionState?.type !== TellerySelectionType.Inline || !lastInputCharRef.current) {
       return
     }
 
@@ -390,7 +456,7 @@ const _StoryEditor: React.FC<{
 
     // logger('lastinput', lastInputChar)
     const splitedTokens = splitToken(currentBlock.content?.title ?? [])
-    const transformData = getTransformedTypeAndPrefixLength(splitedTokens, 1, selectionState, lastInputChar)
+    const transformData = getTransformedTypeAndPrefixLength(splitedTokens, 1, selectionState, lastInputCharRef.current)
     if (!transformData) return
     // logger('transform', transformData)
 
@@ -413,55 +479,11 @@ const _StoryEditor: React.FC<{
       default:
         toggleBlockType(currentBlock.id, newType, prefixLength)
     }
-  }, [blockAdminValue, insertNewEmptyBlock, lastInputChar, selectionState, snapshot, toggleBlockType])
+  }, [blockAdminValue, insertNewEmptyBlock, lastInputCharRef, selectionState, snapshot, toggleBlockType])
 
   useEffect(() => {
     logger('selection state', selectionState)
   }, [selectionState])
-
-  const deleteBlockFragmentFromSelection = useCallback(() => {
-    if (selectionState === null) return
-    if (selectionState?.type === TellerySelectionType.Inline) {
-      const block = getBlockFromSnapshot(selectionState.anchor.blockId, snapshot)
-      const tokens = block?.content?.title || []
-      const splitedTokens = splitToken(tokens)
-
-      const startPosition =
-        selectionState.anchor.blockId === block.id && selectionState.anchor.nodeIndex !== -1
-          ? tokenPosition2SplitedTokenPosition(tokens, selectionState.anchor.nodeIndex, selectionState.anchor.offset)
-          : null
-      const endPosition =
-        selectionState.focus.blockId === block.id && selectionState.anchor.nodeIndex !== -1
-          ? tokenPosition2SplitedTokenPosition(tokens, selectionState.focus.nodeIndex, selectionState.focus.offset)
-          : null
-
-      if (startPosition !== null && endPosition !== null) {
-        setBlockValue(block.id, (block) => {
-          if (isTextBlock(block.type)) {
-            block!.content!.title = mergeTokens([
-              ...splitedTokens.slice(0, startPosition),
-              ...splitedTokens.slice(endPosition)
-            ])
-          }
-        })
-      }
-    } else {
-      blockTranscations.removeBlocks(storyId, selectionState.selectedBlocks)
-    }
-  }, [blockTranscations, selectionState, setBlockValue, snapshot, storyId])
-
-  const setClipboardWithFragment = useCallback(
-    (e: React.ClipboardEvent<HTMLDivElement>, fragment: any) => {
-      logger('on copy set')
-      if (e.clipboardData) {
-        // const blocks = Object.values(editorState.blocksMap)
-        e.clipboardData.setData(fragment.type, JSON.stringify(fragment.value))
-        e.clipboardData.setData('text/plain', convertBlocksOrTokensToPureText(fragment, snapshot))
-        logger('set success', fragment)
-      }
-    },
-    [snapshot]
-  )
 
   const deleteBackward = useCallback(
     (unit: 'character', options: { selection: TellerySelection }) => {
@@ -594,41 +616,6 @@ const _StoryEditor: React.FC<{
     [commit, setSelectionState, snapshot, storyId]
   )
 
-  const doCut = useCallback(
-    (e: KeyboardEvent) => {
-      const selection = window.getSelection()
-      selection?.removeAllRanges()
-      const fragment = selectionState ? getBlocksFragmentFromSelection(selectionState, snapshot) : null
-      if (fragment) {
-        e.preventDefault()
-      }
-      copy('tellery', {
-        debug: true,
-        onCopy: (clipboardData) => {
-          setClipboardWithFragment({ clipboardData } as React.ClipboardEvent<HTMLDivElement>, fragment)
-          deleteBlockFragmentFromSelection()
-        }
-      })
-    },
-    [deleteBlockFragmentFromSelection, selectionState, setClipboardWithFragment, snapshot]
-  )
-
-  const doCopy = useCallback(
-    (e: KeyboardEvent) => {
-      const fragment = selectionState ? getBlocksFragmentFromSelection(selectionState, snapshot) : null
-      if (fragment) {
-        e.preventDefault()
-      }
-      copy('tellery', {
-        debug: true,
-        onCopy: (clipboardData) => {
-          setClipboardWithFragment({ clipboardData } as React.ClipboardEvent<HTMLDivElement>, fragment)
-        }
-      })
-    },
-    [selectionState, setClipboardWithFragment, snapshot]
-  )
-
   const toggleBlocksIndention = useCallback(
     (blockIds: string[], type: 'in' | 'out') => {
       const blockId = blockIds[0]
@@ -746,6 +733,7 @@ const _StoryEditor: React.FC<{
 
   const globalKeyDownHandler = useCallback(
     (e: KeyboardEvent) => {
+      const selectionState = getSelection()
       if (selectionState === null || locked) {
         return
       }
@@ -770,7 +758,7 @@ const _StoryEditor: React.FC<{
         {
           hotkeys: ['mod+x'],
           handler: (e) => {
-            doCut(e)
+            editorClipboardManager.doCut(e)
           }
         },
         {
@@ -790,7 +778,7 @@ const _StoryEditor: React.FC<{
           hotkeys: ['mod+c'],
           handler: (e) => {
             // e.preventDefault()
-            doCopy(e)
+            editorClipboardManager.doCopy(e)
           }
         },
         {
@@ -819,11 +807,9 @@ const _StoryEditor: React.FC<{
       blockTranscations,
       commitHistory,
       deleteBackward,
-      doCopy,
-      doCut,
       duplicateHandler,
+      getSelection,
       locked,
-      selectionState,
       setSelectionState,
       storyId
     ]
@@ -832,11 +818,13 @@ const _StoryEditor: React.FC<{
   const keyDownHandler = useCallback(
     (e: React.KeyboardEvent) => {
       logger('key down', e)
+      const selectionState = getSelection()
+
       if (selectionState === null || locked) {
         return
       }
 
-      setLastInputChar(e.key)
+      lastInputCharRef.current = e.key
 
       const handlers: { hotkeys: string[]; handler: (e: KeyboardEvent) => void }[] = [
         {
@@ -1091,16 +1079,16 @@ const _StoryEditor: React.FC<{
       matchingHandler?.handler(e.nativeEvent)
     },
     [
-      commit,
-      setHoverBlockId,
-      selectionState,
-      storyId,
-      setSelectionAtBlockStart,
+      getSelection,
       locked,
-      getBlockLocalPreferences,
+      setHoverBlockId,
       snapshot,
-      toggleBlocksIndention,
-      blockTranscations
+      storyId,
+      blockTranscations,
+      setSelectionAtBlockStart,
+      getBlockLocalPreferences,
+      commit,
+      toggleBlocksIndention
     ]
   )
 
@@ -1171,6 +1159,7 @@ const _StoryEditor: React.FC<{
   const pasteHandler = useCallback(
     (e: React.ClipboardEvent<HTMLElement>) => {
       if (locked) return
+      const selectionState = getSelection()
       if (e.defaultPrevented || !selectionState) {
         return
       }
@@ -1240,12 +1229,12 @@ const _StoryEditor: React.FC<{
             e.preventDefault()
             const targetBlockId = selectionState.anchor.blockId
             const telleryTokensData: Editor.Token[] = JSON.parse(telleryTokenDataStr)
-            setBlockValue(targetBlockId, (currentBlock) => {
-              const [tokens1, tokens2] = splitBlockTokens(currentBlock!.content!.title || [], selectionState)
-              const beforeToken = mergeTokens([...tokens1, ...(telleryTokensData || [])])
-              const afterToken = tokens2
-              currentBlock!.content!.title = mergeTokens([...beforeToken, ...afterToken])
-            })
+
+            const targetBlock = getBlockFromSnapshot(targetBlockId, snapshot)
+            const [tokens1, tokens2] = splitBlockTokens(targetBlock!.content!.title || [], selectionState)
+            const beforeToken = mergeTokens([...tokens1, ...(telleryTokensData || [])])
+            const afterToken = tokens2
+            updateBlockTitle(targetBlockId, mergeTokens([...beforeToken, ...afterToken]))
           }
         } else if (pureText) {
           const paragraphs = pureText.split(/\s?\r?\n/g)
@@ -1257,26 +1246,27 @@ const _StoryEditor: React.FC<{
               logger('collesped')
               e.preventDefault()
               const content = firstPargraph ?? ''
-              setBlockValue(selectionState.anchor.blockId, (currentBlock) => {
-                const [tokens1, tokens2] = splitBlockTokens(currentBlock!.content!.title || [], selectionState)
-                const beforeToken = mergeTokens([...tokens1, [content]])
-                const afterToken = tokens2
-                currentBlock!.content!.title = mergeTokens([...beforeToken, ...afterToken])
-              })
+              const currentBlock = getBlockFromSnapshot(selectionState.anchor.blockId, snapshot)
+              const [tokens1, tokens2] = splitBlockTokens(currentBlock!.content!.title || [], selectionState)
+              const beforeToken = mergeTokens([...tokens1, [content]])
+              const afterToken = tokens2
+              updateBlockTitle(currentBlock.id, mergeTokens([...beforeToken, ...afterToken]))
             } else if (selectionState.type === TellerySelectionType.Inline) {
               const content = firstPargraph ?? ''
               logger('is url', isUrl(content))
               if (isUrl(content)) {
                 e.preventDefault()
-                setBlockValue(selectionState.anchor.blockId, (currentBlock) => {
-                  currentBlock!.content!.title = applyTransformOnTokensFromSelectionState(
+                const currentBlock = getBlockFromSnapshot(selectionState.anchor.blockId, snapshot)
+                updateBlockTitle(
+                  currentBlock.id,
+                  applyTransformOnTokensFromSelectionState(
                     currentBlock!.content!.title || [],
                     selectionState,
                     (token) => {
                       return [token[0], addMark(token[1], Editor.InlineType.Link, [content])]
                     }
                   )
-                })
+                )
                 setSelectionState((state) => {
                   if (state?.type === TellerySelectionType.Inline) {
                     return {
@@ -1323,13 +1313,13 @@ const _StoryEditor: React.FC<{
     },
     [
       locked,
-      selectionState,
+      getSelection,
       blockTranscations,
       storyId,
+      updateBlockTitle,
       setUploadResource,
       snapshot,
       setSelectedBlocks,
-      setBlockValue,
       focusingBlockId,
       setSelectionState,
       afterDuplicateBlocks
@@ -1341,7 +1331,8 @@ const _StoryEditor: React.FC<{
 
   const editorContext = useMemo(() => {
     return {
-      setBlockValue,
+      updateBlockTitle,
+      updateBlockProps,
       blurEditor,
       deleteBackward,
       setSelectionState,
@@ -1356,8 +1347,9 @@ const _StoryEditor: React.FC<{
     } as EditorContextInterface<Editor.BaseBlock>
   }, [
     blurEditor,
+    updateBlockTitle,
     deleteBackward,
-    setBlockValue,
+    updateBlockProps,
     setSelectionState,
     insertNewEmptyBlock,
     blockTranscations,
@@ -1376,6 +1368,7 @@ const _StoryEditor: React.FC<{
       if (e.defaultPrevented) {
         return
       }
+      const selectionState = getSelection()
       const contentRect = editorRef.current!.getBoundingClientRect()
       const x = e.clientX < contentRect.x + 100 ? contentRect.x + 101 : e.clientX
       const container = getEndContainerFromPoint(x, e.clientY)
@@ -1401,7 +1394,7 @@ const _StoryEditor: React.FC<{
         }
       }
     },
-    [selectionState?.type]
+    [getSelection]
   )
 
   const [dimensions] = useDebouncedDimension(editorRef, 0, true)

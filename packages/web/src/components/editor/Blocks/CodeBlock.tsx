@@ -1,5 +1,6 @@
 import { MenuItem } from '@app/components/MenuItem'
 import { useBlockHovering } from '@app/hooks/useBlockHovering'
+import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { ThemingVariables } from '@app/styles'
 import { CodeBlockLang, CodeBlockLangDisplayName, Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
@@ -14,7 +15,7 @@ import { BlockRenderer } from '../BlockBase/BlockRenderer'
 import { ContentEditable } from '../BlockBase/ContentEditable'
 import { EditorPopover } from '../EditorPopover'
 import { mergeTokens, splitTokenAndMarkIndex, tokensToText } from '../helpers'
-import { useEditor, useLocalSelection } from '../hooks'
+import { useLocalSelection } from '../hooks'
 import { BlockComponent, registerBlock } from './utils'
 
 const getSplitedTokens = (node: LowLightText | LowlightElementSpan, classnames: string[]): Editor.Token[] => {
@@ -104,10 +105,6 @@ const CodeBlock: BlockComponent<
             if (e.shiftKey) return
             // TODO: custom insert text will insert after linebreak
             document.execCommand('insertText', false, '  ')
-            // const [tokens1, tokens2] = splitBlockTokens(block.content?.title || [], localSelection)
-            // editor?.setBlockValue?.(block.id, (block) => {
-            //   block!.content!.title = mergeTokens([...tokens1, ['  '], ...tokens2])
-            // })
           }
         }}
       >
@@ -134,21 +131,19 @@ const CodeBlockOperation = (props: {
 }) => {
   const { block } = props
   const [open, setOpen] = useState(false)
-  const editor = useEditor<Editor.CodeBlock>()
   const ref = useRef<HTMLDivElement>(null)
   const [index, setIndex] = useState(0)
-
+  const blockTranscation = useBlockTranscations()
   const show = useBlockHovering(block.id)
 
   const toggleCodeBlockLangHandler = useCallback(
     (lang: CodeBlockLang) => {
-      editor?.setBlockValue?.(props.block.id, (block) => {
-        block.content.lang = lang
-      })
+      blockTranscation.updateBlockProps(block.storyId!, block.id, ['content', 'lang'], lang)
       setOpen(false)
     },
-    [editor, props.block.id]
+    [block.id, block.storyId, blockTranscation]
   )
+
   return (
     <div
       style={{

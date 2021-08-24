@@ -160,6 +160,26 @@ export const useBlockTranscationProvider = () => {
     [commit]
   )
 
+  const updateBlockProps = useCallback(
+    (storyId: string, blockId: string, path: string[], args: any) => {
+      return commit({
+        storyId: storyId,
+        transcation: createTranscation({
+          operations: [
+            {
+              cmd: 'set',
+              id: blockId,
+              args: args,
+              path: path,
+              table: 'block'
+            }
+          ]
+        })
+      })
+    },
+    [commit]
+  )
+
   // TODO: use commit
   const pinStory = useCallback(
     (workspaceViewId: string, storyId: string) => {
@@ -255,7 +275,8 @@ export const useBlockTranscationProvider = () => {
     pinStory,
     unpinStory,
     deleteStory,
-    duplicateStory
+    duplicateStory,
+    updateBlockProps
   }
 }
 

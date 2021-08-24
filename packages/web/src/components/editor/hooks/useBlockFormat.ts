@@ -1,10 +1,10 @@
-import { MotionValue, PanInfo, useMotionValue, useTransform } from 'framer-motion'
-import invariant from 'tiny-invariant'
-import { RefObject, useCallback, useMemo, useRef, useState } from 'react'
+import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import type { Editor } from '@app/types'
-import { useEditor } from '../hooks'
-import { stripUnit } from 'polished'
 import debug from 'debug'
+import { MotionValue, PanInfo, useMotionValue, useTransform } from 'framer-motion'
+import { stripUnit } from 'polished'
+import { RefObject, useCallback, useMemo, useRef, useState } from 'react'
+import invariant from 'tiny-invariant'
 
 const logger = debug('tellery:blockformat')
 
@@ -37,8 +37,8 @@ export interface BlockFormatInterface {
 export const useBlockFormat = (block: Editor.Block) => {
   const [isDragging, setIsDragging] = useState(false)
   const startDimensionRef = useRef<{ width: number; height: number } | null>(null)
-  const editor = useEditor<Editor.Block>()
   const maxWidthRef = useRef<number>(0)
+  const blockTranscation = useBlockTranscations()
 
   const x = useMotionValue(0)
   const y = useMotionValue(0)
@@ -82,7 +82,6 @@ export const useBlockFormat = (block: Editor.Block) => {
       info,
       { keepAspectRatio, contentRef }: { keepAspectRatio: boolean; contentRef: RefObject<HTMLElement | null> }
     ) => {
-      invariant(editor, 'editor is null')
       const element = contentRef.current
       if (!element) return
       const rect = element.getBoundingClientRect()
@@ -102,23 +101,20 @@ export const useBlockFormat = (block: Editor.Block) => {
         (stripUnit(parentPaddingLeftString) as number) + (stripUnit(parentPaddingRightString) as number)
       const parentWidth = parentElement.offsetWidth - parentPadding
 
-      editor?.setBlockValue(block.id, (draftBlock) => {
-        if (!draftBlock.format) {
-          draftBlock.format = {
-            width: DEFAULT_WIDTH,
-            aspectRatio: DEFAULT_ASPECT_RATIO
-          }
-        }
-        // const widthValue = width.get()
-        // const heightValue = height.get()
-        // invariant(typeof heightValue === 'number' && typeof widthValue === 'number', 'height or width invalid')
-        logger('resize end', 'width', rect.width, 'parentWidth', parentWidth, 'height', rect.height)
-        const newWidth = Math.max(rect.width / parentWidth, 1 / 6)
-        draftBlock.format.width = newWidth
-        if (keepAspectRatio === false) {
-          draftBlock.format.aspectRatio = Math.max((width.get() as number) / height.get(), 0.5)
-        }
-      })
+      const format = {
+        width: DEFAULT_WIDTH,
+        aspectRatio: DEFAULT_ASPECT_RATIO
+      }
+      // const widthValue = width.get()
+      // const heightValue = height.get()
+      // invariant(typeof heightValue === 'number' && typeof widthValue === 'number', 'height or width invalid')
+      logger('resize end', 'width', rect.width, 'parentWidth', parentWidth, 'height', rect.height)
+      const newWidth = Math.max(rect.width / parentWidth, 1 / 6)
+      format.width = newWidth
+      if (keepAspectRatio === false) {
+        format.aspectRatio = Math.max((width.get() as number) / height.get(), 0.5)
+      }
+      blockTranscation.updateBlockProps(block.storyId!, block.id, ['format'], format)
       startDimensionRef.current = null
       setIsDragging(false)
       // TODO: use settimeout because width and isDragging not sync
@@ -129,7 +125,7 @@ export const useBlockFormat = (block: Editor.Block) => {
         y.set(0)
       }, 0)
     },
-    [editor, block.id, width, height, x, y]
+    [blockTranscation, block.storyId, block.id, width, height, x, y]
   )
 
   return useMemo(

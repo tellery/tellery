@@ -1,9 +1,10 @@
+import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
+import { Editor } from '@app/types'
 import IframeResizer from 'iframe-resizer-react'
 import React, { useCallback, useRef, useState } from 'react'
-import { Editor } from '@app/types'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
 import { EmbedBlockPopover } from '../BlockBase/EmbedBlockPopover'
-import { BlockFormatInterface, useEditor } from '../hooks'
+import type { BlockFormatInterface } from '../hooks'
 import { BlockComponent, registerBlock } from './utils'
 
 const EmbedBlock: BlockComponent<
@@ -14,9 +15,8 @@ const EmbedBlock: BlockComponent<
   }>
 > = ({ block, blockFormat, parentType }) => {
   const ref = useRef<HTMLDivElement>(null)
-
-  const editor = useEditor<Editor.EmbedBlock>()
   const [showPopover, setShowPopover] = useState(false)
+  const blockTranscation = useBlockTranscations()
 
   return (
     <>
@@ -42,11 +42,9 @@ const EmbedBlock: BlockComponent<
           onSubmit={useCallback(
             ({ src }: { src: string }) => {
               setShowPopover(false)
-              editor?.setBlockValue(block.id, (oldValue) => {
-                oldValue.content.src = src
-              })
+              blockTranscation.updateBlockProps(block.storyId!, block.id, ['content', 'src'], src)
             },
-            [block.id, editor]
+            [block.id, block.storyId, blockTranscation]
           )}
         />
       </div>

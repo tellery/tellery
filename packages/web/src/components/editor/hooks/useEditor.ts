@@ -10,7 +10,8 @@ export type EditorContextInterface<BlockType> = {
     targetBlockId: string,
     direction: 'top' | 'bottom' | 'child'
   ) => Editor.BaseBlock
-  setBlockValue: SetBlock<BlockType>
+  updateBlockTitle: (blockId: string, tokens: Editor.Token[]) => void
+  updateBlockProps: (blockId: string, path: string[], args: {}) => void
   blurEditor: () => void
   // moveBlocks: (sourceBlockIds: string[], targetBlockId: string, direction: 'left' | 'right' | 'bottom' | 'top') => void
   setSelectionState: SetterOrUpdater<TellerySelection | null>

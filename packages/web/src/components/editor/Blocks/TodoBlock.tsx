@@ -1,10 +1,10 @@
-import { css, cx } from '@emotion/css'
-import React, { useCallback } from 'react'
 import { CheckBox } from '@app/components/CheckBox'
+import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
+import { css, cx } from '@emotion/css'
+import React, { useCallback } from 'react'
 import { ContentEditable } from '../BlockBase/ContentEditable'
-import { useEditor } from '../hooks'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import { BlockComponent, registerBlock } from './utils'
 
@@ -14,8 +14,7 @@ const TodoBlock: BlockComponent<
   }>
 > = ({ block, children }) => {
   const { readonly } = useBlockBehavior()
-
-  const editor = useEditor<Editor.TodoBlock>()
+  const blockTranscation = useBlockTranscations()
   return (
     <>
       <div
@@ -44,10 +43,13 @@ const TodoBlock: BlockComponent<
             disabled={readonly}
             value={!!block.content?.checked}
             onChange={useCallback(() => {
-              editor?.setBlockValue(block.id, (block) => {
-                block!.content!.checked = !block.content?.checked
-              })
-            }, [block.id, editor])}
+              blockTranscation.updateBlockProps(
+                block.storyId!,
+                block.id,
+                ['content', 'checked'],
+                !block.content?.checked
+              )
+            }, [block.content?.checked, block.id, block.storyId, blockTranscation])}
           />
         </div>
 

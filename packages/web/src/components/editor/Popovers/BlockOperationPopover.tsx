@@ -202,12 +202,9 @@ export const BlockPopoverInner: React.FC<{ id: string; requestClose: () => void 
           action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault()
             e.stopPropagation()
-            editor?.setBlockValue(id, (block) => {
-              if (block.format?.textAlign === 'center') {
-                delete block.format?.textAlign
-              } else {
-                block.format = { ...block.format, textAlign: 'center' }
-              }
+            editor?.updateBlockProps(id, ['format'], {
+              ...block.format,
+              textAlign: block.format?.textAlign === 'center' ? undefined : 'center'
             })
           }
         }

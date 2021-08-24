@@ -1,11 +1,12 @@
 import { getMetabaseToken } from '@app/api'
+import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { Editor } from '@app/types'
 import IframeResizer from 'iframe-resizer-react'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useQuery } from 'react-query'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
 import { EmbedBlockPopover } from '../BlockBase/EmbedBlockPopover'
-import { BlockFormatInterface, useEditor } from '../hooks'
+import type { BlockFormatInterface } from '../hooks'
 import { BlockComponent, registerBlock } from './utils'
 
 const useMetabaseToken = (block: Editor.MetabaseBlock) => {
@@ -49,8 +50,7 @@ const MetabaseBlock: BlockComponent<
   }>
 > = ({ block, blockFormat, parentType }) => {
   const ref = useRef<HTMLDivElement>(null)
-
-  const editor = useEditor<Editor.MetabaseBlock>()
+  const blockTranscation = useBlockTranscations()
   const [showPopover, setShowPopover] = useState(false)
 
   const token = useMetabaseToken(block)
@@ -83,30 +83,41 @@ const MetabaseBlock: BlockComponent<
           referenceElement={ref.current}
           onSubmit={useCallback(
             ({ src }: { src: string }) => {
-              editor?.setBlockValue(block.id, (oldValue) => {
-                const url = new URL(src)
-                oldValue.content.siteUrl = `${url.protocol}//${url.host}`
-                const pathParts = url.pathname.split('/').slice(1)
-                if (pathParts.length === 3) {
-                  if (pathParts[0] === 'public') {
-                    oldValue.content.resourceType = pathParts[1]
-                    oldValue.content.publicToken = pathParts[2]
-                  } else if (pathParts[0] === 'embed') {
-                    oldValue.content.resourceType = pathParts[1]
-                    oldValue.content.resourceId = parseInt(pathParts[2], 10)
-                    oldValue.content.params = {}
-                  } else {
-                    return
+              const url = new URL(src)
+              let content: any = {
+                ...block.content,
+                siteURL: `${url.protocol}//${url.host}`
+              }
+              const pathParts = url.pathname.split('/').slice(1)
+              if (pathParts.length === 3) {
+                if (pathParts[0] === 'public') {
+                  content = {
+                    ...content,
+                    resourceType: pathParts[1],
+                    publicToken: pathParts[2]
                   }
-                } else if (pathParts.length === 2) {
-                  oldValue.content.resourceType = pathParts[0]
-                  oldValue.content.resourceId = parseInt(pathParts[1], 10)
-                  oldValue.content.params = {}
+                } else if (pathParts[0] === 'embed') {
+                  content = {
+                    ...content,
+                    resourceType: pathParts[1],
+                    resourceId: parseInt(pathParts[2], 10),
+                    params: {}
+                  }
+                } else {
+                  return
                 }
-                setShowPopover(false)
-              })
+              } else if (pathParts.length === 2) {
+                content = {
+                  ...content,
+                  resourceType: pathParts[0],
+                  resourceId: parseInt(pathParts[1], 10),
+                  params: {}
+                }
+              }
+              blockTranscation.updateBlockProps(block.storyId!, block.id, ['content'], content)
+              setShowPopover(false)
             },
-            [block.id, editor]
+            [block.content, block.id, block.storyId, blockTranscation]
           )}
         />
       </div>

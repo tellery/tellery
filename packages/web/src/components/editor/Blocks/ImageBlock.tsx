@@ -1,3 +1,4 @@
+import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { Editor } from '@app/types'
 import { fileLoader } from '@app/utils'
@@ -7,7 +8,6 @@ import { motion } from 'framer-motion'
 import React, { useEffect, useRef } from 'react'
 import { BlockResizer } from '../BlockBase/BlockResizer'
 import { UploadFilePlaceHolder } from '../BlockBase/UploadFilePlaceHolder'
-import { useEditor } from '../hooks'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
 import { BlockComponent, registerBlock } from './utils'
@@ -28,26 +28,20 @@ const ImageBlock: BlockComponent<
     parentType: Editor.BlockType
   }>
 > = ({ block, blockFormat, parentType }) => {
-  const editor = useEditor<Editor.ImageBlock>()
   const contentRef = useRef<HTMLDivElement | null>(null)
   const { readonly } = useBlockBehavior()
   const workspace = useWorkspace()
+  const blockTranscation = useBlockTranscations()
 
   useEffect(() => {
     if (!block.content) {
-      editor?.setBlockValue?.(block.id, (block) => {
-        block.content = {
-          fileKey: ''
-        }
-      })
+      blockTranscation.updateBlockProps(block.storyId!, block.id, ['content'], { fileKey: '' })
     }
     // TODO: COMPACT CODE, remove later
     if (!block.format?.aspectRatio && block.content?.imageInfo) {
-      editor?.setBlockValue?.(block.id, (block) => {
-        block.format = {
-          width: 1,
-          aspectRatio: block.content!.imageInfo!.width / block.content!.imageInfo!.height
-        }
+      blockTranscation.updateBlockProps(block.storyId!, block.id, ['format'], {
+        width: 1,
+        aspectRatio: block.content!.imageInfo!.width / block.content!.imageInfo!.height
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

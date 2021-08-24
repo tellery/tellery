@@ -1,3 +1,4 @@
+import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { css } from '@emotion/css'
@@ -27,14 +28,13 @@ const EquationBlock: BlockComponent<
   const { readonly } = useBlockBehavior()
   const [showPopover, setShowPopover] = useState(false)
   const [equationHtml, setEquationHtml] = useState<string | null>(null)
+  const blockTranscation = useBlockTranscations()
 
   const updateValue = useCallback(
     ({ value }: { value: string }) => {
-      editor?.setBlockValue(block.id, (oldValue) => {
-        oldValue.content.equation = value
-      })
+      blockTranscation.updateBlockProps(block.storyId!, block.id, ['content', 'equation'], value)
     },
-    [block.id, editor]
+    [block.id, block.storyId, blockTranscation]
   )
 
   useEffect(() => {

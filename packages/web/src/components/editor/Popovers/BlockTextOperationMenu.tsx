@@ -208,9 +208,7 @@ export const BlockTextOperationMenuInner = ({
 
       // invariant(tellerySelection, 'selection state not exist')
 
-      editor?.setBlockValue?.(currentBlock.id, (block) => {
-        block!.content!.title = transformedTokens
-      })
+      editor?.updateBlockTitle?.(currentBlock.id, transformedTokens)
     },
     [currentBlock, editor, tokenRange]
   )
@@ -254,9 +252,7 @@ export const BlockTextOperationMenuInner = ({
         }
       )
       const mergedTokens = mergeTokens(transformedTokens)
-      editor?.setBlockValue?.(currentBlock.id, (block) => {
-        block!.content!.title = mergedTokens
-      })
+      editor?.updateBlockTitle?.(currentBlock.id, mergedTokens)
     } else {
       const title = selectionString
       let story = (await getStoriesByTitle({ title, workspaceId: workspace.id }))?.[0]
@@ -304,9 +300,7 @@ export const BlockTextOperationMenuInner = ({
           ...transformedTokens.slice(0, tokenRange.start + 1),
           ...transformedTokens.slice(tokenRange.end)
         ])
-        editor?.setBlockValue?.(currentBlock.id, (block) => {
-          block!.content!.title = mergedTokens
-        })
+        editor?.updateBlockTitle?.(currentBlock.id, mergedTokens)
       }
     }
   }, [commit, currentBlock, editor, getBlockTitle, markdMap, selectionString, snapshot, tokenRange, workspace.id])
@@ -335,9 +329,7 @@ export const BlockTextOperationMenuInner = ({
           }
         )
         const mergedTokens = mergeTokens(transformedTokens)
-        editor?.setBlockValue?.(currentBlock.id, (block) => {
-          block!.content!.title = mergedTokens
-        })
+        editor?.updateBlockTitle?.(currentBlock.id, mergedTokens)
       } else {
         const splitedTokens = splitToken(currentBlock?.content?.title || [])
         const transformedTokens = applyTransformOnSplitedTokens(splitedTokens, tokenRange, (): Editor.Token => {
@@ -348,9 +340,7 @@ export const BlockTextOperationMenuInner = ({
           ...transformedTokens.slice(0, tokenRange.start + 1),
           ...transformedTokens.slice(tokenRange.end)
         ])
-        editor?.setBlockValue?.(currentBlock.id, (block) => {
-          block!.content!.title = mergedTokens
-        })
+        editor?.updateBlockTitle?.(currentBlock.id, mergedTokens)
       }
     },
     [currentBlock, editor, markdMap, tokenRange]
@@ -449,11 +439,7 @@ export const BlockTextOperationMenuInner = ({
           // parentSafeToRemove={safeToRemove}
           toggleBlockType={(type: Editor.BlockType) => {
             if (!currentBlock?.id) return
-            editor?.setBlockValue?.(currentBlock.id, (block) => {
-              if (block) {
-                block.type = type
-              }
-            })
+            editor?.updateBlockProps?.(currentBlock.id, ['type'], type)
             setOpen(false)
           }}
           currentType={currentBlock?.type}

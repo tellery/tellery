@@ -203,9 +203,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
       const mergedTokens = mergeTokens(splitedTokensUpdated)
 
       if (dequal(newBlockTitle, titleTokens) === false) {
-        editor?.setBlockValue?.(block.id, (block) => {
-          block!.content!.title = mergedTokens
-        })
+        editor?.updateBlockTitle?.(block.id, mergedTokens)
 
         // after toggle block, selection state will change, disable onSelect
         // setContentWillChange(true)

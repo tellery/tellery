@@ -135,11 +135,7 @@ export const _BlockReferenceDropdownInner: React.FC<
           splitedTokens.splice(start, end - start, newToken)
           const mergedTokens = mergeTokens(splitedTokens)
 
-          editor?.setBlockValue?.(currentBlock.id, (block) => {
-            if (block.content?.title !== undefined) {
-              block!.content!.title = mergedTokens
-            }
-          })
+          editor?.updateBlockTitle?.(currentBlock.id, mergedTokens)
 
           setOpen(false)
         }

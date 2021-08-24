@@ -119,12 +119,7 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
     splitedTokens.splice(start, end - start)
     const mergedTokens = mergeTokens(splitedTokens)
 
-    editor?.setBlockValue?.(id, (block) => {
-      logger('set block value')
-      if (block.content?.title !== undefined) {
-        block!.content!.title = mergedTokens
-      }
-    })
+    editor?.updateBlockTitle?.(id, mergedTokens)
     return currentBlock
   }, [currentBlock, editor, id, selection])
 

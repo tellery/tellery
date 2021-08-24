@@ -101,6 +101,7 @@ const _Page: React.FC = () => {
 
 const StoryContent: React.FC<{ storyId: string }> = ({ storyId }) => {
   const storyBlock = useFetchStoryChunk<Story | Thought>(storyId, false)
+  const storyBotom = useMemo(() => <StoryBackLinks storyId={storyId} />, [storyId])
 
   return (
     <>
@@ -114,7 +115,7 @@ const StoryContent: React.FC<{ storyId: string }> = ({ storyId }) => {
             }
             padding: 100px 100px 0 100px;
           `}
-          bottom={<StoryBackLinks storyId={storyId} />}
+          bottom={storyBotom}
         ></StoryEditor>
       )}
       {storyBlock.type === Editor.BlockType.Thought && (

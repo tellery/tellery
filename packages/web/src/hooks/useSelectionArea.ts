@@ -1,6 +1,6 @@
 import SelectionArea from '@tellery/viselect-vanilla'
 import { memoize } from 'lodash'
-import { useDebugValue, useEffect, useRef, useState } from 'react'
+import { useCallback, useDebugValue, useEffect, useRef, useState } from 'react'
 
 const getBlockId = memoize((element: HTMLElement) => {
   return element.dataset.blockId as string
@@ -80,5 +80,15 @@ export function useSelectionArea(selectBlocks: (blockIds: string[] | null) => vo
     }
   }, [selectBlocks])
 
-  return { selectionRef, selecting }
+  const triggerSelection = useCallback(
+    (event: globalThis.MouseEvent | globalThis.TouchEvent) => {
+      if (!selectionRef.current) {
+        return
+      }
+      selectionRef.current.trigger(event, true)
+    },
+    [selectionRef]
+  )
+
+  return { selectionRef, selecting, triggerSelection }
 }

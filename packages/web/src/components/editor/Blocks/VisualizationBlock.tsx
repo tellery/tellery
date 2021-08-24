@@ -163,9 +163,9 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
   useEffect(() => {
     if (!block.content) {
       // setIsPopoverOpen(true)
-      editor?.setBlockValue?.(block.id, (draftBlock) => {
-        draftBlock.content = { title: [] }
-        draftBlock.format = {
+      editor?.updateBlockProps?.(block.id, ['content'], {
+        title: [],
+        format: {
           width: DEFAULT_QUESTION_BLOCK_WIDTH,
           aspectRatio: DEFAULT_QUESTION_BLOCK_ASPECT_RATIO
         }
@@ -805,9 +805,7 @@ export const MoreDropdownSelect: React.FC<{
           title: 'Freeze data',
           icon: <IconCommonLock color={ThemingVariables.colors.text[0]} />,
           action: () => {
-            editor?.setBlockValue?.(dataAssetBlock.id, (draftBlock) => {
-              draftBlock.type = Editor.BlockType.SnapshotBlock
-            })
+            editor?.updateBlockProps?.(block.id, ['type'], Editor.BlockType.SnapshotBlock)
           }
         },
       canConvertDataAsset &&
@@ -815,9 +813,7 @@ export const MoreDropdownSelect: React.FC<{
           title: 'Unfreeze data',
           icon: <IconCommonUnlock color={ThemingVariables.colors.text[0]} />,
           action: () => {
-            editor?.setBlockValue?.(dataAssetBlock.id, (draftBlock) => {
-              draftBlock.type = Editor.BlockType.SQL
-            })
+            editor?.updateBlockProps?.(block.id, ['type'], Editor.BlockType.SQL)
           }
         },
       canConvertDataAsset &&
@@ -825,9 +821,7 @@ export const MoreDropdownSelect: React.FC<{
           title: 'Remove from data assets',
           icon: <IconCommonTurn color={ThemingVariables.colors.text[0]} />,
           action: () => {
-            editor?.setBlockValue?.(dataAssetBlock.id, (draftBlock) => {
-              draftBlock.type = Editor.BlockType.SQL
-            })
+            editor?.updateBlockProps?.(block.id, ['type'], Editor.BlockType.SQL)
           }
         },
       canConvertDataAsset &&
@@ -835,9 +829,7 @@ export const MoreDropdownSelect: React.FC<{
           title: 'Add to data assets',
           icon: <IconCommonMetrics color={ThemingVariables.colors.text[0]} />,
           action: () => {
-            editor?.setBlockValue?.(dataAssetBlock.id, (draftBlock) => {
-              draftBlock.type = Editor.BlockType.Metric
-            })
+            editor?.updateBlockProps?.(block.id, ['type'], Editor.BlockType.Metric)
           }
         }
     ].filter((x) => !!x) as OperationInterface[]
