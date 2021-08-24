@@ -805,7 +805,7 @@ export const MoreDropdownSelect: React.FC<{
           title: 'Freeze data',
           icon: <IconCommonLock color={ThemingVariables.colors.text[0]} />,
           action: () => {
-            editor?.updateBlockProps?.(block.id, ['type'], Editor.BlockType.SnapshotBlock)
+            editor?.updateBlockProps?.(dataAssetBlock.id, ['type'], Editor.BlockType.SnapshotBlock)
           }
         },
       canConvertDataAsset &&
@@ -813,7 +813,7 @@ export const MoreDropdownSelect: React.FC<{
           title: 'Unfreeze data',
           icon: <IconCommonUnlock color={ThemingVariables.colors.text[0]} />,
           action: () => {
-            editor?.updateBlockProps?.(block.id, ['type'], Editor.BlockType.SQL)
+            editor?.updateBlockProps?.(dataAssetBlock.id, ['type'], Editor.BlockType.SQL)
           }
         },
       canConvertDataAsset &&
@@ -821,7 +821,7 @@ export const MoreDropdownSelect: React.FC<{
           title: 'Remove from data assets',
           icon: <IconCommonTurn color={ThemingVariables.colors.text[0]} />,
           action: () => {
-            editor?.updateBlockProps?.(block.id, ['type'], Editor.BlockType.SQL)
+            editor?.updateBlockProps?.(dataAssetBlock.id, ['type'], Editor.BlockType.SQL)
           }
         },
       canConvertDataAsset &&
@@ -829,7 +829,7 @@ export const MoreDropdownSelect: React.FC<{
           title: 'Add to data assets',
           icon: <IconCommonMetrics color={ThemingVariables.colors.text[0]} />,
           action: () => {
-            editor?.updateBlockProps?.(block.id, ['type'], Editor.BlockType.Metric)
+            editor?.updateBlockProps?.(dataAssetBlock.id, ['type'], Editor.BlockType.Metric)
           }
         }
     ].filter((x) => !!x) as OperationInterface[]
