@@ -1,24 +1,24 @@
-import { useBlockSuspense } from '@app/hooks/api'
-import type { Story } from '@app/types'
+import { BlockFormatAtom, BlockPermissionsAtom } from '@app/store/block'
 import { useMemo } from 'react'
+import { useRecoilValue } from 'recoil'
 import { useLoggedUser } from './useAuth'
 
 export const useStoryPermissions = (storyId: string) => {
   const user = useLoggedUser()
-  const block = useBlockSuspense<Story>(storyId)
-  const locked = !!block.format?.locked
+  const permissons = useRecoilValue(BlockPermissionsAtom(storyId))
+  const format = useRecoilValue(BlockFormatAtom(storyId))
+  const locked = !!(format as any)?.locked
 
   const canWrite = useMemo(() => {
-    if (!block || !user) return false
-    const permissions = block.permissions
-    return permissions?.some((permission) => {
+    if (!permissons || !user) return false
+    return permissons?.some((permission) => {
       return (
         permission.role === 'manager' &&
         ((permission.type === 'workspace' && permission.role === 'manager') ||
           (permission.type === 'user' && permission.id === user.id))
       )
     })
-  }, [block, user])
+  }, [permissons, user])
 
   return useMemo(
     () => ({

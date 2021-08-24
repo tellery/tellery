@@ -5,6 +5,7 @@ import type { Editor, Snapshot } from '@app/types'
 import { blockIdGenerator } from '@app/utils'
 import { subscribeBlockUpdate } from '@app/utils/remoteStoreObserver'
 import debug from 'debug'
+import { dequal } from 'dequal'
 import { cloneDeep } from 'lodash'
 import { atomFamily, DefaultValue, selectorFamily, useRecoilCallback, Snapshot as RecoilSnapshot } from 'recoil'
 import invariant from 'tiny-invariant'
@@ -13,14 +14,19 @@ import { WorkspaceIdAtom } from '../hooks/useWorkspaceIdAtom'
 export type BlockSnapshot = Map<string, Editor.BaseBlock>
 export const TelleryBlockMap: BlockSnapshot = new Map()
 
-export const blockUpdater = (newValue: Editor.BaseBlock | DefaultValue, oldValue: Editor.BaseBlock | DefaultValue) => {
+export const blockUpdater = (newValue: Editor.Block | DefaultValue, oldValue: Editor.BaseBlock | DefaultValue) => {
   if (newValue instanceof DefaultValue) {
     return oldValue
   } else {
     if (oldValue instanceof DefaultValue) {
       return newValue
     } else if (newValue.version > oldValue.version) {
-      return newValue
+      return {
+        ...newValue,
+        content: dequal(newValue.content, oldValue.content) ? oldValue.content : newValue.content,
+        format: dequal(newValue.format, oldValue.format) ? oldValue.format : newValue.format,
+        permissions: dequal(newValue.permissions, oldValue.permissions) ? oldValue.permissions : newValue.permissions
+      }
     } else {
       return oldValue
     }
@@ -62,6 +68,46 @@ export const TelleryBlockAtom = atomFamily<Editor.BaseBlock, string>({
       }
     }
   ]
+})
+
+export const BlockTypeAtom = selectorFamily({
+  key: 'blockTypeAtom',
+  get:
+    (blockId: string) =>
+    ({ get }) => {
+      const atom = get(TelleryBlockAtom(blockId))
+      return atom.type
+    }
+})
+
+export const BlockTitleAtom = selectorFamily({
+  key: 'blockTitleAtom',
+  get:
+    (blockId: string) =>
+    ({ get }) => {
+      const atom = get(TelleryBlockAtom(blockId))
+      return atom.content?.title
+    }
+})
+
+export const BlockFormatAtom = selectorFamily({
+  key: 'blockFormatAtom',
+  get:
+    (blockId: string) =>
+    ({ get }) => {
+      const atom = get(TelleryBlockAtom(blockId))
+      return atom.format
+    }
+})
+
+export const BlockPermissionsAtom = selectorFamily({
+  key: 'blockPermissionsAtom',
+  get:
+    (blockId: string) =>
+    ({ get }) => {
+      const atom = get(TelleryBlockAtom(blockId))
+      return atom.permissions
+    }
 })
 
 export const TellerySnapshotAtom = atomFamily<Snapshot | null, string | null>({

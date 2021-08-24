@@ -1,3 +1,4 @@
+// import './utils/wdyr'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import 'react-perfect-scrollbar/dist/css/styles.css'

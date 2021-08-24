@@ -1,13 +1,14 @@
 import { BlockingUI } from '@app/components/BlockingUI'
-import { SecondaryEditor, StoryEditor, useGetBlockTitleTextSnapshot } from '@app/components/editor'
+import { SecondaryEditor, StoryEditor, tokensToText } from '@app/components/editor'
 import { NavigationHeader } from '@app/components/NavigationHeader'
 import { SideBarMetricsSection } from '@app/components/SideBarMetricsSection'
 import { StoryBackLinks } from '@app/components/StoryBackLinks'
 import { StoryQuestionsEditor } from '@app/components/StoryQuestionsEditor'
 import { useMediaQuery } from '@app/hooks'
-import { useBlockSuspense, useFetchStoryChunk, useRecordStoryVisits, useStoryPinnedStatus } from '@app/hooks/api'
+import { useFetchStoryChunk, useRecordStoryVisits, useStoryPinnedStatus } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useWorkspace } from '@app/hooks/useWorkspace'
+import { BlockFormatAtom, BlockTitleAtom, BlockTypeAtom } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor, Story, Thought } from '@app/types'
 import { DEFAULT_TITLE } from '@app/utils'
@@ -16,10 +17,10 @@ import styled from '@emotion/styled'
 import React, { useEffect, useMemo } from 'react'
 import { Helmet } from 'react-helmet'
 import { useParams } from 'react-router-dom'
+import { useRecoilValue } from 'recoil'
 
 const _Page: React.FC = () => {
   const { id } = useParams<{ id: string }>()
-
   const recordVisits = useRecordStoryVisits()
   const user = useLoggedUser()
   const workspace = useWorkspace()
@@ -57,18 +58,14 @@ const _Page: React.FC = () => {
                 height: 44px;
                 flex-shrink: 0;
                 position: relative;
+                background: ${ThemingVariables.colors.gray[5]};
+                box-shadow: 0px 1px 0px ${ThemingVariables.colors.gray[1]};
+                width: 100%;
+                align-items: center;
+                display: flex;
               `}
             >
-              <React.Suspense
-                fallback={
-                  <div
-                    className={css`
-                      background: ${ThemingVariables.colors.gray[5]};
-                      box-shadow: 0px 1px 0px ${ThemingVariables.colors.gray[1]};
-                    `}
-                  ></div>
-                }
-              >
+              <React.Suspense fallback={<div></div>}>
                 <StoryHeader storyId={id} key={id} />
               </React.Suspense>
             </div>
@@ -135,37 +132,32 @@ const StoryContent: React.FC<{ storyId: string }> = ({ storyId }) => {
 }
 
 const StoryHeader: React.FC<{ storyId: string }> = ({ storyId }) => {
-  const storyBlock = useBlockSuspense(storyId)
-  const getBlockTitle = useGetBlockTitleTextSnapshot()
+  const storyType = useRecoilValue(BlockTypeAtom(storyId))
+  const storyTitle = useRecoilValue(BlockTitleAtom(storyId))
+  const storyForamt = useRecoilValue(BlockFormatAtom(storyId))
   const pinned = useStoryPinnedStatus(storyId)
-  const title = useMemo(() => storyBlock && getBlockTitle(storyBlock), [getBlockTitle, storyBlock])
-
+  const title = useMemo(() => tokensToText(storyTitle) ?? DEFAULT_TITLE, [storyTitle])
   return (
     <>
       <Helmet>
-        <title>{title ?? DEFAULT_TITLE} - Tellery</title>
+        <title>{title} - Tellery</title>
       </Helmet>
-      {storyBlock.type === Editor.BlockType.Story && (
-        <NavigationHeader storyId={storyId} title={title} pinned={pinned} />
-      )}
-      {storyBlock.type === Editor.BlockType.Thought && (
-        <div
-          className={css`
-            box-shadow: 0px 1px 0px #dedede;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 25px;
-            width: 100%;
-            z-index: 1000;
-            flex-shrink: 0;
-            height: 100%;
-            background-color: #fff;
-          `}
-        >
-          Thoughts
-        </div>
-      )}
+      <div
+        className={css`
+          display: flex;
+          flex: 1;
+          align-items: center;
+          padding: 0 25px;
+          z-index: 1000;
+          flex-shrink: 0;
+          background-color: #fff;
+        `}
+      >
+        {storyType === Editor.BlockType.Story && (
+          <NavigationHeader format={storyForamt} storyId={storyId} title={title} pinned={pinned} />
+        )}
+        {storyType === Editor.BlockType.Thought && <>Thoughts</>}
+      </div>
     </>
   )
 }

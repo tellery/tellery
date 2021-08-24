@@ -7,7 +7,7 @@ import {
   IconMenuNormalWidth
 } from '@app/assets/icons'
 import { createTranscation } from '@app/context/editorTranscations'
-import { useBlockSuspense, useWorkspaceView } from '@app/hooks/api'
+import { useWorkspaceView } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useCommit } from '@app/hooks/useCommit'
 import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
@@ -15,6 +15,7 @@ import { ThemingVariables } from '@app/styles'
 import type { Story } from '@app/types'
 import { css } from '@emotion/css'
 import Tippy from '@tippyjs/react'
+import { dequal } from 'dequal'
 import React, { memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useStorySnapshotManagerProvider } from '../hooks/useStorySnapshotManager'
@@ -23,45 +24,35 @@ import { RefreshButton } from './RefreshButton'
 import { StoryConfigPopOver } from './StoryConfigPopOver'
 import { StoryVisits } from './StoryVisits'
 
-export const _NavigationHeader = (props: { storyId: string; title?: string; pinned?: boolean }) => {
-  const story = useBlockSuspense<Story>(props.storyId)
-  const locked = !!story.format?.locked
+export const _NavigationHeader = (props: {
+  storyId: string
+  title?: string
+  pinned?: boolean
+  format: Story['format']
+}) => {
+  const locked = !!props.format?.locked
   const { data: workspaceView, refetch: refetchWorkspaceView } = useWorkspaceView()
   const commit = useCommit()
   const blockTranscation = useBlockTranscations()
   const setStoryFormat = useCallback(
     async (key: string, value: boolean | string) => {
       const newFormat = {
-        ...story?.format,
+        ...props.format,
         [key]: value
       }
       await commit({
-        storyId: story.id,
+        storyId: props.storyId,
         transcation: createTranscation({
-          operations: [{ cmd: 'update', path: ['format'], args: newFormat, table: 'block', id: story.id }]
+          operations: [{ cmd: 'update', path: ['format'], args: newFormat, table: 'block', id: props.storyId }]
         })
       })
     },
-    [story, commit]
+    [props.format, props.storyId, commit]
   )
   const permissions = useStoryPermissions(props.storyId)
 
   return (
-    <div
-      className={css`
-        background: ${ThemingVariables.colors.gray[5]};
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
-        padding: 0 20px;
-        align-self: flex-start;
-        width: 100%;
-        line-height: 0;
-        height: 100%;
-        box-shadow: 0px 1px 0px ${ThemingVariables.colors.gray[1]};
-        z-index: 100;
-      `}
-    >
+    <>
       {locked && (
         <span
           className={css`
@@ -113,14 +104,14 @@ export const _NavigationHeader = (props: { storyId: string; title?: string; pinn
           <>
             <RefreshAllQuestionBlockButton storyId={props.storyId} />
             <IconButton
-              hoverContent={story.format?.fullWidth ? 'Dsiable Full Width' : 'Full Width'}
-              icon={story.format?.fullWidth ? IconMenuNormalWidth : IconMenuFullWidth}
+              hoverContent={props.format?.fullWidth ? 'Dsiable Full Width' : 'Full Width'}
+              icon={props.format?.fullWidth ? IconMenuNormalWidth : IconMenuFullWidth}
               color={ThemingVariables.colors.text[0]}
               className={css`
                 margin-right: 20px;
               `}
               onClick={() => {
-                setStoryFormat('fullWidth', !story.format?.fullWidth)
+                setStoryFormat('fullWidth', !props.format?.fullWidth)
               }}
             />
           </>
@@ -152,9 +143,9 @@ export const _NavigationHeader = (props: { storyId: string; title?: string; pinn
             }}
           />
         )}
-        {story && (
+        {props.storyId && (
           <Tippy
-            content={<StoryConfigPopOver story={story} />}
+            content={<StoryConfigPopOver storyId={props.storyId} />}
             hideOnClick={true}
             theme="tellery"
             animation="fade"
@@ -184,7 +175,7 @@ export const _NavigationHeader = (props: { storyId: string; title?: string; pinn
           </Tippy>
         )}
       </div>
-    </div>
+    </>
   )
 }
 
@@ -221,4 +212,4 @@ export const RefreshAllQuestionBlockButton: React.FC<{ storyId: string }> = ({ s
   )
 }
 
-export const NavigationHeader = memo(_NavigationHeader)
+export const NavigationHeader = memo(_NavigationHeader, (a, b) => dequal(a, b))

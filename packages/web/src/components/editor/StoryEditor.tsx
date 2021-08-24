@@ -808,6 +808,7 @@ const _StoryEditor: React.FC<{
       commitHistory,
       deleteBackward,
       duplicateHandler,
+      editorClipboardManager,
       getSelection,
       locked,
       setSelectionState,

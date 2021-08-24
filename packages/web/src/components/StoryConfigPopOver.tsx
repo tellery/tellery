@@ -12,7 +12,7 @@ import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { createTranscation } from '@app/context/editorTranscations'
 import { env } from '@app/env'
 import { useOpenStory } from '@app/hooks'
-import { useUser } from '@app/hooks/api'
+import { useBlockSuspense, useUser } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useCommit } from '@app/hooks/useCommit'
@@ -36,11 +36,11 @@ const upsertPermission = (permissions: Permission[], permission: Permission): Pe
 }
 
 export const StoryConfigPopOver: React.FC<{
-  story: Story
+  storyId: string
 }> = (props) => {
   const commit = useCommit()
   const blockTranscation = useBlockTranscations()
-  const { story } = props
+  const story = useBlockSuspense<Story>(props.storyId)
   const { data: createdBy } = useUser(story?.createdById ?? null)
   const { data: lastEditedBy } = useUser(story?.lastEditedById ?? null)
   const user = useLoggedUser()
