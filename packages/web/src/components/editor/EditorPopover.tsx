@@ -6,6 +6,7 @@ import { createPortal } from 'react-dom'
 import { Modifier, usePopper } from 'react-popper'
 import { useEditor } from './hooks'
 import { useOnClickOutside } from '@app/hooks'
+import { PopoverMotionVariants } from '@app/styles/animations'
 
 interface PopoverProps {
   referenceElement: HTMLElement | null | Range
@@ -97,9 +98,10 @@ export const _EditorPopoverContent = (props: PopoverProps) => {
         }}
       >
         <motion.div
-          initial={{ opacity: 0, transform: 'scale(0.8)' }}
-          animate={{ opacity: 1, transform: 'scale(1)' }}
-          exit={{ opacity: 0, transform: 'scale(0.8)' }}
+          initial={'inactive'}
+          animate={'active'}
+          exit={'inactive'}
+          variants={PopoverMotionVariants}
           transition={{ duration: 0.15 }}
           className={css`
             pointer-events: auto;

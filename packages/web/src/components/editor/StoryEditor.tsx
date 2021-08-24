@@ -472,14 +472,23 @@ const _StoryEditor: React.FC<{
 
         break
       }
-      case Editor.BlockType.Divider:
+      case Editor.BlockType.Divider: {
         toggleBlockType(currentBlock.id, currentBlock.type, prefixLength)
-        insertNewEmptyBlock(newType, currentBlock.id)
+        insertNewEmptyBlock(newType, currentBlock.id, 'top')
         break
+      }
       default:
         toggleBlockType(currentBlock.id, newType, prefixLength)
     }
-  }, [blockAdminValue, insertNewEmptyBlock, lastInputCharRef, selectionState, snapshot, toggleBlockType])
+  }, [
+    blockAdminValue,
+    insertNewEmptyBlock,
+    lastInputCharRef,
+    selectionState,
+    setSelectionAtBlockStart,
+    snapshot,
+    toggleBlockType
+  ])
 
   useEffect(() => {
     logger('selection state', selectionState)
@@ -841,9 +850,6 @@ const _StoryEditor: React.FC<{
               const element = getBlockElementContentEditbleById(blockId)
               invariant(element, 'element not exist')
               if (isSelectionAtStart(selectionState)) {
-                if (block.type === Editor.BlockType.Story) {
-                  return
-                }
                 const newBlock = createEmptyBlock({
                   type: Editor.BlockType.Text,
                   storyId,
@@ -855,8 +861,11 @@ const _StoryEditor: React.FC<{
                     data: { [newBlock.id]: newBlock }
                   },
                   targetBlockId: blockId,
-                  direction: 'top'
+                  direction: block.type === Editor.BlockType.Story ? 'child' : 'top'
                 })
+                if (block.type === Editor.BlockType.Story) {
+                  setSelectionAtBlockStart(newBlock)
+                }
               } else if (isCaretAtEnd(element)) {
                 const getNextBlockType = (block: Editor.BaseBlock) => {
                   if (block.type === Editor.BlockType.BulletList) {

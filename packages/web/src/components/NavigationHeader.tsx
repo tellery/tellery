@@ -12,12 +12,15 @@ import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useCommit } from '@app/hooks/useCommit'
 import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { ThemingVariables } from '@app/styles'
+import { PopoverMotionVariants } from '@app/styles/animations'
 import type { Story } from '@app/types'
 import { css } from '@emotion/css'
-import Tippy from '@tippyjs/react'
+import Tippy from '@tippyjs/react/headless'
 import { dequal } from 'dequal'
+import { useAnimation, useSpring } from 'framer-motion'
 import React, { memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Props } from 'tippy.js'
 import { useStorySnapshotManagerProvider } from '../hooks/useStorySnapshotManager'
 import IconButton from './kit/IconButton'
 import { RefreshButton } from './RefreshButton'
@@ -143,39 +146,56 @@ export const _NavigationHeader = (props: {
             }}
           />
         )}
-        {props.storyId && (
-          <Tippy
-            content={<StoryConfigPopOver storyId={props.storyId} />}
-            hideOnClick={true}
-            theme="tellery"
-            animation="fade"
-            duration={150}
-            arrow={false}
-            interactive
-            trigger="click"
-            popperOptions={{
-              modifiers: [
-                {
-                  name: 'offset',
-                  enabled: true,
-                  options: {
-                    offset: [10, 20]
-                  }
-                }
-              ]
-            }}
-          >
-            <IconButton
-              icon={IconCommonMore}
-              color={ThemingVariables.colors.text[0]}
-              className={css`
-                margin-left: 20px;
-              `}
-            />
-          </Tippy>
-        )}
+        {props.storyId && <StoryConfigButton storyId={props.storyId} />}
       </div>
     </>
+  )
+}
+
+const StoryConfigButton: React.FC<{ storyId: string }> = ({ storyId }) => {
+  const controls = useAnimation()
+
+  const onMount = useCallback(() => {
+    controls.mount()
+    controls.start(PopoverMotionVariants.active)
+  }, [controls])
+
+  const onHide = useCallback(() => {
+    controls.start(PopoverMotionVariants.inactive)
+  }, [controls])
+
+  return (
+    <Tippy
+      render={(attrs) => <StoryConfigPopOver storyId={storyId} animate={controls} {...attrs} />}
+      hideOnClick={true}
+      theme="tellery"
+      animation={true}
+      onMount={onMount}
+      onHide={onHide}
+      duration={150}
+      arrow={false}
+      interactive
+      trigger="click"
+      popperOptions={{
+        modifiers: [
+          {
+            name: 'offset',
+            enabled: true,
+            options: {
+              offset: [10, 20]
+            }
+          }
+        ]
+      }}
+    >
+      <IconButton
+        icon={IconCommonMore}
+        color={ThemingVariables.colors.text[0]}
+        className={css`
+          margin-left: 20px;
+        `}
+      />
+    </Tippy>
   )
 }
 

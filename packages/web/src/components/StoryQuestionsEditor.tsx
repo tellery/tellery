@@ -42,7 +42,7 @@ import { useIsMutating } from 'react-query'
 import { toast } from 'react-toastify'
 import { Tab, TabList, TabPanel, TabStateReturn, useTabState } from 'reakit/Tab'
 // eslint-disable-next-line camelcase
-import { atom, useRecoilState, useRecoilTransaction_UNSTABLE } from 'recoil'
+import { atom, useRecoilCallback, useRecoilState, useRecoilTransaction_UNSTABLE } from 'recoil'
 import invariant from 'tiny-invariant'
 import YAML from 'yaml'
 import { setBlockTranscation } from '../context/editorTranscations'
@@ -123,7 +123,7 @@ export const useQuestionEditor = () => {
 }
 
 export const useCleanQuestionEditorHandler = () => {
-  const handler = useRecoilTransaction_UNSTABLE(
+  const handler = useRecoilCallback(
     (recoilCallback) => async (arg: string) => {
       const blockId = arg
       const blockMap = await recoilCallback.snapshot.getPromise(questionEditorBlockMapState)

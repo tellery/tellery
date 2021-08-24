@@ -4,7 +4,9 @@ import {
   IconCommonBackLink,
   IconCommonMetrics,
   IconCommonQuestion,
-  IconCommonLock
+  IconCommonLock,
+  IconCommonMenu,
+  IconCommonMore
 } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useOpenStory } from '@app/hooks'
@@ -137,6 +139,9 @@ const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ bl
           </div>
         </Tippy>
       )}
+      {/* <div>
+        <IconCommonMore />
+      </div> */}
     </div>
   )
 }
@@ -225,7 +230,7 @@ const DataAssetItem: React.FC<{ block: Editor.BaseBlock; currentStoryId: string 
   )
 }
 
-const CurrentStoryQuestions: React.FC = () => {
+const CurrentStoryQueries: React.FC = () => {
   const storyId = useStoryPathParams()
 
   return storyId ? (
@@ -293,7 +298,7 @@ export const SideBarMetricsSection = () => {
   const { t } = useTranslation()
   const TABS = useMemo(
     () => [
-      { name: t`Queries`, Component: <CurrentStoryQuestions /> },
+      { name: t`Queries`, Component: <CurrentStoryQueries /> },
       {
         name: t`Data Assets`,
         Component: <AllMetrics />

@@ -84,7 +84,7 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
             direction: droppingAreaRef.current.direction
           })
 
-          focusBlockHandler(blockData.id, blockData.storyId, isQuestionLikeBlock(blockData.type))
+          focusBlockHandler(blockData.id, blockData.storyId, false)
         } else if (item.type === DnDItemTypes.BlockIds) {
           const id = droppingAreaRef.current.blockId
           const blockIds = item.ids
