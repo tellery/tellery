@@ -24,7 +24,12 @@ export default function Login() {
   const history = useHistory()
   useEffect(() => {
     if (handleUserLogin.status === 'success') {
-      history.push('/')
+      const callback = new URLSearchParams(history.location.search).get('callback')
+      if (callback) {
+        window.location.href = callback
+      } else {
+        history.push('/')
+      }
     }
   }, [handleUserLogin.status, history])
   const email = watch('email')
