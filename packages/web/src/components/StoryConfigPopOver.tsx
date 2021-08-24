@@ -191,7 +191,7 @@ export const StoryConfigPopOver: React.FC<{
             }
             onClick={async () => {
               if (confirm(`Delete story?`)) {
-                await blockTranscation.deleteStory(props.story.id)
+                await blockTranscation.deleteStory(props.storyId)
                 history.push('/stories')
               }
             }}
