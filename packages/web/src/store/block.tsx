@@ -11,6 +11,7 @@ import invariant from 'tiny-invariant'
 import { WorkspaceIdAtom } from '../hooks/useWorkspaceIdAtom'
 
 export type BlockSnapshot = Map<string, Editor.BaseBlock>
+
 export const TelleryBlockMap: BlockSnapshot = new Map()
 
 export const blockUpdater = (newValue: Editor.BaseBlock | DefaultValue, oldValue: Editor.BaseBlock | DefaultValue) => {
