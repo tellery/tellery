@@ -41,13 +41,14 @@ import React, { SetStateAction, useCallback, useEffect, useMemo, useRef, useStat
 import { useIsMutating } from 'react-query'
 import { toast } from 'react-toastify'
 import { Tab, TabList, TabPanel, TabStateReturn, useTabState } from 'reakit/Tab'
-import { atom, useRecoilCallback, useRecoilState } from 'recoil'
+// eslint-disable-next-line camelcase
+import { atom, useRecoilState, useRecoilTransaction_UNSTABLE } from 'recoil'
 import invariant from 'tiny-invariant'
 import YAML from 'yaml'
 import { setBlockTranscation } from '../context/editorTranscations'
 import { BlockingUI } from './BlockingUI'
 import { CircularLoading } from './CircularLoading'
-import { BlockTitle, tokensToText, useGetBlockTitleTextSnapshot } from './editor'
+import { BlockTitle, useGetBlockTitleTextSnapshot } from './editor'
 import { ContentEditablePureText } from './editor/BlockBase/ContentEditablePureText'
 import { isExecuteableBlockType } from './editor/Blocks/utils'
 import type { SetBlock } from './editor/types'
@@ -122,7 +123,7 @@ export const useQuestionEditor = () => {
 }
 
 export const useCleanQuestionEditorHandler = () => {
-  const handler = useRecoilCallback(
+  const handler = useRecoilTransaction_UNSTABLE(
     (recoilCallback) => async (arg: string) => {
       const blockId = arg
       const blockMap = await recoilCallback.snapshot.getPromise(questionEditorBlockMapState)
@@ -141,7 +142,7 @@ export const useCleanQuestionEditorHandler = () => {
 }
 
 export const useOpenQuestionBlockIdHandler = () => {
-  const handler = useRecoilCallback(
+  const handler = useRecoilTransaction_UNSTABLE(
     (recoilCallback) =>
       ({ mode, blockId, storyId }: { mode: Mode; blockId: string; storyId: string }) => {
         recoilCallback.set(questionEditorActiveIdState, blockId)
