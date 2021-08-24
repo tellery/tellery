@@ -136,7 +136,8 @@ const StoryHeader: React.FC<{ storyId: string }> = ({ storyId }) => {
   const storyTitle = useRecoilValue(BlockTitleAtom(storyId))
   const storyForamt = useRecoilValue(BlockFormatAtom(storyId))
   const pinned = useStoryPinnedStatus(storyId)
-  const title = useMemo(() => tokensToText(storyTitle) ?? DEFAULT_TITLE, [storyTitle])
+  const title = useMemo(() => (storyTitle?.length ? tokensToText(storyTitle) : DEFAULT_TITLE), [storyTitle])
+
   return (
     <>
       <Helmet>

@@ -1,12 +1,16 @@
+/* eslint-disable camelcase */
 import { TelleryBlockAtom } from '@app/store/block'
-import { useRecoilCallback } from 'recoil'
+import { useCallback } from 'react'
+import { useGetRecoilValueInfo_UNSTABLE, useRecoilTransaction_UNSTABLE } from 'recoil'
 
 export const useGetBlock = () => {
-  const callback = useRecoilCallback(
-    (recoil) => (blockId: string) => {
-      return recoil.snapshot.getPromise(TelleryBlockAtom(blockId))
+  const getRecoilValue = useGetRecoilValueInfo_UNSTABLE()
+  const getBlockValue = useCallback(
+    (blockId: string) => {
+      const { loadable } = getRecoilValue(TelleryBlockAtom(blockId))
+      return loadable?.contents
     },
-    []
+    [getRecoilValue]
   )
-  return callback
+  return getBlockValue
 }
