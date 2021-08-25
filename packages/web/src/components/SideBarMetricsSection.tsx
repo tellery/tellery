@@ -150,7 +150,7 @@ const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ bl
               </div>
             </Tippy>
           )}
-          {/* <SideBarQueryItemDropdownMenu block={block} storyId={storyId} /> */}
+          <SideBarQueryItemDropdownMenu block={block} storyId={storyId} />
         </div>
       </div>
     </Tippy>

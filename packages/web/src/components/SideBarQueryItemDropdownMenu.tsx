@@ -14,6 +14,7 @@ import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
+import { DEFAULT_TITLE } from '@app/utils'
 import { css } from '@emotion/css'
 import Tippy from '@tippyjs/react'
 import copy from 'copy-to-clipboard'
@@ -23,6 +24,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import { useTippyMenuAnimation } from '../hooks/useTippyMenuAnimation'
 import { mergeTokens } from './editor'
+import { FormButton } from './kit/FormButton'
 import IconButton from './kit/IconButton'
 import { MenuConfirmPopover } from './MenuConfirmPopover'
 import { MenuWrapper } from './MenuWrapper'
@@ -45,7 +47,7 @@ export const SideBarQueryItemDropdownMenuContent: React.FC<{
       type: block.type,
       storyId,
       parentId: storyId,
-      content: { ...block.content, title: mergeTokens([[`copy of `], ...(block.content?.title ?? [])]) }
+      content: { ...block.content, title: mergeTokens([[`copy of `], ...(block.content?.title ?? [[DEFAULT_TITLE]])]) }
     })
     const newBlocks = [newBlock]
     await blockTranscations.insertBlocks(storyId, {
@@ -102,17 +104,35 @@ export const SideBarQueryItemDropdownMenuContent: React.FC<{
         <>
           <MenuItemDivider />
           <MenuConfirmPopover
+            width={180}
             content={
               <div>
-                Delete this query?
-                <button
-                  onClick={async () => {
-                    console.log(storyId, [block.id])
-                    await blockTranscations.removeBlocks(storyId, [block.id], 'resources')
-                  }}
+                <div
+                  className={css`
+                    color: ${ThemingVariables.colors.text[0]};
+                    font-size: 14px;
+                    padding: 8px;
+                    margin-bottom: 10px;
+                  `}
                 >
-                  Confirm
-                </button>
+                  Delete this query?
+                </div>
+                <div
+                  className={css`
+                    display: flex;
+                    justify-content: flex-end;
+                  `}
+                >
+                  <FormButton
+                    variant="danger"
+                    onClick={async () => {
+                      console.log(storyId, [block.id])
+                      await blockTranscations.removeBlocks(storyId, [block.id], 'resources')
+                    }}
+                  >
+                    Confirm
+                  </FormButton>
+                </div>
               </div>
             }
           >
