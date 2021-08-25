@@ -1,27 +1,24 @@
 package common.dbt
 
-import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.shouldBe
 import io.tellery.common.dbt.ProfileManager
 import io.tellery.entities.Profile
-import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
 
-class ProfileManagerTest {
+class ProfileManagerTest : StringSpec({
 
-    private val mapper: ObjectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
+    val mapper = jacksonObjectMapper()
 
-    @Test
-    fun `get dbt profile from tellery profile`() {
-        val profiles = mapper.readValue(
-            ProfileManagerTest::class.java.getResource("/dbt_profiles.json"),
-            object : TypeReference<List<Profile>>() {}
-        )
+    "get dbt profile from tellery profile" {
+        val profiles: List<Profile> =
+            mapper.readValue(ProfileManagerTest::class.java.getResource("/dbt_profiles.json"))
 
         val profilesYamlContent = ProfileManager.batchToDbtProfile(profiles)
         val expectYamlContent =
             ProfileManager::class.java.getResource("/dbt_profiles.yml").readText()
-        assertEquals(expectYamlContent, profilesYamlContent)
+
+        profilesYamlContent shouldBe expectYamlContent
     }
-}
+})

@@ -41,6 +41,8 @@ dependencies {
     api("io.github.microutils:kotlin-logging:2.0.10")
     api("javax.annotation:javax.annotation-api:1.3.2")
 
+    api("com.typesafe:config:1.4.1")
+
     api("io.arrow-kt:arrow-core:$arrowVersion")
     kapt("io.arrow-kt:arrow-meta:$arrowVersion")
 

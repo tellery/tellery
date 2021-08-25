@@ -1,0 +1,9 @@
+{
+  "id": "12345_knowhere",
+  "workspaceId": "12345",
+  "type": "knowhere",
+  "configs": {
+    "a": "123",
+    "b": "456"
+  }
+}

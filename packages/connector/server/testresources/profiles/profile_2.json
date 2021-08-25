@@ -1,0 +1,12 @@
+{
+  "workspaceId": "89787676",
+  "type": "PostgreSQL",
+  "configs": {
+    "Endpoint": "127.0.0.1",
+    "Port": "5432",
+    "Database": "my_db",
+    "Username": "abc",
+    "Password": "def",
+    "Schema": "PUBLIC"
+  }
+}
