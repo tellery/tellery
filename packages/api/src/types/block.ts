@@ -31,6 +31,7 @@ enum BlockType {
   VISUALIZATION = 'visualization',
   SNAPSHOT = 'snapshot',
   VARIABLE = 'variable',
+  EXPLORATION = 'exploration',
 
   // embeds
   EMBED = 'embed',
