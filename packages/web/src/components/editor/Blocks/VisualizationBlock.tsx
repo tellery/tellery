@@ -26,7 +26,7 @@ import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useOnScreen } from '@app/hooks'
 import { useBlockSuspense, useGetSnapshot, useSnapshot, useUser } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
-import { useGetBlock } from '@app/hooks/useGetBlock'
+import { useFetchBlock } from '@app/hooks/useFetchBlock'
 import { useInterval } from '@app/hooks/useInterval'
 import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
 import { useBlockSnapshot } from '@app/store/block'
@@ -93,7 +93,7 @@ interface QuestionBlockProps {
 
 const useVisulizationBlockInstructionsProvider = (block: Editor.VisualizationBlock) => {
   const commit = useCommit()
-  const getBlock = useGetBlock()
+  const fetchBlock = useFetchBlock()
   const questionEditor = useQuestionEditor()
   const snapshot = useBlockSnapshot()
   const dataAssetId = block.content?.dataAssetId
@@ -105,7 +105,7 @@ const useVisulizationBlockInstructionsProvider = (block: Editor.VisualizationBlo
       },
       unLink: async () => {
         if (!dataAssetId) return
-        const dataAssetBlock = await getBlock(dataAssetId)
+        const dataAssetBlock = await fetchBlock(dataAssetId)
         const newSqlBlock = createEmptyBlock({
           type: Editor.BlockType.SQL,
           storyId: block.storyId!,
@@ -133,7 +133,7 @@ const useVisulizationBlockInstructionsProvider = (block: Editor.VisualizationBlo
         })
       }
     }),
-    [block.id, block.storyId, commit, dataAssetId, getBlock, questionEditor, snapshot]
+    [block.id, block.storyId, commit, dataAssetId, fetchBlock, questionEditor, snapshot]
   )
   return instructions
 }
