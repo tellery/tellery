@@ -2,7 +2,14 @@ import { Transform, TransformCallback } from 'stream'
 import { credentials, ChannelCredentials } from 'grpc'
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb'
 import _ from 'lodash'
-import { Profile, TypeField, Collection, Database, AvailableConfig } from '../../types/connector'
+import {
+  Profile,
+  TypeField,
+  Collection,
+  Database,
+  AvailableConfig,
+  ProfileSpec,
+} from '../../types/connector'
 import { AuthType, AuthData } from '../../types/auth'
 import {
   GetDatabaseRequest,
@@ -15,6 +22,7 @@ import {
   ImportRequest,
   KVEntry,
   ProfileBody,
+  GetProfileSpecRequest,
 } from '../../protobufs/connector_pb'
 import { SQLType } from '../../protobufs/sqlType_pb'
 import { DisplayType } from '../../protobufs/displayType_pb'
@@ -42,8 +50,8 @@ export function getGrpcConnector(
   authType: AuthType,
   authData: AuthData,
 ): ConnectorManager {
-  if (grpcConnectorStorage.has(url)) {
-    const cachedConnectorManager = grpcConnectorStorage.get(url)!
+  const cachedConnectorManager = grpcConnectorStorage.get(url)
+  if (cachedConnectorManager) {
     if (cachedConnectorManager.checkAuth(authType, authData)) {
       return cachedConnectorManager
     }
@@ -98,6 +106,17 @@ export class ConnectorManager implements IConnectorManager {
         fillHint: i.getFillhint(),
       })),
     }))
+  }
+
+  async getProfileSpec(profile: string): Promise<ProfileSpec> {
+    const request = new GetProfileSpecRequest().setName(profile)
+    const spec = await beautyCall(this.client.getProfileSpec, this.client, request)
+    return {
+      name: spec.getName(),
+      type: spec.getType(),
+      tokenizer: spec.getTokenizer(),
+      metricSpec: spec.getMetricspec(),
+    }
   }
 
   private profileToObject(item: ProfileBody): Profile {

@@ -9,6 +9,7 @@ import io.tellery.connectors.profiles.BaseDbtProfile
 import io.tellery.entities.Profile
 import io.tellery.entities.ProfileNotFoundException
 import io.tellery.utils.allSubclasses
+import io.tellery.utils.toBase64
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
@@ -20,11 +21,14 @@ import kotlin.reflect.full.*
 
 object ConnectorManager {
 
+    data class ProfileSpec(val type: String, val tokenizer: String, val metricSpec: String)
+
     private val logger = KotlinLogging.logger {}
 
     private var profiles: ConcurrentHashMap<String, Profile> = ConcurrentHashMap()
     private var connectors: ConcurrentHashMap<String, BaseConnector> = ConcurrentHashMap()
     private lateinit var dbTypeToClassMap: Map<String, KClass<out BaseConnector>>
+    private lateinit var propertySpecs: Map<String, ProfileSpec>
     private lateinit var availableConfig: List<AvailableConfigAnnotation>
 
     fun init() {
@@ -45,6 +49,19 @@ object ConnectorManager {
 
         dbTypeToClassMap = loadedConnectorClasses.associateBy {
             it.findAnnotation<Connector>()!!.type
+        }
+
+        val resourceLoader = Thread.currentThread().contextClassLoader::getResource
+        propertySpecs = dbTypeToClassMap.keys.associateWith { type ->
+            val tokenizer =
+                resourceLoader("${type.replace('/', '-')}Tokenizer.js")?.readBytes()?.toBase64()
+            val metricSpec =
+                resourceLoader("${type.replace('/', '-')}MetricSpec.json")?.readBytes()?.toBase64()
+
+            requireNotNull(tokenizer) { "Tokenizer file of $type is not correctly placed into the resources" }
+            requireNotNull(metricSpec) { "MetricSupport file of $type is not correctly placed into the resources" }
+
+            ProfileSpec(type, tokenizer, metricSpec)
         }
 
         val dbTypeToDbtProfileClassMap = BaseDbtProfile::class.allSubclasses
@@ -126,6 +143,11 @@ object ConnectorManager {
 
     fun getDBConnector(profileName: String): BaseConnector {
         return connectors[profileName] ?: throw ProfileNotFoundException(profileName)
+    }
+
+    fun getProfileSpec(profileName: String): ProfileSpec {
+        val profile = profiles[profileName] ?: throw ProfileNotFoundException(profileName)
+        return propertySpecs[profile.type]!!
     }
 
     data class AvailableConfigAnnotation(val connector: Connector, val dbt: Dbt?) {

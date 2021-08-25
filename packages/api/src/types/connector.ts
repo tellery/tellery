@@ -15,6 +15,13 @@ type AvailableConfig = {
   configs: Config[]
 }
 
+type ProfileSpec = {
+  name: string
+  type: string
+  tokenizer: string
+  metricSpec: string
+}
+
 type Profile = {
   type: string
   name: string
@@ -55,6 +62,7 @@ type ConnectorDTO = {
 
 export {
   AvailableConfig,
+  ProfileSpec,
   Profile,
   ConnectionType,
   Database,

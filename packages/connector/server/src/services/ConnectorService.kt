@@ -73,6 +73,19 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
         }
     }
 
+    override suspend fun getProfileSpec(request: GetProfileSpecRequest): ProfileSpec {
+        return withErrorWrapper(request) { req ->
+            ConnectorManager.getProfileSpec(req.name).let {
+                ProfileSpec {
+                    name = req.name
+                    type = it.type
+                    tokenizer = it.tokenizer
+                    metricSpec = it.metricSpec
+                }
+            }
+        }
+    }
+
     private val loadedProfiles: Profiles
         get() = Profiles {
             addAllProfiles(ConnectorManager.getCurrentProfiles().values.map {

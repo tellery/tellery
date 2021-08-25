@@ -13,6 +13,7 @@ import "config.proto";
 service Connector {
   rpc GetAvailableConfigs(google.protobuf.Empty) returns (AvailableConfigs);
   rpc GetProfiles(google.protobuf.Empty) returns (Profiles);
+  rpc GetProfileSpec(GetProfileSpecRequest) returns (ProfileSpec);
   rpc UpsertProfile(UpsertProfileRequest) returns (Profiles);
   rpc DeleteProfile(DeleteProfileRequest) returns (Profiles);
   rpc GetDatabases(GetDatabaseRequest) returns (Databases);
@@ -40,6 +41,16 @@ message DeleteProfileRequest {
   string name = 1;
 }
 
+message GetProfileSpecRequest {
+  string name = 1;
+}
+
+message ProfileSpec {
+  string type = 1;
+  string name = 2;
+  string tokenizer = 3;
+  string metricSpec = 4;
+}
 
 message ProfileBody {
   string type = 1;
@@ -59,7 +70,7 @@ message Databases {
 
 message CollectionField {
   string collection = 1;
-  oneof schema_exists {
+  oneof schemaExists {
     string schema = 2;
   }
 }
@@ -121,7 +132,7 @@ message ImportRequest {
 message ImportResult {
   string database = 1;
   string collection = 2;
-  oneof schema_exists {
+  oneof schemaExists {
     string schema = 3;
   }
 }
