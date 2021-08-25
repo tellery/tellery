@@ -843,7 +843,9 @@ export const StoryQuestionEditor: React.FC<{
   const isDBT = block.type === Editor.BlockType.DBT
 
   const sqlReadOnly =
-    readonly || sqlBlock.type === Editor.BlockType.SnapshotBlock || sqlBlock.storyId !== visualizationBlock?.storyId
+    readonly ||
+    sqlBlock.type === Editor.BlockType.SnapshotBlock ||
+    (visualizationBlock && sqlBlock.storyId !== visualizationBlock?.storyId)
 
   return (
     <TabPanel

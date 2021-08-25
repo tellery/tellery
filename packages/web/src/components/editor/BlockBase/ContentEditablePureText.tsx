@@ -221,7 +221,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
         }}
         suppressContentEditableWarning={true}
         onKeyDown={(e) => {
-          if (props.disableEnter && isComposing.current === false) {
+          if (props.disableEnter && e.key === 'Enter' && isComposing.current === false) {
             e.preventDefault()
             e.stopPropagation()
           }

@@ -1,17 +1,18 @@
 import {
-  IconCommonDbt,
-  IconCommonSql,
+  IconCommonAdd,
   IconCommonBackLink,
+  IconCommonDbt,
+  IconCommonLock,
   IconCommonMetrics,
   IconCommonQuestion,
-  IconCommonLock,
-  IconCommonMenu,
-  IconCommonMore
+  IconCommonSql,
+  IconMenuImport
 } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
-import { useOpenStory } from '@app/hooks'
 import { useBlockSuspense, useSearchDBTBlocks, useSearchMetrics } from '@app/hooks/api'
+import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useStoryResources } from '@app/hooks/useStoryResources'
+import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { DndItemDataBlockType, DnDItemTypes } from '@app/utils/dnd'
@@ -19,13 +20,15 @@ import { useDraggable } from '@dnd-kit/core'
 import { css, cx } from '@emotion/css'
 import { Tab } from '@headlessui/react'
 import Tippy from '@tippyjs/react'
-import React, { Fragment, useMemo } from 'react'
+import React, { Fragment, useCallback, useMemo } from 'react'
 import ContentLoader from 'react-content-loader'
 import { useTranslation } from 'react-i18next'
 import PerfectScrollbar from 'react-perfect-scrollbar'
-import { Link } from 'react-router-dom'
 import { useStoryPathParams } from '../hooks/useStoryPathParams'
-import { useGetBlockTitleTextSnapshot } from './editor'
+import { BlockTitle, useGetBlockTitleTextSnapshot } from './editor'
+import IconButton from './kit/IconButton'
+import { MenuWrapper } from './MenuWrapper'
+import { SideBarQueryItemDropdownMenu } from './SideBarQueryItemDropdownMenu'
 import { useQuestionEditor } from './StoryQuestionsEditor'
 
 const SideBarLoader: React.FC = () => {
@@ -36,11 +39,17 @@ const SideBarLoader: React.FC = () => {
   )
 }
 
+const InspectQueryBlockPopover: React.FC<{ block: Editor.DataAssetBlock }> = ({ block }) => {
+  return (
+    <MenuWrapper>
+      <BlockTitle block={block} />
+    </MenuWrapper>
+  )
+}
+
 const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
   const block = useBlockSuspense(blockId)
   const getBlockTitle = useGetBlockTitleTextSnapshot()
-  // const pushFocusedBlockIdState = usePushFocusedBlockIdState()
-  const questionEditor = useQuestionEditor()
 
   const { attributes, listeners, setNodeRef } = useDraggable({
     id: `drag-${block.id}`,
@@ -58,91 +67,93 @@ const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ bl
     } as DndItemDataBlockType
   })
 
-  const openStory = useOpenStory()
   const { t } = useTranslation()
+  const tippyAnimation = useTippyMenuAnimation('fade')
+  const IconType = useMemo(() => {
+    if (block.storyId !== storyId) {
+      return IconCommonBackLink
+    }
+    if (block.type === Editor.BlockType.SQL || block.type === Editor.BlockType.SnapshotBlock) {
+      return IconCommonSql
+    } else if (block.type === Editor.BlockType.Metric) {
+      return IconCommonMetrics
+    } else if (block.type === Editor.BlockType.DBT) {
+      return IconCommonDbt
+    }
+    return IconCommonSql
+  }, [block.storyId, block.type, storyId])
 
   return (
-    <div
-      className={css`
-        display: flex;
-        align-items: center;
-        cursor: pointer;
-        padding: 6px 16px;
-        margin-bottom: 5px;
-        :hover {
-          background: ${ThemingVariables.colors.primary[5]};
-        }
-      `}
-      {...listeners}
-      {...attributes}
-      ref={setNodeRef}
-      onClick={() => {
-        if (block.storyId === storyId) {
-          questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
-        } else {
-          openStory(block.storyId!)
-        }
-        // pushFocusedBlockIdState(block.id, block.storyId)
-      }}
+    <Tippy
+      // render={(attrs) => (
+      //   <motion.div animate={tippyAnimation.controls} {...attrs} transition={{ duration: 0.15 }}>
+      //     <InspectQueryBlockPopover block={block}></InspectQueryBlockPopover>
+      //   </motion.div>
+      // )}
+      hideOnClick={true}
+      animation={true}
+      onMount={tippyAnimation.onMount}
+      onHide={tippyAnimation.onHide}
+      appendTo={document.body}
+      placement="right-end"
+      disabled
     >
-      {block.type === Editor.BlockType.SQL || block.type === Editor.BlockType.SnapshotBlock ? (
-        <IconCommonSql
-          color={ThemingVariables.colors.gray[0]}
-          className={css`
-            flex-shrink: 0;
-            margin-right: 8px;
-          `}
-        />
-      ) : null}
-      {block.type === Editor.BlockType.Metric ? (
-        <IconCommonMetrics
-          color={ThemingVariables.colors.gray[0]}
-          className={css`
-            flex-shrink: 0;
-            margin-right: 8px;
-          `}
-        />
-      ) : null}
-      {block.type === Editor.BlockType.DBT ? (
-        <IconCommonDbt
-          color={ThemingVariables.colors.gray[0]}
-          className={css`
-            flex-shrink: 0;
-            margin-right: 8px;
-          `}
-        />
-      ) : null}
-      <span
+      <div
         className={css`
-          font-size: 12px;
-          line-height: 14px;
-          flex: 1;
-          color: ${ThemingVariables.colors.text[0]};
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
+          display: flex;
+          align-items: center;
+          cursor: pointer;
+          padding: 6px 8px;
+          margin-bottom: 5px;
+          :hover {
+            background: ${ThemingVariables.colors.primary[5]};
+          }
         `}
+        {...listeners}
+        {...attributes}
+        ref={setNodeRef}
       >
-        {getBlockTitle(block)}
-      </span>
-      {block.storyId !== storyId && (
-        <Tippy content={t`Click to navigate to the original story`} arrow={false} placement="right">
-          <Link to={`/story/${block.storyId}`}>
-            <IconCommonBackLink color={ThemingVariables.colors.gray[0]} width="16px" height="16px" />
-          </Link>
-        </Tippy>
-      )}
-      {block.type === Editor.BlockType.SnapshotBlock && (
-        <Tippy content={t`Frozen data`} arrow={false} placement="right">
-          <div>
-            <IconCommonLock color={ThemingVariables.colors.gray[0]} width="16px" height="16px" />
-          </div>
-        </Tippy>
-      )}
-      {/* <div>
-        <IconCommonMore />
-      </div> */}
-    </div>
+        <IconType
+          color={ThemingVariables.colors.gray[0]}
+          className={css`
+            flex-shrink: 0;
+            margin: 0 8px;
+          `}
+        />
+
+        <span
+          className={css`
+            font-size: 12px;
+            line-height: 14px;
+            flex: 1;
+            color: ${ThemingVariables.colors.text[0]};
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          `}
+        >
+          {getBlockTitle(block)}
+        </span>
+        <div
+          className={css`
+            > * + * {
+              margin-left: 16px;
+            }
+            display: flex;
+            align-items: center;
+          `}
+        >
+          {block.type === Editor.BlockType.SnapshotBlock && (
+            <Tippy content={t`Frozen data`} arrow={false} placement="right">
+              <div>
+                <IconCommonLock color={ThemingVariables.colors.text[0]} width="16px" height="16px" />
+              </div>
+            </Tippy>
+          )}
+          {/* <SideBarQueryItemDropdownMenu block={block} storyId={storyId} /> */}
+        </div>
+      </div>
+    </Tippy>
   )
 }
 
@@ -232,9 +243,69 @@ const DataAssetItem: React.FC<{ block: Editor.BaseBlock; currentStoryId: string 
 
 const CurrentStoryQueries: React.FC = () => {
   const storyId = useStoryPathParams()
+  const { t } = useTranslation()
+  const blockTranscations = useBlockTranscations()
+  const questionEditor = useQuestionEditor()
+
+  const createNewQuery = useCallback(async () => {
+    if (!storyId) return
+    const newBlock = createEmptyBlock<Editor.SQLBlock>({
+      type: Editor.BlockType.SQL,
+      storyId,
+      parentId: storyId,
+      content: { sql: '' }
+    })
+    const newBlocks = [newBlock]
+    await blockTranscations.insertBlocks(storyId, {
+      blocksFragment: {
+        children: newBlocks.map((block) => block.id),
+        data: newBlocks.reduce((a, c) => {
+          a[c.id] = c
+          return a
+        }, {} as Record<string, Editor.BaseBlock>)
+      },
+      targetBlockId: storyId,
+      direction: 'child',
+      path: 'resources'
+    })
+    questionEditor.open({ mode: 'SQL', blockId: newBlock.id, storyId: newBlock.storyId! })
+  }, [blockTranscations, questionEditor, storyId])
 
   return storyId ? (
     <React.Suspense fallback={<></>}>
+      <div
+        className={css`
+          padding: 12px 8px;
+          font-weight: 500;
+          font-size: 12px;
+          line-height: 15px;
+          color: ${ThemingVariables.colors.text[0]};
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        `}
+      >
+        <div
+          className={css`
+            padding: 0 8px;
+          `}
+        >{t`Queries`}</div>
+        <div
+          className={css`
+            display: flex;
+            align-items: center;
+            > * + * {
+              margin-left: 16px;
+            }
+            > {
+              padding: 8px 0;
+            }
+          `}
+        >
+          {/* <IconButton icon={IconMenuImport} hoverContent={t`Import a query`} /> */}
+          <IconButton icon={IconCommonAdd} hoverContent={t`Create a new query`} onClick={createNewQuery} />
+        </div>
+      </div>
       <StoryResources storyId={storyId} />{' '}
     </React.Suspense>
   ) : null
@@ -298,7 +369,7 @@ export const SideBarMetricsSection = () => {
   const { t } = useTranslation()
   const TABS = useMemo(
     () => [
-      { name: t`Queries`, Component: <CurrentStoryQueries /> },
+      { name: t`Current Page`, Component: <CurrentStoryQueries /> },
       {
         name: t`Data Assets`,
         Component: <AllMetrics />

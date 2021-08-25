@@ -271,6 +271,36 @@ export const useCommit = () => {
   return commit
 }
 
+const getProp = (data: Record<string, any>, path: string[]): any => {
+  if (path.length) {
+    return getProp(data[path[0]], path.slice(1))
+  } else {
+    return cloneDeep(data)
+  }
+}
+
+const updateProp = (data: Record<string, any>, path: string[], value: any): any => {
+  if (path.length) {
+    return {
+      ...data,
+      [path[0]]: updateProp(data[path[0]], path.slice(1), value)
+    }
+  } else {
+    return value
+  }
+}
+
+const listRemoveProp = (data: Record<string, any> | string[], path: string[], value: any): any => {
+  if (path.length && Array.isArray(data) === false) {
+    return {
+      ...data,
+      [path[0]]: listRemoveProp((data as Record<string, any>)[path[0]], path.slice(1), value)
+    }
+  } else {
+    return (data as string[]).filter((id) => id !== value)
+  }
+}
+
 const applyOperations = (
   _operations: Operation[],
   options: { storyId?: string; recoilCallback: CallbackInterface; shouldReformat?: boolean; userId: string }
@@ -300,25 +330,6 @@ const applyOperations = (
       case 'set':
       case 'setPermissions':
       case 'update': {
-        const getProp = (data: Record<string, any>, path: string[]): any => {
-          if (path.length) {
-            return getProp(data[path[0]], path.slice(1))
-          } else {
-            return cloneDeep(data)
-          }
-        }
-
-        const updateProp = (data: Record<string, any>, path: string[], value: any): any => {
-          if (path.length) {
-            return {
-              ...data,
-              [path[0]]: updateProp(data[path[0]], path.slice(1), value)
-            }
-          } else {
-            return value
-          }
-        }
-
         if (!updatedBlock) {
           reversedOperations.push({
             cmd: 'update',
@@ -346,11 +357,12 @@ const applyOperations = (
       case 'listRemove': {
         logger(operation)
         invariant(updatedBlock, 'Block is not defined')
-        invariant(updatedBlock.children, 'no children')
-        const index = updatedBlock.children.findIndex((id) => id === (operation.args as any).id)
+        const children = getProp(updatedBlock, operation.path) as string[]
+        invariant(children, 'no children')
+        const index = children.findIndex((id) => id === (operation.args as any).id)
         invariant(index !== -1, 'child not found')
 
-        const beforeId = updatedBlock.children[index - 1]
+        const beforeId = children[index - 1]
         if (beforeId) {
           reversedOperations.push({
             cmd: 'listAfter',
@@ -369,11 +381,7 @@ const applyOperations = (
           })
         }
 
-        updatedBlock = update(updatedBlock, {
-          children: {
-            $splice: [[index, 1]]
-          }
-        })
+        updatedBlock = listRemoveProp(updatedBlock, operation.path, (operation.args as any).id) as Editor.BaseBlock
 
         shouldReformat && pushReformatColumnsOperations(operations, i, updatedBlock)
         shouldReformat && normalizeLayoutBlockSet.add(updatedBlock.id)

@@ -1,18 +1,22 @@
 import { css, cx } from '@emotion/css'
-import React, { ReactNode } from 'react'
+import React, { forwardRef, ReactNode } from 'react'
 import { ThemingVariables } from '@app/styles'
 
-export const MenuItem: React.FC<{
-  icon?: ReactNode
-  title: ReactNode
-  side?: ReactNode
-  isActive?: boolean
-  size?: 'small' | 'medium' | 'large'
-  onClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-}> = (props) => {
+const _MenuItem: React.ForwardRefRenderFunction<
+  HTMLDivElement,
+  {
+    icon?: ReactNode
+    title: ReactNode
+    side?: ReactNode
+    isActive?: boolean
+    size?: 'small' | 'medium' | 'large'
+    onClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+  }
+> = (props, ref) => {
   const { size = 'medium' } = props
   return (
     <div
+      ref={ref}
       className={cx(
         size === 'small' &&
           css`
@@ -76,3 +80,5 @@ export const MenuItem: React.FC<{
     </div>
   )
 }
+
+export const MenuItem = forwardRef(_MenuItem)
