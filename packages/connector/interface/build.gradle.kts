@@ -38,6 +38,7 @@ dependencies {
     api("io.github.microutils:kotlin-logging:2.0.11")
     api("javax.annotation:javax.annotation-api:1.3.2")
 
+    api("com.typesafe:config:1.4.1")
     api("io.grpc:grpc-stub:$grpcVersion")
 
     api("com.zaxxer:HikariCP:4.0.3")

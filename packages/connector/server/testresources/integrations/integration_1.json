@@ -1,0 +1,9 @@
+{
+  "id": "12345_dbt",
+  "workspaceId": "12345",
+  "type": "dbt",
+  "configs": {
+    "Dbt Project Name": "projectC",
+    "Git Url": "git://xxxx"
+  }
+}

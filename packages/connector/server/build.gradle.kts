@@ -10,6 +10,7 @@ val nattytcnativeVersion: String by project
 val coroutinesVersion: String by project
 val jacksonVersion: String by project
 val jgitVersion: String by project
+val kotestVersion: String by project
 
 repositories {
     jcenter()
@@ -18,6 +19,7 @@ repositories {
 
 plugins {
     application
+    groovy
     kotlin("jvm")
     id("com.google.protobuf") version "0.8.17"
     id("com.github.marcoferrer.kroto-plus") version "0.6.1"
@@ -69,9 +71,11 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
 
-    testImplementation(platform("org.junit:junit-bom:5.7.2"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation(kotlin("test"))
+    testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
+    testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
+    testImplementation("io.kotest:kotest-property:$kotestVersion")
+    testImplementation("io.kotest:kotest-framework-datatest:$kotestVersion")
+    testImplementation("io.mockk:mockk:1.12.0")
 }
 
 

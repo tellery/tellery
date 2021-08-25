@@ -5,89 +5,77 @@ import com.fasterxml.jackson.databind.node.TextNode
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.protobuf.util.JsonFormat
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.engine.spec.tempdir
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.tellery.common.dbt.DbtManager
 import io.tellery.grpc.DbtBlock
 import io.tellery.grpc.QuestionBlockContent
 import org.apache.commons.io.FileUtils
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
-import java.nio.file.Path
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNotEquals
 
 
-class DbtManagerTest {
+class DbtManagerTest : StringSpec({
 
-    private val yamlMapper: ObjectMapper =
-        ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
+    val dir = tempdir()
+    val mapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
 
-    @Test
-    fun `add tellery model config`() {
-        val projectConfig = yamlMapper
+    "add tellery model config" {
+        val projectConfig = mapper
             .readTree(DbtManagerTest::class.java.getResource("/dbt_project_1.yml"))
 
         DbtManager.updateProjectConfig(projectConfig, "jaffle_shop")
 
-        assertEquals(
-            "ephemeral",
-            (projectConfig
-                .get("models")
-                .get("jaffle_shop")
-                .get("tellery")
-                .get("materialized") as TextNode).asText()
-        )
+        (projectConfig
+            .get("models")
+            .get("jaffle_shop")
+            .get("tellery")
+            .get("materialized") as TextNode).asText() shouldBe "ephemeral"
     }
 
-    @Test
-    fun `update tellery model config`() {
-        val projectConfig = yamlMapper
+    "update tellery model config" {
+        val projectConfig = mapper
             .readTree(DbtManagerTest::class.java.getResource("/dbt_project_2.yml"))
 
         DbtManager.updateProjectConfig(projectConfig, "jaffle_shop")
 
-        assertEquals(
-            "ephemeral",
-            (projectConfig
-                .get("models")
-                .get("jaffle_shop")
-                .get("tellery")
-                .get("materialized") as TextNode).asText()
-        )
+        (projectConfig
+            .get("models")
+            .get("jaffle_shop")
+            .get("tellery")
+            .get("materialized") as TextNode).asText() shouldBe "ephemeral"
     }
 
-    @Test
-    fun `parse dbt model blocks and source blocks`() {
+    "parse dbt model blocks and source blocks" {
         val manifestFile = File(DbtManagerTest::class.java.getResource("/manifest.json").toURI())
-
         val blocks = DbtManager.parseDbtBlocks(manifestFile)
         val blockMap = blocks.associateBy { it.name }
 
-        assertFalse(blockMap.containsKey("model.jaffle_shop.my_first_dbt_model"))
-        assertEquals(3, blocks.size)
+        blockMap.containsKey("model.jaffle_shop.my_first_dbt_model") shouldBe false
+        blocks.size shouldBe 3
 
-        val model = blockMap["my_second_dbt_model"]!!
-        assertEquals("`mythic-hulling-307909`.`dbt_bob`.`my_second_dbt_model`", model.relationName)
-        assertEquals(DbtBlock.Materialization.VIEW, model.materialized)
-        assertEquals("A starter dbt model", model.description)
+        blockMap["my_second_dbt_model"]!!.let {
+            it.relationName shouldBe "`mythic-hulling-307909`.`dbt_bob`.`my_second_dbt_model`"
+            it.materialized shouldBe DbtBlock.Materialization.VIEW
+            it.description shouldBe "A starter dbt model"
+        }
 
-        val source = blockMap["orders"]!!
-        assertEquals("raw.public.Orders_", source.relationName)
-        assertEquals(DbtBlock.Materialization.UNKNOWN, source.materialized)
-        assertEquals("", source.description)
-        assertEquals("jaffle_shop", source.sourceName)
+        blockMap["orders"]!!.let {
+            it.relationName shouldBe "raw.public.Orders_"
+            it.materialized shouldBe DbtBlock.Materialization.UNKNOWN
+            it.description shouldBe ""
+            it.sourceName shouldBe "jaffle_shop"
+        }
     }
 
-    @Test
-    fun `overwrite and remove diff models`(@TempDir tempDir: Path) {
+    "overwrite and remove diff models" {
         val repositoryName = "test"
-        val modelFolder = File(tempDir.toFile(), "/$repositoryName/models/tellery")
+        val modelFolder = File(dir, "/$repositoryName/models/tellery")
         FileUtils.forceMkdir(modelFolder)
 
-        // Mock SQL file 1 and SQL file 3
         for (i in 1..3) {
             if (i == 2) {
                 continue
@@ -97,9 +85,8 @@ class DbtManagerTest {
             file.writeText("test")
         }
 
-        DbtManager.updateRootFolder(tempDir.toFile())
+        DbtManager.updateRootFolder(dir)
 
-        // Load blocks
         val blocks = mutableListOf<QuestionBlockContent>()
         for (i in 1..2) {
             val file =
@@ -114,9 +101,15 @@ class DbtManagerTest {
 
         val files = modelFolder.listFiles()!!
         files.sortBy { it.name }
-        assertEquals(2, files.size)
-        assertEquals("welcome_to tellery-dbt-block-1.sql", files[0].name)
-        assertEquals("welcome_to tellery-dbt-block-2.sql", files[1].name)
-        assertNotEquals("test", files[0].readText())
+        files.size shouldBe 2
+
+        files[0].let {
+            it.name shouldBe "welcome_to tellery-dbt-block-1.sql"
+            it.readText() shouldNotBe "test"
+        }
+
+        files[1].let {
+            it.name shouldBe "welcome_to tellery-dbt-block-2.sql"
+        }
     }
-}
+})
