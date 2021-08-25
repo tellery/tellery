@@ -845,7 +845,7 @@ export const StoryQuestionEditor: React.FC<{
   const sqlReadOnly =
     readonly ||
     sqlBlock.type === Editor.BlockType.SnapshotBlock ||
-    (visualizationBlock && sqlBlock.storyId !== visualizationBlock?.storyId)
+    !!(visualizationBlock && sqlBlock.storyId !== visualizationBlock?.storyId)
 
   return (
     <TabPanel
