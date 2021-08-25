@@ -5,7 +5,6 @@ import { css, cx } from '@emotion/css'
 import debug from 'debug'
 import { dequal } from 'dequal'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { mergeTokens, splitToken } from '../helpers/tokenManipulation'
 import { BlockRenderer } from './BlockRenderer'
 
 const logger = debug('tellery:contentEditable')
@@ -36,6 +35,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
     placeHolderStrategy?: 'always' | 'never' | 'active'
     textAlign?: string
     disableTextAlign?: boolean
+    disableEnter?: boolean
     onChange: (tokens: Editor.Token[]) => void
     tokensRenderer?: (
       tokens: Editor.Token[],
@@ -221,7 +221,10 @@ const _ContentEditable: React.ForwardRefRenderFunction<
         }}
         suppressContentEditableWarning={true}
         onKeyDown={(e) => {
-          if (!isFocusing) return
+          if (props.disableEnter && isComposing.current === false) {
+            e.preventDefault()
+            e.stopPropagation()
+          }
         }}
         // contentEditable={'true'}
         contentEditable={readonly ? 'false' : 'true'}

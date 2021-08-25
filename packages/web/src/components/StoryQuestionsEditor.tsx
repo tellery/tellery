@@ -911,6 +911,7 @@ export const StoryQuestionEditor: React.FC<{
             onChange={(tokens) => {
               setTitle(tokens)
             }}
+            disableEnter
             placeHolderStrategy="always"
             placeHolderText={DEFAULT_TITLE}
             textAlign="center"

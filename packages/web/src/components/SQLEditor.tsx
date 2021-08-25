@@ -1,24 +1,24 @@
 import { IconCommonDbt, IconCommonSql } from '@app/assets/icons'
-import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useOpenStory } from '@app/hooks'
 import { useMgetBlocks } from '@app/hooks/api'
+import { useFetchBlock } from '@app/hooks/useFetchBlock'
 import { transclusionRegex } from '@app/hooks/useSqlEditor'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { SVG2DataURI } from '@app/lib/svg'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
 import MonacoEditor, { useMonaco } from '@monaco-editor/react'
 import Tippy from '@tippyjs/react'
-import { compact, uniq, omit } from 'lodash'
+import { compact, omit, uniq } from 'lodash'
 import type { editor } from 'monaco-editor/esm/vs/editor/editor.api'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { useGetBlockTitleTextSnapshot } from './editor'
-import { useQuestionEditor } from './StoryQuestionsEditor'
-import { SQLViewer } from './SQLViewer'
 import YAML from 'yaml'
-import { useGetBlock } from '../hooks/useGetBlock'
 import { CircularLoading } from './CircularLoading'
+import { useGetBlockTitleTextSnapshot } from './editor'
+import { SQLViewer } from './SQLViewer'
+import { useQuestionEditor } from './StoryQuestionsEditor'
 
 const STORY_BLOCK_REGEX = new RegExp(`${window.location.protocol}//${window.location.host}/story/(\\S+)#(\\S+)`)
 
@@ -53,7 +53,7 @@ export function SQLEditor(props: {
   const { onRun, onSave } = props
   const monaco = useMonaco()
 
-  const getBlock = useGetBlock()
+  const fetchBlock = useFetchBlock()
   useEffect(() => {
     if (!editor || !monaco) {
       return
@@ -62,7 +62,7 @@ export function SQLEditor(props: {
       const pastedString = editor.getModel()?.getValueInRange(e.range)
       if (!pastedString) return
 
-      trasnformPasteText(pastedString, getBlock).then((transformedText) => {
+      trasnformPasteText(pastedString, fetchBlock).then((transformedText) => {
         if (transformedText) {
           editor.setSelection(e.range)
           const id = { major: 1, minor: 1 }
@@ -75,7 +75,7 @@ export function SQLEditor(props: {
 
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, () => onSave?.())
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => onRun?.())
-  }, [editor, getBlock, monaco, onRun, onSave])
+  }, [editor, fetchBlock, monaco, onRun, onSave])
   const { onChange } = props
   const handleChange = useCallback(
     (value: string | undefined) => {
