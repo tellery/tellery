@@ -8,10 +8,10 @@ import { SortableList } from '../components/SortableList'
 import { Type } from '../types'
 import { formatRecord, isNumeric, isTimeSeries } from '../utils'
 import type { Chart } from './base'
-import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 import IconButton from '@app/components/kit/IconButton'
 import Tippy from '@tippyjs/react'
 import PerfectScrollbar from 'react-perfect-scrollbar'
+import { ConfigNumericInput } from '../components/ConfigNumericInput'
 
 const TABLE_ROW_HEIGHT_MIN = 30
 
@@ -27,7 +27,8 @@ export const table: Chart<Type.TABLE> = {
     return {
       type: Type.TABLE,
       columnOrder: data.fields.map(({ name }) => name),
-      columnVisibility: {}
+      columnVisibility: {},
+      fractionDigits: 2
     }
   },
 
@@ -40,7 +41,16 @@ export const table: Chart<Type.TABLE> = {
         `}
         options={{ suppressScrollX: true }}
       >
-        <ConfigLabel top={0}>Columns</ConfigLabel>
+        <ConfigLabel top={0}>Fraction digits</ConfigLabel>
+        <ConfigNumericInput
+          min={0}
+          max={17}
+          value={props.config.fractionDigits}
+          onChange={(value) => {
+            props.onConfigChange('fractionDigits', value)
+          }}
+        />
+        <ConfigLabel>Columns</ConfigLabel>
         <h4
           className={css`
             font-style: normal;
@@ -146,7 +156,6 @@ export const table: Chart<Type.TABLE> = {
           })),
       [order, props.config.columnVisibility, props.data]
     )
-    const displayTypes = useDataFieldsDisplayType(props.data.fields)
     const pageSize = Math.max(Math.floor((props.dimensions.height - 1) / (TABLE_ROW_HEIGHT_MIN + 1)) - 2, 1)
     const tableRowHeight = (props.dimensions.height - VERTICAL_BORDER_WITDH) / (pageSize + 2) - VERTICAL_BORDER_WITDH
     const pageCount = Math.ceil(props.data.records.length / pageSize)
@@ -168,6 +177,7 @@ export const table: Chart<Type.TABLE> = {
         setPage(0)
       }
     }, [from, to])
+    console.log(props.config.fractionDigits)
 
     return (
       <div
@@ -252,7 +262,14 @@ export const table: Chart<Type.TABLE> = {
                       )}
                       align={isNumeric(column.displayType) ? 'right' : 'left'}
                     >
-                      {formatRecord(record[column.order], displayTypes[column.name])}
+                      {formatRecord(
+                        isNumeric(column.displayType) &&
+                          !isTimeSeries(column.displayType) &&
+                          props.config.fractionDigits !== undefined
+                          ? Number(record[column.order]).toFixed(props.config.fractionDigits)
+                          : record[column.order],
+                        column.displayType
+                      )}
                     </td>
                   ))}
                 </tr>
