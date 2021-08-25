@@ -14,7 +14,7 @@ export function ConfigNumericInput(props: {
       type="number"
       value={props.value === undefined ? '' : props.value}
       onChange={(e) => {
-        props.onChange(Number.isNaN(e.target.valueAsNumber) ? undefined : e.target.valueAsNumber)
+        props.onChange(e.target.valueAsNumber)
       }}
       min={props.min}
       max={props.max}

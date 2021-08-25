@@ -49,7 +49,6 @@ interface TableConfig {
   type: Type.TABLE
   columnOrder: string[]
   columnVisibility: { [key: string]: boolean }
-  fractionDigits?: number
 }
 
 interface ComboConfig<T extends Type = Type.COMBO> {
