@@ -4,7 +4,7 @@ import {
   splitToken,
   tokenPosition2SplitedTokenPosition
 } from '@app/components/editor/helpers/tokenManipulation'
-import { useBindHovering, useHover } from '@app/hooks'
+import { useBindHovering } from '@app/hooks'
 import { useBlockSuspense, useSearchBlocks } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { ThemingVariables } from '@app/styles'
