@@ -339,31 +339,21 @@ const StoryResources: React.FC<{ storyId: string }> = ({ storyId }) => {
   )
 }
 
-const DataAssets: React.FC = () => {
+const AllMetricsSection = () => {
   const metricBlocksQuery = useSearchMetrics('', 1000)
-  const dbtBlocksMap = useSearchDBTBlocks('', 1000)
   const storyId = useStoryPathParams()
 
   const dataAssetBlocks = useMemo(() => {
     const metricsBlocks = Object.values(metricBlocksQuery.data?.blocks ?? {}).filter(
       (block) => block.type === Editor.BlockType.Metric
     )
-    const dbtBlocks = Object.values(dbtBlocksMap.data?.blocks ?? {}).filter(
-      (block) => block.type === Editor.BlockType.DBT
-    )
-    return [...metricsBlocks, ...dbtBlocks]
-  }, [metricBlocksQuery.data?.blocks, dbtBlocksMap.data?.blocks])
+    return metricsBlocks
+  }, [metricBlocksQuery.data?.blocks])
 
   const { t } = useTranslation()
 
   return (
-    <PerfectScrollbar
-      className={css`
-        flex: 1;
-        overflow-y: auto;
-      `}
-      options={{ suppressScrollX: true }}
-    >
+    <>
       <SideBarSection>
         <SideBarSectionHeader>{t`All Metrics`}</SideBarSectionHeader>
       </SideBarSection>
@@ -374,9 +364,51 @@ const DataAssets: React.FC = () => {
           </React.Suspense>
         )
       })}
+    </>
+  )
+}
+
+const DBTSection = () => {
+  const storyId = useStoryPathParams()
+
+  const dbtBlocksMap = useSearchDBTBlocks('', 1000)
+
+  const dataAssetBlocks = useMemo(() => {
+    const dbtBlocks = Object.values(dbtBlocksMap.data?.blocks ?? {}).filter(
+      (block) => block.type === Editor.BlockType.DBT
+    )
+    return dbtBlocks
+  }, [dbtBlocksMap.data?.blocks])
+
+  const { t } = useTranslation()
+  if (dataAssetBlocks.length === 0) return null
+  return (
+    <>
       <SideBarSection>
         <SideBarSectionHeader>{t`DBT`}</SideBarSectionHeader>
       </SideBarSection>
+      {dataAssetBlocks.map((block) => {
+        return (
+          <React.Suspense key={block.id} fallback={<SideBarLoader />}>
+            <DataAssetItem block={block} currentStoryId={storyId!} />
+          </React.Suspense>
+        )
+      })}
+    </>
+  )
+}
+
+const DataAssets: React.FC = () => {
+  return (
+    <PerfectScrollbar
+      className={css`
+        flex: 1;
+        overflow-y: auto;
+      `}
+      options={{ suppressScrollX: true }}
+    >
+      <AllMetricsSection />
+      <DBTSection />
     </PerfectScrollbar>
   )
 }
