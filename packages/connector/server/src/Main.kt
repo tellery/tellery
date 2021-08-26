@@ -7,6 +7,8 @@ import io.tellery.common.*
 import io.tellery.common.dbt.DbtManager
 import io.tellery.services.*
 import mu.*
+import org.koin.core.context.startKoin
+import org.koin.core.logger.Level
 import java.io.*
 
 
@@ -68,6 +70,11 @@ class ConnectorServer(
 }
 
 fun main() {
+    startKoin {
+        printLogger(Level.ERROR)
+        modules(Modules.providesAppModule())
+    }
+
     ConnectorManager.init()
     DbtManager.initDbtWorkspace()
     val server = ConnectorServer(50051)
