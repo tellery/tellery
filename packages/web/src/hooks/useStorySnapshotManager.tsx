@@ -9,7 +9,7 @@ import dayjs from 'dayjs'
 import React, { useCallback, useContext, useEffect, useMemo } from 'react'
 import { useIsMutating, useQueryClient } from 'react-query'
 import invariant from 'tiny-invariant'
-import { useBlockSuspense } from './api'
+import { useBlockSuspense, useFetchStoryChunk } from './api'
 import { useCommit } from './useCommit'
 import { useStoryPermissions } from './useStoryPermissions'
 import { useStoryResources } from './useStoryResources'
@@ -144,8 +144,9 @@ export const useRefreshSnapshot = () => {
 }
 
 export const useStorySnapshotManagerProvider = (storyId: string) => {
-  const resourcesBlocks = useStoryResources(storyId)
+  useFetchStoryChunk(storyId)
   const storyBlock = useBlockSuspense<Story>(storyId)
+  const resourcesBlocks = useStoryResources(storyId)
 
   const executeableQuestionBlocks = useMemo(() => {
     return resourcesBlocks.filter((block) => isExecuteableBlockType(block.type))

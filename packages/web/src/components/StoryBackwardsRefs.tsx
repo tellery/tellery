@@ -75,7 +75,7 @@ export const StoryBackwardsRefs = (props: { refs: Ref[]; storyId: string }) => {
               `}
             >
               {stories.map((storyId) => (
-                <StoryRefs key={storyId} storyId={storyId} refs={refByStory[storyId]} />
+                <StoryRefs key={storyId} storyId={storyId} refs={refByStory[storyId]} currentStoryId={storyId} />
               ))}
             </div>
           </div>
@@ -85,7 +85,7 @@ export const StoryBackwardsRefs = (props: { refs: Ref[]; storyId: string }) => {
   )
 }
 
-export const StoryRefs = (props: { refs: Ref[]; storyId: string; isSQLEditor?: boolean }) => {
+export const StoryRefs = (props: { refs: Ref[]; storyId: string; isSQLEditor?: boolean; currentStoryId: string }) => {
   const { refs, storyId } = props
   const [hoverBlockId, setHoverBlockId] = useState<string | null>(null)
   const [modalRef, setModalRef] = useState<HTMLElement | null>(null)
@@ -109,7 +109,7 @@ export const StoryRefs = (props: { refs: Ref[]; storyId: string; isSQLEditor?: b
     ]
   })
   const openStory = useOpenStory()
-  const { open: openQuestion } = useQuestionEditor()
+  const { open: openQuestion } = useQuestionEditor(storyId)
 
   return (
     <div key={storyId} ref={setReferenceElement}>
@@ -195,10 +195,10 @@ export const StoryRefs = (props: { refs: Ref[]; storyId: string; isSQLEditor?: b
                             e.preventDefault()
                             e.stopPropagation()
                             openStory(block.storyId!, {
-                              blockId: block.id,
-                              isAltKeyPressed: e.altKey
+                              blockId: block.id
                             })
-                            if (props.isSQLEditor) {
+
+                            if (props.isSQLEditor && props.currentStoryId === block.storyId) {
                               openQuestion({ mode: 'SQL', storyId: block.storyId!, blockId: block.id })
                             }
                           }}

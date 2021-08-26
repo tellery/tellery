@@ -4,17 +4,16 @@ import {
   IconCommonDbt,
   IconCommonLock,
   IconCommonMetrics,
-  IconCommonQuestion,
   IconCommonSql
 } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
-import { useHover } from '@app/hooks'
-import { useBlockSuspense, useSearchDBTBlocks, useSearchMetrics } from '@app/hooks/api'
+import { useBindHovering } from '@app/hooks'
+import { useBlockSuspense, useFetchStoryChunk, useSearchDBTBlocks, useSearchMetrics } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useStoryResources } from '@app/hooks/useStoryResources'
 import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
 import { ThemingVariables } from '@app/styles'
-import { Editor } from '@app/types'
+import { Editor, Story, Thought } from '@app/types'
 import { DndItemDataBlockType, DnDItemTypes } from '@app/utils/dnd'
 import { useDraggable } from '@dnd-kit/core'
 import { css, cx } from '@emotion/css'
@@ -77,9 +76,8 @@ const StoryDataAssetItemContent: React.FC<{ blockId: string; storyId: string }> 
     return IconCommonSql
   }, [block.storyId, block.type, storyId])
 
-  // const ref = useRef<HTMLDivElement | null>(null)
+  const [hoveringHandlers, isHovering] = useBindHovering()
 
-  const [ref, isHovering] = useHover()
   return (
     <div
       className={css`
@@ -94,10 +92,8 @@ const StoryDataAssetItemContent: React.FC<{ blockId: string; storyId: string }> 
       `}
       {...listeners}
       {...attributes}
-      ref={(element) => {
-        setNodeRef(element)
-        ref.current = element
-      }}
+      {...hoveringHandlers()}
+      ref={setNodeRef}
     >
       <IconType
         color={ThemingVariables.colors.gray[0]}
@@ -191,7 +187,7 @@ const DataAssetItem: React.FC<{ block: Editor.BaseBlock; currentStoryId: string 
     } as DndItemDataBlockType
   })
 
-  const questionEditor = useQuestionEditor()
+  const questionEditor = useQuestionEditor(currentStoryId)
 
   const IconType = useMemo(() => {
     if (block.type === Editor.BlockType.SQL || block.type === Editor.BlockType.SnapshotBlock) {
@@ -249,11 +245,11 @@ const DataAssetItem: React.FC<{ block: Editor.BaseBlock; currentStoryId: string 
   )
 }
 
-const CurrentStoryQueries: React.FC = () => {
-  const storyId = useStoryPathParams()
+const CurrentStoryQueries: React.FC<{ storyId: string }> = ({ storyId }) => {
+  useFetchStoryChunk<Story | Thought>(storyId)
   const { t } = useTranslation()
   const blockTranscations = useBlockTranscations()
-  const questionEditor = useQuestionEditor()
+  const questionEditor = useQuestionEditor(storyId)
 
   const createNewQuery = useCallback(async () => {
     if (!storyId) return
@@ -339,9 +335,8 @@ const StoryResources: React.FC<{ storyId: string }> = ({ storyId }) => {
   )
 }
 
-const AllMetricsSection = () => {
+const AllMetricsSection: React.FC<{ storyId: string }> = ({ storyId }) => {
   const metricBlocksQuery = useSearchMetrics('', 1000)
-  const storyId = useStoryPathParams()
 
   const dataAssetBlocks = useMemo(() => {
     const metricsBlocks = Object.values(metricBlocksQuery.data?.blocks ?? {}).filter(
@@ -368,9 +363,7 @@ const AllMetricsSection = () => {
   )
 }
 
-const DBTSection = () => {
-  const storyId = useStoryPathParams()
-
+const DBTSection: React.FC<{ storyId: string }> = ({ storyId }) => {
   const dbtBlocksMap = useSearchDBTBlocks('', 1000)
 
   const dataAssetBlocks = useMemo(() => {
@@ -398,7 +391,7 @@ const DBTSection = () => {
   )
 }
 
-const DataAssets: React.FC = () => {
+const DataAssets: React.FC<{ storyId: string }> = ({ storyId }) => {
   return (
     <PerfectScrollbar
       className={css`
@@ -407,24 +400,25 @@ const DataAssets: React.FC = () => {
       `}
       options={{ suppressScrollX: true }}
     >
-      <AllMetricsSection />
-      <DBTSection />
+      <AllMetricsSection storyId={storyId} />
+      <DBTSection storyId={storyId} />
     </PerfectScrollbar>
   )
 }
 
-export const SideBarMetricsSection = () => {
+export const SideBarMetricsSection: React.FC<{ storyId: string }> = ({ storyId }) => {
   const { t } = useTranslation()
-  const TABS = useMemo(
-    () => [
-      { name: t`Current Page`, Component: <CurrentStoryQueries /> },
+
+  const TABS = useMemo(() => {
+    if (!storyId) return []
+    return [
+      { name: t`Current Page`, Component: <CurrentStoryQueries storyId={storyId} /> },
       {
         name: t`Data Assets`,
-        Component: <DataAssets />
+        Component: <DataAssets storyId={storyId} />
       }
-    ],
-    [t]
-  )
+    ]
+  }, [storyId, t])
   return (
     <div
       className={css`

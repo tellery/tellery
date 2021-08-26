@@ -23,7 +23,7 @@ import { Diagram } from '@app/components/v11n'
 import { charts } from '@app/components/v11n/charts'
 import { Config, Data, Type } from '@app/components/v11n/types'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
-import { useOnScreen } from '@app/hooks'
+import { useBindHovering, useOnScreen } from '@app/hooks'
 import { useBlockSuspense, useGetSnapshot, useSnapshot, useUser } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
 import { useFetchBlock } from '@app/hooks/useFetchBlock'
@@ -56,7 +56,7 @@ import DetectableOverflow from 'react-detectable-overflow'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { useHoverDirty, useMeasure } from 'react-use'
+import { useMeasure } from 'react-use'
 import invariant from 'tiny-invariant'
 import { BlockingUI } from '../BlockBase/BlockingUIBlock'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
@@ -94,7 +94,7 @@ interface QuestionBlockProps {
 const useVisulizationBlockInstructionsProvider = (block: Editor.VisualizationBlock) => {
   const commit = useCommit()
   const fetchBlock = useFetchBlock()
-  const questionEditor = useQuestionEditor()
+  const questionEditor = useQuestionEditor(block.storyId!)
   const snapshot = useBlockSnapshot()
   const dataAssetId = block.content?.dataAssetId
 
@@ -202,7 +202,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const isHover = useHoverDirty(elementRef)
+  const [hoveringHandlers, hovering] = useBindHovering()
 
   return (
     <VisulizationInstructionsContext.Provider value={instructions}>
@@ -211,11 +211,12 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
           measureRef(el as unknown as HTMLDivElement)
           elementRef.current = el
         }}
+        {...hoveringHandlers()}
         className={QuestionsBlockContainer}
       >
         <React.Suspense fallback={<></>}>
           {block.content?.dataAssetId && <QuestionBlockHeader block={block} />}
-          <QuestionBlockButtons block={block} show={isHover} slim={rect.width < 260} />
+          <QuestionBlockButtons block={block} show={hovering} slim={rect.width < 260} />
         </React.Suspense>
 
         {dataAssetId === undefined ? (
@@ -714,7 +715,7 @@ export const MoreDropdownSelect: React.FC<{
   const dataAssetBlock = useBlockSuspense<Editor.DataAssetBlock>(block.content?.dataAssetId!)
   const canConvertDataAsset = !readonly && dataAssetBlock.storyId === block.storyId
   const getSnapshot = useGetSnapshot()
-  const questionEditor = useQuestionEditor()
+  const questionEditor = useQuestionEditor(block.storyId!)
   const { t } = useTranslation()
   const mutateSnapshot = useRefreshSnapshot()
 
@@ -954,7 +955,7 @@ const TitleButtonsInner: React.FC<{
   const { t } = useTranslation()
   const [isActive, setIsActive] = useState(false)
   const [isPresent, safeToRemove] = usePresence()
-  const questionEditor = useQuestionEditor()
+  const questionEditor = useQuestionEditor(block.storyId!)
 
   useEffect(() => {
     isActive === false && !isPresent && safeToRemove?.()

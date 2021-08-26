@@ -4,7 +4,7 @@ import {
   splitToken,
   tokenPosition2SplitedTokenPosition
 } from '@app/components/editor/helpers/tokenManipulation'
-import { useHover } from '@app/hooks'
+import { useBindHovering } from '@app/hooks'
 import { useBlockSuspense, useSearchBlocks } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { ThemingVariables } from '@app/styles'
@@ -12,7 +12,7 @@ import { Editor } from '@app/types'
 import { blockIdGenerator, DEFAULT_TITLE, TelleryGlyph } from '@app/utils'
 import { css } from '@emotion/css'
 import { motion } from 'framer-motion'
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import invariant from 'tiny-invariant'
 import { BlockTitle } from '..'
@@ -310,14 +310,15 @@ const DropDownMenuItem: React.FC<{
   setIndex: (index: number) => void
   index: number
 }> = ({ children, onClick, active, setIndex, index }) => {
-  const [ref, hover] = useHover<HTMLDivElement>()
+  const ref = useRef<HTMLDivElement | null>(null)
+  const [hoveringHandlers, hovering] = useBindHovering()
 
   useEffect(() => {
-    if (hover) {
+    if (hovering) {
       setIndex(index)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hover, setIndex])
+  }, [hovering, setIndex])
 
   useEffect(() => {
     if (active && ref.current) {
@@ -332,6 +333,7 @@ const DropDownMenuItem: React.FC<{
   return (
     <div
       ref={ref}
+      {...hoveringHandlers()}
       onClick={onClick}
       data-active={active}
       className={css`

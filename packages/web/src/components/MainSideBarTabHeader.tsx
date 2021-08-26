@@ -1,4 +1,4 @@
-import { useHover } from '@app/hooks'
+import { useBindHovering } from '@app/hooks'
 import { ThemingVariables } from '@app/styles'
 import { css, cx } from '@emotion/css'
 import Tippy from '@tippyjs/react'
@@ -14,7 +14,7 @@ export function MainSideBarTabHeader(props: {
   onClick: (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => void
 }) {
   const Icon = props.icon
-  const [ref, isHovering] = useHover<HTMLAnchorElement>()
+  const [bindHoveringEvents, isHovering] = useBindHovering()
 
   useEffect(() => {
     if (isHovering) {
@@ -33,7 +33,7 @@ export function MainSideBarTabHeader(props: {
       <div>
         <a
           data-active={props.active}
-          ref={ref}
+          {...bindHoveringEvents()}
           className={cx(
             sideBarContainerStyle,
             css`

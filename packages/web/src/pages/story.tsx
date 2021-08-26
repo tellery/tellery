@@ -77,14 +77,14 @@ const _Page: React.FC = () => {
                   `}
                 >
                   <React.Suspense fallback={<div></div>}>
-                    <SideBarMetricsSection />
+                    <SideBarMetricsSection storyId={id} />
                   </React.Suspense>
                 </div>
               )}
               <StoryContainer>
                 <React.Suspense fallback={<BlockingUI blocking size={50} />}>
                   <StoryContent storyId={id} />
-                  <StoryQuestionsEditor />
+                  <StoryQuestionsEditor key={id} storyId={id} />
                 </React.Suspense>
               </StoryContainer>
             </Layout>
