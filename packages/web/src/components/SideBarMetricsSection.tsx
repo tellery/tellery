@@ -4,11 +4,10 @@ import {
   IconCommonDbt,
   IconCommonLock,
   IconCommonMetrics,
-  IconCommonQuestion,
   IconCommonSql
 } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
-import { useHover } from '@app/hooks'
+import { useBindHovering } from '@app/hooks'
 import { useBlockSuspense, useSearchDBTBlocks, useSearchMetrics } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useStoryResources } from '@app/hooks/useStoryResources'
@@ -77,9 +76,8 @@ const StoryDataAssetItemContent: React.FC<{ blockId: string; storyId: string }> 
     return IconCommonSql
   }, [block.storyId, block.type, storyId])
 
-  // const ref = useRef<HTMLDivElement | null>(null)
+  const [hoveringHandlers, isHovering] = useBindHovering()
 
-  const [ref, isHovering] = useHover()
   return (
     <div
       className={css`
@@ -94,10 +92,8 @@ const StoryDataAssetItemContent: React.FC<{ blockId: string; storyId: string }> 
       `}
       {...listeners}
       {...attributes}
-      ref={(element) => {
-        setNodeRef(element)
-        ref.current = element
-      }}
+      {...hoveringHandlers()}
+      ref={setNodeRef}
     >
       <IconType
         color={ThemingVariables.colors.gray[0]}

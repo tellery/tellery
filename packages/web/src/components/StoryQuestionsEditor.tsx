@@ -14,7 +14,7 @@ import {
 } from '@app/assets/icons'
 import { SQLEditor } from '@app/components/SQLEditor'
 import { Configuration } from '@app/components/v11n'
-import { useHover, usePrevious } from '@app/hooks'
+import { useBindHovering, usePrevious } from '@app/hooks'
 import {
   useBlockSuspense,
   useConnectorsListProfiles,
@@ -44,10 +44,11 @@ import { useIsMutating } from 'react-query'
 import { toast } from 'react-toastify'
 import { Tab, TabList, TabPanel, TabStateReturn, useTabState } from 'reakit/Tab'
 // eslint-disable-next-line camelcase
-import { atom, atomFamily, useRecoilCallback, useRecoilState, useRecoilTransaction_UNSTABLE } from 'recoil'
+import { atomFamily, useRecoilCallback, useRecoilState, useRecoilTransaction_UNSTABLE } from 'recoil'
 import invariant from 'tiny-invariant'
 import YAML from 'yaml'
 import { setBlockTranscation } from '../context/editorTranscations'
+import { useProfileType } from '../hooks/useProfileType'
 import { BlockingUI } from './BlockingUI'
 import { CircularLoading } from './CircularLoading'
 import { BlockTitle, useGetBlockTitleTextSnapshot } from './editor'
@@ -56,7 +57,6 @@ import { isExecuteableBlockType } from './editor/Blocks/utils'
 import type { SetBlock } from './editor/types'
 import IconButton from './kit/IconButton'
 import QuestionDownstreams from './QuestionDownstreams'
-import { useProfileType } from '../hooks/useProfileType'
 import { charts } from './v11n/charts'
 import { Config, Type } from './v11n/types'
 
@@ -284,8 +284,6 @@ const TabHeader: React.FC<{ blockId: string; hovering: boolean; storyId: string 
   const opendQuestionBlockIds = useMemo(() => {
     return Object.keys(questionBlocksMap)
   }, [questionBlocksMap])
-  // const [ref, hovering] = useHover<HTMLDivElement>()
-
   const closeTabById = useCallback(
     (tabId: string) => {
       const isTabDirty = !!questionBlocksMap[tabId].draft
@@ -368,12 +366,13 @@ const QuestionTab: React.FC<{
   onClick: () => void
   storyId: string
 }> = ({ id, tab, isActive, onClick, storyId }) => {
-  const [ref, hover] = useHover<HTMLButtonElement>()
+  const [bindHoveringEvents, isHovering] = useBindHovering()
+
   return (
     <Tab
       key={id}
       {...tab}
-      ref={ref}
+      {...bindHoveringEvents()}
       onClick={onClick}
       className={cx(
         css`
@@ -402,7 +401,7 @@ const QuestionTab: React.FC<{
             `
       )}
     >
-      <TabHeader blockId={id} hovering={hover} storyId={storyId} />
+      <TabHeader blockId={id} hovering={isHovering} storyId={storyId} />
     </Tab>
   )
 }
@@ -1180,10 +1179,11 @@ export const DraftStatus: React.FC<{
   onCloseClick: React.MouseEventHandler<HTMLDivElement>
   showClose: boolean
 }> = ({ onCloseClick, isDraft, showClose }) => {
-  const [ref, hovering] = useHover<HTMLDivElement>()
+  const [bindHoveringEvents, isHovering] = useBindHovering()
+
   return (
     <div
-      ref={ref}
+      {...bindHoveringEvents()}
       onClick={onCloseClick}
       className={css`
         display: inline-block;
@@ -1194,7 +1194,7 @@ export const DraftStatus: React.FC<{
         position: relative;
       `}
     >
-      {isDraft && !hovering && (
+      {isDraft && !isHovering && (
         <div
           className={css`
             position: absolute;
@@ -1209,7 +1209,7 @@ export const DraftStatus: React.FC<{
           `}
         ></div>
       )}
-      {(hovering || (!isDraft && showClose)) && (
+      {(isHovering || (!isDraft && showClose)) && (
         <IconCommonClose
           color={ThemingVariables.colors.text[0]}
           className={css`
