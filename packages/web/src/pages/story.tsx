@@ -1,5 +1,5 @@
 import { BlockingUI } from '@app/components/BlockingUI'
-import { SecondaryEditor, StoryEditor, tokensToText } from '@app/components/editor'
+import { StoryEditor, tokensToText } from '@app/components/editor'
 import { NavigationHeader } from '@app/components/NavigationHeader'
 import { SideBarMetricsSection } from '@app/components/SideBarMetricsSection'
 import { StoryBackLinks } from '@app/components/StoryBackLinks'
@@ -85,12 +85,12 @@ const _Page: React.FC = () => {
                 <React.Suspense fallback={<BlockingUI blocking size={50} />}>
                   <StoryContent storyId={id} />
                 </React.Suspense>
+                <StoryQuestionsEditor />
               </StoryContainer>
             </Layout>
           </div>
-          <SecondaryEditor />
+          {/* <SecondaryEditor /> */}
         </div>
-        <StoryQuestionsEditor />
       </VerticalLayout>
     </>
   )

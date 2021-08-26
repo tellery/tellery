@@ -16,16 +16,16 @@ import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { DEFAULT_TITLE } from '@app/utils'
 import { css } from '@emotion/css'
-import Tippy from '@tippyjs/react'
 import copy from 'copy-to-clipboard'
 import { motion } from 'framer-motion'
-import React, { useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import { useTippyMenuAnimation } from '../hooks/useTippyMenuAnimation'
 import { mergeTokens } from './editor'
 import { FormButton } from './kit/FormButton'
 import IconButton from './kit/IconButton'
+import { LazyTippy } from './LazyTippy'
 import { MenuConfirmPopover } from './MenuConfirmPopover'
 import { MenuWrapper } from './MenuWrapper'
 import { useQuestionEditor } from './StoryQuestionsEditor'
@@ -155,40 +155,50 @@ export const SideBarQueryItemDropdownMenuContent: React.FC<{
   )
 }
 
-export const SideBarQueryItemDropdownMenu: React.FC<{ block: Editor.DataAssetBlock; storyId: string }> = ({
-  block,
-  storyId
-}) => {
-  const tippyAnimation = useTippyMenuAnimation('scale')
-  return (
-    <Tippy
-      render={(attrs, content, instance) => (
-        <motion.div animate={tippyAnimation.controls} transition={{ duration: 0.15 }} {...attrs}>
-          <SideBarQueryItemDropdownMenuContent
-            block={block}
-            storyId={storyId}
-            onClose={() => {
-              instance?.hide()
-            }}
-          />
-        </motion.div>
-      )}
-      animation={true}
-      onMount={tippyAnimation.onMount}
-      onHide={tippyAnimation.onHide}
-      hideOnClick={true}
-      interactive
-      trigger="click"
-      placement="right-end"
-      appendTo={document.body}
-    >
-      <IconButton
-        icon={IconCommonMore}
-        color={ThemingVariables.colors.text[0]}
-        onClick={(e) => {
-          e.stopPropagation()
+export const SideBarQueryItemDropdownMenu: React.FC<{ block: Editor.DataAssetBlock; storyId: string; show: boolean }> =
+  ({ block, storyId, show }) => {
+    const tippyAnimation = useTippyMenuAnimation('scale')
+    const [displaying, setDisplaying] = useState(false)
+
+    return (
+      <LazyTippy
+        render={(attrs, content, instance) => (
+          <motion.div animate={tippyAnimation.controls} transition={{ duration: 0.15 }} {...attrs}>
+            <SideBarQueryItemDropdownMenuContent
+              block={block}
+              storyId={storyId}
+              onClose={() => {
+                instance?.hide()
+              }}
+            />
+          </motion.div>
+        )}
+        animation={true}
+        onMount={() => {
+          tippyAnimation.onMount()
+          setDisplaying(true)
         }}
-      />
-    </Tippy>
-  )
-}
+        onHide={(instance) => {
+          tippyAnimation.onHide(instance).then(() => {
+            setDisplaying(false)
+          })
+        }}
+        hideOnClick={true}
+        interactive
+        trigger="click"
+        placement="right-end"
+        appendTo={document.body}
+      >
+        <IconButton
+          icon={IconCommonMore}
+          color={ThemingVariables.colors.text[0]}
+          onClick={(e) => {
+            e.stopPropagation()
+          }}
+          style={{
+            display: displaying || show ? 'block' : 'none'
+          }}
+        />
+      </LazyTippy>
+    )
+  }

@@ -1,4 +1,6 @@
 import {
+  IconCommonArrowDropDown,
+  IconCommonArrowUpDown,
   IconCommonClose,
   IconCommonDbt,
   IconCommonDownstream,
@@ -55,6 +57,7 @@ import type { SetBlock } from './editor/types'
 import IconButton from './kit/IconButton'
 import MetricConfig from './MetricConfig'
 import QuestionDownstreams from './QuestionDownstreams'
+import { useProfileType } from '../hooks/useProfileType'
 import { charts } from './v11n/charts'
 import { Config, Type } from './v11n/types'
 
@@ -187,22 +190,38 @@ const _StoryQuestionsEditor = () => {
       unsubscribe()
     }
   }, [setResizeConfig, y])
-  const workspace = useWorkspace()
-  const { data: profiles } = useConnectorsListProfiles(workspace.preferences.connectorId)
-  const profileType = useMemo(
-    () => profiles?.find((profile) => profile.name === workspace.preferences.profile)?.type,
-    [profiles, workspace.preferences.profile]
-  )
+  const profileType = useProfileType()
   useSqlEditor(profileType)
 
   return (
     <>
       <div
         style={{
-          height: open ? `${height.get()}px` : '0px',
+          height: open ? `${height.get()}px` : '40px',
           flexShrink: 0
         }}
-      ></div>
+      >
+        <div
+          className={css`
+            border-top: solid 1px ${ThemingVariables.colors.gray[1]};
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            height: 100%;
+          `}
+        >
+          <IconButton
+            hoverContent="Click to open query editor"
+            icon={IconCommonArrowUpDown}
+            onClick={() => {
+              setOpen(true)
+            }}
+            className={css`
+              margin-left: auto;
+            `}
+          />
+        </div>
+      </div>
       <motion.div
         style={{
           height: height,
@@ -446,7 +465,7 @@ export const EditorContent = () => {
           })}
         </div>
         <IconButton
-          icon={IconCommonClose}
+          icon={IconCommonArrowDropDown}
           color={ThemingVariables.colors.text[0]}
           className={css`
             margin-left: auto;
