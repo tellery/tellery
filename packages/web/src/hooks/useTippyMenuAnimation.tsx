@@ -12,7 +12,7 @@ export const useTippyMenuAnimation = (key: keyof typeof PopoverMotionVariants) =
 
   const onHide = useCallback(
     ({ unmount }) => {
-      controls.start(PopoverMotionVariants[key].inactive).then(() => {
+      return controls.start(PopoverMotionVariants[key].inactive).then(() => {
         unmount()
       })
     },

@@ -5,10 +5,10 @@ import {
   IconCommonLock,
   IconCommonMetrics,
   IconCommonQuestion,
-  IconCommonSql,
-  IconMenuImport
+  IconCommonSql
 } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
+import { useHover } from '@app/hooks'
 import { useBlockSuspense, useSearchDBTBlocks, useSearchMetrics } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useStoryResources } from '@app/hooks/useStoryResources'
@@ -20,14 +20,15 @@ import { useDraggable } from '@dnd-kit/core'
 import { css, cx } from '@emotion/css'
 import { Tab } from '@headlessui/react'
 import Tippy from '@tippyjs/react'
+import { motion } from 'framer-motion'
 import React, { Fragment, useCallback, useMemo } from 'react'
 import ContentLoader from 'react-content-loader'
 import { useTranslation } from 'react-i18next'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import { useStoryPathParams } from '../hooks/useStoryPathParams'
-import { BlockTitle, useGetBlockTitleTextSnapshot } from './editor'
+import { useGetBlockTitleTextSnapshot } from './editor'
 import IconButton from './kit/IconButton'
-import { MenuWrapper } from './MenuWrapper'
+import { SideBarInspectQueryBlockPopover } from './SideBarInspectQueryBlockPopover'
 import { SideBarQueryItemDropdownMenu } from './SideBarQueryItemDropdownMenu'
 import { useQuestionEditor } from './StoryQuestionsEditor'
 
@@ -39,15 +40,7 @@ const SideBarLoader: React.FC = () => {
   )
 }
 
-const InspectQueryBlockPopover: React.FC<{ block: Editor.DataAssetBlock }> = ({ block }) => {
-  return (
-    <MenuWrapper>
-      <BlockTitle block={block} />
-    </MenuWrapper>
-  )
-}
-
-const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
+const StoryDataAssetItemContent: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
   const block = useBlockSuspense(blockId)
   const getBlockTitle = useGetBlockTitleTextSnapshot()
 
@@ -68,7 +61,6 @@ const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ bl
   })
 
   const { t } = useTranslation()
-  const tippyAnimation = useTippyMenuAnimation('fade')
   const IconType = useMemo(() => {
     if (block.storyId !== storyId) {
       return IconCommonBackLink
@@ -83,76 +75,95 @@ const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ bl
     return IconCommonSql
   }, [block.storyId, block.type, storyId])
 
+  // const ref = useRef<HTMLDivElement | null>(null)
+
+  const [ref, isHovering] = useHover()
+  return (
+    <div
+      className={css`
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        padding: 6px 8px;
+        margin-bottom: 5px;
+        :hover {
+          background: ${ThemingVariables.colors.primary[5]};
+        }
+      `}
+      {...listeners}
+      {...attributes}
+      ref={(element) => {
+        setNodeRef(element)
+        ref.current = element
+      }}
+    >
+      <IconType
+        color={ThemingVariables.colors.gray[0]}
+        className={css`
+          flex-shrink: 0;
+          margin: 0 8px;
+        `}
+      />
+
+      <span
+        className={css`
+          font-size: 12px;
+          line-height: 14px;
+          flex: 1;
+          color: ${ThemingVariables.colors.text[0]};
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        `}
+      >
+        {getBlockTitle(block)}
+      </span>
+      <div
+        className={css`
+          > * + * {
+            margin-left: 16px;
+          }
+          display: flex;
+          align-items: center;
+        `}
+      >
+        {block.type === Editor.BlockType.SnapshotBlock && (
+          <Tippy content={t`Frozen data`} arrow={false} placement="right">
+            <div>
+              <IconCommonLock color={ThemingVariables.colors.text[0]} width="16px" height="16px" />
+            </div>
+          </Tippy>
+        )}
+        <SideBarQueryItemDropdownMenu block={block} storyId={storyId} show={isHovering} />
+      </div>
+    </div>
+  )
+}
+
+const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
+  const tippyAnimation = useTippyMenuAnimation('fade')
+
   return (
     <Tippy
-      // render={(attrs) => (
-      //   <motion.div animate={tippyAnimation.controls} {...attrs} transition={{ duration: 0.15 }}>
-      //     <InspectQueryBlockPopover block={block}></InspectQueryBlockPopover>
-      //   </motion.div>
-      // )}
+      render={(attrs) => (
+        <motion.div animate={tippyAnimation.controls} {...attrs} transition={{ duration: 0.15 }}>
+          <SideBarInspectQueryBlockPopover blockId={blockId}></SideBarInspectQueryBlockPopover>
+        </motion.div>
+      )}
+      delay={500}
       hideOnClick={true}
       animation={true}
       onMount={tippyAnimation.onMount}
       onHide={tippyAnimation.onHide}
       appendTo={document.body}
+      interactive
       placement="right-end"
-      disabled
+      zIndex={1000}
+      // disabled
     >
-      <div
-        className={css`
-          display: flex;
-          align-items: center;
-          cursor: pointer;
-          padding: 6px 8px;
-          margin-bottom: 5px;
-          :hover {
-            background: ${ThemingVariables.colors.primary[5]};
-          }
-        `}
-        {...listeners}
-        {...attributes}
-        ref={setNodeRef}
-      >
-        <IconType
-          color={ThemingVariables.colors.gray[0]}
-          className={css`
-            flex-shrink: 0;
-            margin: 0 8px;
-          `}
-        />
-
-        <span
-          className={css`
-            font-size: 12px;
-            line-height: 14px;
-            flex: 1;
-            color: ${ThemingVariables.colors.text[0]};
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-          `}
-        >
-          {getBlockTitle(block)}
-        </span>
-        <div
-          className={css`
-            > * + * {
-              margin-left: 16px;
-            }
-            display: flex;
-            align-items: center;
-          `}
-        >
-          {block.type === Editor.BlockType.SnapshotBlock && (
-            <Tippy content={t`Frozen data`} arrow={false} placement="right">
-              <div>
-                <IconCommonLock color={ThemingVariables.colors.text[0]} width="16px" height="16px" />
-              </div>
-            </Tippy>
-          )}
-          <SideBarQueryItemDropdownMenu block={block} storyId={storyId} />
-        </div>
-      </div>
+      <span>
+        <StoryDataAssetItemContent blockId={blockId} storyId={storyId} />
+      </span>
     </Tippy>
   )
 }

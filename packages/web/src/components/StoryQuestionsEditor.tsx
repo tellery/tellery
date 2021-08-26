@@ -54,6 +54,7 @@ import { isExecuteableBlockType } from './editor/Blocks/utils'
 import type { SetBlock } from './editor/types'
 import IconButton from './kit/IconButton'
 import QuestionDownstreams from './QuestionDownstreams'
+import { useProfileType } from '../hooks/useProfileType'
 import { charts } from './v11n/charts'
 import { Config, Type } from './v11n/types'
 
@@ -186,12 +187,7 @@ const _StoryQuestionsEditor = () => {
       unsubscribe()
     }
   }, [setResizeConfig, y])
-  const workspace = useWorkspace()
-  const { data: profiles } = useConnectorsListProfiles(workspace.preferences.connectorId)
-  const profileType = useMemo(
-    () => profiles?.find((profile) => profile.name === workspace.preferences.profile)?.type,
-    [profiles, workspace.preferences.profile]
-  )
+  const profileType = useProfileType()
   useSqlEditor(profileType)
 
   return (
