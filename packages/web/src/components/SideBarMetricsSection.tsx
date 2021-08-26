@@ -18,6 +18,7 @@ import { Editor } from '@app/types'
 import { DndItemDataBlockType, DnDItemTypes } from '@app/utils/dnd'
 import { useDraggable } from '@dnd-kit/core'
 import { css, cx } from '@emotion/css'
+import styled from '@emotion/styled'
 import { Tab } from '@headlessui/react'
 import Tippy from '@tippyjs/react'
 import { motion } from 'framer-motion'
@@ -28,6 +29,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 import { useStoryPathParams } from '../hooks/useStoryPathParams'
 import { useGetBlockTitleTextSnapshot } from './editor'
 import IconButton from './kit/IconButton'
+import { LazyTippy } from './LazyTippy'
 import { SideBarInspectQueryBlockPopover } from './SideBarInspectQueryBlockPopover'
 import { SideBarQueryItemDropdownMenu } from './SideBarQueryItemDropdownMenu'
 import { useQuestionEditor } from './StoryQuestionsEditor'
@@ -144,7 +146,7 @@ const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ bl
   const tippyAnimation = useTippyMenuAnimation('fade')
 
   return (
-    <Tippy
+    <LazyTippy
       render={(attrs) => (
         <motion.div animate={tippyAnimation.controls} {...attrs} transition={{ duration: 0.15 }}>
           <SideBarInspectQueryBlockPopover blockId={blockId}></SideBarInspectQueryBlockPopover>
@@ -166,7 +168,7 @@ const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ bl
       <span>
         <StoryDataAssetItemContent blockId={blockId} storyId={storyId} />
       </span>
-    </Tippy>
+    </LazyTippy>
   )
 }
 
@@ -191,6 +193,17 @@ const DataAssetItem: React.FC<{ block: Editor.BaseBlock; currentStoryId: string 
 
   const questionEditor = useQuestionEditor()
 
+  const IconType = useMemo(() => {
+    if (block.type === Editor.BlockType.SQL || block.type === Editor.BlockType.SnapshotBlock) {
+      return IconCommonSql
+    } else if (block.type === Editor.BlockType.Metric) {
+      return IconCommonMetrics
+    } else if (block.type === Editor.BlockType.DBT) {
+      return IconCommonDbt
+    }
+    return IconCommonSql
+  }, [block.type])
+
   return (
     <div
       className={css`
@@ -212,31 +225,13 @@ const DataAssetItem: React.FC<{ block: Editor.BaseBlock; currentStoryId: string 
         questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
       }}
     >
-      {block.type === Editor.BlockType.Metric ? (
-        <IconCommonMetrics
-          color={ThemingVariables.colors.gray[0]}
-          className={css`
-            flex-shrink: 0;
-            margin-right: 8px;
-          `}
-        />
-      ) : block.type === Editor.BlockType.DBT ? (
-        <IconCommonDbt
-          color={ThemingVariables.colors.gray[0]}
-          className={css`
-            flex-shrink: 0;
-            margin-right: 8px;
-          `}
-        />
-      ) : (
-        <IconCommonQuestion
-          color={ThemingVariables.colors.gray[0]}
-          className={css`
-            flex-shrink: 0;
-            margin-right: 8px;
-          `}
-        />
-      )}
+      <IconType
+        color={ThemingVariables.colors.gray[0]}
+        className={css`
+          flex-shrink: 0;
+          margin-right: 8px;
+        `}
+      />
 
       <span
         className={css`
@@ -286,23 +281,8 @@ const CurrentStoryQueries: React.FC = () => {
 
   return storyId ? (
     <React.Suspense fallback={<></>}>
-      <div
-        className={css`
-          padding: 12px 8px;
-          font-weight: 500;
-          font-size: 12px;
-          line-height: 15px;
-          color: ${ThemingVariables.colors.text[0]};
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        `}
-      >
-        <div
-          className={css`
-            padding: 0 8px;
-          `}
-        >{t`Queries`}</div>
+      <SideBarSection>
+        <SideBarSectionHeader>{t`Queries`}</SideBarSectionHeader>
         <div
           className={css`
             display: flex;
@@ -318,11 +298,26 @@ const CurrentStoryQueries: React.FC = () => {
           {/* <IconButton icon={IconMenuImport} hoverContent={t`Import a query`} /> */}
           <IconButton icon={IconCommonAdd} hoverContent={t`Create a new query`} onClick={createNewQuery} />
         </div>
-      </div>
+      </SideBarSection>
       <StoryResources storyId={storyId} />{' '}
     </React.Suspense>
   ) : null
 }
+
+const SideBarSection = styled.div`
+  padding: 12px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`
+
+const SideBarSectionHeader = styled.div`
+  padding: 0 8px;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 15px;
+  color: ${ThemingVariables.colors.text[0]};
+`
 
 const StoryResources: React.FC<{ storyId: string }> = ({ storyId }) => {
   const resourceBlocks = useStoryResources(storyId)
@@ -344,7 +339,7 @@ const StoryResources: React.FC<{ storyId: string }> = ({ storyId }) => {
   )
 }
 
-const AllMetrics: React.FC = () => {
+const DataAssets: React.FC = () => {
   const metricBlocksQuery = useSearchMetrics('', 1000)
   const dbtBlocksMap = useSearchDBTBlocks('', 1000)
   const storyId = useStoryPathParams()
@@ -359,6 +354,8 @@ const AllMetrics: React.FC = () => {
     return [...metricsBlocks, ...dbtBlocks]
   }, [metricBlocksQuery.data?.blocks, dbtBlocksMap.data?.blocks])
 
+  const { t } = useTranslation()
+
   return (
     <PerfectScrollbar
       className={css`
@@ -367,6 +364,9 @@ const AllMetrics: React.FC = () => {
       `}
       options={{ suppressScrollX: true }}
     >
+      <SideBarSection>
+        <SideBarSectionHeader>{t`All Metrics`}</SideBarSectionHeader>
+      </SideBarSection>
       {dataAssetBlocks.map((block) => {
         return (
           <React.Suspense key={block.id} fallback={<SideBarLoader />}>
@@ -374,6 +374,9 @@ const AllMetrics: React.FC = () => {
           </React.Suspense>
         )
       })}
+      <SideBarSection>
+        <SideBarSectionHeader>{t`DBT`}</SideBarSectionHeader>
+      </SideBarSection>
     </PerfectScrollbar>
   )
 }
@@ -385,7 +388,7 @@ export const SideBarMetricsSection = () => {
       { name: t`Current Page`, Component: <CurrentStoryQueries /> },
       {
         name: t`Data Assets`,
-        Component: <AllMetrics />
+        Component: <DataAssets />
       }
     ],
     [t]

@@ -16,7 +16,6 @@ import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { DEFAULT_TITLE } from '@app/utils'
 import { css } from '@emotion/css'
-import Tippy from '@tippyjs/react'
 import copy from 'copy-to-clipboard'
 import { motion } from 'framer-motion'
 import React, { useCallback, useState } from 'react'
@@ -26,6 +25,7 @@ import { useTippyMenuAnimation } from '../hooks/useTippyMenuAnimation'
 import { mergeTokens } from './editor'
 import { FormButton } from './kit/FormButton'
 import IconButton from './kit/IconButton'
+import { LazyTippy } from './LazyTippy'
 import { MenuConfirmPopover } from './MenuConfirmPopover'
 import { MenuWrapper } from './MenuWrapper'
 import { useQuestionEditor } from './StoryQuestionsEditor'
@@ -161,7 +161,7 @@ export const SideBarQueryItemDropdownMenu: React.FC<{ block: Editor.DataAssetBlo
     const [displaying, setDisplaying] = useState(false)
 
     return (
-      <Tippy
+      <LazyTippy
         render={(attrs, content, instance) => (
           <motion.div animate={tippyAnimation.controls} transition={{ duration: 0.15 }} {...attrs}>
             <SideBarQueryItemDropdownMenuContent
@@ -199,6 +199,6 @@ export const SideBarQueryItemDropdownMenu: React.FC<{ block: Editor.DataAssetBlo
             display: displaying || show ? 'block' : 'none'
           }}
         />
-      </Tippy>
+      </LazyTippy>
     )
   }
