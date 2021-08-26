@@ -703,7 +703,7 @@ const _StoryEditor: React.FC<{
               }}
             />
           </div>,
-          { position: 'bottom-center', autoClose: 6000 }
+          { position: 'bottom-center', autoClose: 10000 }
         )
       }
     },
