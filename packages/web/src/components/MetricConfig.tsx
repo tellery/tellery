@@ -6,6 +6,7 @@ import { css, cx } from '@emotion/css'
 import { useEffect, useRef, useState } from 'react'
 import { FormButton } from './kit/FormButton'
 import { table } from './v11n/charts/table'
+import { ConfigLabel } from './v11n/components/ConfigLabel'
 
 export default function MetricConfig(props: { block: Editor.SQLLikeBlock; className?: string }) {
   const [isMetric, setIsMetric] = useState(false)
@@ -100,6 +101,7 @@ function MetricConfigInner(props: { block: Editor.SQLLikeBlock; className?: stri
                 css`
                   font-size: 12px;
                   font-style: italic;
+                  text-transform: lowercase;
                 `,
                 index === activeFieldIndex
                   ? css`
@@ -121,9 +123,20 @@ function MetricConfigInner(props: { block: Editor.SQLLikeBlock; className?: stri
           width: 320px;
           flex-shrink: 0;
           border-right: 1px solid ${ThemingVariables.colors.gray[1]};
+          padding: 20px;
         `}
       >
-        {props.block.id}
+        <ConfigLabel top={0}>Metric config</ConfigLabel>
+        <span
+          className={css`
+            font-weight: 500;
+            font-size: 12px;
+            color: ${ThemingVariables.colors.text[1]};
+            margin-top: 5px;
+          `}
+        >
+          Name
+        </span>
       </div>
       <div
         ref={ref}
