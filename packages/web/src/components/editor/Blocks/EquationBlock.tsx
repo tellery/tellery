@@ -2,7 +2,7 @@ import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { css } from '@emotion/css'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
 import { EditorPopover } from '../EditorPopover'
@@ -40,7 +40,7 @@ const EquationBlock: BlockComponent<
   useEffect(() => {
     const render = async () => {
       const equation = block.content?.equation
-      if (!equation) {
+      if (!equation || typeof equation !== 'string') {
         setEquationHtml(null)
         return
       }
@@ -102,7 +102,7 @@ const EquationBlock: BlockComponent<
   )
 }
 
-export const EmbedBlockPopover: React.FC<{
+const _EmbedBlockPopover: React.FC<{
   open: boolean
   setOpen: (value: boolean) => void
   referenceElement: HTMLElement | null
@@ -117,11 +117,13 @@ export const EmbedBlockPopover: React.FC<{
     formState: { errors }
   } = useForm({ defaultValues: { value: initialValue } })
 
-  const value = watch()
+  const value = watch('value')
 
   useEffect(() => {
-    onSubmit(value)
-  }, [onSubmit, value])
+    if (initialValue !== value) {
+      onSubmit({ value })
+    }
+  }, [initialValue, onSubmit, value])
 
   useEffect(() => {
     if (open) {
@@ -210,6 +212,8 @@ export const EmbedBlockPopover: React.FC<{
     </EditorPopover>
   )
 }
+
+const EmbedBlockPopover = memo(_EmbedBlockPopover)
 
 EquationBlock.meta = {
   isText: false,
