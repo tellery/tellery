@@ -39,7 +39,7 @@ export const SideBarQueryItemDropdownMenuContent: React.FC<{
   const permissions = useStoryPermissions(block.id)
   const { t } = useTranslation()
   const openStory = useOpenStory()
-  const questionEditor = useQuestionEditor()
+  const questionEditor = useQuestionEditor(storyId)
 
   const duplicateQueryHandler = useCallback(async () => {
     onClose()

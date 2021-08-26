@@ -191,7 +191,7 @@ const DataAssetItem: React.FC<{ block: Editor.BaseBlock; currentStoryId: string 
     } as DndItemDataBlockType
   })
 
-  const questionEditor = useQuestionEditor()
+  const questionEditor = useQuestionEditor(currentStoryId)
 
   const IconType = useMemo(() => {
     if (block.type === Editor.BlockType.SQL || block.type === Editor.BlockType.SnapshotBlock) {
@@ -249,11 +249,10 @@ const DataAssetItem: React.FC<{ block: Editor.BaseBlock; currentStoryId: string 
   )
 }
 
-const CurrentStoryQueries: React.FC = () => {
-  const storyId = useStoryPathParams()
+const CurrentStoryQueries: React.FC<{ storyId: string }> = ({ storyId }) => {
   const { t } = useTranslation()
   const blockTranscations = useBlockTranscations()
-  const questionEditor = useQuestionEditor()
+  const questionEditor = useQuestionEditor(storyId)
 
   const createNewQuery = useCallback(async () => {
     if (!storyId) return
@@ -339,9 +338,8 @@ const StoryResources: React.FC<{ storyId: string }> = ({ storyId }) => {
   )
 }
 
-const AllMetricsSection = () => {
+const AllMetricsSection: React.FC<{ storyId: string }> = ({ storyId }) => {
   const metricBlocksQuery = useSearchMetrics('', 1000)
-  const storyId = useStoryPathParams()
 
   const dataAssetBlocks = useMemo(() => {
     const metricsBlocks = Object.values(metricBlocksQuery.data?.blocks ?? {}).filter(
@@ -368,9 +366,7 @@ const AllMetricsSection = () => {
   )
 }
 
-const DBTSection = () => {
-  const storyId = useStoryPathParams()
-
+const DBTSection: React.FC<{ storyId: string }> = ({ storyId }) => {
   const dbtBlocksMap = useSearchDBTBlocks('', 1000)
 
   const dataAssetBlocks = useMemo(() => {
@@ -398,7 +394,7 @@ const DBTSection = () => {
   )
 }
 
-const DataAssets: React.FC = () => {
+const DataAssets: React.FC<{ storyId: string }> = ({ storyId }) => {
   return (
     <PerfectScrollbar
       className={css`
@@ -407,24 +403,26 @@ const DataAssets: React.FC = () => {
       `}
       options={{ suppressScrollX: true }}
     >
-      <AllMetricsSection />
-      <DBTSection />
+      <AllMetricsSection storyId={storyId} />
+      <DBTSection storyId={storyId} />
     </PerfectScrollbar>
   )
 }
 
 export const SideBarMetricsSection = () => {
   const { t } = useTranslation()
-  const TABS = useMemo(
-    () => [
-      { name: t`Current Page`, Component: <CurrentStoryQueries /> },
+  const storyId = useStoryPathParams()
+
+  const TABS = useMemo(() => {
+    if (!storyId) return []
+    return [
+      { name: t`Current Page`, Component: <CurrentStoryQueries storyId={storyId} /> },
       {
         name: t`Data Assets`,
-        Component: <DataAssets />
+        Component: <DataAssets storyId={storyId} />
       }
-    ],
-    [t]
-  )
+    ]
+  }, [storyId, t])
   return (
     <div
       className={css`

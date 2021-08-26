@@ -94,7 +94,7 @@ interface QuestionBlockProps {
 const useVisulizationBlockInstructionsProvider = (block: Editor.VisualizationBlock) => {
   const commit = useCommit()
   const fetchBlock = useFetchBlock()
-  const questionEditor = useQuestionEditor()
+  const questionEditor = useQuestionEditor(block.storyId!)
   const snapshot = useBlockSnapshot()
   const dataAssetId = block.content?.dataAssetId
 
@@ -714,7 +714,7 @@ export const MoreDropdownSelect: React.FC<{
   const dataAssetBlock = useBlockSuspense<Editor.DataAssetBlock>(block.content?.dataAssetId!)
   const canConvertDataAsset = !readonly && dataAssetBlock.storyId === block.storyId
   const getSnapshot = useGetSnapshot()
-  const questionEditor = useQuestionEditor()
+  const questionEditor = useQuestionEditor(block.storyId!)
   const { t } = useTranslation()
   const mutateSnapshot = useRefreshSnapshot()
 
@@ -954,7 +954,7 @@ const TitleButtonsInner: React.FC<{
   const { t } = useTranslation()
   const [isActive, setIsActive] = useState(false)
   const [isPresent, safeToRemove] = usePresence()
-  const questionEditor = useQuestionEditor()
+  const questionEditor = useQuestionEditor(block.storyId!)
 
   useEffect(() => {
     isActive === false && !isPresent && safeToRemove?.()

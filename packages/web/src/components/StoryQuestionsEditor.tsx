@@ -44,7 +44,7 @@ import { useIsMutating } from 'react-query'
 import { toast } from 'react-toastify'
 import { Tab, TabList, TabPanel, TabStateReturn, useTabState } from 'reakit/Tab'
 // eslint-disable-next-line camelcase
-import { atom, useRecoilCallback, useRecoilState, useRecoilTransaction_UNSTABLE } from 'recoil'
+import { atom, atomFamily, useRecoilCallback, useRecoilState, useRecoilTransaction_UNSTABLE } from 'recoil'
 import invariant from 'tiny-invariant'
 import YAML from 'yaml'
 import { setBlockTranscation } from '../context/editorTranscations'
@@ -81,23 +81,26 @@ interface EditorDraft {
   title?: Editor.Token[]
 }
 
-export const questionEditorBlockMapState = atom<
-  Record<
-    string,
-    {
-      storyId: string
-      draft?: EditorDraft
-      mode: string
-    }
-  >
->({
+type BlockDraft = Record<
+  string,
+  {
+    storyId: string
+    draft?: EditorDraft
+    mode: string
+  }
+>
+
+export const questionEditorBlockMapState = atomFamily<BlockDraft, string>({
   key: 'questionEditorBlockMapState',
   default: {}
 })
 
-export const questionEditorOpenState = atom<boolean>({ key: 'questionEditorOpenState', default: false })
+export const questionEditorOpenState = atomFamily<boolean, string>({ key: 'questionEditorOpenState', default: false })
 
-export const questionEditorActiveIdState = atom<string | null>({ key: 'questionEditorActiveIdState', default: null })
+export const questionEditorActiveIdState = atomFamily<string | null, string>({
+  key: 'questionEditorActiveIdState',
+  default: null
+})
 
 const updateOldDraft = (oldDraft?: EditorDraft, block?: Editor.SQLLikeBlock) => {
   if (!oldDraft) return undefined
@@ -113,9 +116,9 @@ const updateOldDraft = (oldDraft?: EditorDraft, block?: Editor.SQLLikeBlock) => 
   return updatedDraft
 }
 
-export const useQuestionEditor = () => {
-  const openQuestionBlockHandler = useOpenQuestionBlockIdHandler()
-  const cleanQuestionEditorHandler = useCleanQuestionEditorHandler()
+export const useQuestionEditor = (storyId: string) => {
+  const openQuestionBlockHandler = useOpenQuestionBlockIdHandler(storyId)
+  const cleanQuestionEditorHandler = useCleanQuestionEditorHandler(storyId)
 
   return useMemo(() => {
     return {
@@ -125,13 +128,13 @@ export const useQuestionEditor = () => {
   }, [cleanQuestionEditorHandler, openQuestionBlockHandler])
 }
 
-export const useCleanQuestionEditorHandler = () => {
+export const useCleanQuestionEditorHandler = (storyId: string) => {
   const handler = useRecoilCallback(
     (recoilCallback) => async (arg: string) => {
       const blockId = arg
-      const blockMap = await recoilCallback.snapshot.getPromise(questionEditorBlockMapState)
+      const blockMap = await recoilCallback.snapshot.getPromise(questionEditorBlockMapState(storyId))
       if (blockMap[blockId]) {
-        recoilCallback.set(questionEditorBlockMapState, (state) => {
+        recoilCallback.set(questionEditorBlockMapState(storyId), (state) => {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { [blockId]: _removed, ...rest } = state
           return rest
@@ -144,13 +147,13 @@ export const useCleanQuestionEditorHandler = () => {
   return handler
 }
 
-export const useOpenQuestionBlockIdHandler = () => {
+export const useOpenQuestionBlockIdHandler = (storyId: string) => {
   const handler = useRecoilTransaction_UNSTABLE(
     (recoilCallback) =>
-      ({ mode, blockId, storyId }: { mode: Mode; blockId: string; storyId: string }) => {
-        recoilCallback.set(questionEditorActiveIdState, blockId)
-        recoilCallback.set(questionEditorOpenState, true)
-        recoilCallback.set(questionEditorBlockMapState, (state) => {
+      ({ mode, blockId }: { mode: Mode; blockId: string; storyId: string }) => {
+        recoilCallback.set(questionEditorActiveIdState(storyId), blockId)
+        recoilCallback.set(questionEditorOpenState(storyId), true)
+        recoilCallback.set(questionEditorBlockMapState(storyId), (state) => {
           return {
             ...state,
             [blockId]: {
@@ -171,8 +174,8 @@ const DragConstraints = {
   bottom: -300
 }
 
-const _StoryQuestionsEditor = () => {
-  const [open, setOpen] = useRecoilState(questionEditorOpenState)
+const _StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId }) => {
+  const [open, setOpen] = useRecoilState(questionEditorOpenState(storyId))
   const [resizeConfig, setResizeConfig] = useLocalStorage('MainSQLEditorConfig_v2', {
     y: -300
   })
@@ -263,7 +266,7 @@ const _StoryQuestionsEditor = () => {
           dragMomentum={false}
           style={{ y }}
         />
-        <EditorContent />
+        <EditorContent storyId={storyId} />
       </motion.div>
     </>
   )
@@ -271,9 +274,13 @@ const _StoryQuestionsEditor = () => {
 
 export const StoryQuestionsEditor = _StoryQuestionsEditor
 
-const TabHeader: React.FC<{ blockId: string; hovering: boolean }> = ({ blockId, hovering }) => {
-  const [questionBlocksMap, setQuestionBlocksMap] = useRecoilState(questionEditorBlockMapState)
-  const [activeId, setActiveId] = useRecoilState(questionEditorActiveIdState)
+const TabHeader: React.FC<{ blockId: string; hovering: boolean; storyId: string }> = ({
+  blockId,
+  hovering,
+  storyId
+}) => {
+  const [questionBlocksMap, setQuestionBlocksMap] = useRecoilState(questionEditorBlockMapState(storyId))
+  const [activeId, setActiveId] = useRecoilState(questionEditorActiveIdState(storyId))
   const opendQuestionBlockIds = useMemo(() => {
     return Object.keys(questionBlocksMap)
   }, [questionBlocksMap])
@@ -354,12 +361,13 @@ const TabHeader: React.FC<{ blockId: string; hovering: boolean }> = ({ blockId, 
   )
 }
 
-const QuestionTab: React.FC<{ id: string; tab: TabStateReturn; isActive: boolean; onClick: () => void }> = ({
-  id,
-  tab,
-  isActive,
-  onClick
-}) => {
+const QuestionTab: React.FC<{
+  id: string
+  tab: TabStateReturn
+  isActive: boolean
+  onClick: () => void
+  storyId: string
+}> = ({ id, tab, isActive, onClick, storyId }) => {
   const [ref, hover] = useHover<HTMLButtonElement>()
   return (
     <Tab
@@ -394,15 +402,15 @@ const QuestionTab: React.FC<{ id: string; tab: TabStateReturn; isActive: boolean
             `
       )}
     >
-      <TabHeader blockId={id} hovering={hover} />
+      <TabHeader blockId={id} hovering={hover} storyId={storyId} />
     </Tab>
   )
 }
 
-export const EditorContent = () => {
-  const [questionBlocksMap, setQuestionBlocksMap] = useRecoilState(questionEditorBlockMapState)
-  const [activeId, setActiveId] = useRecoilState(questionEditorActiveIdState)
-  const [open, setOpen] = useRecoilState(questionEditorOpenState)
+export const EditorContent: React.FC<{ storyId: string }> = ({ storyId }) => {
+  const [questionBlocksMap, setQuestionBlocksMap] = useRecoilState(questionEditorBlockMapState(storyId))
+  const [activeId, setActiveId] = useRecoilState(questionEditorActiveIdState(storyId))
+  const [open, setOpen] = useRecoilState(questionEditorOpenState(storyId))
   const tab = useTabState()
 
   const opendQuestionBlockIds = useMemo(() => {
@@ -458,7 +466,13 @@ export const EditorContent = () => {
           {opendQuestionBlockIds?.map((id) => {
             return (
               <React.Suspense key={id} fallback={null}>
-                <QuestionTab id={id} isActive={id === activeId} tab={tab} onClick={() => setActiveId(id)} />
+                <QuestionTab
+                  id={id}
+                  isActive={id === activeId}
+                  tab={tab}
+                  onClick={() => setActiveId(id)}
+                  storyId={storyId}
+                />
               </React.Suspense>
             )
           })}
@@ -485,7 +499,7 @@ export const EditorContent = () => {
       </TabList>
       {opendQuestionBlockIds.map((id) => (
         <React.Suspense key={id} fallback={<BlockingUI blocking={true} />}>
-          <StoryQuestionEditor tab={tab} id={id} setActiveId={setActiveId} />
+          <StoryQuestionEditor tab={tab} id={id} setActiveId={setActiveId} storyId={storyId} />
         </React.Suspense>
       ))}
     </>
@@ -496,14 +510,15 @@ export const StoryQuestionEditor: React.FC<{
   id: string
   setActiveId: (update: SetStateAction<string | null>) => void | Promise<void>
   tab: TabStateReturn
+  storyId: string
   // block: Editor.QuestionBlock
   // originalBlock: Editor.QuestionBlock
-}> = ({ id, setActiveId, tab }) => {
+}> = ({ id, setActiveId, tab, storyId }) => {
   const block = useBlockSuspense<Editor.VisualizationBlock | Editor.SQLLikeBlock>(id)
   const visualizationBlock: Editor.VisualizationBlock | null =
     block.type === Editor.BlockType.Visualization ? block : null
   const sqlBlock = useBlockSuspense<Editor.SQLLikeBlock>(visualizationBlock?.content?.dataAssetId ?? id)
-  const [questionBlocksMap, setQuestionBlocksMap] = useRecoilState(questionEditorBlockMapState)
+  const [questionBlocksMap, setQuestionBlocksMap] = useRecoilState(questionEditorBlockMapState(storyId))
   const [sqlSidePanel, setSqlSidePanel] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -544,7 +559,6 @@ export const StoryQuestionEditor: React.FC<{
   )
 
   const permissions = useStoryPermissions(visualizationBlock?.storyId ?? block.id)
-  const [titleEditing, setTitleEditing] = useState(false)
 
   const mode = questionBlockState?.mode ?? 'VIS'
   const readonly = permissions.readonly

@@ -237,7 +237,7 @@ function TransclusionContentWidget(props: {
   const { value: block } = props
   const getBlockTitle = useGetBlockTitleTextSnapshot()
   const openStoryHandler = useOpenStory()
-  const { open } = useQuestionEditor()
+  const { open } = useQuestionEditor(block.storyId!)
   const el = document.querySelector(
     `[widgetid="content.widget.transclusion.${props.blockId}.${block.id}.${props.index}"]`
   )

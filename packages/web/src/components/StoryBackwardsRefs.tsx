@@ -109,7 +109,7 @@ export const StoryRefs = (props: { refs: Ref[]; storyId: string; isSQLEditor?: b
     ]
   })
   const openStory = useOpenStory()
-  const { open: openQuestion } = useQuestionEditor()
+  const { open: openQuestion } = useQuestionEditor(storyId)
 
   return (
     <div key={storyId} ref={setReferenceElement}>
