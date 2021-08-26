@@ -6,6 +6,7 @@ import { MenuWrapper } from './MenuWrapper'
 
 export const MenuConfirmPopover: React.FC<{ content: ReactNode; width: number }> = ({ children, content, width }) => {
   const animation = useTippyMenuAnimation('fade')
+
   return (
     <Tippy
       // content={content}
@@ -21,7 +22,9 @@ export const MenuConfirmPopover: React.FC<{ content: ReactNode; width: number }>
       trigger="click"
       placement="top"
       onMount={animation.onMount}
-      onHide={animation.onHide}
+      onHide={(instance) => {
+        animation.onHide(instance)
+      }}
     >
       <span>{children}</span>
     </Tippy>

@@ -154,7 +154,9 @@ const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ bl
       hideOnClick={true}
       animation={true}
       onMount={tippyAnimation.onMount}
-      onHide={tippyAnimation.onHide}
+      onHide={(instance) => {
+        tippyAnimation.onHide(instance)
+      }}
       appendTo={document.body}
       interactive
       placement="right-end"

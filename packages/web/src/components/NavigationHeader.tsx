@@ -163,7 +163,9 @@ const StoryConfigButton: React.FC<{ storyId: string }> = ({ storyId }) => {
       theme="tellery"
       animation={true}
       onMount={animation.onMount}
-      onHide={animation.onHide}
+      onHide={(instance) => {
+        animation.onHide(instance)
+      }}
       duration={150}
       arrow={false}
       interactive
