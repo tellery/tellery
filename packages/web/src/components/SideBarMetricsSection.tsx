@@ -138,6 +138,10 @@ const StoryDataAssetItemContent: React.FC<{ blockId: string; storyId: string }> 
 }
 
 const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
+  return <StoryDataAssetItemContent blockId={blockId} storyId={storyId} />
+}
+
+const StoryDataAssetItemWithInspectPopover: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
   const tippyAnimation = useTippyMenuAnimation('fade')
 
   return (
