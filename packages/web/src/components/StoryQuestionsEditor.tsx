@@ -53,11 +53,12 @@ import { ContentEditablePureText } from './editor/BlockBase/ContentEditablePureT
 import { isExecuteableBlockType } from './editor/Blocks/utils'
 import type { SetBlock } from './editor/types'
 import IconButton from './kit/IconButton'
+import MetricConfig from './MetricConfig'
 import QuestionDownstreams from './QuestionDownstreams'
 import { charts } from './v11n/charts'
 import { Config, Type } from './v11n/types'
 
-type Mode = 'SQL' | 'VIS' | 'DOWNSTREAM'
+type Mode = 'SQL' | 'VIS' | 'DOWNSTREAM' | 'METRIC'
 
 export interface QuestionEditor {
   close: (arg: string) => Promise<void>
@@ -932,7 +933,7 @@ export const StoryQuestionEditor: React.FC<{
               line-height: 24px;
               color: ${ThemingVariables.colors.text[0]};
             `}
-          ></ContentEditablePureText>
+          />
         </div>
         {isDBT ? null : (
           <div
@@ -1049,6 +1050,20 @@ export const StoryQuestionEditor: React.FC<{
               />
             </Tippy>
           )}
+          <Tippy content="Metric" arrow={false} placement="right" delay={300}>
+            <IconButton
+              icon={IconCommonMetrics}
+              className={css`
+                &::after {
+                  display: ${mode === 'METRIC' ? 'visible' : 'none'};
+                }
+              `}
+              color={mode === 'METRIC' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
+              onClick={() => {
+                setMode('METRIC')
+              }}
+            />
+          </Tippy>
         </div>
         {mode === 'SQL' && (
           <>
@@ -1128,6 +1143,7 @@ export const StoryQuestionEditor: React.FC<{
             `}
           />
         )}
+        {mode === 'METRIC' && <MetricConfig blockId={id} />}
       </div>
     </TabPanel>
   )
