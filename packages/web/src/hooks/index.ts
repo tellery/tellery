@@ -56,7 +56,7 @@ interface OpenStoryOpetions {
   isAltKeyPressed?: boolean
 }
 
-export const useOpenStory = () => {
+export const useOpenStoryWithSecondaryEditor = () => {
   const history = useHistory()
   const pathStoryId = useStoryPathParams()
 
@@ -70,6 +70,8 @@ export const useOpenStory = () => {
 
       const mainEditorStoryId = pathStoryId
       const currentStoryId = _currentStoryId ?? mainEditorStoryId
+
+      history.push(targetUrl)
       const isInSecondaryEditor = secondaryStoryId !== null && secondaryStoryId === currentStoryId
 
       if (matchThoughtPattern) {
@@ -103,6 +105,25 @@ export const useOpenStory = () => {
       }
     },
     [history, isPressed, matchThoughtPattern, pathStoryId, secondaryStoryId, setSecondaryStoryId]
+  )
+  return handler
+}
+
+export const useOpenStory = () => {
+  const history = useHistory()
+  // const pathStoryId = useStoryPathParams()
+
+  const handler = useCallback(
+    (storyId: string, options?: OpenStoryOpetions) => {
+      const { blockId, _currentStoryId, isAltKeyPressed } = options ?? {}
+      const targetUrl = `/story/${storyId}${blockId ? `#${blockId}` : ''}`
+
+      // const mainEditorStoryId = pathStoryId
+      // const currentStoryId = _currentStoryId ?? mainEditorStoryId
+
+      history.push(targetUrl)
+    },
+    [history]
   )
   return handler
 }
