@@ -1107,6 +1107,7 @@ export const StoryQuestionEditor: React.FC<{
                 `}
                 blockId={block.id}
                 value={sql}
+                storyId={storyId}
                 padding={{ top: 20, bottom: 0 }}
                 languageId={profileType}
                 onChange={(e) => {

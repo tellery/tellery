@@ -38,6 +38,7 @@ const trasnformPasteText = async (text: string, getBlock: (blockId: string) => P
 export function SQLEditor(props: {
   blockId: string
   languageId?: string
+  storyId: string
   value: string
   readOnly?: boolean
   onChange(value: string): void
@@ -185,6 +186,7 @@ export function SQLEditor(props: {
         const questionId = match.matches[1]
         return questions?.[questionId] ? (
           <TransclusionContentWidget
+            storyId={props.storyId}
             key={questionId}
             blockId={props.blockId}
             value={questions[questionId]}
@@ -194,7 +196,7 @@ export function SQLEditor(props: {
           />
         ) : null
       }),
-    [matches, props.blockId, props.languageId, questions]
+    [matches, props.blockId, props.languageId, props.storyId, questions]
   )
 
   return (
@@ -233,11 +235,12 @@ function TransclusionContentWidget(props: {
   value: Editor.SQLBlock
   length: number
   index: number
+  storyId: string
 }) {
   const { value: block } = props
   const getBlockTitle = useGetBlockTitleTextSnapshot()
   const openStoryHandler = useOpenStory()
-  const { open } = useQuestionEditor(block.storyId!)
+  const { open } = useQuestionEditor(props.storyId)
   const el = document.querySelector(
     `[widgetid="content.widget.transclusion.${props.blockId}.${block.id}.${props.index}"]`
   )
@@ -344,10 +347,12 @@ function TransclusionContentWidget(props: {
                     if (!block.storyId) {
                       return
                     }
-                    if (block.parentTable !== Editor.BlockParentType.WORKSPACE) {
-                      openStoryHandler(block.storyId, { blockId: block.id, isAltKeyPressed: true })
+
+                    if (block.storyId === props.storyId) {
+                      open({ mode: 'SQL', storyId: block.storyId, blockId: block.id })
+                    } else {
+                      openStoryHandler(block.storyId, { blockId: block.id })
                     }
-                    open({ mode: 'SQL', storyId: block.storyId, blockId: block.id })
                   }}
                 >
                   Go to block
