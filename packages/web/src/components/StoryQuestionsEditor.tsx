@@ -1,4 +1,6 @@
 import {
+  IconCommonArrowDropDown,
+  IconCommonArrowUpDown,
   IconCommonClose,
   IconCommonDbt,
   IconCommonDownstream,
@@ -194,10 +196,31 @@ const _StoryQuestionsEditor = () => {
     <>
       <div
         style={{
-          height: open ? `${height.get()}px` : '0px',
+          height: open ? `${height.get()}px` : '40px',
           flexShrink: 0
         }}
-      ></div>
+      >
+        <div
+          className={css`
+            border-top: solid 1px ${ThemingVariables.colors.gray[1]};
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            height: 100%;
+          `}
+        >
+          <IconButton
+            hoverContent="Click to open query editor"
+            icon={IconCommonArrowUpDown}
+            onClick={() => {
+              setOpen(true)
+            }}
+            className={css`
+              margin-left: auto;
+            `}
+          />
+        </div>
+      </div>
       <motion.div
         style={{
           height: height,
@@ -441,7 +464,7 @@ export const EditorContent = () => {
           })}
         </div>
         <IconButton
-          icon={IconCommonClose}
+          icon={IconCommonArrowDropDown}
           color={ThemingVariables.colors.text[0]}
           className={css`
             margin-left: auto;
