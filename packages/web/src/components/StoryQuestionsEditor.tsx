@@ -1143,7 +1143,14 @@ export const StoryQuestionEditor: React.FC<{
             `}
           />
         )}
-        {mode === 'METRIC' && <MetricConfig blockId={id} />}
+        {mode === 'METRIC' && (
+          <MetricConfig
+            block={sqlBlock}
+            className={css`
+              flex: 1;
+            `}
+          />
+        )}
       </div>
     </TabPanel>
   )
