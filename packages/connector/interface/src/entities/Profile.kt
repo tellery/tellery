@@ -1,18 +1,23 @@
 package io.tellery.entities
 
+import entities.NewProfile
+
 data class Profile(
     val type: String,
     val name: String,
     val configs: Map<String, String>,
     val jar: String? = null,
 ) {
+    // TODO: refactor special
+    constructor(p: NewProfile) : this(p.type, p.workspaceId, p.configs)
+
     override fun equals(other: Any?): Boolean {
         if (other !is Profile) {
             return false
         }
-        return  type == other.type &&
+        return type == other.type &&
                 name == other.name &&
-                configs.entries.fold(true) {acc, (k,v) -> return acc && other.configs[k] == v}
+                configs.entries.fold(true) { acc, (k, v) -> return acc && other.configs[k] == v }
     }
 
     override fun hashCode(): Int {

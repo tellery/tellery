@@ -8,8 +8,12 @@ class ProjectConfig {
 
     private val appConfig = ConfigFactory.load()
 
-    fun getDeployModel(): String {
-        return appConfig.getString("deployModel")
+    fun getDeployModel(): DeployModel {
+        return DeployModel.valueOf(System.getenv("deployModel"))
+    }
+
+    fun getWorkspaceId(): String {
+        return System.getenv("workspaceId")
     }
 
     fun getGlobalConfigDir(): Path {
@@ -22,5 +26,9 @@ class ProjectConfig {
 
     fun getIntegrationPath(): Path {
         return getGlobalConfigDir().resolve(appConfig.getString("integration.path"))
+    }
+
+    enum class DeployModel {
+        LOCAL, SAAS
     }
 }

@@ -19,7 +19,6 @@ repositories {
 
 plugins {
     application
-    groovy
     kotlin("jvm")
     id("com.google.protobuf") version "0.8.17"
     id("com.github.marcoferrer.kroto-plus") version "0.6.1"
@@ -70,6 +69,8 @@ dependencies {
 
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
+
+    implementation("org.koin:koin-core:2.2.0-rc-4")
 
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
