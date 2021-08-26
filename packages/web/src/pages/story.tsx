@@ -84,8 +84,8 @@ const _Page: React.FC = () => {
               <StoryContainer>
                 <React.Suspense fallback={<BlockingUI blocking size={50} />}>
                   <StoryContent storyId={id} />
+                  <StoryQuestionsEditor />
                 </React.Suspense>
-                <StoryQuestionsEditor />
               </StoryContainer>
             </Layout>
           </div>
