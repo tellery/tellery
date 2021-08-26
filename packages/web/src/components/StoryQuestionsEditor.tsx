@@ -1157,6 +1157,7 @@ export const StoryQuestionEditor: React.FC<{
         {mode === 'DOWNSTREAM' && (
           <QuestionDownstreams
             blockId={id}
+            storyId={storyId}
             className={css`
               flex: 1;
             `}
