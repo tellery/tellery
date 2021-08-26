@@ -1,4 +1,5 @@
 import { AuthData, AuthType } from './auth'
+import { MetricSpec } from './metric'
 
 type Config = {
   name: string
@@ -19,7 +20,7 @@ type ProfileSpec = {
   name: string
   type: string
   tokenizer: string
-  metricSpec: string
+  metricSpec: MetricSpec
 }
 
 type Profile = {

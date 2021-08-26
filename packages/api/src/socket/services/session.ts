@@ -26,7 +26,7 @@ export class StorySessionService implements ISessionService {
     this.emitter = emitter
   }
 
-  get cache() {
+  get cache(): ReturnType<typeof getCacheManager> {
     return getCacheManager(false)
   }
 

@@ -1,18 +1,14 @@
 import { Block, getPlainTextFromTokens } from '.'
 import { BlockType } from '../../types/block'
 import { LinkType } from '../../types/link'
-import { Dimension } from '../../types/metric'
+import { ExplorationExecution } from '../../types/metric'
 import { Token } from '../../types/token'
 import { Link } from '../link'
 import { DataSource } from './interfaces'
 
-type ExplorationBlockContent = {
+type ExplorationBlockContent = ExplorationExecution & {
   title: Token[]
-  metricId: string
   snapshotId?: string
-  measurementIds: string[]
-  dimensions: Dimension[]
-  // filters: string[]
 }
 
 export class ExplorationBlock extends Block implements DataSource {

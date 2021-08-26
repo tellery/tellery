@@ -13,6 +13,7 @@ import { DividerBlock } from './divider'
 import { EmbedBlock } from './embed'
 import { EquationBlock } from './equation'
 import { ExcalidrawBlock } from './excalidraw'
+import { ExplorationBlock } from './exploration'
 import { FigmaBlock } from './figma'
 import { FileBlock } from './file'
 import { GistBlock } from './gist'
@@ -62,6 +63,7 @@ const blockConstructors = {
   [BlockType.SQL]: SqlBlock,
   [BlockType.METRIC]: MetricBlock,
   [BlockType.VISUALIZATION]: VisualizationBlock,
+  [BlockType.EXPLORATION]: ExplorationBlock,
   [BlockType.QUOTE]: QuoteBlock,
   [BlockType.TABLE]: TableBlock,
   [BlockType.TEXT]: TextBlock,

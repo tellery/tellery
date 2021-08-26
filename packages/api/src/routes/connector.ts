@@ -1,5 +1,5 @@
 import { plainToClass, Type } from 'class-transformer'
-import { IsDefined, IsOptional, IsEnum } from 'class-validator'
+import { IsDefined, IsOptional, IsEnum, IsArray } from 'class-validator'
 import { Context } from 'koa'
 import Router from 'koa-router'
 import { nanoid } from 'nanoid'
@@ -12,6 +12,8 @@ import { mustGetUser } from '../utils/user'
 import { streamHttpErrorCb, withKeepaliveStream } from '../utils/stream'
 import { StorageError, UnauthorizedError } from '../error/error'
 import { translate } from '../core/translator'
+import { SelectBuilder } from '../types/metric'
+import { translateExplorationToSql } from '../core/translator/exploration'
 
 class AddConnectorRequest {
   @IsDefined()
@@ -166,6 +168,30 @@ class ImportRequest {
   key!: string
 }
 
+class TranslateExplorationRequest {
+  @IsDefined()
+  workspaceId!: string
+
+  @IsDefined()
+  connectorId!: string
+
+  @IsDefined()
+  profile!: string
+
+  @IsDefined()
+  metricId!: string
+
+  @IsDefined()
+  @IsArray()
+  @Type(() => String)
+  measurementIds!: string[]
+
+  @IsDefined()
+  @IsArray()
+  @Type(() => Object)
+  dimensions!: SelectBuilder[]
+}
+
 async function listConnectorsRouter(ctx: Context) {
   const payload = plainToClass(ListConnectorsRequest, ctx.request.body)
   await validate(ctx, payload)
@@ -317,9 +343,16 @@ async function execute(ctx: Context) {
     const user = mustGetUser(ctx)
     const { workspaceId, connectorId, profile, sql, maxRow, questionId } = payload
 
-    const assembledSql = await translate(sql)
-
     const manager = await getIConnectorManagerFromDB(connectorId)
+
+    const { metricSpec } = await connectorService.getProfileSpec(
+      manager,
+      user.id,
+      workspaceId,
+      profile,
+    )
+
+    const assembledSql = await translate(sql, { metricSpec })
 
     const identifier = nanoid()
 
@@ -380,6 +413,29 @@ async function importFromFile(ctx: Context) {
   ctx.body = result
 }
 
+async function translateExploration(ctx: Context) {
+  const payload = plainToClass(TranslateExplorationRequest, ctx.request.body)
+  await validate(ctx, payload)
+  const user = mustGetUser(ctx)
+  const { workspaceId, connectorId, profile, metricId, measurementIds, dimensions } = payload
+
+  const manager = await getIConnectorManagerFromDB(connectorId)
+
+  const { metricSpec } = await connectorService.getProfileSpec(
+    manager,
+    user.id,
+    workspaceId,
+    profile,
+  )
+
+  const assembledSql = await translateExplorationToSql(
+    { metricId, measurementIds, dimensions },
+    metricSpec,
+  )
+
+  ctx.body = { sql: assembledSql }
+}
+
 const router = new Router()
 
 router.post('/list', listConnectorsRouter)
@@ -393,5 +449,6 @@ router.post('/listCollections', listCollectionsRouter)
 router.post('/getCollectionSchema', getCollectionSchemaRouter)
 router.post('/executeSql', execute)
 router.post('/import', importFromFile)
+router.post('/translateExploration', translateExploration)
 
 export default router

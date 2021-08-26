@@ -18,7 +18,7 @@ test('dbt translate (ephemeral)', async (t) => {
     0,
   )
 
-  const sql = translate(dbtBlock)
+  const sql = await translate(dbtBlock)
   t.is(sql, compiledSql)
 })
 
@@ -33,6 +33,6 @@ test('dbt translate (other)', async (t) => {
     0,
   )
 
-  const sql = translate(dbtBlock)
+  const sql = await translate(dbtBlock)
   t.is(sql, 'SELECT * from dbname.event')
 })
