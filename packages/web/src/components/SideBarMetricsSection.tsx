@@ -8,12 +8,12 @@ import {
 } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useBindHovering } from '@app/hooks'
-import { useBlockSuspense, useSearchDBTBlocks, useSearchMetrics } from '@app/hooks/api'
+import { useBlockSuspense, useFetchStoryChunk, useSearchDBTBlocks, useSearchMetrics } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useStoryResources } from '@app/hooks/useStoryResources'
 import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
 import { ThemingVariables } from '@app/styles'
-import { Editor } from '@app/types'
+import { Editor, Story, Thought } from '@app/types'
 import { DndItemDataBlockType, DnDItemTypes } from '@app/utils/dnd'
 import { useDraggable } from '@dnd-kit/core'
 import { css, cx } from '@emotion/css'
@@ -246,6 +246,7 @@ const DataAssetItem: React.FC<{ block: Editor.BaseBlock; currentStoryId: string 
 }
 
 const CurrentStoryQueries: React.FC<{ storyId: string }> = ({ storyId }) => {
+  useFetchStoryChunk<Story | Thought>(storyId)
   const { t } = useTranslation()
   const blockTranscations = useBlockTranscations()
   const questionEditor = useQuestionEditor(storyId)
@@ -405,9 +406,8 @@ const DataAssets: React.FC<{ storyId: string }> = ({ storyId }) => {
   )
 }
 
-export const SideBarMetricsSection = () => {
+export const SideBarMetricsSection: React.FC<{ storyId: string }> = ({ storyId }) => {
   const { t } = useTranslation()
-  const storyId = useStoryPathParams()
 
   const TABS = useMemo(() => {
     if (!storyId) return []

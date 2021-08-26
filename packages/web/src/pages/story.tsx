@@ -77,7 +77,7 @@ const _Page: React.FC = () => {
                   `}
                 >
                   <React.Suspense fallback={<div></div>}>
-                    <SideBarMetricsSection />
+                    <SideBarMetricsSection storyId={id} />
                   </React.Suspense>
                 </div>
               )}
