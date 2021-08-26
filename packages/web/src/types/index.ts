@@ -178,7 +178,20 @@ export namespace Editor {
     content?: ContentBlock['content'] & SQLBlockContent
   }
 
-  export interface MetricBlock extends SQLBlock {}
+  export interface MetricBlock extends SQLBlock {
+    content?: SQLBlock['content'] & {
+      fields: { name: string; type: 'string' | 'integer' | 'datetime' | 'float' | 'boolean' }[]
+      measurements: {
+        [key: string]: {
+          name: string
+          type: 'string' | 'integer' | 'datetime' | 'float' | 'boolean'
+          deprecated?: boolean
+          fieldName: string
+          aggregation: string
+        }
+      }
+    }
+  }
 
   export interface SnapshotBlock extends SQLBlock {}
 
