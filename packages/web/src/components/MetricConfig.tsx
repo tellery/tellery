@@ -2,12 +2,15 @@ import { IconCommonAdd } from '@app/assets/icons'
 import { useSnapshot } from '@app/hooks/api'
 import { useDimensions } from '@app/hooks/useDimensions'
 import { ThemingVariables } from '@app/styles'
-import { Editor } from '@app/types'
+import { Editor, Measurement } from '@app/types'
+import { blockIdGenerator } from '@app/utils'
 import { css, cx } from '@emotion/css'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import { FormButton } from './kit/FormButton'
+import FormDropdown from './kit/FormDropdown'
+import { MenuItem } from './MenuItem'
+import { MenuWrapper } from './MenuWrapper'
 import { table } from './v11n/charts/table'
-import { ConfigLabel } from './v11n/components/ConfigLabel'
 
 export default function MetricConfig(props: { block: Editor.SQLLikeBlock; className?: string }) {
   const [isMetric, setIsMetric] = useState(false)
@@ -41,6 +44,18 @@ function MetricConfigInner(props: { block: Editor.MetricBlock; className?: strin
   const [activeMeasurement, setActiveMeasurement] = useState<string>()
   const ref = useRef<HTMLDivElement>(null)
   const dimensions = useDimensions(ref, 0)
+  const [measurements, setMeasurements] = useState(props.block.content?.measurements || {})
+  useEffect(() => {
+    setMeasurements(props.block.content?.measurements || {})
+  }, [props.block.content?.measurements])
+  const [isAddMode, setIsAddMode] = useState(false)
+  const fields = useMemo(
+    () =>
+      snapshot?.data.fields
+        .filter((field) => field.sqlType)
+        .map((field) => ({ name: field.name, type: field.sqlType! })),
+    [snapshot?.data.fields]
+  )
 
   return (
     <div
@@ -59,7 +74,7 @@ function MetricConfigInner(props: { block: Editor.MetricBlock; className?: strin
           padding: 0 10px;
         `}
       >
-        {Object.entries(props.block.content?.measurements || {}).map(([id, measurement]) => (
+        {Object.entries(measurements).map(([id, measurement]) => (
           <div
             key={id}
             onClick={() => {
@@ -101,6 +116,9 @@ function MetricConfigInner(props: { block: Editor.MetricBlock; className?: strin
         ))}
         <FormButton
           variant="secondary"
+          onClick={() => {
+            setIsAddMode(true)
+          }}
           className={css`
             width: 100%;
             padding: 8px 0;
@@ -118,17 +136,33 @@ function MetricConfigInner(props: { block: Editor.MetricBlock; className?: strin
           padding: 20px;
         `}
       >
-        <ConfigLabel top={0}>Metric config</ConfigLabel>
-        <span
-          className={css`
-            font-weight: 500;
-            font-size: 12px;
-            color: ${ThemingVariables.colors.text[1]};
-            margin-top: 5px;
-          `}
-        >
-          Name
-        </span>
+        {isAddMode ? (
+          <MetricConigCreator
+            fields={fields}
+            onCreate={(ms) => {
+              setMeasurements({
+                ...measurements,
+                ...ms.reduce<{ [id: string]: Measurement }>((obj, m) => {
+                  obj[blockIdGenerator()] = m
+                  return obj
+                }, {})
+              })
+            }}
+          />
+        ) : (
+          <>
+            <span
+              className={css`
+                font-weight: 500;
+                font-size: 12px;
+                color: ${ThemingVariables.colors.text[1]};
+                margin-top: 5px;
+              `}
+            >
+              Name
+            </span>
+          </>
+        )}
       </div>
       <div
         ref={ref}
@@ -148,5 +182,30 @@ function MetricConfigInner(props: { block: Editor.MetricBlock; className?: strin
         ) : null}
       </div>
     </div>
+  )
+}
+
+function MetricConigCreator(props: {
+  fields?: { name: string; type: string }[]
+  onCreate(measurements: Measurement[]): void
+}) {
+  return (
+    <>
+      <FormDropdown
+        menu={
+          <MenuWrapper>
+            <MenuItem title="123" onClick={console.log} />
+          </MenuWrapper>
+        }
+      />
+      <FormButton
+        variant="primary"
+        className={css`
+          width: 100%;
+        `}
+      >
+        Add
+      </FormButton>
+    </>
   )
 }

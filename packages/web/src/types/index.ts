@@ -48,6 +48,21 @@ export type Snapshot = {
   createdAt?: string
 }
 
+export type Measurement = {
+  name: string
+  deprecated?: boolean
+} & (
+  | {
+      fieldName: string
+      type: string
+      func?: string
+      args?: string[]
+    }
+  | {
+      rawSql: string
+    }
+)
+
 export namespace Editor {
   export enum InlineType {
     Link = 'a',
@@ -185,20 +200,7 @@ export namespace Editor {
         type: string
       }[]
       measurements?: {
-        [id: string]: {
-          name: string
-          deprecated?: boolean
-        } & (
-          | {
-              fieldName: string
-              type: string
-              func?: string
-              args?: string[]
-            }
-          | {
-              rawSql: string
-            }
-        )
+        [id: string]: Measurement
       }
     }
   }
