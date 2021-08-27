@@ -8,9 +8,12 @@ import { css, cx } from '@emotion/css'
 import { useEffect, useRef, useState, useMemo } from 'react'
 import { FormButton } from './kit/FormButton'
 import FormDropdown from './kit/FormDropdown'
+import FormInput from './kit/FormInput'
 import { MenuItem } from './MenuItem'
+import { MenuItemDivider } from './MenuItemDivider'
 import { MenuWrapper } from './MenuWrapper'
 import { table } from './v11n/charts/table'
+import produce from 'immer'
 
 export default function MetricConfig(props: { block: Editor.SQLLikeBlock; className?: string }) {
   const [isMetric, setIsMetric] = useState(false)
@@ -71,7 +74,7 @@ function MetricConfigInner(props: { block: Editor.MetricBlock; className?: strin
           width: 280px;
           flex-shrink: 0;
           border-right: 1px solid ${ThemingVariables.colors.gray[1]};
-          padding: 0 10px;
+          padding: 0 20px;
         `}
       >
         {Object.entries(measurements).map(([id, measurement]) => (
@@ -84,7 +87,7 @@ function MetricConfigInner(props: { block: Editor.MetricBlock; className?: strin
               css`
                 height: 36px;
                 border-radius: 8px;
-                margin-top: 10px;
+                margin-top: 20px;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
@@ -122,7 +125,7 @@ function MetricConfigInner(props: { block: Editor.MetricBlock; className?: strin
           className={css`
             width: 100%;
             padding: 8px 0;
-            margin-top: 10px;
+            margin-top: 20px;
           `}
         >
           <IconCommonAdd />
@@ -130,7 +133,7 @@ function MetricConfigInner(props: { block: Editor.MetricBlock; className?: strin
       </div>
       <div
         className={css`
-          width: 320px;
+          width: 280px;
           flex-shrink: 0;
           border-right: 1px solid ${ThemingVariables.colors.gray[1]};
           padding: 20px;
@@ -189,23 +192,75 @@ function MetricConigCreator(props: {
   fields?: { name: string; type: string }[]
   onCreate(measurements: Measurement[]): void
 }) {
+  const [measurements, setMeasurements] = useState<Measurement[]>([])
+
   return (
     <>
+      {measurements.map((measurement, index) => (
+        <MeasurementItem
+          key={measurement.name + index}
+          value={measurement}
+          onChange={(m) => {
+            setMeasurements(
+              produce((draft) => {
+                draft[index] = m
+              })
+            )
+          }}
+        />
+      ))}
       <FormDropdown
         menu={
           <MenuWrapper>
-            <MenuItem title="123" onClick={console.log} />
+            {props.fields?.map((field, index) => (
+              <MenuItem
+                key={field.name + index}
+                title={field.name}
+                side={field.type}
+                onClick={() => {
+                  setMeasurements((old) => [...old, { name: field.name, type: field.type, fieldName: field.name }])
+                }}
+              />
+            ))}
+            <MenuItemDivider />
+            <MenuItem
+              title="Raw SQL"
+              onClick={() => {
+                setMeasurements((old) => [...old, { name: '', rawSql: '' }])
+              }}
+            />
           </MenuWrapper>
         }
-      />
-      <FormButton
-        variant="primary"
         className={css`
           width: 100%;
+          text-align: start;
         `}
       >
-        Add
+        Choose
+      </FormDropdown>
+      <FormButton
+        variant="primary"
+        disabled={true}
+        className={css`
+          width: 100%;
+          margin-top: 20px;
+        `}
+      >
+        Add all
       </FormButton>
+    </>
+  )
+}
+
+function MeasurementItem(props: { value: Measurement; onChange(value: Measurement): void }) {
+  return (
+    <>
+      <FormInput
+        value={props.value.name}
+        onChange={(e) => {
+          props.onChange({ ...props.value, name: e.target.value })
+        }}
+      />
     </>
   )
 }

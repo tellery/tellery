@@ -8,7 +8,15 @@ import Tippy from '@tippyjs/react'
 export default forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement> & { menu: ReactNode }>(
   function FormDropdown(props, ref) {
     return (
-      <Tippy content={props.menu} placement="bottom-start" trigger="click" theme="tellery" interactive={true}>
+      <Tippy
+        content={props.menu}
+        placement="bottom-start"
+        trigger="click"
+        theme="tellery"
+        interactive={true}
+        arrow={false}
+        offset={[-9, 4]}
+      >
         <button
           ref={ref}
           {...props}
