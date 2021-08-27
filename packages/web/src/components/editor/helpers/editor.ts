@@ -153,6 +153,11 @@ export const getTransformedSelection = (
   const oldAnchor = selectionState.anchor
   const oldFocus = selectionState.focus
   const changedLength = getTokensLength(newTokens) - getTokensLength(oldTokens)
+  // logger(
+  //   'getTransformedSelection',
+  //   tokenPosition2SplitedTokenPosition(oldTokens, oldAnchor.nodeIndex, oldAnchor.offset) ?? 0
+  // )
+
   const anchorOffset =
     (tokenPosition2SplitedTokenPosition(oldTokens, oldAnchor.nodeIndex, oldAnchor.offset) ?? 0) + changedLength
   const focusOffset =
@@ -160,7 +165,7 @@ export const getTransformedSelection = (
   const newAnchor = splitedTokenPosition2TokenPosition(newTokens, anchorOffset)
   const newFocus = splitedTokenPosition2TokenPosition(newTokens, focusOffset)
 
-  logger('getTransformedSelection', anchorOffset, focusOffset, changedLength, newAnchor, newFocus)
+  // logger('getTransformedSelection', selectionState, anchorOffset, focusOffset, changedLength, newAnchor, newFocus)
   return {
     type: TellerySelectionType.Inline,
     anchor: {

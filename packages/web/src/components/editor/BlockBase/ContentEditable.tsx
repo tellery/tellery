@@ -1,8 +1,10 @@
 import { deserialize, restoreRange, saveSelection } from '@app/components/editor/helpers/contentEditable'
+import { LazyTippy } from '@app/components/LazyTippy'
 import { useOpenStory, usePrevious } from '@app/hooks'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
+import styled from '@emotion/styled'
 import debug from 'debug'
 import { dequal } from 'dequal'
 import produce from 'immer'
@@ -18,6 +20,7 @@ import {
 import {
   extractEntitiesFromToken,
   getTokensLength,
+  isNonSelectbleToken,
   mergeTokens,
   splitToken,
   toggleMark,
@@ -25,6 +28,7 @@ import {
 } from '../helpers/tokenManipulation'
 import { useEditor, useLocalSelection } from '../hooks'
 import { useBlockTitleAssets } from '../hooks/useBlockTitleAssets'
+import { useSetInlineFormulaPopoverState } from '../hooks/useInlineFormulaPopoverState'
 import { BlockReferenceDropdown } from '../Popovers/BlockReferenceDropdown'
 import { SlashCommandDropdown } from '../Popovers/SlashCommandDropdown'
 import { decodeHTML } from '../utils'
@@ -34,6 +38,15 @@ const logger = debug('tellery:contentEditable')
 export interface EditableRef {
   openSlashCommandMenu: () => void
 }
+
+const InlineHoverPopover = styled.div`
+  box-shadow: ${ThemingVariables.boxShadows[0]};
+  background: #fff;
+  color: ${ThemingVariables.colors.text[0]};
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+`
 
 const _ContentEditable: React.ForwardRefRenderFunction<
   EditableRef,
@@ -72,12 +85,14 @@ const _ContentEditable: React.ForwardRefRenderFunction<
   const [showReferenceDropdown, setShowReferenceDropdown] = useState(false)
   const [showSlashCommandDropdown, setShowSlashCommandDropdown] = useState(false)
   const [keywordRange, setKeywordRange] = useState<TellerySelection | null>(null)
+  const [linkTokenReference, setLinkTokenReference] = useState<Element | null>(null)
+  const [hoveringTokenIndex, setHoveringTokenIndex] = useState<number | null>(null)
   const isComposing = useRef(false)
   const [composingState, setComposingState] = useState(false)
   const localSelection = useLocalSelection(block.id)
   const isFocusing = !!localSelection
   const openStoryHandler = useOpenStory()
-
+  const setInlineformulaPopoverState = useSetInlineFormulaPopoverState()
   const titleTokens = useMemo(() => block?.content?.title || [], [block?.content?.title])
   const blockTitleAssets = useBlockTitleAssets(block.storyId!, block.id)
 
@@ -153,17 +168,14 @@ const _ContentEditable: React.ForwardRefRenderFunction<
       return
     }
 
-    // TODO: it just works
-    if (willFlush) {
-      try {
-        const range = tellerySelection2Native(localSelection!, editbleRef.current)
-        range && restoreRange(range)
-        logger('resotre range', range)
-      } catch (e) {
-        console.error('selection fail', e)
-      }
-      setWillFlush(false)
+    try {
+      const range = tellerySelection2Native(localSelection!, editbleRef.current)
+      range && restoreRange(range)
+      logger('resotre range', range)
+    } catch (e) {
+      console.error('selection fail', e)
     }
+    setWillFlush(false)
   }, [isFocusing, willFlush, localSelection, block.id, readonly])
 
   const onMutation = useCallback(() => {
@@ -192,8 +204,8 @@ const _ContentEditable: React.ForwardRefRenderFunction<
       const mergedTokens = mergeTokens(splitedTokensUpdated)
 
       if (dequal(newBlockTitle, titleTokens) === false) {
+        console.log('merged tokesn', mergedTokens)
         editor?.updateBlockTitle?.(block.id, mergedTokens)
-
         // after toggle block, selection state will change, disable onSelect
         // setContentWillChange(true)
       }
@@ -422,7 +434,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
           const tokenIndex = parseInt(tokenRoot.dataset.tokenIndex || '0', 10)
           const token = block?.content?.title?.[tokenIndex]
           if (token) {
-            const { link, reference } = extractEntitiesFromToken(token)
+            const { link, reference, formula } = extractEntitiesFromToken(token)
             if (link) {
               if (e.defaultPrevented === false) {
                 e.preventDefault()
@@ -441,6 +453,25 @@ const _ContentEditable: React.ForwardRefRenderFunction<
                   })
                 }
               }
+            }
+            if (formula) {
+              e.preventDefault()
+              e.stopPropagation()
+              setInlineformulaPopoverState(true)
+              editor?.setSelectionState({
+                storyId: block.storyId!,
+                type: TellerySelectionType.Inline,
+                focus: {
+                  blockId: block.id,
+                  nodeIndex: tokenIndex,
+                  offset: 1
+                },
+                anchor: {
+                  blockId: block.id,
+                  nodeIndex: tokenIndex,
+                  offset: 0
+                }
+              })
             }
           }
         }}
@@ -464,38 +495,44 @@ const _ContentEditable: React.ForwardRefRenderFunction<
           const nextToken = splitedTokens[_range?.start]
           const nextMarks = nextToken?.[1] || []
           const marks = lastToken?.[1] || []
-          if (
-            marks.findIndex((x) => x[0] === Editor.InlineType.Code) !== -1 &&
-            nextMarks &&
-            nextMarks.findIndex((x) => x[0] === Editor.InlineType.Code) === -1
-          ) {
-            currentMarksRef.current = []
-          } else if (
-            marks.findIndex((x) => x[0] === Editor.InlineType.Link) !== -1 &&
-            nextMarks &&
-            nextMarks.findIndex((x) => x[0] === Editor.InlineType.Link) === -1
-          ) {
-            currentMarksRef.current = []
-          } else if (
-            marks.findIndex((x) => x[0] === Editor.InlineType.Reference) !== -1 &&
-            nextMarks &&
-            nextMarks.findIndex((x) => x[0] === Editor.InlineType.Reference) === -1
-          ) {
+          if (shouldClenMarks(marks) && nextMarks && shouldClenMarks(nextMarks)) {
             currentMarksRef.current = []
           } else {
             currentMarksRef.current = marks
           }
         }}
-        onChange={() => {}}
         onBlurCapture={() => {
           setShowReferenceDropdown(false)
         }}
-        onFocus={() => {}}
         onMouseDown={(e) => {
           setShowReferenceDropdown(false)
         }}
+        onMouseOver={(e) => {
+          const tokenElement = e.target as HTMLElement
+          const tokenRoot = tokenElement.closest('.tellery-hoverable-token') as HTMLElement
+          if (!tokenRoot) return
+          setLinkTokenReference(tokenRoot)
+          setHoveringTokenIndex(parseInt(tokenRoot.dataset.tokenIndex ?? '0', 10))
+        }}
         data-root
       ></div>
+      <LazyTippy
+        render={() => {
+          if (!hoveringTokenIndex) return null
+          const currentToken = titleTokens[hoveringTokenIndex]
+          const entities = extractEntitiesFromToken(currentToken)
+          if (entities.link) {
+            const linkURL = entities.link[1]
+            return <InlineHoverPopover>{linkURL}</InlineHoverPopover>
+          } else if (entities.formula) {
+            const formula = entities.formula[1]
+            // return <InlineHoverPopover>click to edit formula</InlineHoverPopover>
+            return <InlineHoverPopover>{formula}</InlineHoverPopover>
+          }
+        }}
+        reference={linkTokenReference}
+        placement="bottom"
+      ></LazyTippy>
       {readonly !== true && !disableReferenceDropdown && (
         <BlockReferenceDropdown
           open={showReferenceDropdown}
@@ -520,10 +557,18 @@ const _ContentEditable: React.ForwardRefRenderFunction<
   )
 }
 
-// _RichTextBlock.whyDidYouRender = {
-//   logOnDifferentValues: true,
-//   customName: 'RichTextBlock'
-// }
+export const shouldClenMarks = (marks: Editor.TokenType[]) => {
+  return (
+    marks.findIndex(
+      (x) =>
+        x[0] === Editor.InlineType.Reference ||
+        x[0] === Editor.InlineType.Code ||
+        x[0] === Editor.InlineType.Link ||
+        x[0] === Editor.InlineType.Formula ||
+        x[0] === Editor.InlineType.Equation
+    ) !== -1
+  )
+}
 
 function updateTokensMark(
   block: Editor.Block,
@@ -553,7 +598,7 @@ function updateTokensMark(
         }
         // logger('marks', currentMarks)
         if (!currentMarks || currentMarks.length === 0) {
-          if (isReferenceToken(draftState[updateIndex]) === false) {
+          if (isNonSelectbleToken(draftState[updateIndex]) === false) {
             draftState?.[updateIndex]?.[1] && delete draftState[updateIndex][1]
           }
         } else {
@@ -563,10 +608,6 @@ function updateTokensMark(
     }
   })
   return splitedTokensUpdated
-}
-
-export const isReferenceToken = (token: Editor.Token) => {
-  return !!token[1]?.some((tokenType) => tokenType[0] === Editor.InlineType.Reference)
 }
 
 export const ContentEditable = React.forwardRef(_ContentEditable)
