@@ -101,7 +101,7 @@ export const _EditorPopoverContent = (props: PopoverProps) => {
           initial={'inactive'}
           animate={'active'}
           exit={'inactive'}
-          variants={PopoverMotionVariants}
+          variants={PopoverMotionVariants.scale}
           transition={{ duration: 0.15 }}
           className={css`
             pointer-events: auto;

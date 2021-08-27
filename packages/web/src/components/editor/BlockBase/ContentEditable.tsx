@@ -27,23 +27,12 @@ import { useEditor, useLocalSelection } from '../hooks'
 import { useBlockTitleAssets } from '../hooks/useBlockTitleAssets'
 import { BlockReferenceDropdown } from '../Popovers/BlockReferenceDropdown'
 import { SlashCommandDropdown } from '../Popovers/SlashCommandDropdown'
+import { decodeHTML } from '../utils'
 import { BlockRenderer } from './BlockRenderer'
 
 const logger = debug('tellery:contentEditable')
 export interface EditableRef {
   openSlashCommandMenu: () => void
-}
-
-const decodeHTML = function (html: string | null) {
-  if (typeof html === 'string') {
-    const txt = document.createElement('textarea')
-    txt.innerHTML = html
-    const value = txt.value
-    txt.remove()
-    return value
-  }
-
-  return ''
 }
 
 const _ContentEditable: React.ForwardRefRenderFunction<
@@ -147,7 +136,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
     }
     if (!isComposing.current && element) {
       // leavesHTML is encoded, but innerHTML is decoded
-      if (leavesHtml !== null && decodeHTML(leavesHtml) !== element.innerHTML) {
+      if (leavesHtml !== null && decodeHTML(leavesHtml) !== decodeHTML(element.innerHTML)) {
         if (isFocusing && document.activeElement === element) {
           setWillFlush(true)
         }

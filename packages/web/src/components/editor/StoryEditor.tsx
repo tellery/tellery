@@ -1,6 +1,6 @@
 import { IconMenuDuplicate } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
-import { useFetchStoryChunk } from '@app/hooks/api'
+import { useBlockSuspense, useFetchStoryChunk } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { Operation, useCommit, useCommitHistory } from '@app/hooks/useCommit'
@@ -200,7 +200,8 @@ const _StoryEditor: React.FC<{
   const isSelectingRef = useRef<DOMRect | null>(null)
   const mouseDownEventRef = useRef<MouseEvent | null>(null)
   const lastInputCharRef = useRef<string | null>(null)
-  const rootBlock = useFetchStoryChunk<Story | Thought>(storyId)
+  useFetchStoryChunk<Story | Thought>(storyId)
+  const rootBlock = useBlockSuspense<Story | Thought>(storyId)
   const blocksMap = useStoryBlocksMap(storyId)
   const blocksMapsRef = useRef<Record<string, Editor.BaseBlock> | null>(null)
   const [inited, setInited] = useState(false)
@@ -703,7 +704,7 @@ const _StoryEditor: React.FC<{
               }}
             />
           </div>,
-          { position: 'bottom-center' }
+          { position: 'bottom-center', autoClose: 10000 }
         )
       }
     },

@@ -74,9 +74,9 @@ export class OperationService {
           transaction.operations,
         )
         successes.push(transaction)
-      } catch (error) {
+      } catch (error: unknown) {
         res.push({
-          error,
+          error: error as Error,
           transactionId: transaction.id,
         })
       }

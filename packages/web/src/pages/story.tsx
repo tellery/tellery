@@ -1,11 +1,11 @@
 import { BlockingUI } from '@app/components/BlockingUI'
-import { SecondaryEditor, StoryEditor, tokensToText } from '@app/components/editor'
+import { StoryEditor, tokensToText } from '@app/components/editor'
 import { NavigationHeader } from '@app/components/NavigationHeader'
 import { SideBarMetricsSection } from '@app/components/SideBarMetricsSection'
 import { StoryBackLinks } from '@app/components/StoryBackLinks'
 import { StoryQuestionsEditor } from '@app/components/StoryQuestionsEditor'
 import { useMediaQuery } from '@app/hooks'
-import { useFetchStoryChunk, useRecordStoryVisits, useStoryPinnedStatus } from '@app/hooks/api'
+import { useBlockSuspense, useFetchStoryChunk, useRecordStoryVisits, useStoryPinnedStatus } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { BlockFormatAtom, BlockTitleAtom, BlockTypeAtom } from '@app/store/block'
@@ -77,27 +77,28 @@ const _Page: React.FC = () => {
                   `}
                 >
                   <React.Suspense fallback={<div></div>}>
-                    <SideBarMetricsSection />
+                    <SideBarMetricsSection storyId={id} />
                   </React.Suspense>
                 </div>
               )}
               <StoryContainer>
                 <React.Suspense fallback={<BlockingUI blocking size={50} />}>
                   <StoryContent storyId={id} />
+                  <StoryQuestionsEditor key={id} storyId={id} />
                 </React.Suspense>
               </StoryContainer>
             </Layout>
           </div>
-          <SecondaryEditor />
+          {/* <SecondaryEditor /> */}
         </div>
-        <StoryQuestionsEditor />
       </VerticalLayout>
     </>
   )
 }
 
 const StoryContent: React.FC<{ storyId: string }> = ({ storyId }) => {
-  const storyBlock = useFetchStoryChunk<Story | Thought>(storyId, false)
+  useFetchStoryChunk(storyId, false)
+  const storyBlock = useBlockSuspense<Story | Thought>(storyId)
   const storyBotom = useMemo(() => <StoryBackLinks storyId={storyId} />, [storyId])
 
   return (

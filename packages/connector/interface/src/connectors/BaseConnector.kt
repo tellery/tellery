@@ -1,24 +1,33 @@
 package io.tellery.connectors
 
-import arrow.core.*
 import io.tellery.entities.*
-import io.tellery.interfaces.*
-import io.tellery.utils.*
+import io.tellery.interfaces.IConnector
+import io.tellery.utils.Cache
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.*
-import kotlinx.coroutines.sync.*
-import mu.*
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
+import mu.KotlinLogging
 
 
 abstract class BaseConnector : IConnector {
 
     // Caches
-    private var _databases: Cache<String, List<String>> = Cache({ this.getDatabases() }, 60 * 60 * 2L)
+    private var _databases: Cache<String, List<String>> =
+        Cache({ this.getDatabases() }, 60 * 60 * 2L)
     private var _collections: Cache<String, List<CollectionField>> =
         Cache({ key -> this.getCollections(key) }, 60 * 60 * 2L)
     private var _schema: Cache<Triple<String, String, String?>, List<TypeField>> =
-        Cache({ (dbName, collectionName, schemaName) -> this.getCollectionSchema(dbName, collectionName, schemaName) },
-            60 * 60 * 2L)
+        Cache(
+            { (dbName, collectionName, schemaName) ->
+                this.getCollectionSchema(
+                    dbName,
+                    collectionName,
+                    schemaName
+                )
+            },
+            60 * 60 * 2L
+        )
 
     protected var scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
     private val semaphore = Semaphore(10)
@@ -35,7 +44,11 @@ abstract class BaseConnector : IConnector {
         return _collections.get(dbName)
     }
 
-    fun getCachedCollectionSchema(dbName: String, collectionName: String, schemaName: String?): List<TypeField> {
+    fun getCachedCollectionSchema(
+        dbName: String,
+        collectionName: String,
+        schemaName: String?
+    ): List<TypeField> {
         return _schema.get(Triple(dbName, collectionName, schemaName))
     }
 
@@ -44,17 +57,17 @@ abstract class BaseConnector : IConnector {
     // returning back to the client.
     // SupervisorJob right here stands for properly propagating the cancellation made by an exception upward.
     // See https://kotlinlang.org/docs/reference/coroutines/exception-handling.html#supervision-job
-    suspend fun queryWithLimit(ctx: QueryContext, channel: Channel<Either<Exception, QueryResultWrapper>>): Job {
+    suspend fun queryWithLimit(ctx: QueryContext, channel: Channel<QueryResultSet>): Job {
         return scope.launch(SupervisorJob()) {
             try {
                 withTimeout(10 * 60 * 1000L) {
                     semaphore.withPermit {
                         logger.info("start query ${ctx.questionId}")
-                        query(ctx) { item -> channel.send(Either.Right(item)) }
+                        query(ctx) { channel.send(it) }
                     }
                 }
             } catch (e: Exception) {
-                channel.send(Either.Left(e))
+                channel.send(QueryResultSet.Error(e))
             } finally {
                 channel.close()
             }

@@ -136,9 +136,9 @@ test('cyclic assemble', async (t) => {
   try {
     await translate(sql, {})
     t.fail()
-  } catch (e) {
+  } catch (e: any) {
     if (!(e instanceof CyclicTransclusionError)) {
-      t.fail(e)
+      t.fail(e.toString())
     }
   } finally {
     await getRepository(BlockEntity).delete([blockId1, blockId2])

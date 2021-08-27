@@ -73,6 +73,7 @@ import IconMenuH2 from './menu/h2.svg?component'
 import IconMenuH3 from './menu/h3.svg?component'
 import IconMenuHide from './menu/hide.svg?component'
 import IconMenuImage from './menu/image.svg?component'
+import IconMenuImport from './menu/import.svg?component'
 import IconMenuInsertAfter from './menu/insert_after.svg?component'
 import IconMenuInsertBefore from './menu/insert_before.svg?component'
 import IconMenuLineDivider from './menu/line_divider.svg?component'
@@ -181,6 +182,7 @@ export {
   IconMenuH3,
   IconMenuHide,
   IconMenuImage,
+  IconMenuImport,
   IconMenuInsertAfter,
   IconMenuInsertBefore,
   IconMenuLineDivider,

@@ -11,16 +11,14 @@ import { useWorkspaceView } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useCommit } from '@app/hooks/useCommit'
 import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
+import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
 import { ThemingVariables } from '@app/styles'
-import { PopoverMotionVariants } from '@app/styles/animations'
 import type { Story } from '@app/types'
 import { css } from '@emotion/css'
 import Tippy from '@tippyjs/react/headless'
 import { dequal } from 'dequal'
-import { useAnimation, useSpring } from 'framer-motion'
 import React, { memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Props } from 'tippy.js'
 import { useStorySnapshotManagerProvider } from '../hooks/useStorySnapshotManager'
 import IconButton from './kit/IconButton'
 import { RefreshButton } from './RefreshButton'
@@ -153,25 +151,18 @@ export const _NavigationHeader = (props: {
 }
 
 const StoryConfigButton: React.FC<{ storyId: string }> = ({ storyId }) => {
-  const controls = useAnimation()
-
-  const onMount = useCallback(() => {
-    controls.mount()
-    controls.start(PopoverMotionVariants.active)
-  }, [controls])
-
-  const onHide = useCallback(() => {
-    controls.start(PopoverMotionVariants.inactive)
-  }, [controls])
+  const animation = useTippyMenuAnimation('scale')
 
   return (
     <Tippy
-      render={(attrs) => <StoryConfigPopOver storyId={storyId} animate={controls} {...attrs} />}
+      render={(attrs) => <StoryConfigPopOver storyId={storyId} animate={animation.controls} {...attrs} />}
       hideOnClick={true}
       theme="tellery"
       animation={true}
-      onMount={onMount}
-      onHide={onHide}
+      onMount={animation.onMount}
+      onHide={(instance) => {
+        animation.onHide(instance)
+      }}
       duration={150}
       arrow={false}
       interactive
