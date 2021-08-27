@@ -180,15 +180,25 @@ export namespace Editor {
 
   export interface MetricBlock extends SQLBlock {
     content?: SQLBlock['content'] & {
-      fields: { name: string; type: 'string' | 'integer' | 'datetime' | 'float' | 'boolean' }[]
-      measurements: {
-        [key: string]: {
+      fields?: {
+        name: string
+        type: string
+      }[]
+      measurements?: {
+        [id: string]: {
           name: string
-          type: 'string' | 'integer' | 'datetime' | 'float' | 'boolean'
           deprecated?: boolean
-          fieldName: string
-          aggregation: string
-        }
+        } & (
+          | {
+              fieldName: string
+              type: string
+              func?: string
+              args?: string[]
+            }
+          | {
+              rawSql: string
+            }
+        )
       }
     }
   }
