@@ -501,8 +501,8 @@ test.serial('test saveTransactions with bigInt', async (t: ExecutionContext<any>
         ],
       },
     })
-  } catch (e) {
-    t.fail(e)
+  } catch (e: any) {
+    t.fail(e.toString())
   }
 
   const resp: any = await got<any>('api/mgetResources', {
