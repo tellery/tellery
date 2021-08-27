@@ -1,3 +1,4 @@
+import { IconCommonAdd } from '@app/assets/icons'
 import { useSnapshot } from '@app/hooks/api'
 import { useDimensions } from '@app/hooks/useDimensions'
 import { ThemingVariables } from '@app/styles'
@@ -35,9 +36,9 @@ export default function MetricConfig(props: { block: Editor.SQLLikeBlock; classN
   return <MetricConfigInner block={props.block} className={props.className} />
 }
 
-function MetricConfigInner(props: { block: Editor.SQLLikeBlock; className?: string }) {
+function MetricConfigInner(props: { block: Editor.MetricBlock; className?: string }) {
   const snapshot = useSnapshot(props.block.content?.snapshotId)
-  const [activeFieldIndex, setActiveFieldIndex] = useState(0)
+  const [activeMeasurement, setActiveMeasurement] = useState<string>()
   const ref = useRef<HTMLDivElement>(null)
   const dimensions = useDimensions(ref, 0)
 
@@ -55,26 +56,26 @@ function MetricConfigInner(props: { block: Editor.SQLLikeBlock; className?: stri
           width: 280px;
           flex-shrink: 0;
           border-right: 1px solid ${ThemingVariables.colors.gray[1]};
+          padding: 0 10px;
         `}
       >
-        {snapshot?.data.fields.map((field, index) => (
+        {Object.entries(props.block.content?.measurements || {}).map(([id, measurement]) => (
           <div
-            key={field.name + index}
+            key={id}
             onClick={() => {
-              setActiveFieldIndex(index)
+              setActiveMeasurement(id)
             }}
             className={cx(
               css`
                 height: 36px;
                 border-radius: 8px;
-                padding: 0 10px;
-                margin: 10px;
+                margin-top: 10px;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
                 cursor: pointer;
               `,
-              index === activeFieldIndex &&
+              id === activeMeasurement &&
                 css`
                   background: ${ThemingVariables.colors.primary[1]};
                 `
@@ -85,7 +86,7 @@ function MetricConfigInner(props: { block: Editor.SQLLikeBlock; className?: stri
                 css`
                   font-size: 14px;
                 `,
-                index === activeFieldIndex
+                id === activeMeasurement
                   ? css`
                       color: ${ThemingVariables.colors.gray[5]};
                     `
@@ -94,29 +95,20 @@ function MetricConfigInner(props: { block: Editor.SQLLikeBlock; className?: stri
                     `
               )}
             >
-              {field.name}
-            </span>
-            <span
-              className={cx(
-                css`
-                  font-size: 12px;
-                  font-style: italic;
-                  text-transform: lowercase;
-                `,
-                index === activeFieldIndex
-                  ? css`
-                      color: ${ThemingVariables.colors.gray[5]};
-                      opacity: 0.5;
-                    `
-                  : css`
-                      color: ${ThemingVariables.colors.text[1]};
-                    `
-              )}
-            >
-              {field.sqlType}
+              {measurement.name}
             </span>
           </div>
         ))}
+        <FormButton
+          variant="secondary"
+          className={css`
+            width: 100%;
+            padding: 8px 0;
+            margin-top: 10px;
+          `}
+        >
+          <IconCommonAdd />
+        </FormButton>
       </div>
       <div
         className={css`
