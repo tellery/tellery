@@ -54,9 +54,8 @@ export type Measurement = {
 } & (
   | {
       fieldName: string
-      type: string
-      func?: string
-      args?: string[]
+      fieldType: string
+      func: string
     }
   | {
       rawSql: string

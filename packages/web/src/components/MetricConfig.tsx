@@ -14,6 +14,7 @@ import { MenuItemDivider } from './MenuItemDivider'
 import { MenuWrapper } from './MenuWrapper'
 import { table } from './v11n/charts/table'
 import produce from 'immer'
+import PerfectScrollbar from 'react-perfect-scrollbar'
 
 export default function MetricConfig(props: { block: Editor.SQLLikeBlock; className?: string }) {
   const [isMetric, setIsMetric] = useState(false)
@@ -131,7 +132,8 @@ function MetricConfigInner(props: { block: Editor.MetricBlock; className?: strin
           <IconCommonAdd />
         </FormButton>
       </div>
-      <div
+      <PerfectScrollbar
+        options={{ suppressScrollX: true }}
         className={css`
           width: 280px;
           flex-shrink: 0;
@@ -166,7 +168,7 @@ function MetricConfigInner(props: { block: Editor.MetricBlock; className?: strin
             </span>
           </>
         )}
-      </div>
+      </PerfectScrollbar>
       <div
         ref={ref}
         className={css`
@@ -207,10 +209,13 @@ function MetricConigCreator(props: {
               })
             )
           }}
+          className={css`
+            margin-bottom: 20px;
+          `}
         />
       ))}
       <FormDropdown
-        menu={
+        menu={({ onClick }) => (
           <MenuWrapper>
             {props.fields?.map((field, index) => (
               <MenuItem
@@ -218,7 +223,11 @@ function MetricConigCreator(props: {
                 title={field.name}
                 side={field.type}
                 onClick={() => {
-                  setMeasurements((old) => [...old, { name: field.name, type: field.type, fieldName: field.name }])
+                  setMeasurements((old) => [
+                    ...old,
+                    { name: field.name, fieldType: field.type, fieldName: field.name, func: 'count' }
+                  ])
+                  onClick()
                 }}
               />
             ))}
@@ -227,10 +236,11 @@ function MetricConigCreator(props: {
               title="Raw SQL"
               onClick={() => {
                 setMeasurements((old) => [...old, { name: '', rawSql: '' }])
+                onClick()
               }}
             />
           </MenuWrapper>
-        }
+        )}
         className={css`
           width: 100%;
           text-align: start;
@@ -252,15 +262,22 @@ function MetricConigCreator(props: {
   )
 }
 
-function MeasurementItem(props: { value: Measurement; onChange(value: Measurement): void }) {
+function MeasurementItem(props: { value: Measurement; onChange(value: Measurement): void; className?: string }) {
   return (
-    <>
+    <div className={props.className}>
+      <span
+        className={css`
+          color: ${ThemingVariables.colors.text[1]};
+        `}
+      >
+        Name
+      </span>
       <FormInput
         value={props.value.name}
         onChange={(e) => {
           props.onChange({ ...props.value, name: e.target.value })
         }}
       />
-    </>
+    </div>
   )
 }
