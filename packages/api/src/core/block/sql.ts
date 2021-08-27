@@ -2,7 +2,7 @@ import { BlockType } from '../../types/block'
 import { Token } from '../../types/token'
 import { getLinksFromSql, Link } from '../link'
 import { Block, getPlainTextFromTokens } from '.'
-import { DataSource, Transclusible } from './interfaces'
+import { DataSource, Transcludable } from './interfaces'
 
 type SqlBlockContent = {
   title: Token[]
@@ -11,7 +11,7 @@ type SqlBlockContent = {
   sql: string
 }
 
-export class SqlBlock extends Block implements DataSource, Transclusible {
+export class SqlBlock extends Block implements DataSource, Transcludable {
   static type = BlockType.SQL
 
   getType(): BlockType {

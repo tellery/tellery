@@ -3,7 +3,7 @@ import { BlockType } from '../../types/block'
 import { Field, Measurement } from '../../types/metric'
 import { Token } from '../../types/token'
 import { getLinksFromSql, Link } from '../link'
-import { DataSource, Transclusible } from './interfaces'
+import { DataSource, Transcludable, Explorable } from './interfaces'
 
 type MetricBlockContent = {
   title: Token[]
@@ -13,7 +13,7 @@ type MetricBlockContent = {
   fields?: Field[]
   measurements?: { [id: string]: Measurement }
 }
-export class MetricBlock extends Block implements DataSource, Transclusible {
+export class MetricBlock extends Block implements DataSource, Transcludable, Explorable {
   static type = BlockType.METRIC
 
   getType(): BlockType {

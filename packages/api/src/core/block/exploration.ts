@@ -4,14 +4,14 @@ import { LinkType } from '../../types/link'
 import { ExplorationExecution } from '../../types/metric'
 import { Token } from '../../types/token'
 import { Link } from '../link'
-import { DataSource } from './interfaces'
+import { DataSource, Transcludable } from './interfaces'
 
 type ExplorationBlockContent = ExplorationExecution & {
   title: Token[]
   snapshotId?: string
 }
 
-export class ExplorationBlock extends Block implements DataSource {
+export class ExplorationBlock extends Block implements DataSource, Transcludable {
   static type = BlockType.EXPLORATION
 
   getType(): BlockType {
