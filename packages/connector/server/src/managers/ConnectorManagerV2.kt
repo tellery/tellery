@@ -7,27 +7,22 @@ import io.tellery.connectors.BaseConnector
 import io.tellery.entities.Profile
 import io.tellery.utils.allSubclasses
 import mu.KotlinLogging
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import java.lang.reflect.InvocationTargetException
 import kotlin.reflect.KClass
 import kotlin.reflect.full.*
 
-class ConnectorManagerV2 : KoinComponent {
-    private val rm: ProfileManager by inject()
-    private val config: ProjectConfig by inject()
+class ConnectorManagerV2(
+    private val rm: ProfileManager,
+    private val config: ProjectConfig
+) {
     private lateinit var connector: BaseConnector
 
     companion object {
         private val logger = KotlinLogging.logger {}
-        private lateinit var dbTypeToClassMap: Map<String, KClass<out BaseConnector>>
-        private lateinit var availableConfig: List<Connector>
+        private var dbTypeToClassMap: Map<String, KClass<out BaseConnector>>
+        private var availableConfig: List<Connector>
 
         init {
-            loadConnectors()
-        }
-
-        private fun loadConnectors() {
             val loadedConnectorClasses = BaseConnector::class.allSubclasses.filter {
                 it.hasAnnotation<Connector>()
             }
@@ -47,7 +42,7 @@ class ConnectorManagerV2 : KoinComponent {
     }
 
     fun initializeConnector() {
-        val profile = rm.getProfileById(config.getWorkspaceId()) ?: throw RuntimeException()
+        val profile = rm.getProfileById(config.workspaceId) ?: throw RuntimeException()
 
         // initialize connector instance
         val clazz = dbTypeToClassMap[profile.type]!!

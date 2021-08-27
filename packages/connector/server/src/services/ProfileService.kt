@@ -13,13 +13,13 @@ class ProfileService(
 ) : ProfileServiceCoroutineGrpc.ProfileServiceImplBase() {
 
     override suspend fun getProfile(request: Empty): Profile {
-        val profile = rm.getProfileById(config.getWorkspaceId())
+        val profile = rm.getProfileById(config.workspaceId)
         return buildProtoProfile(profile!!)
     }
 
     override suspend fun upsertProfile(request: UpsertProfileRequestV2): Profile {
         val profile = NewProfile(
-            id = config.getWorkspaceId(),
+            id = config.workspaceId,
             type = request.type,
             credential = request.credential,
             configs = request.configsList.associate { it.key to it.value }
@@ -28,7 +28,7 @@ class ProfileService(
     }
 
     override suspend fun listIntegrations(request: Empty): ListIntegrationsResponse {
-        val integrations = rm.getAllIntegrationInProfile(config.getWorkspaceId())
+        val integrations = rm.getAllIntegrationInProfile(config.workspaceId)
         return ListIntegrationsResponse {
             addAllIntegrations(integrations.map { buildProtoIntegration(it) })
         }
@@ -38,7 +38,7 @@ class ProfileService(
         val f = request.descriptorForType.findFieldByName("id")
         val integration = entities.Integration(
             id = if (request.hasField(f)) request.id.value else null,
-            profileId = config.getWorkspaceId(),
+            profileId = config.workspaceId,
             type = request.type,
             configs = request.configsList.associate { it.key to it.value }
         )

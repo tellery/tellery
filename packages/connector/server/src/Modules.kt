@@ -16,35 +16,32 @@ object Modules {
         return module {
             single { ProjectConfig() }
             single { providesDatabaseClient(get()) }
-            single { providesResourceManager(get(), get()) }
-            single { ConnectorManagerV2() }
+            single { providesProfileManager(get(), get()) }
+            single { ConnectorManagerV2(get(), get()) }
 
             // Service
             single { ProfileService(get(), get()) }
         }
     }
 
-    private fun providesResourceManager(
+    private fun providesProfileManager(
         config: ProjectConfig,
         database: Database
-    ): ProfileManager {
-        return when (config.getDeployModel()) {
-            ProjectConfig.DeployModel.LOCAL -> FileProfileManager(config)
-            ProjectConfig.DeployModel.CLUSTER -> DatabaseProfileManager(database)
-            else -> throw RuntimeException()
-        }
+    ): ProfileManager = when (config.deployModel) {
+        ProjectConfig.DeployModel.LOCAL -> FileProfileManager(config)
+        ProjectConfig.DeployModel.CLUSTER -> DatabaseProfileManager(database)
+        else -> throw RuntimeException()
     }
 
-    private fun providesDatabaseClient(config: ProjectConfig): Database? {
-        return when (config.getDeployModel()) {
+    private fun providesDatabaseClient(config: ProjectConfig): Database? =
+        when (config.deployModel) {
             ProjectConfig.DeployModel.LOCAL -> null
             ProjectConfig.DeployModel.CLUSTER -> Database.connect(
-                url = config.getDatabaseUrl() ?: throw RuntimeException(),
+                url = config.databaseURL ?: throw RuntimeException(),
                 driver = "org.postgresql.Driver",
-                user = config.getDatabaseUser(),
-                password = config.getDatabasePassword()
+                user = config.databaseUser,
+                password = config.databasePassword
             )
             else -> throw RuntimeException()
         }
-    }
 }

@@ -29,9 +29,9 @@ class FileProfileManagerTest : FunSpec({
 
     beforeSpec {
         appConfig = mockk()
-        every { appConfig.getGlobalConfigDir() } returns dir.toPath()
-        every { appConfig.getProfilePath() } returns dir.toPath().resolve("profiles.json")
-        every { appConfig.getIntegrationPath() } returns dir.toPath().resolve("integration.json")
+        every { appConfig.globalConfigDir } returns dir.toPath()
+        every { appConfig.profilePath } returns dir.toPath().resolve("profiles.json")
+        every { appConfig.integrationPath } returns dir.toPath().resolve("integration.json")
 
         rm = FileProfileManager(appConfig)
     }
@@ -47,13 +47,13 @@ class FileProfileManagerTest : FunSpec({
         rm.upsertProfile(profile)
 
         val profileAfterSaved: NewProfile =
-            mapper.readValue(appConfig.getProfilePath().readText())
+            mapper.readValue(appConfig.profilePath.readText())
 
         profileAfterSaved shouldBe profile
     }
 
     context("update a profile") {
-        appConfig.getProfilePath().writeText(profileURL.readText())
+        appConfig.profilePath.writeText(profileURL.readText())
 
         val profile: NewProfile = mapper.readValue(profileURL)
         val configs = HashMap(profile.configs)
@@ -64,7 +64,7 @@ class FileProfileManagerTest : FunSpec({
         rm.upsertProfile(profile)
 
         val profileAfterUpdate: NewProfile =
-            mapper.readValue(appConfig.getProfilePath().readText())
+            mapper.readValue(appConfig.profilePath.readText())
 
         profileAfterUpdate.let {
             configs["Username"] shouldBe "test"
@@ -73,7 +73,7 @@ class FileProfileManagerTest : FunSpec({
     }
 
     context("get a profile") {
-        appConfig.getProfilePath().writeText(profileURL.readText())
+        appConfig.profilePath.writeText(profileURL.readText())
 
         val profile: NewProfile = mapper.readValue(profileURL)
         val profileFromGet = rm.getProfileById(profile.id)
@@ -88,7 +88,7 @@ class FileProfileManagerTest : FunSpec({
         rm.upsertIntegration(integration)
 
         val integrationsAfterSaved: List<Integration> =
-            mapper.readValue(appConfig.getIntegrationPath().readText())
+            mapper.readValue(appConfig.integrationPath.readText())
 
         integrationsAfterSaved.size shouldBe 1
         integrationsAfterSaved[0].let {
@@ -101,7 +101,7 @@ class FileProfileManagerTest : FunSpec({
 
     context("update a integration") {
         val integration: Integration = mapper.readValue(integrationURL)
-        appConfig.getIntegrationPath().writeText(mapper.writeValueAsString(listOf(integration)))
+        appConfig.integrationPath.writeText(mapper.writeValueAsString(listOf(integration)))
 
         val configs = HashMap(integration.configs)
         configs["Dbt Project Name"] = "test"
@@ -110,7 +110,7 @@ class FileProfileManagerTest : FunSpec({
         rm.upsertIntegration(integration)
 
         val integrationsAfterUpdated: List<Integration> =
-            mapper.readValue(appConfig.getIntegrationPath().readText())
+            mapper.readValue(appConfig.integrationPath.readText())
 
         integrationsAfterUpdated.size shouldBe 1
         integrationsAfterUpdated[0].let {
@@ -121,7 +121,7 @@ class FileProfileManagerTest : FunSpec({
 
     context("get a integration") {
         val integration: Integration = mapper.readValue(integrationURL)
-        appConfig.getIntegrationPath().writeText(mapper.writeValueAsString(listOf(integration)))
+        appConfig.integrationPath.writeText(mapper.writeValueAsString(listOf(integration)))
 
         val integrationsFromGet = rm.getAllIntegrationInProfile(integration.profileId)
 
@@ -132,12 +132,12 @@ class FileProfileManagerTest : FunSpec({
     context("delete a integration") {
         val url = getResourceFileURL("/integrations/integration_1.json")
         val integration: Integration = mapper.readValue(url)
-        appConfig.getIntegrationPath().writeText(mapper.writeValueAsString(listOf(integration)))
+        appConfig.integrationPath.writeText(mapper.writeValueAsString(listOf(integration)))
 
         rm.deleteIntegration(integration.id!!)
 
         val integrationsAfterDeleted: List<Integration> =
-            mapper.readValue(appConfig.getIntegrationPath().readText())
+            mapper.readValue(appConfig.integrationPath.readText())
 
         integrationsAfterDeleted.size shouldBe 0
     }

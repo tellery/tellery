@@ -15,9 +15,9 @@ import kotlin.io.path.writeText
 
 class FileProfileManager(private val appConfig: ProjectConfig) : ProfileManager {
 
-    private var globalConfigDir: Path = appConfig.getGlobalConfigDir()
-    private var profilePath: Path = appConfig.getProfilePath()
-    private var integrationPath: Path = appConfig.getIntegrationPath()
+    private var globalConfigDir: Path = appConfig.globalConfigDir
+    private var profilePath: Path = appConfig.profilePath
+    private var integrationPath: Path = appConfig.integrationPath
 
     companion object {
         private val mapper = jacksonObjectMapper()
