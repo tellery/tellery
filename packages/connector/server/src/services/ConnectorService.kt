@@ -1,6 +1,5 @@
 package io.tellery.services
 
-import arrow.core.Either
 import com.google.gson.GsonBuilder
 import com.google.protobuf.ByteString
 import com.google.protobuf.Empty
@@ -215,13 +214,13 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
         request: SubmitQueryRequest,
         responseChannel: SendChannel<QueryResult>
     ) {
-        val currentQueryChannel = Channel<Either<Exception, QueryResultWrapper>>()
+        val currentQueryChannel = Channel<QueryResultSet>()
         val queryContext = QueryContext(request.sql, request.questionId, request.maxRow)
         val connector = ConnectorManager.getDBConnector(request.profile)
         connector.queryWithLimit(queryContext, currentQueryChannel)
         currentQueryChannel.consumeEach { cursor ->
             when (cursor) {
-                is Either.Left -> {
+                is QueryResultSet.Error -> {
                     when (cursor.value) {
                         is TruncateException -> {
                             responseChannel.send(QueryResult {
@@ -231,27 +230,23 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
                         else -> throw errorWrapper(cursor.value, "query")
                     }
                 }
-                is Either.Right -> {
-                    when (val content = cursor.value) {
-                        is Either.Left -> {
-                            responseChannel.send(QueryResult {
-                                fields {
-                                    addAllFields(content.value.map {
-                                        SchemaField {
-                                            name = it.name
-                                            displayType = toDisplayType(it.type)
-                                            sqlType = SQLType.forNumber(it.type)
-                                        }
-                                    })
+                is QueryResultSet.Fields -> {
+                    responseChannel.send(QueryResult {
+                        fields {
+                            addAllFields(cursor.value.map {
+                                SchemaField {
+                                    name = it.name
+                                    displayType = toDisplayType(it.type)
+                                    sqlType = SQLType.forNumber(it.type)
                                 }
                             })
                         }
-                        is Either.Right -> {
-                            responseChannel.send(QueryResult {
-                                row = ByteString.copyFrom(serializer.toJson(content.value), UTF_8)
-                            })
-                        }
-                    }
+                    })
+                }
+                is QueryResultSet.Rows -> {
+                    responseChannel.send(QueryResult {
+                        row = ByteString.copyFrom(serializer.toJson(cursor.value), UTF_8)
+                    })
                 }
             }
         }

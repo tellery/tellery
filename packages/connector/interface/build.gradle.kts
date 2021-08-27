@@ -1,7 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val coroutinesVersion: String by project
-val arrowVersion: String by project
 val logbackVersion: String by project
 val grpcVersion: String by project
 
@@ -10,7 +9,6 @@ val snapshotVersion = "0.8.0"
 
 repositories {
     jcenter()
-    maven("https://dl.bintray.com/arrow-kt/arrow-kt/")
     maven("https://kotlin.bintray.com/kotlinx")
 }
 
@@ -18,7 +16,6 @@ plugins {
     idea
     `java-library`
     kotlin("jvm")
-    kotlin("kapt")
     `maven-publish`
 }
 
@@ -40,9 +37,6 @@ dependencies {
     api("ch.qos.logback:logback-classic:$logbackVersion")
     api("io.github.microutils:kotlin-logging:2.0.10")
     api("javax.annotation:javax.annotation-api:1.3.2")
-
-    api("io.arrow-kt:arrow-core:$arrowVersion")
-    kapt("io.arrow-kt:arrow-meta:$arrowVersion")
 
     api("io.grpc:grpc-stub:$grpcVersion")
 

@@ -1,6 +1,5 @@
 package io.tellery.connectors
 
-import arrow.core.Either
 import com.github.michaelbull.jdbc.context.CoroutineDataSource
 import com.github.michaelbull.jdbc.context.dataSource
 import com.zaxxer.hikari.HikariDataSource
@@ -56,10 +55,10 @@ abstract class JDBCConnector : BaseConnector() {
             connectionTimeout = 5 * 60 * 1000
             maxLifetime = 15 * 60 * 1000
             keepaliveTime = 60 * 1000
-            profile.configs["Username"].let{
+            profile.configs["Username"].let {
                 username = it
             }
-            profile.configs["Password"].let{
+            profile.configs["Password"].let {
                 password = it
             }
         }
@@ -125,7 +124,10 @@ abstract class JDBCConnector : BaseConnector() {
     }
 
 
-    override suspend fun query(ctx: QueryContext, sendToChannel: suspend (QueryResultWrapper) -> Unit) {
+    override suspend fun query(
+        ctx: QueryContext,
+        sendToChannel: suspend (QueryResultSet) -> Unit
+    ) {
         dbConnection.apply {
             transactionIsolation = transactionIsolationLevel
         }.use { conn ->
@@ -140,14 +142,14 @@ abstract class JDBCConnector : BaseConnector() {
                                 TypeField(getColumnLabel(it), getColumnType(it))
                             }
                         }
-                        sendToChannel(Either.Left(fields))
+                        sendToChannel(QueryResultSet.Fields(fields))
                         var rowCount = 0
                         while (it.next()) {
                             rowCount++
                             if (rowCount > ctx.maxRows) {
                                 throw TruncateException()
                             }
-                            sendToChannel(Either.Right(
+                            sendToChannel(QueryResultSet.Rows(
                                 fields.indices.map { colIndex ->
                                     when (val tmp = it.getObject(colIndex + 1)) {
                                         is InputStream -> tmp.readBytes().toBase64()
