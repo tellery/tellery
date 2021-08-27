@@ -194,7 +194,7 @@ function MetricConfigInner(props: { block: Editor.MetricBlock; className?: strin
 function getFuncs(type: string) {
   return ['CHAR', 'VARCHAR', 'LONGVARCHAR', 'DATE', 'TIME', 'TIMESTAMP'].includes(type)
     ? ['count', 'countDistinct']
-    : ['TINYINT', 'SMALLINT', 'INTERGER', 'FLOAT', 'REAL', 'DOUBLD', 'NUMERIC', 'DECIMAL'].includes(type)
+    : ['TINYINT', 'SMALLINT', 'INTEGER', 'FLOAT', 'REAL', 'DOUBLD', 'NUMERIC', 'DECIMAL'].includes(type)
     ? ['sum', 'avg', 'min', 'max', 'median', 'std']
     : []
 }
