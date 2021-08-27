@@ -518,9 +518,10 @@ const _ContentEditable: React.ForwardRefRenderFunction<
       ></div>
       <LazyTippy
         render={() => {
-          if (!hoveringTokenIndex) return null
+          if (hoveringTokenIndex === null) return null
           const currentToken = titleTokens[hoveringTokenIndex]
           const entities = extractEntitiesFromToken(currentToken)
+          console.log('entities')
           if (entities.link) {
             const linkURL = entities.link[1]
             return <InlineHoverPopover>{linkURL}</InlineHoverPopover>
