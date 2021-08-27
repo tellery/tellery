@@ -7,13 +7,31 @@ import kotlin.io.path.Path
 class ProjectConfig {
 
     private val appConfig = ConfigFactory.load()
+    private val env = System.getenv()
 
     fun getDeployModel(): DeployModel {
-        return DeployModel.valueOf(System.getenv("deployModel"))
+        return DeployModel.valueOf(
+            env.getOrDefault(
+                "connector.deployModel",
+                DeployModel.LOCAL.name
+            )
+        )
     }
 
     fun getWorkspaceId(): String {
-        return System.getenv("workspaceId")
+        return env["connector.workspaceId"] ?: throw RuntimeException()
+    }
+
+    fun getDatabaseUrl(): String? {
+        return env["connector.cluster.db_url"]
+    }
+
+    fun getDatabaseUser(): String {
+        return env.getOrDefault("connector.cluster.db_user", "")
+    }
+
+    fun getDatabasePassword(): String {
+        return env.getOrDefault("connector.cluster.db_pwd", "")
     }
 
     fun getGlobalConfigDir(): Path {
@@ -29,6 +47,6 @@ class ProjectConfig {
     }
 
     enum class DeployModel {
-        LOCAL, SAAS
+        LOCAL, CLUSTER
     }
 }

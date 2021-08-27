@@ -1,6 +1,6 @@
 {
-  "id": "12345_dbt",
-  "workspaceId": "12345",
+  "id": 1,
+  "profileId": "12345",
   "type": "dbt",
   "configs": {
     "Dbt Project Name": "projectC",

@@ -14,7 +14,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.*
 
 class ConnectorManagerV2 : KoinComponent {
-    private val rm: ResourceManager by inject()
+    private val rm: ProfileManager by inject()
     private val config: ProjectConfig by inject()
     private lateinit var connector: BaseConnector
 
