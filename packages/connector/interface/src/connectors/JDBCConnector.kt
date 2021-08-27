@@ -52,9 +52,9 @@ abstract class JDBCConnector : BaseConnector() {
         this.dataSource.apply {
             maximumPoolSize = 15
             minimumIdle = 5
-            connectionTimeout = 5 * 60 * 1000
-            maxLifetime = 15 * 60 * 1000
-            keepaliveTime = 60 * 1000
+            connectionTimeout = 5 * 60 * 1000L
+            maxLifetime = 15 * 60 * 1000L
+            keepaliveTime = 60 * 1000L
             profile.configs["Username"].let {
                 username = it
             }

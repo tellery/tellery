@@ -13,7 +13,7 @@ import io.tellery.common.withErrorWrapper
 import io.tellery.configs.AvailableConfig
 import io.tellery.configs.AvailableConfigs
 import io.tellery.configs.ConfigField
-import io.tellery.connectors.annotations.DbtFields
+import io.tellery.connectors.annotations.Dbt.DbtFields
 import io.tellery.entities.*
 import io.tellery.grpc.*
 import io.tellery.types.SQLType
