@@ -25,7 +25,7 @@ const metricSpec = {
       count: 'count(?)',
       countDistinct: 'count(distinct ?)',
     },
-    'TINYINT,SMALLINT,INTERGER,FLOAT,REAL,DOUBLD,NUMERIC,DECIMAL': {
+    'TINYINT,SMALLINT,INTEGER,FLOAT,REAL,DOUBLE,NUMERIC,DECIMAL': {
       sum: 'sum(?)',
       avg: 'avg(?)',
       min: 'min(?)',
@@ -84,19 +84,19 @@ test('exploration sql assemble', async (t) => {
         mid1: {
           name: 'active_user',
           fieldName: 'uid',
-          type: 'VARCHAR',
+          fieldType: 'VARCHAR',
           func: 'countDistinct',
         },
         mid2: {
           name: 'avg_cost',
           fieldName: 'cost',
-          type: 'DECIMAL',
+          fieldType: 'DECIMAL',
           func: 'avg',
         },
         mid3: {
           name: 'total_visit',
           fieldName: 'visit',
-          type: 'INTEGER',
+          fieldType: 'INTEGER',
           func: 'sum',
         },
         mid4: {
@@ -117,7 +117,7 @@ test('exploration sql assemble', async (t) => {
       {
         name: 'dt byDate',
         fieldName: 'dt',
-        type: 'TIMESTAMP',
+        fieldType: 'TIMESTAMP',
         func: 'byDate',
       },
       {

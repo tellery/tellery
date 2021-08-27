@@ -69,12 +69,17 @@ function assembleSelectField(
   if ('rawSql' in builder) {
     return `${builder.rawSql} AS ${quotedName}`
   }
-  const { fieldName, type, func, args } = builder
+  const { fieldName, fieldType, func, args } = builder
   const quotedFieldName = quote.replace('?', fieldName)
   if (func) {
+    if (fieldName === 'uid') {
+      console.log('!!!')
+      console.log(translation)
+      console.log(translation.get(fieldType), func, translation.get(fieldType)?.get(func))
+    }
     const translatedName = [quotedFieldName, ...(args ?? [])].reduce(
       (acc, replacer) => acc.replace('?', replacer),
-      translation.get(type)?.get(func) ?? '?',
+      translation.get(fieldType)?.get(func) ?? '?',
     )
     return `${translatedName} AS ${quotedName}`
   }

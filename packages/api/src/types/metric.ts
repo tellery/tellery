@@ -21,7 +21,7 @@ type SelectBuilder = {
 } & (
   | {
       fieldName: string
-      type: DataType
+      fieldType: DataType
       func?: string
       args?: string[]
     }
