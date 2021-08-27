@@ -458,13 +458,17 @@ const _ContentEditable: React.ForwardRefRenderFunction<
               e.preventDefault()
               e.stopPropagation()
               setInlineformulaPopoverState(true)
+              const range = new Range()
+              range.selectNodeContents(tokenElement)
+              // restoreRange(range)
+              // setWillFlush(true)
               editor?.setSelectionState({
                 storyId: block.storyId!,
                 type: TellerySelectionType.Inline,
                 focus: {
                   blockId: block.id,
-                  nodeIndex: tokenIndex,
-                  offset: 1
+                  nodeIndex: tokenIndex + 1,
+                  offset: 0
                 },
                 anchor: {
                   blockId: block.id,
@@ -521,7 +525,6 @@ const _ContentEditable: React.ForwardRefRenderFunction<
           if (hoveringTokenIndex === null) return null
           const currentToken = titleTokens[hoveringTokenIndex]
           const entities = extractEntitiesFromToken(currentToken)
-          console.log('entities')
           if (entities.link) {
             const linkURL = entities.link[1]
             return <InlineHoverPopover>{linkURL}</InlineHoverPopover>
