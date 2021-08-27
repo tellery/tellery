@@ -12,36 +12,39 @@ import {
   DragMoveEvent,
   DragOverlay,
   DragStartEvent,
+  LayoutMeasuringStrategy,
   MouseSensor,
   useSensor,
   useSensors
 } from '@dnd-kit/core'
 import { css } from '@emotion/css'
-import React, { ReactNode, useCallback, useRef, useState } from 'react'
+import _ from 'lodash'
+import React, { memo, ReactNode, useCallback, useRef, useState } from 'react'
 import ReactTestUtils from 'react-dom/test-utils'
 import invariant from 'tiny-invariant'
 import {
   closetBorder,
-  DroppingAreaContext,
   FileDraggble,
   findDroppbleBlockIdAndDirection,
   getFakeDragbleElement,
   logger,
   MouseSensorOptions
 } from '../context/blockDnd'
-import { useDroppingArea } from '../hooks/useDroppingArea'
+import { useSetDroppingArea } from '../hooks/useDroppingArea'
 import { DndSensor } from '../lib/dnd-kit/dndSensor'
-import { isQuestionLikeBlock } from './editor/Blocks/utils'
 import { useSetUploadResource } from './editor/hooks/useUploadResource'
 import { getSubsetOfBlocksSnapshot } from './editor/utils'
 
-export const BlockDndContextProvider: React.FC = ({ children }) => {
-  const [previewData, setPreviewData] = useState<ReactNode | null>(null)
-  const [isDragging, setIsDragging] = useState(false)
-  const droppingAreaRef = useRef<{ blockId: string; direction: Direction } | null>(null)
-  const dataTransferRef = useRef<DataTransfer | null>(null)
+const DEFAULT_LAYOUT_MEASURING = { strategy: LayoutMeasuringStrategy.BeforeDragging }
 
-  const [droppingArea, setDroppingArea] = useDroppingArea()
+const _TelleryDNDContext: React.FC<{
+  dataTransferRef: React.MutableRefObject<DataTransfer | null>
+  setIsDragging: React.Dispatch<React.SetStateAction<boolean>>
+  setPreviewData: React.Dispatch<React.SetStateAction<React.ReactNode>>
+  children: ReactNode
+}> = ({ children, dataTransferRef, setIsDragging, setPreviewData }) => {
+  const droppingAreaRef = useRef<{ blockId: string; direction: Direction } | null>(null)
+  const setDroppingArea = useSetDroppingArea()
   const mouseSensor = useSensor(MouseSensor, MouseSensorOptions)
   const dragSensor = useSensor(DndSensor)
   const sensors = useSensors(dragSensor, mouseSensor)
@@ -57,7 +60,7 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
     setDroppingArea(null)
     droppingAreaRef.current = null
     setPreviewData(null)
-  }, [setDroppingArea])
+  }, [setDroppingArea, setIsDragging, setPreviewData])
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
@@ -154,7 +157,17 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
       setDroppingArea(null)
       droppingAreaRef.current = null
     },
-    [setDroppingArea, blockTranscations, focusBlockHandler, snapshot, createEmptyBlock, setUploadResource]
+    [
+      setIsDragging,
+      setPreviewData,
+      setDroppingArea,
+      blockTranscations,
+      focusBlockHandler,
+      snapshot,
+      dataTransferRef,
+      createEmptyBlock,
+      setUploadResource
+    ]
   )
 
   const handleDragMove = useCallback(
@@ -227,52 +240,71 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
       )
     }
   }, [])
+  return (
+    <DndContext
+      collisionDetection={closetBorder}
+      onDragMove={handleDragMove}
+      onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
+      sensors={sensors}
+      onDragStart={handleDragStart}
+      layoutMeasuring={DEFAULT_LAYOUT_MEASURING}
+    >
+      {children}
+    </DndContext>
+  )
+}
+
+const TelleryDNDContext = memo(_TelleryDNDContext)
+
+export const BlockDndContextProvider: React.FC = ({ children }) => {
+  const [previewData, setPreviewData] = useState<ReactNode | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const dataTransferRef = useRef<DataTransfer | null>(null)
 
   return (
     <div
-      onDrop={(e) => {
+      onDrop={useCallback((e) => {
         dataTransferRef.current = e.dataTransfer
         e.preventDefault()
-      }}
-      onDragOver={(e) => {
-        if (isDragging === false) {
-          logger('on darg entter', e, e.nativeEvent)
-          const handle = getFakeDragbleElement()
-          const nativeEvent = e.nativeEvent
-          e.persist()
-          handle.style.left = `${nativeEvent.clientX}px`
-          handle.style.top = `${nativeEvent.clientY}px`
+      }, [])}
+      onDragOver={useCallback(
+        (e) => {
+          if (isDragging === false) {
+            logger('on darg entter', e, e.nativeEvent)
+            const handle = getFakeDragbleElement()
+            const nativeEvent = e.nativeEvent
+            e.persist()
+            handle.style.left = `${nativeEvent.clientX}px`
+            handle.style.top = `${nativeEvent.clientY}px`
 
-          ReactTestUtils.Simulate.dragEnter(handle, {
-            nativeEvent: e.nativeEvent,
-            clientX: nativeEvent.clientX,
-            clientY: nativeEvent.clientY,
-            button: nativeEvent.button
-          })
-        }
-      }}
+            ReactTestUtils.Simulate.dragEnter(handle, {
+              nativeEvent: e.nativeEvent,
+              clientX: nativeEvent.clientX,
+              clientY: nativeEvent.clientY,
+              button: nativeEvent.button
+            })
+          }
+        },
+        [isDragging]
+      )}
     >
-      <DndContext
-        collisionDetection={closetBorder}
-        onDragMove={handleDragMove}
-        onDragEnd={handleDragEnd}
-        onDragCancel={handleDragCancel}
-        sensors={sensors}
-        onDragStart={handleDragStart}
+      <TelleryDNDContext
+        dataTransferRef={dataTransferRef}
+        setIsDragging={setIsDragging}
+        setPreviewData={setPreviewData}
       >
         <FileDraggble />
-        <DroppingAreaContext.Provider value={droppingArea}>
-          {children}
-          <DragOverlay
-            dropAnimation={null}
-            className={css`
-              opacity: 0.5;
-            `}
-          >
-            {isDragging && <React.Suspense fallback={<div>loading...</div>}>{previewData}</React.Suspense>}
-          </DragOverlay>
-        </DroppingAreaContext.Provider>
-      </DndContext>
+        {children}
+        <DragOverlay
+          dropAnimation={null}
+          className={css`
+            opacity: 0.5;
+          `}
+        >
+          {isDragging && <React.Suspense fallback={<div>loading...</div>}>{previewData}</React.Suspense>}
+        </DragOverlay>
+      </TelleryDNDContext>
     </div>
   )
 }
