@@ -82,9 +82,6 @@ export const useFetchStoryChunk = <T extends Editor.BaseBlock = Story>(id: strin
         }),
     { suspense: suspense }
   )
-
-  const block = useBlockSuspense<T>(id)
-  return block as T
 }
 
 export const useStoryPinnedStatus = (id?: string) => {

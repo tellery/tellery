@@ -5,7 +5,7 @@ import { SideBarMetricsSection } from '@app/components/SideBarMetricsSection'
 import { StoryBackLinks } from '@app/components/StoryBackLinks'
 import { StoryQuestionsEditor } from '@app/components/StoryQuestionsEditor'
 import { useMediaQuery } from '@app/hooks'
-import { useFetchStoryChunk, useRecordStoryVisits, useStoryPinnedStatus } from '@app/hooks/api'
+import { useBlockSuspense, useFetchStoryChunk, useRecordStoryVisits, useStoryPinnedStatus } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { BlockFormatAtom, BlockTitleAtom, BlockTypeAtom } from '@app/store/block'
@@ -97,7 +97,8 @@ const _Page: React.FC = () => {
 }
 
 const StoryContent: React.FC<{ storyId: string }> = ({ storyId }) => {
-  const storyBlock = useFetchStoryChunk<Story | Thought>(storyId, false)
+  useFetchStoryChunk(storyId, false)
+  const storyBlock = useBlockSuspense<Story | Thought>(storyId)
   const storyBotom = useMemo(() => <StoryBackLinks storyId={storyId} />, [storyId])
 
   return (
