@@ -26,12 +26,15 @@ export default forwardRef<
       arrow={false}
       offset={[-9, 4]}
       appendTo={document.body}
+      onClickOutside={() => {
+        setVisible(false)
+      }}
     >
       <button
         ref={ref}
         {...props}
         onClick={(e) => {
-          setVisible(true)
+          setVisible((old) => !old)
           props.onClick?.(e)
         }}
         className={cx(
