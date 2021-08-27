@@ -324,7 +324,7 @@ const applyOperations = (
     const currentBlock = getBlockFromStoreMap(operation.id, tempMap)
     const isNewCreated = currentBlock === undefined ?? !currentBlock?.createdById
     logger('currentblock', currentBlock)
-    let updatedBlock = cloneDeep(currentBlock)
+    let updatedBlock = currentBlock
 
     switch (operation.cmd) {
       case 'set':

@@ -25,7 +25,6 @@ import React, { Fragment, useCallback, useMemo } from 'react'
 import ContentLoader from 'react-content-loader'
 import { useTranslation } from 'react-i18next'
 import PerfectScrollbar from 'react-perfect-scrollbar'
-import { useStoryPathParams } from '../hooks/useStoryPathParams'
 import { useGetBlockTitleTextSnapshot } from './editor'
 import IconButton from './kit/IconButton'
 import { LazyTippy } from './LazyTippy'
@@ -139,6 +138,10 @@ const StoryDataAssetItemContent: React.FC<{ blockId: string; storyId: string }> 
 }
 
 const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
+  return <StoryDataAssetItemContent blockId={blockId} storyId={storyId} />
+}
+
+const StoryDataAssetItemWithInspectPopover: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
   const tippyAnimation = useTippyMenuAnimation('fade')
 
   return (

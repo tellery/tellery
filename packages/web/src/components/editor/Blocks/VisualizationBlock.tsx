@@ -29,7 +29,7 @@ import { useCommit } from '@app/hooks/useCommit'
 import { useFetchBlock } from '@app/hooks/useFetchBlock'
 import { useInterval } from '@app/hooks/useInterval'
 import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
-import { useBlockSnapshot } from '@app/store/block'
+import { BlockResourcesAtom, useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { snapshotToCSV, TELLERY_MIME_TYPES } from '@app/utils'
@@ -57,6 +57,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useMeasure } from 'react-use'
+import { useRecoilValue } from 'recoil'
 import invariant from 'tiny-invariant'
 import { BlockingUI } from '../BlockBase/BlockingUIBlock'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
@@ -243,7 +244,7 @@ const VisualizationBlockContent: React.FC<{
   const dataAssetBlock = useBlockSuspense<Editor.DataAssetBlock>(dataAssetId)
   const snapshotId = dataAssetBlock?.content?.snapshotId
   const commit = useCommit()
-  const storyBlock = useBlockSuspense(block.storyId!)
+  const storyBlockResources = useRecoilValue(BlockResourcesAtom(block.storyId!))
 
   const mutateSnapshot = useRefreshSnapshot()
   const mutatingCount = useSnapshotMutating(dataAssetBlock.id)
@@ -261,17 +262,17 @@ const VisualizationBlockContent: React.FC<{
   const contentRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    if (dataAssetId && !storyBlock.resources?.includes(dataAssetId)) {
+    if (dataAssetId && !storyBlockResources?.includes(dataAssetId)) {
       commit({
         transcation: createTranscation({
           operations: [
-            { cmd: 'listBefore', path: ['resources'], args: { id: dataAssetId }, table: 'block', id: storyBlock.id }
+            { cmd: 'listBefore', path: ['resources'], args: { id: dataAssetId }, table: 'block', id: block.storyId! }
           ]
         }),
         storyId: block.storyId!
       })
     }
-  }, [block.storyId, commit, dataAssetId, storyBlock.id, storyBlock.resources])
+  }, [block.storyId, commit, dataAssetId, storyBlockResources])
 
   return (
     <>

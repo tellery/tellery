@@ -26,7 +26,8 @@ export const blockUpdater = (newValue: Editor.Block | DefaultValue, oldValue: Ed
         ...newValue,
         content: dequal(newValue.content, oldValue.content) ? oldValue.content : newValue.content,
         format: dequal(newValue.format, oldValue.format) ? oldValue.format : newValue.format,
-        permissions: dequal(newValue.permissions, oldValue.permissions) ? oldValue.permissions : newValue.permissions
+        permissions: dequal(newValue.permissions, oldValue.permissions) ? oldValue.permissions : newValue.permissions,
+        resources: dequal(newValue.resources, oldValue.resources) ? oldValue.resources : newValue.resources
       }
     } else {
       return oldValue
@@ -88,6 +89,16 @@ export const BlockTitleAtom = selectorFamily({
     ({ get }) => {
       const atom = get(TelleryBlockAtom(blockId))
       return atom.content?.title
+    }
+})
+
+export const BlockResourcesAtom = selectorFamily({
+  key: 'blockResourcesAtom',
+  get:
+    (blockId: string) =>
+    ({ get }) => {
+      const atom = get(TelleryBlockAtom(blockId))
+      return atom.resources
     }
 })
 

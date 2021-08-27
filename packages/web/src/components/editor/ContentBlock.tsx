@@ -42,7 +42,7 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetError
 
 // const BlockInner = _BlockInner
 
-export const ContentBlocks: React.FC<{
+const _ContentBlocks: React.FC<{
   blockIds: string[]
   small?: boolean
   parentType: Editor.BlockType
@@ -73,6 +73,8 @@ export const ContentBlocks: React.FC<{
     </AnimateSharedLayout>
   )
 }
+
+export const ContentBlocks = memo(_ContentBlocks)
 
 export const _ContentBlockPure: React.FC<{
   id: string
