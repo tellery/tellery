@@ -26,6 +26,8 @@ export default forwardRef<
       arrow={false}
       offset={[-9, 4]}
       appendTo={document.body}
+      delay={0}
+      duration={0}
       onClickOutside={() => {
         setVisible(false)
       }}

@@ -15,6 +15,7 @@ import { MenuWrapper } from './MenuWrapper'
 import { table } from './v11n/charts/table'
 import produce from 'immer'
 import PerfectScrollbar from 'react-perfect-scrollbar'
+import Tippy from '@tippyjs/react'
 
 export default function MetricConfig(props: { block: Editor.SQLLikeBlock; className?: string }) {
   const [isMetric, setIsMetric] = useState(false)
@@ -190,6 +191,14 @@ function MetricConfigInner(props: { block: Editor.MetricBlock; className?: strin
   )
 }
 
+function getFuncs(type: string) {
+  return ['CHAR', 'VARCHAR', 'LONGVARCHAR', 'DATE', 'TIME', 'TIMESTAMP'].includes(type)
+    ? ['count', 'countDistinct']
+    : ['TINYINT', 'SMALLINT', 'INTERGER', 'FLOAT', 'REAL', 'DOUBLD', 'NUMERIC', 'DECIMAL'].includes(type)
+    ? ['sum', 'avg', 'min', 'max', 'median', 'std']
+    : []
+}
+
 function MetricConigCreator(props: {
   fields?: { name: string; type: string }[]
   onCreate(measurements: Measurement[]): void
@@ -218,25 +227,41 @@ function MetricConigCreator(props: {
         menu={({ onClick }) => (
           <MenuWrapper>
             {props.fields?.map((field, index) => (
-              <MenuItem
+              <Tippy
                 key={field.name + index}
-                title={field.name}
-                side={field.type}
-                onClick={() => {
-                  setMeasurements((old) => [
-                    ...old,
-                    { name: field.name, fieldType: field.type, fieldName: field.name, func: 'count' }
-                  ])
-                  onClick()
-                }}
-              />
+                content={
+                  <MenuWrapper>
+                    {getFuncs(field.type).map((func) => (
+                      <MenuItem
+                        key={func}
+                        title={func}
+                        onClick={() => {
+                          onClick()
+                          setMeasurements((old) => [
+                            ...old,
+                            { name: `${func} ${field.name}`, fieldType: field.type, fieldName: field.name, func }
+                          ])
+                        }}
+                      />
+                    ))}
+                  </MenuWrapper>
+                }
+                theme="tellery"
+                arrow={false}
+                placement="right-start"
+                duration={0}
+                offset={[-10, 10]}
+                interactive={true}
+              >
+                <MenuItem title={field.name} side={field.type} />
+              </Tippy>
             ))}
             <MenuItemDivider />
             <MenuItem
               title="Raw SQL"
               onClick={() => {
-                setMeasurements((old) => [...old, { name: '', rawSql: '' }])
                 onClick()
+                setMeasurements((old) => [...old, { name: '', rawSql: '' }])
               }}
             />
           </MenuWrapper>
