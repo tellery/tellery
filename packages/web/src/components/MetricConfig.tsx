@@ -205,6 +205,8 @@ function MetricConigCreator(props: {
 }) {
   const [field, setField] = useState<{ name: string; type?: string }>()
   const [map, setMap] = useState<Record<string, string>>({})
+  const array = useMemo(() => Object.entries(map), [map])
+  const [sqlName, setSqlName] = useState('')
   const [sql, setSql] = useState('')
 
   return (
@@ -262,25 +264,43 @@ function MetricConigCreator(props: {
             />
           ))
         ) : (
-          <textarea
-            value={sql}
-            onChange={(e) => {
-              setSql(e.target.value)
-            }}
-            className={css`
-              margin-top: 20px;
-              width: 100%;
-              height: 200px;
-              resize: none;
-            `}
-          />
+          <>
+            <FormInput
+              value={sqlName}
+              onChange={(e) => {
+                setSqlName(e.target.value)
+              }}
+              className={css`
+                margin-top: 20px;
+              `}
+            />
+            <textarea
+              value={sql}
+              onChange={(e) => {
+                setSql(e.target.value)
+              }}
+              className={css`
+                margin-top: 20px;
+                width: 100%;
+                height: 200px;
+                resize: none;
+              `}
+            />
+          </>
         )
       ) : null}
       <FormButton
         variant="primary"
-        disabled={true}
+        disabled={!field || (field.type && array.length === 0) || (!field.type && (!sqlName || !sql))}
         onClick={() => {
-          props.onCreate([])
+          if (!field) {
+            return
+          }
+          if (field.type) {
+            props.onCreate(array.map(([func, name]) => ({ name, fieldName: field.name, fieldType: field.type!, func })))
+          } else {
+            props.onCreate([{ name: sqlName!, rawSql: sql! }])
+          }
         }}
         className={css`
           width: 100%;
