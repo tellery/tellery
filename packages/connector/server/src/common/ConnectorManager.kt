@@ -21,7 +21,7 @@ import kotlin.reflect.full.*
 
 object ConnectorManager {
 
-    data class ProfileSpec(val type: String, val tokenizer: String, val metricSpec: String)
+    data class ProfileSpec(val type: String, val tokenizer: String, val queryBuilderSpec: String)
 
     private val logger = KotlinLogging.logger {}
 
@@ -55,13 +55,14 @@ object ConnectorManager {
         propertySpecs = dbTypeToClassMap.keys.associateWith { type ->
             val tokenizer =
                 resourceLoader("${type.replace('/', '-')}Tokenizer.js")?.readBytes()?.toBase64()
-            val metricSpec =
-                resourceLoader("${type.replace('/', '-')}MetricSpec.json")?.readBytes()?.toBase64()
+            val queryBuilderSpec =
+                resourceLoader("${type.replace('/', '-')}QueryBuilderSpec.json")?.readBytes()
+                    ?.toBase64()
 
             requireNotNull(tokenizer) { "Tokenizer file of $type is not correctly placed into the resources" }
-            requireNotNull(metricSpec) { "MetricSupport file of $type is not correctly placed into the resources" }
+            requireNotNull(queryBuilderSpec) { "MetricSupport file of $type is not correctly placed into the resources" }
 
-            ProfileSpec(type, tokenizer, metricSpec)
+            ProfileSpec(type, tokenizer, queryBuilderSpec)
         }
 
         val dbTypeToDbtProfileClassMap = BaseDbtProfile::class.allSubclasses

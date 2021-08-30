@@ -79,7 +79,7 @@ class ConnectorService : ConnectorCoroutineGrpc.ConnectorImplBase() {
                     name = req.name
                     type = it.type
                     tokenizer = it.tokenizer
-                    metricSpec = it.metricSpec
+                    queryBuilderSpec = it.queryBuilderSpec
                 }
             }
         }
