@@ -1,5 +1,5 @@
 {
-  "workspaceId": "12345",
+  "id": "12345",
   "type": "Redshift",
   "configs": {
     "Endpoint": "examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com",

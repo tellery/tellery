@@ -7,28 +7,38 @@ import kotlin.io.path.Path
 class ProjectConfig {
 
     private val appConfig = ConfigFactory.load()
+    private val env = System.getenv()
 
-    fun getDeployModel(): DeployModel {
-        return DeployModel.valueOf(System.getenv("deployModel"))
-    }
+    val deployModel: DeployModel
+        get() = DeployModel.valueOf(
+            env.getOrDefault(
+                "connector.deployModel",
+                DeployModel.LOCAL.name
+            )
+        )
 
-    fun getWorkspaceId(): String {
-        return System.getenv("workspaceId")
-    }
+    val workspaceId: String
+        get() = env["connector.workspaceId"] ?: throw RuntimeException()
 
-    fun getGlobalConfigDir(): Path {
-        return Path(appConfig.getString("configDirPath"))
-    }
+    val databaseURL: String?
+        get() = env["connector.cluster.db_url"]
 
-    fun getProfilePath(): Path {
-        return getGlobalConfigDir().resolve(appConfig.getString("profile.path"))
-    }
+    val databaseUser: String
+        get() = env.getOrDefault("connector.cluster.db_user", "")
 
-    fun getIntegrationPath(): Path {
-        return getGlobalConfigDir().resolve(appConfig.getString("integration.path"))
-    }
+    val databasePassword: String
+        get() = env.getOrDefault("connector.cluster.db_pwd", "")
 
+    val globalConfigDir: Path
+        get() = Path(appConfig.getString("configDirPath"))
+
+    val profilePath: Path
+        get() = globalConfigDir.resolve(appConfig.getString("profile.path"))
+
+    val integrationPath: Path
+        get() = globalConfigDir.resolve(appConfig.getString("integration.path"))
+    
     enum class DeployModel {
-        LOCAL, SAAS
+        LOCAL, CLUSTER
     }
 }

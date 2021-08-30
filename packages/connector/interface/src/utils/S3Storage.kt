@@ -34,7 +34,7 @@ class S3Storage(
     private val transferManager: TransferManager
 
     companion object {
-        fun buildFromConfigs(configs: Map<String, String>): S3Storage? {
+        fun buildFromConfigs(configs: Map<String, String?>): S3Storage? {
             var s3Client: S3Storage? = null
             val accessKey = configs["S3 Access Key"]
             val secretKey = configs["S3 Secret Key"]
@@ -57,7 +57,12 @@ class S3Storage(
             .withCredentials(AWSStaticCredentialsProvider(credentials))
         if (!endpoint.isNullOrBlank()) {
             clientBuilder =
-                clientBuilder.withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration(endpoint, region))
+                clientBuilder.withEndpointConfiguration(
+                    AwsClientBuilder.EndpointConfiguration(
+                        endpoint,
+                        region
+                    )
+                )
         }
         this.client = clientBuilder.build()
         this.transferManager = TransferManagerBuilder.standard().apply {
@@ -65,12 +70,18 @@ class S3Storage(
         }.build()
     }
 
-    private suspend fun uploadFile(bucket: String, key: String, content: ByteArray, fileType: String): String {
+    private suspend fun uploadFile(
+        bucket: String,
+        key: String,
+        content: ByteArray,
+        fileType: String
+    ): String {
         val uploadResult = withContext(Dispatchers.IO) {
-            val uploadHandler = transferManager.upload(bucket, key, content.inputStream(), ObjectMetadata().apply {
-                contentLength = content.size.toLong()
-                contentType = fileType
-            })
+            val uploadHandler =
+                transferManager.upload(bucket, key, content.inputStream(), ObjectMetadata().apply {
+                    contentLength = content.size.toLong()
+                    contentType = fileType
+                })
             uploadHandler.waitForUploadResult()
         }
         return "s3://${uploadResult.bucketName}/$key"
@@ -81,7 +92,8 @@ class S3Storage(
         content: ByteArray,
         fileType: String,
     ): String {
-        val key = "${if ((keyPrefix ?: "").isNotBlank()) "${keyPrefix!!.trimEnd('/')}/" else ""}$filename"
+        val key =
+            "${if ((keyPrefix ?: "").isNotBlank()) "${keyPrefix!!.trimEnd('/')}/" else ""}$filename"
         return uploadFile(bucket, key, content, fileType)
     }
 }
@@ -93,7 +105,7 @@ suspend fun Upload.await(): UploadResult = suspendCancellableCoroutine { cont ->
         if (state == Transfer.TransferState.Completed) {
             logger.info { "completed" }
             try {
-                cont.resume(waitForUploadResult()){}
+                cont.resume(waitForUploadResult()) {}
             } catch (e: Throwable) {
                 cont.resumeWithException(e)
             }
