@@ -13,6 +13,9 @@ import { MenuItemDivider } from './MenuItemDivider'
 import { MenuWrapper } from './MenuWrapper'
 import { table } from './v11n/charts/table'
 import PerfectScrollbar from 'react-perfect-scrollbar'
+import FormSwitch from './kit/FormSwitch'
+import FormInput from './kit/FormInput'
+import produce from 'immer'
 
 export default function MetricConfig(props: { block: Editor.SQLLikeBlock; className?: string }) {
   const [isMetric, setIsMetric] = useState(false)
@@ -188,10 +191,10 @@ function MetricConfigInner(props: { block: Editor.MetricBlock; className?: strin
   )
 }
 
-function getFuncs(type?: string) {
-  return type && ['CHAR', 'VARCHAR', 'LONGVARCHAR', 'DATE', 'TIME', 'TIMESTAMP'].includes(type)
+function getFuncs(type: string) {
+  return ['CHAR', 'VARCHAR', 'LONGVARCHAR', 'DATE', 'TIME', 'TIMESTAMP'].includes(type)
     ? ['count', 'countDistinct']
-    : type && ['TINYINT', 'SMALLINT', 'INTEGER', 'FLOAT', 'REAL', 'DOUBLD', 'NUMERIC', 'DECIMAL'].includes(type)
+    : ['TINYINT', 'SMALLINT', 'INTEGER', 'FLOAT', 'REAL', 'DOUBLD', 'NUMERIC', 'DECIMAL'].includes(type)
     ? ['sum', 'avg', 'min', 'max', 'median', 'std']
     : []
 }
@@ -201,6 +204,7 @@ function MetricConigCreator(props: {
   onCreate(measurements: Measurement[]): void
 }) {
   const [field, setField] = useState<{ name: string; type: string }>()
+  const [map, setMap] = useState<Record<string, string>>({})
 
   return (
     <>
@@ -242,9 +246,26 @@ function MetricConigCreator(props: {
       >
         {field?.name || 'Choose'}
       </FormDropdown>
-      {getFuncs(field?.type).map((func) => (
-        <div key={func}>{func}</div>
-      ))}
+      {field &&
+        getFuncs(field.type).map((func) => (
+          <MeasurementItem
+            key={func}
+            fieldName={field.name}
+            func={func}
+            value={map[func]}
+            onChange={(value) => {
+              setMap(
+                produce((draft) => {
+                  if (value) {
+                    draft[func] = value
+                  } else {
+                    delete draft[func]
+                  }
+                })
+              )
+            }}
+          />
+        ))}
       <FormButton
         variant="primary"
         disabled={true}
@@ -256,5 +277,44 @@ function MetricConigCreator(props: {
         Add all
       </FormButton>
     </>
+  )
+}
+
+function MeasurementItem(props: {
+  fieldName: string
+  func: string
+  value?: string
+  onChange(value?: string): void
+  className?: string
+}) {
+  return (
+    <div className={props.className}>
+      <div>
+        {props.func}
+        <FormSwitch
+          checked={!!props.value}
+          onChange={(e) => {
+            props.onChange(e.target.checked ? `${props.func}(${props.fieldName})` : undefined)
+          }}
+        />
+      </div>
+      {props.value && (
+        <>
+          <span
+            className={css`
+              color: ${ThemingVariables.colors.text[1]};
+            `}
+          >
+            Name
+          </span>
+          <FormInput
+            value={props.value}
+            onChange={(e) => {
+              props.onChange(e.target.value)
+            }}
+          />
+        </>
+      )}
+    </div>
   )
 }
