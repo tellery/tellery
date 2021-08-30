@@ -6,7 +6,7 @@
       "count": "COUNT(?)",
       "countDistinct": "COUNT(DISTINCT ?)"
     },
-    "TINYINT,SMALLINT,INTEGER": {
+    "TINYINT,SMALLINT,INTEGER,BIGINT": {
       "sum": "SUM(?)",
       "avg": "AVG(?)",
       "min": "MIN(?)",
