@@ -3,7 +3,7 @@ import { Block } from '../block'
 import { SqlBlock } from '../block/sql'
 
 function match(block: Block): boolean {
-  return block.getType() === BlockType.SQL || block.getType() === BlockType.METRIC
+  return block.getType() === BlockType.SQL || block.getType() === BlockType.QUERY_BUILDER
 }
 
 /**

@@ -1,27 +1,27 @@
 import { Block, getPlainTextFromTokens } from '.'
 import { BlockType } from '../../types/block'
-import { Field, Measurement } from '../../types/metric'
+import { Field, Metric } from '../../types/queryBuilder'
 import { Token } from '../../types/token'
 import { getLinksFromSql, Link } from '../link'
-import { DataSource, Transcludable, Explorable } from './interfaces'
+import { DataSource, Transcludable } from './interfaces'
 
-type MetricBlockContent = {
+type QueryBuilderBlockContent = {
   title: Token[]
   snapshotId?: string
   sql: string
   // generated from sql execution (table schema, where DataType can be refined by user)
   fields?: Field[]
-  measurements?: { [id: string]: Measurement }
+  metrics?: { [id: string]: Metric }
 }
-export class MetricBlock extends Block implements DataSource, Transcludable, Explorable {
-  static type = BlockType.METRIC
+export class QueryBuilderBlock extends Block implements DataSource, Transcludable {
+  static type = BlockType.QUERY_BUILDER
 
   getType(): BlockType {
-    return MetricBlock.type
+    return QueryBuilderBlock.type
   }
 
-  getContent(): MetricBlockContent {
-    return (this.content as MetricBlockContent) ?? {}
+  getContent(): QueryBuilderBlockContent {
+    return (this.content as QueryBuilderBlockContent) ?? {}
   }
 
   getPlainText(): string | undefined {

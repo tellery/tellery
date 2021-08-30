@@ -1,14 +1,14 @@
 type DataType = string
 type FunctionName = string
-type MetricTranslation = Map<DataType, Map<string, FunctionName>>
+type QueryBuilderTranslation = Map<DataType, Map<string, FunctionName>>
 
-type MetricSpec = {
+type QueryBuilderSpec = {
   // single char
   identifier: string
   // single char
   stringLiteral: string
-  aggregation: MetricTranslation
-  bucketization: MetricTranslation
+  aggregation: QueryBuilderTranslation
+  bucketization: QueryBuilderTranslation
 }
 
 type Field = {
@@ -30,25 +30,25 @@ type SelectBuilder = {
     }
 )
 
-type Measurement = SelectBuilder & {
+type Metric = SelectBuilder & {
   deprecated?: boolean
 }
 
 type Dimension = SelectBuilder
 
-type ExplorationExecution = {
-  metricId: string
-  measurementIds: string[]
+type SmartQueryExecution = {
+  queryBuilderId: string
+  metricIds: string[]
   dimensions: Dimension[]
   // filters: Filter[]
 }
 
 export {
-  MetricSpec,
+  QueryBuilderSpec,
   SelectBuilder,
-  MetricTranslation,
+  QueryBuilderTranslation,
   Field,
-  Measurement,
+  Metric,
   Dimension,
-  ExplorationExecution,
+  SmartQueryExecution,
 }

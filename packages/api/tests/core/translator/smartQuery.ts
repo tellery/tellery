@@ -7,7 +7,7 @@ import { getRepository } from 'typeorm'
 import { BlockParentType, BlockType } from '../../../src/types/block'
 import { createDatabaseCon } from '../../../src/clients/db/orm'
 import BlockEntity from '../../../src/entities/block'
-import { translateExplorationToSql } from '../../../src/core/translator/exploration'
+import { translateSmartQuery } from '../../../src/core/translator/smartQuery'
 import { stringCompare } from '../../testutils'
 
 const objConverter = (t: { [key: string]: { [key: string]: string } }) =>
@@ -17,7 +17,7 @@ const objConverter = (t: { [key: string]: { [key: string]: string } }) =>
       return k.split(',').map((subKey: string) => [subKey, vMap])
     }),
   )
-const metricSpec = {
+const queryBuilderSpec = {
   identifier: '`?`',
   stringLiteral: "'?'",
   aggregation: objConverter({
@@ -48,19 +48,19 @@ test.before(async () => {
   await createDatabaseCon()
 })
 
-test('exploration sql assemble', async (t) => {
+test('smart query sql assemble', async (t) => {
   const storyId = nanoid()
-  const metricId = nanoid()
+  const queryBuilderId = nanoid()
 
   await getRepository(BlockEntity).save({
-    id: metricId,
+    id: queryBuilderId,
     workspaceId: 'test',
-    interKey: metricId,
+    interKey: queryBuilderId,
     parentId: storyId,
     parentTable: BlockParentType.BLOCK,
     storyId,
     content: {
-      title: [['metric1']],
+      title: [['qb1']],
       sql: 'select uid, visit, dt, cost from test',
       fields: [
         {
@@ -80,7 +80,7 @@ test('exploration sql assemble', async (t) => {
           type: 'DECIMAL',
         },
       ],
-      measurements: {
+      metrics: {
         mid1: {
           name: 'active_user',
           fieldName: 'uid',
@@ -105,14 +105,14 @@ test('exploration sql assemble', async (t) => {
         },
       },
     },
-    type: BlockType.METRIC,
+    type: BlockType.QUERY_BUILDER,
     children: [],
     alive: true,
   })
 
-  const explorationExecution = {
-    metricId,
-    measurementIds: ['mid1', 'mid4'],
+  const smartQueryExecution = {
+    queryBuilderId,
+    metricIds: ['mid1', 'mid4'],
     dimensions: [
       {
         name: 'dt byDate',
@@ -127,11 +127,11 @@ test('exploration sql assemble', async (t) => {
     ],
   }
 
-  const sql = await translateExplorationToSql(explorationExecution, metricSpec)
-  await getRepository(BlockEntity).delete([metricId])
+  const sql = await translateSmartQuery(smartQueryExecution, queryBuilderSpec)
+  await getRepository(BlockEntity).delete([queryBuilderId])
   stringCompare(
     t,
     sql,
-    `SELECT to_date(\`dt\`) AS \`dt byDate\`, case when cost > 10 then 'high' else 'low' AS \`costHigh\`, count(distinct \`uid\`) AS \`active_user\`, percentile(visit, 0.95) AS \`visit_p95\` FROM {{ ${metricId} }} GROUP BY 1, 2`,
+    `SELECT to_date(\`dt\`) AS \`dt byDate\`, case when cost > 10 then 'high' else 'low' AS \`costHigh\`, count(distinct \`uid\`) AS \`active_user\`, percentile(visit, 0.95) AS \`visit_p95\` FROM {{ ${queryBuilderId} }} GROUP BY 1, 2`,
   )
 })

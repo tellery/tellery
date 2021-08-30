@@ -111,7 +111,7 @@ export class ConnectorManager implements IConnectorManager {
   async getProfileSpec(profile: string): Promise<ProfileSpec> {
     const request = new GetProfileSpecRequest().setName(profile)
     const spec = await beautyCall(this.client.getProfileSpec, this.client, request)
-    const rawMetricSpec = JSON.parse(Buffer.from(spec.getMetricspec(), 'base64').toString())
+    const rawSpec = JSON.parse(Buffer.from(spec.getQuerybuilderspec(), 'base64').toString())
     const objConverter = (t: { [key: string]: { [key: string]: string } }) =>
       new Map(
         Object.entries(t).flatMap(([k, v]) => {
@@ -119,18 +119,17 @@ export class ConnectorManager implements IConnectorManager {
           return k.split(',').map((subKey: string) => [subKey, vMap])
         }),
       )
-    const metricSpec = {
-      identifier: rawMetricSpec.identifier,
-      stringLiteral: rawMetricSpec.stringLiteral,
-      aggregation: objConverter(rawMetricSpec.aggregation),
-      bucketization: objConverter(rawMetricSpec.bucketization),
+    const queryBuilderSpec = {
+      ...rawSpec,
+      aggregation: objConverter(rawSpec.aggregation),
+      bucketization: objConverter(rawSpec.bucketization),
     }
 
     return {
       name: spec.getName(),
       type: spec.getType(),
       tokenizer: Buffer.from(spec.getTokenizer(), 'base64').toString(),
-      metricSpec,
+      queryBuilderSpec,
     }
   }
 

@@ -1,5 +1,5 @@
 import { AuthData, AuthType } from './auth'
-import { MetricSpec } from './metric'
+import { QueryBuilderSpec } from './queryBuilder'
 
 type Config = {
   name: string
@@ -20,7 +20,7 @@ type ProfileSpec = {
   name: string
   type: string
   tokenizer: string
-  metricSpec: MetricSpec
+  queryBuilderSpec: QueryBuilderSpec
 }
 
 type Profile = {

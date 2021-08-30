@@ -11,9 +11,9 @@ import { ISqlTranslator } from './interface'
 
 import * as dbtTranslator from './dbt'
 import * as sqlTranslator from './sql'
-import * as explorationTranslator from './exploration'
+import * as smartQueryTranslator from './smartQuery'
 
-const translators: ISqlTranslator[] = [sqlTranslator, dbtTranslator, explorationTranslator]
+const translators: ISqlTranslator[] = [sqlTranslator, dbtTranslator, smartQueryTranslator]
 
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 8)
 

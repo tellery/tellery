@@ -12,8 +12,8 @@ import { mustGetUser } from '../utils/user'
 import { streamHttpErrorCb, withKeepaliveStream } from '../utils/stream'
 import { StorageError, UnauthorizedError } from '../error/error'
 import { translate } from '../core/translator'
-import { SelectBuilder } from '../types/metric'
-import { translateExplorationToSql } from '../core/translator/exploration'
+import { SelectBuilder } from '../types/queryBuilder'
+import { translateSmartQuery } from '../core/translator/smartQuery'
 
 class AddConnectorRequest {
   @IsDefined()
@@ -179,7 +179,7 @@ class ImportRequest {
   key!: string
 }
 
-class TranslateExplorationRequest {
+class TranslateSmartQueryRequest {
   @IsDefined()
   workspaceId!: string
 
@@ -190,12 +190,12 @@ class TranslateExplorationRequest {
   profile!: string
 
   @IsDefined()
-  metricId!: string
+  queryBuilderId!: string
 
   @IsDefined()
   @IsArray()
   @Type(() => String)
-  measurementIds!: string[]
+  metricIds!: string[]
 
   @IsDefined()
   @IsArray()
@@ -307,19 +307,19 @@ async function getProfileSpecRouter(ctx: Context) {
     Object.fromEntries(
       Array.from(map.entries()).map(([k, submap]) => [k, Object.fromEntries(submap.entries())]),
     )
-  const { name, type, tokenizer, metricSpec } = await connectorService.getProfileSpec(
+  const { name, type, tokenizer, queryBuilderSpec } = await connectorService.getProfileSpec(
     manager,
     user.id,
     payload.workspaceId,
     payload.profile,
   )
-  const { aggregation, bucketization } = metricSpec
+  const { aggregation, bucketization } = queryBuilderSpec
   ctx.body = {
     name,
     type,
     tokenizer,
-    metricSpec: {
-      ...metricSpec,
+    queryBuilderSpec: {
+      ...queryBuilderSpec,
       aggregation: converter(aggregation),
       bucketization: converter(bucketization),
     },
@@ -388,14 +388,14 @@ async function execute(ctx: Context) {
 
     const manager = await getIConnectorManagerFromDB(connectorId)
 
-    const { metricSpec } = await connectorService.getProfileSpec(
+    const { queryBuilderSpec } = await connectorService.getProfileSpec(
       manager,
       user.id,
       workspaceId,
       profile,
     )
 
-    const assembledSql = await translate(sql, { metricSpec })
+    const assembledSql = await translate(sql, { queryBuilderSpec })
 
     const identifier = nanoid()
 
@@ -456,24 +456,24 @@ async function importFromFile(ctx: Context) {
   ctx.body = result
 }
 
-async function translateExploration(ctx: Context) {
-  const payload = plainToClass(TranslateExplorationRequest, ctx.request.body)
+async function translateSmartQueryRouter(ctx: Context) {
+  const payload = plainToClass(TranslateSmartQueryRequest, ctx.request.body)
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
-  const { workspaceId, connectorId, profile, metricId, measurementIds, dimensions } = payload
+  const { workspaceId, connectorId, profile, queryBuilderId, metricIds, dimensions } = payload
 
   const manager = await getIConnectorManagerFromDB(connectorId)
 
-  const { metricSpec } = await connectorService.getProfileSpec(
+  const { queryBuilderSpec } = await connectorService.getProfileSpec(
     manager,
     user.id,
     workspaceId,
     profile,
   )
 
-  const assembledSql = await translateExplorationToSql(
-    { metricId, measurementIds, dimensions },
-    metricSpec,
+  const assembledSql = await translateSmartQuery(
+    { queryBuilderId, metricIds, dimensions },
+    queryBuilderSpec,
   )
 
   ctx.body = { sql: assembledSql }
@@ -493,6 +493,6 @@ router.post('/listCollections', listCollectionsRouter)
 router.post('/getCollectionSchema', getCollectionSchemaRouter)
 router.post('/executeSql', execute)
 router.post('/import', importFromFile)
-router.post('/translateExploration', translateExploration)
+router.post('/translateSmartQuery', translateSmartQueryRouter)
 
 export default router

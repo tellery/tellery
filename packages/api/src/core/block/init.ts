@@ -13,7 +13,6 @@ import { DividerBlock } from './divider'
 import { EmbedBlock } from './embed'
 import { EquationBlock } from './equation'
 import { ExcalidrawBlock } from './excalidraw'
-import { ExplorationBlock } from './exploration'
 import { FigmaBlock } from './figma'
 import { FileBlock } from './file'
 import { GistBlock } from './gist'
@@ -39,9 +38,10 @@ import { ToggleBlock } from './toggle'
 import { TweetBlock } from './tweet'
 import { VideoBlock } from './video'
 import { YouTubeBlock } from './youtube'
-import { MetricBlock } from './metric'
 import { SnapshotBlock } from './snapshot'
 import { VariableBlock } from './variable'
+import { QueryBuilderBlock } from './queryBuilder'
+import { SmartQueryBlock } from './smartQuery'
 // deprecated
 
 // record all block types
@@ -61,9 +61,9 @@ const blockConstructors = {
   [BlockType.STORY]: StoryBlock,
   [BlockType.EMBED]: FigmaBlock,
   [BlockType.SQL]: SqlBlock,
-  [BlockType.METRIC]: MetricBlock,
+  [BlockType.QUERY_BUILDER]: QueryBuilderBlock,
   [BlockType.VISUALIZATION]: VisualizationBlock,
-  [BlockType.EXPLORATION]: ExplorationBlock,
+  [BlockType.SMART_QUERY]: SmartQueryBlock,
   [BlockType.QUOTE]: QuoteBlock,
   [BlockType.TABLE]: TableBlock,
   [BlockType.TEXT]: TextBlock,
