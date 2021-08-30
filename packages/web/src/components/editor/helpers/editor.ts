@@ -25,6 +25,7 @@ export const getStartContainerFromPoint = (x: number, y: number) => {
 export const getRangeFromPoint = (x: number, y: number) => {
   // https://developer.mozilla.org/zh-CN/docs/Web/API/Document/caretRangeFromPoint
   if (document.caretRangeFromPoint) return document.caretRangeFromPoint(x, y)
+  // https://developer.mozilla.org/en-US/docs/Web/API/Document/caretPositionFromPoint
   if (document.caretPositionFromPoint) {
     const position = document.caretPositionFromPoint(x, y)
     if (position) {

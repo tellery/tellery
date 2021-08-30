@@ -1179,7 +1179,7 @@ const _StoryEditor: React.FC<{
         e.preventDefault()
         invariant(selectionState?.type === TellerySelectionType.Inline, 'selection state is not inline')
         const files = e.clipboardData.files
-        const fileBlocks: Editor.BaseBlock[] = [...files].map(() =>
+        const fileBlocks: Editor.BaseBlock[] = Array.from(files).map(() =>
           createEmptyBlock({
             type: Editor.BlockType.File,
             storyId,

@@ -126,7 +126,7 @@ const _TelleryDNDContext: React.FC<{
           logger('drga end', event, dataTransferRef.current)
           const files = dataTransferRef.current?.files
           invariant(files, 'files is empty')
-          const fileBlocks = [...files].map(() =>
+          const fileBlocks = Array.from(files).map(() =>
             createEmptyBlock({
               type: Editor.BlockType.File,
               storyId: overStoryId,
