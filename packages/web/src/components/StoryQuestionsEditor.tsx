@@ -469,6 +469,9 @@ export const StoryQuestionEditor: React.FC<{
   const sql = questionBlockState?.draft?.sql ?? originalSQL ?? ''
   const snapShotId = questionBlockState?.draft?.snapshotId ?? sqlBlock?.content?.snapshotId
   const queryTitle = questionBlockState?.draft?.title ?? sqlBlock?.content?.title
+  const fields = questionBlockState?.draft?.fields ?? (sqlBlock as Editor.MetricBlock)?.content?.fields
+  const measurements =
+    questionBlockState?.draft?.measurements ?? (sqlBlock as Editor.MetricBlock)?.content?.measurements
 
   const snapshot = useSnapshot(snapShotId)
 
@@ -518,6 +521,28 @@ export const StoryQuestionEditor: React.FC<{
       })
     },
     [id, originalSQL, setQuestionBlocksMap]
+  )
+
+  const setMetricContent = useCallback(
+    (fields, measurements) => {
+      setQuestionBlocksMap((blocksMap) => {
+        return {
+          ...blocksMap,
+          [id]: {
+            ...blocksMap[id],
+            draft: emitFalsyObject({
+              ...blocksMap[id].draft,
+              fields: dequal(fields, (sqlBlock as Editor.MetricBlock).content?.fields) === false ? fields : undefined,
+              measurements:
+                dequal(measurements, (sqlBlock as Editor.MetricBlock).content?.measurements) === false
+                  ? measurements
+                  : undefined
+            })
+          }
+        }
+      })
+    },
+    [id, setQuestionBlocksMap, sqlBlock]
   )
 
   const previousSnapshot = usePrevious(snapshot)
@@ -615,6 +640,11 @@ export const StoryQuestionEditor: React.FC<{
       draftBlock.content!.error = null
       draftBlock.content!.title = queryTitle ?? []
       draftBlock.content!.lastRunAt = Date.now()
+      if (fields?.length && Object.keys(measurements || {}).length) {
+        draftBlock.type = Editor.BlockType.Metric
+      }
+      ;(draftBlock as Editor.MetricBlock).content!.fields = fields
+      ;(draftBlock as Editor.MetricBlock).content!.measurements = measurements
     })
     setVisualizationBlock(block.id, (draftBlock) => {
       draftBlock.content!.visualization = visualizationConfig
@@ -629,6 +659,8 @@ export const StoryQuestionEditor: React.FC<{
     sql,
     snapShotId,
     queryTitle,
+    fields,
+    measurements,
     visualizationConfig
   ])
 
@@ -1094,7 +1126,8 @@ export const StoryQuestionEditor: React.FC<{
         )}
         {mode === 'METRIC' && (
           <MetricConfig
-            block={sqlBlock}
+            value={sqlBlock}
+            onChange={setMetricContent}
             className={css`
               flex: 1;
             `}

@@ -17,11 +17,23 @@ import FormSwitch from './kit/FormSwitch'
 import FormInput from './kit/FormInput'
 import produce from 'immer'
 
-export default function MetricConfig(props: { block: Editor.SQLLikeBlock; className?: string }) {
+export default function MetricConfig(props: {
+  value: Editor.SQLLikeBlock
+  onChange(
+    fields: {
+      name: string
+      type: string
+    }[],
+    measurements: {
+      [id: string]: Measurement
+    }
+  ): void
+  className?: string
+}) {
   const [isMetric, setIsMetric] = useState(false)
   useEffect(() => {
-    setIsMetric(props.block.type === Editor.BlockType.Metric)
-  }, [props.block.type])
+    setIsMetric(props.value.type === Editor.BlockType.Metric)
+  }, [props.value.type])
 
   if (!isMetric) {
     return (
@@ -41,18 +53,30 @@ export default function MetricConfig(props: { block: Editor.SQLLikeBlock; classN
       </div>
     )
   }
-  return <MetricConfigInner block={props.block} className={props.className} />
+  return <MetricConfigInner value={props.value} onChange={props.onChange} className={props.className} />
 }
 
-function MetricConfigInner(props: { block: Editor.MetricBlock; className?: string }) {
-  const snapshot = useSnapshot(props.block.content?.snapshotId)
+function MetricConfigInner(props: {
+  value: Editor.MetricBlock
+  onChange(
+    fields: {
+      name: string
+      type: string
+    }[],
+    measurements: {
+      [id: string]: Measurement
+    }
+  ): void
+  className?: string
+}) {
+  const snapshot = useSnapshot(props.value.content?.snapshotId)
   const [activeMeasurement, setActiveMeasurement] = useState<string>()
   const ref = useRef<HTMLDivElement>(null)
   const dimensions = useDimensions(ref, 0)
-  const [measurements, setMeasurements] = useState(props.block.content?.measurements || {})
+  const [measurements, setMeasurements] = useState(props.value.content?.measurements || {})
   useEffect(() => {
-    setMeasurements(props.block.content?.measurements || {})
-  }, [props.block.content?.measurements])
+    setMeasurements(props.value.content?.measurements || {})
+  }, [props.value.content?.measurements])
   const fields = useMemo(
     () =>
       snapshot?.data.fields
@@ -60,6 +84,12 @@ function MetricConfigInner(props: { block: Editor.MetricBlock; className?: strin
         .map((field) => ({ name: field.name, type: field.sqlType! })),
     [snapshot?.data.fields]
   )
+  const { onChange } = props
+  useEffect(() => {
+    if (fields) {
+      onChange(fields, measurements)
+    }
+  }, [fields, measurements, onChange])
 
   return (
     <div

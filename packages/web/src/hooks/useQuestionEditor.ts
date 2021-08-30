@@ -1,5 +1,5 @@
 import { Config, Type } from '@app/components/v11n/types'
-import { Editor } from '@app/types'
+import { Editor, Measurement } from '@app/types'
 import { useMemo } from 'react'
 import { useIsMutating } from 'react-query'
 // eslint-disable-next-line camelcase
@@ -14,6 +14,13 @@ export type QueryEditorMode = 'SQL' | 'VIS' | 'DOWNSTREAM' | 'METRIC'
 
 export interface EditorDraft {
   sql?: string
+  fields?: {
+    name: string
+    type: string
+  }[]
+  measurements?: {
+    [id: string]: Measurement
+  }
   visConfig?: Config<Type>
   snapshotId?: string
   title?: Editor.Token[]
