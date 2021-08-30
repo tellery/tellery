@@ -75,11 +75,6 @@ function assembleSelectField(
   const { fieldName, fieldType, func, args } = builder
   const quotedFieldName = quote.replace('?', fieldName)
   if (func) {
-    if (fieldName === 'uid') {
-      console.log('!!!')
-      console.log(translation)
-      console.log(translation.get(fieldType), func, translation.get(fieldType)?.get(func))
-    }
     const translatedName = [quotedFieldName, ...(args ?? [])].reduce(
       (acc, replacer) => acc.replace('?', replacer),
       translation.get(fieldType)?.get(func) ?? '?',
