@@ -8,14 +8,11 @@ import { css, cx } from '@emotion/css'
 import { useEffect, useRef, useState, useMemo } from 'react'
 import { FormButton } from './kit/FormButton'
 import FormDropdown from './kit/FormDropdown'
-import FormInput from './kit/FormInput'
 import { MenuItem } from './MenuItem'
 import { MenuItemDivider } from './MenuItemDivider'
 import { MenuWrapper } from './MenuWrapper'
 import { table } from './v11n/charts/table'
-import produce from 'immer'
 import PerfectScrollbar from 'react-perfect-scrollbar'
-import Tippy from '@tippyjs/react'
 
 export default function MetricConfig(props: { block: Editor.SQLLikeBlock; className?: string }) {
   const [isMetric, setIsMetric] = useState(false)
@@ -191,10 +188,10 @@ function MetricConfigInner(props: { block: Editor.MetricBlock; className?: strin
   )
 }
 
-function getFuncs(type: string) {
-  return ['CHAR', 'VARCHAR', 'LONGVARCHAR', 'DATE', 'TIME', 'TIMESTAMP'].includes(type)
+function getFuncs(type?: string) {
+  return type && ['CHAR', 'VARCHAR', 'LONGVARCHAR', 'DATE', 'TIME', 'TIMESTAMP'].includes(type)
     ? ['count', 'countDistinct']
-    : ['TINYINT', 'SMALLINT', 'INTEGER', 'FLOAT', 'REAL', 'DOUBLD', 'NUMERIC', 'DECIMAL'].includes(type)
+    : type && ['TINYINT', 'SMALLINT', 'INTEGER', 'FLOAT', 'REAL', 'DOUBLD', 'NUMERIC', 'DECIMAL'].includes(type)
     ? ['sum', 'avg', 'min', 'max', 'median', 'std']
     : []
 }
@@ -203,65 +200,37 @@ function MetricConigCreator(props: {
   fields?: { name: string; type: string }[]
   onCreate(measurements: Measurement[]): void
 }) {
-  const [measurements, setMeasurements] = useState<Measurement[]>([])
+  const [field, setField] = useState<{ name: string; type: string }>()
 
   return (
     <>
-      {measurements.map((measurement, index) => (
-        <MeasurementItem
-          key={measurement.name + index}
-          value={measurement}
-          onChange={(m) => {
-            setMeasurements(
-              produce((draft) => {
-                draft[index] = m
-              })
-            )
-          }}
-          className={css`
-            margin-bottom: 20px;
-          `}
-        />
-      ))}
+      <div
+        className={css`
+          color: ${ThemingVariables.colors.text[1]};
+        `}
+      >
+        Field
+      </div>
       <FormDropdown
         menu={({ onClick }) => (
           <MenuWrapper>
-            {props.fields?.map((field, index) => (
-              <Tippy
-                key={field.name + index}
-                content={
-                  <MenuWrapper>
-                    {getFuncs(field.type).map((func) => (
-                      <MenuItem
-                        key={func}
-                        title={func}
-                        onClick={() => {
-                          onClick()
-                          setMeasurements((old) => [
-                            ...old,
-                            { name: `${func} ${field.name}`, fieldType: field.type, fieldName: field.name, func }
-                          ])
-                        }}
-                      />
-                    ))}
-                  </MenuWrapper>
-                }
-                theme="tellery"
-                arrow={false}
-                placement="right-start"
-                duration={0}
-                offset={[-10, 10]}
-                interactive={true}
-              >
-                <MenuItem title={field.name} side={field.type} />
-              </Tippy>
+            {props.fields?.map((f, index) => (
+              <MenuItem
+                key={f.name + index}
+                title={f.name}
+                side={f.type}
+                onClick={() => {
+                  onClick()
+                  setField(f)
+                }}
+              />
             ))}
             <MenuItemDivider />
             <MenuItem
               title="Raw SQL"
               onClick={() => {
                 onClick()
-                setMeasurements((old) => [...old, { name: '', rawSql: '' }])
+                setField(undefined)
               }}
             />
           </MenuWrapper>
@@ -271,8 +240,11 @@ function MetricConigCreator(props: {
           text-align: start;
         `}
       >
-        Choose
+        {field?.name || 'Choose'}
       </FormDropdown>
+      {getFuncs(field?.type).map((func) => (
+        <div key={func}>{func}</div>
+      ))}
       <FormButton
         variant="primary"
         disabled={true}
@@ -284,25 +256,5 @@ function MetricConigCreator(props: {
         Add all
       </FormButton>
     </>
-  )
-}
-
-function MeasurementItem(props: { value: Measurement; onChange(value: Measurement): void; className?: string }) {
-  return (
-    <div className={props.className}>
-      <span
-        className={css`
-          color: ${ThemingVariables.colors.text[1]};
-        `}
-      >
-        Name
-      </span>
-      <FormInput
-        value={props.value.name}
-        onChange={(e) => {
-          props.onChange({ ...props.value, name: e.target.value })
-        }}
-      />
-    </div>
   )
 }
