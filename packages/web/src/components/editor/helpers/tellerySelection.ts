@@ -70,31 +70,28 @@ const findNodePositionAndOffset = (node: Node, offset: number) => {
     }
   }
 
-  const childIter = root.childNodes.values()
+  const children = Array.from(root.childNodes)
   if (node === root) {
     return [offset, 0]
   }
-  let i = -1
+  let index = -1
   let tokenAccOffset = 0
-  while (true) {
-    const iterRes = childIter.next()
-    if (iterRes.done) {
-      break
-    }
-    const child = iterRes.value as HTMLElement
 
-    const tokenIndex = child.dataset?.tokenIndex ? parseInt(child.dataset?.tokenIndex) : i + 1
-    if (tokenIndex !== i) {
-      i = tokenIndex
+  for (let i = 0; i < children.length; i++) {
+    const child = children[i] as HTMLElement
+
+    const tokenIndex = child.dataset?.tokenIndex ? parseInt(child.dataset?.tokenIndex) : index + 1
+    if (tokenIndex !== index) {
+      index = tokenIndex
       tokenAccOffset = 0
     }
 
     if (child === node) {
-      return [i, offset]
+      return [index, offset]
     }
     if (child?.contains?.(node)) {
       const accOffset = offset + tokenAccOffset + getNodeContentOffset(child, node)
-      return [i, accOffset]
+      return [index, accOffset]
     } else {
       tokenAccOffset += child.textContent?.length ?? 0
     }
@@ -103,7 +100,7 @@ const findNodePositionAndOffset = (node: Node, offset: number) => {
   if (offset === 0) {
     return [0, 0]
   } else {
-    return [i, 0]
+    return [index, 0]
   }
 }
 
@@ -142,7 +139,7 @@ const findNodesAtIndex = (container: HTMLElement, index: number, offset: number)
   }
 
   const tokenElements: HTMLElement[] = []
-  const childNodes = [...container.childNodes]
+  const childNodes = Array.from(container.childNodes)
   let currentIndex = -1
   for (let i = 0; i < childNodes.length; i++) {
     const currentNode = childNodes[i] as HTMLElement

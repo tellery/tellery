@@ -1,4 +1,5 @@
 import { PopoverMotionVariants } from '@app/styles/animations'
+import { Instance } from 'tippy.js'
 import { useAnimation } from 'framer-motion'
 import { useCallback, useMemo } from 'react'
 
@@ -11,9 +12,10 @@ export const useTippyMenuAnimation = (key: keyof typeof PopoverMotionVariants) =
   }, [controls, key])
 
   const onHide = useCallback(
-    ({ unmount }) => {
-      return controls.start(PopoverMotionVariants[key].inactive).then(() => {
+    ({ unmount }: Instance, finishCallback?: Function) => {
+      controls.start(PopoverMotionVariants[key].inactive).then(() => {
         unmount()
+        finishCallback?.()
       })
     },
     [controls, key]

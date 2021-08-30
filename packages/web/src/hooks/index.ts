@@ -147,7 +147,7 @@ export function useAsync<T, A extends Array<unknown>>(asyncFunction: (...args: A
         setValue(response)
         setStatus('success')
       } catch (err) {
-        setError(err)
+        setError(err as AxiosError)
         setStatus('error')
       }
     },

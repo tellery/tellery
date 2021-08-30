@@ -11,6 +11,7 @@ import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useOpenStory } from '@app/hooks'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
+import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
 import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
@@ -28,7 +29,6 @@ import IconButton from './kit/IconButton'
 import { LazyTippy } from './LazyTippy'
 import { MenuConfirmPopover } from './MenuConfirmPopover'
 import { MenuWrapper } from './MenuWrapper'
-import { useQuestionEditor } from './StoryQuestionsEditor'
 
 export const SideBarQueryItemDropdownMenuContent: React.FC<{
   block: Editor.DataAssetBlock
@@ -179,7 +179,7 @@ export const SideBarQueryItemDropdownMenu: React.FC<{ block: Editor.DataAssetBlo
           setDisplaying(true)
         }}
         onHide={(instance) => {
-          tippyAnimation.onHide(instance).then(() => {
+          tippyAnimation.onHide(instance, () => {
             setDisplaying(false)
           })
         }}

@@ -1,4 +1,5 @@
 /* eslint-disable camelcase */
+import { dequal } from 'dequal'
 import { useMemo } from 'react'
 import { useRecoilTransaction_UNSTABLE, useRecoilValue } from 'recoil'
 import type { TelleryBlockSelection, TelleryInlineSelection, TellerySelection } from '../helpers'
@@ -14,7 +15,9 @@ export const useStorySelection = (storyId: string) => {
         const previousSelection = get(TelleryStorySelectionAtom(storyId))
         const newSelection =
           typeof newSelectionOrUpdater === 'function' ? newSelectionOrUpdater(previousSelection) : newSelectionOrUpdater
-
+        if (dequal(previousSelection, newSelection)) {
+          return
+        }
         // update block selected status atom family
         const previousSelectectBlocks = new Set((previousSelection as TelleryBlockSelection)?.selectedBlocks ?? [])
         const currentSelectedBlocks = new Set((newSelection as TelleryBlockSelection)?.selectedBlocks ?? [])

@@ -1,5 +1,5 @@
 import { IconCommonLink } from '@app/assets/icons'
-import { css } from '@emotion/css'
+import { css, cx } from '@emotion/css'
 import React, { CSSProperties, useEffect, useRef } from 'react'
 import ReactDOMServer from 'react-dom/server'
 import { useBlockSnapshot } from '@app/store/block'
@@ -152,9 +152,14 @@ export const Token = ({
 
     return (
       <>
-        <a data-token-index={realIndex} contentEditable={false} style={styleGen()} className={classNames}>
+        <a
+          data-token-index={realIndex}
+          contentEditable={false}
+          style={styleGen()}
+          className={cx(classNames, 'tellery-hoverable-token', 'tellery-formula-token')}
+        >
           <span style={{ whiteSpace: 'nowrap' }}></span>
-          {assetsMap[formulaEntity[1]] ?? 'loading...'}
+          <span>{assetsMap[formulaEntity[1]] ?? 'loading...'}</span>
           <span style={{ whiteSpace: 'nowrap' }}></span>
         </a>
       </>
@@ -172,7 +177,7 @@ export const Token = ({
           target="_blank"
           rel="noopener noreferrer"
           style={styleGen()}
-          className={classNames}
+          className={cx(classNames, 'tellery-hoverable-token', 'tellery-link-token')}
         >
           <IconCommonLink height="1em" width="1em" viewBox="0 0 20 20" style={{ verticalAlign: 'middle' }} />
           {getTextElement(token, index)}
@@ -205,7 +210,7 @@ export const Token = ({
           rel="noopener noreferrer"
           contentEditable={false}
           style={styleGen()}
-          className={classNames}
+          className={cx(classNames, 'tellery-hoverable-token', 'tellery-reference-token')}
         >
           <span style={{ whiteSpace: 'nowrap' }}></span>
           <span>{title}</span>

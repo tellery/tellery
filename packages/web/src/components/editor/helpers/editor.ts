@@ -25,6 +25,7 @@ export const getStartContainerFromPoint = (x: number, y: number) => {
 export const getRangeFromPoint = (x: number, y: number) => {
   // https://developer.mozilla.org/zh-CN/docs/Web/API/Document/caretRangeFromPoint
   if (document.caretRangeFromPoint) return document.caretRangeFromPoint(x, y)
+  // https://developer.mozilla.org/en-US/docs/Web/API/Document/caretPositionFromPoint
   if (document.caretPositionFromPoint) {
     const position = document.caretPositionFromPoint(x, y)
     if (position) {
@@ -153,6 +154,11 @@ export const getTransformedSelection = (
   const oldAnchor = selectionState.anchor
   const oldFocus = selectionState.focus
   const changedLength = getTokensLength(newTokens) - getTokensLength(oldTokens)
+  // logger(
+  //   'getTransformedSelection',
+  //   tokenPosition2SplitedTokenPosition(oldTokens, oldAnchor.nodeIndex, oldAnchor.offset) ?? 0
+  // )
+
   const anchorOffset =
     (tokenPosition2SplitedTokenPosition(oldTokens, oldAnchor.nodeIndex, oldAnchor.offset) ?? 0) + changedLength
   const focusOffset =
@@ -160,7 +166,7 @@ export const getTransformedSelection = (
   const newAnchor = splitedTokenPosition2TokenPosition(newTokens, anchorOffset)
   const newFocus = splitedTokenPosition2TokenPosition(newTokens, focusOffset)
 
-  logger('getTransformedSelection', anchorOffset, focusOffset, changedLength, newAnchor, newFocus)
+  // logger('getTransformedSelection', selectionState, anchorOffset, focusOffset, changedLength, newAnchor, newFocus)
   return {
     type: TellerySelectionType.Inline,
     anchor: {

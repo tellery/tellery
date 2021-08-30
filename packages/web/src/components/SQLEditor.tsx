@@ -2,6 +2,7 @@ import { IconCommonDbt, IconCommonSql } from '@app/assets/icons'
 import { useOpenStory } from '@app/hooks'
 import { useMgetBlocks } from '@app/hooks/api'
 import { useFetchBlock } from '@app/hooks/useFetchBlock'
+import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
 import { transclusionRegex } from '@app/hooks/useSqlEditor'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { SVG2DataURI } from '@app/lib/svg'
@@ -18,7 +19,6 @@ import YAML from 'yaml'
 import { CircularLoading } from './CircularLoading'
 import { useGetBlockTitleTextSnapshot } from './editor'
 import { SQLViewer } from './SQLViewer'
-import { useQuestionEditor } from './StoryQuestionsEditor'
 
 const STORY_BLOCK_REGEX = new RegExp(`${window.location.protocol}//${window.location.host}/story/(\\S+)#(\\S+)`)
 
@@ -315,6 +315,7 @@ function TransclusionContentWidget(props: {
                       scrollBeyondLastLine: false,
                       scrollBeyondLastColumn: 0
                     }}
+                    theme="tellery"
                     loading={<CircularLoading size={50} color={ThemingVariables.colors.gray[0]} />}
                     wrapperClassName={css`
                       padding: 0 15px;

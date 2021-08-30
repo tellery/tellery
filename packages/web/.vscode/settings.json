@@ -1,3 +1,4 @@
 {
-  "react-i18n.i18nPaths": "public/locales"
+  "react-i18n.i18nPaths": "public/locales",
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
