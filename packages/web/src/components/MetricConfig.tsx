@@ -203,18 +203,12 @@ function MetricConigCreator(props: {
   fields?: { name: string; type: string }[]
   onCreate(measurements: Measurement[]): void
 }) {
-  const [field, setField] = useState<{ name: string; type: string }>()
+  const [field, setField] = useState<{ name: string; type?: string }>()
   const [map, setMap] = useState<Record<string, string>>({})
+  const [sql, setSql] = useState('')
 
   return (
     <>
-      <div
-        className={css`
-          color: ${ThemingVariables.colors.text[1]};
-        `}
-      >
-        Field
-      </div>
       <FormDropdown
         menu={({ onClick }) => (
           <MenuWrapper>
@@ -234,7 +228,7 @@ function MetricConigCreator(props: {
               title="Raw SQL"
               onClick={() => {
                 onClick()
-                setField(undefined)
+                setField({ name: '' })
               }}
             />
           </MenuWrapper>
@@ -244,31 +238,50 @@ function MetricConigCreator(props: {
           text-align: start;
         `}
       >
-        {field?.name || 'Choose'}
+        {field ? (field.type ? field.name : 'Raw SQL') : 'Choose'}
       </FormDropdown>
-      {field &&
-        getFuncs(field.type).map((func) => (
-          <MeasurementItem
-            key={func}
-            fieldName={field.name}
-            func={func}
-            value={map[func]}
-            onChange={(value) => {
-              setMap(
-                produce((draft) => {
-                  if (value === undefined) {
-                    delete draft[func]
-                  } else {
-                    draft[func] = value
-                  }
-                })
-              )
+      {field ? (
+        field.type ? (
+          getFuncs(field.type).map((func) => (
+            <MeasurementItem
+              key={func}
+              fieldName={field.name}
+              func={func}
+              value={map[func]}
+              onChange={(value) => {
+                setMap(
+                  produce((draft) => {
+                    if (value === undefined) {
+                      delete draft[func]
+                    } else {
+                      draft[func] = value
+                    }
+                  })
+                )
+              }}
+            />
+          ))
+        ) : (
+          <textarea
+            value={sql}
+            onChange={(e) => {
+              setSql(e.target.value)
             }}
+            className={css`
+              margin-top: 20px;
+              width: 100%;
+              height: 200px;
+              resize: none;
+            `}
           />
-        ))}
+        )
+      ) : null}
       <FormButton
         variant="primary"
         disabled={true}
+        onClick={() => {
+          props.onCreate([])
+        }}
         className={css`
           width: 100%;
           margin-top: 20px;
@@ -308,6 +321,12 @@ function MeasurementItem(props: {
             Name
           </span>
           <FormInput
+            placeholder={`${props.func}(${props.fieldName})`}
+            onBlur={() => {
+              if (typeof props.value === 'string' && props.value.length === 0) {
+                props.onChange(`${props.func}(${props.fieldName})`)
+              }
+            }}
             value={props.value}
             onChange={(e) => {
               props.onChange(e.target.value)
