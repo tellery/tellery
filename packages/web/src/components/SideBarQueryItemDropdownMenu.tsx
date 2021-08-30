@@ -179,7 +179,7 @@ export const SideBarQueryItemDropdownMenu: React.FC<{ block: Editor.DataAssetBlo
           setDisplaying(true)
         }}
         onHide={(instance) => {
-          tippyAnimation.onHide(instance).then(() => {
+          tippyAnimation.onHide(instance, () => {
             setDisplaying(false)
           })
         }}
