@@ -42,7 +42,7 @@
     "got": "^11.8.2",
     "grpc": "^1.24.11",
     "http-errors": "^1.8.0",
-    "ioredis": "^4.27.8",
+    "ioredis": "^4.27.9",
     "jsonwebtoken": "^8.5.1",
     "koa": "^2.13.1",
     "koa-body": "^4.2.0",
