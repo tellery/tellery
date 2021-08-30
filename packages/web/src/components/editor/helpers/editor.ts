@@ -37,14 +37,46 @@ export const getRangeFromPoint = (x: number, y: number) => {
   return null
 }
 
+export const findNearestBlockWithFilter = (
+  blockId: string,
+  snapshot: BlockSnapshot,
+  filter: (block: Editor.Block) => boolean
+): Editor.Block | null => {
+  const block = getBlockFromSnapshot(blockId, snapshot)
+  if (filter(block)) {
+    return block
+  } else {
+    if (!block.children?.length) {
+      return null
+    }
+    const firstChild = block.children[0]
+    return findNearestBlockWithFilter(firstChild, snapshot, filter)
+  }
+}
+
+export const findDeepestBlockWithFilter = (
+  blockId: string,
+  snapshot: BlockSnapshot,
+  filter: (block: Editor.Block) => boolean
+): Editor.Block | null => {
+  const block = getBlockFromSnapshot(blockId, snapshot)
+  if (!block.children?.length) {
+    return filter(block) ? block : null
+  }
+  const lastChild = block.children[block.children.length - 1]
+  return findDeepestBlockWithFilter(lastChild, snapshot, filter)
+}
+
 export const findPreviousTextBlock = (blockId: string, snapshot: BlockSnapshot) => {
   const block = getBlockFromSnapshot(blockId, snapshot)
   const parentBlock = getBlockFromSnapshot(block.parentId, snapshot)
   const index = parentBlock.children!.findIndex((id) => id === blockId)
   for (let i = index - 1; i >= 0; i--) {
-    const block = getBlockFromSnapshot(parentBlock.children![i], snapshot)
-    if (isTextBlock(block.type)) {
-      return block
+    const deepestTextBlock = findDeepestBlockWithFilter(parentBlock.children![i], snapshot, (block) =>
+      isTextBlock(block.type)
+    )
+    if (deepestTextBlock) {
+      return deepestTextBlock
     }
   }
   if (block.parentId !== block.storyId) {
@@ -55,20 +87,37 @@ export const findPreviousTextBlock = (blockId: string, snapshot: BlockSnapshot) 
   return null
 }
 
-export const findNextTextBlock = (blockId: string, snapshot: BlockSnapshot): Editor.BaseBlock | null => {
+export const findNextTextBlock = (
+  blockId: string,
+  snapshot: BlockSnapshot,
+  skipChildren: boolean = false
+): Editor.BaseBlock | null => {
   const block = getBlockFromSnapshot(blockId, snapshot)
   const parentBlock = getBlockFromSnapshot(block.parentId, snapshot)
   const index = parentBlock.children!.findIndex((id) => id === blockId)
-  for (let i = index + 1; i < parentBlock.children!.length; i++) {
-    const block = getBlockFromSnapshot(parentBlock.children![i], snapshot)
 
-    if (isTextBlock(block.type)) {
-      return block
+  // first, look for it's children
+  if (block.children?.length && skipChildren === false) {
+    for (let i = 0; i < block.children.length; i++) {
+      const nreaestBlock = findNearestBlockWithFilter(block.children[i], snapshot, (block) => isTextBlock(block.type))
+      if (nreaestBlock && nreaestBlock.id !== blockId) {
+        return nreaestBlock
+      }
+    }
+  }
+
+  // then, look for the block next to it
+  for (let i = index + 1; i < parentBlock.children!.length; i++) {
+    const nreaestBlock = findNearestBlockWithFilter(parentBlock.children![i], snapshot, (block) =>
+      isTextBlock(block.type)
+    )
+    if (nreaestBlock) {
+      return nreaestBlock
     }
   }
 
   if (block.parentId !== block.storyId) {
-    return findNextTextBlock(parentBlock.id, snapshot)
+    return findNextTextBlock(parentBlock.id, snapshot, true)
   }
 
   return null
@@ -104,6 +153,11 @@ export const getTransformedSelection = (
   const oldAnchor = selectionState.anchor
   const oldFocus = selectionState.focus
   const changedLength = getTokensLength(newTokens) - getTokensLength(oldTokens)
+  // logger(
+  //   'getTransformedSelection',
+  //   tokenPosition2SplitedTokenPosition(oldTokens, oldAnchor.nodeIndex, oldAnchor.offset) ?? 0
+  // )
+
   const anchorOffset =
     (tokenPosition2SplitedTokenPosition(oldTokens, oldAnchor.nodeIndex, oldAnchor.offset) ?? 0) + changedLength
   const focusOffset =
@@ -111,7 +165,7 @@ export const getTransformedSelection = (
   const newAnchor = splitedTokenPosition2TokenPosition(newTokens, anchorOffset)
   const newFocus = splitedTokenPosition2TokenPosition(newTokens, focusOffset)
 
-  logger('getTransformedSelection', anchorOffset, focusOffset, changedLength, newAnchor, newFocus)
+  // logger('getTransformedSelection', selectionState, anchorOffset, focusOffset, changedLength, newAnchor, newFocus)
   return {
     type: TellerySelectionType.Inline,
     anchor: {

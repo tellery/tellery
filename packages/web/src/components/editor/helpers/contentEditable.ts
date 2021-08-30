@@ -252,6 +252,9 @@ export const deserialize = (el: Element, tokens?: Editor.Token[]): Editor.Token[
             children.push([TelleryGlyph.BI_LINK, token[1]])
             break
           } else if (entities.formula) {
+            children.push([TelleryGlyph.FORMULA, token[1]])
+            break
+          } else if (entities.equation) {
             children.push([TelleryGlyph.EQUATION, token[1]])
             break
           }

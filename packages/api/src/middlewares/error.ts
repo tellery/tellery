@@ -3,7 +3,7 @@ import { Context, Next } from 'koa'
 export default async function error(ctx: Context, next: Next): Promise<void> {
   try {
     await next()
-  } catch (err) {
+  } catch (err: any) {
     console.log(err)
 
     ctx.status = err.status || 500

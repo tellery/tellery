@@ -1,6 +1,5 @@
 package io.tellery.connectors
 
-import arrow.core.Either
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.auth.oauth2.ServiceAccountCredentials
@@ -55,7 +54,8 @@ class BigQueryConnector : BaseConnector() {
     private val executor = Executors.newFixedThreadPool(10)
 
     override fun initByProfile(profile: Profile) {
-        val jsonBody = Base64.getDecoder().decode(profile.configs[BigQueryFields.KEY_FILE]).decodeToString()
+        val jsonBody =
+            Base64.getDecoder().decode(profile.configs[BigQueryFields.KEY_FILE]).decodeToString()
         val keyfileBody = gson.fromJson(jsonBody, BigQueryKeyBody::class.java)
         bigQueryOpts = BigQueryOptions.newBuilder().setCredentials(keyfileBody.toCreds()).build()
         bigQueryClient = bigQueryOpts.service
@@ -87,7 +87,7 @@ class BigQueryConnector : BaseConnector() {
 
     override suspend fun query(
         ctx: QueryContext,
-        sendToChannel: suspend (QueryResultWrapper) -> Unit
+        sendToChannel: suspend (QueryResultSet) -> Unit
     ) {
         val queryConfig = QueryJobConfiguration.newBuilder(ctx.sql).build()
         val jobId =
@@ -100,10 +100,10 @@ class BigQueryConnector : BaseConnector() {
         val fields = resultSet.schema.fields.map {
             TypeField(it.name, bigQueryTypeToSQLType(it.type.standardType))
         }
-        sendToChannel(Either.Left(fields))
+        sendToChannel(QueryResultSet.Fields(fields))
 
         resultSet.iterateAll().forEach { row ->
-            sendToChannel(Either.Right(row.map { it.value }))
+            sendToChannel(QueryResultSet.Rows(row.map { it.value }))
         }
     }
 

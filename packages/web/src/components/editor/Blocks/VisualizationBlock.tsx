@@ -43,6 +43,7 @@ import { useSelect } from 'downshift'
 import { AnimatePresence, motion, usePresence } from 'framer-motion'
 import html2canvas from 'html2canvas'
 import React, {
+  memo,
   ReactNode,
   useCallback,
   useContext,
@@ -235,7 +236,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
   )
 }
 
-const VisualizationBlockContent: React.FC<{
+const _VisualizationBlockContent: React.FC<{
   dataAssetId: string
   block: Editor.VisualizationBlock
   blockFormat: BlockFormatInterface
@@ -311,6 +312,8 @@ const VisualizationBlockContent: React.FC<{
     </>
   )
 }
+
+const VisualizationBlockContent = memo(_VisualizationBlockContent)
 
 const VisualizationBlock = React.forwardRef(_VisualizationBlock) as BlockComponent<
   React.ForwardRefExoticComponent<QuestionBlockProps & React.RefAttributes<any>>
@@ -434,7 +437,7 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
 
 const QuestionBlockBody = React.forwardRef(_QuestionBlockBody)
 
-const QuestionBlockHeader: React.FC<{
+const _QuestionBlockHeader: React.FC<{
   block: Editor.VisualizationBlock
 }> = ({ block }) => {
   const { t } = useTranslation()
@@ -505,6 +508,8 @@ const QuestionBlockHeader: React.FC<{
     </>
   )
 }
+
+const QuestionBlockHeader = memo(_QuestionBlockHeader)
 
 const QuestionBlockStatus: React.FC<{
   dataAssetBlock: Editor.DataAssetBlock
@@ -721,6 +726,7 @@ export const MoreDropdownSelect: React.FC<{
   const mutateSnapshot = useRefreshSnapshot()
 
   const operations = useMemo(() => {
+    if (!open) return []
     return [
       {
         title: t`Refresh Query`,

@@ -21,10 +21,11 @@ import styled from '@emotion/styled'
 import { Tab } from '@headlessui/react'
 import Tippy from '@tippyjs/react'
 import { motion } from 'framer-motion'
-import React, { Fragment, useCallback, useMemo } from 'react'
+import React, { Fragment, memo, ReactNode, useCallback, useMemo } from 'react'
 import ContentLoader from 'react-content-loader'
 import { useTranslation } from 'react-i18next'
 import PerfectScrollbar from 'react-perfect-scrollbar'
+import { ReactEventHandlers } from 'react-use-gesture/dist/types'
 import { useGetBlockTitleTextSnapshot } from './editor'
 import IconButton from './kit/IconButton'
 import { LazyTippy } from './LazyTippy'
@@ -40,25 +41,55 @@ const SideBarLoader: React.FC = () => {
   )
 }
 
-const StoryDataAssetItemContent: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
-  const block = useBlockSuspense(blockId)
-  const getBlockTitle = useGetBlockTitleTextSnapshot()
-
+const _StoryDataAssetItemContentDraggable: React.FC<{
+  storyId: string
+  blockId: string
+  hoveringHandlers: (...args: any[]) => ReactEventHandlers
+  children: ReactNode
+}> = ({ hoveringHandlers, children, storyId, blockId }) => {
   const { attributes, listeners, setNodeRef } = useDraggable({
-    id: `drag-${block.id}`,
+    id: `drag-${blockId}`,
     data: {
       type: DnDItemTypes.Block,
-      originalBlockId: block.id,
+      originalBlockId: blockId,
       blockData: createEmptyBlock<Editor.VisualizationBlock>({
         type: Editor.BlockType.Visualization,
         storyId: storyId,
         parentId: storyId,
         content: {
-          dataAssetId: block.id
+          dataAssetId: blockId
         }
       })
     } as DndItemDataBlockType
   })
+
+  return (
+    <div
+      className={css`
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        padding: 6px 8px;
+        margin-bottom: 5px;
+        :hover {
+          background: ${ThemingVariables.colors.primary[5]};
+        }
+      `}
+      {...listeners}
+      {...attributes}
+      {...hoveringHandlers()}
+      ref={setNodeRef}
+    >
+      {children}
+    </div>
+  )
+}
+
+const StoryDataAssetItemContentDraggable = memo(_StoryDataAssetItemContentDraggable)
+
+const StoryDataAssetItemContent: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
+  const block = useBlockSuspense(blockId)
+  const getBlockTitle = useGetBlockTitleTextSnapshot()
 
   const { t } = useTranslation()
   const IconType = useMemo(() => {
@@ -78,22 +109,7 @@ const StoryDataAssetItemContent: React.FC<{ blockId: string; storyId: string }> 
   const [hoveringHandlers, isHovering] = useBindHovering()
 
   return (
-    <div
-      className={css`
-        display: flex;
-        align-items: center;
-        cursor: pointer;
-        padding: 6px 8px;
-        margin-bottom: 5px;
-        :hover {
-          background: ${ThemingVariables.colors.primary[5]};
-        }
-      `}
-      {...listeners}
-      {...attributes}
-      {...hoveringHandlers()}
-      ref={setNodeRef}
-    >
+    <StoryDataAssetItemContentDraggable hoveringHandlers={hoveringHandlers} storyId={storyId} blockId={blockId}>
       <IconType
         color={ThemingVariables.colors.gray[0]}
         className={css`
@@ -133,7 +149,7 @@ const StoryDataAssetItemContent: React.FC<{ blockId: string; storyId: string }> 
         )}
         <SideBarQueryItemDropdownMenu block={block} storyId={storyId} show={isHovering} />
       </div>
-    </div>
+    </StoryDataAssetItemContentDraggable>
   )
 }
 

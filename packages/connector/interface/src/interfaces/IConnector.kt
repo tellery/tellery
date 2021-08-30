@@ -26,7 +26,7 @@ interface IConnector {
         schemaName: String?,
     ): List<TypeField>
 
-    suspend fun query(ctx: QueryContext, sendToChannel: suspend (QueryResultWrapper) -> Unit)
+    suspend fun query(ctx: QueryContext, sendToChannel: suspend (QueryResultSet) -> Unit)
 
     suspend fun import(
         database: String,
@@ -38,7 +38,8 @@ interface IConnector {
         val (_, response, result) = Fuel.get(url).awaitByteArrayResponseResult()
         result.fold(success = { content ->
             val contentType = response.header("Content-Type").single()
-            val handler = importDispatcher[contentType] ?: throw ImportNotSupportedException(contentType)
+            val handler =
+                importDispatcher[contentType] ?: throw ImportNotSupportedException(contentType)
             handler(database, collection, schema, content)
         }, failure = { error ->
             logger.error { error }

@@ -52,6 +52,7 @@ import invariant from 'tiny-invariant'
 import { isTextBlock } from '../Blocks/utils'
 import { EditorPopover } from '../EditorPopover'
 import { useEditor, useGetBlockTitleTextSnapshot } from '../hooks'
+import { useInlineFormulaPopoverState } from '../hooks/useInlineFormulaPopoverState'
 import { useVariable } from '../hooks/useVariable'
 
 const MARK_TYPES = Object.values(Editor.InlineType)
@@ -334,7 +335,7 @@ export const BlockTextOperationMenuInner = ({
         const splitedTokens = splitToken(currentBlock?.content?.title || [])
         const transformedTokens = applyTransformOnSplitedTokens(splitedTokens, tokenRange, (): Editor.Token => {
           const uniqueMarks = addMark([], Editor.InlineType.Formula, [formula])
-          return [TelleryGlyph.EQUATION, uniqueMarks]
+          return [TelleryGlyph.FORMULA, uniqueMarks]
         })
         const mergedTokens = mergeTokens([
           ...transformedTokens.slice(0, tokenRange.start + 1),
@@ -1062,13 +1063,14 @@ const InlineFormulaPopover = (props: {
   editHandler: (formula: string) => void
   storyId: string
 }) => {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useInlineFormulaPopoverState()
 
   useEffect(() => {
     if (!open) {
       props.setInlineEditing(false)
     }
   }, [open, props])
+
   return (
     <>
       <OperationButtonWithHoverContent

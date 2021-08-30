@@ -1,6 +1,6 @@
-import { get } from 'config'
+import config from 'config'
 
-const { host, port, username, password, database } = get('postgres')
+const { host, port, username, password, database } = config.get('postgres')
 
 const param = {
   type: 'postgres',

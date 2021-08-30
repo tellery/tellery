@@ -185,7 +185,7 @@ async function addConnectorRouter(ctx: Context) {
     (req) => {
       try {
         return getIConnectorManager(req.url, req.authType, req.authData)
-      } catch (err) {
+      } catch (err: any) {
         return ctx.throw(400, errorResponse(err.toString()))
       }
     },
@@ -341,7 +341,7 @@ async function execute(ctx: Context) {
       )
       queryResultStream.pipe(streamResponse)
     })
-  } catch (err) {
+  } catch (err: any) {
     if (!(err instanceof UnauthorizedError)) {
       // override the status code, therefore the error would appear in the sql editor correctly
       err.status = 200
