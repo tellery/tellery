@@ -1,14 +1,16 @@
 import { deserialize, restoreRange, saveSelection } from '@app/components/editor/helpers/contentEditable'
 import { LazyTippy } from '@app/components/LazyTippy'
 import { useOpenStory, usePrevious } from '@app/hooks'
+import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
 import styled from '@emotion/styled'
 import debug from 'debug'
 import { dequal } from 'dequal'
+import { motion } from 'framer-motion'
 import produce from 'immer'
-import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import invariant from 'tiny-invariant'
 import { isDataAssetBlock, isVisualizationBlock } from '../Blocks/utils'
 import {
@@ -39,7 +41,7 @@ export interface EditableRef {
   openSlashCommandMenu: () => void
 }
 
-const InlineHoverPopover = styled.div`
+const InlineHoverPopoverContainer = styled.div`
   box-shadow: ${ThemingVariables.boxShadows[0]};
   background: #fff;
   color: ${ThemingVariables.colors.text[0]};
@@ -47,6 +49,23 @@ const InlineHoverPopover = styled.div`
   padding: 6px 10px;
   border-radius: 6px;
 `
+
+const InlinePopover: React.FC<{ content: ReactNode; reference: Element | null }> = ({ content, reference }) => {
+  const tippyAnimation = useTippyMenuAnimation('fade')
+
+  return (
+    <LazyTippy
+      render={() => {
+        return <motion.div animate={tippyAnimation.controls}>{content}</motion.div>
+      }}
+      duration={150}
+      onMount={tippyAnimation.onMount}
+      onHide={tippyAnimation.onHide}
+      reference={reference}
+      placement="bottom"
+    ></LazyTippy>
+  )
+}
 
 const _ContentEditable: React.ForwardRefRenderFunction<
   EditableRef,
@@ -311,6 +330,21 @@ const _ContentEditable: React.ForwardRefRenderFunction<
     [localSelection]
   )
 
+  const inlinePopoverContent = useMemo(() => {
+    if (hoveringTokenIndex === null) return null
+    const currentToken = titleTokens[hoveringTokenIndex]
+    const entities = extractEntitiesFromToken(currentToken)
+    if (entities.link) {
+      const linkURL = entities.link[1]
+      return <InlineHoverPopoverContainer>{linkURL}</InlineHoverPopoverContainer>
+    } else if (entities.formula) {
+      const formula = entities.formula[1]
+      // return <InlineHoverPopover>click to edit formula</InlineHoverPopover>
+      return <InlineHoverPopoverContainer>{formula}</InlineHoverPopoverContainer>
+    }
+    return null
+  }, [hoveringTokenIndex, titleTokens])
+
   return (
     <div
       style={
@@ -520,23 +554,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
         }}
         data-root
       ></div>
-      <LazyTippy
-        render={() => {
-          if (hoveringTokenIndex === null) return null
-          const currentToken = titleTokens[hoveringTokenIndex]
-          const entities = extractEntitiesFromToken(currentToken)
-          if (entities.link) {
-            const linkURL = entities.link[1]
-            return <InlineHoverPopover>{linkURL}</InlineHoverPopover>
-          } else if (entities.formula) {
-            const formula = entities.formula[1]
-            // return <InlineHoverPopover>click to edit formula</InlineHoverPopover>
-            return <InlineHoverPopover>{formula}</InlineHoverPopover>
-          }
-        }}
-        reference={linkTokenReference}
-        placement="bottom"
-      ></LazyTippy>
+      <InlinePopover content={inlinePopoverContent} reference={linkTokenReference}></InlinePopover>
       {readonly !== true && !disableReferenceDropdown && (
         <BlockReferenceDropdown
           open={showReferenceDropdown}

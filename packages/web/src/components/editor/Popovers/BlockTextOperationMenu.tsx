@@ -31,6 +31,7 @@ import {
   applyTransformOnSplitedTokens,
   applyTransformOnTokens,
   extractEntitiesFromToken,
+  isSelectionCollapsed,
   mergeTokens,
   removeMark,
   splitToken,
@@ -55,7 +56,7 @@ import { usePopper } from 'react-popper'
 import invariant from 'tiny-invariant'
 import { isTextBlock } from '../Blocks/utils'
 import { EditorPopover } from '../EditorPopover'
-import { useEditor, useGetBlockTitleTextSnapshot, useTellerySelection } from '../hooks'
+import { useEditor, useGetBlockTitleTextSnapshot } from '../hooks'
 import { useInlineFormulaPopoverState } from '../hooks/useInlineFormulaPopoverState'
 import { useStorySelection } from '../hooks/useStorySelection'
 import { useVariable } from '../hooks/useVariable'
@@ -64,12 +65,10 @@ const MARK_TYPES = Object.values(Editor.InlineType)
 
 export const BlockTextOperationMenu = (props: { storyId: string }) => {
   const [open, setOpen] = useState(false)
-  // const [range, setRange] = useState<null | Range>(null)
-  // const [selectionString, setSelectionString] = useState('')
   const [selectionState] = useStorySelection(props.storyId)
 
   const range = useMemo(() => {
-    if (selectionState?.type === TellerySelectionType.Inline) {
+    if (selectionState?.type === TellerySelectionType.Inline && isSelectionCollapsed(selectionState) === false) {
       return tellerySelection2Native(selectionState)
     }
     return null
@@ -87,12 +86,12 @@ export const BlockTextOperationMenu = (props: { storyId: string }) => {
   }, [range])
 
   useEffect(() => {
-    if (!selectionString) {
-      setOpen(false)
-    } else {
+    if (selectionString?.length) {
       setOpen(true)
+    } else {
+      setOpen(false)
     }
-  }, [range, selectionString, setOpen])
+  }, [selectionString?.length])
 
   return (
     <AnimatePresence>
@@ -108,7 +107,7 @@ export const BlockTextOperationMenu = (props: { storyId: string }) => {
   )
 }
 
-export const BlockTextOperationMenuInner = ({
+const BlockTextOperationMenuInner = ({
   setOpen,
   range,
   currentBlockId,
@@ -212,11 +211,11 @@ export const BlockTextOperationMenuInner = ({
       if (isMarked) {
         const targetTokenType = firstToken?.[1]?.find((tokenType) => tokenType[0] === markType)
         if (!targetTokenType) {
-          return false
+          return undefined
         }
         return targetTokenType[1] ?? true
       } else {
-        return false
+        return undefined
       }
     },
     [selectedTokens]
@@ -315,22 +314,10 @@ export const BlockTextOperationMenuInner = ({
       }
       if (markdMap.get(Editor.InlineType.Formula)) {
         const splitedTokens = splitToken(currentBlock?.content?.title || [])
-        const transformedTokens = applyTransformOnSplitedTokens(
-          splitedTokens,
-          tokenRange,
-          (token: Editor.Token): Editor.Token => {
-            const marks = token[1]
-            const entity = extractEntitiesFromToken(token)
-            const uniqueMarks = removeMark(marks, Editor.InlineType.Formula)
-            invariant(entity.fomula, 'reference is null')
-            const tokenText = entity.fomula[1] as string
-            if (uniqueMarks) {
-              return [tokenText, uniqueMarks]
-            } else {
-              return [tokenText]
-            }
-          }
-        )
+        const transformedTokens = applyTransformOnSplitedTokens(splitedTokens, tokenRange, (): Editor.Token => {
+          const uniqueMarks = addMark([], Editor.InlineType.Formula, [formula])
+          return [TelleryGlyph.FORMULA, uniqueMarks]
+        })
         const mergedTokens = mergeTokens(transformedTokens)
         editor?.updateBlockTitle?.(currentBlock.id, mergedTokens)
       } else {
@@ -497,7 +484,7 @@ export const BlockTextOperationMenuInner = ({
           editHandler={editFormula}
           referenceRange={range}
           storyId={currentBlock.storyId!}
-          initValue={markdMap.get(Editor.InlineType.Formula) as string}
+          initValue={(markdMap.get(Editor.InlineType.Formula) as string) ?? ''}
         />
         {/* <InlineEquationPopover setInlineEditing={setInlineEditing} markHandler={markHandler} referenceRange={range} /> */}
         <OperationButtonWithHoverContent
