@@ -301,13 +301,29 @@ async function getProfileSpecRouter(ctx: Context) {
 
   const manager = await getIConnectorManagerFromDB(payload.connectorId)
 
-  const spec = await connectorService.getProfileSpec(
+  const converter = (
+    map: Map<string, Map<string, string>>,
+  ): { [key: string]: { [key: string]: string } } =>
+    Object.fromEntries(
+      Array.from(map.entries()).map(([k, submap]) => [k, Object.fromEntries(submap.entries())]),
+    )
+  const { name, type, tokenizer, metricSpec } = await connectorService.getProfileSpec(
     manager,
     user.id,
     payload.workspaceId,
     payload.profile,
   )
-  ctx.body = { spec }
+  const { aggregation, bucketization } = metricSpec
+  ctx.body = {
+    name,
+    type,
+    tokenizer,
+    metricSpec: {
+      ...metricSpec,
+      aggregation: converter(aggregation),
+      bucketization: converter(bucketization),
+    },
+  }
 }
 
 async function listDatabasesRouter(ctx: Context) {
