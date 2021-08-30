@@ -5,7 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import entities.Integration
 import entities.NewProfile
 import entities.ProjectConfig
-import io.tellery.managers.ResourceManager
+import io.tellery.managers.ProfileManager
 import org.apache.commons.io.FileUtils
 import java.nio.file.Path
 import kotlin.io.path.createFile
@@ -13,11 +13,11 @@ import kotlin.io.path.notExists
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
-class FileResourceManager(appConfig: ProjectConfig) : ResourceManager {
+class FileProfileManager(private val appConfig: ProjectConfig) : ProfileManager {
 
-    private var globalConfigDir: Path = appConfig.getGlobalConfigDir()
-    private var profilePath: Path = appConfig.getProfilePath()
-    private var integrationPath: Path = appConfig.getIntegrationPath()
+    private var globalConfigDir: Path = appConfig.globalConfigDir
+    private var profilePath: Path = appConfig.profilePath
+    private var integrationPath: Path = appConfig.integrationPath
 
     companion object {
         private val mapper = jacksonObjectMapper()
@@ -39,28 +39,35 @@ class FileResourceManager(appConfig: ProjectConfig) : ResourceManager {
         return loadProfile()
     }
 
-    override fun upsertProfile(profile: NewProfile) {
+    override fun upsertProfile(profile: NewProfile): NewProfile {
         profilePath.writeText(mapper.writeValueAsString(profile))
+        return profile
     }
 
-    override fun getAllIntegrationByProfile(profileId: String): List<Integration> {
+    override fun getAllIntegrationInProfile(profileId: String): List<Integration> {
         return loadIntegrations()
     }
 
-    override fun getIntegrationByType(type: String): Integration? {
+    override fun getIntegrationInProfileAndByType(profileId: String, type: String): Integration? {
         val integrations = loadIntegrations()
         return integrations.let {
             it.findLast { integration -> integration.type == type }
         }
     }
 
-    override fun upsertIntegration(integration: Integration) {
+    override fun upsertIntegration(integration: Integration): Integration {
         val idToIntegration = HashMap(loadIntegrations().associateBy { it.id })
+
+        if (integration.id == null) {
+            integration.id = generateIntegrationId(integration.type)
+        }
+
         idToIntegration[integration.id] = integration
         integrationPath.writeText(mapper.writeValueAsString(idToIntegration.values.toList()))
+        return integration
     }
 
-    override fun deleteIntegration(id: String) {
+    override fun deleteIntegration(id: Int) {
         val idToIntegration = HashMap(loadIntegrations().associateBy { it.id })
         idToIntegration.remove(id)
         integrationPath.writeText(mapper.writeValueAsString(idToIntegration.values.toList()))
@@ -80,5 +87,12 @@ class FileResourceManager(appConfig: ProjectConfig) : ResourceManager {
         }
 
         return mapper.readValue(integrationPath.toFile())
+    }
+
+    private fun generateIntegrationId(type: String): Int {
+        return when (type) {
+            "dbt" -> 1
+            else -> throw RuntimeException()
+        }
     }
 }

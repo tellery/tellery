@@ -11,6 +11,8 @@ val coroutinesVersion: String by project
 val jacksonVersion: String by project
 val jgitVersion: String by project
 val kotestVersion: String by project
+val koinVersion: String by project
+val ktormVersion: String by project
 
 repositories {
     jcenter()
@@ -70,13 +72,17 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
 
-    implementation("org.koin:koin-core:2.2.0-rc-4")
+    implementation("org.koin:koin-core:$koinVersion")
+    implementation("org.ktorm:ktorm-core:$ktormVersion")
+    implementation("org.ktorm:ktorm-support-postgresql:$ktormVersion")
 
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
     testImplementation("io.kotest:kotest-property:$kotestVersion")
     testImplementation("io.kotest:kotest-framework-datatest:$kotestVersion")
+    testImplementation("io.kotest.extensions:kotest-extensions-testcontainers:1.0.1")
     testImplementation("io.mockk:mockk:1.12.0")
+    testImplementation("org.testcontainers:postgresql:1.15.1")
 }
 
 
