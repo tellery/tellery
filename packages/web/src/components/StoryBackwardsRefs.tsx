@@ -11,8 +11,8 @@ import type { Ref, Story } from '@app/types'
 import { CircularLoading } from './CircularLoading'
 import { BlockContentOverview } from './editor/BlockContentOverview'
 import { SmallStory } from './SmallStory'
-import { useQuestionEditor } from './StoryQuestionsEditor'
 import { ToggleControl } from './ToggleControl'
+import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
 
 export const StoryBackwardsRefs = (props: { refs: Ref[]; storyId: string }) => {
   const refByStory = useMemo(() => {

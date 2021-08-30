@@ -10,6 +10,7 @@ import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useBindHovering } from '@app/hooks'
 import { useBlockSuspense, useFetchStoryChunk, useSearchDBTBlocks, useSearchMetrics } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
+import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
 import { useStoryResources } from '@app/hooks/useStoryResources'
 import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
 import { ThemingVariables } from '@app/styles'
@@ -31,7 +32,6 @@ import IconButton from './kit/IconButton'
 import { LazyTippy } from './LazyTippy'
 import { SideBarInspectQueryBlockPopover } from './SideBarInspectQueryBlockPopover'
 import { SideBarQueryItemDropdownMenu } from './SideBarQueryItemDropdownMenu'
-import { useQuestionEditor } from './StoryQuestionsEditor'
 
 const SideBarLoader: React.FC = () => {
   return (
