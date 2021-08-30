@@ -10,7 +10,16 @@ import debug from 'debug'
 import { dequal } from 'dequal'
 import { motion } from 'framer-motion'
 import produce from 'immer'
-import React, { ReactNode, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
+import React, {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+  useLayoutEffect
+} from 'react'
 import invariant from 'tiny-invariant'
 import { isDataAssetBlock, isVisualizationBlock } from '../Blocks/utils'
 import {
@@ -158,7 +167,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
     }
   }, [readonly, editbleRef])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const element = editbleRef.current
 
     if (isFocusing && document.activeElement !== element) {
@@ -181,21 +190,24 @@ const _ContentEditable: React.ForwardRefRenderFunction<
 
   useEffect(() => {
     if (readonly) return
+    setWillFlush(false)
     if (isFocusing === false) {
-      setWillFlush(false)
       editbleRef.current?.blur()
       return
     }
+    const element = editbleRef.current
+    if (!element) return
 
+    if (decodeHTML(leavesHtml) !== decodeHTML(element.innerHTML)) {
+      return
+    }
     try {
       const range = tellerySelection2Native(localSelection!, editbleRef.current)
       range && restoreRange(range)
-      logger('resotre range', range)
     } catch (e) {
       console.error('selection fail', e)
     }
-    setWillFlush(false)
-  }, [isFocusing, willFlush, localSelection, block.id, readonly])
+  }, [isFocusing, willFlush, localSelection, block.id, readonly, leavesHtml])
 
   const onMutation = useCallback(() => {
     invariant(editor, 'editor context is null,')
@@ -333,13 +345,13 @@ const _ContentEditable: React.ForwardRefRenderFunction<
   const inlinePopoverContent = useMemo(() => {
     if (hoveringTokenIndex === null) return null
     const currentToken = titleTokens[hoveringTokenIndex]
+    if (!currentToken) return null
     const entities = extractEntitiesFromToken(currentToken)
     if (entities.link) {
       const linkURL = entities.link[1]
       return <InlineHoverPopoverContainer>{linkURL}</InlineHoverPopoverContainer>
     } else if (entities.formula) {
       const formula = entities.formula[1]
-      // return <InlineHoverPopover>click to edit formula</InlineHoverPopover>
       return <InlineHoverPopoverContainer>{formula}</InlineHoverPopoverContainer>
     }
     return null
@@ -624,7 +636,9 @@ function updateTokensMark(
             draftState?.[updateIndex]?.[1] && delete draftState[updateIndex][1]
           }
         } else {
-          draftState[updateIndex][1] = currentMarks
+          if (currentMarks.length) {
+            draftState[updateIndex][1] = currentMarks
+          }
         }
       }
     }

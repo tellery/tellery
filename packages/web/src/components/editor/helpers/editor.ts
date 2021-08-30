@@ -154,10 +154,13 @@ export const getTransformedSelection = (
   const oldAnchor = selectionState.anchor
   const oldFocus = selectionState.focus
   const changedLength = getTokensLength(newTokens) - getTokensLength(oldTokens)
-  // logger(
-  //   'getTransformedSelection',
-  //   tokenPosition2SplitedTokenPosition(oldTokens, oldAnchor.nodeIndex, oldAnchor.offset) ?? 0
-  // )
+  logger(
+    'getTransformedSelection',
+    oldTokens,
+    oldAnchor.nodeIndex,
+    oldAnchor.offset,
+    tokenPosition2SplitedTokenPosition(oldTokens, oldAnchor.nodeIndex, oldAnchor.offset) ?? 0
+  )
 
   const anchorOffset =
     (tokenPosition2SplitedTokenPosition(oldTokens, oldAnchor.nodeIndex, oldAnchor.offset) ?? 0) + changedLength

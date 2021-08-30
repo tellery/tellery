@@ -27,7 +27,6 @@ export const BlockTitleAssetsAtoms = selectorFamily<Record<string, any>, { block
           result[formula] = formulaResult
         }
       }
-
       return result
     },
   cachePolicy_UNSTABLE: {

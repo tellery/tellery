@@ -21,17 +21,12 @@ import {
   IconMenuToggleList
 } from '@app/assets/icons'
 import { getBlockElementContentEditbleById } from '@app/components/editor/helpers/contentEditable'
-import {
-  nativeSelection2Tellery,
-  tellerySelection2Native,
-  TellerySelectionType
-} from '@app/components/editor/helpers/tellerySelection'
+import { nativeSelection2Tellery, TellerySelectionType } from '@app/components/editor/helpers/tellerySelection'
 import {
   addMark,
   applyTransformOnSplitedTokens,
   applyTransformOnTokens,
   extractEntitiesFromToken,
-  isSelectionCollapsed,
   mergeTokens,
   removeMark,
   splitToken,
@@ -53,6 +48,8 @@ import { AnimatePresence, motion } from 'framer-motion'
 import isHotkey from 'is-hotkey'
 import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { usePopper } from 'react-popper'
+import { useEvent } from 'react-use'
+import { atom, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil'
 import invariant from 'tiny-invariant'
 import { isTextBlock } from '../Blocks/utils'
 import { EditorPopover } from '../EditorPopover'
@@ -63,16 +60,35 @@ import { useVariable } from '../hooks/useVariable'
 
 const MARK_TYPES = Object.values(Editor.InlineType)
 
+const InlineEditingAtom = atom({ key: 'InlineEditingAtom', default: false })
+const useInlineEditingState = () => {
+  return useRecoilState(InlineEditingAtom)
+}
+
+const useInlineEditingValue = () => {
+  return useRecoilValue(InlineEditingAtom)
+}
+
+const useSetInlineEditing = () => {
+  return useSetRecoilState(InlineEditingAtom)
+}
+
 export const BlockTextOperationMenu = (props: { storyId: string }) => {
   const [open, setOpen] = useState(false)
   const [selectionState] = useStorySelection(props.storyId)
+  const [range, setRange] = useState<Range | null>(null)
+  const inlineEditing = useInlineEditingValue()
 
-  const range = useMemo(() => {
-    if (selectionState?.type === TellerySelectionType.Inline && isSelectionCollapsed(selectionState) === false) {
-      return tellerySelection2Native(selectionState)
-    }
-    return null
-  }, [selectionState])
+  useEvent(
+    'selectionchange',
+    useCallback(() => {
+      if (inlineEditing === true) return
+      const sel = document.getSelection()
+      const _range = sel?.getRangeAt(0)
+      _range && setRange(_range)
+    }, [inlineEditing]),
+    document
+  )
 
   const currentBlockId = useMemo(() => {
     if (selectionState?.type === TellerySelectionType.Inline) {
@@ -95,7 +111,7 @@ export const BlockTextOperationMenu = (props: { storyId: string }) => {
 
   return (
     <AnimatePresence>
-      {open && range && currentBlockId && (
+      {open && range && currentBlockId && selectionString?.length && (
         <BlockTextOperationMenuInner
           currentBlockId={currentBlockId}
           setOpen={setOpen}
@@ -121,8 +137,8 @@ const BlockTextOperationMenuInner = ({
   const editor = useEditor<Editor.BaseBlock>()
   const currentBlock = useBlockSuspense(currentBlockId)
   const [modalRef, setModalRef] = useState<HTMLDivElement | null>(null)
-  const [inlineEditing, setInlineEditing] = useState(false)
   const workspace = useWorkspace()
+  const inlineEditing = useInlineEditingValue()
 
   const tokenRange = useMemo(() => {
     if (range && currentBlock && isTextBlock(currentBlock.type)) {
@@ -172,7 +188,7 @@ const BlockTextOperationMenuInner = ({
           const marks = token[1]
           if (unmark) {
             const uniqueMarks = removeMark(marks, mark)
-            if (uniqueMarks) {
+            if (uniqueMarks?.length) {
               return [token[0], uniqueMarks]
             } else {
               return [token[0]]
@@ -434,7 +450,7 @@ const BlockTextOperationMenuInner = ({
           currentType={currentBlock?.type}
         />
         <VerticalDivider />
-        <AddLinkOperation setInlineEditing={setInlineEditing} markHandler={markHandler} referenceRange={range} />
+        <AddLinkOperation markHandler={markHandler} referenceRange={range} />
         <VerticalDivider />
         <OperationButtonWithHoverContent
           type={Editor.InlineType.Bold}
@@ -480,7 +496,6 @@ const BlockTextOperationMenuInner = ({
         />
         <VerticalDivider />
         <InlineFormulaPopover
-          setInlineEditing={setInlineEditing}
           editHandler={editFormula}
           referenceRange={range}
           storyId={currentBlock.storyId!}
@@ -668,21 +683,27 @@ const ToggleTypeOperation = (props: {
 
 const AddLinkOperation = (props: {
   markHandler: (type: Editor.InlineType, links: string[], isFirstLink: boolean) => void
-  setInlineEditing: (editing: boolean) => void
   referenceRange: Range | null
 }) => {
   const [open, setOpen] = useState(false)
   const [link, setLink] = useState('')
   const inputRef = useRef<HTMLInputElement | null>(null)
   const editor = useEditor()
+  const setInlineEditing = useSetInlineEditing()
 
   useEffect(() => {
-    if (!open) {
-      props.setInlineEditing(false)
-    } else {
+    if (open) {
       inputRef.current?.focus()
     }
-  }, [open, props])
+  }, [open, props, setInlineEditing])
+
+  const setOpenStatusHandler = useCallback(
+    (status: boolean) => {
+      setInlineEditing(status)
+      setOpen(status)
+    },
+    [setInlineEditing]
+  )
 
   return (
     <>
@@ -703,10 +724,7 @@ const AddLinkOperation = (props: {
           line-height: 17px;
           color: ${ThemingVariables.colors.text[0]};
         `}
-        onClick={() => {
-          setOpen(true)
-          props.setInlineEditing(true)
-        }}
+        onClick={() => setOpenStatusHandler(true)}
       >
         <IconCommonLink
           color={ThemingVariables.colors.text[0]}
@@ -717,7 +735,12 @@ const AddLinkOperation = (props: {
         Link
         <IconCommonArrowDropDown color={ThemingVariables.colors.gray[0]} />
       </div>
-      <EditorPopover referenceElement={props.referenceRange} open={open} setOpen={setOpen} disableClickThrough>
+      <EditorPopover
+        referenceElement={props.referenceRange}
+        open={open}
+        setOpen={setOpenStatusHandler}
+        disableClickThrough
+      >
         <div
           className={css`
             background: ${ThemingVariables.colors.gray[5]};
@@ -768,7 +791,6 @@ const AddLinkOperation = (props: {
                 if (e.key === 'Enter') {
                   e.preventDefault()
                   props.markHandler(Editor.InlineType.Link, [link], link.length === 0)
-                  props.setInlineEditing(false)
                   editor?.setSelectionState((state) => {
                     if (state?.type === TellerySelectionType.Inline) {
                       return {
@@ -778,109 +800,7 @@ const AddLinkOperation = (props: {
                     }
                     return state
                   })
-                  setOpen(false)
-                }
-              }}
-            ></input>
-          </div>
-        </div>
-      </EditorPopover>
-    </>
-  )
-}
-
-const InlineEquationPopover = (props: {
-  markHandler: (type: Editor.InlineType, links: string[], isFirstLink: boolean) => void
-  setInlineEditing: (editing: boolean) => void
-  referenceRange: Range | null
-}) => {
-  const [open, setOpen] = useState(false)
-  const [link, setLink] = useState('')
-  const inputRef = useRef<HTMLInputElement | null>(null)
-  const editor = useEditor()
-
-  useEffect(() => {
-    if (!open) {
-      props.setInlineEditing(false)
-    } else {
-      inputRef.current?.focus()
-    }
-  }, [open, props])
-
-  return (
-    <>
-      <OperationButtonWithHoverContent
-        active={false}
-        icon={IconFontCode}
-        hoverContent="Inline equation"
-        type={Editor.InlineType.Equation}
-        onClick={() => {
-          setOpen(true)
-          props.setInlineEditing(true)
-        }}
-      />
-      <EditorPopover referenceElement={props.referenceRange} open={open} setOpen={setOpen} disableClickThrough>
-        <div
-          className={css`
-            background: ${ThemingVariables.colors.gray[5]};
-            box-shadow: ${ThemingVariables.boxShadows[0]};
-            border-radius: 8px;
-            overflow: hidden;
-            user-select: none;
-            padding: 10px 10px;
-          `}
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-          }}
-        >
-          <div
-            className={css`
-              font-size: 14px;
-              color: ${ThemingVariables.colors.gray[1]};
-              background: ${ThemingVariables.colors.gray[5]};
-              border: 1px solid ${ThemingVariables.colors.gray[1]};
-              box-sizing: border-box;
-              font-size: 14px;
-              line-height: 17px;
-              color: ${ThemingVariables.colors.text[1]};
-            `}
-          >
-            <input
-              className={css`
-                outline: none;
-                border: none;
-                padding: 10px 10px;
-                user-select: none;
-              `}
-              onPaste={(e) => {
-                e.stopPropagation()
-              }}
-              ref={inputRef}
-              onSelect={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-              }}
-              placeholder="Input an equation"
-              onInput={(e) => {
-                setLink(e.currentTarget.value)
-              }}
-              onKeyDown={(e) => {
-                e.stopPropagation()
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  props.markHandler(Editor.InlineType.Equation, [link], link.length === 0)
-                  props.setInlineEditing(false)
-                  editor?.setSelectionState((state) => {
-                    if (state?.type === TellerySelectionType.Inline) {
-                      return {
-                        ...state,
-                        anchor: state.focus
-                      }
-                    }
-                    return state
-                  })
-                  setOpen(false)
+                  setOpenStatusHandler(false)
                 }
               }}
             ></input>
@@ -1057,19 +977,39 @@ const InlineFormulaInput: React.FC<{
 }
 
 const InlineFormulaPopover = (props: {
-  setInlineEditing: (editing: boolean) => void
   referenceRange: Range | null
   editHandler: (formula: string) => void
   storyId: string
   initValue: string
 }) => {
   const [open, setOpen] = useInlineFormulaPopoverState()
+  const setInlineEditing = useSetInlineEditing()
+  const editor = useEditor()
+
+  const setOpenStatusHandler = useCallback(
+    (status: boolean) => {
+      setInlineEditing(status)
+      setOpen(status)
+      if (status === false) {
+        editor?.setSelectionState((state) => {
+          if (state?.type === TellerySelectionType.Inline) {
+            return {
+              ...state,
+              anchor: state.focus
+            }
+          }
+          return state
+        })
+      }
+    },
+    [editor, setInlineEditing, setOpen]
+  )
 
   useEffect(() => {
-    if (!open) {
-      props.setInlineEditing(false)
+    if (open) {
+      setInlineEditing(true)
     }
-  }, [open, props])
+  }, [open, setInlineEditing])
 
   return (
     <>
@@ -1078,16 +1018,18 @@ const InlineFormulaPopover = (props: {
         icon={IconCommonFormula}
         hoverContent="Inline formula"
         type={Editor.InlineType.Variable}
-        onClick={() => {
-          setOpen(true)
-          props.setInlineEditing(true)
-        }}
+        onClick={() => setOpenStatusHandler(true)}
       />
-      <EditorPopover referenceElement={props.referenceRange} open={open} setOpen={setOpen} disableClickThrough>
+      <EditorPopover
+        referenceElement={props.referenceRange}
+        open={open}
+        setOpen={setOpenStatusHandler}
+        disableClickThrough
+      >
         <InlineFormulaInput
           storyId={props.storyId}
           editHandler={props.editHandler}
-          setOpen={setOpen}
+          setOpen={setOpenStatusHandler}
           initValue={props.initValue}
         />
       </EditorPopover>

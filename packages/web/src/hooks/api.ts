@@ -3,7 +3,6 @@ import {
   EntityRequest,
   fetchEntity,
   fetchQuestionBackLinks,
-  fetchSnapshot,
   fetchStoryBackLinks,
   getCollectionSchema,
   request,
@@ -15,10 +14,9 @@ import {
 import { isDataAssetBlock } from '@app/components/editor/Blocks/utils'
 import { useAsync } from '@app/hooks'
 import { useWorkspace } from '@app/hooks/useWorkspace'
-import type { AvailableConfig, BackLinks, ProfileConfig, Snapshot, Story, UserInfo, Workspace } from '@app/types'
+import type { AvailableConfig, BackLinks, ProfileConfig, Story, UserInfo, Workspace } from '@app/types'
 import { Editor } from '@app/types'
 import { queryClient } from '@app/utils'
-import { emitBlockUpdate } from '@app/utils/remoteStoreObserver'
 import { compact } from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
@@ -29,7 +27,7 @@ import {
   useQueryClient,
   UseQueryOptions
 } from 'react-query'
-import { useRecoilCallback, useRecoilValue, useRecoilValueLoadable, waitForAll, waitForAny } from 'recoil'
+import { useRecoilCallback, useRecoilValue, useRecoilValueLoadable, waitForAll } from 'recoil'
 import invariant from 'tiny-invariant'
 import { blockUpdater, TelleryBlockAtom, TellerySnapshotAtom, TelleryUserAtom } from '../store/block'
 import { useBatchQueries } from './useBatchQueries'
@@ -158,14 +156,12 @@ export function useSearchBlocks<T extends Editor.BlockType>(
   options?: UseQueryOptions<SearchBlockResult<T>>
 ) {
   const workspace = useWorkspace()
+  const blockUpdater = useUpdateBlocks()
   return useQuery<SearchBlockResult<T>>(
     ['search', 'block', type, keyword, limit],
     async () =>
       searchBlocks(keyword, limit, workspace.id, type).then((results) => {
-        const blocks = results.blocks as Record<string, Editor.BaseBlock>
-        Object.values(blocks).forEach((block: Editor.BaseBlock) => {
-          emitBlockUpdate(block)
-        })
+        blockUpdater(results.blocks)
         return results
       }),
     options

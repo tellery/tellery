@@ -11,7 +11,7 @@ import { TellerySelection, TellerySelectionType } from './tellerySelection'
 export const mergeTokens = (tokens: Editor.Token[]) => {
   return tokens.reduce((acc: Editor.Token[], current: Editor.Token) => {
     if (acc.length === 0) {
-      acc.push([...current])
+      acc.push([current[0]])
     } else {
       const lastToken = acc[acc.length - 1]
       const lastTokenMarks = lastToken.slice(1) || []

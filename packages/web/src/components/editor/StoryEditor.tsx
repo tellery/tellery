@@ -395,6 +395,7 @@ const _StoryEditor: React.FC<{
           if (oldSelection.type !== TellerySelectionType.Inline) return oldSelection
           if (oldSelection.anchor.blockId !== blockId) return oldSelection
           const newSelection = getTransformedSelection(oldSelection, oldBlock.content?.title ?? [], tokens ?? [])
+          logger('update selection', oldSelection, newSelection)
           return newSelection
         })
       }
