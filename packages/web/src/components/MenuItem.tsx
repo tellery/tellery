@@ -9,6 +9,7 @@ const _MenuItem: React.ForwardRefRenderFunction<
     title: ReactNode
     side?: ReactNode
     isActive?: boolean
+    disabled?: boolean
     size?: 'small' | 'medium' | 'large'
     onClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   }
@@ -49,16 +50,17 @@ const _MenuItem: React.ForwardRefRenderFunction<
           &:hover {
             background: ${ThemingVariables.colors.primary[4]};
           }
-          &:active {
-            background: ${ThemingVariables.colors.primary[3]};
-          }
         `,
         props.isActive &&
           css`
             background: ${ThemingVariables.colors.primary[3]};
+          `,
+        props.disabled &&
+          css`
+            cursor: not-allowed;
           `
       )}
-      onClick={props.onClick}
+      onClick={props.disabled ? undefined : props.onClick}
     >
       {props?.icon}
       <span

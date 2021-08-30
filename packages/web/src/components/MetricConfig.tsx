@@ -208,7 +208,7 @@ function MetricConfigInner(props: { block: Editor.MetricBlock; className?: strin
 function getFuncs(type: string) {
   return ['CHAR', 'VARCHAR', 'LONGVARCHAR', 'DATE', 'TIME', 'TIMESTAMP'].includes(type)
     ? ['count', 'countDistinct']
-    : ['TINYINT', 'SMALLINT', 'INTEGER', 'FLOAT', 'REAL', 'DOUBLD', 'NUMERIC', 'DECIMAL'].includes(type)
+    : ['TINYINT', 'SMALLINT', 'INTEGER', 'FLOAT', 'REAL', 'DOUBLE', 'NUMERIC', 'DECIMAL'].includes(type)
     ? ['sum', 'avg', 'min', 'max', 'median', 'std']
     : []
 }
@@ -233,6 +233,7 @@ function MetricConigCreator(props: {
                 key={f.name + index}
                 title={f.name}
                 side={f.type}
+                disabled={getFuncs(f.type).length === 0}
                 onClick={() => {
                   onClick()
                   setField(f)
