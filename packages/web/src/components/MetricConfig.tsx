@@ -256,10 +256,10 @@ function MetricConigCreator(props: {
             onChange={(value) => {
               setMap(
                 produce((draft) => {
-                  if (value) {
-                    draft[func] = value
-                  } else {
+                  if (value === undefined) {
                     delete draft[func]
+                  } else {
+                    draft[func] = value
                   }
                 })
               )
@@ -292,13 +292,13 @@ function MeasurementItem(props: {
       <div>
         {props.func}
         <FormSwitch
-          checked={!!props.value}
+          checked={typeof props.value !== 'undefined'}
           onChange={(e) => {
             props.onChange(e.target.checked ? `${props.func}(${props.fieldName})` : undefined)
           }}
         />
       </div>
-      {props.value && (
+      {typeof props.value === 'undefined' ? null : (
         <>
           <span
             className={css`
