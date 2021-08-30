@@ -655,6 +655,32 @@ export function useConnectorsUpsertProfile(connectorId: string) {
   return useAsync(handleUpdateProfile)
 }
 
+export const useGetProfileSpec = () => {
+  const workspace = useWorkspace()
+  return useQuery<{
+    metricSpec: {
+      aggregation: Record<string, Record<string, string>>
+      bucketization: Record<string, Record<string, string>>
+      identifier: string
+      stringLiteral: string
+    }
+    name: string
+    tokenizer: string
+    type: string
+  }>(
+    ['connector', 'getProfileSpec', workspace.preferences.connectorId, workspace.id],
+    () =>
+      request
+        .post('/api/connectors/getProfileSpec', {
+          workspaceId: workspace.id,
+          connectorId: workspace.preferences.connectorId,
+          profile: workspace.preferences.profile
+        })
+        .then((res) => res.data),
+    { enabled: !!workspace.preferences.connectorId && !!workspace.preferences.profile }
+  )
+}
+
 /**
  * dbt start
  */

@@ -1,5 +1,5 @@
 import { IconCommonAdd } from '@app/assets/icons'
-import { useSnapshot } from '@app/hooks/api'
+import { useGetProfileSpec, useSnapshot } from '@app/hooks/api'
 import { useDimensions } from '@app/hooks/useDimensions'
 import { ThemingVariables } from '@app/styles'
 import { Editor, Measurement } from '@app/types'
@@ -205,12 +205,8 @@ function MetricConfigInner(props: { block: Editor.MetricBlock; className?: strin
   )
 }
 
-function getFuncs(type: string) {
-  return ['CHAR', 'VARCHAR', 'LONGVARCHAR', 'DATE', 'TIME', 'TIMESTAMP'].includes(type)
-    ? ['count', 'countDistinct']
-    : ['TINYINT', 'SMALLINT', 'INTEGER', 'FLOAT', 'REAL', 'DOUBLE', 'NUMERIC', 'DECIMAL'].includes(type)
-    ? ['sum', 'avg', 'min', 'max', 'median', 'std']
-    : []
+function getFuncs(type: string, aggregation?: Record<string, Record<string, string>>): string[] {
+  return aggregation ? Object.keys(aggregation[type] || {}) : []
 }
 
 function MetricConigCreator(props: {
@@ -222,6 +218,7 @@ function MetricConigCreator(props: {
   const array = useMemo(() => Object.entries(map), [map])
   const [sqlName, setSqlName] = useState('')
   const [sql, setSql] = useState('')
+  const { data: spec } = useGetProfileSpec()
 
   return (
     <>
@@ -233,7 +230,7 @@ function MetricConigCreator(props: {
                 key={f.name + index}
                 title={f.name}
                 side={f.type}
-                disabled={getFuncs(f.type).length === 0}
+                disabled={getFuncs(f.type, spec?.metricSpec.aggregation).length === 0}
                 onClick={() => {
                   onClick()
                   setField(f)
@@ -259,7 +256,7 @@ function MetricConigCreator(props: {
       </FormDropdown>
       {field ? (
         field.type ? (
-          getFuncs(field.type).map((func) => (
+          getFuncs(field.type, spec?.metricSpec.aggregation).map((func) => (
             <MeasurementItem
               key={func}
               fieldName={field.name}
