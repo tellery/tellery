@@ -65,7 +65,7 @@ export const useUpdateBlocks = () => {
   return updateBlocks
 }
 
-export const useFetchStoryChunk = <T extends Editor.BaseBlock = Story>(id: string, suspense: boolean = true): T => {
+export const useFetchStoryChunk = <T extends Editor.BaseBlock = Story>(id: string, suspense: boolean = true) => {
   const updateBlocks = useUpdateBlocks()
   const workspace = useWorkspace()
   useQuery<Record<string, Editor.BaseBlock>>(
@@ -82,9 +82,6 @@ export const useFetchStoryChunk = <T extends Editor.BaseBlock = Story>(id: strin
         }),
     { suspense: suspense }
   )
-
-  const block = useBlockSuspense<T>(id)
-  return block as T
 }
 
 export const useStoryPinnedStatus = (id?: string) => {

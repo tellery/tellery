@@ -1,4 +1,4 @@
-import { TelleryBlockAtom } from '@app/store/block'
+import { BlockResourcesAtom, TelleryBlockAtom } from '@app/store/block'
 import type { Editor } from '@app/types'
 import { selectorFamily, useRecoilValue } from 'recoil'
 
@@ -7,8 +7,7 @@ export const StoryResourcesAtom = selectorFamily<Editor.BaseBlock[], string>({
   get:
     (storyId) =>
     ({ get }) => {
-      const story = get(TelleryBlockAtom(storyId))
-      const resourceIds = story.resources ?? []
+      const resourceIds = get(BlockResourcesAtom(storyId)) ?? []
       const resources = resourceIds.map((id) => get(TelleryBlockAtom(id)))
 
       return resources

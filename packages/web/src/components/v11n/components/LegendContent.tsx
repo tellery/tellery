@@ -78,6 +78,11 @@ export function LegendContent(props: Props) {
 }
 
 function LegendItem(props: { value: Payload; isSmall: boolean; onMouseEnter(): void; onMouseLeave(): void }) {
+  const textWidth = useTextWidth({
+    text: props.value.value,
+    font: `${fontSize}px ${fontFamily}`
+  })
+
   return (
     <li
       className={cx(
@@ -103,12 +108,12 @@ function LegendItem(props: { value: Payload; isSmall: boolean; onMouseEnter(): v
       onMouseEnter={props.onMouseEnter}
       onMouseLeave={props.onMouseLeave}
     >
-      <Tippy content={props.value.value} disabled={!props.isSmall} delay={100}>
-        <span
-          className={css`
-            margin-right: ${iconMargin}px;
-          `}
-        >
+      <Tippy
+        content={props.value.value}
+        disabled={!props.isSmall || textWidth + iconMargin + iconSize <= 160}
+        delay={100}
+      >
+        <span>
           <IconVisualizationCircle
             color={props.value.color}
             width={iconSize}
@@ -119,7 +124,13 @@ function LegendItem(props: { value: Payload; isSmall: boolean; onMouseEnter(): v
           />
         </span>
       </Tippy>
-      {props.value.value}
+      <span
+        className={css`
+          margin-left: ${iconMargin}px;
+        `}
+      >
+        {props.value.value}
+      </span>
     </li>
   )
 }

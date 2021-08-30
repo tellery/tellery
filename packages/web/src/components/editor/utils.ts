@@ -2,7 +2,7 @@ import type { BlockSnapshot } from '@app/store/block'
 import { Editor } from '@app/types'
 import { flattenDeep } from 'lodash'
 import invariant from 'tiny-invariant'
-
+import { decode } from 'html-entities'
 export const DEFAULT_QUESTION_BLOCK_ASPECT_RATIO = 16 / 9
 export const DEFAULT_QUESTION_BLOCK_WIDTH = 0.7
 
@@ -58,4 +58,8 @@ export const TOKEN_MAP: { [key: string]: { type: Editor.BlockType } } = {
   '1. ': { type: Editor.BlockType.NumberedList },
   '1。': { type: Editor.BlockType.NumberedList },
   '$$ ': { type: Editor.BlockType.Equation }
+}
+
+export const decodeHTML = function (html: string | null) {
+  return decode(html)
 }

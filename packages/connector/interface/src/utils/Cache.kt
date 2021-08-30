@@ -1,9 +1,6 @@
 package io.tellery.utils
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.time.Instant
@@ -14,6 +11,7 @@ class Cache<K, V>(private val updater: suspend (K) -> V, private val intervalSec
     private val lastUpdatedAt: HashMap<K, Instant> = hashMapOf()
     private val exceptionStorage: HashMap<K, Pair<Exception, Int>> = hashMapOf()
     private val lock = Mutex()
+    private val scope = CoroutineScope(Dispatchers.Default)
 
 
     fun get(key: K): V {
@@ -23,7 +21,7 @@ class Cache<K, V>(private val updater: suspend (K) -> V, private val intervalSec
             }
         } else {
             if (lastUpdatedAt[key]!!.plusSeconds(intervalSeconds).isBefore(Instant.now())) {
-                GlobalScope.launch {
+                scope.launch {
                     async { updateItem(key) }.start()
                 }
             }

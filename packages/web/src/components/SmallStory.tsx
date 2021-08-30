@@ -1,9 +1,9 @@
 import { useDimensions } from '@app/hooks/useDimensions'
 import { css, cx } from '@emotion/css'
-import { useFetchStoryChunk } from '@app/hooks/api'
+import { useBlockSuspense, useFetchStoryChunk } from '@app/hooks/api'
 import React, { useEffect, useMemo, useRef } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
-import { Editor } from '@app/types'
+import { Editor, Story, Thought } from '@app/types'
 import { BlockingUI } from './BlockingUI'
 import { BlockTitle } from './editor'
 import { ContentBlocks } from './editor/ContentBlock'
@@ -82,7 +82,8 @@ const StoryContent: React.FC<{ storyId: string; blockId?: string; containerRef: 
   blockId,
   containerRef
 }) => {
-  const story = useFetchStoryChunk(storyId)
+  useFetchStoryChunk(storyId)
+  const story = useBlockSuspense<Story | Thought>(storyId)
 
   const blockAdminValue = useBlockAdminProvider(storyId)
 

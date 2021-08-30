@@ -1,6 +1,6 @@
 import { IconMenuDuplicate } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
-import { useFetchStoryChunk } from '@app/hooks/api'
+import { useBlockSuspense, useFetchStoryChunk } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { Operation, useCommit, useCommitHistory } from '@app/hooks/useCommit'
@@ -200,7 +200,8 @@ const _StoryEditor: React.FC<{
   const isSelectingRef = useRef<DOMRect | null>(null)
   const mouseDownEventRef = useRef<MouseEvent | null>(null)
   const lastInputCharRef = useRef<string | null>(null)
-  const rootBlock = useFetchStoryChunk<Story | Thought>(storyId)
+  useFetchStoryChunk<Story | Thought>(storyId)
+  const rootBlock = useBlockSuspense<Story | Thought>(storyId)
   const blocksMap = useStoryBlocksMap(storyId)
   const blocksMapsRef = useRef<Record<string, Editor.BaseBlock> | null>(null)
   const [inited, setInited] = useState(false)
@@ -472,14 +473,23 @@ const _StoryEditor: React.FC<{
 
         break
       }
-      case Editor.BlockType.Divider:
+      case Editor.BlockType.Divider: {
         toggleBlockType(currentBlock.id, currentBlock.type, prefixLength)
-        insertNewEmptyBlock(newType, currentBlock.id)
+        insertNewEmptyBlock(newType, currentBlock.id, 'top')
         break
+      }
       default:
         toggleBlockType(currentBlock.id, newType, prefixLength)
     }
-  }, [blockAdminValue, insertNewEmptyBlock, lastInputCharRef, selectionState, snapshot, toggleBlockType])
+  }, [
+    blockAdminValue,
+    insertNewEmptyBlock,
+    lastInputCharRef,
+    selectionState,
+    setSelectionAtBlockStart,
+    snapshot,
+    toggleBlockType
+  ])
 
   useEffect(() => {
     logger('selection state', selectionState)
@@ -694,7 +704,7 @@ const _StoryEditor: React.FC<{
               }}
             />
           </div>,
-          { position: 'bottom-center' }
+          { position: 'bottom-center', autoClose: 10000 }
         )
       }
     },
@@ -841,9 +851,6 @@ const _StoryEditor: React.FC<{
               const element = getBlockElementContentEditbleById(blockId)
               invariant(element, 'element not exist')
               if (isSelectionAtStart(selectionState)) {
-                if (block.type === Editor.BlockType.Story) {
-                  return
-                }
                 const newBlock = createEmptyBlock({
                   type: Editor.BlockType.Text,
                   storyId,
@@ -855,8 +862,11 @@ const _StoryEditor: React.FC<{
                     data: { [newBlock.id]: newBlock }
                   },
                   targetBlockId: blockId,
-                  direction: 'top'
+                  direction: block.type === Editor.BlockType.Story ? 'child' : 'top'
                 })
+                if (block.type === Editor.BlockType.Story) {
+                  setSelectionAtBlockStart(newBlock)
+                }
               } else if (isCaretAtEnd(element)) {
                 const getNextBlockType = (block: Editor.BaseBlock) => {
                   if (block.type === Editor.BlockType.BulletList) {
@@ -1169,7 +1179,7 @@ const _StoryEditor: React.FC<{
         e.preventDefault()
         invariant(selectionState?.type === TellerySelectionType.Inline, 'selection state is not inline')
         const files = e.clipboardData.files
-        const fileBlocks: Editor.BaseBlock[] = [...files].map(() =>
+        const fileBlocks: Editor.BaseBlock[] = Array.from(files).map(() =>
           createEmptyBlock({
             type: Editor.BlockType.File,
             storyId,
@@ -1532,7 +1542,7 @@ const _StoryEditor: React.FC<{
                           <ContentBlocks blockIds={rootBlock.children} parentType={rootBlock.type} readonly={locked} />
                         )}
                         <EditorEmptyStateEndPlaceHolder onClick={createFirstOrLastBlockHandler} height={272} />
-                        {!locked && <BlockTextOperationMenu currentBlockId={focusingBlockId} />}
+                        {!locked && <BlockTextOperationMenu storyId={storyId} />}
                         {props.bottom && (
                           <div
                             className={css`

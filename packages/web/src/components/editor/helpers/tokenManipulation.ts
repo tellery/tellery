@@ -4,7 +4,6 @@ import { DEFAULT_TITLE, TelleryGlyph, TELLERY_MIME_TYPES } from '@app/utils'
 import dayjs from 'dayjs'
 import { dequal } from 'dequal'
 import invariant from 'tiny-invariant'
-import { isReferenceToken } from '../BlockBase/ContentEditable'
 import { isDataAssetBlock, isVisualizationBlock } from '../Blocks/utils'
 import { getSubsetOfBlocksSnapshot, TOKEN_MAP } from '../utils'
 import { TellerySelection, TellerySelectionType } from './tellerySelection'
@@ -18,7 +17,7 @@ export const mergeTokens = (tokens: Editor.Token[]) => {
       const lastTokenMarks = lastToken.slice(1) || []
       const currentTokenMarks = current.slice(1) || []
       if (current[0].length) {
-        if (dequal(lastTokenMarks.sort(), currentTokenMarks.sort()) && isReferenceToken(current) === false) {
+        if (dequal(lastTokenMarks.sort(), currentTokenMarks.sort()) && isNonSelectbleToken(current) === false) {
           acc[acc.length - 1][0] = `${acc[acc.length - 1][0]}${current[0]}`
         } else {
           acc.push([...current])
@@ -258,7 +257,7 @@ export const getTokensLength = (tokens: Editor.Token[]) => {
 }
 
 export const getTokenLength = (token: Editor.Token) => {
-  if (isReferenceToken(token)) {
+  if (isNonSelectbleToken(token)) {
     return 1
   }
   return (token?.[0] || '').split('').length
@@ -296,9 +295,6 @@ export const splitedTokenPosition2TokenPosition = (tokens: Editor.Token[], offse
     if (tokenText) {
       splitedOffset -= tokenText.length
     }
-    // if (isNonSelectbleToken(tokens[i])) {
-    //   continue
-    // }
     if (splitedOffset <= 0) {
       if (isNonSelectbleToken(tokens[i])) {
         return [i + 1, 0]
@@ -405,8 +401,8 @@ export const toggleMark = (marks: Editor.TokenType[] | undefined | null, mark: E
 }
 
 export const isNonSelectbleToken = (token: Editor.Token) => {
-  const { reference, formula } = extractEntitiesFromToken(token)
-  if (reference || formula) {
+  const { reference, formula, equation } = extractEntitiesFromToken(token)
+  if (reference || formula || equation) {
     return true
   }
   return false

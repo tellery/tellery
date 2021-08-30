@@ -11,10 +11,11 @@ import { useWorkspaceView } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useCommit } from '@app/hooks/useCommit'
 import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
+import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
 import { ThemingVariables } from '@app/styles'
 import type { Story } from '@app/types'
 import { css } from '@emotion/css'
-import Tippy from '@tippyjs/react'
+import Tippy from '@tippyjs/react/headless'
 import { dequal } from 'dequal'
 import React, { memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -143,39 +144,49 @@ export const _NavigationHeader = (props: {
             }}
           />
         )}
-        {props.storyId && (
-          <Tippy
-            content={<StoryConfigPopOver storyId={props.storyId} />}
-            hideOnClick={true}
-            theme="tellery"
-            animation="fade"
-            duration={150}
-            arrow={false}
-            interactive
-            trigger="click"
-            popperOptions={{
-              modifiers: [
-                {
-                  name: 'offset',
-                  enabled: true,
-                  options: {
-                    offset: [10, 20]
-                  }
-                }
-              ]
-            }}
-          >
-            <IconButton
-              icon={IconCommonMore}
-              color={ThemingVariables.colors.text[0]}
-              className={css`
-                margin-left: 20px;
-              `}
-            />
-          </Tippy>
-        )}
+        {props.storyId && <StoryConfigButton storyId={props.storyId} />}
       </div>
     </>
+  )
+}
+
+const StoryConfigButton: React.FC<{ storyId: string }> = ({ storyId }) => {
+  const animation = useTippyMenuAnimation('scale')
+
+  return (
+    <Tippy
+      render={(attrs) => <StoryConfigPopOver storyId={storyId} animate={animation.controls} {...attrs} />}
+      hideOnClick={true}
+      theme="tellery"
+      animation={true}
+      onMount={animation.onMount}
+      onHide={(instance) => {
+        animation.onHide(instance)
+      }}
+      duration={150}
+      arrow={false}
+      interactive
+      trigger="click"
+      popperOptions={{
+        modifiers: [
+          {
+            name: 'offset',
+            enabled: true,
+            options: {
+              offset: [10, 20]
+            }
+          }
+        ]
+      }}
+    >
+      <IconButton
+        icon={IconCommonMore}
+        color={ThemingVariables.colors.text[0]}
+        className={css`
+          margin-left: 20px;
+        `}
+      />
+    </Tippy>
   )
 }
 

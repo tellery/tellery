@@ -1,24 +1,24 @@
 import { IconCommonDbt, IconCommonSql } from '@app/assets/icons'
-import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useOpenStory } from '@app/hooks'
 import { useMgetBlocks } from '@app/hooks/api'
+import { useFetchBlock } from '@app/hooks/useFetchBlock'
+import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
 import { transclusionRegex } from '@app/hooks/useSqlEditor'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { SVG2DataURI } from '@app/lib/svg'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
 import MonacoEditor, { useMonaco } from '@monaco-editor/react'
 import Tippy from '@tippyjs/react'
-import { compact, uniq, omit } from 'lodash'
+import { compact, omit, uniq } from 'lodash'
 import type { editor } from 'monaco-editor/esm/vs/editor/editor.api'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { useGetBlockTitleTextSnapshot } from './editor'
-import { useQuestionEditor } from './StoryQuestionsEditor'
-import { SQLViewer } from './SQLViewer'
 import YAML from 'yaml'
-import { useGetBlock } from '../hooks/useGetBlock'
 import { CircularLoading } from './CircularLoading'
+import { useGetBlockTitleTextSnapshot } from './editor'
+import { SQLViewer } from './SQLViewer'
 
 const STORY_BLOCK_REGEX = new RegExp(`${window.location.protocol}//${window.location.host}/story/(\\S+)#(\\S+)`)
 
@@ -38,6 +38,7 @@ const trasnformPasteText = async (text: string, getBlock: (blockId: string) => P
 export function SQLEditor(props: {
   blockId: string
   languageId?: string
+  storyId: string
   value: string
   readOnly?: boolean
   onChange(value: string): void
@@ -53,7 +54,7 @@ export function SQLEditor(props: {
   const { onRun, onSave } = props
   const monaco = useMonaco()
 
-  const getBlock = useGetBlock()
+  const fetchBlock = useFetchBlock()
   useEffect(() => {
     if (!editor || !monaco) {
       return
@@ -62,7 +63,7 @@ export function SQLEditor(props: {
       const pastedString = editor.getModel()?.getValueInRange(e.range)
       if (!pastedString) return
 
-      trasnformPasteText(pastedString, getBlock).then((transformedText) => {
+      trasnformPasteText(pastedString, fetchBlock).then((transformedText) => {
         if (transformedText) {
           editor.setSelection(e.range)
           const id = { major: 1, minor: 1 }
@@ -75,7 +76,7 @@ export function SQLEditor(props: {
 
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, () => onSave?.())
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => onRun?.())
-  }, [editor, getBlock, monaco, onRun, onSave])
+  }, [editor, fetchBlock, monaco, onRun, onSave])
   const { onChange } = props
   const handleChange = useCallback(
     (value: string | undefined) => {
@@ -185,6 +186,7 @@ export function SQLEditor(props: {
         const questionId = match.matches[1]
         return questions?.[questionId] ? (
           <TransclusionContentWidget
+            storyId={props.storyId}
             key={questionId}
             blockId={props.blockId}
             value={questions[questionId]}
@@ -194,7 +196,7 @@ export function SQLEditor(props: {
           />
         ) : null
       }),
-    [matches, props.blockId, props.languageId, questions]
+    [matches, props.blockId, props.languageId, props.storyId, questions]
   )
 
   return (
@@ -233,11 +235,12 @@ function TransclusionContentWidget(props: {
   value: Editor.SQLBlock
   length: number
   index: number
+  storyId: string
 }) {
   const { value: block } = props
   const getBlockTitle = useGetBlockTitleTextSnapshot()
   const openStoryHandler = useOpenStory()
-  const { open } = useQuestionEditor()
+  const { open } = useQuestionEditor(props.storyId)
   const el = document.querySelector(
     `[widgetid="content.widget.transclusion.${props.blockId}.${block.id}.${props.index}"]`
   )
@@ -312,6 +315,7 @@ function TransclusionContentWidget(props: {
                       scrollBeyondLastLine: false,
                       scrollBeyondLastColumn: 0
                     }}
+                    theme="tellery"
                     loading={<CircularLoading size={50} color={ThemingVariables.colors.gray[0]} />}
                     wrapperClassName={css`
                       padding: 0 15px;
@@ -344,10 +348,12 @@ function TransclusionContentWidget(props: {
                     if (!block.storyId) {
                       return
                     }
-                    if (block.parentTable !== Editor.BlockParentType.WORKSPACE) {
-                      openStoryHandler(block.storyId, { blockId: block.id, isAltKeyPressed: true })
+
+                    if (block.storyId === props.storyId) {
+                      open({ mode: 'SQL', storyId: block.storyId, blockId: block.id })
+                    } else {
+                      openStoryHandler(block.storyId, { blockId: block.id })
                     }
-                    open({ mode: 'SQL', storyId: block.storyId, blockId: block.id })
                   }}
                 >
                   Go to block

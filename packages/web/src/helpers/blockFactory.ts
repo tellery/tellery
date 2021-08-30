@@ -61,6 +61,12 @@ export const createDeletedBlock = (id: string) => {
     resourceType: 'block',
     content: { title: [['Deleted']] },
     id: id,
-    version: 0
+    version: 0,
+    updatedAt: new Date().valueOf(),
+    createdAt: new Date().valueOf(),
+    type: 'text',
+    parentId: id,
+    permissions: [],
+    parentTable: Editor.BlockParentType.BLOCK
   } as Editor.BaseBlock
 }

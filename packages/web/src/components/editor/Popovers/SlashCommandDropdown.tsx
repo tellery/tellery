@@ -13,6 +13,7 @@ import {
   IconMenuToggleList,
   IconMenuUpload
 } from '@app/assets/icons'
+import { useBindHovering } from '@app/hooks'
 import { useBlockSuspense } from '@app/hooks/api'
 import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
 import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
@@ -21,7 +22,6 @@ import { Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
 import debug from 'debug'
 import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useHoverDirty } from 'react-use'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import invariant from 'tiny-invariant'
 import { mergeTokens, splitToken, tokenPosition2SplitedTokenPosition } from '..'
@@ -316,7 +316,7 @@ interface BlockMenuItemProps {
 
 const BlockMenuItem = (props: BlockMenuItemProps) => {
   const ref = useRef<HTMLDivElement>(null)
-  const hover = useHoverDirty(ref, true)
+  const [hoveringHandlers, hover] = useBindHovering()
 
   useEffect(() => {
     if (props.active && ref.current) {
@@ -337,6 +337,7 @@ const BlockMenuItem = (props: BlockMenuItemProps) => {
   return (
     <div
       ref={ref}
+      {...hoveringHandlers()}
       className={cx(
         css`
           border-radius: 8px;

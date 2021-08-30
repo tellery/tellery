@@ -18,18 +18,18 @@ import IconButton from '@app/components/kit/IconButton'
 import { MenuItem } from '@app/components/MenuItem'
 import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { RefreshButton } from '@app/components/RefreshButton'
-import { useQuestionEditor } from '@app/components/StoryQuestionsEditor'
 import { Diagram } from '@app/components/v11n'
 import { charts } from '@app/components/v11n/charts'
 import { Config, Data, Type } from '@app/components/v11n/types'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
-import { useOnScreen } from '@app/hooks'
+import { useBindHovering, useOnScreen } from '@app/hooks'
 import { useBlockSuspense, useGetSnapshot, useSnapshot, useUser } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
-import { useGetBlock } from '@app/hooks/useGetBlock'
+import { useFetchBlock } from '@app/hooks/useFetchBlock'
 import { useInterval } from '@app/hooks/useInterval'
+import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
 import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
-import { useBlockSnapshot } from '@app/store/block'
+import { BlockResourcesAtom, useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { snapshotToCSV, TELLERY_MIME_TYPES } from '@app/utils'
@@ -43,6 +43,7 @@ import { useSelect } from 'downshift'
 import { AnimatePresence, motion, usePresence } from 'framer-motion'
 import html2canvas from 'html2canvas'
 import React, {
+  memo,
   ReactNode,
   useCallback,
   useContext,
@@ -56,7 +57,8 @@ import DetectableOverflow from 'react-detectable-overflow'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { useHoverDirty, useMeasure } from 'react-use'
+import { useMeasure } from 'react-use'
+import { useRecoilValue } from 'recoil'
 import invariant from 'tiny-invariant'
 import { BlockingUI } from '../BlockBase/BlockingUIBlock'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
@@ -93,8 +95,8 @@ interface QuestionBlockProps {
 
 const useVisulizationBlockInstructionsProvider = (block: Editor.VisualizationBlock) => {
   const commit = useCommit()
-  const getBlock = useGetBlock()
-  const questionEditor = useQuestionEditor()
+  const fetchBlock = useFetchBlock()
+  const questionEditor = useQuestionEditor(block.storyId!)
   const snapshot = useBlockSnapshot()
   const dataAssetId = block.content?.dataAssetId
 
@@ -105,7 +107,7 @@ const useVisulizationBlockInstructionsProvider = (block: Editor.VisualizationBlo
       },
       unLink: async () => {
         if (!dataAssetId) return
-        const dataAssetBlock = await getBlock(dataAssetId)
+        const dataAssetBlock = await fetchBlock(dataAssetId)
         const newSqlBlock = createEmptyBlock({
           type: Editor.BlockType.SQL,
           storyId: block.storyId!,
@@ -133,7 +135,7 @@ const useVisulizationBlockInstructionsProvider = (block: Editor.VisualizationBlo
         })
       }
     }),
-    [block.id, block.storyId, commit, dataAssetId, getBlock, questionEditor, snapshot]
+    [block.id, block.storyId, commit, dataAssetId, fetchBlock, questionEditor, snapshot]
   )
   return instructions
 }
@@ -202,7 +204,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const isHover = useHoverDirty(elementRef)
+  const [hoveringHandlers, hovering] = useBindHovering()
 
   return (
     <VisulizationInstructionsContext.Provider value={instructions}>
@@ -211,11 +213,12 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
           measureRef(el as unknown as HTMLDivElement)
           elementRef.current = el
         }}
+        {...hoveringHandlers()}
         className={QuestionsBlockContainer}
       >
         <React.Suspense fallback={<></>}>
           {block.content?.dataAssetId && <QuestionBlockHeader block={block} />}
-          <QuestionBlockButtons block={block} show={isHover} slim={rect.width < 260} />
+          <QuestionBlockButtons block={block} show={hovering} slim={rect.width < 260} />
         </React.Suspense>
 
         {dataAssetId === undefined ? (
@@ -233,7 +236,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
   )
 }
 
-const VisualizationBlockContent: React.FC<{
+const _VisualizationBlockContent: React.FC<{
   dataAssetId: string
   block: Editor.VisualizationBlock
   blockFormat: BlockFormatInterface
@@ -242,7 +245,7 @@ const VisualizationBlockContent: React.FC<{
   const dataAssetBlock = useBlockSuspense<Editor.DataAssetBlock>(dataAssetId)
   const snapshotId = dataAssetBlock?.content?.snapshotId
   const commit = useCommit()
-  const storyBlock = useBlockSuspense(block.storyId!)
+  const storyBlockResources = useRecoilValue(BlockResourcesAtom(block.storyId!))
 
   const mutateSnapshot = useRefreshSnapshot()
   const mutatingCount = useSnapshotMutating(dataAssetBlock.id)
@@ -260,17 +263,17 @@ const VisualizationBlockContent: React.FC<{
   const contentRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    if (dataAssetId && !storyBlock.resources?.includes(dataAssetId)) {
+    if (dataAssetId && !storyBlockResources?.includes(dataAssetId)) {
       commit({
         transcation: createTranscation({
           operations: [
-            { cmd: 'listBefore', path: ['resources'], args: { id: dataAssetId }, table: 'block', id: storyBlock.id }
+            { cmd: 'listBefore', path: ['resources'], args: { id: dataAssetId }, table: 'block', id: block.storyId! }
           ]
         }),
         storyId: block.storyId!
       })
     }
-  }, [block.storyId, commit, dataAssetId, storyBlock.id, storyBlock.resources])
+  }, [block.storyId, commit, dataAssetId, storyBlockResources])
 
   return (
     <>
@@ -309,6 +312,8 @@ const VisualizationBlockContent: React.FC<{
     </>
   )
 }
+
+const VisualizationBlockContent = memo(_VisualizationBlockContent)
 
 const VisualizationBlock = React.forwardRef(_VisualizationBlock) as BlockComponent<
   React.ForwardRefExoticComponent<QuestionBlockProps & React.RefAttributes<any>>
@@ -432,7 +437,7 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
 
 const QuestionBlockBody = React.forwardRef(_QuestionBlockBody)
 
-const QuestionBlockHeader: React.FC<{
+const _QuestionBlockHeader: React.FC<{
   block: Editor.VisualizationBlock
 }> = ({ block }) => {
   const { t } = useTranslation()
@@ -503,6 +508,8 @@ const QuestionBlockHeader: React.FC<{
     </>
   )
 }
+
+const QuestionBlockHeader = memo(_QuestionBlockHeader)
 
 const QuestionBlockStatus: React.FC<{
   dataAssetBlock: Editor.DataAssetBlock
@@ -714,11 +721,12 @@ export const MoreDropdownSelect: React.FC<{
   const dataAssetBlock = useBlockSuspense<Editor.DataAssetBlock>(block.content?.dataAssetId!)
   const canConvertDataAsset = !readonly && dataAssetBlock.storyId === block.storyId
   const getSnapshot = useGetSnapshot()
-  const questionEditor = useQuestionEditor()
+  const questionEditor = useQuestionEditor(block.storyId!)
   const { t } = useTranslation()
   const mutateSnapshot = useRefreshSnapshot()
 
   const operations = useMemo(() => {
+    if (!open) return []
     return [
       {
         title: t`Refresh Query`,
@@ -805,7 +813,7 @@ export const MoreDropdownSelect: React.FC<{
           title: 'Freeze data',
           icon: <IconCommonLock color={ThemingVariables.colors.text[0]} />,
           action: () => {
-            editor?.updateBlockProps?.(block.id, ['type'], Editor.BlockType.SnapshotBlock)
+            editor?.updateBlockProps?.(dataAssetBlock.id, ['type'], Editor.BlockType.SnapshotBlock)
           }
         },
       canConvertDataAsset &&
@@ -813,7 +821,7 @@ export const MoreDropdownSelect: React.FC<{
           title: 'Unfreeze data',
           icon: <IconCommonUnlock color={ThemingVariables.colors.text[0]} />,
           action: () => {
-            editor?.updateBlockProps?.(block.id, ['type'], Editor.BlockType.SQL)
+            editor?.updateBlockProps?.(dataAssetBlock.id, ['type'], Editor.BlockType.SQL)
           }
         },
       canConvertDataAsset &&
@@ -821,7 +829,7 @@ export const MoreDropdownSelect: React.FC<{
           title: 'Remove from data assets',
           icon: <IconCommonTurn color={ThemingVariables.colors.text[0]} />,
           action: () => {
-            editor?.updateBlockProps?.(block.id, ['type'], Editor.BlockType.SQL)
+            editor?.updateBlockProps?.(dataAssetBlock.id, ['type'], Editor.BlockType.SQL)
           }
         },
       canConvertDataAsset &&
@@ -829,7 +837,7 @@ export const MoreDropdownSelect: React.FC<{
           title: 'Add to data assets',
           icon: <IconCommonMetrics color={ThemingVariables.colors.text[0]} />,
           action: () => {
-            editor?.updateBlockProps?.(block.id, ['type'], Editor.BlockType.Metric)
+            editor?.updateBlockProps?.(dataAssetBlock.id, ['type'], Editor.BlockType.Metric)
           }
         }
     ].filter((x) => !!x) as OperationInterface[]
@@ -954,7 +962,7 @@ const TitleButtonsInner: React.FC<{
   const { t } = useTranslation()
   const [isActive, setIsActive] = useState(false)
   const [isPresent, safeToRemove] = usePresence()
-  const questionEditor = useQuestionEditor()
+  const questionEditor = useQuestionEditor(block.storyId!)
 
   useEffect(() => {
     isActive === false && !isPresent && safeToRemove?.()
