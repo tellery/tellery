@@ -1001,6 +1001,7 @@ export const StoryQuestionEditor: React.FC<{
             {isDBT ? (
               <MonacoEditor
                 language="yaml"
+                theme="tellery"
                 value={YAML.stringify(omit(block.content, 'title'))}
                 options={{
                   readOnly: true,

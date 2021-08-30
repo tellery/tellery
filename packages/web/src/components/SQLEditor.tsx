@@ -315,6 +315,7 @@ function TransclusionContentWidget(props: {
                       scrollBeyondLastLine: false,
                       scrollBeyondLastColumn: 0
                     }}
+                    theme="tellery"
                     loading={<CircularLoading size={50} color={ThemingVariables.colors.gray[0]} />}
                     wrapperClassName={css`
                       padding: 0 15px;
