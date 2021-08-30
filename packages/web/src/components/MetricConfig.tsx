@@ -53,7 +53,6 @@ function MetricConfigInner(props: { block: Editor.MetricBlock; className?: strin
   useEffect(() => {
     setMeasurements(props.block.content?.measurements || {})
   }, [props.block.content?.measurements])
-  const [isAddMode, setIsAddMode] = useState(false)
   const fields = useMemo(
     () =>
       snapshot?.data.fields
@@ -120,9 +119,9 @@ function MetricConfigInner(props: { block: Editor.MetricBlock; className?: strin
           </div>
         ))}
         <FormButton
-          variant="secondary"
+          variant={activeMeasurement ? 'secondary' : 'primary'}
           onClick={() => {
-            setIsAddMode(true)
+            setActiveMeasurement(undefined)
           }}
           className={css`
             width: 100%;
@@ -142,22 +141,9 @@ function MetricConfigInner(props: { block: Editor.MetricBlock; className?: strin
           padding: 20px;
         `}
       >
-        {isAddMode ? (
-          <MetricConigCreator
-            fields={fields}
-            onCreate={(ms) => {
-              setMeasurements({
-                ...measurements,
-                ...ms.reduce<{ [id: string]: Measurement }>((obj, m) => {
-                  obj[blockIdGenerator()] = m
-                  return obj
-                }, {})
-              })
-            }}
-          />
-        ) : (
+        {activeMeasurement ? (
           <>
-            <span
+            <div
               className={css`
                 font-weight: 500;
                 font-size: 12px;
@@ -166,8 +152,36 @@ function MetricConfigInner(props: { block: Editor.MetricBlock; className?: strin
               `}
             >
               Name
-            </span>
+            </div>
+            {measurements[activeMeasurement] ? measurements[activeMeasurement].name : null}
+            <FormButton
+              variant="danger"
+              onClick={() => {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { [activeMeasurement]: _removed, ...rest } = measurements
+                setMeasurements(rest)
+                setActiveMeasurement(undefined)
+              }}
+            >
+              Remove
+            </FormButton>
           </>
+        ) : (
+          <MetricConigCreator
+            fields={fields}
+            onCreate={(ms) => {
+              let id: string | undefined
+              setMeasurements({
+                ...measurements,
+                ...ms.reduce<{ [id: string]: Measurement }>((obj, m) => {
+                  id = blockIdGenerator()
+                  obj[id] = m
+                  return obj
+                }, {})
+              })
+              setActiveMeasurement(id)
+            }}
+          />
         )}
       </PerfectScrollbar>
       <div
@@ -332,27 +346,18 @@ function MeasurementItem(props: {
         />
       </div>
       {typeof props.value === 'undefined' ? null : (
-        <>
-          <span
-            className={css`
-              color: ${ThemingVariables.colors.text[1]};
-            `}
-          >
-            Name
-          </span>
-          <FormInput
-            placeholder={`${props.func}(${props.fieldName})`}
-            onBlur={() => {
-              if (typeof props.value === 'string' && props.value.length === 0) {
-                props.onChange(`${props.func}(${props.fieldName})`)
-              }
-            }}
-            value={props.value}
-            onChange={(e) => {
-              props.onChange(e.target.value)
-            }}
-          />
-        </>
+        <FormInput
+          placeholder={`${props.func}(${props.fieldName})`}
+          onBlur={() => {
+            if (typeof props.value === 'string' && props.value.length === 0) {
+              props.onChange(`${props.func}(${props.fieldName})`)
+            }
+          }}
+          value={props.value}
+          onChange={(e) => {
+            props.onChange(e.target.value)
+          }}
+        />
       )}
     </div>
   )
