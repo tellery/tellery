@@ -771,7 +771,7 @@ export const StoryQuestionEditor: React.FC<{
   )
 
   const mutatingCount = useDraftBlockMutating(block.id)
-  const { data: downstreams } = useQuestionDownstreams(block.id)
+  const { data: downstreams } = useQuestionDownstreams(sqlBlock.id)
 
   const isDBT = block.type === Editor.BlockType.DBT
 
