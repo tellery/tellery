@@ -21,12 +21,17 @@ import {
   IconMenuToggleList
 } from '@app/assets/icons'
 import { getBlockElementContentEditbleById } from '@app/components/editor/helpers/contentEditable'
-import { nativeSelection2Tellery, TellerySelectionType } from '@app/components/editor/helpers/tellerySelection'
+import {
+  nativeSelection2Tellery,
+  tellerySelection2Native,
+  TellerySelectionType
+} from '@app/components/editor/helpers/tellerySelection'
 import {
   addMark,
   applyTransformOnSplitedTokens,
   applyTransformOnTokens,
   extractEntitiesFromToken,
+  isSelectionCollapsed,
   mergeTokens,
   removeMark,
   splitToken,
@@ -41,7 +46,7 @@ import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor, Story } from '@app/types'
 import { blockIdGenerator, DEFAULT_TITLE, TelleryGlyph } from '@app/utils'
-import { css } from '@emotion/css'
+import { css, cx } from '@emotion/css'
 import styled from '@emotion/styled'
 import Tippy from '@tippyjs/react'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -53,75 +58,56 @@ import { isTextBlock } from '../Blocks/utils'
 import { EditorPopover } from '../EditorPopover'
 import { useEditor, useGetBlockTitleTextSnapshot } from '../hooks'
 import { useInlineFormulaPopoverState } from '../hooks/useInlineFormulaPopoverState'
+import { useStorySelection } from '../hooks/useStorySelection'
 import { useVariable } from '../hooks/useVariable'
 
 const MARK_TYPES = Object.values(Editor.InlineType)
 
-export const BlockTextOperationMenu = (props: { currentBlockId: string | null }) => {
+export const BlockTextOperationMenu = (props: { storyId: string }) => {
   const [open, setOpen] = useState(false)
-  const { currentBlockId } = props
-  const [range, setRange] = useState<null | Range>(null)
-  const [selectionString, setSelectionString] = useState('')
+  const [selectionState] = useStorySelection(props.storyId)
+
+  const range = useMemo(() => {
+    if (selectionState?.type === TellerySelectionType.Inline && isSelectionCollapsed(selectionState) === false) {
+      return tellerySelection2Native(selectionState)
+    }
+    return null
+  }, [selectionState])
+
+  const currentBlockId = useMemo(() => {
+    if (selectionState?.type === TellerySelectionType.Inline) {
+      return selectionState.anchor.blockId
+    }
+    return null
+  }, [selectionState])
+
+  const selectionString = useMemo(() => {
+    return range?.toString()
+  }, [range])
 
   useEffect(() => {
-    if (range === null) {
+    if (selectionString?.length) {
+      setOpen(true)
+    } else {
       setOpen(false)
     }
-  }, [range, setOpen])
-
-  useEffect(() => {
-    const onMouseDown = () => {
-      setRange(null)
-      setOpen(false)
-    }
-
-    const onMouseUp = (e: MouseEvent | KeyboardEvent) => {
-      setTimeout(() => {
-        if ((e.target as HTMLElement).closest('.tellery-select-toolbar')) {
-          const selection = document.getSelection()
-          if (selection) {
-            const selectionString = selection.toString()
-            const range = selection.rangeCount > 0 && selection.getRangeAt(0).cloneRange()
-            if (selectionString.length && range) {
-              setRange(range)
-              setOpen(true)
-              setSelectionString(selectionString)
-            } else {
-              setRange(null)
-              setOpen(false)
-            }
-          }
-        }
-        // selection change will trigger after mouse up was triggered, add this delay to prevent
-      }, 100)
-    }
-
-    document.addEventListener('mousedown', onMouseDown)
-    document.addEventListener('mouseup', onMouseUp)
-    document.addEventListener('keyup', onMouseUp)
-
-    return () => {
-      document.removeEventListener('mousedown', onMouseDown)
-      document.removeEventListener('mouseup', onMouseUp)
-      document.removeEventListener('keyup', onMouseUp)
-    }
-  }, [])
+  }, [selectionString?.length])
 
   return (
     <AnimatePresence>
-      {open && currentBlockId && (
+      {open && range && currentBlockId && (
         <BlockTextOperationMenuInner
           currentBlockId={currentBlockId}
           setOpen={setOpen}
           range={range}
-          selectionString={selectionString}
+          selectionString={selectionString ?? ''}
         />
       )}
     </AnimatePresence>
   )
 }
 
-export const BlockTextOperationMenuInner = ({
+const BlockTextOperationMenuInner = ({
   setOpen,
   range,
   currentBlockId,
@@ -214,16 +200,31 @@ export const BlockTextOperationMenuInner = ({
     [currentBlock, editor, tokenRange]
   )
 
-  const isMarked = useMemo(
-    () => (markType: Editor.InlineType) =>
-      selectedTokens.length &&
-      selectedTokens.every((token) => {
-        return token[1] && token[1].findIndex((mark) => mark[0] === markType) !== -1
-      }),
+  const getMarkValue = useCallback(
+    (markType: Editor.InlineType) => {
+      const isMarked =
+        selectedTokens.length &&
+        selectedTokens.every((token) => {
+          return token[1] && token[1].findIndex((mark) => mark[0] === markType) !== -1
+        })
+      const firstToken = selectedTokens[0]
+      if (isMarked) {
+        const targetTokenType = firstToken?.[1]?.find((tokenType) => tokenType[0] === markType)
+        if (!targetTokenType) {
+          return undefined
+        }
+        return targetTokenType[1] ?? true
+      } else {
+        return undefined
+      }
+    },
     [selectedTokens]
   )
 
-  const markdMap = useMemo(() => new Map(MARK_TYPES.map((markType) => [markType, isMarked(markType)])), [isMarked])
+  const markdMap = useMemo(
+    () => new Map(MARK_TYPES.map((markType) => [markType, getMarkValue(markType)])),
+    [getMarkValue]
+  )
 
   const snapshot = useBlockSnapshot()
   const getBlockTitle = useGetBlockTitleTextSnapshot()
@@ -313,22 +314,10 @@ export const BlockTextOperationMenuInner = ({
       }
       if (markdMap.get(Editor.InlineType.Formula)) {
         const splitedTokens = splitToken(currentBlock?.content?.title || [])
-        const transformedTokens = applyTransformOnSplitedTokens(
-          splitedTokens,
-          tokenRange,
-          (token: Editor.Token): Editor.Token => {
-            const marks = token[1]
-            const entity = extractEntitiesFromToken(token)
-            const uniqueMarks = removeMark(marks, Editor.InlineType.Formula)
-            invariant(entity.fomula, 'reference is null')
-            const tokenText = entity.fomula[1] as string
-            if (uniqueMarks) {
-              return [tokenText, uniqueMarks]
-            } else {
-              return [tokenText]
-            }
-          }
-        )
+        const transformedTokens = applyTransformOnSplitedTokens(splitedTokens, tokenRange, (): Editor.Token => {
+          const uniqueMarks = addMark([], Editor.InlineType.Formula, [formula])
+          return [TelleryGlyph.FORMULA, uniqueMarks]
+        })
         const mergedTokens = mergeTokens(transformedTokens)
         editor?.updateBlockTitle?.(currentBlock.id, mergedTokens)
       } else {
@@ -433,7 +422,6 @@ export const BlockTextOperationMenuInner = ({
           overflow: hidden;
           align-items: stretch;
           height: 40px;
-          user-select: none;
         `}
       >
         <ToggleTypeOperation
@@ -496,6 +484,7 @@ export const BlockTextOperationMenuInner = ({
           editHandler={editFormula}
           referenceRange={range}
           storyId={currentBlock.storyId!}
+          initValue={(markdMap.get(Editor.InlineType.Formula) as string) ?? ''}
         />
         {/* <InlineEquationPopover setInlineEditing={setInlineEditing} markHandler={markHandler} referenceRange={range} /> */}
         <OperationButtonWithHoverContent
@@ -917,30 +906,40 @@ const InlineFormulaInput: React.FC<{
   storyId: string
   editHandler: (formula: string) => void
   setOpen: (open: boolean) => void
-}> = ({ storyId, editHandler, setOpen }) => {
+  initValue: string
+}> = ({ storyId, editHandler, setOpen, initValue = '' }) => {
   const currentResources = useStoryResources(storyId)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
-  const [formula, setFormula] = useState('')
+  const [formula, setFormula] = useState(initValue)
   const editor = useEditor()
 
   useEffect(() => {
     inputRef.current?.focus()
   }, [])
 
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.value = initValue
+    }
+  }, [initValue])
+
   const getBlockTitle = useGetBlockTitleTextSnapshot()
 
   return (
     <>
       <div
-        className={css`
-          background: ${ThemingVariables.colors.gray[5]};
-          box-shadow: ${ThemingVariables.boxShadows[0]};
-          border-radius: 8px;
-          overflow: hidden;
-          user-select: none;
-          padding: 10px 10px;
-          color: ${ThemingVariables.colors.text[1]};
-        `}
+        className={cx(
+          css`
+            background: ${ThemingVariables.colors.gray[5]};
+            box-shadow: ${ThemingVariables.boxShadows[0]};
+            border-radius: 8px;
+            overflow: hidden;
+            user-select: text;
+            padding: 10px 10px;
+            color: ${ThemingVariables.colors.text[1]};
+          `,
+          'no-select'
+        )}
         onClick={(e) => {
           e.preventDefault()
           e.stopPropagation()
@@ -963,7 +962,7 @@ const InlineFormulaInput: React.FC<{
               outline: none;
               border: none;
               padding: 10px 10px;
-              user-select: none;
+              user-select: all;
               resize: none;
               min-height: 50px;
               width: 100%;
@@ -972,14 +971,14 @@ const InlineFormulaInput: React.FC<{
               e.stopPropagation()
             }}
             ref={inputRef}
-            onSelect={(e) => {
-              // e.preventDefault()
-              e.stopPropagation()
-            }}
+            // value={formula}
+            // onSelect={(e) => {
+            // e.preventDefault()
+            // e.stopPropagation()
+            // }}
             placeholder="Input an formula"
             onInput={(e) => {
               setFormula(e.currentTarget.value)
-              // setLink(e.currentTarget.value)
             }}
             onKeyDown={(e) => {
               e.stopPropagation()
@@ -1062,6 +1061,7 @@ const InlineFormulaPopover = (props: {
   referenceRange: Range | null
   editHandler: (formula: string) => void
   storyId: string
+  initValue: string
 }) => {
   const [open, setOpen] = useInlineFormulaPopoverState()
 
@@ -1084,7 +1084,12 @@ const InlineFormulaPopover = (props: {
         }}
       />
       <EditorPopover referenceElement={props.referenceRange} open={open} setOpen={setOpen} disableClickThrough>
-        <InlineFormulaInput storyId={props.storyId} editHandler={props.editHandler} setOpen={setOpen} />
+        <InlineFormulaInput
+          storyId={props.storyId}
+          editHandler={props.editHandler}
+          setOpen={setOpen}
+          initValue={props.initValue}
+        />
       </EditorPopover>
     </>
   )

@@ -1542,7 +1542,7 @@ const _StoryEditor: React.FC<{
                           <ContentBlocks blockIds={rootBlock.children} parentType={rootBlock.type} readonly={locked} />
                         )}
                         <EditorEmptyStateEndPlaceHolder onClick={createFirstOrLastBlockHandler} height={272} />
-                        {!locked && <BlockTextOperationMenu currentBlockId={focusingBlockId} />}
+                        {!locked && <BlockTextOperationMenu storyId={storyId} />}
                         {props.bottom && (
                           <div
                             className={css`
