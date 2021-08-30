@@ -82,6 +82,17 @@ class DeleteProfileRequest {
   profile!: string
 }
 
+class GetProfileSpecRequest {
+  @IsDefined()
+  workspaceId!: string
+
+  @IsDefined()
+  connectorId!: string
+
+  @IsDefined()
+  profile!: string
+}
+
 class ListDatabasesRequest {
   @IsDefined()
   workspaceId!: string
@@ -283,6 +294,22 @@ async function deleteProfileRouter(ctx: Context) {
   ctx.body = { profiles }
 }
 
+async function getProfileSpecRouter(ctx: Context) {
+  const payload = plainToClass(GetProfileSpecRequest, ctx.request.body)
+  await validate(ctx, payload)
+  const user = mustGetUser(ctx)
+
+  const manager = await getIConnectorManagerFromDB(payload.connectorId)
+
+  const spec = await connectorService.getProfileSpec(
+    manager,
+    user.id,
+    payload.workspaceId,
+    payload.profile,
+  )
+  ctx.body = { spec }
+}
+
 async function listDatabasesRouter(ctx: Context) {
   const payload = plainToClass(ListDatabasesRequest, ctx.request.body)
   await validate(ctx, payload)
@@ -444,6 +471,7 @@ router.post('/listAvailableConfigs', listAvailableConfigsRouter)
 router.post('/listProfiles', listProfilesRouter)
 router.post('/upsertProfile', upsertProfileRouter)
 router.post('/deleteProfile', deleteProfileRouter)
+router.post('/getProfileSpec', getProfileSpecRouter)
 router.post('/listDatabases', listDatabasesRouter)
 router.post('/listCollections', listCollectionsRouter)
 router.post('/getCollectionSchema', getCollectionSchemaRouter)

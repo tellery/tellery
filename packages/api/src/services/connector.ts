@@ -15,7 +15,6 @@ import {
   ProfileSpec,
   TypeField,
 } from '../types/connector'
-import { getCacheManager } from '../utils/cache'
 import { canGetWorkspaceData, canUpdateWorkspaceData } from '../utils/permission'
 
 export class ConnectorService {
@@ -75,6 +74,7 @@ export class ConnectorService {
   }
 
   /**
+   * TODO: see if caching is needed
    * TODO: implement setCurrentConnector in the backend, and invalidate the cache here when connector changed
    */
   async getProfileSpec(
@@ -84,14 +84,7 @@ export class ConnectorService {
     profileName: string,
   ): Promise<ProfileSpec> {
     await canGetWorkspaceData(this.permission, operatorId, workspaceId)
-    const cache = getCacheManager(true)
-    const profileSpec = await cache.get<ProfileSpec>(`${workspaceId}-profileSpec`)
-    if (profileSpec) {
-      return profileSpec
-    }
-    const newProfileSpec = await connectorManager.getProfileSpec(profileName)
-    await cache.set(`${workspaceId}-profileSpec`, newProfileSpec)
-    return newProfileSpec
+    return connectorManager.getProfileSpec(profileName)
   }
 
   async listProfiles(
