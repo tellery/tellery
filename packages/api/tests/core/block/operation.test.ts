@@ -255,7 +255,7 @@ test('set permissions with invalid args', async (t) => {
   })
 })
 
-test('convert question block to metric block', async (t) =>
+test('convert question block to query builder block', async (t) =>
   getConnection().transaction(async (manager) => {
     const op = new BlockOperation(uuid(), 'test', manager)
     const qid = nanoid()
@@ -283,9 +283,9 @@ test('convert question block to metric block', async (t) =>
     const question = await manager.getRepository(BlockEntity).findOneOrFail(qid)
 
     // update block type
-    await update(op, qid, 'metric', ['type'])
+    await update(op, qid, 'query_builder', ['type'])
 
-    const metric = await manager.getRepository(BlockEntity).findOneOrFail(qid)
-    t.is(metric.type, BlockType.METRIC)
-    t.deepEqual(question.content, metric.content)
+    const queryBuilder = await manager.getRepository(BlockEntity).findOneOrFail(qid)
+    t.is(queryBuilder.type, BlockType.QUERY_BUILDER)
+    t.deepEqual(question.content, queryBuilder.content)
   }))

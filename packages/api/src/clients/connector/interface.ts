@@ -1,5 +1,12 @@
 import { Readable } from 'stream'
-import { Collection, Database, Profile, TypeField, AvailableConfig } from '../../types/connector'
+import {
+  Collection,
+  Database,
+  Profile,
+  TypeField,
+  AvailableConfig,
+  ProfileSpec,
+} from '../../types/connector'
 import { DbtMetadata, ExportedBlockMetadata } from '../../types/dbt'
 
 /**
@@ -10,6 +17,11 @@ export interface IConnectorManager {
    * list all available configs (i.e. db type, supported options, etc.) of a given connector
    */
   listAvailableConfigs(): Promise<AvailableConfig[]>
+
+  /**
+   * get specification of a given profile (of its type)
+   */
+  getProfileSpec(profile: string): Promise<ProfileSpec>
 
   /**
    * list all profiles

@@ -1,0 +1,26 @@
+{
+  "identifier": "\"?\"",
+  "stringLiteral": "'?'",
+  "aggregation": {
+    "CHAR,VARCHAR,LONGVARCHAR,DATE,TIME,TIMESTAMP": {
+      "count": "COUNT(?)",
+      "countDistinct": "COUNT(DISTINCT ?)"
+    },
+    "TINYINT,SMALLINT,INTEGER,BIGINT,FLOAT,REAL,DOUBLE,NUMERIC,DECIMAL": {
+      "sum": "SUM(?)",
+      "avg": "AVG(?)",
+      "min": "MIN(?)",
+      "max": "MAX(?)",
+      "median": "MEDIAN(?)",
+      "std": "STDDEV(?)"
+    }
+  },
+  "bucketization": {
+    "DATE,TIME,TIMESTAMP": {
+      "byYear": "EXTRACT(YEAR FROM ?)",
+      "byMonth": "TO_CHAR(?, 'YYYY-mm')",
+      "byWeek": "EXTRACT(WEEK FROM ?)",
+      "byDate": "DATE(?)"
+    }
+  }
+}

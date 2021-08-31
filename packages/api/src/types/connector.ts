@@ -1,4 +1,5 @@
 import { AuthData, AuthType } from './auth'
+import { QueryBuilderSpec } from './queryBuilder'
 
 type Config = {
   name: string
@@ -13,6 +14,13 @@ type Config = {
 type AvailableConfig = {
   type: string
   configs: Config[]
+}
+
+type ProfileSpec = {
+  name: string
+  type: string
+  tokenizer: string
+  queryBuilderSpec: QueryBuilderSpec
 }
 
 type Profile = {
@@ -55,6 +63,7 @@ type ConnectorDTO = {
 
 export {
   AvailableConfig,
+  ProfileSpec,
   Profile,
   ConnectionType,
   Database,

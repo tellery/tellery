@@ -12,6 +12,7 @@ import {
   ConnectorDTO,
   Database,
   Profile,
+  ProfileSpec,
   TypeField,
 } from '../types/connector'
 import { canGetWorkspaceData, canUpdateWorkspaceData } from '../utils/permission'
@@ -70,6 +71,20 @@ export class ConnectorService {
     await canGetWorkspaceData(this.permission, operatorId, workspaceId)
 
     return connectorManager.listAvailableConfigs()
+  }
+
+  /**
+   * TODO: see if caching is needed
+   * TODO: implement setCurrentConnector in the backend, and invalidate the cache here when connector changed
+   */
+  async getProfileSpec(
+    connectorManager: IConnectorManager,
+    operatorId: string,
+    workspaceId: string,
+    profileName: string,
+  ): Promise<ProfileSpec> {
+    await canGetWorkspaceData(this.permission, operatorId, workspaceId)
+    return connectorManager.getProfileSpec(profileName)
   }
 
   async listProfiles(

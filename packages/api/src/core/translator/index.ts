@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import bluebird from 'bluebird'
 import { getRepository, In } from 'typeorm'
 import { customAlphabet } from 'nanoid'
 
@@ -8,10 +9,11 @@ import { DirectedGraph } from '../../utils/directedgraph'
 import { Block } from '../block'
 import { ISqlTranslator } from './interface'
 
-import * as dbt from './dbt'
-import * as question from './question'
+import * as dbtTranslator from './dbt'
+import * as sqlTranslator from './sql'
+import * as smartQueryTranslator from './smartQuery'
 
-const translators: ISqlTranslator[] = [dbt, question]
+const translators: ISqlTranslator[] = [sqlTranslator, dbtTranslator, smartQueryTranslator]
 
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 8)
 
@@ -41,8 +43,8 @@ const partialQueryPattern = new RegExp(
 /**
  * Assist param to an executable statement
  */
-async function translate(sql: string): Promise<string> {
-  const graph = await buildGraph(sql)
+async function translate(sql: string, opts: Record<string, unknown>): Promise<string> {
+  const graph = await buildGraph(sql, opts)
 
   // check if the graph is valid
   if (graph.isCyclic(rootKey)) {
@@ -55,7 +57,10 @@ async function translate(sql: string): Promise<string> {
 /**
  * @returns key: blockId, value: sql
  */
-async function loadSqlFromBlocks(blockIds: string[]): Promise<{ [k: string]: string }> {
+async function loadSqlFromBlocks(
+  blockIds: string[],
+  opts: Record<string, unknown> = {},
+): Promise<{ [k: string]: string }> {
   if (_.isEmpty(blockIds)) {
     return {}
   }
@@ -75,21 +80,26 @@ async function loadSqlFromBlocks(blockIds: string[]): Promise<{ [k: string]: str
     throw NotFoundError.resourceNotFound(missingBlocks.toString())
   }
 
-  return _(records)
-    .keyBy('id')
-    .mapValues((b) => {
-      // eslint-disable-next-line no-restricted-syntax
-      for (const translator of translators) {
-        if (translator.match(b)) {
-          return translator.translate(b)
+  return bluebird.props(
+    _(records)
+      .keyBy('id')
+      .mapValues(async (b) => {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const translator of translators) {
+          if (translator.match(b)) {
+            return translator.translate(b, opts)
+          }
         }
-      }
-      throw InvalidArgumentError.new(`cannot find sql translator for block: ${b.id}`)
-    })
-    .value()
+        throw InvalidArgumentError.new(`cannot find sql translator for block: ${b.id}`)
+      })
+      .value(),
+  )
 }
 
-async function buildGraph(sql: string): Promise<DirectedGraph<SQLPieces, string>> {
+async function buildGraph(
+  sql: string,
+  opts: Record<string, unknown> = {},
+): Promise<DirectedGraph<SQLPieces, string>> {
   const res = new DirectedGraph<SQLPieces>()
   const root = sqlMacro(sql)
   const queue = new Array<{ key: string; node: SQLPieces }>()
@@ -109,7 +119,7 @@ async function buildGraph(sql: string): Promise<DirectedGraph<SQLPieces, string>
       .value()
 
     // eslint-disable-next-line no-await-in-loop
-    const notIncludedSqls = await loadSqlFromBlocks(notIncludedBlockIds)
+    const notIncludedSqls = await loadSqlFromBlocks(notIncludedBlockIds, opts)
 
     _(notIncludedSqls).forEach((s, currKey) => queue.push({ key: currKey, node: sqlMacro(s) }))
   }

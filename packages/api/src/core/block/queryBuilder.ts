@@ -1,25 +1,27 @@
+import { Block, getPlainTextFromTokens } from '.'
 import { BlockType } from '../../types/block'
+import { Field, Metric } from '../../types/queryBuilder'
 import { Token } from '../../types/token'
 import { getLinksFromSql, Link } from '../link'
-import { Block, getPlainTextFromTokens } from '.'
 import { DataSource, Transcludable } from './interfaces'
 
-type SqlBlockContent = {
+type QueryBuilderBlockContent = {
   title: Token[]
-  forkedFromId?: string
   snapshotId?: string
   sql: string
+  // generated from sql execution (table schema, where DataType can be refined by user)
+  fields?: Field[]
+  metrics?: { [id: string]: Metric }
 }
-
-export class SqlBlock extends Block implements DataSource, Transcludable {
-  static type = BlockType.SQL
+export class QueryBuilderBlock extends Block implements DataSource, Transcludable {
+  static type = BlockType.QUERY_BUILDER
 
   getType(): BlockType {
-    return SqlBlock.type
+    return QueryBuilderBlock.type
   }
 
-  private getContent(): SqlBlockContent {
-    return (this.content as SqlBlockContent) ?? {}
+  getContent(): QueryBuilderBlockContent {
+    return (this.content as QueryBuilderBlockContent) ?? {}
   }
 
   getPlainText(): string | undefined {
@@ -27,7 +29,6 @@ export class SqlBlock extends Block implements DataSource, Transcludable {
   }
 
   getLinksFromContent(): Link[] {
-    // if the block has been deleted, links should be empty
     if (!this.alive) {
       return []
     }

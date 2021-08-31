@@ -1,5 +1,5 @@
 import { plainToClass, Type } from 'class-transformer'
-import { IsDefined, IsOptional, IsEnum } from 'class-validator'
+import { IsDefined, IsOptional, IsEnum, IsArray } from 'class-validator'
 import { Context } from 'koa'
 import Router from 'koa-router'
 import { nanoid } from 'nanoid'
@@ -12,6 +12,8 @@ import { mustGetUser } from '../utils/user'
 import { streamHttpErrorCb, withKeepaliveStream } from '../utils/stream'
 import { StorageError, UnauthorizedError } from '../error/error'
 import { translate } from '../core/translator'
+import { SelectBuilder } from '../types/queryBuilder'
+import { translateSmartQuery } from '../core/translator/smartQuery'
 
 class AddConnectorRequest {
   @IsDefined()
@@ -70,6 +72,17 @@ class UpsertProfileRequest {
 }
 
 class DeleteProfileRequest {
+  @IsDefined()
+  workspaceId!: string
+
+  @IsDefined()
+  connectorId!: string
+
+  @IsDefined()
+  profile!: string
+}
+
+class GetProfileSpecRequest {
   @IsDefined()
   workspaceId!: string
 
@@ -166,6 +179,30 @@ class ImportRequest {
   key!: string
 }
 
+class TranslateSmartQueryRequest {
+  @IsDefined()
+  workspaceId!: string
+
+  @IsDefined()
+  connectorId!: string
+
+  @IsDefined()
+  profile!: string
+
+  @IsDefined()
+  queryBuilderId!: string
+
+  @IsDefined()
+  @IsArray()
+  @Type(() => String)
+  metricIds!: string[]
+
+  @IsDefined()
+  @IsArray()
+  @Type(() => Object)
+  dimensions!: SelectBuilder[]
+}
+
 async function listConnectorsRouter(ctx: Context) {
   const payload = plainToClass(ListConnectorsRequest, ctx.request.body)
   await validate(ctx, payload)
@@ -257,6 +294,38 @@ async function deleteProfileRouter(ctx: Context) {
   ctx.body = { profiles }
 }
 
+async function getProfileSpecRouter(ctx: Context) {
+  const payload = plainToClass(GetProfileSpecRequest, ctx.request.body)
+  await validate(ctx, payload)
+  const user = mustGetUser(ctx)
+
+  const manager = await getIConnectorManagerFromDB(payload.connectorId)
+
+  const converter = (
+    map: Map<string, Map<string, string>>,
+  ): { [key: string]: { [key: string]: string } } =>
+    Object.fromEntries(
+      Array.from(map.entries()).map(([k, submap]) => [k, Object.fromEntries(submap.entries())]),
+    )
+  const { name, type, tokenizer, queryBuilderSpec } = await connectorService.getProfileSpec(
+    manager,
+    user.id,
+    payload.workspaceId,
+    payload.profile,
+  )
+  const { aggregation, bucketization } = queryBuilderSpec
+  ctx.body = {
+    name,
+    type,
+    tokenizer,
+    queryBuilderSpec: {
+      ...queryBuilderSpec,
+      aggregation: converter(aggregation),
+      bucketization: converter(bucketization),
+    },
+  }
+}
+
 async function listDatabasesRouter(ctx: Context) {
   const payload = plainToClass(ListDatabasesRequest, ctx.request.body)
   await validate(ctx, payload)
@@ -317,9 +386,16 @@ async function execute(ctx: Context) {
     const user = mustGetUser(ctx)
     const { workspaceId, connectorId, profile, sql, maxRow, questionId } = payload
 
-    const assembledSql = await translate(sql)
-
     const manager = await getIConnectorManagerFromDB(connectorId)
+
+    const { queryBuilderSpec } = await connectorService.getProfileSpec(
+      manager,
+      user.id,
+      workspaceId,
+      profile,
+    )
+
+    const assembledSql = await translate(sql, { queryBuilderSpec })
 
     const identifier = nanoid()
 
@@ -380,6 +456,29 @@ async function importFromFile(ctx: Context) {
   ctx.body = result
 }
 
+async function translateSmartQueryRouter(ctx: Context) {
+  const payload = plainToClass(TranslateSmartQueryRequest, ctx.request.body)
+  await validate(ctx, payload)
+  const user = mustGetUser(ctx)
+  const { workspaceId, connectorId, profile, queryBuilderId, metricIds, dimensions } = payload
+
+  const manager = await getIConnectorManagerFromDB(connectorId)
+
+  const { queryBuilderSpec } = await connectorService.getProfileSpec(
+    manager,
+    user.id,
+    workspaceId,
+    profile,
+  )
+
+  const assembledSql = await translateSmartQuery(
+    { queryBuilderId, metricIds, dimensions },
+    queryBuilderSpec,
+  )
+
+  ctx.body = { sql: assembledSql }
+}
+
 const router = new Router()
 
 router.post('/list', listConnectorsRouter)
@@ -388,10 +487,12 @@ router.post('/listAvailableConfigs', listAvailableConfigsRouter)
 router.post('/listProfiles', listProfilesRouter)
 router.post('/upsertProfile', upsertProfileRouter)
 router.post('/deleteProfile', deleteProfileRouter)
+router.post('/getProfileSpec', getProfileSpecRouter)
 router.post('/listDatabases', listDatabasesRouter)
 router.post('/listCollections', listCollectionsRouter)
 router.post('/getCollectionSchema', getCollectionSchemaRouter)
 router.post('/executeSql', execute)
 router.post('/import', importFromFile)
+router.post('/translateSmartQuery', translateSmartQueryRouter)
 
 export default router

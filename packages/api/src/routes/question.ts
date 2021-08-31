@@ -11,7 +11,7 @@ import { GlobalSearchRequest } from './global'
 
 /**
  * search question blocks by sql
- * TODO: deprecate sql search or add metric into searched result
+ * TODO: deprecate sql search or add query builder into searched result
  */
 async function search(ctx: Context) {
   const payload = plainToClass(GlobalSearchRequest, ctx.request.body)

@@ -1,6 +1,7 @@
 import '../../src/core/block/init'
 
 import _ from 'lodash'
+import { ExecutionContext } from 'ava'
 import { nanoid } from 'nanoid'
 import { getRepository } from 'typeorm'
 
@@ -181,25 +182,45 @@ export async function mockSubBlocks(
   return getRepository(BlockEntity).save(models)
 }
 
-export async function set(operation: IOperation, id: string, args: any, path: string[]) {
+export async function set(
+  operation: IOperation,
+  id: string,
+  args: any,
+  path: string[],
+): Promise<void> {
   const obj = await operation.entity(id)
   const res = await operation.set(obj, args, path)
   await operation.save(res, await operation.findInDB(id))
 }
 
-export async function update(operation: IOperation, id: string, args: any, path: string[]) {
+export async function update(
+  operation: IOperation,
+  id: string,
+  args: any,
+  path: string[],
+): Promise<void> {
   const obj = await operation.entity(id)
   const res = await operation.update(obj, args, path)
   await operation.save(res, await operation.findInDB(id))
 }
 
-export async function remove(operation: IOperation, id: string, args: any, path: string[]) {
+export async function remove(
+  operation: IOperation,
+  id: string,
+  args: any,
+  path: string[],
+): Promise<void> {
   const obj = await operation.entity(id)
   const res = await operation.remove(obj, args, path)
   await operation.save(res, await operation.findInDB(id))
 }
 
-export async function setPermissions(operation: IOperation, id: string, args: any, path: string[]) {
+export async function setPermissions(
+  operation: IOperation,
+  id: string,
+  args: any,
+  path: string[],
+): Promise<void> {
   const obj = await operation.entity(id)
   const res = await operation.setPermissions(obj, args, path)
   await operation.save(res, await operation.findInDB(id))
@@ -212,13 +233,13 @@ export async function updateIndex(
   path: string[],
   flag: 'before' | 'after',
   targetId?: string,
-) {
+): Promise<void> {
   const obj = await operation.entity(id)
   const res = await operation.updateIndex(obj, operatorId, path, flag, targetId)
   await operation.save(res, await operation.findInDB(id))
 }
 
-export async function createMetabaseSecret(host: string) {
+export async function createMetabaseSecret(host: string): Promise<void> {
   let tpc = await getRepository(ThirdPartyConfigurationEntity).findOne({ type: 'metabase' })
   if (!tpc) {
     tpc = new ThirdPartyConfigurationEntity()
@@ -229,4 +250,18 @@ export async function createMetabaseSecret(host: string) {
   _.set(tpc, ['config', 'secretMap', host], nanoid())
 
   await tpc.save()
+}
+
+export function stringCompare(t: ExecutionContext<any>, a: string, b: string): void {
+  const tags = [' ', '\n', '\t']
+
+  const splitAndJoin = (str: string): string => {
+    let currStr = str
+    // eslint-disable-next-line no-restricted-syntax
+    for (const tag of tags) {
+      currStr = currStr.split(tag).join(' ')
+    }
+    return _(currStr).split(' ').compact().join(' ')
+  }
+  t.deepEqual(splitAndJoin(a), splitAndJoin(b))
 }

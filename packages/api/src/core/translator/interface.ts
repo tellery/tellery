@@ -12,5 +12,5 @@ export interface ISqlTranslator {
   /**
    * Assist param to an executable statement
    */
-  translate(block: Block): string
+  translate(block: Block, opts: Record<string, unknown>): Promise<string>
 }

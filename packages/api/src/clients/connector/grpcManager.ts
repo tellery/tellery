@@ -2,7 +2,14 @@ import { Transform, TransformCallback } from 'stream'
 import { credentials, ChannelCredentials } from 'grpc'
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb'
 import _ from 'lodash'
-import { Profile, TypeField, Collection, Database, AvailableConfig } from '../../types/connector'
+import {
+  Profile,
+  TypeField,
+  Collection,
+  Database,
+  AvailableConfig,
+  ProfileSpec,
+} from '../../types/connector'
 import { AuthType, AuthData } from '../../types/auth'
 import {
   GetDatabaseRequest,
@@ -15,6 +22,7 @@ import {
   ImportRequest,
   KVEntry,
   ProfileBody,
+  GetProfileSpecRequest,
 } from '../../protobufs/connector_pb'
 import { SQLType } from '../../protobufs/sqlType_pb'
 import { DisplayType } from '../../protobufs/displayType_pb'
@@ -42,8 +50,8 @@ export function getGrpcConnector(
   authType: AuthType,
   authData: AuthData,
 ): ConnectorManager {
-  if (grpcConnectorStorage.has(url)) {
-    const cachedConnectorManager = grpcConnectorStorage.get(url)!
+  const cachedConnectorManager = grpcConnectorStorage.get(url)
+  if (cachedConnectorManager) {
     if (cachedConnectorManager.checkAuth(authType, authData)) {
       return cachedConnectorManager
     }
@@ -98,6 +106,31 @@ export class ConnectorManager implements IConnectorManager {
         fillHint: i.getFillhint(),
       })),
     }))
+  }
+
+  async getProfileSpec(profile: string): Promise<ProfileSpec> {
+    const request = new GetProfileSpecRequest().setName(profile)
+    const spec = await beautyCall(this.client.getProfileSpec, this.client, request)
+    const rawSpec = JSON.parse(Buffer.from(spec.getQuerybuilderspec(), 'base64').toString())
+    const objConverter = (t: { [key: string]: { [key: string]: string } }) =>
+      new Map(
+        Object.entries(t).flatMap(([k, v]) => {
+          const vMap = new Map(Object.entries(v))
+          return k.split(',').map((subKey: string) => [subKey, vMap])
+        }),
+      )
+    const queryBuilderSpec = {
+      ...rawSpec,
+      aggregation: objConverter(rawSpec.aggregation),
+      bucketization: objConverter(rawSpec.bucketization),
+    }
+
+    return {
+      name: spec.getName(),
+      type: spec.getType(),
+      tokenizer: Buffer.from(spec.getTokenizer(), 'base64').toString(),
+      queryBuilderSpec,
+    }
   }
 
   private profileToObject(item: ProfileBody): Profile {

@@ -14,7 +14,7 @@ enum BlockType {
   IMAGE = 'image',
   NUMBERED_LIST = 'numbered_list',
   STORY = 'story',
-  METRIC = 'metric',
+  QUERY_BUILDER = 'query_builder',
   QUOTE = 'quote',
   TABLE = 'table',
   TEXT = 'text',
@@ -31,6 +31,7 @@ enum BlockType {
   VISUALIZATION = 'visualization',
   SNAPSHOT = 'snapshot',
   VARIABLE = 'variable',
+  SMART_QUERY = 'smart_query',
 
   // embeds
   EMBED = 'embed',

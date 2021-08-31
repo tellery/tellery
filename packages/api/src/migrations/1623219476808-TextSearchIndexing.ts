@@ -35,7 +35,7 @@ export class TextSearchIndexing1623219476808 implements MigrationInterface {
     )
 
     // create gin index on question blocks
-    const typeInjection = [BlockType.SQL, BlockType.METRIC].map((t) => `'${t}'`).join(', ')
+    const typeInjection = [BlockType.SQL, BlockType.QUERY_BUILDER].map((t) => `'${t}'`).join(', ')
     await queryRunner.query(
       `CREATE INDEX IF NOT EXISTS ${this.getIndexName(
         cfg,

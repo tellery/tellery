@@ -1,6 +1,13 @@
 /* eslint class-methods-use-this: 0 */
 import { Readable } from 'stream'
-import { Profile, TypeField, Database, Collection, AvailableConfig } from '../../types/connector'
+import {
+  Profile,
+  TypeField,
+  Database,
+  Collection,
+  AvailableConfig,
+  ProfileSpec,
+} from '../../types/connector'
 import { DbtMetadata, ExportedBlockMetadata } from '../../types/dbt'
 import { IConnectorManager } from './interface'
 
@@ -10,6 +17,10 @@ import { IConnectorManager } from './interface'
 export class FakeManager implements IConnectorManager {
   async listAvailableConfigs(): Promise<AvailableConfig[]> {
     return []
+  }
+
+  async getProfileSpec(_profile: string): Promise<ProfileSpec> {
+    throw new Error('Method not implemented.')
   }
 
   async listProfiles(): Promise<Profile[]> {

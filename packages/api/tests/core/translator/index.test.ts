@@ -1,6 +1,6 @@
 import '../../../src/core/block/init'
 
-import test, { ExecutionContext } from 'ava'
+import test from 'ava'
 import _ from 'lodash'
 import { nanoid } from 'nanoid'
 import { getRepository } from 'typeorm'
@@ -11,6 +11,7 @@ import { CyclicTransclusionError } from '../../../src/error/error'
 import { BlockParentType, BlockType } from '../../../src/types/block'
 import { buildSqlFromGraph, sqlMacro, translate } from '../../../src/core/translator'
 import { DirectedGraph } from '../../../src/utils/directedgraph'
+import { stringCompare } from '../../testutils'
 
 test.before(async () => {
   await createDatabaseCon()
@@ -52,7 +53,7 @@ test('translate', async (t) => {
   })
   const sql = `select * from {{${sqlBlockId} as t1}} left join {{${dbtBlockId} as t2}}`
 
-  const sqlBody = await translate(sql)
+  const sqlBody = await translate(sql, {})
 
   stringCompare(
     t,
@@ -83,7 +84,7 @@ test('translate duplicate references', async (t) => {
 
   const sql = `select * from {{${sqlBlockId} as t1}} left join {{${sqlBlockId} as t2}}`
 
-  const sqlBody = await translate(sql)
+  const sqlBody = await translate(sql, {})
 
   stringCompare(
     t,
@@ -133,7 +134,7 @@ test('cyclic assemble', async (t) => {
   const sql = `select * from {{${blockId1} as t1}}`
 
   try {
-    await translate(sql)
+    await translate(sql, {})
     t.fail()
   } catch (e: any) {
     if (!(e instanceof CyclicTransclusionError)) {
@@ -191,17 +192,3 @@ test('buildSqlFromGraph', async (t) => {
     'WITH t1 AS ( WITH t2 AS ( WITH t3 AS ( WITH RECURSIVE result AS ( SELECT id, children FROM blocks WHERE id = a UNION ALL SELECT origin.id, origin.children FROM result JOIN blocks origin ON origin.id = ANY(result.children)) updateSql ) select * from t3 ) select * from t2 ) select * from t1',
   )
 })
-
-function stringCompare(t: ExecutionContext<any>, a: string, b: string) {
-  const tags = [' ', '\n', '\t']
-
-  const splitAndJoin = (str: string): string => {
-    let currStr = str
-    // eslint-disable-next-line no-restricted-syntax
-    for (const tag of tags) {
-      currStr = currStr.split(tag).join(' ')
-    }
-    return _(currStr).split(' ').compact().join(' ')
-  }
-  t.deepEqual(splitAndJoin(a), splitAndJoin(b))
-}

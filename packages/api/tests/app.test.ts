@@ -861,14 +861,14 @@ test.serial('reference completion', async (t: ExecutionContext<any>) => {
       },
       [],
     )
-    // create metrics 1
+    // create query builder 1
     await set(
       bop,
       mid1,
       {
         id: mid1,
         workspaceId,
-        type: BlockType.METRIC,
+        type: BlockType.QUERY_BUILDER,
         storyId: sid1,
         parentId: workspaceId,
         parentTable: 'workspace',
@@ -880,14 +880,14 @@ test.serial('reference completion', async (t: ExecutionContext<any>) => {
       },
       [],
     )
-    // create metrics 2
+    // create query builder 2
     await set(
       bop,
       mid2,
       {
         id: mid2,
         workspaceId,
-        type: BlockType.METRIC,
+        type: BlockType.QUERY_BUILDER,
         storyId: sid1,
         parentId: workspaceId,
         parentTable: 'workspace',
@@ -914,9 +914,9 @@ test.serial('reference completion', async (t: ExecutionContext<any>) => {
   const srs3 = completionRes3.results.searchResults
   const blocks3 = completionRes3.results.blocks
   t.is(srs3.length, 3)
-  // first two are metric blocks
-  t.is(blocks3[srs3[0]].type, BlockType.METRIC)
-  t.is(blocks3[srs3[1]].type, BlockType.METRIC)
+  // first two are query builder blocks
+  t.is(blocks3[srs3[0]].type, BlockType.QUERY_BUILDER)
+  t.is(blocks3[srs3[1]].type, BlockType.QUERY_BUILDER)
   // last one is sql block
   t.is(blocks3[srs3[2]].type, BlockType.SQL)
   // contains story blocks
@@ -935,9 +935,9 @@ test.serial('reference completion', async (t: ExecutionContext<any>) => {
   const srs2 = completionRes2.results.searchResults
   const blocks2 = completionRes2.results.blocks
   t.is(srs2.length, 2)
-  // all of them are metric blocks
-  t.is(blocks2[srs2[0]].type, 'metric')
-  t.is(blocks2[srs2[1]].type, 'metric')
+  // all of them are query builder blocks
+  t.is(blocks2[srs2[0]].type, 'query_builder')
+  t.is(blocks2[srs2[1]].type, 'query_builder')
   t.not(blocks2[sid1], undefined)
 
   await getRepository(BlockEntity).delete([qid, mid1, mid2])

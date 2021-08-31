@@ -12,10 +12,9 @@ function match(block: Block): boolean {
 /**
  * Assist param to an executable statement
  *
- *
  * The implementation overrides `getSql` of DbtBlock
  */
-function translate(block: Block): string {
+async function translate(block: Block): Promise<string> {
   return (block as DbtBlock).getSql()
 }
 
