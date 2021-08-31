@@ -109,6 +109,7 @@ export namespace Editor {
     Visualization = 'visualization',
     SnapshotBlock = 'snapshot',
     QueryBuilder = 'query_builder',
+    SmartQuery = 'smart_query',
     SQL = 'sql',
     DBT = 'dbt',
 

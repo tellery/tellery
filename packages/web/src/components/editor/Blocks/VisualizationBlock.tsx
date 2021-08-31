@@ -4,19 +4,22 @@ import {
   IconCommonError,
   IconCommonLink,
   IconCommonLock,
-  IconCommonDataAsset,
+  IconCommonMetrics,
   IconCommonMore,
   IconCommonRefresh,
   IconCommonSql,
   IconCommonTurn,
   IconCommonUnlock,
+  IconMenuDelete,
   IconMenuDownload,
+  IconMenuDuplicate,
   IconMiscNoResult,
   IconVisualizationSetting
 } from '@app/assets/icons'
 import IconButton from '@app/components/kit/IconButton'
-import { MenuItem } from '@app/components/MenuItem'
 import { MenuItemDivider } from '@app/components/MenuItemDivider'
+// import { MenuItem } from '@app/components/MenuItem'
+// import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { RefreshButton } from '@app/components/RefreshButton'
 import { Diagram } from '@app/components/v11n'
 import { charts } from '@app/components/v11n/charts'
@@ -24,6 +27,7 @@ import { Config, Data, Type } from '@app/components/v11n/types'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useBindHovering, useOnScreen } from '@app/hooks'
 import { useBlockSuspense, useGetSnapshot, useSnapshot, useUser } from '@app/hooks/api'
+import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useCommit } from '@app/hooks/useCommit'
 import { useFetchBlock } from '@app/hooks/useFetchBlock'
 import { useInterval } from '@app/hooks/useInterval'
@@ -39,7 +43,6 @@ import Tippy from '@tippyjs/react'
 import copy from 'copy-to-clipboard'
 import dayjs from 'dayjs'
 import download from 'downloadjs'
-import { useSelect } from 'downshift'
 import { AnimatePresence, motion, usePresence } from 'framer-motion'
 import html2canvas from 'html2canvas'
 import React, {
@@ -51,6 +54,7 @@ import React, {
   useImperativeHandle,
   useMemo,
   useRef,
+  forwardRef,
   useState
 } from 'react'
 import DetectableOverflow from 'react-detectable-overflow'
@@ -58,6 +62,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useMeasure } from 'react-use'
+import { Menu, MenuButton, MenuItem, MenuSeparator, MenuStateReturn, useMenuState } from 'reakit'
 import { useRecoilValue } from 'recoil'
 import invariant from 'tiny-invariant'
 import { BlockingUI } from '../BlockBase/BlockingUIBlock'
@@ -65,13 +70,11 @@ import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
 import { BlockResizer } from '../BlockBase/BlockResizer'
 import { BlockTitle } from '../BlockTitle'
 import { DebouncedResizeBlock } from '../DebouncedResizeBlock'
-import { EditorPopover } from '../EditorPopover'
-import { createTranscation, insertBlocksAndMoveOperations } from '../helpers'
+import { createTranscation, insertBlocksAndMoveOperations, TellerySelectionType } from '../helpers'
 import { getBlockImageById } from '../helpers/contentEditable'
 import { useEditor } from '../hooks'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
-import type { OperationInterface } from '../Popovers/BlockOperationPopover'
 import { DEFAULT_QUESTION_BLOCK_ASPECT_RATIO, DEFAULT_QUESTION_BLOCK_WIDTH } from '../utils'
 import { BlockComponent, isExecuteableBlockType, registerBlock } from './utils'
 
@@ -336,10 +339,11 @@ export const QuestionBlockButtons: React.FC<{
   slim: boolean
 }> = ({ block, show, slim }) => {
   const { small } = useBlockBehavior()
+  const [isActive, setIsActive] = useState(false)
 
   return (
     <AnimatePresence>
-      {!small && show && (
+      {!small && (show || isActive) && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -356,7 +360,7 @@ export const QuestionBlockButtons: React.FC<{
             border-radius: 8px;
           `}
         >
-          <TitleButtonsInner block={block} slim={slim} />
+          <TitleButtonsInner block={block} slim={slim} setIsActive={setIsActive} />
         </motion.div>
       )}
     </AnimatePresence>
@@ -714,7 +718,6 @@ export const MoreDropdownSelect: React.FC<{
   className?: string
   setIsActive: (active: boolean) => void
 }> = ({ block, setIsActive, className, hoverContent }) => {
-  const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null)
   const { data: user } = useUser(block?.lastEditedById ?? null)
   const editor = useEditor<Editor.VisualizationBlock>()
   const { readonly } = useBlockBehavior()
@@ -724,215 +727,345 @@ export const MoreDropdownSelect: React.FC<{
   const questionEditor = useQuestionEditor(block.storyId!)
   const { t } = useTranslation()
   const mutateSnapshot = useRefreshSnapshot()
-
-  const operations = useMemo(() => {
-    if (!open) return []
-    return [
-      {
-        title: t`Refresh Query`,
-        icon: <IconCommonRefresh color={ThemingVariables.colors.text[0]} />,
-        action: () => {
-          mutateSnapshot.execute(dataAssetBlock)
-        }
-      },
-      {
-        title: t`Visualization options`,
-        icon: <IconVisualizationSetting color={ThemingVariables.colors.text[0]} />,
-        action: () => {
-          questionEditor.open({ mode: 'VIS', blockId: block.id, storyId: block.storyId! })
-        }
-      },
-      {
-        title: t`Edit SQL`,
-        icon: <IconCommonSql color={ThemingVariables.colors.text[0]} />,
-        action: () => {
-          questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
-        }
-      },
-      {
-        title: 'Copy link',
-        icon: <IconCommonLink color={ThemingVariables.colors.text[0]} />,
-        action: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-          e.preventDefault()
-          e.stopPropagation()
-          copy('placeholder', {
-            onCopy: (clipboardData) => {
-              invariant(block, 'block is null')
-              const dataTranser = clipboardData as DataTransfer
-              if (!block.storyId) return
-
-              dataTranser.setData(
-                TELLERY_MIME_TYPES.BLOCK_REF,
-                JSON.stringify({ blockId: block.id, storyId: block.storyId })
-              )
-              dataTranser.setData(
-                'text/plain',
-                `${window.location.protocol}//${window.location.host}/story/${block?.storyId}#${block.id}`
-              )
-            }
-          })
-          toast('Link copied')
-        }
-      },
-      {
-        title: 'Download as CSV',
-        icon: <IconMenuDownload color={ThemingVariables.colors.text[0]} />,
-        action: async () => {
-          const snapshot = await getSnapshot({ snapshotId: dataAssetBlock?.content?.snapshotId })
-          const snapshotData = snapshot?.data
-          invariant(snapshotData, 'snapshotData is null')
-          const csvString = snapshotToCSV(snapshotData)
-          invariant(csvString, 'csvString is null')
-          csvString && download(csvString, 'data.csv', 'text/csv')
-        }
-      },
-      {
-        title: 'Download as image',
-        icon: <IconMenuDownload color={ThemingVariables.colors.text[0]} />,
-        action: async () => {
-          const elementSVG = getBlockImageById(block.id)
-          if (elementSVG) {
-            html2canvas(elementSVG!, {
-              foreignObjectRendering: false
-            }).then(function (canvas) {
-              const dataUrl = canvas.toDataURL('image/png')
-              download(dataUrl, 'image.png', 'image/png')
-            })
-          }
-        }
-      },
-      {
-        title: 'Copy SQL',
-        icon: <IconCommonCopy color={ThemingVariables.colors.text[0]} />,
-        action: () => {
-          copy(dataAssetBlock.content?.sql ?? '')
-        }
-      },
-      canConvertDataAsset &&
-        dataAssetBlock.type === Editor.BlockType.SQL && {
-          title: 'Freeze data',
-          icon: <IconCommonLock color={ThemingVariables.colors.text[0]} />,
-          action: () => {
-            editor?.updateBlockProps?.(dataAssetBlock.id, ['type'], Editor.BlockType.SnapshotBlock)
-          }
-        },
-      canConvertDataAsset &&
-        dataAssetBlock.type === Editor.BlockType.SnapshotBlock && {
-          title: 'Unfreeze data',
-          icon: <IconCommonUnlock color={ThemingVariables.colors.text[0]} />,
-          action: () => {
-            editor?.updateBlockProps?.(dataAssetBlock.id, ['type'], Editor.BlockType.SQL)
-          }
-        },
-      canConvertDataAsset &&
-        dataAssetBlock.type === Editor.BlockType.QueryBuilder && {
-          title: 'Remove from data assets',
-          icon: <IconCommonTurn color={ThemingVariables.colors.text[0]} />,
-          action: () => {
-            editor?.updateBlockProps?.(dataAssetBlock.id, ['type'], Editor.BlockType.SQL)
-          }
-        },
-      canConvertDataAsset &&
-        dataAssetBlock.type === Editor.BlockType.SQL && {
-          title: 'Add to data assets',
-          icon: <IconCommonDataAsset color={ThemingVariables.colors.text[0]} />,
-          action: () => {
-            editor?.updateBlockProps?.(dataAssetBlock.id, ['type'], Editor.BlockType.QueryBuilder)
-          }
-        }
-    ].filter((x) => !!x) as OperationInterface[]
-  }, [t, canConvertDataAsset, dataAssetBlock, mutateSnapshot, questionEditor, block, getSnapshot, editor])
-
-  const { isOpen, openMenu, getToggleButtonProps, getMenuProps, highlightedIndex, getItemProps, closeMenu } = useSelect(
-    { items: operations }
-  )
+  const canRefresh = !readonly
+  const menu = useMenuState()
+  const blockTranscations = useBlockTranscations()
 
   useEffect(() => {
-    setTimeout(() => {
-      setIsActive(isOpen)
-    }, 100)
-  }, [isOpen, setIsActive])
+    setIsActive(menu.visible)
+  }, [menu, setIsActive])
 
   return (
-    <div>
-      <IconButton
-        hoverContent={hoverContent}
-        icon={IconCommonMore}
-        color={ThemingVariables.colors.gray[5]}
-        {...getToggleButtonProps({ ref: setReferenceElement })}
-        className={cx(
-          css`
-            outline: none;
-            outline: none;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            font-weight: 500;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            background: transparent;
-          `,
-          className
-        )}
-      />
-      <div {...getMenuProps()}>
-        <EditorPopover
-          referenceElement={referenceElement}
-          setOpen={(open) => {
-            if (open) {
-              openMenu()
-            } else {
-              closeMenu()
-            }
-          }}
-          open={isOpen}
-        >
-          <div
-            className={css`
-              background: ${ThemingVariables.colors.gray[5]};
-              box-shadow: ${ThemingVariables.boxShadows[0]};
-              border-radius: 8px;
-              padding: 8px;
-              width: 260px;
-              overflow: hidden;
+    <>
+      <MenuButton
+        {...menu}
+        className={css`
+          border: none;
+          background: transparent;
+          outline: none;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        `}
+      >
+        <IconButton
+          hoverContent={hoverContent}
+          icon={IconCommonMore}
+          color={ThemingVariables.colors.gray[5]}
+          className={cx(
+            css`
               outline: none;
-            `}
-          >
-            {operations.map((operation, index) => (
-              <div key={`${operation.title}`} {...getItemProps({ item: operation, index })}>
-                <MenuItem
-                  title={operation.title}
-                  icon={operation.icon}
-                  onClick={operation.action}
-                  isActive={highlightedIndex === index}
-                />
+              border: none;
+              border-radius: 4px;
+              font-size: 16px;
+              font-weight: 500;
+              padding: 0;
+              cursor: pointer;
+              background: transparent;
+            `,
+            className
+          )}
+        />
+      </MenuButton>
+
+      <Menu
+        {...menu}
+        style={{
+          outline: 'none'
+        }}
+      >
+        <div
+          className={css`
+            background: ${ThemingVariables.colors.gray[5]};
+            box-shadow: ${ThemingVariables.boxShadows[0]};
+            border-radius: 8px;
+            padding: 8px;
+            width: 260px;
+            overflow: hidden;
+            outline: none;
+            display: flex;
+            flex-direction: column;
+          `}
+        >
+          <StyledMenuItem
+            {...menu}
+            title={t`Copy Link`}
+            icon={<IconCommonLink color={ThemingVariables.colors.text[0]} />}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              copy('placeholder', {
+                onCopy: (clipboardData) => {
+                  invariant(block, 'block is null')
+                  const dataTranser = clipboardData as DataTransfer
+                  if (!block.storyId) return
+
+                  dataTranser.setData(
+                    TELLERY_MIME_TYPES.BLOCK_REF,
+                    JSON.stringify({ blockId: block.id, storyId: block.storyId })
+                  )
+                  dataTranser.setData(
+                    'text/plain',
+                    `${window.location.protocol}//${window.location.host}/story/${block?.storyId}#${block?.id}`
+                  )
+                }
+              })
+              toast('Link Copied')
+            }}
+          />
+          <StyledMenuItem
+            {...menu}
+            title={t`Duplicate`}
+            icon={<IconMenuDuplicate color={ThemingVariables.colors.text[0]} />}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              const selection = editor?.getSelection()
+              editor?.duplicateHandler(
+                selection?.type === TellerySelectionType.Block ? selection.selectedBlocks : [block.id]
+              )
+            }}
+          />
+          <MenuItemDivider />
+          {canRefresh && (
+            <StyledMenuItem
+              {...menu}
+              title={t`Refresh Query`}
+              icon={<IconCommonRefresh color={ThemingVariables.colors.text[0]} />}
+              onClick={() => {
+                mutateSnapshot.execute(dataAssetBlock)
+              }}
+            />
+          )}
+          <StyledMenuItem
+            {...menu}
+            title={t`Visualization options`}
+            icon={<IconVisualizationSetting color={ThemingVariables.colors.text[0]} />}
+            onClick={() => {
+              questionEditor.open({ mode: 'VIS', blockId: block.id, storyId: block.storyId! })
+            }}
+          />
+          <StyledMenuItem
+            {...menu}
+            title={t`Open in editor`}
+            icon={<IconCommonSql color={ThemingVariables.colors.text[0]} />}
+            onClick={() => {
+              questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
+            }}
+          />
+          <StyledMenuItem
+            {...menu}
+            title={'Download as CSV'}
+            icon={<IconMenuDownload color={ThemingVariables.colors.text[0]} />}
+            onClick={async () => {
+              const snapshot = await getSnapshot({ snapshotId: dataAssetBlock?.content?.snapshotId })
+              const snapshotData = snapshot?.data
+              invariant(snapshotData, 'snapshotData is null')
+              const csvString = snapshotToCSV(snapshotData)
+              invariant(csvString, 'csvString is null')
+              csvString && download(csvString, 'data.csv', 'text/csv')
+            }}
+          />
+          <StyledMenuItem
+            {...menu}
+            title={'Download as image'}
+            icon={<IconMenuDownload color={ThemingVariables.colors.text[0]} />}
+            onClick={async () => {
+              const elementSVG = getBlockImageById(block.id)
+              if (elementSVG) {
+                html2canvas(elementSVG!, {
+                  foreignObjectRendering: false
+                }).then(function (canvas) {
+                  const dataUrl = canvas.toDataURL('image/png')
+                  download(dataUrl, 'image.png', 'image/png')
+                })
+              }
+            }}
+          />
+          {canConvertDataAsset && dataAssetBlock.type === Editor.BlockType.SQL && (
+            <Tippy
+              content="Freeze the data returned by the query to prevent accidental refreshing."
+              placement="left"
+              maxWidth={260}
+              delay={500}
+              arrow={false}
+            >
+              <StyledMenuItem
+                {...menu}
+                title={'Freeze data'}
+                icon={<IconCommonLock color={ThemingVariables.colors.text[0]} />}
+                onClick={async () => {
+                  editor?.updateBlockProps?.(dataAssetBlock.id, ['type'], Editor.BlockType.SnapshotBlock)
+                }}
+              />
+            </Tippy>
+          )}
+          {canConvertDataAsset && dataAssetBlock.type === Editor.BlockType.SnapshotBlock && (
+            <StyledMenuItem
+              {...menu}
+              title={'Unfreeze data'}
+              icon={<IconCommonUnlock color={ThemingVariables.colors.text[0]} />}
+              onClick={async () => {
+                editor?.updateBlockProps?.(dataAssetBlock.id, ['type'], Editor.BlockType.SQL)
+              }}
+            />
+          )}
+          {canConvertDataAsset && dataAssetBlock.type === Editor.BlockType.QueryBuilder && (
+            <StyledMenuItem
+              {...menu}
+              title={'Remove from data assets'}
+              icon={<IconCommonTurn color={ThemingVariables.colors.text[0]} />}
+              onClick={async () => {
+                editor?.updateBlockProps?.(dataAssetBlock.id, ['type'], Editor.BlockType.SQL)
+              }}
+            />
+          )}
+          {canConvertDataAsset && dataAssetBlock.type === Editor.BlockType.QueryBuilder && (
+            <StyledMenuItem
+              {...menu}
+              title={'Add to data assets'}
+              icon={<IconCommonMetrics color={ThemingVariables.colors.text[0]} />}
+              onClick={async () => {
+                editor?.updateBlockProps?.(dataAssetBlock.id, ['type'], Editor.BlockType.QueryBuilder)
+              }}
+            />
+          )}
+
+          {canConvertDataAsset && dataAssetBlock.type === Editor.BlockType.SmartQuery && (
+            <StyledMenuItem
+              {...menu}
+              title={'Convert to SQL query'}
+              icon={<IconCommonMetrics color={ThemingVariables.colors.text[0]} />}
+              onClick={async () => {
+                editor?.updateBlockProps?.(dataAssetBlock.id, ['type'], Editor.BlockType.SQL)
+              }}
+            />
+          )}
+          <MenuItemDivider />
+
+          {!readonly && (
+            <StyledMenuItem
+              {...menu}
+              title={'Delete'}
+              icon={<IconMenuDelete color={ThemingVariables.colors.text[0]} />}
+              onClick={async () => {
+                // requestClose()
+
+                // TODO: a workaround to transition
+                setTimeout(() => {
+                  blockTranscations.removeBlocks(block.storyId!, [block.id])
+                }, 100)
+              }}
+            />
+          )}
+
+          {block?.lastEditedById && (
+            <>
+              <MenuItemDivider />
+              <div
+                className={css`
+                  color: ${ThemingVariables.colors.text[1]};
+                  font-size: 12px;
+                  padding: 0 10px;
+                `}
+              >
+                Last edited by {user?.name}
+                <br />
+                {dayjs(block.updatedAt).format('YYYY-MM-DD')}
               </div>
-            ))}
-            {block?.lastEditedById && (
-              <>
-                <MenuItemDivider />
-                <div
-                  className={css`
-                    color: ${ThemingVariables.colors.text[1]};
-                    font-size: 12px;
-                    padding: 0 10px;
-                  `}
-                >
-                  Last edited by {user?.name}
-                  <br />
-                  {dayjs(block.updatedAt).format('YYYY-MM-DD')}
-                </div>
-              </>
-            )}
-          </div>
-        </EditorPopover>
-      </div>
-    </div>
+            </>
+          )}
+        </div>
+      </Menu>
+    </>
   )
 }
+
+const _StyledMenuItem: React.ForwardRefRenderFunction<
+  any,
+  {
+    icon?: ReactNode
+    title: ReactNode
+    side?: ReactNode
+    isActive?: boolean
+    size?: 'small' | 'medium' | 'large'
+    onClick?: React.MouseEventHandler<HTMLButtonElement>
+  } & MenuStateReturn
+> = (props, ref) => {
+  const { size = 'medium', title, side, isActive, onClick, icon, children, ...rest } = props
+  return (
+    <MenuItem
+      {...rest}
+      ref={ref}
+      className={cx(
+        size === 'small' &&
+          css`
+            height: 24px;
+          `,
+        size === 'medium' &&
+          css`
+            height: 36px;
+          `,
+        size === 'large' &&
+          css`
+            height: 44px;
+          `,
+        css`
+          border-radius: 8px;
+          padding: 0px 8px;
+          outline: none;
+          border: none;
+          width: 100%;
+          background: transparent;
+          box-sizing: border-box;
+          cursor: pointer;
+          transition: all 0.1s ease;
+          display: block;
+          color: ${ThemingVariables.colors.text[0]};
+          font-size: 12px;
+          line-height: 14px;
+          text-decoration: none;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          &:hover {
+            background: ${ThemingVariables.colors.primary[4]};
+          }
+          &:active {
+            background: ${ThemingVariables.colors.primary[3]};
+          }
+        `,
+        props.isActive &&
+          css`
+            background: ${ThemingVariables.colors.primary[3]};
+          `
+      )}
+      onClick={props.onClick}
+    >
+      {props?.icon}
+      <span
+        className={css`
+          margin-left: 8px;
+        `}
+      >
+        {props.title}
+      </span>
+      {props.side && (
+        <div
+          className={css`
+            margin-left: auto;
+          `}
+        >
+          {props.side}
+        </div>
+      )}
+    </MenuItem>
+  )
+}
+
+const StyledMenuItem = forwardRef(_StyledMenuItem)
 
 const VisBlockRefereshButton: React.FC<{ block: Editor.VisualizationBlock }> = ({ block }) => {
   const { t } = useTranslation()
@@ -958,15 +1091,10 @@ const VisBlockRefereshButton: React.FC<{ block: Editor.VisualizationBlock }> = (
 const TitleButtonsInner: React.FC<{
   block: Editor.VisualizationBlock
   slim: boolean
-}> = ({ block, slim }) => {
+  setIsActive: React.Dispatch<React.SetStateAction<boolean>>
+}> = ({ block, slim, setIsActive }) => {
   const { t } = useTranslation()
-  const [isActive, setIsActive] = useState(false)
-  const [isPresent, safeToRemove] = usePresence()
   const questionEditor = useQuestionEditor(block.storyId!)
-
-  useEffect(() => {
-    isActive === false && !isPresent && safeToRemove?.()
-  }, [isActive, isPresent, safeToRemove])
 
   return (
     <div
@@ -1013,13 +1141,13 @@ const QuestionBlockIconButton = styled.div`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  button {
+  > button {
     width: 30px;
     height: 30px;
     cursor: pointer;
     border-radius: 8px;
   }
-  button:hover {
+  > button:hover {
     background: ${ThemingVariables.colors.text[0]};
   }
 `
