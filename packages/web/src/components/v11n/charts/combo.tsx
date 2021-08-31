@@ -860,12 +860,10 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
           (groups.right?.stackType === ComboStack.NONE && groups.right?.shape === ComboShape.BAR
             ? props.config.shapes.filter((group) => group.groupId === 'right').length
             : 0)
-        return barsCount === 1
-          ? 'gap'
-          : {
-              left: props.dimensions.width / result100.length / (barsCount || 1) + 10,
-              right: props.dimensions.width / result100.length / (barsCount || 1) + 10
-            }
+        return {
+          left: props.dimensions.width / result100.length / (barsCount || 1) + 10,
+          right: props.dimensions.width / result100.length / (barsCount || 1) + 10
+        }
       }
       return undefined
     }, [groups.left, groups.right, props.config.shapes, props.dimensions.width, result100.length])
