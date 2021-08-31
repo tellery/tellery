@@ -808,7 +808,8 @@ export const StoryQuestionEditor: React.FC<{
   const sqlReadOnly =
     readonly ||
     sqlBlock.type === Editor.BlockType.SnapshotBlock ||
-    !!(visualizationBlock && sqlBlock.storyId !== visualizationBlock?.storyId)
+    !!(visualizationBlock && sqlBlock.storyId !== visualizationBlock?.storyId) ||
+    sqlBlock.type === Editor.BlockType.QueryBuilder
 
   return (
     <TabPanel
@@ -1025,20 +1026,22 @@ export const StoryQuestionEditor: React.FC<{
               />
             </Tippy>
           )}
-          <Tippy content="Metric" arrow={false} placement="right" delay={300}>
-            <IconButton
-              icon={IconCommonDataAsset}
-              className={css`
-                &::after {
-                  display: ${mode === 'QUERY_BUILDER' ? 'visible' : 'none'};
-                }
-              `}
-              color={mode === 'QUERY_BUILDER' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
-              onClick={() => {
-                setMode('QUERY_BUILDER')
-              }}
-            />
-          </Tippy>
+          {sqlBlock.type === Editor.BlockType.QueryBuilder ? null : (
+            <Tippy content="Query builder" arrow={false} placement="right" delay={300}>
+              <IconButton
+                icon={IconCommonDataAsset}
+                className={css`
+                  &::after {
+                    display: ${mode === 'QUERY_BUILDER' ? 'visible' : 'none'};
+                  }
+                `}
+                color={mode === 'QUERY_BUILDER' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
+                onClick={() => {
+                  setMode('QUERY_BUILDER')
+                }}
+              />
+            </Tippy>
+          )}
         </div>
         {mode === 'SQL' && (
           <>
