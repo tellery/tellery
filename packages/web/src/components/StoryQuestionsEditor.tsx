@@ -41,7 +41,7 @@ import { Editor } from '@app/types'
 import { blockIdGenerator, DEFAULT_TITLE, DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import MonacoEditor from '@monaco-editor/react'
-import Tippy from '@tippyjs/react'
+import Tippy, { useSingleton } from '@tippyjs/react'
 import { dequal } from 'dequal'
 import { motion, useMotionValue, useTransform } from 'framer-motion'
 import { produce } from 'immer'
@@ -818,7 +818,6 @@ export const StoryQuestionEditor: React.FC<{
   )
 
   const mutatingCount = useDraftBlockMutating(block.id)
-  const { data: downstreams } = useQuestionDownstreams(queryBlock.id)
 
   const isDBT = block.type === Editor.BlockType.DBT
 
@@ -827,6 +826,8 @@ export const StoryQuestionEditor: React.FC<{
     queryBlock.type === Editor.BlockType.SnapshotBlock ||
     !!(visualizationBlock && queryBlock.storyId !== visualizationBlock?.storyId) ||
     queryBlock.type === Editor.BlockType.QueryBuilder
+
+  const [source, target] = useSingleton()
 
   return (
     <TabPanel
@@ -915,6 +916,8 @@ export const StoryQuestionEditor: React.FC<{
             `}
           />
         </div>
+        <Tippy singleton={source} delay={500} arrow={false} />
+
         {isDBT ? null : (
           <div
             className={css`
@@ -934,20 +937,23 @@ export const StoryQuestionEditor: React.FC<{
                 }}
               />
             )}
-            <IconButton
-              hoverContent={mutatingCount !== 0 ? 'Cancel Query' : 'Execute Query'}
-              icon={mutatingCount !== 0 ? IconCommonClose : IconCommonRun}
-              color={ThemingVariables.colors.primary[1]}
-              disabled={!isExecuteableBlockType(queryBlock.type)}
-              onClick={mutatingCount !== 0 ? cancelExecuteSql : run}
-            />
-            <IconButton
-              hoverContent="Save"
-              disabled={!isDraft || readonly === true}
-              icon={IconCommonSave}
-              onClick={save}
-              color={ThemingVariables.colors.primary[1]}
-            />
+            <Tippy content={mutatingCount !== 0 ? 'Cancel Query' : 'Execute Query'} singleton={target}>
+              <IconButton
+                icon={mutatingCount !== 0 ? IconCommonClose : IconCommonRun}
+                color={ThemingVariables.colors.primary[1]}
+                disabled={!isExecuteableBlockType(queryBlock.type)}
+                onClick={mutatingCount !== 0 ? cancelExecuteSql : run}
+              />
+            </Tippy>
+            <Tippy content={'Save'} singleton={target}>
+              <IconButton
+                disabled={!isDraft || readonly === true}
+                icon={IconCommonSave}
+                onClick={save}
+                color={ThemingVariables.colors.primary[1]}
+              />
+            </Tippy>
+
             <IconButton
               icon={IconCommonArrowDropDown}
               color={ThemingVariables.colors.text[0]}
@@ -972,94 +978,13 @@ export const StoryQuestionEditor: React.FC<{
           height: calc(100% - 40px);
         `}
       >
-        <div
-          className={css`
-            flex-shrink: 0;
-            width: 60px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            z-index: 1;
-            border-right: solid 1px ${ThemingVariables.colors.gray[1]};
-            & > button {
-              padding: 20px;
-              position: relative;
-            }
-            & > button::after {
-              content: '';
-              width: 4px;
-              height: 40px;
-              border-radius: 2px;
-              background: ${ThemingVariables.colors.primary[1]};
-              position: absolute;
-              top: 10px;
-              right: 0;
-            }
-          `}
-        >
-          <Tippy content={isDBT ? 'View DBT' : 'Edit SQL'} arrow={false} placement="right" delay={300}>
-            <IconButton
-              icon={isDBT ? IconCommonDbt : IconCommonSql}
-              className={css`
-                &::after {
-                  display: ${mode === 'SQL' ? 'visible' : 'none'};
-                }
-              `}
-              color={mode === 'SQL' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
-              onClick={() => {
-                setMode('SQL')
-              }}
-            />
-          </Tippy>
-          {block.type === Editor.BlockType.Visualization && (
-            <Tippy content="Visualization options" arrow={false} placement="right" delay={300}>
-              <IconButton
-                icon={IconVisualizationSetting}
-                className={css`
-                  &::after {
-                    display: ${mode === 'VIS' ? 'visible' : 'none'};
-                  }
-                `}
-                color={mode === 'VIS' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
-                onClick={() => {
-                  setMode('VIS')
-                }}
-              />
-            </Tippy>
-          )}
-          {downstreams.length === 0 || (
-            <Tippy content="Downstreams" arrow={false} placement="right" delay={300}>
-              <IconButton
-                icon={IconCommonDownstream}
-                className={css`
-                  &::after {
-                    display: ${mode === 'DOWNSTREAM' ? 'visible' : 'none'};
-                  }
-                `}
-                color={mode === 'DOWNSTREAM' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
-                onClick={() => {
-                  setMode('DOWNSTREAM')
-                }}
-              />
-            </Tippy>
-          )}
-          {queryBlock.type === Editor.BlockType.QueryBuilder ? null : (
-            <Tippy content="Query builder" arrow={false} placement="right" delay={300}>
-              <IconButton
-                icon={IconCommonDataAsset}
-                className={css`
-                  &::after {
-                    display: ${mode === 'QUERY_BUILDER' ? 'visible' : 'none'};
-                  }
-                `}
-                color={mode === 'QUERY_BUILDER' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
-                onClick={() => {
-                  setMode('QUERY_BUILDER')
-                }}
-              />
-            </Tippy>
-          )}
-        </div>
+        <QueryEditorSideTabs
+          mode={mode}
+          setMode={setMode}
+          queryBlockId={queryBlock.id}
+          blockType={block.type}
+          queryBlockType={queryBlock.type}
+        />
         {mode === 'SQL' && (
           <>
             {isDBT ? (
@@ -1155,6 +1080,109 @@ export const StoryQuestionEditor: React.FC<{
   )
 }
 
+const QueryEditorSideTabs: React.FC<{
+  mode: string
+  setMode: (mode: QueryEditorMode) => void
+  blockType: Editor.BlockType
+  queryBlockType: Editor.BlockType
+  queryBlockId: string
+}> = ({ mode, setMode, blockType, queryBlockType, queryBlockId }) => {
+  const isDBT = queryBlockType === Editor.BlockType.DBT
+  const [source, target] = useSingleton()
+  const { data: downstreams } = useQuestionDownstreams(queryBlockId)
+
+  return (
+    <div
+      className={css`
+        flex-shrink: 0;
+        width: 60px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        z-index: 1;
+        border-right: solid 1px ${ThemingVariables.colors.gray[1]};
+        & > button {
+          padding: 20px;
+          position: relative;
+        }
+        & > button::after {
+          content: '';
+          width: 4px;
+          height: 40px;
+          border-radius: 2px;
+          background: ${ThemingVariables.colors.primary[1]};
+          position: absolute;
+          top: 10px;
+          right: 0;
+        }
+      `}
+    >
+      <Tippy singleton={source} delay={500} arrow={false} placement="right" />
+      <Tippy content={isDBT ? 'View DBT' : 'Edit SQL'} singleton={target}>
+        <IconButton
+          icon={isDBT ? IconCommonDbt : IconCommonSql}
+          className={css`
+            &::after {
+              display: ${mode === 'SQL' ? 'visible' : 'none'};
+            }
+          `}
+          color={mode === 'SQL' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
+          onClick={() => {
+            setMode('SQL')
+          }}
+        />
+      </Tippy>
+      {blockType === Editor.BlockType.Visualization && (
+        <Tippy content="Visualization options" arrow={false} singleton={target}>
+          <IconButton
+            icon={IconVisualizationSetting}
+            className={css`
+              &::after {
+                display: ${mode === 'VIS' ? 'visible' : 'none'};
+              }
+            `}
+            color={mode === 'VIS' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
+            onClick={() => {
+              setMode('VIS')
+            }}
+          />
+        </Tippy>
+      )}
+      {downstreams.length === 0 || (
+        <Tippy content="Downstreams" arrow={false} singleton={target}>
+          <IconButton
+            icon={IconCommonDownstream}
+            className={css`
+              &::after {
+                display: ${mode === 'DOWNSTREAM' ? 'visible' : 'none'};
+              }
+            `}
+            color={mode === 'DOWNSTREAM' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
+            onClick={() => {
+              setMode('DOWNSTREAM')
+            }}
+          />
+        </Tippy>
+      )}
+      {queryBlockType === Editor.BlockType.QueryBuilder ? null : (
+        <Tippy content="Query builder" arrow={false} singleton={target}>
+          <IconButton
+            icon={IconCommonDataAsset}
+            className={css`
+              &::after {
+                display: ${mode === 'QUERY_BUILDER' ? 'visible' : 'none'};
+              }
+            `}
+            color={mode === 'QUERY_BUILDER' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
+            onClick={() => {
+              setMode('QUERY_BUILDER')
+            }}
+          />
+        </Tippy>
+      )}
+    </div>
+  )
+}
 const emitFalsyObject = (object: EditorDraft) => {
   if (Object.values(object).some((value) => value !== undefined)) {
     return object
