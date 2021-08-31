@@ -773,6 +773,10 @@ export const MoreDropdownSelect: React.FC<{
     setIsActive(menu.visible)
   }, [menu, setIsActive])
 
+  const closeMenu = useCallback(() => {
+    menu.hide()
+  }, [menu])
+
   return (
     <>
       <MenuButton
@@ -819,6 +823,7 @@ export const MoreDropdownSelect: React.FC<{
           >
             <Menu
               {...menu}
+              hideOnClickOutside
               style={{
                 outline: 'none'
               }}
@@ -860,6 +865,7 @@ export const MoreDropdownSelect: React.FC<{
                       }
                     })
                     toast('Link Copied')
+                    closeMenu()
                   }}
                 />
                 <StyledMenuItem
@@ -873,6 +879,7 @@ export const MoreDropdownSelect: React.FC<{
                     editor?.duplicateHandler(
                       selection?.type === TellerySelectionType.Block ? selection.selectedBlocks : [block.id]
                     )
+                    closeMenu()
                   }}
                 />
                 <MenuItemDivider />
@@ -883,6 +890,7 @@ export const MoreDropdownSelect: React.FC<{
                     icon={<IconCommonRefresh color={ThemingVariables.colors.text[0]} />}
                     onClick={() => {
                       mutateSnapshot.execute(queryBlock)
+                      closeMenu()
                     }}
                   />
                 )}
@@ -892,6 +900,7 @@ export const MoreDropdownSelect: React.FC<{
                   icon={<IconVisualizationSetting color={ThemingVariables.colors.text[0]} />}
                   onClick={() => {
                     questionEditor.open({ mode: 'VIS', blockId: block.id, storyId: block.storyId! })
+                    closeMenu()
                   }}
                 />
                 <StyledMenuItem
@@ -900,6 +909,7 @@ export const MoreDropdownSelect: React.FC<{
                   icon={<IconCommonSql color={ThemingVariables.colors.text[0]} />}
                   onClick={() => {
                     questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
+                    closeMenu()
                   }}
                 />
                 <StyledMenuItem
@@ -913,6 +923,7 @@ export const MoreDropdownSelect: React.FC<{
                     const csvString = snapshotToCSV(snapshotData)
                     invariant(csvString, 'csvString is null')
                     csvString && download(csvString, 'data.csv', 'text/csv')
+                    closeMenu()
                   }}
                 />
                 <StyledMenuItem
@@ -929,6 +940,7 @@ export const MoreDropdownSelect: React.FC<{
                         download(dataUrl, 'image.png', 'image/png')
                       })
                     }
+                    closeMenu()
                   }}
                 />
                 {canConvertDataAsset && queryBlock.type === Editor.BlockType.SQL && (
@@ -945,6 +957,7 @@ export const MoreDropdownSelect: React.FC<{
                       icon={<IconCommonLock color={ThemingVariables.colors.text[0]} />}
                       onClick={async () => {
                         editor?.updateBlockProps?.(queryBlock.id, ['type'], Editor.BlockType.SnapshotBlock)
+                        closeMenu()
                       }}
                     />
                   </Tippy>
@@ -956,6 +969,7 @@ export const MoreDropdownSelect: React.FC<{
                     icon={<IconCommonUnlock color={ThemingVariables.colors.text[0]} />}
                     onClick={async () => {
                       editor?.updateBlockProps?.(queryBlock.id, ['type'], Editor.BlockType.SQL)
+                      closeMenu()
                     }}
                   />
                 )}

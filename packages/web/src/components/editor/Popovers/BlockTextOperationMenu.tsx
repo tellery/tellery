@@ -32,6 +32,7 @@ import {
   splitToken,
   tokenPosition2SplitedTokenPosition
 } from '@app/components/editor/helpers/tokenManipulation'
+import { FormButton } from '@app/components/kit/FormButton'
 import { createTranscation } from '@app/context/editorTranscations'
 import { useBlockSuspense } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
@@ -845,6 +846,19 @@ const InlineFormulaInput: React.FC<{
   }, [initValue])
 
   const getBlockTitle = useGetBlockTitleTextSnapshot()
+  const submit = useCallback(() => {
+    editHandler(formula)
+    editor?.setSelectionState((state) => {
+      if (state?.type === TellerySelectionType.Inline) {
+        return {
+          ...state,
+          anchor: state.focus
+        }
+      }
+      return state
+    })
+    setOpen(false)
+  }, [editHandler, editor, formula, setOpen])
 
   return (
     <>
@@ -874,6 +888,8 @@ const InlineFormulaInput: React.FC<{
             line-height: 17px;
             color: ${ThemingVariables.colors.text[1]};
             width: 420px;
+            display: flex;
+            flex-direction: column;
           `}
         >
           <textarea
@@ -903,20 +919,25 @@ const InlineFormulaInput: React.FC<{
               e.stopPropagation()
               if (e.key === 'Enter') {
                 e.preventDefault()
-                editHandler(formula)
-                editor?.setSelectionState((state) => {
-                  if (state?.type === TellerySelectionType.Inline) {
-                    return {
-                      ...state,
-                      anchor: state.focus
-                    }
-                  }
-                  return state
-                })
-                setOpen(false)
+                submit()
               }
             }}
           ></textarea>
+          <FormButton
+            variant="primary"
+            className={css`
+              margin-left: auto;
+              display: inline-flex;
+              align-items: center;
+              margin-right: 10px;
+              margin-bottom: 10px;
+            `}
+            onClick={() => {
+              submit()
+            }}
+          >
+            confirm
+          </FormButton>
           <div
             className={css`
               background-color: ${ThemingVariables.colors.primary[5]};

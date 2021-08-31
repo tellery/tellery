@@ -1,3 +1,4 @@
+import { FormButton } from '@app/components/kit/FormButton'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
@@ -187,17 +188,12 @@ const _EmbedBlockPopover: React.FC<{
             onPaste={(e) => e.stopPropagation()}
             placeholder="c = \\pm\\sqrt{a^2 + b^2}"
           />
-          <button
+          <FormButton
+            variant="primary"
             className={css`
               margin-left: auto;
-              border: none;
-              outline: none;
-              cursor: pointer;
-              border: none;
-              color: ${ThemingVariables.colors.gray[4]};
-              border-radius: 3px;
-              padding: 8px 16px;
-              background-color: ${ThemingVariables.colors.primary[1]};
+              display: inline-flex;
+              align-items: center;
               margin-right: 10px;
               margin-bottom: 10px;
             `}
@@ -206,7 +202,7 @@ const _EmbedBlockPopover: React.FC<{
             }}
           >
             confirm
-          </button>
+          </FormButton>
         </form>
       </div>
     </EditorPopover>
