@@ -1,5 +1,5 @@
 import { css, cx } from '@emotion/css'
-import ReactCalendar from 'react-calendar'
+import ReactCalendar, { ViewCallback } from 'react-calendar'
 import dayjs from 'dayjs'
 import { useMemo, useState, forwardRef, useCallback } from 'react'
 
@@ -14,6 +14,7 @@ export const Calendar = forwardRef<
     className?: string
     value: Date
     onChange(date: Date, id?: string): void
+    onActiveStartDataChange?: ViewCallback
   }
 >(function Calendar(props, ref) {
   const { data: thoughts } = useAllThoughts()
@@ -62,7 +63,10 @@ export const Calendar = forwardRef<
         locale="en"
         tileDisabled={({ date }) => date > new Date()}
         activeStartDate={activeStartDate}
-        onActiveStartDateChange={(value) => setActiveStartDate(value.activeStartDate)}
+        onActiveStartDateChange={(value) => {
+          setActiveStartDate(value.activeStartDate)
+          props.onActiveStartDataChange?.(value)
+        }}
         prev2Label={
           <IconCommonArrowDouble
             color={ThemingVariables.colors.text[1]}

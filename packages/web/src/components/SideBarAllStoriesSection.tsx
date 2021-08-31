@@ -200,6 +200,7 @@ export const StoryCard: React.FC<{ data: StoryListItemValue }> = ({ data }) => {
               overflow: hidden;
               text-overflow: ellipsis;
               color: ${ThemingVariables.colors.text[1]};
+              margin-top: 5px;
             `}
             dangerouslySetInnerHTML={{ __html: data.highlight.text }}
           ></div>
