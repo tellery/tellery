@@ -30,6 +30,10 @@ export class SmartQueryBlock extends Block implements DataSource, Transcludable 
     if (!this.alive) {
       return []
     }
+    const { queryBuilderId } = this.getContent()
+    if (!queryBuilderId) {
+      return []
+    }
     return [
       {
         blockId: this.getContent().queryBuilderId,
