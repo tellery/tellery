@@ -35,7 +35,7 @@ enum BlockType {
 
   // embeds
   EMBED = 'embed',
-  METABASE = 'metabse',
+  METABASE = 'metabase',
   MODE_ANALYTICS = 'mode_analytics',
   FIGMA = 'figma',
   GIST = 'gist',
