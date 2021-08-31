@@ -200,6 +200,7 @@ const BlockTextOperationMenuInner = ({
               return [TelleryGlyph.BI_LINK, uniqueMarks]
             } else {
               const uniqueMarks = addMark(marks, mark, args)
+              console.log('add mark', [token[0], uniqueMarks])
               return [token[0], uniqueMarks]
             }
           }

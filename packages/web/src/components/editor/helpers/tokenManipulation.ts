@@ -11,7 +11,7 @@ import { TellerySelection, TellerySelectionType } from './tellerySelection'
 export const mergeTokens = (tokens: Editor.Token[]) => {
   return tokens.reduce((acc: Editor.Token[], current: Editor.Token) => {
     if (acc.length === 0) {
-      acc.push([current[0]])
+      acc.push([...current])
     } else {
       const lastToken = acc[acc.length - 1]
       const lastTokenMarks = lastToken.slice(1) || []
@@ -20,7 +20,12 @@ export const mergeTokens = (tokens: Editor.Token[]) => {
         if (dequal(lastTokenMarks.sort(), currentTokenMarks.sort()) && isNonSelectbleToken(current) === false) {
           acc[acc.length - 1][0] = `${acc[acc.length - 1][0]}${current[0]}`
         } else {
-          acc.push([...current])
+          const marks = current[1]
+          if (marks) {
+            acc.push(current)
+          } else {
+            acc.push([current[0]])
+          }
         }
       }
     }
@@ -375,7 +380,7 @@ export const addMark = (
   mark: Editor.InlineType,
   args: (string | number)[]
 ) => {
-  const marksMap = marksArrayToMarksMap(marks || [])
+  const marksMap = marksArrayToMarksMap(marks ?? [])
   marksMap[mark] = args
   const uniqueMarks = marksMapToMarksArray(marksMap)
   return uniqueMarks
