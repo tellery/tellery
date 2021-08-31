@@ -2,7 +2,7 @@ import { IconCommonAdd } from '@app/assets/icons'
 import { useGetProfileSpec, useSnapshot } from '@app/hooks/api'
 import { useDimensions } from '@app/hooks/useDimensions'
 import { ThemingVariables } from '@app/styles'
-import { Editor, Measurement } from '@app/types'
+import { Editor, Metric } from '@app/types'
 import { blockIdGenerator } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import { useEffect, useRef, useState, useMemo } from 'react'
@@ -24,18 +24,18 @@ export default function MetricConfig(props: {
       name: string
       type: string
     }[],
-    measurements: {
-      [id: string]: Measurement
+    metrics: {
+      [id: string]: Metric
     }
   ): void
   className?: string
 }) {
-  const [isMetric, setIsMetric] = useState(false)
+  const [isQueryBuilder, setIsQueryBuilder] = useState(false)
   useEffect(() => {
-    setIsMetric(props.value.type === Editor.BlockType.Metric)
+    setIsQueryBuilder(props.value.type === Editor.BlockType.QueryBuilder)
   }, [props.value.type])
 
-  if (!isMetric) {
+  if (!isQueryBuilder) {
     return (
       <div
         className={cx(
@@ -47,7 +47,7 @@ export default function MetricConfig(props: {
           props.className
         )}
       >
-        <FormButton variant="primary" onClick={() => setIsMetric(true)}>
+        <FormButton variant="primary" onClick={() => setIsQueryBuilder(true)}>
           Convert as data assets
         </FormButton>
       </div>
@@ -57,26 +57,26 @@ export default function MetricConfig(props: {
 }
 
 function MetricConfigInner(props: {
-  value: Editor.MetricBlock
+  value: Editor.QueryBuilder
   onChange(
     fields: {
       name: string
       type: string
     }[],
-    measurements: {
-      [id: string]: Measurement
+    metrics: {
+      [id: string]: Metric
     }
   ): void
   className?: string
 }) {
   const snapshot = useSnapshot(props.value.content?.snapshotId)
-  const [activeMeasurement, setActiveMeasurement] = useState<string>()
+  const [activeMetric, setActiveMetric] = useState<string>()
   const ref = useRef<HTMLDivElement>(null)
   const dimensions = useDimensions(ref, 0)
-  const [measurements, setMeasurements] = useState(props.value.content?.measurements || {})
+  const [metrics, setMetrics] = useState(props.value.content?.metrics || {})
   useEffect(() => {
-    setMeasurements(props.value.content?.measurements || {})
-  }, [props.value.content?.measurements])
+    setMetrics(props.value.content?.metrics || {})
+  }, [props.value.content?.metrics])
   const fields = useMemo(
     () =>
       snapshot?.data.fields
@@ -87,9 +87,9 @@ function MetricConfigInner(props: {
   const { onChange } = props
   useEffect(() => {
     if (fields) {
-      onChange(fields, measurements)
+      onChange(fields, metrics)
     }
-  }, [fields, measurements, onChange])
+  }, [fields, metrics, onChange])
 
   return (
     <div
@@ -108,11 +108,11 @@ function MetricConfigInner(props: {
           padding: 0 20px;
         `}
       >
-        {Object.entries(measurements).map(([id, measurement]) => (
+        {Object.entries(metrics).map(([id, metric]) => (
           <div
             key={id}
             onClick={() => {
-              setActiveMeasurement(id)
+              setActiveMetric(id)
             }}
             className={cx(
               css`
@@ -124,7 +124,7 @@ function MetricConfigInner(props: {
                 justify-content: space-between;
                 cursor: pointer;
               `,
-              id === activeMeasurement &&
+              id === activeMetric &&
                 css`
                   background: ${ThemingVariables.colors.primary[1]};
                 `
@@ -135,7 +135,7 @@ function MetricConfigInner(props: {
                 css`
                   font-size: 14px;
                 `,
-                id === activeMeasurement
+                id === activeMetric
                   ? css`
                       color: ${ThemingVariables.colors.gray[5]};
                     `
@@ -144,14 +144,14 @@ function MetricConfigInner(props: {
                     `
               )}
             >
-              {measurement.name}
+              {metric.name}
             </span>
           </div>
         ))}
         <FormButton
-          variant={activeMeasurement ? 'secondary' : 'primary'}
+          variant={activeMetric ? 'secondary' : 'primary'}
           onClick={() => {
-            setActiveMeasurement(undefined)
+            setActiveMetric(undefined)
           }}
           className={css`
             width: 100%;
@@ -171,7 +171,7 @@ function MetricConfigInner(props: {
           padding: 20px;
         `}
       >
-        {activeMeasurement ? (
+        {activeMetric ? (
           <>
             <div
               className={css`
@@ -183,14 +183,14 @@ function MetricConfigInner(props: {
             >
               Name
             </div>
-            {measurements[activeMeasurement] ? measurements[activeMeasurement].name : null}
+            {metrics[activeMetric] ? metrics[activeMetric].name : null}
             <FormButton
               variant="danger"
               onClick={() => {
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const { [activeMeasurement]: _removed, ...rest } = measurements
-                setMeasurements(rest)
-                setActiveMeasurement(undefined)
+                const { [activeMetric]: _removed, ...rest } = metrics
+                setMetrics(rest)
+                setActiveMetric(undefined)
               }}
             >
               Remove
@@ -201,15 +201,15 @@ function MetricConfigInner(props: {
             fields={fields}
             onCreate={(ms) => {
               let id: string | undefined
-              setMeasurements({
-                ...measurements,
-                ...ms.reduce<{ [id: string]: Measurement }>((obj, m) => {
+              setMetrics({
+                ...metrics,
+                ...ms.reduce<{ [id: string]: Metric }>((obj, m) => {
                   id = blockIdGenerator()
                   obj[id] = m
                   return obj
                 }, {})
               })
-              setActiveMeasurement(id)
+              setActiveMetric(id)
             }}
           />
         )}
@@ -239,10 +239,7 @@ function getFuncs(type: string, aggregation?: Record<string, Record<string, stri
   return aggregation ? Object.keys(aggregation[type] || {}) : []
 }
 
-function MetricConigCreator(props: {
-  fields?: { name: string; type: string }[]
-  onCreate(measurements: Measurement[]): void
-}) {
+function MetricConigCreator(props: { fields?: { name: string; type: string }[]; onCreate(metrics: Metric[]): void }) {
   const [field, setField] = useState<{ name: string; type?: string }>()
   const [map, setMap] = useState<Record<string, string>>({})
   const array = useMemo(() => Object.entries(map), [map])
@@ -260,7 +257,7 @@ function MetricConigCreator(props: {
                 key={f.name + index}
                 title={f.name}
                 side={f.type}
-                disabled={getFuncs(f.type, spec?.metricSpec.aggregation).length === 0}
+                disabled={getFuncs(f.type, spec?.queryBuilderSpec.aggregation).length === 0}
                 onClick={() => {
                   onClick()
                   setField(f)
@@ -286,8 +283,8 @@ function MetricConigCreator(props: {
       </FormDropdown>
       {field ? (
         field.type ? (
-          getFuncs(field.type, spec?.metricSpec.aggregation).map((func) => (
-            <MeasurementItem
+          getFuncs(field.type, spec?.queryBuilderSpec.aggregation).map((func) => (
+            <MetricItem
               key={func}
               fieldName={field.name}
               func={func}
@@ -355,7 +352,7 @@ function MetricConigCreator(props: {
   )
 }
 
-function MeasurementItem(props: {
+function MetricItem(props: {
   fieldName: string
   func: string
   value?: string

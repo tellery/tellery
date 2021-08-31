@@ -1,5 +1,5 @@
 import { Config, Type } from '@app/components/v11n/types'
-import { Editor, Measurement } from '@app/types'
+import { Editor, Metric } from '@app/types'
 import { useMemo } from 'react'
 import { useIsMutating } from 'react-query'
 // eslint-disable-next-line camelcase
@@ -18,8 +18,8 @@ export interface EditorDraft {
     name: string
     type: string
   }[]
-  measurements?: {
-    [id: string]: Measurement
+  metrics?: {
+    [id: string]: Metric
   }
   visConfig?: Config<Type>
   snapshotId?: string

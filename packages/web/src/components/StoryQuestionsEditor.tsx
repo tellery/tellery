@@ -469,9 +469,8 @@ export const StoryQuestionEditor: React.FC<{
   const sql = questionBlockState?.draft?.sql ?? originalSQL ?? ''
   const snapShotId = questionBlockState?.draft?.snapshotId ?? sqlBlock?.content?.snapshotId
   const queryTitle = questionBlockState?.draft?.title ?? sqlBlock?.content?.title
-  const fields = questionBlockState?.draft?.fields ?? (sqlBlock as Editor.MetricBlock)?.content?.fields
-  const measurements =
-    questionBlockState?.draft?.measurements ?? (sqlBlock as Editor.MetricBlock)?.content?.measurements
+  const fields = questionBlockState?.draft?.fields ?? (sqlBlock as Editor.QueryBuilder)?.content?.fields
+  const metrics = questionBlockState?.draft?.metrics ?? (sqlBlock as Editor.QueryBuilder)?.content?.metrics
 
   const snapshot = useSnapshot(snapShotId)
 
@@ -524,7 +523,7 @@ export const StoryQuestionEditor: React.FC<{
   )
 
   const setMetricContent = useCallback(
-    (fields, measurements) => {
+    (fields, metrics) => {
       setQuestionBlocksMap((blocksMap) => {
         return {
           ...blocksMap,
@@ -532,11 +531,9 @@ export const StoryQuestionEditor: React.FC<{
             ...blocksMap[id],
             draft: emitFalsyObject({
               ...blocksMap[id].draft,
-              fields: dequal(fields, (sqlBlock as Editor.MetricBlock).content?.fields) === false ? fields : undefined,
-              measurements:
-                dequal(measurements, (sqlBlock as Editor.MetricBlock).content?.measurements) === false
-                  ? measurements
-                  : undefined
+              fields: dequal(fields, (sqlBlock as Editor.QueryBuilder).content?.fields) === false ? fields : undefined,
+              metrics:
+                dequal(metrics, (sqlBlock as Editor.QueryBuilder).content?.metrics) === false ? metrics : undefined
             })
           }
         }
@@ -640,11 +637,11 @@ export const StoryQuestionEditor: React.FC<{
       draftBlock.content!.error = null
       draftBlock.content!.title = queryTitle ?? []
       draftBlock.content!.lastRunAt = Date.now()
-      if (fields?.length && Object.keys(measurements || {}).length) {
-        draftBlock.type = Editor.BlockType.Metric
+      if (fields?.length && Object.keys(metrics || {}).length) {
+        draftBlock.type = Editor.BlockType.QueryBuilder
       }
-      ;(draftBlock as Editor.MetricBlock).content!.fields = fields
-      ;(draftBlock as Editor.MetricBlock).content!.measurements = measurements
+      ;(draftBlock as Editor.QueryBuilder).content!.fields = fields
+      ;(draftBlock as Editor.QueryBuilder).content!.metrics = metrics
     })
     setVisualizationBlock(block.id, (draftBlock) => {
       draftBlock.content!.visualization = visualizationConfig
@@ -660,7 +657,7 @@ export const StoryQuestionEditor: React.FC<{
     snapShotId,
     queryTitle,
     fields,
-    measurements,
+    metrics,
     visualizationConfig
   ])
 
@@ -849,7 +846,7 @@ export const StoryQuestionEditor: React.FC<{
             display: flex;
           `}
         >
-          {sqlBlock.type === Editor.BlockType.Metric ? (
+          {sqlBlock.type === Editor.BlockType.QueryBuilder ? (
             <IconCommonMetrics
               color={ThemingVariables.colors.text[0]}
               className={css`

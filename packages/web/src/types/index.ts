@@ -48,7 +48,7 @@ export type Snapshot = {
   createdAt?: string
 }
 
-export type Measurement = {
+export type Metric = {
   name: string
   deprecated?: boolean
 } & (
@@ -108,7 +108,7 @@ export namespace Editor {
     StoryLink = 'story_link',
     Visualization = 'visualization',
     SnapshotBlock = 'snapshot',
-    Metric = 'metric',
+    QueryBuilder = 'query_builder',
     SQL = 'sql',
     DBT = 'dbt',
 
@@ -192,23 +192,23 @@ export namespace Editor {
     content?: ContentBlock['content'] & SQLBlockContent
   }
 
-  export interface MetricBlock extends SQLBlock {
+  export interface QueryBuilder extends SQLBlock {
     content?: SQLBlock['content'] & {
       fields?: {
         name: string
         type: string
       }[]
-      measurements?: {
-        [id: string]: Measurement
+      metrics?: {
+        [id: string]: Metric
       }
     }
   }
 
   export interface SnapshotBlock extends SQLBlock {}
 
-  export type SQLLikeBlock = SQLBlock | MetricBlock
+  export type SQLLikeBlock = SQLBlock | QueryBuilder
 
-  export type DataAssetBlock = SQLBlock | SnapshotBlock | MetricBlock
+  export type DataAssetBlock = SQLBlock | SnapshotBlock | QueryBuilder
 
   export interface VisualizationBlock extends ContentBlock {
     content?: ContentBlock['content'] & VisualizationBlockContent

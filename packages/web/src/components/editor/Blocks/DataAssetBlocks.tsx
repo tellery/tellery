@@ -149,7 +149,7 @@ SnapshotBlock.meta = {
 }
 
 registerBlock(Editor.BlockType.SQL, DataAssetBlockTablePreviewExecuteable)
-registerBlock(Editor.BlockType.Metric, DataAssetBlockTablePreviewExecuteable)
+registerBlock(Editor.BlockType.QueryBuilder, DataAssetBlockTablePreviewExecuteable)
 
 registerBlock(Editor.BlockType.DBT, DataAssetBlockTablePreview)
 registerBlock(Editor.BlockType.SnapshotBlock, SnapshotBlock)

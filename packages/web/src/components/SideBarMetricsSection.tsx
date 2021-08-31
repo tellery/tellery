@@ -98,7 +98,7 @@ const StoryDataAssetItemContent: React.FC<{ blockId: string; storyId: string }> 
     }
     if (block.type === Editor.BlockType.SQL || block.type === Editor.BlockType.SnapshotBlock) {
       return IconCommonSql
-    } else if (block.type === Editor.BlockType.Metric) {
+    } else if (block.type === Editor.BlockType.QueryBuilder) {
       return IconCommonMetrics
     } else if (block.type === Editor.BlockType.DBT) {
       return IconCommonDbt
@@ -211,7 +211,7 @@ const DataAssetItem: React.FC<{ block: Editor.BaseBlock; currentStoryId: string 
   const IconType = useMemo(() => {
     if (block.type === Editor.BlockType.SQL || block.type === Editor.BlockType.SnapshotBlock) {
       return IconCommonSql
-    } else if (block.type === Editor.BlockType.Metric) {
+    } else if (block.type === Editor.BlockType.QueryBuilder) {
       return IconCommonMetrics
     } else if (block.type === Editor.BlockType.DBT) {
       return IconCommonDbt
@@ -359,7 +359,7 @@ const AllMetricsSection: React.FC<{ storyId: string }> = ({ storyId }) => {
 
   const dataAssetBlocks = useMemo(() => {
     const metricsBlocks = Object.values(metricBlocksQuery.data?.blocks ?? {}).filter(
-      (block) => block.type === Editor.BlockType.Metric
+      (block) => block.type === Editor.BlockType.QueryBuilder
     )
     return metricsBlocks
   }, [metricBlocksQuery.data?.blocks])

@@ -825,7 +825,7 @@ export const MoreDropdownSelect: React.FC<{
           }
         },
       canConvertDataAsset &&
-        dataAssetBlock.type === Editor.BlockType.Metric && {
+        dataAssetBlock.type === Editor.BlockType.QueryBuilder && {
           title: 'Remove from data assets',
           icon: <IconCommonTurn color={ThemingVariables.colors.text[0]} />,
           action: () => {
@@ -837,7 +837,7 @@ export const MoreDropdownSelect: React.FC<{
           title: 'Add to data assets',
           icon: <IconCommonMetrics color={ThemingVariables.colors.text[0]} />,
           action: () => {
-            editor?.updateBlockProps?.(dataAssetBlock.id, ['type'], Editor.BlockType.Metric)
+            editor?.updateBlockProps?.(dataAssetBlock.id, ['type'], Editor.BlockType.QueryBuilder)
           }
         }
     ].filter((x) => !!x) as OperationInterface[]
