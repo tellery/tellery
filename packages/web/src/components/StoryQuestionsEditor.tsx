@@ -61,6 +61,7 @@ import { ContentEditablePureText } from './editor/BlockBase/ContentEditablePureT
 import { isExecuteableBlockType } from './editor/Blocks/utils'
 import type { SetBlock } from './editor/types'
 import IconButton from './kit/IconButton'
+import MetricConfig from './MetricConfig'
 import QuestionDownstreams from './QuestionDownstreams'
 import { charts } from './v11n/charts'
 import { Config, Type } from './v11n/types'
@@ -468,6 +469,8 @@ export const StoryQuestionEditor: React.FC<{
   const sql = questionBlockState?.draft?.sql ?? originalSQL ?? ''
   const snapShotId = questionBlockState?.draft?.snapshotId ?? sqlBlock?.content?.snapshotId
   const queryTitle = questionBlockState?.draft?.title ?? sqlBlock?.content?.title
+  const fields = questionBlockState?.draft?.fields ?? (sqlBlock as Editor.QueryBuilder)?.content?.fields
+  const metrics = questionBlockState?.draft?.metrics ?? (sqlBlock as Editor.QueryBuilder)?.content?.metrics
 
   const snapshot = useSnapshot(snapShotId)
 
@@ -517,6 +520,26 @@ export const StoryQuestionEditor: React.FC<{
       })
     },
     [id, originalSQL, setQuestionBlocksMap]
+  )
+
+  const setMetricContent = useCallback(
+    (fields, metrics) => {
+      setQuestionBlocksMap((blocksMap) => {
+        return {
+          ...blocksMap,
+          [id]: {
+            ...blocksMap[id],
+            draft: emitFalsyObject({
+              ...blocksMap[id].draft,
+              fields: dequal(fields, (sqlBlock as Editor.QueryBuilder).content?.fields) === false ? fields : undefined,
+              metrics:
+                dequal(metrics, (sqlBlock as Editor.QueryBuilder).content?.metrics) === false ? metrics : undefined
+            })
+          }
+        }
+      })
+    },
+    [id, setQuestionBlocksMap, sqlBlock]
   )
 
   const previousSnapshot = usePrevious(snapshot)
@@ -614,6 +637,11 @@ export const StoryQuestionEditor: React.FC<{
       draftBlock.content!.error = null
       draftBlock.content!.title = queryTitle ?? []
       draftBlock.content!.lastRunAt = Date.now()
+      if (fields?.length && Object.keys(metrics || {}).length) {
+        draftBlock.type = Editor.BlockType.QueryBuilder
+      }
+      ;(draftBlock as Editor.QueryBuilder).content!.fields = fields
+      ;(draftBlock as Editor.QueryBuilder).content!.metrics = metrics
     })
     setVisualizationBlock(block.id, (draftBlock) => {
       draftBlock.content!.visualization = visualizationConfig
@@ -628,6 +656,8 @@ export const StoryQuestionEditor: React.FC<{
     sql,
     snapShotId,
     queryTitle,
+    fields,
+    metrics,
     visualizationConfig
   ])
 
@@ -816,7 +846,7 @@ export const StoryQuestionEditor: React.FC<{
             display: flex;
           `}
         >
-          {sqlBlock.type === Editor.BlockType.Metric ? (
+          {sqlBlock.type === Editor.BlockType.QueryBuilder ? (
             <IconCommonMetrics
               color={ThemingVariables.colors.text[0]}
               className={css`
@@ -865,7 +895,7 @@ export const StoryQuestionEditor: React.FC<{
               line-height: 24px;
               color: ${ThemingVariables.colors.text[0]};
             `}
-          ></ContentEditablePureText>
+          />
         </div>
         {isDBT ? null : (
           <div
@@ -995,6 +1025,20 @@ export const StoryQuestionEditor: React.FC<{
               />
             </Tippy>
           )}
+          <Tippy content="Metric" arrow={false} placement="right" delay={300}>
+            <IconButton
+              icon={IconCommonMetrics}
+              className={css`
+                &::after {
+                  display: ${mode === 'QUERY_BUILDER' ? 'visible' : 'none'};
+                }
+              `}
+              color={mode === 'QUERY_BUILDER' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
+              onClick={() => {
+                setMode('QUERY_BUILDER')
+              }}
+            />
+          </Tippy>
         </div>
         {mode === 'SQL' && (
           <>
@@ -1072,6 +1116,15 @@ export const StoryQuestionEditor: React.FC<{
           <QuestionDownstreams
             blockId={sqlBlock.id}
             storyId={storyId}
+            className={css`
+              flex: 1;
+            `}
+          />
+        )}
+        {mode === 'QUERY_BUILDER' && (
+          <MetricConfig
+            value={sqlBlock}
+            onChange={setMetricContent}
             className={css`
               flex: 1;
             `}

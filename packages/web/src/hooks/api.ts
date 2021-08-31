@@ -171,9 +171,9 @@ export function useSearchBlocks<T extends Editor.BlockType>(
 export function useSearchMetrics(
   keyword: string,
   limit: number,
-  options?: UseQueryOptions<SearchBlockResult<Editor.BlockType.Metric>>
+  options?: UseQueryOptions<SearchBlockResult<Editor.BlockType.QueryBuilder>>
 ) {
-  return useSearchBlocks(keyword, limit, Editor.BlockType.Metric, options)
+  return useSearchBlocks(keyword, limit, Editor.BlockType.QueryBuilder, options)
 }
 
 export function useSearchDBTBlocks(
@@ -187,7 +187,7 @@ export function useSearchDBTBlocks(
 export const useRefetchMetrics = () => {
   const queryClient = useQueryClient()
   const refetch = useCallback(() => {
-    queryClient.refetchQueries(['search', 'block', Editor.BlockType.Metric])
+    queryClient.refetchQueries(['search', 'block', Editor.BlockType.QueryBuilder])
   }, [queryClient])
   return refetch
 }
@@ -649,6 +649,32 @@ export function useConnectorsUpsertProfile(connectorId: string) {
     [connectorId, workspace.id]
   )
   return useAsync(handleUpdateProfile)
+}
+
+export const useGetProfileSpec = () => {
+  const workspace = useWorkspace()
+  return useQuery<{
+    queryBuilderSpec: {
+      aggregation: Record<string, Record<string, string>>
+      bucketization: Record<string, Record<string, string>>
+      identifier: string
+      stringLiteral: string
+    }
+    name: string
+    tokenizer: string
+    type: string
+  }>(
+    ['connector', 'getProfileSpec', workspace.preferences.connectorId, workspace.id],
+    () =>
+      request
+        .post('/api/connectors/getProfileSpec', {
+          workspaceId: workspace.id,
+          connectorId: workspace.preferences.connectorId,
+          profile: workspace.preferences.profile
+        })
+        .then((res) => res.data),
+    { enabled: !!workspace.preferences.connectorId && !!workspace.preferences.profile }
+  )
 }
 
 /**

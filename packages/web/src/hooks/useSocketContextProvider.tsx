@@ -56,7 +56,7 @@ export const useSocketContextProvider = () => {
           if (entity.type === 'block') {
             fetchBlock(entity.id, workspace.id).then((res) => {
               updateBlocks({ [res.id]: res })
-              if (res.type === Editor.BlockType.Metric) {
+              if (res.type === Editor.BlockType.QueryBuilder) {
                 refetchMetrics()
               }
             })

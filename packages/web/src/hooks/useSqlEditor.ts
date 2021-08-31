@@ -312,7 +312,7 @@ function useSqlEditorTransclusion(languageId?: string, monaco?: Monaco) {
                   ? getBlockTitle(data?.blocks[result.storyId])
                   : undefined,
               kind:
-                result.type === Editor.BlockType.Metric
+                result.type === Editor.BlockType.QueryBuilder
                   ? monaco.languages.CompletionItemKind.Class
                   : monaco.languages.CompletionItemKind.Function,
               insertText: `{{${result.id}}}`,
