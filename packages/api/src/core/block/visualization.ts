@@ -4,7 +4,7 @@ import { LinkType } from '../../types/link'
 import { Link } from '../link'
 
 type VisualizationBlockContent = {
-  dataAssetId?: string
+  queryId?: string
   visualization?: Record<string, unknown>
 }
 export class VisualizationBlock extends Block {
@@ -22,13 +22,13 @@ export class VisualizationBlock extends Block {
     if (!this.alive) {
       return []
     }
-    const { dataAssetId } = this.getContent()
-    if (!dataAssetId) {
+    const { queryId } = this.getContent()
+    if (!queryId) {
       return []
     }
     return [
       {
-        blockId: dataAssetId,
+        blockId: queryId,
         type: LinkType.BLOCK,
       },
     ]
