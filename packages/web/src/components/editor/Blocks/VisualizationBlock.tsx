@@ -171,7 +171,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
         storyId: block.storyId!,
         parentId: block.storyId!,
         content: {
-          title: addPrefixToBlockTitle(queryBuilderBlock.content?.title, 'smart query of'),
+          title: addPrefixToBlockTitle(queryBuilderBlock.content?.title, 'smart query of '),
           queryBuilderId: queryBuilderId,
           metricIds: [],
           dimensions: []
