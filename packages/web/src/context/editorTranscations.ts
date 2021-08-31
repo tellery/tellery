@@ -2,12 +2,11 @@ import { createEmptyBlock } from '@app/helpers/blockFactory'
 import type { Operation, Transcation } from '@app/hooks/useCommit'
 import { BlockSnapshot, getBlockFromSnapshot } from '@app/store/block'
 import { Editor } from '@app/types'
-import { blockIdGenerator } from '@app/utils'
+import { addPrefixToBlockTitle, blockIdGenerator } from '@app/utils'
 import { dequal } from 'dequal'
 import { cloneDeep } from 'lodash'
 import { toast } from 'react-toastify'
 import invariant from 'tiny-invariant'
-import { mergeTokens } from '../components/editor'
 
 export const createTranscation = ({ operations }: { operations: Operation[] }) => {
   return {
@@ -346,7 +345,7 @@ export const duplicateStoryTranscation = ({
       parentId: wroskapceId,
       parentTable: Editor.BlockParentType.WORKSPACE,
       resources: newResources.map((block) => block.id),
-      content: { ...story.content, title: mergeTokens([[`copy of `], ...(story.content?.title ?? [])]) },
+      content: { ...story.content, title: addPrefixToBlockTitle(story.content?.title, 'smart query of') },
       children: [],
       type: Editor.BlockType.Story,
       storyId: newStoryId,

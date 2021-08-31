@@ -5,6 +5,8 @@ import isUrl from 'is-url'
 import Papa from 'papaparse'
 import { QueryClient } from 'react-query'
 import { customAlphabet } from 'nanoid'
+import { Editor } from '@app/types'
+import { mergeTokens } from '@app/components/editor'
 export const DRAG_HANDLE_WIDTH = 4
 
 const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
@@ -20,6 +22,14 @@ export enum TELLERY_MIME_TYPES {
 export const DEFAULT_TITLE = 'Untitled'
 export const FIRST_LINE_OR_LAST_LINE_THERESHOLD = 10
 export const WS_URI = env.WEB_SOCKET_URI
+
+export const addPrefixToBlockTitle = (tokens: Editor.Token[] | undefined | null, prefix: string) => {
+  if (!tokens || tokens.length === 0) {
+    return mergeTokens([[prefix], [DEFAULT_TITLE]]) as Editor.Token[]
+  } else {
+    return mergeTokens([[prefix], ...tokens])
+  }
+}
 
 export const fileLoader = ({ src, workspaceId }: { src: string; workspaceId?: string }) => {
   if (src.startsWith('http')) {

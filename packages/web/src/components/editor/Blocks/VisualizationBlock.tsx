@@ -33,7 +33,7 @@ import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnap
 import { BlockResourcesAtom, useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
-import { snapshotToCSV, TELLERY_MIME_TYPES } from '@app/utils'
+import { addPrefixToBlockTitle, snapshotToCSV, TELLERY_MIME_TYPES } from '@app/utils'
 import { css, cx, keyframes } from '@emotion/css'
 import styled from '@emotion/styled'
 import Tippy from '@tippyjs/react'
@@ -67,7 +67,7 @@ import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
 import { BlockResizer } from '../BlockBase/BlockResizer'
 import { BlockTitle } from '../BlockTitle'
 import { DebouncedResizeBlock } from '../DebouncedResizeBlock'
-import { createTranscation, insertBlocksAndMoveOperations, mergeTokens, TellerySelectionType } from '../helpers'
+import { createTranscation, insertBlocksAndMoveOperations, TellerySelectionType } from '../helpers'
 import { getBlockImageById } from '../helpers/contentEditable'
 import { useEditor } from '../hooks'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
@@ -171,7 +171,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
         storyId: block.storyId!,
         parentId: block.storyId!,
         content: {
-          title: mergeTokens([['smart query of'], ...(queryBuilderBlock.content?.title ?? [])]),
+          title: addPrefixToBlockTitle(queryBuilderBlock.content?.title, 'smart query of'),
           queryBuilderId: queryBuilderId,
           metricIds: [],
           dimensions: []

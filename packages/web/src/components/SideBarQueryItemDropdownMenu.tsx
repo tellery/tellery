@@ -15,7 +15,7 @@ import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
 import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
-import { DEFAULT_TITLE } from '@app/utils'
+import { addPrefixToBlockTitle } from '@app/utils'
 import { css } from '@emotion/css'
 import copy from 'copy-to-clipboard'
 import { motion } from 'framer-motion'
@@ -23,7 +23,6 @@ import React, { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import { useTippyMenuAnimation } from '../hooks/useTippyMenuAnimation'
-import { mergeTokens } from './editor'
 import { FormButton } from './kit/FormButton'
 import IconButton from './kit/IconButton'
 import { LazyTippy } from './LazyTippy'
@@ -47,7 +46,7 @@ export const SideBarQueryItemDropdownMenuContent: React.FC<{
       type: block.type,
       storyId,
       parentId: storyId,
-      content: { ...block.content, title: mergeTokens([[`copy of `], ...(block.content?.title ?? [[DEFAULT_TITLE]])]) }
+      content: { ...block.content, title: addPrefixToBlockTitle(block.content?.title, 'copy of') }
     })
     const newBlocks = [newBlock]
     await blockTranscations.insertBlocks(storyId, {
