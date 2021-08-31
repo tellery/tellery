@@ -21,9 +21,9 @@ export const useRefreshSnapshot = () => {
   const createSnapshot = useCreateSnapshot()
 
   const execute = useCallback(
-    (dataAssetBlock: Editor.DataAssetBlock) => {
-      const originalBlockId = dataAssetBlock.id
-      const sql = dataAssetBlock.content?.sql ?? ''
+    (queryBlock: Editor.QueryBlock) => {
+      const originalBlockId = queryBlock.id
+      const sql = (queryBlock as Editor.SQLBlock).content?.sql ?? ''
       const mutationCount = queryClient
         .getMutationCache()
         .getAll()
@@ -43,12 +43,12 @@ export const useRefreshSnapshot = () => {
           connectorId: workspace.preferences.connectorId!,
           profile: workspace.preferences.profile!
         },
-        mutationKey: ['story', dataAssetBlock.storyId, dataAssetBlock.id, originalBlockId].join('/'),
+        mutationKey: ['story', queryBlock.storyId, queryBlock.id, originalBlockId].join('/'),
         onSuccess: async (data) => {
           if (typeof data !== 'object' || data.errMsg) {
             // const snapshotId = questionBlock.content!.snapshotId
             commit({
-              storyId: dataAssetBlock.storyId!,
+              storyId: queryBlock.storyId!,
               transcation: createTranscation({
                 operations: [
                   {
@@ -79,7 +79,7 @@ export const useRefreshSnapshot = () => {
             workspaceId: workspace.id
           })
           commit({
-            storyId: dataAssetBlock.storyId!,
+            storyId: queryBlock.storyId!,
             transcation: createTranscation({
               operations: [
                 {

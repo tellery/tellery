@@ -9,7 +9,7 @@ import { MenuWrapper } from './MenuWrapper'
 import { SQLViewer } from './SQLViewer'
 
 export const SideBarInspectQueryBlockPopover: React.FC<{ blockId: string }> = ({ blockId }) => {
-  const block = useBlockSuspense<Editor.DataAssetBlock>(blockId)
+  const block = useBlockSuspense<Editor.QueryBlock>(blockId)
   const profileType = useProfileType()
 
   return (
@@ -31,7 +31,7 @@ export const SideBarInspectQueryBlockPopover: React.FC<{ blockId: string }> = ({
           <SQLViewer
             blockId={block.id!}
             languageId={profileType!}
-            value={block.content?.sql ?? ''}
+            value={(block as Editor.SQLBlock).content?.sql ?? ''}
             padding={{ top: 10, bottom: 10 }}
           />
         )}

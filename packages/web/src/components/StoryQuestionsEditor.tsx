@@ -71,15 +71,19 @@ const DragConstraints = {
   bottom: -300
 }
 
-const updateOldDraft = (oldDraft?: EditorDraft, block?: Editor.SQLLikeBlock) => {
+const updateOldDraft = (oldDraft?: EditorDraft, block?: Editor.QueryBlock | Editor.VisualizationBlock) => {
   if (!oldDraft) return undefined
 
   const updatedDraft = emitFalsyObject({
     ...oldDraft,
     title: dequal(oldDraft.title, block?.content?.title) === false ? oldDraft.title : undefined,
-    sql: oldDraft.sql !== block?.content?.sql ? oldDraft.sql : undefined,
-    visConfig: dequal(oldDraft.visConfig, block?.content?.visualization) === false ? oldDraft.visConfig : undefined,
-    snapshotId: oldDraft.snapshotId !== block?.content?.snapshotId ? oldDraft.snapshotId : undefined
+    sql: oldDraft.sql !== (block as Editor.SQLBlock)?.content?.sql ? oldDraft.sql : undefined,
+    visConfig:
+      dequal(oldDraft.visConfig, (block as Editor.VisualizationBlock)?.content?.visualization) === false
+        ? oldDraft.visConfig
+        : undefined,
+    snapshotId:
+      oldDraft.snapshotId !== (block as Editor.QueryBlock)?.content?.snapshotId ? oldDraft.snapshotId : undefined
   })
 
   return updatedDraft
@@ -313,10 +317,10 @@ const TabHeader: React.FC<{ blockId: string; hovering: boolean; storyId: string 
     [activeId, opendQuestionBlockIds, questionBlocksMap, setActiveId, setQuestionBlocksMap]
   )
 
-  const block = useBlockSuspense<Editor.SQLLikeBlock | Editor.VisualizationBlock>(blockId)
+  const block = useBlockSuspense<Editor.QueryBlock | Editor.VisualizationBlock>(blockId)
 
-  const sqlBlock = useBlockSuspense<Editor.SQLLikeBlock>(
-    (block as Editor.VisualizationBlock)?.content?.dataAssetId ?? blockId
+  const queryBlock = useBlockSuspense<Editor.QueryBlock>(
+    (block as Editor.VisualizationBlock)?.content?.queryId ?? blockId
   )
 
   const mutatingCount = useDraftBlockMutating(blockId)
@@ -334,7 +338,7 @@ const TabHeader: React.FC<{ blockId: string; hovering: boolean; storyId: string 
           box-sizing: border-box;
         `}
         // ref={ref}
-        title={getBlockTitle(sqlBlock)}
+        title={getBlockTitle(queryBlock)}
       >
         {mutatingCount !== 0 && <CircularLoading size={20} color={ThemingVariables.colors.primary[1]} />}
         <div
@@ -345,7 +349,7 @@ const TabHeader: React.FC<{ blockId: string; hovering: boolean; storyId: string 
             white-space: nowrap;
           `}
         >
-          <BlockTitle block={sqlBlock} />
+          <BlockTitle block={queryBlock} />
         </div>
       </div>
       <DraftStatus
@@ -414,10 +418,10 @@ export const StoryQuestionEditor: React.FC<{
   // block: Editor.QuestionBlock
   // originalBlock: Editor.QuestionBlock
 }> = ({ id, setActiveId, tab, storyId }) => {
-  const block = useBlockSuspense<Editor.VisualizationBlock | Editor.SQLLikeBlock>(id)
+  const block = useBlockSuspense<Editor.VisualizationBlock | Editor.QueryBlock>(id)
   const visualizationBlock: Editor.VisualizationBlock | null =
     block.type === Editor.BlockType.Visualization ? block : null
-  const sqlBlock = useBlockSuspense<Editor.SQLLikeBlock>(visualizationBlock?.content?.dataAssetId ?? id)
+  const queryBlock = useBlockSuspense<Editor.QueryBlock>(visualizationBlock?.content?.queryId ?? id)
   const [questionBlocksMap, setQuestionBlocksMap] = useQuestionEditorBlockMapState(storyId)
   const [sqlSidePanel, setSqlSidePanel] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -446,17 +450,17 @@ export const StoryQuestionEditor: React.FC<{
     [commit, visualizationBlock]
   )
 
-  const setSqlBlock = useCallback<SetBlock<Editor.SQLLikeBlock>>(
+  const setSqlBlock = useCallback<SetBlock<Editor.QueryBlock>>(
     (id, update) => {
-      const oldBlock = sqlBlock
+      const oldBlock = queryBlock
       const newBlock = produce(oldBlock, update)
 
       commit({
         transcation: setBlockTranscation({ oldBlock, newBlock }),
-        storyId: sqlBlock.storyId!
+        storyId: queryBlock.storyId!
       })
     },
-    [commit, sqlBlock]
+    [commit, queryBlock]
   )
 
   const permissions = useStoryPermissions(visualizationBlock?.storyId ?? block.id)
@@ -465,12 +469,12 @@ export const StoryQuestionEditor: React.FC<{
   const readonly = permissions.readonly
   const isDraftSql = !!questionBlockState?.draft?.sql
   const isDraft = !!questionBlockState?.draft
-  const originalSQL = sqlBlock?.content?.sql
+  const originalSQL = (queryBlock as Editor.SQLBlock)?.content?.sql
   const sql = questionBlockState?.draft?.sql ?? originalSQL ?? ''
-  const snapShotId = questionBlockState?.draft?.snapshotId ?? sqlBlock?.content?.snapshotId
-  const queryTitle = questionBlockState?.draft?.title ?? sqlBlock?.content?.title
-  const fields = questionBlockState?.draft?.fields ?? (sqlBlock as Editor.QueryBuilder)?.content?.fields
-  const metrics = questionBlockState?.draft?.metrics ?? (sqlBlock as Editor.QueryBuilder)?.content?.metrics
+  const snapShotId = questionBlockState?.draft?.snapshotId ?? queryBlock?.content?.snapshotId
+  const queryTitle = questionBlockState?.draft?.title ?? queryBlock?.content?.title
+  const fields = questionBlockState?.draft?.fields ?? (queryBlock as Editor.QueryBuilder)?.content?.fields
+  const metrics = questionBlockState?.draft?.metrics ?? (queryBlock as Editor.QueryBuilder)?.content?.metrics
 
   const snapshot = useSnapshot(snapShotId)
 
@@ -480,11 +484,11 @@ export const StoryQuestionEditor: React.FC<{
         ...blocksMap,
         [id]: {
           ...blocksMap[id],
-          draft: updateOldDraft(updateOldDraft(blocksMap[id].draft, visualizationBlock ?? sqlBlock), sqlBlock)
+          draft: updateOldDraft(updateOldDraft(blocksMap[id].draft, visualizationBlock ?? queryBlock), queryBlock)
         }
       }
     })
-  }, [sqlBlock, visualizationBlock, id, setQuestionBlocksMap])
+  }, [queryBlock, visualizationBlock, id, setQuestionBlocksMap])
 
   const setTitle = useCallback(
     (title: Editor.Token[]) => {
@@ -495,13 +499,13 @@ export const StoryQuestionEditor: React.FC<{
             ...blocksMap[id],
             draft: emitFalsyObject({
               ...blocksMap[id].draft,
-              title: dequal(title, sqlBlock?.content?.title) === false ? title : undefined
+              title: dequal(title, queryBlock?.content?.title) === false ? title : undefined
             })
           }
         }
       })
     },
-    [id, setQuestionBlocksMap, sqlBlock?.content?.title]
+    [id, setQuestionBlocksMap, queryBlock?.content?.title]
   )
 
   const setSql = useCallback(
@@ -531,15 +535,16 @@ export const StoryQuestionEditor: React.FC<{
             ...blocksMap[id],
             draft: emitFalsyObject({
               ...blocksMap[id].draft,
-              fields: dequal(fields, (sqlBlock as Editor.QueryBuilder).content?.fields) === false ? fields : undefined,
+              fields:
+                dequal(fields, (queryBlock as Editor.QueryBuilder).content?.fields) === false ? fields : undefined,
               metrics:
-                dequal(metrics, (sqlBlock as Editor.QueryBuilder).content?.metrics) === false ? metrics : undefined
+                dequal(metrics, (queryBlock as Editor.QueryBuilder).content?.metrics) === false ? metrics : undefined
             })
           }
         }
       })
     },
-    [id, setQuestionBlocksMap, sqlBlock]
+    [id, setQuestionBlocksMap, queryBlock]
   )
 
   const previousSnapshot = usePrevious(snapshot)
@@ -548,13 +553,17 @@ export const StoryQuestionEditor: React.FC<{
     if (snapshot?.data && typeof snapshot?.data === 'object' && !snapshot.data.errMsg) {
       return (
         questionBlockState?.draft?.visConfig ??
-        block?.content?.visualization ??
+        (block as Editor.VisualizationBlock)?.content?.visualization ??
         charts[Type.TABLE].initializeConfig(snapshot.data, {})
       )
     } else {
       return undefined
     }
-  }, [block?.content?.visualization, questionBlockState?.draft?.visConfig, snapshot?.data])
+  }, [
+    (block as Editor.VisualizationBlock)?.content?.visualization,
+    questionBlockState?.draft?.visConfig,
+    snapshot?.data
+  ])
 
   const setVisConfig = useCallback<
     (config: Config<Type> | undefined | ((config: Config<Type> | undefined) => Config<Type> | undefined)) => void
@@ -569,13 +578,15 @@ export const StoryQuestionEditor: React.FC<{
             ...blocksMap[id],
             draft: emitFalsyObject({
               ...blocksMap[id].draft,
-              visConfig: dequal(newConfig, block.content?.visualization) ? undefined : newConfig
+              visConfig: dequal(newConfig, (block as Editor.VisualizationBlock).content?.visualization)
+                ? undefined
+                : newConfig
             })
           }
         }
       })
     },
-    [block.content?.visualization, id, setQuestionBlocksMap, visualizationConfig]
+    [(block as Editor.VisualizationBlock).content?.visualization, id, setQuestionBlocksMap, visualizationConfig]
   )
 
   useEffect(() => {
@@ -631,17 +642,23 @@ export const StoryQuestionEditor: React.FC<{
       toast.error('question is readonly')
       return
     }
-    setSqlBlock(sqlBlock.id, (draftBlock) => {
-      draftBlock.content!.sql = sql
+    setSqlBlock(queryBlock.id, (draftBlock) => {
+      if (draftBlock.type === Editor.BlockType.SQL) {
+        ;(draftBlock as Editor.SQLBlock).content!.sql = sql
+      }
+
+      if (draftBlock.type === Editor.BlockType.QueryBuilder) {
+        ;(draftBlock as Editor.QueryBuilder).content!.fields = fields
+        ;(draftBlock as Editor.QueryBuilder).content!.metrics = metrics
+      }
       draftBlock.content!.snapshotId = snapShotId
       draftBlock.content!.error = null
       draftBlock.content!.title = queryTitle ?? []
       draftBlock.content!.lastRunAt = Date.now()
+
       if (fields?.length && Object.keys(metrics || {}).length) {
         draftBlock.type = Editor.BlockType.QueryBuilder
       }
-      ;(draftBlock as Editor.QueryBuilder).content!.fields = fields
-      ;(draftBlock as Editor.QueryBuilder).content!.metrics = metrics
     })
     setVisualizationBlock(block.id, (draftBlock) => {
       draftBlock.content!.visualization = visualizationConfig
@@ -651,7 +668,7 @@ export const StoryQuestionEditor: React.FC<{
     isDraft,
     readonly,
     setSqlBlock,
-    sqlBlock.id,
+    queryBlock.id,
     setVisualizationBlock,
     sql,
     snapShotId,
@@ -673,16 +690,16 @@ export const StoryQuestionEditor: React.FC<{
   const createSnapshot = useCreateSnapshot()
 
   const run = useCallback(async () => {
-    if (!sqlBlock) return
+    if (!queryBlock) return
     if (!sql) return
 
-    if (!isExecuteableBlockType(sqlBlock.type)) {
+    if (!isExecuteableBlockType(queryBlock.type)) {
       return
     }
     const data = await executeSQL.mutateAsync({
       workspaceId: workspace.id,
       sql,
-      questionId: sqlBlock.id,
+      questionId: queryBlock.id,
       connectorId: workspace.preferences.connectorId!,
       profile: workspace.preferences.profile!
     })
@@ -699,15 +716,15 @@ export const StoryQuestionEditor: React.FC<{
       // TODO: fix snap shot question id
       await createSnapshot({
         snapshotId,
-        questionId: sqlBlock.id,
+        questionId: queryBlock.id,
         sql: sql,
         data: data,
         workspaceId: workspace.id
       })
       setSnapshotId(snapshotId)
     } else {
-      const originalBlockId = sqlBlock.id
-      invariant(sqlBlock, 'originalBlock is undefined')
+      const originalBlockId = queryBlock.id
+      invariant(queryBlock, 'originalBlock is undefined')
       // mutateBlock(
       //   originalBlockId,
       //   { ...originalBlock, content: { ...originalBlock.content, snapshotId: snapshotId } },
@@ -723,7 +740,7 @@ export const StoryQuestionEditor: React.FC<{
       })
 
       if (!readonly) {
-        setSqlBlock(sqlBlock.id, (draftBlock: Editor.SQLLikeBlock) => {
+        setSqlBlock(queryBlock.id, (draftBlock: Editor.QueryBlock) => {
           draftBlock.content!.snapshotId = snapshotId
         })
       }
@@ -739,7 +756,7 @@ export const StoryQuestionEditor: React.FC<{
     isDraftSql,
     setMode,
     setSnapshotId,
-    sqlBlock,
+    queryBlock,
     readonly,
     setSqlBlock
   ])
@@ -801,15 +818,15 @@ export const StoryQuestionEditor: React.FC<{
   )
 
   const mutatingCount = useDraftBlockMutating(block.id)
-  const { data: downstreams } = useQuestionDownstreams(sqlBlock.id)
+  const { data: downstreams } = useQuestionDownstreams(queryBlock.id)
 
   const isDBT = block.type === Editor.BlockType.DBT
 
   const sqlReadOnly =
     readonly ||
-    sqlBlock.type === Editor.BlockType.SnapshotBlock ||
-    !!(visualizationBlock && sqlBlock.storyId !== visualizationBlock?.storyId) ||
-    sqlBlock.type === Editor.BlockType.QueryBuilder
+    queryBlock.type === Editor.BlockType.SnapshotBlock ||
+    !!(visualizationBlock && queryBlock.storyId !== visualizationBlock?.storyId) ||
+    queryBlock.type === Editor.BlockType.QueryBuilder
 
   return (
     <TabPanel
@@ -847,7 +864,7 @@ export const StoryQuestionEditor: React.FC<{
             display: flex;
           `}
         >
-          {sqlBlock.type === Editor.BlockType.QueryBuilder ? (
+          {queryBlock.type === Editor.BlockType.QueryBuilder ? (
             <IconCommonDataAsset
               color={ThemingVariables.colors.text[0]}
               className={css`
@@ -855,7 +872,7 @@ export const StoryQuestionEditor: React.FC<{
               `}
             />
           ) : null}
-          {sqlBlock.type === Editor.BlockType.SnapshotBlock ? (
+          {queryBlock.type === Editor.BlockType.SnapshotBlock ? (
             <IconCommonLock
               color={ThemingVariables.colors.text[0]}
               className={css`
@@ -863,7 +880,7 @@ export const StoryQuestionEditor: React.FC<{
               `}
             />
           ) : null}
-          {sqlBlock.type === Editor.BlockType.DBT ? (
+          {queryBlock.type === Editor.BlockType.DBT ? (
             <IconCommonDbt
               color={ThemingVariables.colors.text[0]}
               className={css`
@@ -921,7 +938,7 @@ export const StoryQuestionEditor: React.FC<{
               hoverContent={mutatingCount !== 0 ? 'Cancel Query' : 'Execute Query'}
               icon={mutatingCount !== 0 ? IconCommonClose : IconCommonRun}
               color={ThemingVariables.colors.primary[1]}
-              disabled={!isExecuteableBlockType(sqlBlock.type)}
+              disabled={!isExecuteableBlockType(queryBlock.type)}
               onClick={mutatingCount !== 0 ? cancelExecuteSql : run}
             />
             <IconButton
@@ -1117,7 +1134,7 @@ export const StoryQuestionEditor: React.FC<{
         )}
         {mode === 'DOWNSTREAM' && (
           <QuestionDownstreams
-            blockId={sqlBlock.id}
+            blockId={queryBlock.id}
             storyId={storyId}
             className={css`
               flex: 1;
@@ -1126,7 +1143,7 @@ export const StoryQuestionEditor: React.FC<{
         )}
         {mode === 'QUERY_BUILDER' && (
           <MetricConfig
-            value={sqlBlock}
+            value={queryBlock}
             onChange={setMetricContent}
             className={css`
               flex: 1;

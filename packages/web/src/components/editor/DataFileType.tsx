@@ -95,7 +95,7 @@ const File2BlockProcessers: Record<
             ...block,
             type: Editor.BlockType.Visualization,
             content: {
-              dataAssetId: dataAssetBlock.id
+              queryId: dataAssetBlock.id
             }
           }
         })

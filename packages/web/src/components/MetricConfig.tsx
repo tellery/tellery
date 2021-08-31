@@ -18,7 +18,7 @@ import FormInput from './kit/FormInput'
 import produce from 'immer'
 
 export default function MetricConfig(props: {
-  value: Editor.SQLLikeBlock
+  value: Editor.QueryBlock
   onChange(
     fields: {
       name: string

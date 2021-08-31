@@ -59,36 +59,29 @@ const _DataAssetBlockTablePreview: React.ForwardRefRenderFunction<any, QuestionB
 }
 
 const VisualizationBlockContent: React.FC<{
-  block: Editor.DataAssetBlock
+  block: Editor.QueryBlock
   wrapperRef: React.MutableRefObject<HTMLDivElement | null>
   blockFocusing: boolean
   blockFormat: BlockFormatInterface
 }> = ({ block, blockFormat }) => {
-  const dataAssetBlock = block
-  const snapshotId = dataAssetBlock?.content?.snapshotId
+  const queryBlock = block
+  const snapshotId = queryBlock?.content?.snapshotId
   const mutateSnapshot = useRefreshSnapshot()
-  const mutatingCount = useSnapshotMutating(dataAssetBlock.id)
+  const mutatingCount = useSnapshotMutating(queryBlock.id)
 
   useEffect(() => {
-    if (dataAssetBlock.id && !snapshotId && dataAssetBlock.content?.sql && mutatingCount === 0) {
-      mutateSnapshot.execute(dataAssetBlock)
+    if (queryBlock.id && !snapshotId && (queryBlock as Editor.SQLBlock).content?.sql && mutatingCount === 0) {
+      mutateSnapshot.execute(queryBlock)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  const visualization = block.content?.visualization
 
   const contentRef = useRef<HTMLDivElement | null>(null)
 
   return (
     <>
-      <QuestionBlockHeader
-        setTitleEditing={() => {}}
-        titleEditing={false}
-        block={block}
-        dataAssetBlock={dataAssetBlock}
-      />
-      <QuestionBlockStatus snapshotId={snapshotId} block={block} dataAssetBlock={dataAssetBlock} />
+      <QuestionBlockHeader setTitleEditing={() => {}} titleEditing={false} block={block} queryBlock={queryBlock} />
+      <QuestionBlockStatus snapshotId={snapshotId} block={block} queryBlock={queryBlock} />
       <motion.div
         style={{
           paddingTop: blockFormat.paddingTop
@@ -101,7 +94,11 @@ const VisualizationBlockContent: React.FC<{
           min-height: 100px;
         `}
       >
-        <QuestionBlockBody ref={contentRef} snapshotId={snapshotId} visualization={visualization} />
+        <QuestionBlockBody
+          ref={contentRef}
+          snapshotId={snapshotId}
+          visualization={(block as Editor.VisualizationBlock).content?.visualization}
+        />
       </motion.div>
       <div
         className={css`
@@ -232,8 +229,8 @@ const QuestionBlockHeader: React.FC<{
   setTitleEditing: React.Dispatch<React.SetStateAction<boolean>>
   block: Editor.VisualizationBlock
   titleEditing: boolean
-  dataAssetBlock: Editor.DataAssetBlock
-}> = ({ setTitleEditing, block, titleEditing, dataAssetBlock }) => {
+  queryBlock: Editor.QueryBlock
+}> = ({ setTitleEditing, block, titleEditing, queryBlock }) => {
   const { readonly } = useBlockBehavior()
 
   return (
@@ -274,7 +271,7 @@ const QuestionBlockHeader: React.FC<{
             }}
           >
             <ContentEditable
-              block={dataAssetBlock}
+              block={queryBlock}
               disableReferenceDropdown
               disableSlashCommand
               disableTextToolBar
@@ -292,11 +289,11 @@ const QuestionBlockHeader: React.FC<{
 
 const QuestionBlockStatus: React.FC<{
   block: Editor.VisualizationBlock
-  dataAssetBlock: Editor.DataAssetBlock
+  queryBlock: Editor.QueryBlock
   snapshotId?: string
-}> = ({ block, dataAssetBlock, snapshotId }) => {
+}> = ({ block, queryBlock, snapshotId }) => {
   const snapshot = useSnapshot(snapshotId)
-  const mutatingCount = useSnapshotMutating(dataAssetBlock.id)
+  const mutatingCount = useSnapshotMutating(queryBlock.id)
   const [mutatingStartTimeStamp, setMutatingStartTimeStamp] = useState(0)
   const [nowTimeStamp, setNowTimeStamp] = useState(0)
   const loading = mutatingCount !== 0
@@ -327,14 +324,14 @@ const QuestionBlockStatus: React.FC<{
       >
         <Tippy
           content={
-            dataAssetBlock.content?.error ? (
+            queryBlock.content?.error ? (
               <div
                 className={css`
                   max-height: 100px;
                   overflow: auto;
                 `}
               >
-                {dataAssetBlock.content?.error}
+                {queryBlock.content?.error}
               </div>
             ) : (
               'loading...'
@@ -377,7 +374,7 @@ const QuestionBlockStatus: React.FC<{
                   `}
                 />
               </>
-            ) : dataAssetBlock.content?.error ? (
+            ) : queryBlock.content?.error ? (
               <>
                 <IconCommonError width="12px" height="12px" fill={ThemingVariables.colors.negative[0]} />
               </>
@@ -402,8 +399,8 @@ const QuestionBlockStatus: React.FC<{
         >
           {loading
             ? dayjs(nowTimeStamp).subtract(mutatingStartTimeStamp).format('mm:ss')
-            : snapshot?.createdAt ?? dataAssetBlock.content?.lastRunAt
-            ? dayjs(dataAssetBlock.content?.lastRunAt ?? snapshot?.createdAt).fromNow()
+            : snapshot?.createdAt ?? queryBlock.content?.lastRunAt
+            ? dayjs(queryBlock.content?.lastRunAt ?? snapshot?.createdAt).fromNow()
             : ''}
         </div>
       </div>

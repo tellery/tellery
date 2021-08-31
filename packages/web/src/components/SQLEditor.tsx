@@ -28,8 +28,8 @@ const trasnformPasteText = async (text: string, getBlock: (blockId: string) => P
     const blockId = matches[2]
     const block = await getBlock(blockId)
     if (block.type === Editor.BlockType.Visualization) {
-      if ((block as Editor.VisualizationBlock).content?.dataAssetId)
-        return `{{${(block as Editor.VisualizationBlock).content?.dataAssetId}}}`
+      if ((block as Editor.VisualizationBlock).content?.queryId)
+        return `{{${(block as Editor.VisualizationBlock).content?.queryId}}}`
     }
     return `{{${block.id}}}`
   }
