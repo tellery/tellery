@@ -28,6 +28,7 @@ import { useTranslation } from 'react-i18next'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import { ReactEventHandlers } from 'react-use-gesture/dist/types'
 import { useGetBlockTitleTextSnapshot } from './editor'
+import { isDataAssetBlock } from './editor/Blocks/utils'
 import IconButton from './kit/IconButton'
 import { LazyTippy } from './LazyTippy'
 import { SideBarInspectQueryBlockPopover } from './SideBarInspectQueryBlockPopover'
@@ -46,7 +47,8 @@ const _StoryDataAssetItemContentDraggable: React.FC<{
   blockId: string
   hoveringHandlers: (...args: any[]) => ReactEventHandlers
   children: ReactNode
-}> = ({ hoveringHandlers, children, storyId, blockId }) => {
+  isDataAssest?: boolean
+}> = ({ hoveringHandlers, children, storyId, blockId, isDataAssest }) => {
   const { attributes, listeners, setNodeRef } = useDraggable({
     id: `drag-${blockId}`,
     data: {
@@ -56,9 +58,13 @@ const _StoryDataAssetItemContentDraggable: React.FC<{
         type: Editor.BlockType.Visualization,
         storyId: storyId,
         parentId: storyId,
-        content: {
-          queryId: blockId
-        }
+        content: isDataAssest
+          ? {
+              fromDataAssetId: blockId
+            }
+          : {
+              queryId: blockId
+            }
       })
     } as DndItemDataBlockType
   })
@@ -109,7 +115,12 @@ const StoryDataAssetItemContent: React.FC<{ blockId: string; storyId: string }> 
   const [hoveringHandlers, isHovering] = useBindHovering()
 
   return (
-    <StoryDataAssetItemContentDraggable hoveringHandlers={hoveringHandlers} storyId={storyId} blockId={blockId}>
+    <StoryDataAssetItemContentDraggable
+      hoveringHandlers={hoveringHandlers}
+      storyId={storyId}
+      blockId={blockId}
+      isDataAssest={isDataAssetBlock(block.type)}
+    >
       <IconType
         color={ThemingVariables.colors.gray[0]}
         className={css`
@@ -206,8 +217,6 @@ const DataAssetItem: React.FC<{ block: Editor.BaseBlock; currentStoryId: string 
     } as DndItemDataBlockType
   })
 
-  const questionEditor = useQuestionEditor(currentStoryId)
-
   const IconType = useMemo(() => {
     if (block.type === Editor.BlockType.SQL || block.type === Editor.BlockType.SnapshotBlock) {
       return IconCommonSql
@@ -235,10 +244,6 @@ const DataAssetItem: React.FC<{ block: Editor.BaseBlock; currentStoryId: string 
       {...listeners}
       {...attributes}
       ref={setNodeRef}
-      onClick={() => {
-        // pushFocusedBlockIdState(block.id, block.storyId)
-        questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
-      }}
     >
       <IconType
         color={ThemingVariables.colors.gray[0]}

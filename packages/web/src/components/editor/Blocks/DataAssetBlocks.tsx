@@ -113,6 +113,10 @@ const DataAssetBlockTablePreviewExecuteable = React.forwardRef(_DataAssetBlockTa
   React.ForwardRefExoticComponent<QuestionBlockProps & React.RefAttributes<any>>
 >
 
+const SQLBlock = React.forwardRef(_DataAssetBlockTablePreview) as BlockComponent<
+  React.ForwardRefExoticComponent<QuestionBlockProps & React.RefAttributes<any>>
+>
+
 const DataAssetBlockTablePreview = React.forwardRef(_DataAssetBlockTablePreview) as BlockComponent<
   React.ForwardRefExoticComponent<QuestionBlockProps & React.RefAttributes<any>>
 >
@@ -134,6 +138,15 @@ DataAssetBlockTablePreviewExecuteable.meta = {
   isQuery: true
 }
 
+SQLBlock.meta = {
+  isText: false,
+  forwardRef: true,
+  hasChildren: false,
+  isExecuteable: true,
+  isDataAsset: false,
+  isQuery: true
+}
+
 DataAssetBlockTablePreview.meta = {
   isText: false,
   forwardRef: true,
@@ -148,7 +161,7 @@ SnapshotBlock.meta = {
   forwardRef: true,
   hasChildren: false,
   isExecuteable: false,
-  isDataAsset: true,
+  isDataAsset: false,
   isQuery: true
 }
 
@@ -161,12 +174,11 @@ SmartQueryBlock.meta = {
   isQuery: true
 }
 
-registerBlock(Editor.BlockType.SQL, DataAssetBlockTablePreviewExecuteable)
-registerBlock(Editor.BlockType.QueryBuilder, DataAssetBlockTablePreviewExecuteable)
-
-registerBlock(Editor.BlockType.DBT, DataAssetBlockTablePreview)
+registerBlock(Editor.BlockType.SQL, SQLBlock)
 registerBlock(Editor.BlockType.SnapshotBlock, SnapshotBlock)
 registerBlock(Editor.BlockType.SmartQuery, SmartQueryBlock)
+registerBlock(Editor.BlockType.QueryBuilder, DataAssetBlockTablePreviewExecuteable)
+registerBlock(Editor.BlockType.DBT, DataAssetBlockTablePreview)
 
 const _QuestionBlockBody: React.ForwardRefRenderFunction<
   HTMLDivElement | null,
