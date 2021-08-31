@@ -4,7 +4,9 @@ import { useBlockSuspense, useFetchStoryChunk } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { Operation, useCommit, useCommitHistory } from '@app/hooks/useCommit'
+import { useFetchBlock } from '@app/hooks/useFetchBlock'
 import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
+import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
 import { useSelectionArea } from '@app/hooks/useSelectionArea'
 import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
 import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
@@ -40,7 +42,13 @@ import {
 } from '.'
 import IconButton from '../kit/IconButton'
 import { ThoughtItemHeader } from '../ThoughtItem'
-import { isBlockHasChildren, isQuestionLikeBlock, isTextBlock, isVisualizationBlock } from './Blocks/utils'
+import {
+  isBlockHasChildren,
+  isQueryBlock,
+  isQuestionLikeBlock,
+  isTextBlock,
+  isVisualizationBlock
+} from './Blocks/utils'
 import { ContentBlocks } from './ContentBlock'
 import {
   canOutdention,
@@ -293,6 +301,8 @@ const _StoryEditor: React.FC<{
       })
     }
   }, [blockAdminValue, location, setSelectedBlocks, storyId])
+  const fetchBlock = useFetchBlock()
+  const questionEditor = useQuestionEditor(storyId)
 
   useEffect(() => {
     if (!inited) return
@@ -301,6 +311,16 @@ const _StoryEditor: React.FC<{
     const select = !!(location.state as any)?.select
 
     if (!blockId) return
+
+    fetchBlock(blockId).then((block) => {
+      if (isQueryBlock(block.type)) {
+        if (block.type === Editor.BlockType.SmartQuery) {
+          questionEditor.open({ mode: 'QUERY_BUILDER', blockId, storyId })
+        } else {
+          questionEditor.open({ mode: 'SQL', blockId, storyId })
+        }
+      }
+    })
     // TODO: if block not belong to this story...
     blockAdminValue.getBlockInstanceById(blockId).then(({ wrapperElement, blockRef }) => {
       const scrollContainer = editorRef.current?.parentElement
@@ -322,7 +342,17 @@ const _StoryEditor: React.FC<{
       // TODO: use a highlight animation
       setSelectedBlocks([blockId as string])
     })
-  }, [blockAdminValue, inited, setSelectedBlocks, location.state, location.hash, rootBlock.type])
+  }, [
+    blockAdminValue,
+    inited,
+    setSelectedBlocks,
+    location.state,
+    location.hash,
+    rootBlock.type,
+    fetchBlock,
+    questionEditor,
+    storyId
+  ])
 
   const blurEditor = useCallback(() => {
     setSelectionState(null)

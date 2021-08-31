@@ -12,6 +12,7 @@ export type BlockComponent<P = {}> = P & {
     isResizeable?: boolean
     isDataAsset?: boolean
     isExecuteable?: boolean
+    isQuery?: boolean
   }
 }
 
@@ -28,6 +29,10 @@ export const isTextBlock = (blockType: Editor.BlockType) => {
 // TODO: remove later
 export const isQuestionLikeBlock = (blockType: Editor.BlockType) => {
   return isVisualizationBlock(blockType)
+}
+
+export const isQueryBlock = (blockType: Editor.BlockType) => {
+  return !!Blocks[blockType]?.meta.isQuery
 }
 
 export const isDataAssetBlock = (blockType: Editor.BlockType) => {
