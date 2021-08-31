@@ -1043,7 +1043,7 @@ export const StoryQuestionEditor: React.FC<{
               />
             </Tippy>
           )}
-          {sqlBlock.type === Editor.BlockType.QueryBuilder ? null : (
+          {queryBlock.type === Editor.BlockType.QueryBuilder ? null : (
             <Tippy content="Query builder" arrow={false} placement="right" delay={300}>
               <IconButton
                 icon={IconCommonDataAsset}
