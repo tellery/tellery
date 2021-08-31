@@ -1,14 +1,11 @@
 import {
   IconCommonBackLink,
-  IconCommonCopy,
   IconCommonError,
   IconCommonLink,
   IconCommonLock,
-  IconCommonMetrics,
   IconCommonMore,
   IconCommonRefresh,
   IconCommonSql,
-  IconCommonTurn,
   IconCommonUnlock,
   IconMenuDelete,
   IconMenuDownload,
@@ -33,7 +30,7 @@ import { useFetchBlock } from '@app/hooks/useFetchBlock'
 import { useInterval } from '@app/hooks/useInterval'
 import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
 import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
-import { BlockResourcesAtom, useBlockSnapshot, useGetBlockContent } from '@app/store/block'
+import { BlockResourcesAtom, useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { snapshotToCSV, TELLERY_MIME_TYPES } from '@app/utils'
@@ -43,9 +40,10 @@ import Tippy from '@tippyjs/react'
 import copy from 'copy-to-clipboard'
 import dayjs from 'dayjs'
 import download from 'downloadjs'
-import { AnimatePresence, motion, usePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import html2canvas from 'html2canvas'
 import React, {
+  forwardRef,
   memo,
   ReactNode,
   useCallback,
@@ -54,7 +52,6 @@ import React, {
   useImperativeHandle,
   useMemo,
   useRef,
-  forwardRef,
   useState
 } from 'react'
 import DetectableOverflow from 'react-detectable-overflow'
@@ -62,7 +59,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useMeasure } from 'react-use'
-import { Menu, MenuButton, MenuItem, MenuSeparator, MenuStateReturn, useMenuState } from 'reakit'
+import { Menu, MenuButton, MenuItem, MenuStateReturn, useMenuState } from 'reakit'
 import { useRecoilValue } from 'recoil'
 import invariant from 'tiny-invariant'
 import { BlockingUI } from '../BlockBase/BlockingUIBlock'
@@ -101,7 +98,7 @@ const useVisulizationBlockInstructionsProvider = (block: Editor.VisualizationBlo
   const fetchBlock = useFetchBlock()
   const questionEditor = useQuestionEditor(block.storyId!)
   const snapshot = useBlockSnapshot()
-  const dataAssetId = block.content?.dataAssetId
+  const queryId = block.content?.queryId
 
   const instructions = useMemo(
     () => ({
@@ -109,8 +106,8 @@ const useVisulizationBlockInstructionsProvider = (block: Editor.VisualizationBlo
         questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
       },
       unLink: async () => {
-        if (!dataAssetId) return
-        const dataAssetBlock = await fetchBlock(dataAssetId)
+        if (!queryId) return
+        const dataAssetBlock = await fetchBlock(queryId)
         const newQueryBlock = createEmptyBlock({
           type: Editor.BlockType.SQL,
           storyId: block.storyId!,
@@ -131,14 +128,14 @@ const useVisulizationBlockInstructionsProvider = (block: Editor.VisualizationBlo
                 snapshot,
                 path: 'resources'
               }),
-              { cmd: 'set', path: ['content', 'dataAssetId'], args: newQueryBlock.id, table: 'block', id: block.id }
+              { cmd: 'set', path: ['content', 'queryId'], args: newQueryBlock.id, table: 'block', id: block.id }
             ]
           }),
           storyId: block.storyId!
         })
       }
     }),
-    [block.id, block.storyId, commit, dataAssetId, fetchBlock, questionEditor, snapshot]
+    [block.id, block.storyId, commit, queryId, fetchBlock, questionEditor, snapshot]
   )
   return instructions
 }
@@ -159,7 +156,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
   const snapshot = useBlockSnapshot()
   const [measureRef, rect] = useMeasure<HTMLDivElement>()
   const elementRef = useRef<HTMLDivElement | null>(null)
-  const dataAssetId = block.content?.dataAssetId
+  const queryId = block.content?.queryId
   const fromDataAssetId = block.content?.fromDataAssetId
   const fetchBlock = useFetchBlock()
   const instructions = useVisulizationBlockInstructionsProvider(block)
@@ -194,7 +191,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
               snapshot,
               path: 'resources'
             }),
-            { cmd: 'set', path: ['content', 'dataAssetId'], args: newQueryBlock.id, table: 'block', id: block.id }
+            { cmd: 'set', path: ['content', 'queryId'], args: newQueryBlock.id, table: 'block', id: block.id }
           ]
         }),
         storyId: block.storyId!
@@ -215,7 +212,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
       })
     }
 
-    if (!dataAssetId) {
+    if (!queryId) {
       if (fromDataAssetId) {
         createSmartQuery(fromDataAssetId)
       } else {
@@ -238,7 +235,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
                 snapshot,
                 path: 'resources'
               }),
-              { cmd: 'set', path: ['content', 'dataAssetId'], args: newQueryBlock.id, table: 'block', id: block.id }
+              { cmd: 'set', path: ['content', 'queryId'], args: newQueryBlock.id, table: 'block', id: block.id }
             ]
           }),
           storyId: block.storyId!
@@ -262,15 +259,15 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
         className={QuestionsBlockContainer}
       >
         <React.Suspense fallback={<></>}>
-          {block.content?.dataAssetId && <QuestionBlockHeader block={block} />}
+          {block.content?.queryId && <QuestionBlockHeader block={block} />}
           <QuestionBlockButtons block={block} show={hovering} slim={rect.width < 260} />
         </React.Suspense>
 
-        {dataAssetId === undefined ? (
+        {queryId === undefined ? (
           <BlockPlaceHolder loading={false} text="New Question" />
         ) : (
           <VisualizationBlockContent
-            dataAssetId={dataAssetId}
+            queryId={queryId}
             block={block}
             blockFormat={props.blockFormat}
             parentType={props.parentType}
@@ -282,22 +279,22 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
 }
 
 const _VisualizationBlockContent: React.FC<{
-  dataAssetId: string
+  queryId: string
   block: Editor.VisualizationBlock
   blockFormat: BlockFormatInterface
   parentType: Editor.BlockType
-}> = ({ dataAssetId, block, blockFormat, parentType }) => {
-  const dataAssetBlock = useBlockSuspense<Editor.DataAssetBlock>(dataAssetId)
-  const snapshotId = dataAssetBlock?.content?.snapshotId
+}> = ({ queryId, block, blockFormat, parentType }) => {
+  const queryBlock = useBlockSuspense<Editor.QueryBlock>(queryId)
+  const snapshotId = queryBlock?.content?.snapshotId
   const commit = useCommit()
   const storyBlockResources = useRecoilValue(BlockResourcesAtom(block.storyId!))
 
   const mutateSnapshot = useRefreshSnapshot()
-  const mutatingCount = useSnapshotMutating(dataAssetBlock.id)
+  const mutatingCount = useSnapshotMutating(queryBlock.id)
 
   useEffect(() => {
-    if (dataAssetBlock.id && !snapshotId && dataAssetBlock.content?.sql && mutatingCount === 0) {
-      mutateSnapshot.execute(dataAssetBlock)
+    if (queryBlock.id && !snapshotId && (queryBlock as Editor.SQLBlock).content?.sql && mutatingCount === 0) {
+      mutateSnapshot.execute(queryBlock)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -308,21 +305,21 @@ const _VisualizationBlockContent: React.FC<{
   const contentRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    if (dataAssetId && !storyBlockResources?.includes(dataAssetId)) {
+    if (queryId && !storyBlockResources?.includes(queryId)) {
       commit({
         transcation: createTranscation({
           operations: [
-            { cmd: 'listBefore', path: ['resources'], args: { id: dataAssetId }, table: 'block', id: block.storyId! }
+            { cmd: 'listBefore', path: ['resources'], args: { id: queryId }, table: 'block', id: block.storyId! }
           ]
         }),
         storyId: block.storyId!
       })
     }
-  }, [block.storyId, commit, dataAssetId, storyBlockResources])
+  }, [block.storyId, commit, queryId, storyBlockResources])
 
   return (
     <>
-      <QuestionBlockStatus dataAssetBlock={dataAssetBlock} />
+      <QuestionBlockStatus queryBlock={queryBlock} />
       <motion.div
         style={{
           paddingTop: blockFormat.paddingTop
@@ -487,8 +484,8 @@ const _QuestionBlockHeader: React.FC<{
   block: Editor.VisualizationBlock
 }> = ({ block }) => {
   const { t } = useTranslation()
-  const dataAssetBlock = useBlockSuspense(block.content?.dataAssetId!)
-  const isReference = dataAssetBlock.storyId !== block.storyId
+  const queryBlock = useBlockSuspense(block.content?.queryId!)
+  const isReference = queryBlock.storyId !== block.storyId
   const [disableTippy, setDisableTippy] = useState(true)
 
   return (
@@ -504,7 +501,7 @@ const _QuestionBlockHeader: React.FC<{
       >
         {isReference && (
           <Tippy content={t`Click to navigate to the original story`} arrow={false}>
-            <Link to={`/story/${dataAssetBlock.storyId}`}>
+            <Link to={`/story/${queryBlock.storyId}`}>
               <IconCommonBackLink
                 className={css`
                   margin-right: 5px;
@@ -513,7 +510,7 @@ const _QuestionBlockHeader: React.FC<{
             </Link>
           </Tippy>
         )}
-        {dataAssetBlock.type === Editor.BlockType.SnapshotBlock && (
+        {queryBlock.type === Editor.BlockType.SnapshotBlock && (
           <IconCommonLock
             className={css`
               margin-right: 5px;
@@ -521,7 +518,7 @@ const _QuestionBlockHeader: React.FC<{
           />
         )}
         <Tippy
-          content={<BlockTitle block={dataAssetBlock} />}
+          content={<BlockTitle block={queryBlock} />}
           placement="top-start"
           arrow={false}
           delay={350}
@@ -546,7 +543,7 @@ const _QuestionBlockHeader: React.FC<{
                 setDisableTippy(!overflowed)
               }}
             >
-              <BlockTitle block={dataAssetBlock} />
+              <BlockTitle block={queryBlock} />
             </DetectableOverflow>
           </div>
         </Tippy>
@@ -558,9 +555,9 @@ const _QuestionBlockHeader: React.FC<{
 const QuestionBlockHeader = memo(_QuestionBlockHeader)
 
 const QuestionBlockStatus: React.FC<{
-  dataAssetBlock: Editor.DataAssetBlock
-}> = ({ dataAssetBlock }) => {
-  const mutatingCount = useSnapshotMutating(dataAssetBlock.id)
+  queryBlock: Editor.QueryBlock
+}> = ({ queryBlock }) => {
+  const mutatingCount = useSnapshotMutating(queryBlock.id)
 
   const loading = mutatingCount !== 0
 
@@ -579,14 +576,14 @@ const QuestionBlockStatus: React.FC<{
       >
         <Tippy
           content={
-            dataAssetBlock.content?.error ? (
+            queryBlock.content?.error ? (
               <div
                 className={css`
                   max-height: 100px;
                   overflow: auto;
                 `}
               >
-                {dataAssetBlock.content?.error}
+                {queryBlock.content?.error}
               </div>
             ) : (
               'loading...'
@@ -629,7 +626,7 @@ const QuestionBlockStatus: React.FC<{
                   `}
                 />
               </>
-            ) : dataAssetBlock.content?.error ? (
+            ) : queryBlock.content?.error ? (
               <>
                 <IconCommonError width="12px" height="12px" fill={ThemingVariables.colors.negative[0]} />
               </>
@@ -653,7 +650,7 @@ const QuestionBlockStatus: React.FC<{
           `}
         >
           <React.Suspense fallback={<></>}>
-            <SnapshotUpdatedAt loading={loading} dataAssetBlock={dataAssetBlock} />
+            <SnapshotUpdatedAt loading={loading} queryBlock={queryBlock} />
           </React.Suspense>
         </div>
       </div>
@@ -663,9 +660,9 @@ const QuestionBlockStatus: React.FC<{
 
 export const SnapshotUpdatedAt: React.FC<{
   loading: boolean
-  dataAssetBlock: Editor.DataAssetBlock
-}> = ({ loading, dataAssetBlock }) => {
-  const snapshot = useSnapshot(dataAssetBlock.content?.snapshotId)
+  queryBlock: Editor.QueryBlock
+}> = ({ loading, queryBlock }) => {
+  const snapshot = useSnapshot(queryBlock.content?.snapshotId)
   const [mutatingStartTimeStamp, setMutatingStartTimeStamp] = useState(0)
   const [nowTimeStamp, setNowTimeStamp] = useState(0)
   useEffect(() => {
@@ -683,8 +680,8 @@ export const SnapshotUpdatedAt: React.FC<{
     <>
       {loading
         ? dayjs(nowTimeStamp).subtract(mutatingStartTimeStamp).format('mm:ss')
-        : snapshot?.createdAt ?? dataAssetBlock.content?.lastRunAt
-        ? dayjs(dataAssetBlock.content?.lastRunAt ?? snapshot?.createdAt).fromNow()
+        : snapshot?.createdAt ?? queryBlock.content?.lastRunAt
+        ? dayjs(queryBlock.content?.lastRunAt ?? snapshot?.createdAt).fromNow()
         : ''}
     </>
   )
@@ -763,8 +760,8 @@ export const MoreDropdownSelect: React.FC<{
   const { data: user } = useUser(block?.lastEditedById ?? null)
   const editor = useEditor<Editor.VisualizationBlock>()
   const { readonly } = useBlockBehavior()
-  const dataAssetBlock = useBlockSuspense<Editor.DataAssetBlock>(block.content?.dataAssetId!)
-  const canConvertDataAsset = !readonly && dataAssetBlock.storyId === block.storyId
+  const queryBlock = useBlockSuspense<Editor.QueryBlock>(block.content?.queryId!)
+  const canConvertDataAsset = !readonly && queryBlock.storyId === block.storyId
   const getSnapshot = useGetSnapshot()
   const questionEditor = useQuestionEditor(block.storyId!)
   const { t } = useTranslation()
@@ -875,7 +872,7 @@ export const MoreDropdownSelect: React.FC<{
               title={t`Refresh Query`}
               icon={<IconCommonRefresh color={ThemingVariables.colors.text[0]} />}
               onClick={() => {
-                mutateSnapshot.execute(dataAssetBlock)
+                mutateSnapshot.execute(queryBlock)
               }}
             />
           )}
@@ -900,7 +897,7 @@ export const MoreDropdownSelect: React.FC<{
             title={'Download as CSV'}
             icon={<IconMenuDownload color={ThemingVariables.colors.text[0]} />}
             onClick={async () => {
-              const snapshot = await getSnapshot({ snapshotId: dataAssetBlock?.content?.snapshotId })
+              const snapshot = await getSnapshot({ snapshotId: queryBlock?.content?.snapshotId })
               const snapshotData = snapshot?.data
               invariant(snapshotData, 'snapshotData is null')
               const csvString = snapshotToCSV(snapshotData)
@@ -924,7 +921,7 @@ export const MoreDropdownSelect: React.FC<{
               }
             }}
           />
-          {canConvertDataAsset && dataAssetBlock.type === Editor.BlockType.SQL && (
+          {canConvertDataAsset && queryBlock.type === Editor.BlockType.SQL && (
             <Tippy
               content="Freeze the data returned by the query to prevent accidental refreshing."
               placement="left"
@@ -937,18 +934,18 @@ export const MoreDropdownSelect: React.FC<{
                 title={'Freeze data'}
                 icon={<IconCommonLock color={ThemingVariables.colors.text[0]} />}
                 onClick={async () => {
-                  editor?.updateBlockProps?.(dataAssetBlock.id, ['type'], Editor.BlockType.SnapshotBlock)
+                  editor?.updateBlockProps?.(queryBlock.id, ['type'], Editor.BlockType.SnapshotBlock)
                 }}
               />
             </Tippy>
           )}
-          {canConvertDataAsset && dataAssetBlock.type === Editor.BlockType.SnapshotBlock && (
+          {canConvertDataAsset && queryBlock.type === Editor.BlockType.SnapshotBlock && (
             <StyledMenuItem
               {...menu}
               title={'Unfreeze data'}
               icon={<IconCommonUnlock color={ThemingVariables.colors.text[0]} />}
               onClick={async () => {
-                editor?.updateBlockProps?.(dataAssetBlock.id, ['type'], Editor.BlockType.SQL)
+                editor?.updateBlockProps?.(queryBlock.id, ['type'], Editor.BlockType.SQL)
               }}
             />
           )}
@@ -1110,7 +1107,7 @@ const StyledMenuItem = forwardRef(_StyledMenuItem)
 
 const VisBlockRefereshButton: React.FC<{ block: Editor.VisualizationBlock }> = ({ block }) => {
   const { t } = useTranslation()
-  const dataAssetBlock = useBlockSuspense(block.content!.dataAssetId!)
+  const dataAssetBlock = useBlockSuspense(block.content!.queryId!)
   const { readonly } = useBlockBehavior()
   const mutateSnapshot = useRefreshSnapshot()
   const mutatingCount = useSnapshotMutating(dataAssetBlock.id)
@@ -1150,7 +1147,7 @@ const TitleButtonsInner: React.FC<{
     >
       {slim === false && (
         <>
-          {block.content?.dataAssetId && <VisBlockRefereshButton block={block} />}
+          {block.content?.queryId && <VisBlockRefereshButton block={block} />}
           <QuestionBlockIconButton>
             <IconButton
               hoverContent={t`Visualization options`}
@@ -1169,7 +1166,7 @@ const TitleButtonsInner: React.FC<{
           </QuestionBlockIconButton>
         </>
       )}
-      {block.content?.dataAssetId && (
+      {block.content?.queryId && (
         <QuestionBlockIconButton>
           <MoreDropdownSelect hoverContent={t`More`} block={block} setIsActive={setIsActive} />
         </QuestionBlockIconButton>

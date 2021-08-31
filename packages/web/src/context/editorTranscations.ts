@@ -185,14 +185,14 @@ export const getDuplicatedBlocks = (
   const duplicatedBlocks = blocks.map((block) => {
     if (block.type === Editor.BlockType.Visualization) {
       const fragBlock = block as Editor.VisualizationBlock
-      const originalDataAssetId = fragBlock.content?.dataAssetId
+      const originalQueryId = fragBlock.content?.queryId
       return createEmptyBlock<Editor.VisualizationBlock>({
         type: fragBlock.type,
         storyId,
         parentId: storyId,
         content: {
           ...fragBlock.content,
-          dataAssetId: originalDataAssetId ? resourceMapping?.[originalDataAssetId] : undefined
+          queryId: originalQueryId ? resourceMapping?.[originalQueryId] : undefined
         },
         children: fragBlock.children,
         format: fragBlock.format

@@ -57,7 +57,7 @@ const _StoryDataAssetItemContentDraggable: React.FC<{
         storyId: storyId,
         parentId: storyId,
         content: {
-          dataAssetId: blockId
+          queryId: blockId
         }
       })
     } as DndItemDataBlockType

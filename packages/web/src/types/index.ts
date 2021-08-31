@@ -154,18 +154,16 @@ export namespace Editor {
     title: Token[]
   }
 
-  export type SQLBlockContent = {
+  export type QueryBlockContent = {
     forkedFromId?: string
     snapshotId?: string
-    visualization?: Config<Type>
-    sql?: string
     lastRunAt?: number
     error?: string | null
   }
 
   export type VisualizationBlockContent = {
     visualization?: Config<Type>
-    dataAssetId?: string
+    queryId?: string
     fromDataAssetId?: string
   }
 
@@ -204,12 +202,12 @@ export namespace Editor {
     }
   }
 
-  export interface SQLBlock extends ContentBlock {
-    content?: ContentBlock['content'] & SQLBlockContent
+  export interface BaseQueryBlock extends ContentBlock {
+    content?: ContentBlock['content'] & QueryBlockContent
   }
 
-  export interface QueryBuilder extends SQLBlock {
-    content?: SQLBlock['content'] & {
+  export interface QueryBuilder extends BaseQueryBlock {
+    content?: BaseQueryBlock['content'] & {
       fields?: {
         name: string
         type: string
@@ -220,11 +218,17 @@ export namespace Editor {
     }
   }
 
-  export interface SnapshotBlock extends SQLBlock {}
+  export interface SQLBlock extends BaseQueryBlock {
+    content?: BaseQueryBlock['content'] & {
+      sql?: string
+    }
+  }
 
-  export type SQLLikeBlock = SQLBlock | QueryBuilder
+  export interface SnapshotBlock extends BaseQueryBlock {}
 
-  export type DataAssetBlock = SQLBlock | SnapshotBlock | QueryBuilder
+  export type QueryBlock = SnapshotBlock | SQLBlock | QueryBuilder
+
+  export type DataAssetBlock = QueryBuilder
 
   export interface SmartQueryBlock extends ContentBlock {
     content: ContentBlock['content'] & {
