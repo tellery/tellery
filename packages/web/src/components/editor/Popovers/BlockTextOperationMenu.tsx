@@ -499,7 +499,7 @@ const BlockTextOperationMenuInner = ({
           editHandler={editFormula}
           referenceRange={range}
           storyId={currentBlock.storyId!}
-          initValue={(markdMap.get(Editor.InlineType.Formula) as string) ?? ''}
+          initValue={(markdMap.get(Editor.InlineType.Formula) as string) ?? selectionString ?? ''}
         />
         {/* <InlineEquationPopover setInlineEditing={setInlineEditing} markHandler={markHandler} referenceRange={range} /> */}
         <OperationButtonWithHoverContent
