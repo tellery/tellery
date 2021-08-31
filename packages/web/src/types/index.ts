@@ -62,6 +62,20 @@ export type Metric = {
     }
 )
 
+type Dimension = {
+  name: string
+} & (
+  | {
+      fieldName: string
+      fieldType: string
+      func?: string
+      args?: string[]
+    }
+  | {
+      rawSql: string
+    }
+)
+
 export namespace Editor {
   export enum InlineType {
     Link = 'a',
@@ -152,6 +166,7 @@ export namespace Editor {
   export type VisualizationBlockContent = {
     visualization?: Config<Type>
     dataAssetId?: string
+    fromDataAssetId?: string
   }
 
   export type CodeBlockContent = {
@@ -211,6 +226,17 @@ export namespace Editor {
 
   export type DataAssetBlock = SQLBlock | SnapshotBlock | QueryBuilder
 
+  export interface SmartQueryBlock extends ContentBlock {
+    content: ContentBlock['content'] & {
+      queryBuilderId: string
+      metricIds: string[]
+      dimensions: Dimension[]
+      // filters: Filter[]
+      title: Token[]
+      snapshotId?: string
+    }
+  }
+
   export interface VisualizationBlock extends ContentBlock {
     content?: ContentBlock['content'] & VisualizationBlockContent
   }
@@ -261,6 +287,7 @@ export namespace Editor {
     | TodoBlock
     | DataAssetBlock
     | VisualizationBlock
+    | SmartQueryBlock
 }
 
 export interface ImageInfo {

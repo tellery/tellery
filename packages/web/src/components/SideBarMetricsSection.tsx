@@ -200,7 +200,7 @@ const DataAssetItem: React.FC<{ block: Editor.BaseBlock; currentStoryId: string 
         storyId: currentStoryId,
         parentId: currentStoryId,
         content: {
-          dataAssetId: block.id
+          fromDataAssetId: block.id
         }
       })
     } as DndItemDataBlockType

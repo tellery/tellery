@@ -33,7 +33,7 @@ import { useFetchBlock } from '@app/hooks/useFetchBlock'
 import { useInterval } from '@app/hooks/useInterval'
 import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
 import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
-import { BlockResourcesAtom, useBlockSnapshot } from '@app/store/block'
+import { BlockResourcesAtom, useBlockSnapshot, useGetBlockContent } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { snapshotToCSV, TELLERY_MIME_TYPES } from '@app/utils'
@@ -70,7 +70,7 @@ import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
 import { BlockResizer } from '../BlockBase/BlockResizer'
 import { BlockTitle } from '../BlockTitle'
 import { DebouncedResizeBlock } from '../DebouncedResizeBlock'
-import { createTranscation, insertBlocksAndMoveOperations, TellerySelectionType } from '../helpers'
+import { createTranscation, insertBlocksAndMoveOperations, mergeTokens, TellerySelectionType } from '../helpers'
 import { getBlockImageById } from '../helpers/contentEditable'
 import { useEditor } from '../hooks'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
@@ -111,7 +111,7 @@ const useVisulizationBlockInstructionsProvider = (block: Editor.VisualizationBlo
       unLink: async () => {
         if (!dataAssetId) return
         const dataAssetBlock = await fetchBlock(dataAssetId)
-        const newSqlBlock = createEmptyBlock({
+        const newQueryBlock = createEmptyBlock({
           type: Editor.BlockType.SQL,
           storyId: block.storyId!,
           parentId: block.storyId!,
@@ -123,15 +123,15 @@ const useVisulizationBlockInstructionsProvider = (block: Editor.VisualizationBlo
               ...insertBlocksAndMoveOperations({
                 storyId: block.storyId!,
                 blocksFragment: {
-                  children: [newSqlBlock.id],
-                  data: { [newSqlBlock.id]: newSqlBlock }
+                  children: [newQueryBlock.id],
+                  data: { [newQueryBlock.id]: newQueryBlock }
                 },
                 targetBlockId: block.storyId!,
                 direction: 'child',
                 snapshot,
                 path: 'resources'
               }),
-              { cmd: 'set', path: ['content', 'dataAssetId'], args: newSqlBlock.id, table: 'block', id: block.id }
+              { cmd: 'set', path: ['content', 'dataAssetId'], args: newQueryBlock.id, table: 'block', id: block.id }
             ]
           }),
           storyId: block.storyId!
@@ -160,10 +160,48 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
   const [measureRef, rect] = useMeasure<HTMLDivElement>()
   const elementRef = useRef<HTMLDivElement | null>(null)
   const dataAssetId = block.content?.dataAssetId
-
+  const fromDataAssetId = block.content?.fromDataAssetId
+  const fetchBlock = useFetchBlock()
   const instructions = useVisulizationBlockInstructionsProvider(block)
 
   useImperativeHandle(ref, () => instructions, [instructions])
+
+  const createSmartQuery = useCallback(
+    async (queryBuilderId: string) => {
+      const queryBuilderBlock = await fetchBlock(queryBuilderId)
+      const newQueryBlock = createEmptyBlock<Editor.SmartQueryBlock>({
+        type: Editor.BlockType.SmartQuery,
+        storyId: block.storyId!,
+        parentId: block.storyId!,
+        content: {
+          title: mergeTokens([['smart query of'], ...(queryBuilderBlock.content?.title ?? [])]),
+          queryBuilderId: queryBuilderId,
+          metricIds: [],
+          dimensions: []
+        }
+      })
+      commit({
+        transcation: createTranscation({
+          operations: [
+            ...insertBlocksAndMoveOperations({
+              storyId: block.storyId!,
+              blocksFragment: {
+                children: [newQueryBlock.id],
+                data: { [newQueryBlock.id]: newQueryBlock }
+              },
+              targetBlockId: block.storyId!,
+              direction: 'child',
+              snapshot,
+              path: 'resources'
+            }),
+            { cmd: 'set', path: ['content', 'dataAssetId'], args: newQueryBlock.id, table: 'block', id: block.id }
+          ]
+        }),
+        storyId: block.storyId!
+      })
+    },
+    [block.id, block.storyId, commit, fetchBlock, snapshot]
+  )
 
   useEffect(() => {
     if (!block.content) {
@@ -178,30 +216,34 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
     }
 
     if (!dataAssetId) {
-      const newSqlBlock = createEmptyBlock({
-        type: Editor.BlockType.SQL,
-        storyId: block.storyId!,
-        parentId: block.storyId!
-      })
-      commit({
-        transcation: createTranscation({
-          operations: [
-            ...insertBlocksAndMoveOperations({
-              storyId: block.storyId!,
-              blocksFragment: {
-                children: [newSqlBlock.id],
-                data: { [newSqlBlock.id]: newSqlBlock }
-              },
-              targetBlockId: block.storyId!,
-              direction: 'child',
-              snapshot,
-              path: 'resources'
-            }),
-            { cmd: 'set', path: ['content', 'dataAssetId'], args: newSqlBlock.id, table: 'block', id: block.id }
-          ]
-        }),
-        storyId: block.storyId!
-      })
+      if (fromDataAssetId) {
+        createSmartQuery(fromDataAssetId)
+      } else {
+        const newQueryBlock = createEmptyBlock({
+          type: Editor.BlockType.SQL,
+          storyId: block.storyId!,
+          parentId: block.storyId!
+        })
+        commit({
+          transcation: createTranscation({
+            operations: [
+              ...insertBlocksAndMoveOperations({
+                storyId: block.storyId!,
+                blocksFragment: {
+                  children: [newQueryBlock.id],
+                  data: { [newQueryBlock.id]: newQueryBlock }
+                },
+                targetBlockId: block.storyId!,
+                direction: 'child',
+                snapshot,
+                path: 'resources'
+              }),
+              { cmd: 'set', path: ['content', 'dataAssetId'], args: newQueryBlock.id, table: 'block', id: block.id }
+            ]
+          }),
+          storyId: block.storyId!
+        })
+      }
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -910,7 +952,7 @@ export const MoreDropdownSelect: React.FC<{
               }}
             />
           )}
-          {canConvertDataAsset && dataAssetBlock.type === Editor.BlockType.QueryBuilder && (
+          {/* {canConvertDataAsset && dataAssetBlock.type === Editor.BlockType.QueryBuilder && (
             <StyledMenuItem
               {...menu}
               title={'Remove from data assets'}
@@ -929,9 +971,8 @@ export const MoreDropdownSelect: React.FC<{
                 editor?.updateBlockProps?.(dataAssetBlock.id, ['type'], Editor.BlockType.QueryBuilder)
               }}
             />
-          )}
-
-          {canConvertDataAsset && dataAssetBlock.type === Editor.BlockType.SmartQuery && (
+          )} */}
+          {/* {canConvertDataAsset && dataAssetBlock.type === Editor.BlockType.SmartQuery && (
             <StyledMenuItem
               {...menu}
               title={'Convert to SQL query'}
@@ -940,7 +981,7 @@ export const MoreDropdownSelect: React.FC<{
                 editor?.updateBlockProps?.(dataAssetBlock.id, ['type'], Editor.BlockType.SQL)
               }}
             />
-          )}
+          )} */}
           <MenuItemDivider />
 
           {!readonly && (
