@@ -4,7 +4,7 @@ import {
   IconCommonError,
   IconCommonLink,
   IconCommonLock,
-  IconCommonMetrics,
+  IconCommonDataAsset,
   IconCommonMore,
   IconCommonRefresh,
   IconCommonSql,
@@ -835,7 +835,7 @@ export const MoreDropdownSelect: React.FC<{
       canConvertDataAsset &&
         dataAssetBlock.type === Editor.BlockType.SQL && {
           title: 'Add to data assets',
-          icon: <IconCommonMetrics color={ThemingVariables.colors.text[0]} />,
+          icon: <IconCommonDataAsset color={ThemingVariables.colors.text[0]} />,
           action: () => {
             editor?.updateBlockProps?.(dataAssetBlock.id, ['type'], Editor.BlockType.QueryBuilder)
           }

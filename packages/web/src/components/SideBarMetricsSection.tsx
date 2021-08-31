@@ -3,7 +3,7 @@ import {
   IconCommonBackLink,
   IconCommonDbt,
   IconCommonLock,
-  IconCommonMetrics,
+  IconCommonDataAsset,
   IconCommonSql
 } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
@@ -99,7 +99,7 @@ const StoryDataAssetItemContent: React.FC<{ blockId: string; storyId: string }> 
     if (block.type === Editor.BlockType.SQL || block.type === Editor.BlockType.SnapshotBlock) {
       return IconCommonSql
     } else if (block.type === Editor.BlockType.QueryBuilder) {
-      return IconCommonMetrics
+      return IconCommonDataAsset
     } else if (block.type === Editor.BlockType.DBT) {
       return IconCommonDbt
     }
@@ -212,7 +212,7 @@ const DataAssetItem: React.FC<{ block: Editor.BaseBlock; currentStoryId: string 
     if (block.type === Editor.BlockType.SQL || block.type === Editor.BlockType.SnapshotBlock) {
       return IconCommonSql
     } else if (block.type === Editor.BlockType.QueryBuilder) {
-      return IconCommonMetrics
+      return IconCommonDataAsset
     } else if (block.type === Editor.BlockType.DBT) {
       return IconCommonDbt
     }

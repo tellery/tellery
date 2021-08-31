@@ -6,7 +6,7 @@ import {
   IconCommonDownstream,
   IconCommonError,
   IconCommonLock,
-  IconCommonMetrics,
+  IconCommonDataAsset,
   IconCommonRun,
   IconCommonSave,
   IconCommonSql,
@@ -847,7 +847,7 @@ export const StoryQuestionEditor: React.FC<{
           `}
         >
           {sqlBlock.type === Editor.BlockType.QueryBuilder ? (
-            <IconCommonMetrics
+            <IconCommonDataAsset
               color={ThemingVariables.colors.text[0]}
               className={css`
                 margin-left: 10px;
@@ -1027,7 +1027,7 @@ export const StoryQuestionEditor: React.FC<{
           )}
           <Tippy content="Metric" arrow={false} placement="right" delay={300}>
             <IconButton
-              icon={IconCommonMetrics}
+              icon={IconCommonDataAsset}
               className={css`
                 &::after {
                   display: ${mode === 'QUERY_BUILDER' ? 'visible' : 'none'};
