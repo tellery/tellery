@@ -129,7 +129,7 @@ export namespace Editor {
 
     // embeds
     Embed = 'embed',
-    Metabase = 'metabse',
+    Metabase = 'metabase',
     ModeAnalytics = 'mode_analytics',
     Figma = 'figma',
     Gist = 'gist',

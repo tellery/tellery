@@ -58,7 +58,7 @@ export const VariableAtomFamily = selectorFamily<any, { storyId: string; formula
         const snapshot = await get(TellerySnapshotAtom(snapshotId))
         if (!snapshot) return NaN
 
-        scope[variableName] = math.evaluate(JSON.stringify(snapshot.data.records))
+        scope[variableName] = math.evaluate(JSON.stringify(snapshot.data?.records ?? [[]]))
       }
 
       try {

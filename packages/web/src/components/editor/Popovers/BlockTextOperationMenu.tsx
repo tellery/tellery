@@ -416,11 +416,9 @@ const BlockTextOperationMenuInner = ({
       style={pop.styles.popper as React.CSSProperties}
       ref={setModalRef}
       onMouseDown={(e) => {
-        e.preventDefault()
         e.stopPropagation()
       }}
       onClick={(e) => {
-        e.preventDefault()
         e.stopPropagation()
       }}
       className={css`
@@ -775,16 +773,16 @@ const AddLinkOperation = (props: {
                 outline: none;
                 border: none;
                 padding: 10px 10px;
-                user-select: none;
+                /* user-select: none; */
               `}
               onPaste={(e) => {
                 e.stopPropagation()
               }}
               ref={inputRef}
-              onSelect={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-              }}
+              // onSelect={(e) => {
+              //   e.preventDefault()
+              //   e.stopPropagation()
+              // }}
               placeholder="Link URL"
               onInput={(e) => {
                 setLink(e.currentTarget.value)
@@ -857,16 +855,14 @@ const InlineFormulaInput: React.FC<{
             box-shadow: ${ThemingVariables.boxShadows[0]};
             border-radius: 8px;
             overflow: hidden;
-            user-select: text;
             padding: 10px 10px;
             color: ${ThemingVariables.colors.text[1]};
           `,
           'no-select'
         )}
-        onClick={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-        }}
+        // onClick={(e) => {
+        //   e.stopPropagation()
+        // }}
       >
         <div
           className={css`
@@ -966,7 +962,7 @@ const InlineFormulaInput: React.FC<{
                 }
               `}
               onClick={(e) => {
-                e.preventDefault()
+                // e.preventDefault()
                 document.execCommand('insertText', false, `{{${resource.id}}}[1,1]`)
               }}
             >
