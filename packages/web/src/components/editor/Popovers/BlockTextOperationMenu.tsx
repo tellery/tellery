@@ -423,6 +423,9 @@ const BlockTextOperationMenuInner = ({
         e.preventDefault()
         e.stopPropagation()
       }}
+      className={css`
+        z-index: 10;
+      `}
     >
       <motion.div
         initial={{ opacity: 0, transform: 'scale(0.8)' }}
@@ -430,7 +433,6 @@ const BlockTextOperationMenuInner = ({
         exit={{ opacity: 0, transform: 'scale(0.8)' }}
         transition={{ duration: 0.15 }}
         className={css`
-          z-index: 1040;
           outline: none;
           background: ${ThemingVariables.colors.gray[5]};
           box-shadow: ${ThemingVariables.boxShadows[0]};
