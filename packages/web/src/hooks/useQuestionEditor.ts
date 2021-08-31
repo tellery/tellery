@@ -10,7 +10,7 @@ import { atomFamily, useRecoilCallback, useRecoilState, useRecoilTransaction_UNS
 //   open: (arg: { mode: Mode }) => Promise<void>
 // }
 
-export type QueryEditorMode = 'SQL' | 'VIS' | 'DOWNSTREAM' | 'METRIC'
+export type QueryEditorMode = 'SQL' | 'VIS' | 'DOWNSTREAM' | 'QUERY_BUILDER'
 
 export interface EditorDraft {
   sql?: string

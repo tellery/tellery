@@ -1030,12 +1030,12 @@ export const StoryQuestionEditor: React.FC<{
               icon={IconCommonMetrics}
               className={css`
                 &::after {
-                  display: ${mode === 'METRIC' ? 'visible' : 'none'};
+                  display: ${mode === 'QUERY_BUILDER' ? 'visible' : 'none'};
                 }
               `}
-              color={mode === 'METRIC' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
+              color={mode === 'QUERY_BUILDER' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
               onClick={() => {
-                setMode('METRIC')
+                setMode('QUERY_BUILDER')
               }}
             />
           </Tippy>
@@ -1121,7 +1121,7 @@ export const StoryQuestionEditor: React.FC<{
             `}
           />
         )}
-        {mode === 'METRIC' && (
+        {mode === 'QUERY_BUILDER' && (
           <MetricConfig
             value={sqlBlock}
             onChange={setMetricContent}
