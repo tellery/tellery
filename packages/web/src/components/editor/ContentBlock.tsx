@@ -182,7 +182,6 @@ export const ContentBlockInner: React.FC<{
             <DroppingAreaIndicator blockId={block.id} />
           </>
         )}
-        <BlockSelectedOverlay blockId={block.id} selected={highlightedBlockId === block.id} />
         <ErrorBoundary
           FallbackComponent={ErrorFallback}
           onReset={() => {
@@ -205,6 +204,7 @@ export const ContentBlockInner: React.FC<{
             )}
           </BlockInner>
         </ErrorBoundary>
+        <BlockSelectedOverlay blockId={block.id} selected={highlightedBlockId === block.id} />
         {!small && <OperatorsAvatar blockId={block.id} />}
       </motion.div>
     </>
