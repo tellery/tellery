@@ -193,7 +193,7 @@ function QueryBuilderConfigInner(props: {
             >
               Name
             </div>
-            {metrics[activeMetric] ? metrics[activeMetric].name : null}
+            <div>{metrics[activeMetric] ? metrics[activeMetric].name : null}</div>
             <FormButton
               variant="danger"
               onClick={() => {
@@ -212,6 +212,7 @@ function QueryBuilderConfigInner(props: {
         ) : (
           <MetricConigCreator
             fields={fields}
+            metrics={metrics}
             onCreate={(ms) => {
               let id: string | undefined
               setMetrics({
@@ -250,20 +251,44 @@ function getFuncs(type: string, aggregation?: Record<string, Record<string, stri
   return aggregation ? Object.keys(aggregation[type] || {}) : []
 }
 
-function MetricConigCreator(props: { fields?: { name: string; type: string }[]; onCreate(metrics: Metric[]): void }) {
+function MetricConigCreator(props: {
+  fields: { name: string; type: string }[]
+  metrics: { [id: string]: Metric }
+  onCreate(metrics: Metric[]): void
+}) {
   const [field, setField] = useState<{ name: string; type?: string }>()
   const [map, setMap] = useState<Record<string, string>>({})
   const array = useMemo(() => Object.entries(map), [map])
   const [sqlName, setSqlName] = useState('')
   const [sql, setSql] = useState('')
   const { data: spec } = useGetProfileSpec()
+  const metrics = useMemo(
+    () =>
+      Object.entries(props.metrics).reduce<Record<string, string>>((obj, [metricId, metric]) => {
+        if ('fieldName' in metric) {
+          obj[`${metric.fieldName}/${metric.fieldType}/${metric.func}`] = metricId
+        }
+        return obj
+      }, {}),
+    [props.metrics]
+  )
+  useEffect(() => {
+    setMap(
+      Object.values(props.metrics).reduce<Record<string, string>>((obj, metric) => {
+        if ('fieldName' in metric) {
+          obj[metric.func] = `${metric.func}(${metric.fieldName})`
+        }
+        return obj
+      }, {})
+    )
+  }, [props.metrics])
 
   return (
     <>
       <FormDropdown
         menu={({ onClick }) => (
           <MenuWrapper>
-            {props.fields?.map((f, index) => (
+            {props.fields.map((f, index) => (
               <MenuItem
                 key={f.name + index}
                 title={f.name}
@@ -297,6 +322,7 @@ function MetricConigCreator(props: { fields?: { name: string; type: string }[]; 
           getFuncs(field.type, spec?.queryBuilderSpec.aggregation).map((func) => (
             <MetricItem
               key={func}
+              disabled={!!metrics[`${field.name}/${field.type}/${func}`]}
               fieldName={field.name}
               func={func}
               value={map[func]}
@@ -350,7 +376,11 @@ function MetricConigCreator(props: { fields?: { name: string; type: string }[]; 
             return
           }
           if (field.type) {
-            props.onCreate(array.map(([func, name]) => ({ name, fieldName: field.name, fieldType: field.type!, func })))
+            props.onCreate(
+              array
+                .map(([func, name]) => ({ name, fieldName: field.name, fieldType: field.type!, func }))
+                .filter(({ fieldName, fieldType, func }) => !metrics[`${fieldName}/${fieldType}/${func}`])
+            )
           } else {
             props.onCreate([{ name: sqlName!, rawSql: sql! }])
           }
@@ -368,6 +398,7 @@ function MetricConigCreator(props: { fields?: { name: string; type: string }[]; 
 
 function MetricItem(props: {
   fieldName: string
+  disabled: boolean
   func: string
   value?: string
   onChange(value?: string): void
@@ -383,6 +414,7 @@ function MetricItem(props: {
       >
         {props.func}
         <FormSwitch
+          disabled={props.disabled}
           checked={typeof props.value !== 'undefined'}
           onChange={(e) => {
             props.onChange(e.target.checked ? `${props.func}(${props.fieldName})` : undefined)
