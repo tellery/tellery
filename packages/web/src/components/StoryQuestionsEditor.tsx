@@ -62,7 +62,7 @@ import { ContentEditablePureText } from './editor/BlockBase/ContentEditablePureT
 import { isExecuteableBlockType } from './editor/Blocks/utils'
 import type { SetBlock } from './editor/types'
 import IconButton from './kit/IconButton'
-import MetricConfig from './MetricConfig'
+import QueryBuilderConfig from './QueryBuilderConfig'
 import QuestionDownstreams from './QuestionDownstreams'
 import { charts } from './v11n/charts'
 import { Config, Type } from './v11n/types'
@@ -1104,7 +1104,7 @@ export const StoryQuestionEditor: React.FC<{
           />
         )}
         {mode === 'QUERY_BUILDER' && (
-          <MetricConfig
+          <QueryBuilderConfig
             value={queryBlock}
             onChange={setMetricContent}
             className={css`

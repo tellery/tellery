@@ -18,7 +18,7 @@ import FormInput from './kit/FormInput'
 import produce from 'immer'
 import Tippy from '@tippyjs/react'
 
-export default function MetricConfig(props: {
+export default function QueryBuilderConfig(props: {
   value: Editor.QueryBlock
   onChange(
     fields: {
@@ -64,11 +64,16 @@ export default function MetricConfig(props: {
     )
   }
   return (
-    <MetricConfigInner value={props.value} onChange={props.onChange} snapshot={snapshot} className={props.className} />
+    <QueryBuilderConfigInner
+      value={props.value}
+      onChange={props.onChange}
+      snapshot={snapshot}
+      className={props.className}
+    />
   )
 }
 
-function MetricConfigInner(props: {
+function QueryBuilderConfigInner(props: {
   value: Editor.QueryBuilder
   onChange(
     fields: {
