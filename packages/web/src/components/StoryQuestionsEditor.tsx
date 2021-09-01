@@ -43,7 +43,7 @@ import { css, cx } from '@emotion/css'
 import MonacoEditor from '@monaco-editor/react'
 import Tippy, { useSingleton } from '@tippyjs/react'
 import { dequal } from 'dequal'
-import { motion, useMotionValue, useTransform } from 'framer-motion'
+import { motion, MotionValue, useMotionValue, useTransform } from 'framer-motion'
 import { produce } from 'immer'
 import isHotkey from 'is-hotkey'
 import { omit } from 'lodash'
@@ -89,14 +89,10 @@ const updateOldDraft = (oldDraft?: EditorDraft, block?: Editor.QueryBlock | Edit
   return updatedDraft
 }
 
-export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId }) => {
-  const [open, setOpen] = useQuestionEditorOpenState(storyId)
+const QueryEditorResizer: React.FC<{ y: MotionValue<number> }> = ({ y }) => {
   const [resizeConfig, setResizeConfig] = useLocalStorage('MainSQLEditorConfig_v2', {
     y: -300
   })
-
-  const y = useMotionValue(resizeConfig.y)
-  const height = useTransform(y, (y) => Math.abs(y - 0.5 * DRAG_HANDLE_WIDTH))
 
   useEffect(() => {
     const unsubscribe = y.onChange((y) => {
@@ -107,6 +103,41 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
       unsubscribe()
     }
   }, [setResizeConfig, y])
+
+  return (
+    <motion.div
+      title="drag to resize"
+      whileDrag={{ backgroundColor: ThemingVariables.colors.gray[1] }}
+      drag={'y'}
+      dragConstraints={DragConstraints}
+      className={css`
+        position: absolute;
+        cursor: ns-resize;
+        left: -${DRAG_HANDLE_WIDTH / 2}px;
+        bottom: 0;
+        height: ${DRAG_HANDLE_WIDTH}px;
+        z-index: 10;
+        width: 100%;
+      `}
+      whileHover={{
+        backgroundColor: ThemingVariables.colors.gray[1]
+      }}
+      dragElastic={false}
+      dragMomentum={false}
+      style={{ y }}
+    />
+  )
+}
+
+export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId }) => {
+  const [open, setOpen] = useQuestionEditorOpenState(storyId)
+
+  const [resizeConfig] = useLocalStorage('MainSQLEditorConfig_v2', {
+    y: -300
+  })
+  const y = useMotionValue(resizeConfig.y)
+  const height = useTransform(y, (y) => Math.abs(y - 0.5 * DRAG_HANDLE_WIDTH))
+
   const profileType = useProfileType()
   useSqlEditor(profileType)
 
@@ -140,78 +171,45 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
     <>
       <div
         style={{
-          height: open ? `${height.get()}px` : '0px',
+          height: open ? `${height.get()}px` : '44px',
           flexShrink: 0
         }}
       ></div>
-      <div
+
+      <motion.div
+        style={{
+          height: height,
+          transform: open ? 'translateY(0%)' : `translateY(${height.get() - 44}px)`
+        }}
+        transition={{ duration: 0.15 }}
         className={css`
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          width: 100%;
+          user-select: none;
+          z-index: 1000;
+          transition: transform 0.25s;
           display: flex;
-          height: 44px;
-          position: relative;
-          flex-shrink: 0;
+          flex-direction: column;
+          background-color: ${ThemingVariables.colors.gray[5]};
         `}
       >
-        <motion.div
-          style={{
-            height: height,
-            transform: open ? 'translateY(0%)' : 'translateY(100%)'
-          }}
-          transition={{ duration: 0.15 }}
-          className={css`
-            position: absolute;
-            bottom: 44px;
-            left: 0;
-            right: 0;
-            width: 100%;
-            user-select: none;
-            z-index: 1000;
-            transition: transform 0.25s;
-            display: flex;
-            flex-direction: column;
-            background-color: ${ThemingVariables.colors.gray[5]};
-          `}
-        >
-          <motion.div
-            title="drag to resize"
-            whileDrag={{ backgroundColor: ThemingVariables.colors.gray[1] }}
-            drag={'y'}
-            dragConstraints={DragConstraints}
-            className={css`
-              position: absolute;
-              cursor: ns-resize;
-              left: -${DRAG_HANDLE_WIDTH / 2}px;
-              bottom: 0;
-              height: ${DRAG_HANDLE_WIDTH}px;
-              z-index: 10;
-              width: 100%;
-            `}
-            whileHover={{
-              backgroundColor: ThemingVariables.colors.gray[1]
-            }}
-            dragElastic={false}
-            dragMomentum={false}
-            style={{ y }}
-          />
-          {opendQuestionBlockIds.map((id) => (
-            <React.Suspense key={id} fallback={<BlockingUI blocking={true} />}>
-              <StoryQuestionEditor tab={tab} id={id} setActiveId={setActiveId} storyId={storyId} />
-            </React.Suspense>
-          ))}
-          {/* <EditorContent storyId={storyId} /> */}
-        </motion.div>
+        <QueryEditorResizer y={y} />
         <TabList
           {...tab}
           aria-label="Question Editor Tabs"
+          style={{
+            backgroundColor: open ? ThemingVariables.colors.primary[4] : ThemingVariables.colors.gray[5]
+          }}
           className={css`
             box-shadow: 0px -1px 0px ${ThemingVariables.colors.gray[1]};
             padding: 0 8px;
+            transition: all 250ms;
             display: flex;
-            height: 44px;
-            background-color: ${ThemingVariables.colors.gray[5]};
             position: relative;
-            flex-shrink: 0;
-            flex: 1;
+            flex: 0 0 44px;
             overflow: hidden;
             z-index: 1001;
           `}
@@ -239,6 +237,7 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
                     id={id}
                     isActive={id === activeId}
                     tab={tab}
+                    isOpen={open}
                     onClick={() => {
                       setActiveId(id)
                       setOpen(true)
@@ -248,6 +247,50 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
                 </React.Suspense>
               )
             })}
+            <div
+              className={css`
+                display: flex;
+                align-items: center;
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                right: 0;
+                padding: 0 16px;
+                height: 100%;
+              `}
+            >
+              <IconButton
+                hoverContent="Click to open query editor"
+                icon={open ? IconCommonArrowDropDown : IconCommonArrowUpDown}
+                onClick={() => {
+                  setOpen(!open)
+                }}
+                className={css`
+                  margin-left: auto;
+                `}
+              />
+            </div>
+          </div>
+        </TabList>
+        {opendQuestionBlockIds.map((id) => (
+          <React.Suspense key={id} fallback={<BlockingUI blocking={true} />}>
+            <StoryQuestionEditor tab={tab} id={id} setActiveId={setActiveId} storyId={storyId} />
+          </React.Suspense>
+        ))}
+        {/* <div
+            className={css`
+              box-shadow: 0px -1px 0px ${ThemingVariables.colors.gray[1]};
+              padding: 0 8px;
+              display: flex;
+              height: 44px;
+              background-color: ${ThemingVariables.colors.gray[5]};
+              position: relative;
+              flex-shrink: 0;
+              flex: 1;
+              overflow: hidden;
+              z-index: 1001;
+            `}
+          >
             {open === false && (
               <div
                 className={css`
@@ -273,9 +316,9 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
                 />
               </div>
             )}
-          </div>
-        </TabList>
-      </div>
+          </div> */}
+        {/* <EditorContent storyId={storyId} /> */}
+      </motion.div>
     </>
   )
 }
@@ -369,9 +412,10 @@ const QuestionTab: React.FC<{
   id: string
   tab: TabStateReturn
   isActive: boolean
+  isOpen: boolean
   onClick: () => void
   storyId: string
-}> = ({ id, tab, isActive, onClick, storyId }) => {
+}> = ({ id, tab, isActive, isOpen, onClick, storyId }) => {
   const [bindHoveringEvents, isHovering] = useBindHovering()
 
   return (
@@ -381,27 +425,33 @@ const QuestionTab: React.FC<{
       {...bindHoveringEvents()}
       onClick={onClick}
       className={cx(
+        isOpen
+          ? css`
+              border-radius: 8px 8px 0 0;
+            `
+          : css`
+              border-radius: 8px;
+              background: ${ThemingVariables.colors.gray[4]};
+              margin-bottom: 8px;
+            `,
         css`
           margin-top: 8px;
-          margin-bottom: 8px;
           font-size: 12px;
           line-height: 14px;
           display: inline-flex;
           align-items: center;
           padding: 8px 15px;
           cursor: pointer;
-          border-radius: 8px;
           outline: none;
           border: none;
+          color: ${ThemingVariables.colors.text[0]};
         `,
         isActive
           ? css`
-              background: ${ThemingVariables.colors.gray[2]};
-              color: ${ThemingVariables.colors.text[0]};
+              background: ${ThemingVariables.colors.primary[5]};
             `
           : css`
-              background: ${ThemingVariables.colors.gray[3]};
-              color: ${ThemingVariables.colors.text[0]};
+              background: ${ThemingVariables.colors.primary[4]};
             `
       )}
     >
@@ -949,21 +999,6 @@ export const StoryQuestionEditor: React.FC<{
                 color={ThemingVariables.colors.primary[1]}
               />
             </Tippy>
-
-            <IconButton
-              icon={IconCommonArrowDropDown}
-              color={ThemingVariables.colors.text[0]}
-              className={css`
-                margin-left: auto;
-                cursor: pointer;
-                align-self: center;
-                padding: 0 10px;
-                flex-shrink: 0;
-              `}
-              onClick={() => {
-                setOpen(false)
-              }}
-            />
           </div>
         )}
       </div>
