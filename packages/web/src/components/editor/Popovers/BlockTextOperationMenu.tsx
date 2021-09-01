@@ -892,7 +892,7 @@ const InlineFormulaInput: React.FC<{
             box-shadow: ${ThemingVariables.boxShadows[0]};
             border-radius: 8px;
             overflow: hidden;
-            padding: 10px 10px;
+            padding: 0 10px;
             color: ${ThemingVariables.colors.text[1]};
           `,
           'no-select'
@@ -910,6 +910,7 @@ const InlineFormulaInput: React.FC<{
             width: 420px;
             display: flex;
             flex-direction: column;
+            padding-top: 10px;
           `}
         >
           <TextareaAutosize
@@ -975,8 +976,6 @@ const InlineFormulaInput: React.FC<{
             > * + * {
               margin-top: 5px;
             }
-            max-height: 200px;
-            overflow-y: auto;
           `}
         >
           <div
@@ -987,24 +986,32 @@ const InlineFormulaInput: React.FC<{
           >
             Queries
           </div>
-          {currentResources.map((resource) => (
-            <div
-              key={resource.id}
-              className={css`
-                cursor: pointer;
-                padding: 5px;
-                :hover {
-                  background-color: ${ThemingVariables.colors.primary[4]};
-                }
-              `}
-              onClick={(e) => {
-                // e.preventDefault()
-                document.execCommand('insertText', false, `{{${resource.id}}}[1,1]`)
-              }}
-            >
-              {getBlockTitle(resource)}
-            </div>
-          ))}
+          <div
+            className={css`
+              overflow-y: auto;
+              max-height: 200px;
+              padding-bottom: 20px;
+            `}
+          >
+            {currentResources.map((resource) => (
+              <div
+                key={resource.id}
+                className={css`
+                  cursor: pointer;
+                  padding: 5px;
+                  :hover {
+                    background-color: ${ThemingVariables.colors.primary[4]};
+                  }
+                `}
+                onClick={(e) => {
+                  // e.preventDefault()
+                  document.execCommand('insertText', false, `{{${resource.id}}}[1,1]`)
+                }}
+              >
+                {getBlockTitle(resource)}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </>
