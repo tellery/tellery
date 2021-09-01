@@ -521,15 +521,20 @@ export const StoryQuestionEditor: React.FC<{
   const isDraftSql = !!questionBlockState?.draft?.sql
   const isDraft = !!questionBlockState?.draft
   const originalSQL = (queryBlock as Editor.SQLBlock)?.content?.sql
-  const { data: sql = questionBlockState?.draft?.sql ?? originalSQL ?? '' } = useTranslateSmartQuery(
-    queryBlock.type === Editor.BlockType.SmartQuery
-      ? (queryBlock as Editor.SmartQueryBlock).content.queryBuilderId
-      : undefined
-  )
   const snapShotId = questionBlockState?.draft?.snapshotId ?? queryBlock?.content?.snapshotId
   const queryTitle = questionBlockState?.draft?.title ?? queryBlock?.content?.title
   const fields = questionBlockState?.draft?.fields ?? (queryBlock as Editor.QueryBuilder)?.content?.fields
   const metrics = questionBlockState?.draft?.metrics ?? (queryBlock as Editor.QueryBuilder)?.content?.metrics
+  const metricIds = questionBlockState?.draft?.metricIds ?? (queryBlock as Editor.SmartQueryBlock)?.content?.metricIds
+  const dimensions =
+    questionBlockState?.draft?.dimensions ?? (queryBlock as Editor.SmartQueryBlock)?.content?.dimensions
+  const { data: sql = questionBlockState?.draft?.sql ?? originalSQL ?? '' } = useTranslateSmartQuery(
+    queryBlock.type === Editor.BlockType.SmartQuery
+      ? (queryBlock as Editor.SmartQueryBlock).content.queryBuilderId
+      : undefined,
+    metricIds,
+    dimensions
+  )
 
   const snapshot = useSnapshot(snapShotId)
 
