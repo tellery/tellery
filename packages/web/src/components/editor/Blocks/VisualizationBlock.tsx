@@ -394,9 +394,9 @@ export const QuestionBlockButtons: React.FC<{
             right: 0;
             top: 0;
             margin: 10px;
-            padding: 5px;
             background: rgba(51, 51, 51, 0.7);
             border-radius: 8px;
+            overflow: hidden;
           `}
         >
           <TitleButtonsInner block={block} slim={slim} setIsActive={setIsActive} />
@@ -766,7 +766,7 @@ export const MoreDropdownSelect: React.FC<{
   const { t } = useTranslation()
   const mutateSnapshot = useRefreshSnapshot()
   const canRefresh = !readonly
-  const menu = useMenuState()
+  const menu = useMenuState({ unstable_fixed: true, modal: true, animated: true })
   const blockTranscations = useBlockTranscations()
 
   useEffect(() => {
@@ -801,171 +801,167 @@ export const MoreDropdownSelect: React.FC<{
         <IconCommonMore color={ThemingVariables.colors.gray[5]} />
       </MenuButton>
 
-      <AnimatePresence>
-        {menu.visible && (
-          <motion.div
-            initial={'inactive'}
-            animate={'active'}
-            exit={'inactive'}
-            transition={{ duration: 0.15 }}
-            variants={PopoverMotionVariants.scale}
-            className={css`
-              z-index: 1000;
-            `}
-          >
-            <Menu
-              {...menu}
-              hideOnClickOutside
-              style={{
-                outline: 'none'
-              }}
+      <Menu
+        {...menu}
+        hideOnClickOutside
+        style={{
+          outline: 'none'
+        }}
+      >
+        <AnimatePresence>
+          {menu.visible && (
+            <motion.div
+              initial={'inactive'}
+              animate={'active'}
+              exit={'inactive'}
+              transition={{ duration: 0.15 }}
+              variants={PopoverMotionVariants.scale}
+              className={css`
+                z-index: 1000;
+                background: ${ThemingVariables.colors.gray[5]};
+                box-shadow: ${ThemingVariables.boxShadows[0]};
+                border-radius: 8px;
+                padding: 8px;
+                width: 260px;
+                overflow: hidden;
+                outline: none;
+                display: flex;
+                flex-direction: column;
+              `}
             >
-              <div
-                className={css`
-                  background: ${ThemingVariables.colors.gray[5]};
-                  box-shadow: ${ThemingVariables.boxShadows[0]};
-                  border-radius: 8px;
-                  padding: 8px;
-                  width: 260px;
-                  overflow: hidden;
-                  outline: none;
-                  display: flex;
-                  flex-direction: column;
-                `}
-              >
-                <StyledMenuItem
-                  {...menu}
-                  title={t`Copy Link`}
-                  icon={<IconCommonLink color={ThemingVariables.colors.text[0]} />}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    copy('placeholder', {
-                      onCopy: (clipboardData) => {
-                        invariant(block, 'block is null')
-                        const dataTranser = clipboardData as DataTransfer
-                        if (!block.storyId) return
+              <StyledMenuItem
+                {...menu}
+                title={t`Copy Link`}
+                icon={<IconCommonLink color={ThemingVariables.colors.text[0]} />}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  copy('placeholder', {
+                    onCopy: (clipboardData) => {
+                      invariant(block, 'block is null')
+                      const dataTranser = clipboardData as DataTransfer
+                      if (!block.storyId) return
 
-                        dataTranser.setData(
-                          TELLERY_MIME_TYPES.BLOCK_REF,
-                          JSON.stringify({ blockId: block.id, storyId: block.storyId })
-                        )
-                        dataTranser.setData(
-                          'text/plain',
-                          `${window.location.protocol}//${window.location.host}/story/${block?.storyId}#${block?.id}`
-                        )
-                      }
-                    })
-                    toast('Link Copied')
-                    closeMenu()
-                  }}
-                />
-                <StyledMenuItem
-                  {...menu}
-                  title={t`Duplicate`}
-                  icon={<IconMenuDuplicate color={ThemingVariables.colors.text[0]} />}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    const selection = editor?.getSelection()
-                    editor?.duplicateHandler(
-                      selection?.type === TellerySelectionType.Block ? selection.selectedBlocks : [block.id]
-                    )
-                    closeMenu()
-                  }}
-                />
-                <MenuItemDivider />
-                {canRefresh && (
-                  <StyledMenuItem
-                    {...menu}
-                    title={t`Refresh Query`}
-                    icon={<IconCommonRefresh color={ThemingVariables.colors.text[0]} />}
-                    onClick={() => {
-                      mutateSnapshot.execute(queryBlock)
-                      closeMenu()
-                    }}
-                  />
-                )}
-                <StyledMenuItem
-                  {...menu}
-                  title={t`Visualization options`}
-                  icon={<IconVisualizationSetting color={ThemingVariables.colors.text[0]} />}
-                  onClick={() => {
-                    questionEditor.open({ mode: 'VIS', blockId: block.id, storyId: block.storyId! })
-                    closeMenu()
-                  }}
-                />
-                <StyledMenuItem
-                  {...menu}
-                  title={t`Open in editor`}
-                  icon={<IconCommonSql color={ThemingVariables.colors.text[0]} />}
-                  onClick={() => {
-                    questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
-                    closeMenu()
-                  }}
-                />
-                <StyledMenuItem
-                  {...menu}
-                  title={'Download as CSV'}
-                  icon={<IconMenuDownload color={ThemingVariables.colors.text[0]} />}
-                  onClick={async () => {
-                    const snapshot = await getSnapshot({ snapshotId: queryBlock?.content?.snapshotId })
-                    const snapshotData = snapshot?.data
-                    invariant(snapshotData, 'snapshotData is null')
-                    const csvString = snapshotToCSV(snapshotData)
-                    invariant(csvString, 'csvString is null')
-                    csvString && download(csvString, 'data.csv', 'text/csv')
-                    closeMenu()
-                  }}
-                />
-                <StyledMenuItem
-                  {...menu}
-                  title={'Download as image'}
-                  icon={<IconMenuDownload color={ThemingVariables.colors.text[0]} />}
-                  onClick={async () => {
-                    const elementSVG = getBlockImageById(block.id)
-                    if (elementSVG) {
-                      html2canvas(elementSVG!, {
-                        foreignObjectRendering: false
-                      }).then(function (canvas) {
-                        const dataUrl = canvas.toDataURL('image/png')
-                        download(dataUrl, 'image.png', 'image/png')
-                      })
+                      dataTranser.setData(
+                        TELLERY_MIME_TYPES.BLOCK_REF,
+                        JSON.stringify({ blockId: block.id, storyId: block.storyId })
+                      )
+                      dataTranser.setData(
+                        'text/plain',
+                        `${window.location.protocol}//${window.location.host}/story/${block?.storyId}#${block?.id}`
+                      )
                     }
+                  })
+                  toast('Link Copied')
+                  closeMenu()
+                }}
+              />
+              <StyledMenuItem
+                {...menu}
+                title={t`Duplicate`}
+                icon={<IconMenuDuplicate color={ThemingVariables.colors.text[0]} />}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  const selection = editor?.getSelection()
+                  editor?.duplicateHandler(
+                    selection?.type === TellerySelectionType.Block ? selection.selectedBlocks : [block.id]
+                  )
+                  closeMenu()
+                }}
+              />
+              <MenuItemDivider />
+              {canRefresh && (
+                <StyledMenuItem
+                  {...menu}
+                  title={t`Refresh Query`}
+                  icon={<IconCommonRefresh color={ThemingVariables.colors.text[0]} />}
+                  onClick={() => {
+                    mutateSnapshot.execute(queryBlock)
                     closeMenu()
                   }}
                 />
-                {canConvertDataAsset && queryBlock.type === Editor.BlockType.SQL && (
-                  <Tippy
-                    content="Freeze the data returned by the query to prevent accidental refreshing."
-                    placement="left"
-                    maxWidth={260}
-                    delay={500}
-                    arrow={false}
-                  >
-                    <StyledMenuItem
-                      {...menu}
-                      title={'Freeze data'}
-                      icon={<IconCommonLock color={ThemingVariables.colors.text[0]} />}
-                      onClick={async () => {
-                        editor?.updateBlockProps?.(queryBlock.id, ['type'], Editor.BlockType.SnapshotBlock)
-                        closeMenu()
-                      }}
-                    />
-                  </Tippy>
-                )}
-                {canConvertDataAsset && queryBlock.type === Editor.BlockType.SnapshotBlock && (
+              )}
+              <StyledMenuItem
+                {...menu}
+                title={t`Visualization options`}
+                icon={<IconVisualizationSetting color={ThemingVariables.colors.text[0]} />}
+                onClick={() => {
+                  questionEditor.open({ mode: 'VIS', blockId: block.id, storyId: block.storyId! })
+                  closeMenu()
+                }}
+              />
+              <StyledMenuItem
+                {...menu}
+                title={t`Open in editor`}
+                icon={<IconCommonSql color={ThemingVariables.colors.text[0]} />}
+                onClick={() => {
+                  questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
+                  closeMenu()
+                }}
+              />
+              <StyledMenuItem
+                {...menu}
+                title={'Download as CSV'}
+                icon={<IconMenuDownload color={ThemingVariables.colors.text[0]} />}
+                onClick={async () => {
+                  const snapshot = await getSnapshot({ snapshotId: queryBlock?.content?.snapshotId })
+                  const snapshotData = snapshot?.data
+                  invariant(snapshotData, 'snapshotData is null')
+                  const csvString = snapshotToCSV(snapshotData)
+                  invariant(csvString, 'csvString is null')
+                  csvString && download(csvString, 'data.csv', 'text/csv')
+                  closeMenu()
+                }}
+              />
+              <StyledMenuItem
+                {...menu}
+                title={'Download as image'}
+                icon={<IconMenuDownload color={ThemingVariables.colors.text[0]} />}
+                onClick={async () => {
+                  const elementSVG = getBlockImageById(block.id)
+                  if (elementSVG) {
+                    html2canvas(elementSVG!, {
+                      foreignObjectRendering: false
+                    }).then(function (canvas) {
+                      const dataUrl = canvas.toDataURL('image/png')
+                      download(dataUrl, 'image.png', 'image/png')
+                    })
+                  }
+                  closeMenu()
+                }}
+              />
+              {canConvertDataAsset && queryBlock.type === Editor.BlockType.SQL && (
+                <Tippy
+                  content="Freeze the data returned by the query to prevent accidental refreshing."
+                  placement="left"
+                  maxWidth={260}
+                  delay={500}
+                  arrow={false}
+                >
                   <StyledMenuItem
                     {...menu}
-                    title={'Unfreeze data'}
-                    icon={<IconCommonUnlock color={ThemingVariables.colors.text[0]} />}
+                    title={'Freeze data'}
+                    icon={<IconCommonLock color={ThemingVariables.colors.text[0]} />}
                     onClick={async () => {
-                      editor?.updateBlockProps?.(queryBlock.id, ['type'], Editor.BlockType.SQL)
+                      editor?.updateBlockProps?.(queryBlock.id, ['type'], Editor.BlockType.SnapshotBlock)
                       closeMenu()
                     }}
                   />
-                )}
-                {/* {canConvertDataAsset && dataAssetBlock.type === Editor.BlockType.QueryBuilder && (
+                </Tippy>
+              )}
+              {canConvertDataAsset && queryBlock.type === Editor.BlockType.SnapshotBlock && (
+                <StyledMenuItem
+                  {...menu}
+                  title={'Unfreeze data'}
+                  icon={<IconCommonUnlock color={ThemingVariables.colors.text[0]} />}
+                  onClick={async () => {
+                    editor?.updateBlockProps?.(queryBlock.id, ['type'], Editor.BlockType.SQL)
+                    closeMenu()
+                  }}
+                />
+              )}
+              {/* {canConvertDataAsset && dataAssetBlock.type === Editor.BlockType.QueryBuilder && (
           <StyledMenuItem
             {...menu}
             title={'Remove from data assets'}
@@ -985,7 +981,7 @@ export const MoreDropdownSelect: React.FC<{
             }}
           />
         )} */}
-                {/* {canConvertDataAsset && dataAssetBlock.type === Editor.BlockType.SmartQuery && (
+              {/* {canConvertDataAsset && dataAssetBlock.type === Editor.BlockType.SmartQuery && (
           <StyledMenuItem
             {...menu}
             title={'Convert to SQL query'}
@@ -995,45 +991,44 @@ export const MoreDropdownSelect: React.FC<{
             }}
           />
         )} */}
-                <MenuItemDivider />
+              <MenuItemDivider />
 
-                {!readonly && (
-                  <StyledMenuItem
-                    {...menu}
-                    title={'Delete'}
-                    icon={<IconMenuDelete color={ThemingVariables.colors.text[0]} />}
-                    onClick={async () => {
-                      // requestClose()
+              {!readonly && (
+                <StyledMenuItem
+                  {...menu}
+                  title={'Delete'}
+                  icon={<IconMenuDelete color={ThemingVariables.colors.text[0]} />}
+                  onClick={async () => {
+                    // requestClose()
 
-                      // TODO: a workaround to transition
-                      setTimeout(() => {
-                        blockTranscations.removeBlocks(block.storyId!, [block.id])
-                      }, 100)
-                    }}
-                  />
-                )}
+                    // TODO: a workaround to transition
+                    setTimeout(() => {
+                      blockTranscations.removeBlocks(block.storyId!, [block.id])
+                    }, 100)
+                  }}
+                />
+              )}
 
-                {block?.lastEditedById && (
-                  <>
-                    <MenuItemDivider />
-                    <div
-                      className={css`
-                        color: ${ThemingVariables.colors.text[1]};
-                        font-size: 12px;
-                        padding: 0 10px;
-                      `}
-                    >
-                      Last edited by {user?.name}
-                      <br />
-                      {dayjs(block.updatedAt).format('YYYY-MM-DD')}
-                    </div>
-                  </>
-                )}
-              </div>
-            </Menu>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              {block?.lastEditedById && (
+                <>
+                  <MenuItemDivider />
+                  <div
+                    className={css`
+                      color: ${ThemingVariables.colors.text[1]};
+                      font-size: 12px;
+                      padding: 0 10px;
+                    `}
+                  >
+                    Last edited by {user?.name}
+                    <br />
+                    {dayjs(block.updatedAt).format('YYYY-MM-DD')}
+                  </div>
+                </>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </Menu>
     </>
   )
 }
@@ -1157,9 +1152,6 @@ const TitleButtonsInner: React.FC<{
         display: inline-flex;
         align-items: center;
         flex-shrink: 0;
-        > * + * {
-          margin-left: 10px;
-        }
       `}
     >
       <Tippy singleton={source} delay={500} arrow={false} />
@@ -1205,12 +1197,12 @@ const QuestionBlockIconButton = styled.div`
   align-items: center;
   justify-content: center;
   > button {
-    width: 30px;
-    height: 30px;
+    width: 36px;
+    height: 36px;
     cursor: pointer;
-    border-radius: 8px;
+    padding: 5px;
   }
-  > button:hover {
+  :hover {
     background: ${ThemingVariables.colors.text[0]};
   }
 `

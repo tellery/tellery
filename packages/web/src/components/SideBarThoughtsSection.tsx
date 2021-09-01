@@ -69,11 +69,12 @@ export const SideBarThoughtsSection = () => {
     }
     return true
   }, [thoughts])
+
   const { t } = useTranslation()
   const currentMonthThoughts = useMemo(() => {
     const currentMonthString = dayjs(activeStartDate).format('YYYY-MM')
     return thoughts?.filter((thought) => {
-      return thought.date.indexOf(currentMonthString) !== -1
+      return thought.date?.indexOf(currentMonthString) !== -1
     })
   }, [activeStartDate, thoughts])
 
