@@ -874,9 +874,6 @@ const InlineFormulaInput: React.FC<{
           `,
           'no-select'
         )}
-        // onClick={(e) => {
-        //   e.stopPropagation()
-        // }}
       >
         <div
           className={css`
@@ -906,12 +903,7 @@ const InlineFormulaInput: React.FC<{
               e.stopPropagation()
             }}
             ref={inputRef}
-            // value={formula}
-            // onSelect={(e) => {
-            // e.preventDefault()
-            // e.stopPropagation()
-            // }}
-            placeholder="Input an formula"
+            placeholder="Input a formula"
             onInput={(e) => {
               setFormula(e.currentTarget.value)
             }}
@@ -936,7 +928,7 @@ const InlineFormulaInput: React.FC<{
               submit()
             }}
           >
-            confirm
+            Confirm
           </FormButton>
           <div
             className={css`
