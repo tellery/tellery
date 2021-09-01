@@ -260,7 +260,7 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
               `}
             >
               <IconButton
-                hoverContent="Click to open query editor"
+                hoverContent={open ? 'Click to close query editor' : 'Click to open query editor'}
                 icon={open ? IconCommonArrowDropDown : IconCommonArrowUpDown}
                 onClick={() => {
                   setOpen(!open)
