@@ -1250,7 +1250,7 @@ const QueryEditorSideTabs: React.FC<{
           />
         </Tippy>
       )}
-      {queryBlockType === Editor.BlockType.SQL ? (
+      {queryBlockType === Editor.BlockType.SQL || queryBlockType === Editor.BlockType.QueryBuilder ? (
         <Tippy content="Query builder" arrow={false} singleton={target}>
           <IconButton
             icon={IconCommonDataAsset}

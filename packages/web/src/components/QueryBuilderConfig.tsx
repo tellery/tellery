@@ -142,6 +142,7 @@ function QueryBuilderConfigInner(props: {
             <span
               className={cx(
                 css`
+                  padding: 0 16px;
                   font-size: 14px;
                 `,
                 id === activeMetric
@@ -201,6 +202,9 @@ function QueryBuilderConfigInner(props: {
                 setMetrics(rest)
                 setActiveMetric(undefined)
               }}
+              className={css`
+                margin-top: 20px;
+              `}
             >
               Remove
             </FormButton>
@@ -307,6 +311,9 @@ function MetricConigCreator(props: { fields?: { name: string; type: string }[]; 
                   })
                 )
               }}
+              className={css`
+                margin-top: 20px;
+              `}
             />
           ))
         ) : (
@@ -368,7 +375,12 @@ function MetricItem(props: {
 }) {
   return (
     <div className={props.className}>
-      <div>
+      <div
+        className={css`
+          display: flex;
+          justify-content: space-between;
+        `}
+      >
         {props.func}
         <FormSwitch
           checked={typeof props.value !== 'undefined'}
@@ -389,6 +401,9 @@ function MetricItem(props: {
           onChange={(e) => {
             props.onChange(e.target.value)
           }}
+          className={css`
+            margin-top: 10px;
+          `}
         />
       )}
     </div>
