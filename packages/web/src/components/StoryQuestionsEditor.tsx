@@ -10,7 +10,8 @@ import {
   IconCommonRun,
   IconCommonSave,
   IconCommonSql,
-  IconVisualizationSetting
+  IconVisualizationSetting,
+  IconCommonMetrics
 } from '@app/assets/icons'
 import { SQLEditor } from '@app/components/SQLEditor'
 import { Configuration } from '@app/components/v11n'
@@ -38,7 +39,7 @@ import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useCreateSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
-import { Editor } from '@app/types'
+import { Dimension, Editor, Metric } from '@app/types'
 import { blockIdGenerator, DEFAULT_TITLE, DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import MonacoEditor from '@monaco-editor/react'
@@ -64,6 +65,7 @@ import type { SetBlock } from './editor/types'
 import IconButton from './kit/IconButton'
 import QueryBuilderConfig from './QueryBuilderConfig'
 import QuestionDownstreams from './QuestionDownstreams'
+import SmartQueryConfig from './SmartQueryConfig'
 import { charts } from './v11n/charts'
 import { Config, Type } from './v11n/types'
 
@@ -476,7 +478,6 @@ export const StoryQuestionEditor: React.FC<{
   const [questionBlocksMap, setQuestionBlocksMap] = useQuestionEditorBlockMapState(storyId)
   const [sqlSidePanel, setSqlSidePanel] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  const [open, setOpen] = useQuestionEditorOpenState(storyId)
 
   const questionBlockState = useMemo(() => {
     if (id && questionBlocksMap && questionBlocksMap[id]) {
@@ -586,8 +587,8 @@ export const StoryQuestionEditor: React.FC<{
     [id, originalSQL, setQuestionBlocksMap]
   )
 
-  const setMetricContent = useCallback(
-    (fields, metrics) => {
+  const setQueryBuilderContent = useCallback(
+    (fields: { name: string; type: string }[], metrics: { [id: string]: Metric }) => {
       setQuestionBlocksMap((blocksMap) => {
         return {
           ...blocksMap,
@@ -599,6 +600,31 @@ export const StoryQuestionEditor: React.FC<{
                 dequal(fields, (queryBlock as Editor.QueryBuilder).content?.fields) === false ? fields : undefined,
               metrics:
                 dequal(metrics, (queryBlock as Editor.QueryBuilder).content?.metrics) === false ? metrics : undefined
+            })
+          }
+        }
+      })
+    },
+    [id, setQuestionBlocksMap, queryBlock]
+  )
+
+  const setSmartQueryContent = useCallback(
+    (metricIds?: string[], dimensions?: Dimension[]) => {
+      setQuestionBlocksMap((blocksMap) => {
+        return {
+          ...blocksMap,
+          [id]: {
+            ...blocksMap[id],
+            draft: emitFalsyObject({
+              ...blocksMap[id].draft,
+              metricIds:
+                dequal(metricIds, (queryBlock as Editor.SmartQueryBlock).content?.metricIds) === false
+                  ? metricIds
+                  : undefined,
+              dimensions:
+                dequal(dimensions, (queryBlock as Editor.SmartQueryBlock).content?.dimensions) === false
+                  ? dimensions
+                  : undefined
             })
           }
         }
@@ -1111,7 +1137,16 @@ export const StoryQuestionEditor: React.FC<{
         {mode === 'QUERY_BUILDER' && (
           <QueryBuilderConfig
             value={queryBlock}
-            onChange={setMetricContent}
+            onChange={setQueryBuilderContent}
+            className={css`
+              flex: 1;
+            `}
+          />
+        )}
+        {mode === 'SMART_QUERY' && (
+          <SmartQueryConfig
+            value={queryBlock as Editor.SmartQueryBlock}
+            onChange={setSmartQueryContent}
             className={css`
               flex: 1;
             `}
@@ -1218,6 +1253,22 @@ const QueryEditorSideTabs: React.FC<{
             color={mode === 'QUERY_BUILDER' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
             onClick={() => {
               setMode('QUERY_BUILDER')
+            }}
+          />
+        </Tippy>
+      ) : null}
+      {queryBlockType === Editor.BlockType.SmartQuery ? (
+        <Tippy content="Metrics" arrow={false} singleton={target}>
+          <IconButton
+            icon={IconCommonMetrics}
+            className={css`
+              &::after {
+                display: ${mode === 'SMART_QUERY' ? 'visible' : 'none'};
+              }
+            `}
+            color={mode === 'SMART_QUERY' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
+            onClick={() => {
+              setMode('SMART_QUERY')
             }}
           />
         </Tippy>

@@ -20,15 +20,7 @@ import Tippy from '@tippyjs/react'
 
 export default function QueryBuilderConfig(props: {
   value: Editor.QueryBlock
-  onChange(
-    fields: {
-      name: string
-      type: string
-    }[],
-    metrics: {
-      [id: string]: Metric
-    }
-  ): void
+  onChange(fields: { name: string; type: string }[], metrics: { [id: string]: Metric }): void
   className?: string
 }) {
   const [isQueryBuilder, setIsQueryBuilder] = useState(false)
