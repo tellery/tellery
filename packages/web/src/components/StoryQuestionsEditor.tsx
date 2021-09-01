@@ -732,6 +732,12 @@ export const StoryQuestionEditor: React.FC<{
         ;(draftBlock as Editor.QueryBuilder).content!.fields = fields
         ;(draftBlock as Editor.QueryBuilder).content!.metrics = metrics
       }
+
+      if (draftBlock.type === Editor.BlockType.SmartQuery) {
+        ;(draftBlock as Editor.SmartQueryBlock).content!.metricIds = metricIds
+        ;(draftBlock as Editor.SmartQueryBlock).content!.dimensions = dimensions
+      }
+
       draftBlock.content!.snapshotId = snapShotId
       draftBlock.content!.error = null
       draftBlock.content!.title = queryTitle ?? []
@@ -751,11 +757,13 @@ export const StoryQuestionEditor: React.FC<{
     setSqlBlock,
     queryBlock.id,
     setVisualizationBlock,
-    sql,
     snapShotId,
     queryTitle,
     fields,
     metrics,
+    sql,
+    metricIds,
+    dimensions,
     visualizationConfig
   ])
 
@@ -1144,7 +1152,9 @@ export const StoryQuestionEditor: React.FC<{
         )}
         {mode === 'SMART_QUERY' && (
           <SmartQueryConfig
-            value={queryBlock as Editor.SmartQueryBlock}
+            queryBuilderId={(queryBlock as Editor.SmartQueryBlock).content.queryBuilderId}
+            metricIds={metricIds}
+            dimensions={dimensions}
             onChange={setSmartQueryContent}
             className={css`
               flex: 1;
