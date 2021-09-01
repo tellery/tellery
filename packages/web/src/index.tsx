@@ -3,8 +3,8 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import 'react-perfect-scrollbar/dist/css/styles.css'
 import './index.css'
-import * as Sentry from '@sentry/react'
-import { Integrations } from '@sentry/tracing'
+// import * as Sentry from '@sentry/react'
+// import { Integrations } from '@sentry/tracing'
 import debug from 'debug'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -12,6 +12,8 @@ import App from './App'
 import { env } from './env'
 import './i18n'
 import Stats from 'stats.js'
+
+import Tracker from '@asayerio/tracker'
 
 env.DEV && debug.enable('tellery:*')
 
@@ -37,26 +39,29 @@ const initStats = () => {
 }
 
 env.DEV && initStats()
-
-Sentry.init({
-  dsn: env.SENTRY_DSN,
-  beforeSend(event) {
-    return event
-  },
-  enabled: env.PROD,
-  autoSessionTracking: true,
-  integrations: [
-    new Integrations.BrowserTracing({
-      beforeNavigate: (context) => {
-        return {
-          ...context,
-          name: location.pathname.replace(/\/[a-fA-F0-9-]+$/g, '/:id')
-        }
-      }
-    })
-  ],
-  tracesSampleRate: 1
+const tracker = new Tracker({
+  projectID: env.ASAYERIO_PROJECTID
 })
+tracker.start()
+// Sentry.init({
+//   dsn: env.SENTRY_DSN,
+//   beforeSend(event) {
+//     return event
+//   },
+//   enabled: env.PROD,
+//   autoSessionTracking: true,
+//   integrations: [
+//     new Integrations.BrowserTracing({
+//       beforeNavigate: (context) => {
+//         return {
+//           ...context,
+//           name: location.pathname.replace(/\/[a-fA-F0-9-]+$/g, '/:id')
+//         }
+//       }
+//     })
+//   ],
+//   tracesSampleRate: 1
+// })
 
 ReactDOM.render(
   <React.StrictMode>

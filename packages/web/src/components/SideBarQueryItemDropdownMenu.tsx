@@ -19,7 +19,7 @@ import { addPrefixToBlockTitle } from '@app/utils'
 import { css } from '@emotion/css'
 import copy from 'copy-to-clipboard'
 import { motion } from 'framer-motion'
-import React, { useCallback, useState } from 'react'
+import React, { memo, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import { useTippyMenuAnimation } from '../hooks/useTippyMenuAnimation'
@@ -156,7 +156,7 @@ export const SideBarQueryItemDropdownMenuContent: React.FC<{
   )
 }
 
-export const SideBarQueryItemDropdownMenu: React.FC<{
+const _SideBarQueryItemDropdownMenu: React.FC<{
   block: Editor.DataAssetBlock
   storyId: string
   show: boolean
@@ -208,3 +208,5 @@ export const SideBarQueryItemDropdownMenu: React.FC<{
     </LazyTippy>
   )
 }
+
+export const SideBarQueryItemDropdownMenu = memo(_SideBarQueryItemDropdownMenu)

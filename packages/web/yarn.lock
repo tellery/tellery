@@ -2,6 +2,13 @@
 # yarn lockfile v1
 
 
+"@asayerio/tracker@^5.6.8":
+  version "5.6.8"
+  resolved "https://registry.yarnpkg.com/@asayerio/tracker/-/tracker-5.6.8.tgz#51296291f7a80fd0b18e8623fec437ab1d18377b"
+  integrity sha512-NnQebk1vfMoTYdJn0LFa0jipmNq15p2lwhexl85sDxXzKEY7du7NsYp2CeCk6Y6JU5jDLycGUaySYWn8eBwrXQ==
+  dependencies:
+    error-stack-parser "^2.0.6"
+
 "@babel/code-frame@7.12.11":
   version "7.12.11"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.12.11.tgz#f4ad435aa263db935b8f10f2c552d23fb716a63f"
