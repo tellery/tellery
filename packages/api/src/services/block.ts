@@ -26,9 +26,9 @@ export class BlockService {
   ): Promise<Block[]> {
     await canGetBlockData(this.permission, operatorId, workspaceId, storyId)
 
-    const blocks = await this.listEntitiesByStoryId(storyId)
+    const blockEntities = await this.listEntitiesByStoryId(storyId)
 
-    return _(blocks)
+    const blocks = _(blockEntities)
       .map((b) => Block.fromEntity(b))
       .map((b) => {
         if (!b.alive) {
@@ -40,13 +40,36 @@ export class BlockService {
         if (b1.parentTable === BlockParentType.WORKSPACE) {
           return true
         }
-        const parentBlock = _(blocks).find((b2) => b1.parentId === b2.id)
+        const parentBlock = _(blockEntities).find((b2) => b1.parentId === b2.id)
         return (
           (parentBlock?.children ?? []).includes(b1.id) ||
           (parentBlock?.resources ?? []).includes(b1.id)
         )
       })
       .value()
+    // Getting external resources
+    // Since external block ids will be only in the story's resources & children, we can only examine the story block
+    // if such a property is generalized to all blocks, we have to do a recursive cte query
+    const story = _(blockEntities).find((i) => i.parentTable === BlockParentType.WORKSPACE)
+    if (story) {
+      const externalBlockIds = _([...(story.resources ?? []), ...(story.children ?? [])])
+        .difference(_(blocks).map('id').value())
+        .value()
+      const externalBlockEntities = await getRepository(BlockEntity).find({
+        id: In(externalBlockIds),
+      })
+      const externalBlocks = _(externalBlockEntities)
+        .map((b) => Block.fromEntity(b))
+        .map((b) => {
+          if (!b.alive) {
+            this.overrideContent(b)
+          }
+          return b
+        })
+        .value()
+      return [...blocks, ...externalBlocks]
+    }
+    return blocks
   }
 
   async mget(operatorId: string, workspaceId: string, ids: string[]): Promise<BlockDTO[]> {
