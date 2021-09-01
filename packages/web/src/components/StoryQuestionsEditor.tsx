@@ -211,7 +211,6 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
             position: relative;
             flex: 0 0 44px;
             overflow: hidden;
-            z-index: 1001;
           `}
         >
           <div

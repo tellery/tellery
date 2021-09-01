@@ -1,10 +1,10 @@
 import { IconCommonLink } from '@app/assets/icons'
-import { css, cx } from '@emotion/css'
-import React, { CSSProperties, useEffect, useRef } from 'react'
-import ReactDOMServer from 'react-dom/server'
 import { useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor, Story } from '@app/types'
+import { cx } from '@emotion/css'
+import React, { CSSProperties } from 'react'
+import ReactDOMServer from 'react-dom/server'
 import { blockTitleToText, extractEntitiesFromToken, isNonSelectbleToken } from '../helpers/tokenManipulation'
 
 export const COLORS = {
@@ -244,52 +244,4 @@ export const BlockRenderer = (
     </>
   )
   return ReactDOMServer.renderToStaticMarkup(leafs)
-}
-
-export const BlockRendererElement = ({
-  tokens,
-  setHtml,
-  assetsMap
-}: {
-  tokens: Editor.Token[]
-  setHtml: (html?: string) => void
-  assetsMap: {
-    [key: string]: Editor.Block
-  }
-}) => {
-  const ref = useRef<HTMLDivElement | null>(null)
-
-  useEffect(() => {
-    if (!ref.current) return
-    setHtml(ref.current?.innerHTML)
-    const observer = new MutationObserver(() => {
-      setHtml(ref.current?.innerHTML)
-    })
-    observer.observe(ref.current, {
-      attributes: true,
-      childList: true,
-      subtree: true,
-      characterData: true
-    })
-
-    return () => {
-      observer.disconnect()
-    }
-  }, [setHtml])
-
-  return (
-    <div
-      className={css`
-        display: none;
-        pointer-events: none;
-      `}
-      ref={ref}
-    >
-      <>
-        {tokens?.map((token, i) => {
-          return <Token token={token} index={i} key={i} assetsMap={assetsMap} />
-        }) ?? null}
-      </>
-    </div>
-  )
 }
