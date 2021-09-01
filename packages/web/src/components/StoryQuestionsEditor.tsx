@@ -20,7 +20,8 @@ import {
   useConnectorsListProfiles,
   useExecuteSQL,
   useQuestionDownstreams,
-  useSnapshot
+  useSnapshot,
+  useTranslateSmartQuery
 } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
 import { useLocalStorage } from '@app/hooks/useLocalStorage'
@@ -37,7 +38,7 @@ import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useCreateSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
-import { Editor, Snapshot } from '@app/types'
+import { Editor } from '@app/types'
 import { blockIdGenerator, DEFAULT_TITLE, DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import MonacoEditor from '@monaco-editor/react'
@@ -470,7 +471,11 @@ export const StoryQuestionEditor: React.FC<{
   const isDraftSql = !!questionBlockState?.draft?.sql
   const isDraft = !!questionBlockState?.draft
   const originalSQL = (queryBlock as Editor.SQLBlock)?.content?.sql
-  const sql = questionBlockState?.draft?.sql ?? originalSQL ?? ''
+  const { data: sql = questionBlockState?.draft?.sql ?? originalSQL ?? '' } = useTranslateSmartQuery(
+    queryBlock.type === Editor.BlockType.SmartQuery
+      ? (queryBlock as Editor.SmartQueryBlock).content.queryBuilderId
+      : undefined
+  )
   const snapShotId = questionBlockState?.draft?.snapshotId ?? queryBlock?.content?.snapshotId
   const queryTitle = questionBlockState?.draft?.title ?? queryBlock?.content?.title
   const fields = questionBlockState?.draft?.fields ?? (queryBlock as Editor.QueryBuilder)?.content?.fields
@@ -821,7 +826,8 @@ export const StoryQuestionEditor: React.FC<{
     readonly ||
     queryBlock.type === Editor.BlockType.SnapshotBlock ||
     !!(visualizationBlock && queryBlock.storyId !== visualizationBlock?.storyId) ||
-    queryBlock.type === Editor.BlockType.QueryBuilder
+    queryBlock.type === Editor.BlockType.QueryBuilder ||
+    queryBlock.type === Editor.BlockType.SmartQuery
 
   const [source, target] = useSingleton()
 

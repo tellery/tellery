@@ -62,7 +62,7 @@ export type Metric = {
     }
 )
 
-type Dimension = {
+export type Dimension = {
   name: string
 } & (
   | {
