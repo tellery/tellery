@@ -4,7 +4,7 @@ import { DEFAULT_TITLE, TelleryGlyph, TELLERY_MIME_TYPES } from '@app/utils'
 import dayjs from 'dayjs'
 import { dequal } from 'dequal'
 import invariant from 'tiny-invariant'
-import { isDataAssetBlock, isVisualizationBlock } from '../Blocks/utils'
+import { isDataAssetBlock, isQueryBlock, isVisualizationBlock } from '../Blocks/utils'
 import { getSubsetOfBlocksSnapshot, TOKEN_MAP } from '../utils'
 import { TellerySelection, TellerySelectionType } from './tellerySelection'
 
@@ -218,7 +218,12 @@ export const splitTokenAndMarkIndex = (title?: Editor.Token[]) => {
 }
 
 export const blockTitleToText = (block: Editor.BaseBlock, snapshot: BlockSnapshot): string => {
-  if (isDataAssetBlock(block.type) || isVisualizationBlock(block.type) || block.type === Editor.BlockType.Story) {
+  if (
+    isQueryBlock(block.type) ||
+    isDataAssetBlock(block.type) ||
+    isVisualizationBlock(block.type) ||
+    block.type === Editor.BlockType.Story
+  ) {
     if (!block.content?.title?.length) {
       return DEFAULT_TITLE
     }

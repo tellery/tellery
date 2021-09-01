@@ -29,6 +29,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 import { ReactEventHandlers } from 'react-use-gesture/dist/types'
 import { useGetBlockTitleTextSnapshot } from './editor'
 import { isDataAssetBlock } from './editor/Blocks/utils'
+import { useStoryQueryVisulizations } from './editor/hooks/useStoryQueryVisulizations'
 import IconButton from './kit/IconButton'
 import { LazyTippy } from './LazyTippy'
 import { SideBarInspectQueryBlockPopover } from './SideBarInspectQueryBlockPopover'
@@ -114,6 +115,8 @@ const StoryDataAssetItemContent: React.FC<{ blockId: string; storyId: string }> 
 
   const [hoveringHandlers, isHovering] = useBindHovering()
 
+  const queryVisulizations = useStoryQueryVisulizations(storyId, blockId)
+
   return (
     <StoryDataAssetItemContentDraggable
       hoveringHandlers={hoveringHandlers}
@@ -139,6 +142,9 @@ const StoryDataAssetItemContent: React.FC<{ blockId: string; storyId: string }> 
           overflow: hidden;
           text-overflow: ellipsis;
         `}
+        style={{
+          color: queryVisulizations.length ? ThemingVariables.colors.text[0] : ThemingVariables.colors.text[1]
+        }}
       >
         {getBlockTitle(block)}
       </span>
@@ -158,7 +164,12 @@ const StoryDataAssetItemContent: React.FC<{ blockId: string; storyId: string }> 
             </div>
           </Tippy>
         )}
-        <SideBarQueryItemDropdownMenu block={block} storyId={storyId} show={isHovering} />
+        <SideBarQueryItemDropdownMenu
+          block={block}
+          storyId={storyId}
+          show={isHovering}
+          visulizationsCount={queryVisulizations.length}
+        />
       </div>
     </StoryDataAssetItemContentDraggable>
   )

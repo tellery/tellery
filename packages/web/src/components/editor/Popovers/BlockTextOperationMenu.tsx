@@ -44,7 +44,7 @@ import { Editor, Story } from '@app/types'
 import { blockIdGenerator, DEFAULT_TITLE, TelleryGlyph } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import styled from '@emotion/styled'
-import Tippy from '@tippyjs/react'
+import Tippy, { useSingleton } from '@tippyjs/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import isHotkey from 'is-hotkey'
 import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -58,7 +58,7 @@ import { useEditor, useGetBlockTitleTextSnapshot } from '../hooks'
 import { useInlineFormulaPopoverState } from '../hooks/useInlineFormulaPopoverState'
 import { useStorySelection } from '../hooks/useStorySelection'
 import { useVariable } from '../hooks/useVariable'
-
+import TextareaAutosize from 'react-textarea-autosize'
 const MARK_TYPES = Object.values(Editor.InlineType)
 
 const InlineEditingAtom = atom({ key: 'InlineEditingAtom', default: false })
@@ -73,6 +73,8 @@ const useInlineEditingValue = () => {
 const useSetInlineEditing = () => {
   return useSetRecoilState(InlineEditingAtom)
 }
+
+type SingletonObject = unknown
 
 export const BlockTextOperationMenu = (props: { storyId: string }) => {
   const [open, setOpen] = useState(false)
@@ -411,6 +413,8 @@ const BlockTextOperationMenuInner = ({
     }
   }, [inlineEditing, markHandler, markdMap, selectedTokens, toggleReference])
 
+  const [source, target] = useSingleton()
+
   return (
     <div
       {...pop.attributes.popper}
@@ -442,6 +446,8 @@ const BlockTextOperationMenuInner = ({
           height: 40px;
         `}
       >
+        <Tippy singleton={source} delay={500} arrow={false} placement="top" />
+
         <ToggleTypeOperation
           // parentSafeToRemove={safeToRemove}
           toggleBlockType={(type: Editor.BlockType) => {
@@ -455,6 +461,7 @@ const BlockTextOperationMenuInner = ({
         <AddLinkOperation markHandler={markHandler} referenceRange={range} />
         <VerticalDivider />
         <OperationButtonWithHoverContent
+          tippySingleton={target}
           type={Editor.InlineType.Bold}
           hoverContent="Bold"
           onClick={() => markHandler(Editor.InlineType.Bold, [], !!markdMap.get(Editor.InlineType.Bold))}
@@ -462,6 +469,7 @@ const BlockTextOperationMenuInner = ({
           icon={IconFontBold}
         />
         <OperationButtonWithHoverContent
+          tippySingleton={target}
           type={Editor.InlineType.Italic}
           hoverContent="Italic"
           onClick={() => markHandler(Editor.InlineType.Italic, [], !!markdMap.get(Editor.InlineType.Italic))}
@@ -470,6 +478,7 @@ const BlockTextOperationMenuInner = ({
         />
         <OperationButtonWithHoverContent
           type={Editor.InlineType.Underline}
+          tippySingleton={target}
           hoverContent="Underline"
           onClick={() => markHandler(Editor.InlineType.Underline, [], !!markdMap.get(Editor.InlineType.Underline))}
           active={!!markdMap.get(Editor.InlineType.Underline)}
@@ -477,6 +486,7 @@ const BlockTextOperationMenuInner = ({
         />
         <OperationButtonWithHoverContent
           type={Editor.InlineType.Strike}
+          tippySingleton={target}
           hoverContent="Strike-through"
           onClick={() => markHandler(Editor.InlineType.Strike, [], !!markdMap.get(Editor.InlineType.Strike))}
           active={!!markdMap.get(Editor.InlineType.Strike)}
@@ -484,6 +494,7 @@ const BlockTextOperationMenuInner = ({
         />
         <OperationButtonWithHoverContent
           type={Editor.InlineType.Code}
+          tippySingleton={target}
           hoverContent="Inline code"
           onClick={() => markHandler(Editor.InlineType.Code, [], !!markdMap.get(Editor.InlineType.Code))}
           active={!!markdMap.get(Editor.InlineType.Code)}
@@ -491,6 +502,7 @@ const BlockTextOperationMenuInner = ({
         />
         <OperationButtonWithHoverContent
           type={Editor.InlineType.Reference}
+          tippySingleton={target}
           hoverContent="Reference story"
           onClick={toggleReference}
           active={!!markdMap.get(Editor.InlineType.Reference)}
@@ -501,11 +513,13 @@ const BlockTextOperationMenuInner = ({
           editHandler={editFormula}
           referenceRange={range}
           storyId={currentBlock.storyId!}
+          tippySingleton={target}
           initValue={(markdMap.get(Editor.InlineType.Formula) as string) ?? selectionString ?? ''}
         />
         {/* <InlineEquationPopover setInlineEditing={setInlineEditing} markHandler={markHandler} referenceRange={range} /> */}
         <OperationButtonWithHoverContent
           type={Editor.InlineType.Hightlighted}
+          tippySingleton={target}
           hoverContent="Highlight"
           onClick={() =>
             markHandler(Editor.InlineType.Hightlighted, [], !!markdMap.get(Editor.InlineType.Hightlighted))
@@ -524,10 +538,19 @@ const OperationButtonWithHoverContent: React.FC<{
   onClick: () => void
   icon: React.ForwardRefExoticComponent<React.SVGAttributes<SVGElement>>
   active: boolean
-}> = ({ type, hoverContent, onClick, active, icon }) => {
+  tippySingleton: SingletonObject
+}> = ({ type, hoverContent, tippySingleton, onClick, active, icon }) => {
   return (
     <>
-      <Tippy key={type} content={hoverContent} hideOnClick={false} animation="fade" duration={150} arrow={false}>
+      <Tippy
+        key={type}
+        singleton={tippySingleton as any}
+        content={hoverContent}
+        hideOnClick={false}
+        animation="fade"
+        duration={150}
+        arrow={false}
+      >
         <OperationButton active={active} onClick={onClick}>
           {icon({ color: ThemingVariables.colors.text[0] })}
         </OperationButton>
@@ -869,14 +892,11 @@ const InlineFormulaInput: React.FC<{
             box-shadow: ${ThemingVariables.boxShadows[0]};
             border-radius: 8px;
             overflow: hidden;
-            padding: 10px 10px;
+            padding: 0 10px;
             color: ${ThemingVariables.colors.text[1]};
           `,
           'no-select'
         )}
-        // onClick={(e) => {
-        //   e.stopPropagation()
-        // }}
       >
         <div
           className={css`
@@ -890,9 +910,10 @@ const InlineFormulaInput: React.FC<{
             width: 420px;
             display: flex;
             flex-direction: column;
+            padding-top: 10px;
           `}
         >
-          <textarea
+          <TextareaAutosize
             className={css`
               outline: none;
               border: none;
@@ -906,23 +927,18 @@ const InlineFormulaInput: React.FC<{
               e.stopPropagation()
             }}
             ref={inputRef}
-            // value={formula}
-            // onSelect={(e) => {
-            // e.preventDefault()
-            // e.stopPropagation()
-            // }}
-            placeholder="Input an formula"
+            placeholder="Input a formula"
             onInput={(e) => {
               setFormula(e.currentTarget.value)
             }}
             onKeyDown={(e) => {
               e.stopPropagation()
-              if (e.key === 'Enter') {
+              if (e.key === 'Enter' && e.shiftKey === false) {
                 e.preventDefault()
                 submit()
               }
             }}
-          ></textarea>
+          ></TextareaAutosize>
           <FormButton
             variant="primary"
             className={css`
@@ -936,7 +952,7 @@ const InlineFormulaInput: React.FC<{
               submit()
             }}
           >
-            confirm
+            Confirm
           </FormButton>
           <div
             className={css`
@@ -960,8 +976,6 @@ const InlineFormulaInput: React.FC<{
             > * + * {
               margin-top: 5px;
             }
-            max-height: 200px;
-            overflow-y: auto;
           `}
         >
           <div
@@ -970,26 +984,34 @@ const InlineFormulaInput: React.FC<{
               color: ${ThemingVariables.colors.text[2]};
             `}
           >
-            Data Assets
+            Queries
           </div>
-          {currentResources.map((resource) => (
-            <div
-              key={resource.id}
-              className={css`
-                cursor: pointer;
-                padding: 5px;
-                :hover {
-                  background-color: ${ThemingVariables.colors.primary[4]};
-                }
-              `}
-              onClick={(e) => {
-                // e.preventDefault()
-                document.execCommand('insertText', false, `{{${resource.id}}}[1,1]`)
-              }}
-            >
-              {getBlockTitle(resource)}
-            </div>
-          ))}
+          <div
+            className={css`
+              overflow-y: auto;
+              max-height: 200px;
+              padding-bottom: 20px;
+            `}
+          >
+            {currentResources.map((resource) => (
+              <div
+                key={resource.id}
+                className={css`
+                  cursor: pointer;
+                  padding: 5px;
+                  :hover {
+                    background-color: ${ThemingVariables.colors.primary[4]};
+                  }
+                `}
+                onClick={(e) => {
+                  // e.preventDefault()
+                  document.execCommand('insertText', false, `{{${resource.id}}}[1,1]`)
+                }}
+              >
+                {getBlockTitle(resource)}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </>
@@ -1000,6 +1022,7 @@ const InlineFormulaPopover = (props: {
   referenceRange: Range | null
   editHandler: (formula: string) => void
   storyId: string
+  tippySingleton: SingletonObject
   initValue: string
 }) => {
   const [open, setOpen] = useInlineFormulaPopoverState()
@@ -1035,6 +1058,7 @@ const InlineFormulaPopover = (props: {
     <>
       <OperationButtonWithHoverContent
         active={false}
+        tippySingleton={props.tippySingleton}
         icon={IconCommonFormula}
         hoverContent="Inline formula"
         type={Editor.InlineType.Variable}

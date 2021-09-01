@@ -765,7 +765,7 @@ export const MoreDropdownSelect: React.FC<{
   const questionEditor = useQuestionEditor(block.storyId!)
   const { t } = useTranslation()
   const mutateSnapshot = useRefreshSnapshot()
-  const canRefresh = !readonly
+  const canRefresh = !readonly && isExecuteableBlockType(queryBlock.type)
   const menu = useMenuState({ unstable_fixed: true, modal: true, animated: true })
   const blockTranscations = useBlockTranscations()
 
