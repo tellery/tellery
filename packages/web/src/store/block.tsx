@@ -1,7 +1,7 @@
 import { fetchBlock, fetchSnapshot, fetchUser } from '@app/api'
 import type { Data } from '@app/components/v11n/types'
 import { applyTransactionsAsync, Operation, Transcation } from '@app/hooks/useCommit'
-import type { Editor, Snapshot } from '@app/types'
+import { Editor, Snapshot } from '@app/types'
 import { blockIdGenerator } from '@app/utils'
 import { subscribeBlockUpdate } from '@app/utils/remoteStoreObserver'
 import debug from 'debug'
@@ -154,6 +154,38 @@ export const TelleryStoryBlocks = selectorFamily<Record<string, Editor.BaseBlock
         invariant(currentNodeId, 'currentNodeId is null')
         const currentNode = get(TelleryBlockAtom(currentNodeId))
         result[currentNodeId] = currentNode
+        const children = currentNode.children ?? []
+        nodeStack.push(...children)
+      }
+
+      return result
+    },
+  cachePolicy_UNSTABLE: {
+    eviction: 'most-recent'
+  }
+})
+
+export const StoryQueryVisulizationBlocksAtom = selectorFamily<
+  Editor.VisualizationBlock[],
+  { storyId: string; queryId: string }
+>({
+  key: 'StoryQueryVisulizationBlocksAtom',
+  get:
+    ({ storyId, queryId }) =>
+    ({ get }) => {
+      const result: Editor.VisualizationBlock[] = []
+      const nodeStack = [storyId]
+
+      while (nodeStack.length !== 0) {
+        const currentNodeId = nodeStack.pop()
+        invariant(currentNodeId, 'currentNodeId is null')
+        const currentNode = get(TelleryBlockAtom(currentNodeId))
+        if (
+          currentNode.type === Editor.BlockType.Visualization &&
+          (currentNode as Editor.VisualizationBlock).content?.queryId === queryId
+        ) {
+          result.push(currentNode as Editor.VisualizationBlock)
+        }
         const children = currentNode.children ?? []
         nodeStack.push(...children)
       }

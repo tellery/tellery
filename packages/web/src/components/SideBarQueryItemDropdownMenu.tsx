@@ -33,7 +33,8 @@ export const SideBarQueryItemDropdownMenuContent: React.FC<{
   block: Editor.DataAssetBlock
   onClose: () => void
   storyId: string
-}> = ({ block, onClose, storyId }) => {
+  visulizationsCount: number
+}> = ({ block, onClose, storyId, visulizationsCount }) => {
   const blockTranscations = useBlockTranscations()
   const permissions = useStoryPermissions(block.id)
   const { t } = useTranslation()
@@ -136,6 +137,7 @@ export const SideBarQueryItemDropdownMenuContent: React.FC<{
             }
           >
             <MenuItem
+              disabled={visulizationsCount !== 0}
               icon={<IconMenuDelete color={ThemingVariables.colors.negative[0]} />}
               title={
                 <span
@@ -154,50 +156,55 @@ export const SideBarQueryItemDropdownMenuContent: React.FC<{
   )
 }
 
-export const SideBarQueryItemDropdownMenu: React.FC<{ block: Editor.DataAssetBlock; storyId: string; show: boolean }> =
-  ({ block, storyId, show }) => {
-    const tippyAnimation = useTippyMenuAnimation('scale')
-    const [displaying, setDisplaying] = useState(false)
+export const SideBarQueryItemDropdownMenu: React.FC<{
+  block: Editor.DataAssetBlock
+  storyId: string
+  show: boolean
+  visulizationsCount: number
+}> = ({ block, storyId, show, visulizationsCount }) => {
+  const tippyAnimation = useTippyMenuAnimation('scale')
+  const [displaying, setDisplaying] = useState(false)
 
-    return (
-      <LazyTippy
-        render={(attrs, content, instance) => (
-          <motion.div animate={tippyAnimation.controls} transition={{ duration: 0.15 }} {...attrs}>
-            <SideBarQueryItemDropdownMenuContent
-              block={block}
-              storyId={storyId}
-              onClose={() => {
-                instance?.hide()
-              }}
-            />
-          </motion.div>
-        )}
-        animation={true}
-        onMount={() => {
-          tippyAnimation.onMount()
-          setDisplaying(true)
+  return (
+    <LazyTippy
+      render={(attrs, content, instance) => (
+        <motion.div animate={tippyAnimation.controls} transition={{ duration: 0.15 }} {...attrs}>
+          <SideBarQueryItemDropdownMenuContent
+            block={block}
+            storyId={storyId}
+            onClose={() => {
+              instance?.hide()
+            }}
+            visulizationsCount={visulizationsCount}
+          />
+        </motion.div>
+      )}
+      animation={true}
+      onMount={() => {
+        tippyAnimation.onMount()
+        setDisplaying(true)
+      }}
+      onHide={(instance) => {
+        tippyAnimation.onHide(instance, () => {
+          setDisplaying(false)
+        })
+      }}
+      hideOnClick={true}
+      interactive
+      trigger="click"
+      placement="right-end"
+      appendTo={document.body}
+    >
+      <IconButton
+        icon={IconCommonMore}
+        color={ThemingVariables.colors.text[0]}
+        onClick={(e) => {
+          e.stopPropagation()
         }}
-        onHide={(instance) => {
-          tippyAnimation.onHide(instance, () => {
-            setDisplaying(false)
-          })
+        style={{
+          display: displaying || show ? 'block' : 'none'
         }}
-        hideOnClick={true}
-        interactive
-        trigger="click"
-        placement="right-end"
-        appendTo={document.body}
-      >
-        <IconButton
-          icon={IconCommonMore}
-          color={ThemingVariables.colors.text[0]}
-          onClick={(e) => {
-            e.stopPropagation()
-          }}
-          style={{
-            display: displaying || show ? 'block' : 'none'
-          }}
-        />
-      </LazyTippy>
-    )
-  }
+      />
+    </LazyTippy>
+  )
+}
