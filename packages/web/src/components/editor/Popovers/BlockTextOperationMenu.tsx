@@ -58,7 +58,7 @@ import { useEditor, useGetBlockTitleTextSnapshot } from '../hooks'
 import { useInlineFormulaPopoverState } from '../hooks/useInlineFormulaPopoverState'
 import { useStorySelection } from '../hooks/useStorySelection'
 import { useVariable } from '../hooks/useVariable'
-
+import TextareaAutosize from 'react-textarea-autosize'
 const MARK_TYPES = Object.values(Editor.InlineType)
 
 const InlineEditingAtom = atom({ key: 'InlineEditingAtom', default: false })
@@ -889,7 +889,7 @@ const InlineFormulaInput: React.FC<{
             flex-direction: column;
           `}
         >
-          <textarea
+          <TextareaAutosize
             className={css`
               outline: none;
               border: none;
@@ -909,12 +909,12 @@ const InlineFormulaInput: React.FC<{
             }}
             onKeyDown={(e) => {
               e.stopPropagation()
-              if (e.key === 'Enter') {
+              if (e.key === 'Enter' && e.shiftKey === false) {
                 e.preventDefault()
                 submit()
               }
             }}
-          ></textarea>
+          ></TextareaAutosize>
           <FormButton
             variant="primary"
             className={css`
@@ -962,7 +962,7 @@ const InlineFormulaInput: React.FC<{
               color: ${ThemingVariables.colors.text[2]};
             `}
           >
-            Data Assets
+            Queries
           </div>
           {currentResources.map((resource) => (
             <div

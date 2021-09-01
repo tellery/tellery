@@ -159,7 +159,7 @@ export const Token = ({
           className={cx(classNames, 'tellery-hoverable-token', 'tellery-formula-token')}
         >
           <span style={{ whiteSpace: 'nowrap' }}></span>
-          <span>{assetsMap[formulaEntity[1]] ?? 'loading...'}</span>
+          <span>{JSON.stringify(assetsMap[formulaEntity[1]]) ?? 'loading...'}</span>
           <span style={{ whiteSpace: 'nowrap' }}></span>
         </a>
       </>
