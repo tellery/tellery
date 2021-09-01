@@ -2,7 +2,7 @@ import { IconCommonAdd } from '@app/assets/icons'
 import { useGetProfileSpec, useSnapshot } from '@app/hooks/api'
 import { useDimensions } from '@app/hooks/useDimensions'
 import { ThemingVariables } from '@app/styles'
-import { Editor, Metric } from '@app/types'
+import { Editor, Metric, Snapshot } from '@app/types'
 import { blockIdGenerator } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import { useEffect, useRef, useState, useMemo } from 'react'
@@ -16,6 +16,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 import FormSwitch from './kit/FormSwitch'
 import FormInput from './kit/FormInput'
 import produce from 'immer'
+import Tippy from '@tippyjs/react'
 
 export default function MetricConfig(props: {
   value: Editor.QueryBlock
@@ -34,8 +35,9 @@ export default function MetricConfig(props: {
   useEffect(() => {
     setIsQueryBuilder(props.value.type === Editor.BlockType.QueryBuilder)
   }, [props.value.type])
+  const snapshot = useSnapshot(props.value.content?.snapshotId)
 
-  if (!isQueryBuilder) {
+  if (!isQueryBuilder || !snapshot) {
     return (
       <div
         className={cx(
@@ -47,13 +49,23 @@ export default function MetricConfig(props: {
           props.className
         )}
       >
-        <FormButton variant="primary" onClick={() => setIsQueryBuilder(true)}>
-          Convert as data assets
-        </FormButton>
+        <Tippy content="Must execute query first" disabled={!!snapshot?.data.fields.length}>
+          <div>
+            <FormButton
+              disabled={!snapshot?.data.fields.length}
+              variant="primary"
+              onClick={() => setIsQueryBuilder(true)}
+            >
+              Convert as data assets
+            </FormButton>
+          </div>
+        </Tippy>
       </div>
     )
   }
-  return <MetricConfigInner value={props.value} onChange={props.onChange} className={props.className} />
+  return (
+    <MetricConfigInner value={props.value} onChange={props.onChange} snapshot={snapshot} className={props.className} />
+  )
 }
 
 function MetricConfigInner(props: {
@@ -67,9 +79,9 @@ function MetricConfigInner(props: {
       [id: string]: Metric
     }
   ): void
+  snapshot: Snapshot
   className?: string
 }) {
-  const snapshot = useSnapshot(props.value.content?.snapshotId)
   const [activeMetric, setActiveMetric] = useState<string>()
   const ref = useRef<HTMLDivElement>(null)
   const dimensions = useDimensions(ref, 0)
@@ -79,10 +91,10 @@ function MetricConfigInner(props: {
   }, [props.value.content?.metrics])
   const fields = useMemo(
     () =>
-      snapshot?.data.fields
+      props.snapshot.data.fields
         .filter((field) => field.sqlType)
         .map((field) => ({ name: field.name, type: field.sqlType! })),
-    [snapshot?.data.fields]
+    [props.snapshot.data.fields]
   )
   const { onChange } = props
   useEffect(() => {
@@ -223,13 +235,11 @@ function MetricConfigInner(props: {
           padding: 20px;
         `}
       >
-        {snapshot?.data ? (
-          <table.Diagram
-            dimensions={dimensions}
-            config={table.initializeConfig(snapshot.data, {})}
-            data={snapshot?.data}
-          />
-        ) : null}
+        <table.Diagram
+          dimensions={dimensions}
+          config={table.initializeConfig(props.snapshot.data, {})}
+          data={props.snapshot.data}
+        />
       </div>
     </div>
   )

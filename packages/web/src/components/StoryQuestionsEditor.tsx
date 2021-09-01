@@ -37,7 +37,7 @@ import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useCreateSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
-import { Editor } from '@app/types'
+import { Editor, Snapshot } from '@app/types'
 import { blockIdGenerator, DEFAULT_TITLE, DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import MonacoEditor from '@monaco-editor/react'
@@ -1160,7 +1160,7 @@ const QueryEditorSideTabs: React.FC<{
           />
         </Tippy>
       )}
-      {queryBlockType === Editor.BlockType.QueryBuilder ? null : (
+      {queryBlockType === Editor.BlockType.SQL ? (
         <Tippy content="Query builder" arrow={false} singleton={target}>
           <IconButton
             icon={IconCommonDataAsset}
@@ -1175,7 +1175,7 @@ const QueryEditorSideTabs: React.FC<{
             }}
           />
         </Tippy>
-      )}
+      ) : null}
     </div>
   )
 }
