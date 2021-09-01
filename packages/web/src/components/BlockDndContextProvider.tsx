@@ -18,7 +18,6 @@ import {
   useSensors
 } from '@dnd-kit/core'
 import { css } from '@emotion/css'
-import _ from 'lodash'
 import React, { memo, ReactNode, useCallback, useRef, useState } from 'react'
 import ReactTestUtils from 'react-dom/test-utils'
 import invariant from 'tiny-invariant'
@@ -220,26 +219,29 @@ const _TelleryDNDContext: React.FC<{
     [setDroppingArea, snapshot]
   )
 
-  const handleDragStart = useCallback((event: DragStartEvent) => {
-    setIsDragging(true)
-    const data = event.active.data.current as DndItemDataType
-    logger('drag start', event)
-    if (!data) return
-    if (data.type === DnDItemTypes.Block) {
-      setPreviewData(<ContentBlocks blockIds={[data.originalBlockId]} readonly parentType={Editor.BlockType.Story} />)
-    } else if (data.type === DnDItemTypes.BlockIds) {
-      setPreviewData(<ContentBlocks blockIds={data.ids} readonly parentType={Editor.BlockType.Story} />)
-    } else {
-      setPreviewData(
-        <div
-          className={css`
-            width: 10px;
-            height: 10px;
-          `}
-        ></div>
-      )
-    }
-  }, [])
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      setIsDragging(true)
+      const data = event.active.data.current as DndItemDataType
+      logger('drag start', event)
+      if (!data) return
+      if (data.type === DnDItemTypes.Block) {
+        setPreviewData(<ContentBlocks blockIds={[data.originalBlockId]} readonly parentType={Editor.BlockType.Story} />)
+      } else if (data.type === DnDItemTypes.BlockIds) {
+        setPreviewData(<ContentBlocks blockIds={data.ids} readonly parentType={Editor.BlockType.Story} />)
+      } else {
+        setPreviewData(
+          <div
+            className={css`
+              width: 10px;
+              height: 10px;
+            `}
+          ></div>
+        )
+      }
+    },
+    [setIsDragging, setPreviewData]
+  )
   return (
     <DndContext
       collisionDetection={closetBorder}

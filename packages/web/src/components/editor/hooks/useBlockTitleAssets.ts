@@ -10,7 +10,7 @@ export const useBlockTitleAssets = (storyId: string, blockId: string) => {
     if (recoilValue.state === 'hasValue' && recoilValue.contents !== cachedContent) {
       setCachedContent(recoilValue.contents)
     }
-  })
+  }, [cachedContent, recoilValue.contents, recoilValue.state])
 
   return cachedContent
 }

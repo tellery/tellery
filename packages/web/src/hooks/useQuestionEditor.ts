@@ -91,7 +91,7 @@ export const useCleanQuestionEditorHandler = (storyId: string) => {
         })
       }
     },
-    []
+    [storyId]
   )
 
   return handler

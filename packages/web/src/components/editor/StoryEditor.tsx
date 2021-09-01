@@ -183,7 +183,7 @@ const useEditorClipboardManager = (
       doCut,
       doCopy
     }),
-    []
+    [doCopy, doCut]
   )
 }
 

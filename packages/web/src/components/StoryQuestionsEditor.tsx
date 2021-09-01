@@ -559,11 +559,7 @@ export const StoryQuestionEditor: React.FC<{
     } else {
       return undefined
     }
-  }, [
-    (block as Editor.VisualizationBlock)?.content?.visualization,
-    questionBlockState?.draft?.visConfig,
-    snapshot?.data
-  ])
+  }, [block, questionBlockState?.draft?.visConfig, snapshot?.data])
 
   const setVisConfig = useCallback<
     (config: Config<Type> | undefined | ((config: Config<Type> | undefined) => Config<Type> | undefined)) => void
@@ -586,7 +582,7 @@ export const StoryQuestionEditor: React.FC<{
         }
       })
     },
-    [(block as Editor.VisualizationBlock).content?.visualization, id, setQuestionBlocksMap, visualizationConfig]
+    [block, id, setQuestionBlocksMap, visualizationConfig]
   )
 
   useEffect(() => {
