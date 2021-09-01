@@ -20,12 +20,21 @@ export const useStoryPermissions = (storyId: string) => {
     })
   }, [permissons, user])
 
+  const isPrivate = useMemo(() => {
+    return (
+      !!permissons?.some((permission) => {
+        return permission.type === 'workspace'
+      }) === false
+    )
+  }, [permissons])
+
   return useMemo(
     () => ({
       canWrite,
       locked,
-      readonly: !canWrite || locked
+      readonly: !canWrite || locked,
+      isPrivate: isPrivate
     }),
-    [canWrite, locked]
+    [canWrite, locked, isPrivate]
   )
 }

@@ -788,25 +788,17 @@ export const MoreDropdownSelect: React.FC<{
           display: flex;
           align-items: center;
           justify-content: center;
+          outline: none;
+          border: none;
+          border-radius: 4px;
+          font-size: 16px;
+          font-weight: 500;
+          padding: 0;
+          cursor: pointer;
+          background: transparent;
         `}
       >
-        <IconButton
-          icon={IconCommonMore}
-          color={ThemingVariables.colors.gray[5]}
-          className={cx(
-            css`
-              outline: none;
-              border: none;
-              border-radius: 4px;
-              font-size: 16px;
-              font-weight: 500;
-              padding: 0;
-              cursor: pointer;
-              background: transparent;
-            `,
-            className
-          )}
-        />
+        <IconCommonMore color={ThemingVariables.colors.gray[5]} />
       </MenuButton>
 
       <AnimatePresence>

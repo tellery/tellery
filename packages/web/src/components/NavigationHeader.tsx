@@ -4,7 +4,8 @@ import {
   IconCommonStar,
   IconCommonStarFill,
   IconMenuFullWidth,
-  IconMenuNormalWidth
+  IconMenuNormalWidth,
+  IconMenuShow
 } from '@app/assets/icons'
 import { createTranscation } from '@app/context/editorTranscations'
 import { useWorkspaceView } from '@app/hooks/api'
@@ -15,7 +16,7 @@ import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
 import { ThemingVariables } from '@app/styles'
 import type { Story } from '@app/types'
 import { css } from '@emotion/css'
-import Tippy from '@tippyjs/react/headless'
+import Tippy from '@tippyjs/react'
 import { dequal } from 'dequal'
 import React, { memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -31,7 +32,6 @@ export const _NavigationHeader = (props: {
   pinned?: boolean
   format: Story['format']
 }) => {
-  const locked = !!props.format?.locked
   const { data: workspaceView, refetch: refetchWorkspaceView } = useWorkspaceView()
   const commit = useCommit()
   const blockTranscation = useBlockTranscations()
@@ -54,19 +54,35 @@ export const _NavigationHeader = (props: {
 
   return (
     <>
-      {locked && (
-        <span
-          className={css`
-            display: inline-flex;
-            flex: 0 0;
-            align-items: center;
-            justify-self: flex-start;
-            margin-right: 10px;
-          `}
-        >
-          <IconCommonLock />
-          locked
-        </span>
+      {permissions.locked && (
+        <Tippy content="Locked" placement="bottom" delay={500}>
+          <span
+            className={css`
+              display: inline-flex;
+              flex: 0 0;
+              align-items: center;
+              justify-self: flex-start;
+              margin-right: 10px;
+            `}
+          >
+            <IconCommonLock />
+          </span>
+        </Tippy>
+      )}
+      {permissions.isPrivate && (
+        <Tippy content="Private" placement="bottom" delay={500}>
+          <span
+            className={css`
+              display: inline-flex;
+              flex: 0 0;
+              align-items: center;
+              justify-self: flex-start;
+              margin-right: 10px;
+            `}
+          >
+            <IconMenuShow />
+          </span>
+        </Tippy>
       )}
       <div
         className={css`

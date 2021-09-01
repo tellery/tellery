@@ -21,6 +21,7 @@ import { ThemingVariables } from '@app/styles'
 import type { Permission, PermissionEntityRole, Story } from '@app/types'
 import { blockIdGenerator } from '@app/utils'
 import { css, cx } from '@emotion/css'
+import Tippy from '@tippyjs/react'
 import copy from 'copy-to-clipboard'
 import dayjs from 'dayjs'
 import { AnimationControls, motion, MotionStyle } from 'framer-motion'
@@ -34,6 +35,14 @@ const upsertPermission = (permissions: Permission[], permission: Permission): Pe
   )
 
   return [...filteredPermission, permission]
+}
+
+const removePermission = (permissions: Permission[], permission: Permission): Permission[] => {
+  const filteredPermission = permissions.filter(
+    (oldPermission) => (oldPermission.type === permission.type && oldPermission.id === permission.id) === false
+  )
+
+  return filteredPermission
 }
 
 export const StoryConfigPopOver: React.FC<{
@@ -51,24 +60,37 @@ export const StoryConfigPopOver: React.FC<{
   const permissions = useStoryPermissions(story.id)
 
   const setWorkspacePermission = useCallback(
-    async (role: PermissionEntityRole) => {
+    async (role: PermissionEntityRole | null) => {
       if (!permissions.canWrite) {
         return
       }
       if (!user) return
-      const newPermissions = upsertPermission(
-        upsertPermission(story?.permissions ?? [], {
-          role,
-          type: 'workspace'
-        } as Permission),
-        {
-          role: 'manager',
-          id: user.id,
-          type: 'user'
-        } as Permission
-      )
-
-      await blockTranscation.updateBlockPermissions(story.id, newPermissions)
+      if (role) {
+        const newPermissions = upsertPermission(
+          upsertPermission(story?.permissions ?? [], {
+            role,
+            type: 'workspace'
+          } as Permission),
+          {
+            role: 'manager',
+            id: user.id,
+            type: 'user'
+          } as Permission
+        )
+        await blockTranscation.updateBlockPermissions(story.id, newPermissions)
+      } else {
+        const newPermissions = upsertPermission(
+          removePermission(story?.permissions ?? [], {
+            type: 'workspace'
+          } as Permission),
+          {
+            role: 'manager',
+            id: user.id,
+            type: 'user'
+          } as Permission
+        )
+        await blockTranscation.updateBlockPermissions(story.id, newPermissions)
+      }
     },
     [blockTranscation, story.id, story?.permissions, user, permissions]
   )
@@ -103,6 +125,11 @@ export const StoryConfigPopOver: React.FC<{
   const readOnlyStatus = !!story?.permissions?.some((permission) => {
     return permission.type === 'workspace' && permission.role === 'commentator'
   })
+
+  const privateStatus =
+    !!story?.permissions?.some((permission) => {
+      return permission.type === 'workspace'
+    }) === false
 
   return (
     <motion.div
@@ -168,6 +195,19 @@ export const StoryConfigPopOver: React.FC<{
           }}
           side={<FormSwitch checked={readOnlyStatus} readOnly disabled={!permissions.canWrite} />}
         />
+      )}
+      {permissions.canWrite && story.createdById === user.id && (
+        <Tippy content="Only you can view or edit this story" placement="left" delay={500} arrow={false}>
+          <MenuItem
+            icon={<IconMenuShow color={ThemingVariables.colors.text[0]} />}
+            title="Private"
+            onClick={(e) => {
+              e.preventDefault()
+              setWorkspacePermission(privateStatus ? 'manager' : null)
+            }}
+            side={<FormSwitch checked={privateStatus} readOnly disabled={!permissions.canWrite} />}
+          />
+        </Tippy>
       )}
 
       {env.DEV && (
