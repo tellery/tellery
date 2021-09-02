@@ -13,6 +13,8 @@ val jgitVersion: String by project
 val kotestVersion: String by project
 val koinVersion: String by project
 val ktormVersion: String by project
+val testContainerVersion: String by project
+val mockkVersion: String by project
 
 repositories {
     jcenter()
@@ -81,8 +83,8 @@ dependencies {
     testImplementation("io.kotest:kotest-property:$kotestVersion")
     testImplementation("io.kotest:kotest-framework-datatest:$kotestVersion")
     testImplementation("io.kotest.extensions:kotest-extensions-testcontainers:1.0.1")
-    testImplementation("io.mockk:mockk:1.12.0")
-    testImplementation("org.testcontainers:postgresql:1.15.1")
+    testImplementation("io.mockk:mockk:$mockkVersion")
+    testImplementation("org.testcontainers:postgresql:$testContainerVersion")
 }
 
 

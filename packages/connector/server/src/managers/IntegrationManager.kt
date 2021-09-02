@@ -1,6 +1,6 @@
 package io.tellery.managers
 
-import annotations.Integration
+import io.tellery.annotations.Integration
 import io.tellery.integrations.BaseIntegration
 import io.tellery.utils.allSubclasses
 import mu.KotlinLogging

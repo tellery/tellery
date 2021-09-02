@@ -1,15 +1,16 @@
 package io.tellery
 
-import io.grpc.*
+import io.grpc.Server
+import io.grpc.ServerBuilder
 import io.grpc.protobuf.services.ProtoReflectionService
-import io.grpc.util.*
-import io.tellery.common.*
+import io.grpc.util.TransmitStatusRuntimeExceptionInterceptor
+import io.tellery.common.ConfigManager
+import io.tellery.common.ConnectorManager
 import io.tellery.common.dbt.DbtManager
-import io.tellery.services.*
-import mu.*
-import org.koin.core.context.startKoin
-import org.koin.core.logger.Level
-import java.io.*
+import io.tellery.services.ConnectorService
+import io.tellery.services.DbtService
+import mu.KotlinLogging
+import java.io.File
 
 
 class ConnectorServer(
@@ -70,11 +71,6 @@ class ConnectorServer(
 }
 
 fun main() {
-    startKoin {
-        printLogger(Level.ERROR)
-        modules(Modules.providesAppModule())
-    }
-
     ConnectorManager.init()
     DbtManager.initDbtWorkspace()
     val server = ConnectorServer(50051)

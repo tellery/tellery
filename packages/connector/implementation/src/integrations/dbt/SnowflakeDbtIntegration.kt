@@ -3,7 +3,7 @@ package io.tellery.integrations
 import io.tellery.connectors.fields.SnowflakeFields
 import io.tellery.entities.NewProfile
 
-@Type("Snowflake")
+@DbtIntegrationType("Snowflake")
 class SnowflakeDbtIntegration : DbtIntegration() {
 
     override fun transformToDbtProfile(profile: NewProfile): BaseDbtProfile {
