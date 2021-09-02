@@ -1,18 +1,20 @@
 import { dequal } from 'dequal'
-import { useState, useEffect } from 'react'
-import { useRecoilValue, useRecoilValueLoadable } from 'recoil'
+import { useEffect, useState } from 'react'
+import { useRecoilValueLoadable } from 'recoil'
 import { BlockTitleAssetsAtoms } from '../store/blockTitle'
 
 export const useBlockTitleAssets = (storyId: string, blockId: string) => {
   const [cachedContent, setCachedContent] = useState<any>(null)
-  const recoilValue = useRecoilValue(BlockTitleAssetsAtoms({ storyId, blockId }))
+  const recoilValue = useRecoilValueLoadable(BlockTitleAssetsAtoms({ storyId, blockId }))
   useEffect(() => {
-    setCachedContent((oldContent: any) => {
-      if (dequal(oldContent, recoilValue)) {
-        return oldContent
-      }
-      return recoilValue
-    })
+    if (recoilValue.state === 'hasValue') {
+      setCachedContent((oldContent: any) => {
+        if (dequal(oldContent, recoilValue.contents)) {
+          return oldContent
+        }
+        return recoilValue.contents
+      })
+    }
   }, [recoilValue])
 
   return cachedContent
