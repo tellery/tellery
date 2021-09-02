@@ -3,7 +3,7 @@ import dayjs from 'dayjs'
 import { take } from 'lodash'
 import React, { CSSProperties, useRef } from 'react'
 import { IconCommonStar, IconCommonStarFill, IconMenuDelete } from '@app/assets/icons'
-import { BlockTitle, useGetBlockTitleTextSnapshot } from '@app/components/editor'
+import { useGetBlockTitleTextSnapshot } from '@app/components/editor'
 import { ThemingVariables } from '@app/styles'
 import type { Editor, UserInfo } from '@app/types'
 import { Link } from 'react-router-dom'
@@ -31,7 +31,6 @@ export function StoryListItem(props: {
 }) {
   const relatedStoriesLength = props.large ? 3 : 2
   const ref = useRef<HTMLDivElement>(null)
-
   const getBlockTitle = useGetBlockTitleTextSnapshot()
 
   return (
@@ -214,7 +213,7 @@ export function StoryListItem(props: {
                 `}
                 title={getBlockTitle(story)}
               >
-                <BlockTitle block={story} />
+                {getBlockTitle(story)}
               </Link>
             ))}
             {props.value.relatedStories.length > relatedStoriesLength ? (
