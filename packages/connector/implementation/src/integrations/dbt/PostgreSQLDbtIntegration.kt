@@ -3,7 +3,7 @@ package io.tellery.integrations
 import io.tellery.connectors.fields.PostgreSQLFields
 import io.tellery.entities.NewProfile
 
-@Type("PostgreSQL")
+@DbtIntegrationType("PostgreSQL")
 class PostgreSQLDbtIntegration : DbtIntegration() {
 
     override fun transformToDbtProfile(profile: NewProfile): PostgreSQLDbtProfile {

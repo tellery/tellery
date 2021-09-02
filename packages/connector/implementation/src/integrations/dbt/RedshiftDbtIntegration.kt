@@ -3,7 +3,7 @@ package io.tellery.integrations
 import io.tellery.connectors.fields.RedshiftFields
 import io.tellery.entities.NewProfile
 
-@Type("Redshift")
+@DbtIntegrationType("Redshift")
 class RedshiftDbtIntegration : DbtIntegration() {
 
     override fun transformToDbtProfile(profile: NewProfile): RedshiftDbtProfile {

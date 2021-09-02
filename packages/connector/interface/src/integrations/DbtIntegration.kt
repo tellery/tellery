@@ -1,9 +1,9 @@
 package io.tellery.integrations
 
-import annotations.Integration
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.tellery.annotations.Config
+import io.tellery.annotations.Integration
 import io.tellery.connectors.annotations.Dbt
 import io.tellery.entities.NewProfile
 
@@ -52,4 +52,4 @@ abstract class DbtIntegration : BaseIntegration() {
 @JsonInclude(JsonInclude.Include.NON_NULL)
 open class BaseDbtProfile(open val type: String)
 
-annotation class Type(val value: String)
+annotation class DbtIntegrationType(val value: String)

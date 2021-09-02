@@ -3,6 +3,7 @@ package io.tellery.common
 import io.grpc.Metadata
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
+import io.tellery.entities.CustomizedException
 import mu.KotlinLogging
 import java.sql.SQLException
 
@@ -42,13 +43,9 @@ fun errorWrapper(e: Exception, decoratedName: String): StatusRuntimeException {
     }
 }
 
-fun assertInternalError(value: Boolean) {
-    assertInternalError(value) { "Assertion failed" }
-}
-
 fun assertInternalError(value: Boolean, lazyMessage: () -> String) {
     if (!value) {
         val message = lazyMessage()
-        throw RuntimeException(message)
+        throw CustomizedException(message)
     }
 }
