@@ -125,7 +125,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
   const blockTitleAssets = useBlockTitleAssets(block.storyId!, block.id)
 
   useEffect(() => {
-    if (!isComposing.current && titleTokens) {
+    if (!isComposing.current) {
       const targetHtml = tokensRenderer(titleTokens, blockTitleAssets ?? {})
       setLeavesHtml(targetHtml)
     }

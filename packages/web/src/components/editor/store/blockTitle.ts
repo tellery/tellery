@@ -1,5 +1,6 @@
 import { TelleryBlockAtom } from '@app/store/block'
-import { selectorFamily } from 'recoil'
+import { Editor } from '@app/types'
+import { noWait, selectorFamily } from 'recoil'
 import { extractEntitiesFromToken } from '..'
 import { VariableAtomFamily } from './variables'
 
@@ -8,23 +9,32 @@ export const BlockTitleAssetsAtoms = selectorFamily<Record<string, any>, { block
   get:
     ({ blockId, storyId }) =>
     async ({ get }) => {
-      const block = get(TelleryBlockAtom(blockId))
-      const titleTokens = block.content?.title ?? []
       const result: Record<string, any> = {}
+      const blockLoadable = get(noWait(TelleryBlockAtom(blockId)))
+      if (blockLoadable.state === 'hasValue' && blockLoadable.contents) {
+        const block = blockLoadable.contents as Editor.Block
+        const titleTokens = block.content?.title ?? []
 
-      for (const token of titleTokens) {
-        const entity = extractEntitiesFromToken(token)
-        if (entity.reference) {
-          const referenceEntity = entity.reference
-          if (referenceEntity[1] === 's') {
-            const blockId = referenceEntity[2] as string
-            const block = get(TelleryBlockAtom(blockId))
-            result[blockId] = block
+        for (const token of titleTokens) {
+          const entity = extractEntitiesFromToken(token)
+          if (entity.reference) {
+            const referenceEntity = entity.reference
+            if (referenceEntity[1] === 's') {
+              const referenceBlockId = referenceEntity[2] as string
+              const referenceBlockLoadable = get(noWait(TelleryBlockAtom(referenceBlockId)))
+              if (referenceBlockLoadable.state === 'hasValue' && referenceBlockLoadable.contents) {
+                const referenceBlock = referenceBlockLoadable.contents
+                result[referenceBlockId] = referenceBlock
+              }
+            }
+          } else if (entity.formula) {
+            const formula = entity.formula[1] as string
+            const formulaResultLoadable = get(noWait(VariableAtomFamily({ storyId: storyId, formula })))
+            if (formulaResultLoadable.state === 'hasValue' && formulaResultLoadable.contents) {
+              const formulaResult = formulaResultLoadable.contents
+              result[formula] = formulaResult
+            }
           }
-        } else if (entity.formula) {
-          const formula = entity.formula[1] as string
-          const formulaResult = get(VariableAtomFamily({ storyId: storyId, formula }))
-          result[formula] = formulaResult
         }
       }
       return result
