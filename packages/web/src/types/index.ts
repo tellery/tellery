@@ -62,19 +62,12 @@ export type Metric = {
     }
 )
 
-type Dimension = {
+export type Dimension = {
   name: string
-} & (
-  | {
-      fieldName: string
-      fieldType: string
-      func?: string
-      args?: string[]
-    }
-  | {
-      rawSql: string
-    }
-)
+  fieldName: string
+  fieldType: string
+  func?: string
+}
 
 export namespace Editor {
   export enum InlineType {

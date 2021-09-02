@@ -7,10 +7,12 @@ import {
   IconCommonDownstream,
   IconCommonError,
   IconCommonLock,
+  IconCommonDataAssetSetting,
   IconCommonRun,
   IconCommonSave,
   IconCommonSql,
-  IconVisualizationSetting
+  IconVisualizationSetting,
+  IconCommonMetrics
 } from '@app/assets/icons'
 import { SQLEditor } from '@app/components/SQLEditor'
 import { Configuration } from '@app/components/v11n'
@@ -20,7 +22,8 @@ import {
   useConnectorsListProfiles,
   useExecuteSQL,
   useQuestionDownstreams,
-  useSnapshot
+  useSnapshot,
+  useTranslateSmartQuery
 } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
 import { useLocalStorage } from '@app/hooks/useLocalStorage'
@@ -37,8 +40,8 @@ import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useCreateSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
-import { Editor } from '@app/types'
-import { blockIdGenerator, DEFAULT_TIPPY_DELAY, DEFAULT_TITLE, DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
+import { Dimension, Editor, Metric } from '@app/types'
+import { blockIdGenerator, DEFAULT_TITLE, DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import MonacoEditor from '@monaco-editor/react'
 import Tippy from '@tippyjs/react'
@@ -61,8 +64,9 @@ import { ContentEditablePureText } from './editor/BlockBase/ContentEditablePureT
 import { isExecuteableBlockType } from './editor/Blocks/utils'
 import type { SetBlock } from './editor/types'
 import IconButton from './kit/IconButton'
-import MetricConfig from './MetricConfig'
+import QueryBuilderConfig from './QueryBuilderConfig'
 import QuestionDownstreams from './QuestionDownstreams'
+import SmartQueryConfig from './SmartQueryConfig'
 import { TippySingletonContextProvider } from './TippySingletonContextProvider'
 import { charts } from './v11n/charts'
 import { Config, Type } from './v11n/types'
@@ -72,7 +76,10 @@ const DragConstraints = {
   bottom: -300
 }
 
-const updateOldDraft = (oldDraft?: EditorDraft, block?: Editor.QueryBlock | Editor.VisualizationBlock) => {
+const updateOldDraft = (
+  oldDraft?: EditorDraft,
+  block?: Editor.QueryBlock | Editor.VisualizationBlock | Editor.QueryBuilder | Editor.SmartQueryBlock
+) => {
   if (!oldDraft) return undefined
 
   const updatedDraft = emitFalsyObject({
@@ -84,7 +91,21 @@ const updateOldDraft = (oldDraft?: EditorDraft, block?: Editor.QueryBlock | Edit
         ? oldDraft.visConfig
         : undefined,
     snapshotId:
-      oldDraft.snapshotId !== (block as Editor.QueryBlock)?.content?.snapshotId ? oldDraft.snapshotId : undefined
+      oldDraft.snapshotId !== (block as Editor.QueryBlock)?.content?.snapshotId ? oldDraft.snapshotId : undefined,
+    fields:
+      dequal(oldDraft.fields, (block as Editor.QueryBuilder).content?.fields) === false ? oldDraft.fields : undefined,
+    metrics:
+      dequal(oldDraft.metrics, (block as Editor.QueryBuilder).content?.metrics) === false
+        ? oldDraft.metrics
+        : undefined,
+    metricIds:
+      dequal(oldDraft.metricIds, (block as Editor.SmartQueryBlock).content?.metricIds) === false
+        ? oldDraft.metricIds
+        : undefined,
+    dimensions:
+      dequal(oldDraft.dimensions, (block as Editor.SmartQueryBlock).content?.dimensions) === false
+        ? oldDraft.dimensions
+        : undefined
   })
 
   return updatedDraft
@@ -482,7 +503,6 @@ export const StoryQuestionEditor: React.FC<{
   const [questionBlocksMap, setQuestionBlocksMap] = useQuestionEditorBlockMapState(storyId)
   const [sqlSidePanel, setSqlSidePanel] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  const [open, setOpen] = useQuestionEditorOpenState(storyId)
 
   const questionBlockState = useMemo(() => {
     if (id && questionBlocksMap && questionBlocksMap[id]) {
@@ -527,11 +547,20 @@ export const StoryQuestionEditor: React.FC<{
   const isDraftSql = !!questionBlockState?.draft?.sql
   const isDraft = !!questionBlockState?.draft
   const originalSQL = (queryBlock as Editor.SQLBlock)?.content?.sql
-  const sql = questionBlockState?.draft?.sql ?? originalSQL ?? ''
   const snapShotId = questionBlockState?.draft?.snapshotId ?? queryBlock?.content?.snapshotId
   const queryTitle = questionBlockState?.draft?.title ?? queryBlock?.content?.title
   const fields = questionBlockState?.draft?.fields ?? (queryBlock as Editor.QueryBuilder)?.content?.fields
   const metrics = questionBlockState?.draft?.metrics ?? (queryBlock as Editor.QueryBuilder)?.content?.metrics
+  const metricIds = questionBlockState?.draft?.metricIds ?? (queryBlock as Editor.SmartQueryBlock)?.content?.metricIds
+  const dimensions =
+    questionBlockState?.draft?.dimensions ?? (queryBlock as Editor.SmartQueryBlock)?.content?.dimensions
+  const { data: sql = questionBlockState?.draft?.sql ?? originalSQL ?? '' } = useTranslateSmartQuery(
+    queryBlock.type === Editor.BlockType.SmartQuery
+      ? (queryBlock as Editor.SmartQueryBlock).content.queryBuilderId
+      : undefined,
+    metricIds,
+    dimensions
+  )
 
   const snapshot = useSnapshot(snapShotId)
 
@@ -583,8 +612,8 @@ export const StoryQuestionEditor: React.FC<{
     [id, originalSQL, setQuestionBlocksMap]
   )
 
-  const setMetricContent = useCallback(
-    (fields, metrics) => {
+  const setQueryBuilderContent = useCallback(
+    (fields: { name: string; type: string }[], metrics: { [id: string]: Metric }) => {
       setQuestionBlocksMap((blocksMap) => {
         return {
           ...blocksMap,
@@ -596,6 +625,31 @@ export const StoryQuestionEditor: React.FC<{
                 dequal(fields, (queryBlock as Editor.QueryBuilder).content?.fields) === false ? fields : undefined,
               metrics:
                 dequal(metrics, (queryBlock as Editor.QueryBuilder).content?.metrics) === false ? metrics : undefined
+            })
+          }
+        }
+      })
+    },
+    [id, setQuestionBlocksMap, queryBlock]
+  )
+
+  const setSmartQueryContent = useCallback(
+    (metricIds?: string[], dimensions?: Dimension[]) => {
+      setQuestionBlocksMap((blocksMap) => {
+        return {
+          ...blocksMap,
+          [id]: {
+            ...blocksMap[id],
+            draft: emitFalsyObject({
+              ...blocksMap[id].draft,
+              metricIds:
+                dequal(metricIds, (queryBlock as Editor.SmartQueryBlock).content?.metricIds) === false
+                  ? metricIds
+                  : undefined,
+              dimensions:
+                dequal(dimensions, (queryBlock as Editor.SmartQueryBlock).content?.dimensions) === false
+                  ? dimensions
+                  : undefined
             })
           }
         }
@@ -704,14 +758,22 @@ export const StoryQuestionEditor: React.FC<{
         ;(draftBlock as Editor.QueryBuilder).content!.fields = fields
         ;(draftBlock as Editor.QueryBuilder).content!.metrics = metrics
       }
+      if (fields?.length && Object.keys(metrics || {}).length) {
+        draftBlock.type = Editor.BlockType.QueryBuilder
+      }
+
+      if (draftBlock.type === Editor.BlockType.SmartQuery) {
+        ;(draftBlock as Editor.SmartQueryBlock).content!.metricIds = metricIds
+        ;(draftBlock as Editor.SmartQueryBlock).content!.dimensions = dimensions
+      }
+      if (metricIds?.length && dimensions?.length) {
+        draftBlock.type = Editor.BlockType.SmartQuery
+      }
+
       draftBlock.content!.snapshotId = snapShotId
       draftBlock.content!.error = null
       draftBlock.content!.title = queryTitle ?? []
       draftBlock.content!.lastRunAt = Date.now()
-
-      if (fields?.length && Object.keys(metrics || {}).length) {
-        draftBlock.type = Editor.BlockType.QueryBuilder
-      }
     })
     setVisualizationBlock(block.id, (draftBlock) => {
       draftBlock.content!.visualization = visualizationConfig
@@ -723,11 +785,13 @@ export const StoryQuestionEditor: React.FC<{
     setSqlBlock,
     queryBlock.id,
     setVisualizationBlock,
-    sql,
     snapShotId,
     queryTitle,
     fields,
     metrics,
+    sql,
+    metricIds,
+    dimensions,
     visualizationConfig
   ])
 
@@ -878,7 +942,8 @@ export const StoryQuestionEditor: React.FC<{
     readonly ||
     queryBlock.type === Editor.BlockType.SnapshotBlock ||
     !!(visualizationBlock && queryBlock.storyId !== visualizationBlock?.storyId) ||
-    queryBlock.type === Editor.BlockType.QueryBuilder
+    queryBlock.type === Editor.BlockType.QueryBuilder ||
+    queryBlock.type === Editor.BlockType.SmartQuery
 
   return (
     <TabPanel
@@ -1101,9 +1166,22 @@ export const StoryQuestionEditor: React.FC<{
           />
         )}
         {mode === 'QUERY_BUILDER' && (
-          <MetricConfig
-            value={queryBlock}
-            onChange={setMetricContent}
+          <QueryBuilderConfig
+            snapshotId={snapShotId}
+            type={queryBlock.type}
+            metrics={metrics}
+            onChange={setQueryBuilderContent}
+            className={css`
+              flex: 1;
+            `}
+          />
+        )}
+        {mode === 'SMART_QUERY' && (
+          <SmartQueryConfig
+            queryBuilderId={(queryBlock as Editor.SmartQueryBlock).content.queryBuilderId}
+            metricIds={metricIds}
+            dimensions={dimensions}
+            onChange={setSmartQueryContent}
             className={css`
               flex: 1;
             `}
@@ -1194,10 +1272,23 @@ const QueryEditorSideTabs: React.FC<{
             }}
           />
         )}
-        {queryBlockType === Editor.BlockType.QueryBuilder ? null : (
+        {queryBlockType === Editor.BlockType.SmartQuery ? (
+          <IconButton
+            icon={IconCommonMetrics}
+            className={css`
+              &::after {
+                display: ${mode === 'SMART_QUERY' ? 'visible' : 'none'};
+              }
+            `}
+            color={mode === 'SMART_QUERY' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
+            onClick={() => {
+              setMode('SMART_QUERY')
+            }}
+          />
+        ) : (
           <IconButton
             hoverContent="Query builder"
-            icon={IconCommonDataAsset}
+            icon={IconCommonDataAssetSetting}
             className={css`
               &::after {
                 display: ${mode === 'QUERY_BUILDER' ? 'visible' : 'none'};

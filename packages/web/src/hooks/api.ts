@@ -14,7 +14,7 @@ import {
 import { isDataAssetBlock } from '@app/components/editor/Blocks/utils'
 import { useAsync } from '@app/hooks'
 import { useWorkspace } from '@app/hooks/useWorkspace'
-import type { AvailableConfig, BackLinks, ProfileConfig, Story, UserInfo, Workspace } from '@app/types'
+import type { AvailableConfig, BackLinks, Dimension, ProfileConfig, Story, UserInfo, Workspace } from '@app/types'
 import { Editor } from '@app/types'
 import { queryClient } from '@app/utils'
 import { compact } from 'lodash'
@@ -672,7 +672,7 @@ export const useGetProfileSpec = () => {
     tokenizer: string
     type: string
   }>(
-    ['connector', 'getProfileSpec', workspace.preferences.connectorId, workspace.id],
+    ['connector', 'getProfileSpec', workspace.id, workspace.preferences.connectorId, workspace.preferences.profile],
     () =>
       request
         .post('/api/connectors/getProfileSpec', {
@@ -682,6 +682,29 @@ export const useGetProfileSpec = () => {
         })
         .then((res) => res.data),
     { enabled: !!workspace.preferences.connectorId && !!workspace.preferences.profile }
+  )
+}
+
+export function useTranslateSmartQuery(
+  queryBuilderId?: string,
+  metricIds: string[] = [],
+  dimensions: Dimension[] = []
+) {
+  const workspace = useWorkspace()
+  return useQuery<string>(
+    ['connectors', 'translateSmartQuery', workspace.id, queryBuilderId, ...metricIds, JSON.stringify(dimensions)],
+    () =>
+      request
+        .post('/api/connectors/translateSmartQuery', {
+          workspaceId: workspace.id,
+          connectorId: workspace.preferences.connectorId,
+          profile: workspace.preferences.profile,
+          queryBuilderId,
+          metricIds,
+          dimensions
+        })
+        .then((res) => res.data.sql),
+    { enabled: !!queryBuilderId }
   )
 }
 

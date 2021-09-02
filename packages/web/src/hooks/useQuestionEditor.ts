@@ -1,5 +1,5 @@
 import { Config, Type } from '@app/components/v11n/types'
-import { Editor, Metric } from '@app/types'
+import { Dimension, Editor, Metric } from '@app/types'
 import { useMemo } from 'react'
 import { useIsMutating } from 'react-query'
 // eslint-disable-next-line camelcase
@@ -10,7 +10,7 @@ import { atomFamily, useRecoilCallback, useRecoilState, useRecoilTransaction_UNS
 //   open: (arg: { mode: Mode }) => Promise<void>
 // }
 
-export type QueryEditorMode = 'SQL' | 'VIS' | 'DOWNSTREAM' | 'QUERY_BUILDER'
+export type QueryEditorMode = 'SQL' | 'VIS' | 'DOWNSTREAM' | 'QUERY_BUILDER' | 'SMART_QUERY'
 
 export interface EditorDraft {
   sql?: string
@@ -21,6 +21,8 @@ export interface EditorDraft {
   metrics?: {
     [id: string]: Metric
   }
+  metricIds?: string[]
+  dimensions?: Dimension[]
   visConfig?: Config<Type>
   snapshotId?: string
   title?: Editor.Token[]
@@ -31,7 +33,7 @@ type BlockDraft = Record<
   {
     storyId: string
     draft?: EditorDraft
-    mode: string
+    mode: QueryEditorMode
   }
 >
 
