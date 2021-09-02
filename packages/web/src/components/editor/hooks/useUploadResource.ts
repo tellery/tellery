@@ -1,8 +1,9 @@
-import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useBlockSuspense } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useEffect, useState } from 'react'
-import { atomFamily, useRecoilCallback, useRecoilState } from 'recoil'
+// eslint-disable-next-line camelcase
+import { atomFamily, useRecoilState, useRecoilTransaction_UNSTABLE } from 'recoil'
 import { uploadFilesAndUpdateBlocks } from '../DataFileType'
 
 const BlockFileResource = atomFamily<{ file: File; status: 'IDLE' | 'PENDING' | 'FAIL' } | null, string>({
@@ -43,7 +44,7 @@ export const useUploadResource = (blockId: string) => {
 }
 
 export const useSetUploadResource = () => {
-  const callback = useRecoilCallback(
+  const callback = useRecoilTransaction_UNSTABLE(
     ({ set }) =>
       ({ blockId, file }: { blockId: string; file: File }) => {
         set(BlockFileResource(blockId), { file: file, status: 'IDLE' })

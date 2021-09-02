@@ -49,7 +49,7 @@ dependencies {
     implementation("org.reflections:reflections:0.9.12")
     implementation("com.typesafe:config:1.4.1")
 
-    implementation("com.google.code.gson:gson:2.8.7")
+    implementation("com.google.code.gson:gson:2.8.8")
 
     implementation("io.grpc:grpc-protobuf:$grpcVersion")
     implementation("io.grpc:grpc-stub:$grpcVersion")

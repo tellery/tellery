@@ -1,30 +1,37 @@
 import {
-  IconCommonDbt,
-  IconCommonSql,
+  IconCommonAdd,
   IconCommonBackLink,
+  IconCommonDbt,
+  IconCommonLock,
   IconCommonMetrics,
-  IconCommonQuestion,
-  IconCommonLock
+  IconCommonSql
 } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
-import { useOpenStory } from '@app/hooks'
-import { useBlockSuspense, useSearchDBTBlocks, useSearchMetrics } from '@app/hooks/api'
+import { useBindHovering } from '@app/hooks'
+import { useBlockSuspense, useFetchStoryChunk, useSearchDBTBlocks, useSearchMetrics } from '@app/hooks/api'
+import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
+import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
 import { useStoryResources } from '@app/hooks/useStoryResources'
+import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
 import { ThemingVariables } from '@app/styles'
-import { Editor } from '@app/types'
+import { Editor, Story, Thought } from '@app/types'
 import { DndItemDataBlockType, DnDItemTypes } from '@app/utils/dnd'
 import { useDraggable } from '@dnd-kit/core'
 import { css, cx } from '@emotion/css'
+import styled from '@emotion/styled'
 import { Tab } from '@headlessui/react'
 import Tippy from '@tippyjs/react'
-import React, { Fragment, useMemo } from 'react'
+import { motion } from 'framer-motion'
+import React, { Fragment, memo, ReactNode, useCallback, useMemo } from 'react'
 import ContentLoader from 'react-content-loader'
 import { useTranslation } from 'react-i18next'
 import PerfectScrollbar from 'react-perfect-scrollbar'
-import { Link } from 'react-router-dom'
-import { useStoryPathParams } from '../hooks/useStoryPathParams'
+import { ReactEventHandlers } from 'react-use-gesture/dist/types'
 import { useGetBlockTitleTextSnapshot } from './editor'
-import { useQuestionEditor } from './StoryQuestionsEditor'
+import IconButton from './kit/IconButton'
+import { LazyTippy } from './LazyTippy'
+import { SideBarInspectQueryBlockPopover } from './SideBarInspectQueryBlockPopover'
+import { SideBarQueryItemDropdownMenu } from './SideBarQueryItemDropdownMenu'
 
 const SideBarLoader: React.FC = () => {
   return (
@@ -34,30 +41,27 @@ const SideBarLoader: React.FC = () => {
   )
 }
 
-const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
-  const block = useBlockSuspense(blockId)
-  const getBlockTitle = useGetBlockTitleTextSnapshot()
-  // const pushFocusedBlockIdState = usePushFocusedBlockIdState()
-  const questionEditor = useQuestionEditor()
-
+const _StoryDataAssetItemContentDraggable: React.FC<{
+  storyId: string
+  blockId: string
+  hoveringHandlers: (...args: any[]) => ReactEventHandlers
+  children: ReactNode
+}> = ({ hoveringHandlers, children, storyId, blockId }) => {
   const { attributes, listeners, setNodeRef } = useDraggable({
-    id: `drag-${block.id}`,
+    id: `drag-${blockId}`,
     data: {
       type: DnDItemTypes.Block,
-      originalBlockId: block.id,
+      originalBlockId: blockId,
       blockData: createEmptyBlock<Editor.VisualizationBlock>({
         type: Editor.BlockType.Visualization,
         storyId: storyId,
         parentId: storyId,
         content: {
-          dataAssetId: block.id
+          dataAssetId: blockId
         }
       })
     } as DndItemDataBlockType
   })
-
-  const openStory = useOpenStory()
-  const { t } = useTranslation()
 
   return (
     <div
@@ -65,7 +69,7 @@ const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ bl
         display: flex;
         align-items: center;
         cursor: pointer;
-        padding: 6px 16px;
+        padding: 6px 8px;
         margin-bottom: 5px;
         :hover {
           background: ${ThemingVariables.colors.primary[5]};
@@ -73,43 +77,47 @@ const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ bl
       `}
       {...listeners}
       {...attributes}
+      {...hoveringHandlers()}
       ref={setNodeRef}
-      onClick={() => {
-        if (block.storyId === storyId) {
-          questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
-        } else {
-          openStory(block.storyId!)
-        }
-        // pushFocusedBlockIdState(block.id, block.storyId)
-      }}
     >
-      {block.type === Editor.BlockType.SQL || block.type === Editor.BlockType.SnapshotBlock ? (
-        <IconCommonSql
-          color={ThemingVariables.colors.gray[0]}
-          className={css`
-            flex-shrink: 0;
-            margin-right: 8px;
-          `}
-        />
-      ) : null}
-      {block.type === Editor.BlockType.Metric ? (
-        <IconCommonMetrics
-          color={ThemingVariables.colors.gray[0]}
-          className={css`
-            flex-shrink: 0;
-            margin-right: 8px;
-          `}
-        />
-      ) : null}
-      {block.type === Editor.BlockType.DBT ? (
-        <IconCommonDbt
-          color={ThemingVariables.colors.gray[0]}
-          className={css`
-            flex-shrink: 0;
-            margin-right: 8px;
-          `}
-        />
-      ) : null}
+      {children}
+    </div>
+  )
+}
+
+const StoryDataAssetItemContentDraggable = memo(_StoryDataAssetItemContentDraggable)
+
+const StoryDataAssetItemContent: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
+  const block = useBlockSuspense(blockId)
+  const getBlockTitle = useGetBlockTitleTextSnapshot()
+
+  const { t } = useTranslation()
+  const IconType = useMemo(() => {
+    if (block.storyId !== storyId) {
+      return IconCommonBackLink
+    }
+    if (block.type === Editor.BlockType.SQL || block.type === Editor.BlockType.SnapshotBlock) {
+      return IconCommonSql
+    } else if (block.type === Editor.BlockType.Metric) {
+      return IconCommonMetrics
+    } else if (block.type === Editor.BlockType.DBT) {
+      return IconCommonDbt
+    }
+    return IconCommonSql
+  }, [block.storyId, block.type, storyId])
+
+  const [hoveringHandlers, isHovering] = useBindHovering()
+
+  return (
+    <StoryDataAssetItemContentDraggable hoveringHandlers={hoveringHandlers} storyId={storyId} blockId={blockId}>
+      <IconType
+        color={ThemingVariables.colors.gray[0]}
+        className={css`
+          flex-shrink: 0;
+          margin: 0 8px;
+        `}
+      />
+
       <span
         className={css`
           font-size: 12px;
@@ -123,21 +131,59 @@ const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ bl
       >
         {getBlockTitle(block)}
       </span>
-      {block.storyId !== storyId && (
-        <Tippy content={t`Click to navigate to the original story`} arrow={false} placement="right">
-          <Link to={`/story/${block.storyId}`}>
-            <IconCommonBackLink color={ThemingVariables.colors.gray[0]} width="16px" height="16px" />
-          </Link>
-        </Tippy>
+      <div
+        className={css`
+          > * + * {
+            margin-left: 16px;
+          }
+          display: flex;
+          align-items: center;
+        `}
+      >
+        {block.type === Editor.BlockType.SnapshotBlock && (
+          <Tippy content={t`Frozen data`} arrow={false} placement="right">
+            <div>
+              <IconCommonLock color={ThemingVariables.colors.text[0]} width="16px" height="16px" />
+            </div>
+          </Tippy>
+        )}
+        <SideBarQueryItemDropdownMenu block={block} storyId={storyId} show={isHovering} />
+      </div>
+    </StoryDataAssetItemContentDraggable>
+  )
+}
+
+const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
+  return <StoryDataAssetItemContent blockId={blockId} storyId={storyId} />
+}
+
+const StoryDataAssetItemWithInspectPopover: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
+  const tippyAnimation = useTippyMenuAnimation('fade')
+
+  return (
+    <LazyTippy
+      render={(attrs) => (
+        <motion.div animate={tippyAnimation.controls} {...attrs} transition={{ duration: 0.15 }}>
+          <SideBarInspectQueryBlockPopover blockId={blockId}></SideBarInspectQueryBlockPopover>
+        </motion.div>
       )}
-      {block.type === Editor.BlockType.SnapshotBlock && (
-        <Tippy content={t`Frozen data`} arrow={false} placement="right">
-          <div>
-            <IconCommonLock color={ThemingVariables.colors.gray[0]} width="16px" height="16px" />
-          </div>
-        </Tippy>
-      )}
-    </div>
+      delay={500}
+      hideOnClick={true}
+      animation={true}
+      onMount={tippyAnimation.onMount}
+      onHide={(instance) => {
+        tippyAnimation.onHide(instance)
+      }}
+      appendTo={document.body}
+      interactive
+      placement="right-end"
+      zIndex={1000}
+      // disabled
+    >
+      <span>
+        <StoryDataAssetItemContent blockId={blockId} storyId={storyId} />
+      </span>
+    </LazyTippy>
   )
 }
 
@@ -160,7 +206,18 @@ const DataAssetItem: React.FC<{ block: Editor.BaseBlock; currentStoryId: string 
     } as DndItemDataBlockType
   })
 
-  const questionEditor = useQuestionEditor()
+  const questionEditor = useQuestionEditor(currentStoryId)
+
+  const IconType = useMemo(() => {
+    if (block.type === Editor.BlockType.SQL || block.type === Editor.BlockType.SnapshotBlock) {
+      return IconCommonSql
+    } else if (block.type === Editor.BlockType.Metric) {
+      return IconCommonMetrics
+    } else if (block.type === Editor.BlockType.DBT) {
+      return IconCommonDbt
+    }
+    return IconCommonSql
+  }, [block.type])
 
   return (
     <div
@@ -183,31 +240,13 @@ const DataAssetItem: React.FC<{ block: Editor.BaseBlock; currentStoryId: string 
         questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
       }}
     >
-      {block.type === Editor.BlockType.Metric ? (
-        <IconCommonMetrics
-          color={ThemingVariables.colors.gray[0]}
-          className={css`
-            flex-shrink: 0;
-            margin-right: 8px;
-          `}
-        />
-      ) : block.type === Editor.BlockType.DBT ? (
-        <IconCommonDbt
-          color={ThemingVariables.colors.gray[0]}
-          className={css`
-            flex-shrink: 0;
-            margin-right: 8px;
-          `}
-        />
-      ) : (
-        <IconCommonQuestion
-          color={ThemingVariables.colors.gray[0]}
-          className={css`
-            flex-shrink: 0;
-            margin-right: 8px;
-          `}
-        />
-      )}
+      <IconType
+        color={ThemingVariables.colors.gray[0]}
+        className={css`
+          flex-shrink: 0;
+          margin-right: 8px;
+        `}
+      />
 
       <span
         className={css`
@@ -225,15 +264,75 @@ const DataAssetItem: React.FC<{ block: Editor.BaseBlock; currentStoryId: string 
   )
 }
 
-const CurrentStoryQuestions: React.FC = () => {
-  const storyId = useStoryPathParams()
+const CurrentStoryQueries: React.FC<{ storyId: string }> = ({ storyId }) => {
+  useFetchStoryChunk<Story | Thought>(storyId)
+  const { t } = useTranslation()
+  const blockTranscations = useBlockTranscations()
+  const questionEditor = useQuestionEditor(storyId)
+
+  const createNewQuery = useCallback(async () => {
+    if (!storyId) return
+    const newBlock = createEmptyBlock<Editor.SQLBlock>({
+      type: Editor.BlockType.SQL,
+      storyId,
+      parentId: storyId,
+      content: { sql: '' }
+    })
+    const newBlocks = [newBlock]
+    await blockTranscations.insertBlocks(storyId, {
+      blocksFragment: {
+        children: newBlocks.map((block) => block.id),
+        data: newBlocks.reduce((a, c) => {
+          a[c.id] = c
+          return a
+        }, {} as Record<string, Editor.BaseBlock>)
+      },
+      targetBlockId: storyId,
+      direction: 'child',
+      path: 'resources'
+    })
+    questionEditor.open({ mode: 'SQL', blockId: newBlock.id, storyId: newBlock.storyId! })
+  }, [blockTranscations, questionEditor, storyId])
 
   return storyId ? (
     <React.Suspense fallback={<></>}>
+      <SideBarSection>
+        <SideBarSectionHeader>{t`Queries`}</SideBarSectionHeader>
+        <div
+          className={css`
+            display: flex;
+            align-items: center;
+            > * + * {
+              margin-left: 16px;
+            }
+            > {
+              padding: 8px 0;
+            }
+          `}
+        >
+          {/* <IconButton icon={IconMenuImport} hoverContent={t`Import a query`} /> */}
+          <IconButton icon={IconCommonAdd} hoverContent={t`Create a new query`} onClick={createNewQuery} />
+        </div>
+      </SideBarSection>
       <StoryResources storyId={storyId} />{' '}
     </React.Suspense>
   ) : null
 }
+
+const SideBarSection = styled.div`
+  padding: 12px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`
+
+const SideBarSectionHeader = styled.div`
+  padding: 0 8px;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 15px;
+  color: ${ThemingVariables.colors.text[0]};
+`
 
 const StoryResources: React.FC<{ storyId: string }> = ({ storyId }) => {
   const resourceBlocks = useStoryResources(storyId)
@@ -255,21 +354,63 @@ const StoryResources: React.FC<{ storyId: string }> = ({ storyId }) => {
   )
 }
 
-const AllMetrics: React.FC = () => {
+const AllMetricsSection: React.FC<{ storyId: string }> = ({ storyId }) => {
   const metricBlocksQuery = useSearchMetrics('', 1000)
-  const dbtBlocksMap = useSearchDBTBlocks('', 1000)
-  const storyId = useStoryPathParams()
 
   const dataAssetBlocks = useMemo(() => {
     const metricsBlocks = Object.values(metricBlocksQuery.data?.blocks ?? {}).filter(
       (block) => block.type === Editor.BlockType.Metric
     )
+    return metricsBlocks
+  }, [metricBlocksQuery.data?.blocks])
+
+  const { t } = useTranslation()
+
+  return (
+    <>
+      <SideBarSection>
+        <SideBarSectionHeader>{t`All Metrics`}</SideBarSectionHeader>
+      </SideBarSection>
+      {dataAssetBlocks.map((block) => {
+        return (
+          <React.Suspense key={block.id} fallback={<SideBarLoader />}>
+            <DataAssetItem block={block} currentStoryId={storyId!} />
+          </React.Suspense>
+        )
+      })}
+    </>
+  )
+}
+
+const DBTSection: React.FC<{ storyId: string }> = ({ storyId }) => {
+  const dbtBlocksMap = useSearchDBTBlocks('', 1000)
+
+  const dataAssetBlocks = useMemo(() => {
     const dbtBlocks = Object.values(dbtBlocksMap.data?.blocks ?? {}).filter(
       (block) => block.type === Editor.BlockType.DBT
     )
-    return [...metricsBlocks, ...dbtBlocks]
-  }, [metricBlocksQuery.data?.blocks, dbtBlocksMap.data?.blocks])
+    return dbtBlocks
+  }, [dbtBlocksMap.data?.blocks])
 
+  const { t } = useTranslation()
+  if (dataAssetBlocks.length === 0) return null
+  return (
+    <>
+      <SideBarSection>
+        <SideBarSectionHeader>{t`DBT`}</SideBarSectionHeader>
+      </SideBarSection>
+      {dataAssetBlocks.map((block) => {
+        return (
+          <React.Suspense key={block.id} fallback={<SideBarLoader />}>
+            <DataAssetItem block={block} currentStoryId={storyId!} />
+          </React.Suspense>
+        )
+      })}
+    </>
+  )
+}
+
+const DataAssets: React.FC<{ storyId: string }> = ({ storyId }) => {
   return (
     <PerfectScrollbar
       className={css`
@@ -278,29 +419,25 @@ const AllMetrics: React.FC = () => {
       `}
       options={{ suppressScrollX: true }}
     >
-      {dataAssetBlocks.map((block) => {
-        return (
-          <React.Suspense key={block.id} fallback={<SideBarLoader />}>
-            <DataAssetItem block={block} currentStoryId={storyId!} />
-          </React.Suspense>
-        )
-      })}
+      <AllMetricsSection storyId={storyId} />
+      <DBTSection storyId={storyId} />
     </PerfectScrollbar>
   )
 }
 
-export const SideBarMetricsSection = () => {
+export const SideBarMetricsSection: React.FC<{ storyId: string }> = ({ storyId }) => {
   const { t } = useTranslation()
-  const TABS = useMemo(
-    () => [
-      { name: t`Queries`, Component: <CurrentStoryQuestions /> },
+
+  const TABS = useMemo(() => {
+    if (!storyId) return []
+    return [
+      { name: t`Current Page`, Component: <CurrentStoryQueries storyId={storyId} /> },
       {
         name: t`Data Assets`,
-        Component: <AllMetrics />
+        Component: <DataAssets storyId={storyId} />
       }
-    ],
-    [t]
-  )
+    ]
+  }, [storyId, t])
   return (
     <div
       className={css`

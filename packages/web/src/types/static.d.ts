@@ -83,4 +83,8 @@ declare global {
       VITE_SENTRY_DSN?: string
     }
   }
+
+  declare interface Document {
+    caretPositionFromPoint?: (x: number, y: number) => CaretPosition
+  }
 }

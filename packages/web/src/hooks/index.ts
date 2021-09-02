@@ -5,6 +5,8 @@ import { debounce } from 'lodash'
 import { MutableRefObject, RefObject, useCallback, useEffect, useRef, useState } from 'react'
 import { useHistory, useLocation, useRouteMatch } from 'react-router-dom'
 import { useKeyPress } from 'react-use'
+import { useHover } from 'react-use-gesture'
+import { ReactEventHandlers } from 'react-use-gesture/dist/types'
 import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect'
 import { useStoryPathParams } from './useStoryPathParams'
 export { useMediaQueries, useMediaQuery } from '@react-hook/media-query'
@@ -56,7 +58,7 @@ interface OpenStoryOpetions {
   isAltKeyPressed?: boolean
 }
 
-export const useOpenStory = () => {
+export const useOpenStoryWithSecondaryEditor = () => {
   const history = useHistory()
   const pathStoryId = useStoryPathParams()
 
@@ -70,6 +72,8 @@ export const useOpenStory = () => {
 
       const mainEditorStoryId = pathStoryId
       const currentStoryId = _currentStoryId ?? mainEditorStoryId
+
+      history.push(targetUrl)
       const isInSecondaryEditor = secondaryStoryId !== null && secondaryStoryId === currentStoryId
 
       if (matchThoughtPattern) {
@@ -107,6 +111,25 @@ export const useOpenStory = () => {
   return handler
 }
 
+export const useOpenStory = () => {
+  const history = useHistory()
+  // const pathStoryId = useStoryPathParams()
+
+  const handler = useCallback(
+    (storyId: string, options?: OpenStoryOpetions) => {
+      const { blockId, _currentStoryId, isAltKeyPressed } = options ?? {}
+      const targetUrl = `/story/${storyId}${blockId ? `#${blockId}` : ''}`
+
+      // const mainEditorStoryId = pathStoryId
+      // const currentStoryId = _currentStoryId ?? mainEditorStoryId
+
+      history.push(targetUrl)
+    },
+    [history]
+  )
+  return handler
+}
+
 export function useAsync<T, A extends Array<unknown>>(asyncFunction: (...args: A) => Promise<T> | undefined) {
   const [status, setStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle')
   const [value, setValue] = useState<T>()
@@ -124,7 +147,7 @@ export function useAsync<T, A extends Array<unknown>>(asyncFunction: (...args: A
         setValue(response)
         setStatus('success')
       } catch (err) {
-        setError(err)
+        setError(err as AxiosError)
         setStatus('error')
       }
     },
@@ -198,31 +221,42 @@ export function useOnClickOutside<T extends HTMLElement | null>(
 }
 
 // Hook
-export function useHover<T>(): [MutableRefObject<T | null>, boolean] {
-  const [value, setValue] = useState(false)
+// export function useHover<T>(): [MutableRefObject<T | null>, boolean] {
+//   const [value, setValue] = useState(false)
 
-  const ref = useRef<T | null>(null)
+//   const ref = useRef<T | null>(null)
 
-  const handleMouseOver = () => setValue(true)
-  const handleMouseOut = () => setValue(false)
+//   const handleMouseOver = () => setValue(true)
+//   const handleMouseOut = () => setValue(false)
 
-  useEffect(
-    () => {
-      const node = ref.current as unknown as HTMLElement
-      if (node) {
-        node.addEventListener('mouseover', handleMouseOver)
-        node.addEventListener('mouseleave', handleMouseOut)
+//   useEffect(
+//     () => {
+//       const node = ref.current as unknown as HTMLElement
+//       if (node) {
+//         node.addEventListener('mouseover', handleMouseOver)
+//         node.addEventListener('mouseleave', handleMouseOut)
 
-        return () => {
-          node.removeEventListener('mouseover', handleMouseOver)
-          node.removeEventListener('mouseleave', handleMouseOut)
-        }
-      }
+//         return () => {
+//           node.removeEventListener('mouseover', handleMouseOver)
+//           node.removeEventListener('mouseleave', handleMouseOut)
+//         }
+//       }
+//     },
+//     [ref] // Recall only if ref changes
+//   )
+
+//   return [ref, value]
+// }
+
+export const useBindHovering = () => {
+  const [hovering, setHovering] = useState(false)
+  const bind = useHover(
+    (event) => {
+      setHovering(event.hovering)
     },
-    [ref] // Recall only if ref changes
+    { eventOptions: { passive: true } }
   )
-
-  return [ref, value]
+  return [bind, hovering] as [(...args: any[]) => ReactEventHandlers, boolean]
 }
 
 export const useViewHeightVarible = () => {

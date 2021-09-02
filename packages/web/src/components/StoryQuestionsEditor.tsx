@@ -1,4 +1,6 @@
 import {
+  IconCommonArrowDropDown,
+  IconCommonArrowUpDown,
   IconCommonClose,
   IconCommonDbt,
   IconCommonDownstream,
@@ -12,7 +14,7 @@ import {
 } from '@app/assets/icons'
 import { SQLEditor } from '@app/components/SQLEditor'
 import { Configuration } from '@app/components/v11n'
-import { useHover, usePrevious } from '@app/hooks'
+import { useBindHovering, usePrevious } from '@app/hooks'
 import {
   useBlockSuspense,
   useConnectorsListProfiles,
@@ -22,6 +24,14 @@ import {
 } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
 import { useLocalStorage } from '@app/hooks/useLocalStorage'
+import {
+  EditorDraft,
+  QueryEditorMode,
+  useDraftBlockMutating,
+  useQuestionEditorActiveIdState,
+  useQuestionEditorBlockMapState,
+  useQuestionEditorOpenState
+} from '@app/hooks/useQuestionEditor'
 import { useSqlEditor } from '@app/hooks/useSqlEditor'
 import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { useWorkspace } from '@app/hooks/useWorkspace'
@@ -38,16 +48,15 @@ import { produce } from 'immer'
 import isHotkey from 'is-hotkey'
 import { omit } from 'lodash'
 import React, { SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useIsMutating } from 'react-query'
 import { toast } from 'react-toastify'
 import { Tab, TabList, TabPanel, TabStateReturn, useTabState } from 'reakit/Tab'
-import { atom, useRecoilCallback, useRecoilState } from 'recoil'
 import invariant from 'tiny-invariant'
 import YAML from 'yaml'
 import { setBlockTranscation } from '../context/editorTranscations'
+import { useProfileType } from '../hooks/useProfileType'
 import { BlockingUI } from './BlockingUI'
 import { CircularLoading } from './CircularLoading'
-import { BlockTitle, tokensToText, useGetBlockTitleTextSnapshot } from './editor'
+import { BlockTitle, useGetBlockTitleTextSnapshot } from './editor'
 import { ContentEditablePureText } from './editor/BlockBase/ContentEditablePureText'
 import { isExecuteableBlockType } from './editor/Blocks/utils'
 import type { SetBlock } from './editor/types'
@@ -56,44 +65,10 @@ import QuestionDownstreams from './QuestionDownstreams'
 import { charts } from './v11n/charts'
 import { Config, Type } from './v11n/types'
 
-type Mode = 'SQL' | 'VIS' | 'DOWNSTREAM'
-
-export interface QuestionEditor {
-  close: (arg: string) => Promise<void>
-  open: (arg: { mode: Mode }) => Promise<void>
+const DragConstraints = {
+  top: -700,
+  bottom: -300
 }
-
-export const useDraftBlockMutating = (blockId: string) => {
-  const refreshingSnapshot = useIsMutating({
-    predicate: (mutation) => (mutation.options.mutationKey as string) === `draft/${blockId}`
-  })
-
-  return refreshingSnapshot
-}
-interface EditorDraft {
-  sql?: string
-  visConfig?: Config<Type>
-  snapshotId?: string
-  title?: Editor.Token[]
-}
-
-export const questionEditorBlockMapState = atom<
-  Record<
-    string,
-    {
-      storyId: string
-      draft?: EditorDraft
-      mode: string
-    }
-  >
->({
-  key: 'questionEditorBlockMapState',
-  default: {}
-})
-
-export const questionEditorOpenState = atom<boolean>({ key: 'questionEditorOpenState', default: false })
-
-export const questionEditorActiveIdState = atom<string | null>({ key: 'questionEditorActiveIdState', default: null })
 
 const updateOldDraft = (oldDraft?: EditorDraft, block?: Editor.SQLLikeBlock) => {
   if (!oldDraft) return undefined
@@ -109,66 +84,8 @@ const updateOldDraft = (oldDraft?: EditorDraft, block?: Editor.SQLLikeBlock) => 
   return updatedDraft
 }
 
-export const useQuestionEditor = () => {
-  const openQuestionBlockHandler = useOpenQuestionBlockIdHandler()
-  const cleanQuestionEditorHandler = useCleanQuestionEditorHandler()
-
-  return useMemo(() => {
-    return {
-      close: cleanQuestionEditorHandler,
-      open: openQuestionBlockHandler
-    }
-  }, [cleanQuestionEditorHandler, openQuestionBlockHandler])
-}
-
-export const useCleanQuestionEditorHandler = () => {
-  const handler = useRecoilCallback(
-    (recoilCallback) => async (arg: string) => {
-      const blockId = arg
-      const blockMap = await recoilCallback.snapshot.getPromise(questionEditorBlockMapState)
-      if (blockMap[blockId]) {
-        recoilCallback.set(questionEditorBlockMapState, (state) => {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { [blockId]: _removed, ...rest } = state
-          return rest
-        })
-      }
-    },
-    []
-  )
-
-  return handler
-}
-
-export const useOpenQuestionBlockIdHandler = () => {
-  const handler = useRecoilCallback(
-    (recoilCallback) =>
-      ({ mode, blockId, storyId }: { mode: Mode; blockId: string; storyId: string }) => {
-        recoilCallback.set(questionEditorActiveIdState, blockId)
-        recoilCallback.set(questionEditorOpenState, true)
-        recoilCallback.set(questionEditorBlockMapState, (state) => {
-          return {
-            ...state,
-            [blockId]: {
-              ...state[blockId],
-              storyId,
-              mode
-            }
-          }
-        })
-      },
-    []
-  )
-  return handler
-}
-
-const DragConstraints = {
-  top: -700,
-  bottom: -300
-}
-
-const _StoryQuestionsEditor = () => {
-  const [open, setOpen] = useRecoilState(questionEditorOpenState)
+export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId }) => {
+  const [open, setOpen] = useQuestionEditorOpenState(storyId)
   const [resizeConfig, setResizeConfig] = useLocalStorage('MainSQLEditorConfig_v2', {
     y: -300
   })
@@ -185,13 +102,34 @@ const _StoryQuestionsEditor = () => {
       unsubscribe()
     }
   }, [setResizeConfig, y])
-  const workspace = useWorkspace()
-  const { data: profiles } = useConnectorsListProfiles(workspace.preferences.connectorId)
-  const profileType = useMemo(
-    () => profiles?.find((profile) => profile.name === workspace.preferences.profile)?.type,
-    [profiles, workspace.preferences.profile]
-  )
+  const profileType = useProfileType()
   useSqlEditor(profileType)
+
+  const [questionBlocksMap] = useQuestionEditorBlockMapState(storyId)
+  const [activeId, setActiveId] = useQuestionEditorActiveIdState(storyId)
+  const tab = useTabState()
+
+  const opendQuestionBlockIds = useMemo(() => {
+    return Object.keys(questionBlocksMap)
+  }, [questionBlocksMap])
+
+  useEffect(() => {
+    // tab.setCurrentId(activeId)
+    tab.setSelectedId(activeId)
+  }, [activeId, tab])
+
+  // const isDirty = useMemo(() => {
+  //   return opendQuestionBlockIds.some((id) => {
+  //     return !!questionBlocksMap[id].draft
+  //   })
+  // }, [opendQuestionBlockIds, questionBlocksMap])
+
+  useEffect(() => {
+    if (opendQuestionBlockIds.length === 0) {
+      setActiveId(null)
+      setOpen(false)
+    }
+  }, [opendQuestionBlockIds, setActiveId, setOpen])
 
   return (
     <>
@@ -201,64 +139,152 @@ const _StoryQuestionsEditor = () => {
           flexShrink: 0
         }}
       ></div>
-      <motion.div
-        style={{
-          height: height,
-          transform: open ? 'translateY(0%)' : 'translateY(100%)'
-        }}
-        transition={{ duration: 0.15 }}
+      <div
         className={css`
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          width: 100%;
-          user-select: none;
-          z-index: 1000;
-          box-shadow: 0px -1px 0px ${ThemingVariables.colors.gray[1]};
-          transition: transform 0.25s;
           display: flex;
-          flex-direction: column;
-          background-color: ${ThemingVariables.colors.gray[5]};
+          height: 44px;
+          position: relative;
+          flex-shrink: 0;
         `}
       >
         <motion.div
-          title="drag to resize"
-          whileDrag={{ backgroundColor: ThemingVariables.colors.gray[1] }}
-          drag={'y'}
-          dragConstraints={DragConstraints}
+          style={{
+            height: height,
+            transform: open ? 'translateY(0%)' : 'translateY(100%)'
+          }}
+          transition={{ duration: 0.15 }}
           className={css`
             position: absolute;
-            cursor: ns-resize;
-            left: -${DRAG_HANDLE_WIDTH / 2}px;
-            bottom: 0;
-            height: ${DRAG_HANDLE_WIDTH}px;
-            z-index: 10;
+            bottom: 44px;
+            left: 0;
+            right: 0;
             width: 100%;
+            user-select: none;
+            z-index: 1000;
+            transition: transform 0.25s;
+            display: flex;
+            flex-direction: column;
+            background-color: ${ThemingVariables.colors.gray[5]};
           `}
-          whileHover={{
-            backgroundColor: ThemingVariables.colors.gray[1]
-          }}
-          dragElastic={false}
-          dragMomentum={false}
-          style={{ y }}
-        />
-        <EditorContent />
-      </motion.div>
+        >
+          <motion.div
+            title="drag to resize"
+            whileDrag={{ backgroundColor: ThemingVariables.colors.gray[1] }}
+            drag={'y'}
+            dragConstraints={DragConstraints}
+            className={css`
+              position: absolute;
+              cursor: ns-resize;
+              left: -${DRAG_HANDLE_WIDTH / 2}px;
+              bottom: 0;
+              height: ${DRAG_HANDLE_WIDTH}px;
+              z-index: 10;
+              width: 100%;
+            `}
+            whileHover={{
+              backgroundColor: ThemingVariables.colors.gray[1]
+            }}
+            dragElastic={false}
+            dragMomentum={false}
+            style={{ y }}
+          />
+          {opendQuestionBlockIds.map((id) => (
+            <React.Suspense key={id} fallback={<BlockingUI blocking={true} />}>
+              <StoryQuestionEditor tab={tab} id={id} setActiveId={setActiveId} storyId={storyId} />
+            </React.Suspense>
+          ))}
+          {/* <EditorContent storyId={storyId} /> */}
+        </motion.div>
+        <TabList
+          {...tab}
+          aria-label="Question Editor Tabs"
+          className={css`
+            box-shadow: 0px -1px 0px ${ThemingVariables.colors.gray[1]};
+            padding: 0 8px;
+            display: flex;
+            height: 44px;
+            background-color: ${ThemingVariables.colors.gray[5]};
+            position: relative;
+            flex-shrink: 0;
+            flex: 1;
+            overflow: hidden;
+            z-index: 1001;
+          `}
+        >
+          <div
+            className={css`
+              flex: 1;
+              height: 100%;
+              display: flex;
+              flex-wrap: nowrap;
+              overflow-x: auto;
+              overflow-y: hidden;
+              ::-webkit-scrollbar {
+                display: none;
+              }
+              > * + * {
+                margin-left: 8px;
+              }
+            `}
+          >
+            {opendQuestionBlockIds?.map((id) => {
+              return (
+                <React.Suspense key={id} fallback={null}>
+                  <QuestionTab
+                    id={id}
+                    isActive={id === activeId}
+                    tab={tab}
+                    onClick={() => {
+                      setActiveId(id)
+                      setOpen(true)
+                    }}
+                    storyId={storyId}
+                  />
+                </React.Suspense>
+              )
+            })}
+            {open === false && (
+              <div
+                className={css`
+                  display: flex;
+                  align-items: center;
+                  position: absolute;
+                  top: 0;
+                  bottom: 0;
+                  right: 0;
+                  padding: 0 16px;
+                  height: 100%;
+                `}
+              >
+                <IconButton
+                  hoverContent="Click to open query editor"
+                  icon={IconCommonArrowUpDown}
+                  onClick={() => {
+                    setOpen(true)
+                  }}
+                  className={css`
+                    margin-left: auto;
+                  `}
+                />
+              </div>
+            )}
+          </div>
+        </TabList>
+      </div>
     </>
   )
 }
 
-export const StoryQuestionsEditor = _StoryQuestionsEditor
-
-const TabHeader: React.FC<{ blockId: string; hovering: boolean }> = ({ blockId, hovering }) => {
-  const [questionBlocksMap, setQuestionBlocksMap] = useRecoilState(questionEditorBlockMapState)
-  const [activeId, setActiveId] = useRecoilState(questionEditorActiveIdState)
+const TabHeader: React.FC<{ blockId: string; hovering: boolean; storyId: string }> = ({
+  blockId,
+  hovering,
+  storyId
+}) => {
+  const [questionBlocksMap, setQuestionBlocksMap] = useQuestionEditorBlockMapState(storyId)
+  const [activeId, setActiveId] = useQuestionEditorActiveIdState(storyId)
   const opendQuestionBlockIds = useMemo(() => {
     return Object.keys(questionBlocksMap)
   }, [questionBlocksMap])
-  // const [ref, hovering] = useHover<HTMLDivElement>()
-
   const closeTabById = useCallback(
     (tabId: string) => {
       const isTabDirty = !!questionBlocksMap[tabId].draft
@@ -334,141 +360,48 @@ const TabHeader: React.FC<{ blockId: string; hovering: boolean }> = ({ blockId, 
   )
 }
 
-const QuestionTab: React.FC<{ id: string; tab: TabStateReturn; isActive: boolean; onClick: () => void }> = ({
-  id,
-  tab,
-  isActive,
-  onClick
-}) => {
-  const [ref, hover] = useHover<HTMLButtonElement>()
+const QuestionTab: React.FC<{
+  id: string
+  tab: TabStateReturn
+  isActive: boolean
+  onClick: () => void
+  storyId: string
+}> = ({ id, tab, isActive, onClick, storyId }) => {
+  const [bindHoveringEvents, isHovering] = useBindHovering()
+
   return (
     <Tab
       key={id}
       {...tab}
-      ref={ref}
+      {...bindHoveringEvents()}
       onClick={onClick}
       className={cx(
         css`
-          height: 36px;
-          margin-top: 4px;
-          font-style: normal;
-          font-weight: normal;
-          font-size: 14px;
-          line-height: 16px;
+          margin-top: 8px;
+          margin-bottom: 8px;
+          font-size: 12px;
+          line-height: 14px;
           display: inline-flex;
           align-items: center;
           padding: 8px 15px;
           cursor: pointer;
-          border-radius: 8px 8px 0 0;
+          border-radius: 8px;
           outline: none;
           border: none;
         `,
         isActive
           ? css`
-              background: ${ThemingVariables.colors.primary[5]};
+              background: ${ThemingVariables.colors.gray[2]};
               color: ${ThemingVariables.colors.text[0]};
             `
           : css`
-              background: ${ThemingVariables.colors.primary[4]};
-              color: ${ThemingVariables.colors.text[1]};
+              background: ${ThemingVariables.colors.gray[3]};
+              color: ${ThemingVariables.colors.text[0]};
             `
       )}
     >
-      <TabHeader blockId={id} hovering={hover} />
+      <TabHeader blockId={id} hovering={isHovering} storyId={storyId} />
     </Tab>
-  )
-}
-
-export const EditorContent = () => {
-  const [questionBlocksMap, setQuestionBlocksMap] = useRecoilState(questionEditorBlockMapState)
-  const [activeId, setActiveId] = useRecoilState(questionEditorActiveIdState)
-  const [open, setOpen] = useRecoilState(questionEditorOpenState)
-  const tab = useTabState()
-
-  const opendQuestionBlockIds = useMemo(() => {
-    return Object.keys(questionBlocksMap)
-  }, [questionBlocksMap])
-
-  useEffect(() => {
-    // tab.setCurrentId(activeId)
-    tab.setSelectedId(activeId)
-  }, [activeId, tab])
-
-  const isDirty = useMemo(() => {
-    return opendQuestionBlockIds.some((id) => {
-      return !!questionBlocksMap[id].draft
-    })
-  }, [opendQuestionBlockIds, questionBlocksMap])
-
-  useEffect(() => {
-    if (opendQuestionBlockIds.length === 0) {
-      setActiveId(null)
-      setOpen(false)
-    }
-  }, [opendQuestionBlockIds, setActiveId, setOpen])
-
-  return (
-    <>
-      <TabList
-        {...tab}
-        aria-label="Question Editor Tabs"
-        className={css`
-          background: ${ThemingVariables.colors.primary[4]};
-          box-shadow: 0px -1px 0px ${ThemingVariables.colors.gray[1]};
-          padding: 0 10px;
-          display: flex;
-          height: 40px;
-          position: relative;
-          overflow: hidden;
-        `}
-      >
-        <div
-          className={css`
-            flex: 1;
-            height: 100%;
-            display: flex;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            overflow-y: hidden;
-            ::-webkit-scrollbar {
-              display: none;
-            }
-          `}
-        >
-          {opendQuestionBlockIds?.map((id) => {
-            return (
-              <React.Suspense key={id} fallback={null}>
-                <QuestionTab id={id} isActive={id === activeId} tab={tab} onClick={() => setActiveId(id)} />
-              </React.Suspense>
-            )
-          })}
-        </div>
-        <IconButton
-          icon={IconCommonClose}
-          color={ThemingVariables.colors.text[0]}
-          className={css`
-            margin-left: auto;
-            cursor: pointer;
-            align-self: center;
-            padding: 0 10px;
-            flex-shrink: 0;
-          `}
-          onClick={() => {
-            if (isDirty) {
-              if (confirm("Close without saving? Your changes will be lost if you don't save them.") === false) {
-                return
-              }
-            }
-            setOpen(false)
-          }}
-        />
-      </TabList>
-      {opendQuestionBlockIds.map((id) => (
-        <React.Suspense key={id} fallback={<BlockingUI blocking={true} />}>
-          <StoryQuestionEditor tab={tab} id={id} setActiveId={setActiveId} />
-        </React.Suspense>
-      ))}
-    </>
   )
 }
 
@@ -476,16 +409,18 @@ export const StoryQuestionEditor: React.FC<{
   id: string
   setActiveId: (update: SetStateAction<string | null>) => void | Promise<void>
   tab: TabStateReturn
+  storyId: string
   // block: Editor.QuestionBlock
   // originalBlock: Editor.QuestionBlock
-}> = ({ id, setActiveId, tab }) => {
+}> = ({ id, setActiveId, tab, storyId }) => {
   const block = useBlockSuspense<Editor.VisualizationBlock | Editor.SQLLikeBlock>(id)
   const visualizationBlock: Editor.VisualizationBlock | null =
     block.type === Editor.BlockType.Visualization ? block : null
   const sqlBlock = useBlockSuspense<Editor.SQLLikeBlock>(visualizationBlock?.content?.dataAssetId ?? id)
-  const [questionBlocksMap, setQuestionBlocksMap] = useRecoilState(questionEditorBlockMapState)
+  const [questionBlocksMap, setQuestionBlocksMap] = useQuestionEditorBlockMapState(storyId)
   const [sqlSidePanel, setSqlSidePanel] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const [open, setOpen] = useQuestionEditorOpenState(storyId)
 
   const questionBlockState = useMemo(() => {
     if (id && questionBlocksMap && questionBlocksMap[id]) {
@@ -524,7 +459,6 @@ export const StoryQuestionEditor: React.FC<{
   )
 
   const permissions = useStoryPermissions(visualizationBlock?.storyId ?? block.id)
-  const [titleEditing, setTitleEditing] = useState(false)
 
   const mode = questionBlockState?.mode ?? 'VIS'
   const readonly = permissions.readonly
@@ -648,7 +582,7 @@ export const StoryQuestionEditor: React.FC<{
   )
 
   const setMode = useCallback(
-    (mode: Mode) => {
+    (mode: QueryEditorMode) => {
       setQuestionBlocksMap((blocksMap) => {
         return {
           ...blocksMap,
@@ -842,7 +776,9 @@ export const StoryQuestionEditor: React.FC<{
   const isDBT = block.type === Editor.BlockType.DBT
 
   const sqlReadOnly =
-    readonly || sqlBlock.type === Editor.BlockType.SnapshotBlock || sqlBlock.storyId !== visualizationBlock?.storyId
+    readonly ||
+    sqlBlock.type === Editor.BlockType.SnapshotBlock ||
+    !!(visualizationBlock && sqlBlock.storyId !== visualizationBlock?.storyId)
 
   return (
     <TabPanel
@@ -910,6 +846,7 @@ export const StoryQuestionEditor: React.FC<{
             onChange={(tokens) => {
               setTitle(tokens)
             }}
+            disableEnter
             placeHolderStrategy="always"
             placeHolderText={DEFAULT_TITLE}
             textAlign="center"
@@ -963,6 +900,20 @@ export const StoryQuestionEditor: React.FC<{
               onClick={save}
               color={ThemingVariables.colors.primary[1]}
             />
+            <IconButton
+              icon={IconCommonArrowDropDown}
+              color={ThemingVariables.colors.text[0]}
+              className={css`
+                margin-left: auto;
+                cursor: pointer;
+                align-self: center;
+                padding: 0 10px;
+                flex-shrink: 0;
+              `}
+              onClick={() => {
+                setOpen(false)
+              }}
+            />
           </div>
         )}
       </div>
@@ -977,12 +928,11 @@ export const StoryQuestionEditor: React.FC<{
           className={css`
             flex-shrink: 0;
             width: 60px;
-            background-color: ${ThemingVariables.colors.gray[4]};
-            box-shadow: 2px 0px 8px rgba(0, 0, 0, 0.08);
             display: flex;
             flex-direction: column;
             align-items: center;
             z-index: 1;
+            border-right: solid 1px ${ThemingVariables.colors.gray[1]};
             & > button {
               padding: 20px;
               position: relative;
@@ -1051,6 +1001,7 @@ export const StoryQuestionEditor: React.FC<{
             {isDBT ? (
               <MonacoEditor
                 language="yaml"
+                theme="tellery"
                 value={YAML.stringify(omit(block.content, 'title'))}
                 options={{
                   readOnly: true,
@@ -1070,6 +1021,7 @@ export const StoryQuestionEditor: React.FC<{
                 `}
                 blockId={block.id}
                 value={sql}
+                storyId={storyId}
                 padding={{ top: 20, bottom: 0 }}
                 languageId={profileType}
                 onChange={(e) => {
@@ -1119,6 +1071,7 @@ export const StoryQuestionEditor: React.FC<{
         {mode === 'DOWNSTREAM' && (
           <QuestionDownstreams
             blockId={id}
+            storyId={storyId}
             className={css`
               flex: 1;
             `}
@@ -1141,10 +1094,11 @@ export const DraftStatus: React.FC<{
   onCloseClick: React.MouseEventHandler<HTMLDivElement>
   showClose: boolean
 }> = ({ onCloseClick, isDraft, showClose }) => {
-  const [ref, hovering] = useHover<HTMLDivElement>()
+  const [bindHoveringEvents, isHovering] = useBindHovering()
+
   return (
     <div
-      ref={ref}
+      {...bindHoveringEvents()}
       onClick={onCloseClick}
       className={css`
         display: inline-block;
@@ -1155,7 +1109,7 @@ export const DraftStatus: React.FC<{
         position: relative;
       `}
     >
-      {isDraft && !hovering && (
+      {isDraft && !isHovering && (
         <div
           className={css`
             position: absolute;
@@ -1170,7 +1124,7 @@ export const DraftStatus: React.FC<{
           `}
         ></div>
       )}
-      {(hovering || (!isDraft && showClose)) && (
+      {(isHovering || (!isDraft && showClose)) && (
         <IconCommonClose
           color={ThemingVariables.colors.text[0]}
           className={css`

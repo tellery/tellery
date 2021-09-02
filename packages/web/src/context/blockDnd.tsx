@@ -20,8 +20,6 @@ export interface XYCoord {
   y: number
 }
 
-export const DroppingAreaContext = React.createContext<{ blockId: string; direction: Direction } | null>(null)
-
 export const BlockDroppingArea = atomFamily<BlockAreaInterface | null, string>({
   key: 'BlockDroppingArea',
   default: null

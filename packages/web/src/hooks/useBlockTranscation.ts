@@ -106,7 +106,7 @@ export const useBlockTranscationProvider = () => {
   )
 
   const removeBlocks = useCallback(
-    (storyId: string, targetBlockIds: string[]) => {
+    (storyId: string, targetBlockIds: string[], path: 'resources' | 'children' = 'children') => {
       return commit({
         transcation: (snapshot) => {
           const operations: Operation[] = []
@@ -117,19 +117,21 @@ export const useBlockTranscationProvider = () => {
                 {
                   cmd: 'listRemove',
                   id: targetBlock.parentId,
-                  path: ['children'],
+                  path: [path],
                   args: { id: targetBlock.id },
-                  table: 'block'
-                },
-                {
-                  cmd: 'update',
-                  id: targetId,
-                  path: ['alive'],
-                  args: false,
                   table: 'block'
                 }
               ]
             )
+            if (storyId === targetBlock.storyId) {
+              operations.push({
+                cmd: 'update',
+                id: targetId,
+                path: ['alive'],
+                args: false,
+                table: 'block'
+              })
+            }
           })
 
           return createTranscation({ operations: operations })

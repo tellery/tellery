@@ -23,6 +23,7 @@ import { blockIdGenerator } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import copy from 'copy-to-clipboard'
 import dayjs from 'dayjs'
+import { AnimationControls, motion, MotionStyle } from 'framer-motion'
 import React, { useCallback } from 'react'
 import { useHistory } from 'react-router-dom'
 import { toast } from 'react-toastify'
@@ -37,6 +38,8 @@ const upsertPermission = (permissions: Permission[], permission: Permission): Pe
 
 export const StoryConfigPopOver: React.FC<{
   storyId: string
+  style?: MotionStyle
+  animate?: AnimationControls
 }> = (props) => {
   const commit = useCommit()
   const blockTranscation = useBlockTranscations()
@@ -102,7 +105,10 @@ export const StoryConfigPopOver: React.FC<{
   })
 
   return (
-    <div
+    <motion.div
+      style={props.style}
+      animate={props.animate}
+      transition={{ duration: 0.15 }}
       className={cx(
         css`
           background: ${ThemingVariables.colors.gray[5]};
@@ -191,7 +197,7 @@ export const StoryConfigPopOver: React.FC<{
             }
             onClick={async () => {
               if (confirm(`Delete story?`)) {
-                await blockTranscation.deleteStory(props.story.id)
+                await blockTranscation.deleteStory(props.storyId)
                 history.push('/stories')
               }
             }}
@@ -216,6 +222,6 @@ export const StoryConfigPopOver: React.FC<{
           {dayjs(story.createdAt).format('YYYY-MM-DD')}
         </div>
       )}
-    </div>
+    </motion.div>
   )
 }

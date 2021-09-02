@@ -5,24 +5,12 @@ import { css, cx } from '@emotion/css'
 import debug from 'debug'
 import { dequal } from 'dequal'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { mergeTokens, splitToken } from '../helpers/tokenManipulation'
+import { decodeHTML } from '../utils'
 import { BlockRenderer } from './BlockRenderer'
 
 const logger = debug('tellery:contentEditable')
 export interface EditableRef {
   openSlashCommandMenu: () => void
-}
-
-const decodeHTML = function (html: string | null) {
-  if (typeof html === 'string') {
-    const txt = document.createElement('textarea')
-    txt.innerHTML = html
-    const value = txt.value
-    txt.remove()
-    return value
-  }
-
-  return ''
 }
 
 const _ContentEditable: React.ForwardRefRenderFunction<
@@ -36,6 +24,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
     placeHolderStrategy?: 'always' | 'never' | 'active'
     textAlign?: string
     disableTextAlign?: boolean
+    disableEnter?: boolean
     onChange: (tokens: Editor.Token[]) => void
     tokensRenderer?: (
       tokens: Editor.Token[],
@@ -103,7 +92,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
     }
     if (!isComposing.current && element) {
       // leavesHTML is encoded, but innerHTML is decoded
-      if (leavesHtml !== null && decodeHTML(leavesHtml) !== element.innerHTML) {
+      if (leavesHtml !== null && decodeHTML(leavesHtml) !== decodeHTML(element.innerHTML)) {
         if (isFocusing && document.activeElement === element) {
           setWillFlush(true)
         }
@@ -134,13 +123,10 @@ const _ContentEditable: React.ForwardRefRenderFunction<
   }, [isFocusing, willFlush, readonly, selectionRange])
 
   const onInput = useCallback(() => {
-    console.log('onMutation', editbleRef.current, isFocusing)
     if (!isComposing.current && editbleRef.current && isFocusing) {
       editbleRef.current.normalize()
       const newBlockTitle = deserialize(editbleRef.current, tokens)
-      console.log('onMutation', newBlockTitle, tokens)
       if (dequal(newBlockTitle, tokens) === false) {
-        console.log('onMutation', newBlockTitle)
         onChange(newBlockTitle)
       }
     }
@@ -221,7 +207,10 @@ const _ContentEditable: React.ForwardRefRenderFunction<
         }}
         suppressContentEditableWarning={true}
         onKeyDown={(e) => {
-          if (!isFocusing) return
+          if (props.disableEnter && e.key === 'Enter' && isComposing.current === false) {
+            e.preventDefault()
+            e.stopPropagation()
+          }
         }}
         // contentEditable={'true'}
         contentEditable={readonly ? 'false' : 'true'}
