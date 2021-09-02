@@ -4,7 +4,7 @@ import { ThemingVariables } from '@app/styles'
 import { Dimension, Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
 import Tippy from '@tippyjs/react'
-import { lowerCase, uniq } from 'lodash'
+import { lowerCase, uniq, uniqBy } from 'lodash'
 import { ReactNode } from 'react-router/node_modules/@types/react'
 import FormDropdown from './kit/FormDropdown'
 import { MenuItem } from './MenuItem'
@@ -115,7 +115,7 @@ export default function SmartQueryConfig(props: {
         </h3>
         {props.dimensions.map((dimension, index) => (
           <ConfigItem
-            key={dimension.name}
+            key={dimension.name + index}
             onClick={() => {
               props.onChange(
                 props.metricIds,
@@ -148,16 +148,30 @@ export default function SmartQueryConfig(props: {
                           <MenuItem
                             key={func}
                             title={func}
+                            disabled={
+                              !!props.dimensions.find(
+                                (dimension) =>
+                                  dimension.fieldName === field.name &&
+                                  dimension.fieldType === field.sqlType &&
+                                  dimension.func === func
+                              )
+                            }
                             onClick={() => {
-                              props.onChange(props.metricIds, [
-                                ...props.dimensions,
-                                {
-                                  name: `${field.name} ${lowerCase(func)}`,
-                                  fieldName: field.name,
-                                  fieldType: field.sqlType!,
-                                  func
-                                }
-                              ])
+                              props.onChange(
+                                props.metricIds,
+                                uniqBy(
+                                  [
+                                    ...props.dimensions,
+                                    {
+                                      name: `${field.name} ${lowerCase(func)}`,
+                                      fieldName: field.name,
+                                      fieldType: field.sqlType!,
+                                      func
+                                    }
+                                  ],
+                                  (dimension) => `${dimension.name}${dimension.fieldType}${dimension.func}`
+                                )
+                              )
                               onClick()
                             }}
                           />
@@ -172,15 +186,26 @@ export default function SmartQueryConfig(props: {
                     key={field.name + index}
                     title={field.name}
                     side={field.sqlType}
+                    disabled={
+                      !!props.dimensions.find(
+                        (dimension) => dimension.fieldName === field.name && dimension.fieldType === field.sqlType
+                      )
+                    }
                     onClick={() => {
-                      props.onChange(props.metricIds, [
-                        ...props.dimensions,
-                        {
-                          name: field.name,
-                          fieldName: field.name,
-                          fieldType: field.sqlType!
-                        }
-                      ])
+                      props.onChange(
+                        props.metricIds,
+                        uniqBy(
+                          [
+                            ...props.dimensions,
+                            {
+                              name: field.name,
+                              fieldName: field.name,
+                              fieldType: field.sqlType!
+                            }
+                          ],
+                          (dimension) => `${dimension.name}${dimension.fieldType}${dimension.func}`
+                        )
+                      )
                       onClick()
                     }}
                   />
