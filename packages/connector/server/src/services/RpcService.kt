@@ -4,7 +4,7 @@ import io.grpc.Server
 import io.grpc.ServerBuilder
 import io.grpc.util.TransmitStatusRuntimeExceptionInterceptor
 import mu.KotlinLogging
-import entities.ProjectConfig as config
+import io.tellery.entities.ProjectConfig as config
 
 class RpcService(
     dbtService: DbtV2Service,

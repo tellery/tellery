@@ -1,19 +1,19 @@
 package io.tellery.integrations
 
 import io.tellery.connectors.fields.PostgreSQLFields
-import io.tellery.entities.NewProfile
+import io.tellery.entities.ProfileEntity
 
 @DbtIntegrationType("PostgreSQL")
 class PostgreSQLDbtIntegration : DbtIntegration() {
 
-    override fun transformToDbtProfile(profile: NewProfile): PostgreSQLDbtProfile {
+    override fun transformToDbtProfile(profileEntity: ProfileEntity): PostgreSQLDbtProfile {
         return PostgreSQLDbtProfile(
-            host = getValueOrThrowException(profile, PostgreSQLFields.ENDPOINT),
-            port = getValueOrThrowException(profile, PostgreSQLFields.PORT).toInt(),
-            user = getValueOrThrowException(profile, PostgreSQLFields.USERNAME),
-            password = getValueOrThrowException(profile, PostgreSQLFields.PASSWORD),
-            dbname = getValueOrThrowException(profile, PostgreSQLFields.DATABASE),
-            schema = getValueOrThrowException(profile, PostgreSQLFields.SCHEMA)
+            host = getValueOrThrowException(profileEntity, PostgreSQLFields.ENDPOINT),
+            port = getValueOrThrowException(profileEntity, PostgreSQLFields.PORT).toInt(),
+            user = getValueOrThrowException(profileEntity, PostgreSQLFields.USERNAME),
+            password = getValueOrThrowException(profileEntity, PostgreSQLFields.PASSWORD),
+            dbname = getValueOrThrowException(profileEntity, PostgreSQLFields.DATABASE),
+            schema = getValueOrThrowException(profileEntity, PostgreSQLFields.SCHEMA)
         )
     }
 

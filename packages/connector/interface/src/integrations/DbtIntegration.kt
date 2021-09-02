@@ -2,10 +2,12 @@ package io.tellery.integrations
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.grpc.Status
 import io.tellery.annotations.Config
 import io.tellery.annotations.Integration
 import io.tellery.connectors.annotations.Dbt
-import io.tellery.entities.NewProfile
+import io.tellery.entities.CustomizedException
+import io.tellery.entities.ProfileEntity
 
 @Integration(
     type = "dbt",
@@ -39,12 +41,11 @@ abstract class DbtIntegration : BaseIntegration() {
         val mapper = jacksonObjectMapper()
     }
 
-    protected fun getValueOrThrowException(profile: NewProfile, key: String): String {
-        return profile.configs[key]
-            ?: throw RuntimeException("Required key $key is not in ${profile.type} dataset profile.")
+    protected fun getValueOrThrowException(profileEntity: ProfileEntity, key: String): String {
+        return profileEntity.configs[key] ?: throw DbtMissRequiredKey(key, profileEntity.type)
     }
 
-    open fun transformToDbtProfile(profile: NewProfile): BaseDbtProfile {
+    open fun transformToDbtProfile(profileEntity: ProfileEntity): BaseDbtProfile {
         throw NotImplementedError("The dbt integration is not impl transformToDbtProfile method.")
     }
 }
@@ -53,3 +54,9 @@ abstract class DbtIntegration : BaseIntegration() {
 open class BaseDbtProfile(open val type: String)
 
 annotation class DbtIntegrationType(val value: String)
+
+class DbtMissRequiredKey(key: String, type: String) :
+    CustomizedException(
+        "Required key $key is not in $type dataset profile.",
+        Status.FAILED_PRECONDITION
+    )

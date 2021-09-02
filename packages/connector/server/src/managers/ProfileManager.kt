@@ -1,19 +1,19 @@
 package io.tellery.managers
 
-import io.tellery.entities.Integration
-import io.tellery.entities.NewProfile
+import io.tellery.entities.IntegrationEntity
+import io.tellery.entities.ProfileEntity
 
 interface ProfileManager {
 
-    fun getProfileById(workspaceId: String): NewProfile?
+    fun getProfileById(workspaceId: String): ProfileEntity?
 
-    fun upsertProfile(profile: NewProfile): NewProfile
+    fun upsertProfile(profileEntity: ProfileEntity): ProfileEntity
 
-    fun getAllIntegrationInProfile(profileId: String): List<Integration>
+    fun getAllIntegrationInProfile(profileId: String): List<IntegrationEntity>
 
-    fun getIntegrationInProfileAndByType(profileId: String, type: String): Integration?
+    fun getIntegrationInProfileAndByType(profileId: String, type: String): IntegrationEntity?
 
-    fun upsertIntegration(integration: Integration): Integration
+    fun upsertIntegration(integrationEntity: IntegrationEntity): IntegrationEntity
 
     fun deleteIntegration(id: Int)
 }

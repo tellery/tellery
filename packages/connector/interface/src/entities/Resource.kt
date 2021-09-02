@@ -1,6 +1,6 @@
 package io.tellery.entities
 
-data class NewProfile(
+data class ProfileEntity(
     // unique id
     var id: String,
     var type: String,
@@ -8,7 +8,7 @@ data class NewProfile(
     var configs: Map<String, String?>
 )
 
-data class Integration(
+data class IntegrationEntity(
     // unique id
     var id: Int?,
     var profileId: String,

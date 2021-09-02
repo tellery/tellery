@@ -4,14 +4,14 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.tellery.connectors.BigQueryConnector
 import io.tellery.connectors.fields.BigQueryFields
-import io.tellery.entities.NewProfile
+import io.tellery.entities.ProfileEntity
 import java.util.*
 
 @DbtIntegrationType("BigQuery")
 class BigQueryDbtIntegration : DbtIntegration() {
 
-    override fun transformToDbtProfile(profile: NewProfile): BigQueryDbtProfile {
-        profile.let {
+    override fun transformToDbtProfile(profileEntity: ProfileEntity): BigQueryDbtProfile {
+        profileEntity.let {
             val jsonBody = Base64
                 .getDecoder()
                 .decode(getValueOrThrowException(it, BigQueryFields.KEY_FILE))
