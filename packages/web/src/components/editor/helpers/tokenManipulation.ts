@@ -14,11 +14,15 @@ export const mergeTokens = (tokens: Editor.Token[]) => {
       acc.push([...current])
     } else {
       const lastToken = acc[acc.length - 1]
-      const lastTokenMarks = lastToken.slice(1) || []
-      const currentTokenMarks = current.slice(1) || []
+      const lastTokenMarks = lastToken.slice(1) ?? []
+      const currentTokenMarks = current.slice(1) ?? []
       if (current[0].length) {
         if (dequal(lastTokenMarks.sort(), currentTokenMarks.sort()) && isNonSelectbleToken(current) === false) {
-          acc[acc.length - 1][0] = `${acc[acc.length - 1][0]}${current[0]}`
+          const lastToken = acc[acc.length - 1]
+          acc[acc.length - 1] = [`${lastToken[0]}${current[0]}`]
+          if (lastToken[1]) {
+            acc[acc.length - 1].push(lastToken[1])
+          }
         } else {
           const marks = current[1]
           if (marks) {
