@@ -39,10 +39,12 @@ const initStats = () => {
 }
 
 env.DEV && initStats()
-const tracker = new Tracker({
-  projectID: env.ASAYERIO_PROJECTID
-})
-tracker.start()
+if (env.ASAYERIO_PROJECTID) {
+  const tracker = new Tracker({
+    projectID: env.ASAYERIO_PROJECTID
+  })
+  tracker.start()
+}
 // Sentry.init({
 //   dsn: env.SENTRY_DSN,
 //   beforeSend(event) {
