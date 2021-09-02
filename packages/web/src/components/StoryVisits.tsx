@@ -1,6 +1,7 @@
-import { useMgetUsers, useStoryVisits } from '@app/hooks/api'
+import { useMgetUsers, User, useStoryVisits } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useSocketInstance } from '@app/hooks/useSocketContextProvider'
+import { useTippySingleton } from '@app/hooks/useTippySingleton'
 import { ThemingVariables } from '@app/styles'
 import { css } from '@emotion/css'
 import styled from '@emotion/styled'
@@ -8,6 +9,13 @@ import Tippy from '@tippyjs/react'
 import dayjs from 'dayjs'
 import React, { useEffect, useMemo, useState } from 'react'
 import Avatar from './Avatar'
+import { TippySingletonContextProvider } from './TippySingletonContextProvider'
+
+interface Visit {
+  storyId: string
+  userId: string
+  lastVisitTimestamp: number
+}
 
 export function StoryVisits(props: { storyId: string; className?: string }) {
   const { storyId } = props
@@ -77,39 +85,51 @@ export function StoryVisits(props: { storyId: string; className?: string }) {
 
   return (
     <Container className={props.className}>
-      {sortedVisits &&
-        sortedVisits.length > 1 &&
-        sortedVisits.map((_visit, index) => {
-          const visit = sortedVisits[sortedVisits.length - index - 1]
-          const user = usersMap?.[visit.userId]
-          if (!user) return null
-          const isActive = activeIds.findIndex((id) => id === user.id) !== -1
-          return (
-            <Tippy
-              content={
-                <div>
-                  {user.name}
-                  <br />
-                  {isActive ? null : `Last Viewed ${dayjs(visit.lastVisitTimestamp).fromNow()}`}
-                </div>
-              }
-              arrow={false}
-              key={visit.userId}
-            >
-              <AvatarWrapper index={index} key={visit.userId}>
-                <Avatar
-                  src={user.avatar}
-                  email={user.email}
-                  size={32}
-                  className={css`
-                    opacity: ${isActive ? 1 : 0.3};
-                  `}
-                />
-              </AvatarWrapper>
-            </Tippy>
-          )
-        })}
+      <TippySingletonContextProvider arrow={false} delay={0}>
+        {sortedVisits &&
+          sortedVisits.length > 1 &&
+          sortedVisits.map((_visit, index) => {
+            const visit = sortedVisits[sortedVisits.length - index - 1]
+            const user = usersMap?.[visit.userId]
+            if (!user) return null
+            const isActive = activeIds.findIndex((id) => id === user.id) !== -1
+            return <StoryVisitAvatar user={user} isActive={isActive} index={index} visit={visit} key={user.id} />
+          })}
+      </TippySingletonContextProvider>
     </Container>
+  )
+}
+
+const StoryVisitAvatar: React.FC<{ isActive: boolean; user: User; index: number; visit: Visit }> = ({
+  isActive,
+  user,
+  index,
+  visit
+}) => {
+  const tippyInstance = useTippySingleton()
+  return (
+    <Tippy
+      singleton={tippyInstance}
+      content={
+        <div>
+          {user.name}
+          <br />
+          {isActive ? null : `Last Viewed ${dayjs(visit.lastVisitTimestamp).fromNow()}`}
+        </div>
+      }
+      key={visit.userId}
+    >
+      <AvatarWrapper index={index} key={visit.userId}>
+        <Avatar
+          src={user.avatar}
+          email={user.email}
+          size={32}
+          className={css`
+            opacity: ${isActive ? 1 : 0.3};
+          `}
+        />
+      </AvatarWrapper>
+    </Tippy>
   )
 }
 
