@@ -1078,6 +1078,7 @@ export const StoryQuestionEditor: React.FC<{
         `}
       >
         <QueryEditorSideTabs
+          readonly={sqlReadOnly}
           mode={mode}
           setMode={setMode}
           queryBlockId={queryBlock.id}
@@ -1193,12 +1194,13 @@ export const StoryQuestionEditor: React.FC<{
 }
 
 const QueryEditorSideTabs: React.FC<{
+  readonly: boolean
   mode: string
   setMode: (mode: QueryEditorMode) => void
   blockType: Editor.BlockType
   queryBlockType: Editor.BlockType
   queryBlockId: string
-}> = ({ mode, setMode, blockType, queryBlockType, queryBlockId }) => {
+}> = ({ readonly, mode, setMode, blockType, queryBlockType, queryBlockId }) => {
   const isDBT = queryBlockType === Editor.BlockType.DBT
   const { data: downstreams } = useQuestionDownstreams(queryBlockId)
 
@@ -1230,7 +1232,7 @@ const QueryEditorSideTabs: React.FC<{
     >
       <TippySingletonContextProvider delay={500} arrow={false} hideOnClick placement="right">
         <IconButton
-          hoverContent={isDBT ? 'View DBT' : 'Edit SQL'}
+          hoverContent={isDBT ? 'View DBT' : readonly ? 'View SQL' : 'Edit SQL'}
           icon={isDBT ? IconCommonDbt : IconCommonSql}
           className={css`
             &::after {
@@ -1274,6 +1276,7 @@ const QueryEditorSideTabs: React.FC<{
         )}
         {queryBlockType === Editor.BlockType.SmartQuery ? (
           <IconButton
+            hoverContent="Smart query"
             icon={IconCommonMetrics}
             className={css`
               &::after {
@@ -1287,7 +1290,7 @@ const QueryEditorSideTabs: React.FC<{
           />
         ) : (
           <IconButton
-            hoverContent="Query builder"
+            hoverContent="Data asset"
             icon={IconCommonDataAssetSetting}
             className={css`
               &::after {
