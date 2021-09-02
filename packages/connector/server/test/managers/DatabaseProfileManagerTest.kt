@@ -2,8 +2,6 @@ package managers
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import entities.Integration
-import entities.NewProfile
 import entities.ProjectConfig
 import execSqlScript
 import getResourceFileURL
@@ -13,6 +11,8 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.every
 import io.mockk.mockkObject
+import io.tellery.entities.Integration
+import io.tellery.entities.NewProfile
 import io.tellery.managers.impl.DatabaseProfileManager
 import org.testcontainers.containers.PostgreSQLContainer
 

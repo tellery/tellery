@@ -1,4 +1,4 @@
-package entities
+package io.tellery.entities
 
 data class NewProfile(
     // unique id

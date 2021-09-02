@@ -1,7 +1,7 @@
 package io.tellery.integrations
 
-import entities.NewProfile
 import io.tellery.connectors.fields.SnowflakeFields
+import io.tellery.entities.NewProfile
 
 @Type("Snowflake")
 class SnowflakeDbtIntegration : DbtIntegration() {

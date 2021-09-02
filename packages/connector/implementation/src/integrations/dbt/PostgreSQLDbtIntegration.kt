@@ -1,7 +1,7 @@
 package io.tellery.integrations
 
-import entities.NewProfile
 import io.tellery.connectors.fields.PostgreSQLFields
+import io.tellery.entities.NewProfile
 
 @Type("PostgreSQL")
 class PostgreSQLDbtIntegration : DbtIntegration() {

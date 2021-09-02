@@ -2,8 +2,8 @@ package io.tellery.managers.impl
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import entities.Integration
-import entities.NewProfile
+import io.tellery.entities.Integration
+import io.tellery.entities.NewProfile
 import io.tellery.managers.ProfileManager
 import org.apache.commons.io.FileUtils
 import java.nio.file.Path

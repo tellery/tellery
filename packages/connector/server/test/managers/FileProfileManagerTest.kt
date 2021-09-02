@@ -2,8 +2,6 @@ package managers
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import entities.Integration
-import entities.NewProfile
 import getResourceFileURL
 import io.kotest.common.ExperimentalKotest
 import io.kotest.core.spec.style.FunSpec
@@ -11,6 +9,8 @@ import io.kotest.engine.spec.tempdir
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockkObject
+import io.tellery.entities.Integration
+import io.tellery.entities.NewProfile
 import io.tellery.managers.impl.FileProfileManager
 import kotlin.io.path.readText
 import kotlin.io.path.writeText

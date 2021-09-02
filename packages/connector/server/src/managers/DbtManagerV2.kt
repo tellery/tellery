@@ -11,13 +11,13 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.common.annotations.VisibleForTesting
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.KeyPair
-import entities.Integration
-import entities.NewProfile
 import io.grpc.Status
 import io.tellery.common.assertInternalError
 import io.tellery.common.dbt.Constants
 import io.tellery.common.dbt.model.Manifest
 import io.tellery.entities.CustomizedException
+import io.tellery.entities.Integration
+import io.tellery.entities.NewProfile
 import io.tellery.grpc.DbtBlock
 import io.tellery.grpc.QuestionBlockContent
 import io.tellery.integrations.BaseDbtProfile
@@ -388,7 +388,7 @@ class DbtManagerV2(private val profileManager: ProfileManager) {
 }
 
 class DbtContextNotInitException :
-    CustomizedException("The dbt context is not init, so can not call functions in DbtManager.")
+    CustomizedException("The dbt context is not initialized, you can't call functions in DbtManager.")
 
 class DbtRepositoryNotExistsException :
     CustomizedException(
