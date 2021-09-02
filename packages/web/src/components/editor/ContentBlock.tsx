@@ -65,7 +65,7 @@ const _ContentBlocks: React.FC<{
     <AnimateSharedLayout>
       <BlockBehaviorConext.Provider value={behavior}>
         {props.blockIds.map((blockId) => (
-          <React.Suspense key={blockId} fallback={<div>loading...</div>}>
+          <React.Suspense key={blockId} fallback={<></>}>
             <ContentBlockPure key={blockId} id={blockId} parentType={props.parentType} />
           </React.Suspense>
         ))}
