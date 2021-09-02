@@ -5,15 +5,15 @@ import io.tellery.annotations.Config
 import io.tellery.configs.AvailableConfig
 import io.tellery.configs.AvailableConfigs
 import io.tellery.configs.ConfigField
-import io.tellery.entities.NewProfile
+import io.tellery.entities.IntegrationEntity
+import io.tellery.entities.ProfileEntity
 import io.tellery.grpc.KVEntry
 import io.tellery.managers.ConnectorManagerV2
 import io.tellery.managers.DbtManagerV2
 import io.tellery.managers.IntegrationManager
 import io.tellery.managers.ProfileManager
 import io.tellery.profile.*
-import entities.ProjectConfig as config
-import io.tellery.entities.Integration as IntegrationEntity
+import io.tellery.entities.ProjectConfig as config
 
 class ProfileService(
     private val dbtManager: DbtManagerV2,
@@ -42,7 +42,7 @@ class ProfileService(
 
     override suspend fun upsertProfile(request: UpsertProfileRequestV2): Profile {
         val profile = profileManager.upsertProfile(
-            NewProfile(
+            ProfileEntity(
                 id = config.workspaceId,
                 type = request.type,
                 credential = request.credential,
@@ -101,15 +101,15 @@ class ProfileService(
         }
     }
 
-    private fun buildProtoProfile(profile: NewProfile): Profile {
-        val connectorMeta = connectorManager.getConfigs().find { it.type == profile.type }!!
+    private fun buildProtoProfile(profileEntity: ProfileEntity): Profile {
+        val connectorMeta = connectorManager.getConfigs().find { it.type == profileEntity.type }!!
         val secretConfigs = connectorMeta.configs.filter { it.secret }.map { it.name }.toSet()
 
         return Profile {
-            id = profile.id
-            type = profile.type
-            credential = profile.credential
-            addAllConfigs(profile.configs.entries.map {
+            id = profileEntity.id
+            type = profileEntity.type
+            credential = profileEntity.credential
+            addAllConfigs(profileEntity.configs.entries.map {
                 KVEntry {
                     key = it.key
                     value = if (secretConfigs.contains(it.key)) secretMask else it.value

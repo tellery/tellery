@@ -1,6 +1,6 @@
 package io.tellery
 
-import entities.ProjectConfig
+import io.tellery.entities.ProjectConfig
 import io.tellery.managers.ConnectorManagerV2
 import io.tellery.managers.DbtManagerV2
 import io.tellery.managers.IntegrationManager

@@ -7,7 +7,7 @@ data class Profile(
     val jar: String? = null,
 ) {
     // TODO: refactor special
-    constructor(p: NewProfile) : this(p.type, p.id, p.configs)
+    constructor(p: ProfileEntity) : this(p.type, p.id, p.configs)
 
     override fun equals(other: Any?): Boolean {
         if (other !is Profile) {

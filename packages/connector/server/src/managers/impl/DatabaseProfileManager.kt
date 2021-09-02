@@ -1,8 +1,8 @@
 package io.tellery.managers.impl
 
-import entities.MissRequiredConfigException
-import io.tellery.entities.Integration
-import io.tellery.entities.NewProfile
+import io.tellery.entities.IntegrationEntity
+import io.tellery.entities.MissRequiredConfigException
+import io.tellery.entities.ProfileEntity
 import io.tellery.managers.ProfileManager
 import org.ktorm.database.Database
 import org.ktorm.dsl.*
@@ -11,7 +11,7 @@ import org.ktorm.schema.int
 import org.ktorm.schema.varchar
 import org.ktorm.support.postgresql.hstore
 import org.ktorm.support.postgresql.insertOrUpdate
-import entities.ProjectConfig as config
+import io.tellery.entities.ProjectConfig as config
 
 class DatabaseProfileManager : ProfileManager {
 
@@ -22,55 +22,58 @@ class DatabaseProfileManager : ProfileManager {
         password = config.databasePassword
     )
 
-    override fun getProfileById(workspaceId: String): NewProfile? =
+    override fun getProfileById(workspaceId: String): ProfileEntity? =
         client.from(ProfileDTO)
             .select()
             .where { ProfileDTO.id eq workspaceId }
             .map { ProfileDTO.createEntity(it) }
             .firstOrNull()
 
-    override fun upsertProfile(profile: NewProfile): NewProfile {
+    override fun upsertProfile(profileEntity: ProfileEntity): ProfileEntity {
         client.insertOrUpdate(ProfileDTO) {
-            set(it.id, profile.id)
-            set(it.type, profile.type)
-            set(it.credential, profile.credential)
-            set(it.configs, profile.configs)
+            set(it.id, profileEntity.id)
+            set(it.type, profileEntity.type)
+            set(it.credential, profileEntity.credential)
+            set(it.configs, profileEntity.configs)
             onConflict(it.id) {
-                set(it.type, profile.type)
-                set(it.credential, profile.credential)
-                set(it.configs, profile.configs)
+                set(it.type, profileEntity.type)
+                set(it.credential, profileEntity.credential)
+                set(it.configs, profileEntity.configs)
             }
         }
-        return profile
+        return profileEntity
     }
 
-    override fun getIntegrationInProfileAndByType(profileId: String, type: String): Integration? =
+    override fun getIntegrationInProfileAndByType(
+        profileId: String,
+        type: String
+    ): IntegrationEntity? =
         client.from(IntegrationDTO)
             .select()
             .where { (IntegrationDTO.type eq type) and (IntegrationDTO.profileId eq profileId) }
             .map { IntegrationDTO.createEntity(it) }
             .firstOrNull()
 
-    override fun upsertIntegration(integration: Integration): Integration {
-        if (integration.id == null) {
+    override fun upsertIntegration(integrationEntity: IntegrationEntity): IntegrationEntity {
+        if (integrationEntity.id == null) {
             val id = client.insertAndGenerateKey(IntegrationDTO) {
-                set(it.profileId, integration.profileId)
-                set(it.type, integration.type)
-                set(it.configs, integration.configs)
+                set(it.profileId, integrationEntity.profileId)
+                set(it.type, integrationEntity.type)
+                set(it.configs, integrationEntity.configs)
             }
-            integration.id = id as Int
+            integrationEntity.id = id as Int
         } else {
             client.update(IntegrationDTO) {
-                set(it.profileId, integration.profileId)
-                set(it.type, integration.type)
-                set(it.configs, integration.configs)
-                where { it.id eq integration.id!! }
+                set(it.profileId, integrationEntity.profileId)
+                set(it.type, integrationEntity.type)
+                set(it.configs, integrationEntity.configs)
+                where { it.id eq integrationEntity.id!! }
             }
         }
-        return integration
+        return integrationEntity
     }
 
-    override fun getAllIntegrationInProfile(profileId: String): List<Integration> =
+    override fun getAllIntegrationInProfile(profileId: String): List<IntegrationEntity> =
         client.from(IntegrationDTO)
             .select()
             .where { IntegrationDTO.profileId eq profileId }
@@ -80,14 +83,14 @@ class DatabaseProfileManager : ProfileManager {
         client.delete(IntegrationDTO) { it.id eq id }
     }
 
-    object ProfileDTO : BaseTable<NewProfile>("profile") {
+    object ProfileDTO : BaseTable<ProfileEntity>("profile") {
         val id = varchar("id").primaryKey()
         val type = varchar("type")
         val credential = varchar("credential")
         val configs = hstore("configs")
 
 
-        override fun doCreateEntity(row: QueryRowSet, withReferences: Boolean) = NewProfile(
+        override fun doCreateEntity(row: QueryRowSet, withReferences: Boolean) = ProfileEntity(
             id = row[id].orEmpty(),
             type = row[type].orEmpty(),
             credential = row[credential],
@@ -95,13 +98,13 @@ class DatabaseProfileManager : ProfileManager {
         )
     }
 
-    object IntegrationDTO : BaseTable<Integration>("integration") {
+    object IntegrationDTO : BaseTable<IntegrationEntity>("integration") {
         val id = int("id").primaryKey()
         val profileId = varchar("profile_id")
         val type = varchar("type")
         val configs = hstore("configs")
 
-        override fun doCreateEntity(row: QueryRowSet, withReferences: Boolean) = Integration(
+        override fun doCreateEntity(row: QueryRowSet, withReferences: Boolean) = IntegrationEntity(
             id = row[id],
             profileId = row[profileId].orEmpty(),
             type = row[type].orEmpty(),

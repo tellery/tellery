@@ -16,8 +16,8 @@ import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.mockk.*
-import io.tellery.entities.Integration
-import io.tellery.entities.NewProfile
+import io.tellery.entities.IntegrationEntity
+import io.tellery.entities.ProfileEntity
 import io.tellery.grpc.DbtBlock
 import io.tellery.grpc.QuestionBlockContent
 import io.tellery.managers.DbtManagerV2
@@ -28,7 +28,7 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
 import kotlin.io.path.*
-import entities.ProjectConfig as config
+import io.tellery.entities.ProjectConfig as config
 
 @OptIn(ExperimentalKotest::class)
 class DbtManagerTest : FunSpec({
@@ -36,7 +36,7 @@ class DbtManagerTest : FunSpec({
     val dir = tempdir()
     val profilePath = dir.resolve("profiles.yml")
     val mapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
-    val integration: Integration =
+    val integrationEntity: IntegrationEntity =
         mapper.readValue(getResourceFileURL("/integrations/integration_1.json"))
 
     val pm: ProfileManager = mockk()
@@ -70,8 +70,13 @@ class DbtManagerTest : FunSpec({
             val mockDbtProfilePath = "/dbt/profiles_${type}.yml"
 
             every { pm.getProfileById(workspaceId) } returns
-                    mapper.readValue<NewProfile>(getResourceFileURL(mockProfilePath))
-            every { pm.getIntegrationInProfileAndByType(workspaceId, "dbt") } returns integration
+                    mapper.readValue<ProfileEntity>(getResourceFileURL(mockProfilePath))
+            every {
+                pm.getIntegrationInProfileAndByType(
+                    workspaceId,
+                    "dbt"
+                )
+            } returns integrationEntity
 
             val dbtManager = DbtManagerV2(pm)
             dbtManager.setDbtProfilePath(profilePath)
@@ -114,8 +119,13 @@ class DbtManagerTest : FunSpec({
             every { GitUtilsV2.checkoutMasterAndPull(any(), any()) } returns mockk()
 
             every { pm.getProfileById(workspaceId) } returns
-                    mapper.readValue<NewProfile>(getResourceFileURL("/profiles/profile_bigquery.json"))
-            every { pm.getIntegrationInProfileAndByType(workspaceId, "dbt") } returns integration
+                    mapper.readValue<ProfileEntity>(getResourceFileURL("/profiles/profile_bigquery.json"))
+            every {
+                pm.getIntegrationInProfileAndByType(
+                    workspaceId,
+                    "dbt"
+                )
+            } returns integrationEntity
 
             // mock env and data
             val dbtManager = DbtManagerV2(pm)
@@ -140,8 +150,8 @@ class DbtManagerTest : FunSpec({
         every { GitUtilsV2.checkoutNewBranchAndCommitAndPush(any(), any(), any()) } returns mockk()
 
         every { pm.getProfileById(workspaceId) } returns
-                mapper.readValue<NewProfile>(getResourceFileURL("/profiles/profile_bigquery.json"))
-        every { pm.getIntegrationInProfileAndByType(workspaceId, "dbt") } returns integration
+                mapper.readValue<ProfileEntity>(getResourceFileURL("/profiles/profile_bigquery.json"))
+        every { pm.getIntegrationInProfileAndByType(workspaceId, "dbt") } returns integrationEntity
 
         // mock env and data
         val block = providesQuestionBlockContent("/dbt/question_block_latest.json")
@@ -170,8 +180,8 @@ class DbtManagerTest : FunSpec({
         every { GitUtilsV2.checkoutNewBranchAndCommitAndPush(any(), any(), any()) } returns mockk()
 
         every { pm.getProfileById(workspaceId) } returns
-                mapper.readValue<NewProfile>(getResourceFileURL("/profiles/profile_bigquery.json"))
-        every { pm.getIntegrationInProfileAndByType(workspaceId, "dbt") } returns integration
+                mapper.readValue<ProfileEntity>(getResourceFileURL("/profiles/profile_bigquery.json"))
+        every { pm.getIntegrationInProfileAndByType(workspaceId, "dbt") } returns integrationEntity
 
         // mock env and data
         val expireBlock = providesQuestionBlockContent("/dbt/question_block_expire.json")
@@ -204,8 +214,8 @@ class DbtManagerTest : FunSpec({
         every { GitUtilsV2.checkoutNewBranchAndCommitAndPush(any(), any(), any()) } returns mockk()
 
         every { pm.getProfileById(workspaceId) } returns
-                mapper.readValue<NewProfile>(getResourceFileURL("/profiles/profile_bigquery.json"))
-        every { pm.getIntegrationInProfileAndByType(workspaceId, "dbt") } returns integration
+                mapper.readValue<ProfileEntity>(getResourceFileURL("/profiles/profile_bigquery.json"))
+        every { pm.getIntegrationInProfileAndByType(workspaceId, "dbt") } returns integrationEntity
 
         // mock env and data
         val block = providesQuestionBlockContent("/dbt/question_block_latest.json")
@@ -232,8 +242,8 @@ class DbtManagerTest : FunSpec({
 
     context("Should get all models and sources after calling parseDbtBlocks.") {
         every { pm.getProfileById(workspaceId) } returns
-                mapper.readValue<NewProfile>(getResourceFileURL("/profiles/profile_bigquery.json"))
-        every { pm.getIntegrationInProfileAndByType(workspaceId, "dbt") } returns integration
+                mapper.readValue<ProfileEntity>(getResourceFileURL("/profiles/profile_bigquery.json"))
+        every { pm.getIntegrationInProfileAndByType(workspaceId, "dbt") } returns integrationEntity
 
         // mock env and data
         val dbtManager = DbtManagerV2(pm)

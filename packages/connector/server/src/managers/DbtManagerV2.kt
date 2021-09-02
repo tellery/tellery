@@ -16,8 +16,8 @@ import io.tellery.common.assertInternalError
 import io.tellery.common.dbt.Constants
 import io.tellery.common.dbt.model.Manifest
 import io.tellery.entities.CustomizedException
-import io.tellery.entities.Integration
-import io.tellery.entities.NewProfile
+import io.tellery.entities.IntegrationEntity
+import io.tellery.entities.ProfileEntity
 import io.tellery.grpc.DbtBlock
 import io.tellery.grpc.QuestionBlockContent
 import io.tellery.integrations.BaseDbtProfile
@@ -45,7 +45,7 @@ import kotlin.io.path.*
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.primaryConstructor
-import entities.ProjectConfig as config
+import io.tellery.entities.ProjectConfig as config
 
 class DbtManagerV2(private val profileManager: ProfileManager) {
     private val lock = ReentrantReadWriteLock()
@@ -62,7 +62,7 @@ class DbtManagerV2(private val profileManager: ProfileManager) {
      * In summary, we require a read-write lock in this class, get write lock when reloading context and
      * get read lock when doing other dbt operations.
      */
-    private var connector: NewProfile? = null
+    private var connector: ProfileEntity? = null
     private var context: Context? = null
     private var profileFile = File(System.getProperty("user.home") + "/.dbt/profiles.yml")
 
@@ -355,18 +355,18 @@ class DbtManagerV2(private val profileManager: ProfileManager) {
         constructor(
             globalRepoDir: Path,
             keyDir: Path,
-            integration: Integration
+            integrationEntity: IntegrationEntity
         ) : this(
-            name = integration.configs[Constants.PROFILE_DBT_PROJECT_FIELD]!!,
-            repoDir = globalRepoDir.resolve(integration.configs[Constants.PROFILE_DBT_PROJECT_FIELD]!!),
-            sshKeyDir = keyDir.resolve(integration.configs[Constants.PROFILE_DBT_PROJECT_FIELD]!!),
+            name = integrationEntity.configs[Constants.PROFILE_DBT_PROJECT_FIELD]!!,
+            repoDir = globalRepoDir.resolve(integrationEntity.configs[Constants.PROFILE_DBT_PROJECT_FIELD]!!),
+            sshKeyDir = keyDir.resolve(integrationEntity.configs[Constants.PROFILE_DBT_PROJECT_FIELD]!!),
             privateKey = keyDir
-                .resolve(integration.configs[Constants.PROFILE_DBT_PROJECT_FIELD]!!)
+                .resolve(integrationEntity.configs[Constants.PROFILE_DBT_PROJECT_FIELD]!!)
                 .resolve("dbt_rsa"),
             publicKey = keyDir
-                .resolve(integration.configs[Constants.PROFILE_DBT_PROJECT_FIELD]!!)
+                .resolve(integrationEntity.configs[Constants.PROFILE_DBT_PROJECT_FIELD]!!)
                 .resolve("dbt_rsa.pub"),
-            gitUrl = integration.configs[Constants.PROFILE_GIT_URL_FIELD]!!,
+            gitUrl = integrationEntity.configs[Constants.PROFILE_GIT_URL_FIELD]!!,
         )
     }
 
