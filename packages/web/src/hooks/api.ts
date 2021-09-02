@@ -684,7 +684,7 @@ export function useTranslateSmartQuery(
 ) {
   const workspace = useWorkspace()
   return useQuery<string>(
-    ['connectors', 'translateSmartQuery', workspace.id, queryBuilderId, ...metricIds, JSON.stringify(metricIds)],
+    ['connectors', 'translateSmartQuery', workspace.id, queryBuilderId, ...metricIds, JSON.stringify(dimensions)],
     () =>
       request
         .post('/api/connectors/translateSmartQuery', {
