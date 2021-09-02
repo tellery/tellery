@@ -94,7 +94,7 @@ function Preview(props: { snapshot: Snapshot }) {
         height: 100%;
         width: 0;
         flex: 1;
-        padding: 20px;
+        padding: 16px;
       `}
     >
       <table.Diagram
@@ -129,9 +129,37 @@ function QueryBuilderConfigInner(props: {
           width: 280px;
           flex-shrink: 0;
           border-right: 1px solid ${ThemingVariables.colors.gray[1]};
-          padding: 0 20px;
+          padding: 16px;
         `}
       >
+        <div
+          className={css`
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+          `}
+        >
+          <h3
+            className={css`
+              margin: 0;
+              font-weight: 500;
+              font-size: 12px;
+              line-height: 15px;
+              color: ${ThemingVariables.colors.text[0]};
+            `}
+          >
+            Metrics
+          </h3>
+          <IconCommonAdd
+            color={ThemingVariables.colors.text[0]}
+            onClick={() => {
+              setActiveMetric(undefined)
+            }}
+            className={css`
+              cursor: pointer;
+            `}
+          />
+        </div>
         {Object.entries(metrics).map(([id, metric]) => (
           <div
             key={id}
@@ -142,11 +170,13 @@ function QueryBuilderConfigInner(props: {
               css`
                 height: 36px;
                 border-radius: 8px;
-                margin-top: 20px;
+                margin-top: 8px;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
                 cursor: pointer;
+                font-weight: normal;
+                font-size: 12px;
               `,
               id === activeMetric &&
                 css`
@@ -173,19 +203,6 @@ function QueryBuilderConfigInner(props: {
             </span>
           </div>
         ))}
-        <FormButton
-          variant={activeMetric ? 'secondary' : 'primary'}
-          onClick={() => {
-            setActiveMetric(undefined)
-          }}
-          className={css`
-            width: 100%;
-            padding: 8px 0;
-            margin-top: 20px;
-          `}
-        >
-          <IconCommonAdd />
-        </FormButton>
       </div>
       <PerfectScrollbar
         options={{ suppressScrollX: true }}
@@ -193,7 +210,7 @@ function QueryBuilderConfigInner(props: {
           width: 280px;
           flex-shrink: 0;
           border-right: 1px solid ${ThemingVariables.colors.gray[1]};
-          padding: 20px;
+          padding: 16px;
         `}
       >
         {activeMetric ? (
@@ -218,7 +235,7 @@ function QueryBuilderConfigInner(props: {
                 setActiveMetric(undefined)
               }}
               className={css`
-                margin-top: 20px;
+                margin-top: 8px;
               `}
             >
               Remove
@@ -338,7 +355,7 @@ function MetricConigCreator(props: {
                 )
               }}
               className={css`
-                margin-top: 20px;
+                margin-top: 8px;
               `}
             />
           ))
@@ -350,7 +367,7 @@ function MetricConigCreator(props: {
                 setSqlName(e.target.value)
               }}
               className={css`
-                margin-top: 20px;
+                margin-top: 8px;
               `}
             />
             <textarea
@@ -359,7 +376,7 @@ function MetricConigCreator(props: {
                 setSql(e.target.value)
               }}
               className={css`
-                margin-top: 20px;
+                margin-top: 8px;
                 width: 100%;
                 height: 200px;
                 resize: none;
@@ -387,7 +404,7 @@ function MetricConigCreator(props: {
         }}
         className={css`
           width: 100%;
-          margin-top: 20px;
+          margin-top: 8px;
         `}
       >
         Add all
