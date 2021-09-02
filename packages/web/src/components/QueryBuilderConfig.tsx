@@ -116,11 +116,12 @@ function QueryBuilderConfigInner(props: {
   }
   onChange(metrics: { [id: string]: Metric }): void
 }) {
-  const [activeMetric, setActiveMetric] = useState<string>()
+  const [activeMetricId, setActiveMetricId] = useState<string>()
   const [metrics, setMetrics] = useState(props.metrics || {})
   useEffect(() => {
     setMetrics(props.metrics || {})
   }, [props.metrics])
+  const activeMetric = activeMetricId ? metrics[activeMetricId] : undefined
 
   return (
     <>
@@ -153,7 +154,7 @@ function QueryBuilderConfigInner(props: {
           <IconCommonAdd
             color={ThemingVariables.colors.text[0]}
             onClick={() => {
-              setActiveMetric(undefined)
+              setActiveMetricId(undefined)
             }}
             className={css`
               cursor: pointer;
@@ -164,7 +165,7 @@ function QueryBuilderConfigInner(props: {
           <div
             key={id}
             onClick={() => {
-              setActiveMetric(id)
+              setActiveMetricId(id)
             }}
             className={cx(
               css`
@@ -178,7 +179,7 @@ function QueryBuilderConfigInner(props: {
                 font-weight: normal;
                 font-size: 12px;
               `,
-              id === activeMetric &&
+              id === activeMetricId &&
                 css`
                   background: ${ThemingVariables.colors.primary[1]};
                 `
@@ -190,7 +191,7 @@ function QueryBuilderConfigInner(props: {
                   padding: 0 16px;
                   font-size: 14px;
                 `,
-                id === activeMetric
+                id === activeMetricId
                   ? css`
                       color: ${ThemingVariables.colors.gray[5]};
                     `
@@ -213,29 +214,102 @@ function QueryBuilderConfigInner(props: {
           padding: 16px;
         `}
       >
-        {activeMetric ? (
+        <h3
+          className={css`
+            margin: 0;
+            font-weight: 500;
+            font-size: 12px;
+            line-height: 15px;
+            color: ${ThemingVariables.colors.text[0]};
+          `}
+        >
+          Metric information
+        </h3>
+        {activeMetricId ? (
           <>
             <div
               className={css`
                 font-weight: 500;
                 font-size: 12px;
                 color: ${ThemingVariables.colors.text[1]};
-                margin-top: 5px;
+                margin-top: 12px;
+                margin-bottom: 4px;
               `}
             >
               Name
             </div>
-            <div>{metrics[activeMetric] ? metrics[activeMetric].name : null}</div>
+            <FormInput value={activeMetric?.name || ''} disabled={true} />
+            {activeMetric && 'func' in activeMetric && (
+              <div
+                className={css`
+                  margin-top: 16px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                `}
+              >
+                <span
+                  className={css`
+                    font-weight: 500;
+                    font-size: 12px;
+                    line-height: 15px;
+                    color: ${ThemingVariables.colors.text[1]};
+                  `}
+                >
+                  Calculation
+                </span>
+                <span
+                  className={css`
+                    font-size: 12px;
+                    line-height: 14px;
+                    color: ${ThemingVariables.colors.text[0]};
+                  `}
+                >
+                  {activeMetric.func}
+                </span>
+              </div>
+            )}
+            {activeMetric && 'fieldName' in activeMetric && (
+              <div
+                className={css`
+                  margin-top: 16px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                `}
+              >
+                <span
+                  className={css`
+                    font-weight: 500;
+                    font-size: 12px;
+                    line-height: 15px;
+                    color: ${ThemingVariables.colors.text[1]};
+                  `}
+                >
+                  Column
+                </span>
+                <span
+                  className={css`
+                    font-size: 12px;
+                    line-height: 14px;
+                    color: ${ThemingVariables.colors.text[0]};
+                  `}
+                >
+                  {activeMetric.fieldName}
+                </span>
+              </div>
+            )}
             <FormButton
               variant="danger"
               onClick={() => {
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const { [activeMetric]: _removed, ...rest } = metrics
+                const { [activeMetricId]: _removed, ...rest } = metrics
                 setMetrics(rest)
-                setActiveMetric(undefined)
+                setActiveMetricId(undefined)
               }}
               className={css`
-                margin-top: 8px;
+                margin-top: 16px;
+                font-weight: normal;
               `}
             >
               Remove
@@ -255,7 +329,7 @@ function QueryBuilderConfigInner(props: {
                   return obj
                 }, {})
               })
-              setActiveMetric(id)
+              setActiveMetricId(id)
             }}
           />
         )}
@@ -330,6 +404,7 @@ function MetricConigCreator(props: {
         className={css`
           width: 100%;
           text-align: start;
+          margin-top: 16px;
         `}
       >
         {field ? (field.type ? field.name : 'Raw SQL') : 'Choose'}
