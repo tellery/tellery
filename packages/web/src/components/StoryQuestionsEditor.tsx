@@ -1142,7 +1142,7 @@ const QueryEditorSideTabs: React.FC<{
         }
       `}
     >
-      <TippySingletonContextProvider delay={500} arrow={false} placement="right">
+      <TippySingletonContextProvider delay={500} arrow={false} hideOnClick placement="right">
         <IconButton
           hoverContent={isDBT ? 'View DBT' : 'Edit SQL'}
           icon={isDBT ? IconCommonDbt : IconCommonSql}
