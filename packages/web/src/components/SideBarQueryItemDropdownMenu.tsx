@@ -95,13 +95,13 @@ export const SideBarQueryItemDropdownMenuContent: React.FC<{
           // setOpen(false)
         }}
       />
-      <MenuItem
-        icon={<IconMenuDuplicate color={ThemingVariables.colors.text[0]} />}
-        title={t`Duplicate`}
-        onClick={duplicateQueryHandler}
-      />
       {permissions.canWrite && (
         <>
+          <MenuItem
+            icon={<IconMenuDuplicate color={ThemingVariables.colors.text[0]} />}
+            title={t`Duplicate`}
+            onClick={duplicateQueryHandler}
+          />
           <MenuItemDivider />
           <MenuConfirmPopover
             width={180}
