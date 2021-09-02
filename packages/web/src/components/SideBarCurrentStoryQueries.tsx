@@ -14,6 +14,7 @@ import { useBlockSuspense, useFetchStoryChunk, useSearchSQLQueries } from '@app/
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useCommit } from '@app/hooks/useCommit'
 import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
+import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { useStoryResourceIds } from '@app/hooks/useStoryResourceIds'
 import { useStoryResources } from '@app/hooks/useStoryResources'
 import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
@@ -67,8 +68,22 @@ const StoryResources: React.FC<{ storyId: string }> = ({ storyId }) => {
 export const CurrentStoryQueries: React.FC<{ storyId: string }> = ({ storyId }) => {
   useFetchStoryChunk<Story | Thought>(storyId)
   const { t } = useTranslation()
+
+  return storyId ? (
+    <React.Suspense fallback={<></>}>
+      <SideBarSection>
+        <SideBarSectionHeader>{t`Queries`}</SideBarSectionHeader>
+        <Operations storyId={storyId} />
+      </SideBarSection>
+      <StoryResources storyId={storyId} />{' '}
+    </React.Suspense>
+  ) : null
+}
+
+const Operations: React.FC<{ storyId: string }> = ({ storyId }) => {
   const blockTranscations = useBlockTranscations()
   const questionEditor = useQuestionEditor(storyId)
+  const { t } = useTranslation()
 
   const createNewQuery = useCallback(async () => {
     if (!storyId) return
@@ -93,32 +108,29 @@ export const CurrentStoryQueries: React.FC<{ storyId: string }> = ({ storyId }) 
     })
     questionEditor.open({ mode: 'SQL', blockId: newBlock.id, storyId: newBlock.storyId! })
   }, [blockTranscations, questionEditor, storyId])
+  const permissions = useStoryPermissions(storyId)
 
-  return storyId ? (
-    <React.Suspense fallback={<></>}>
-      <SideBarSection>
-        <SideBarSectionHeader>{t`Queries`}</SideBarSectionHeader>
-        <div
-          className={css`
-            display: flex;
-            align-items: center;
-            > * + * {
-              margin-left: 16px;
-            }
-            > {
-              padding: 8px 0;
-            }
-          `}
-        >
-          <TippySingletonContextProvider arrow={false}>
-            <ImportOperation storyId={storyId} />
-            <IconButton icon={IconCommonAdd} hoverContent={t`Create a new query`} onClick={createNewQuery} />
-          </TippySingletonContextProvider>
-        </div>
-      </SideBarSection>
-      <StoryResources storyId={storyId} />{' '}
-    </React.Suspense>
-  ) : null
+  if (permissions.canWrite === false) return null
+
+  return (
+    <div
+      className={css`
+        display: flex;
+        align-items: center;
+        > * + * {
+          margin-left: 16px;
+        }
+        > {
+          padding: 8px 0;
+        }
+      `}
+    >
+      <TippySingletonContextProvider arrow={false}>
+        <ImportOperation storyId={storyId} />
+        <IconButton icon={IconCommonAdd} hoverContent={t`Create a new query`} onClick={createNewQuery} />
+      </TippySingletonContextProvider>
+    </div>
+  )
 }
 
 const ImportOperation: React.FC<{ storyId: string }> = ({ storyId }) => {
