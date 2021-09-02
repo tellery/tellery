@@ -7,46 +7,40 @@ import {
   IconCommonSql,
   IconMenuImport
 } from '@app/assets/icons'
+import { createTranscation } from '@app/context/editorTranscations'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useBindHovering } from '@app/hooks'
-import { useBlockSuspense, useFetchStoryChunk, useSearchBlocks, useSearchSQLQueries } from '@app/hooks/api'
+import { useBlockSuspense, useFetchStoryChunk, useSearchSQLQueries } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
+import { useCommit } from '@app/hooks/useCommit'
 import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
+import { useStoryResourceIds } from '@app/hooks/useStoryResourceIds'
 import { useStoryResources } from '@app/hooks/useStoryResources'
 import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
+import { useTippySingleton } from '@app/hooks/useTippySingleton'
 import { ThemingVariables } from '@app/styles'
 import { Editor, Story, Thought } from '@app/types'
-import { DnDItemTypes, DndItemDataBlockType } from '@app/utils/dnd'
+import { DndItemDataBlockType, DnDItemTypes } from '@app/utils/dnd'
 import { useDraggable } from '@dnd-kit/core'
 import { css } from '@emotion/css'
-import Tippy, { useSingleton } from '@tippyjs/react'
+import Tippy from '@tippyjs/react'
 import { motion } from 'framer-motion'
 import React, { memo, ReactNode, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import PerfectScrollbar from 'react-perfect-scrollbar'
 import { ReactEventHandlers } from 'react-use-gesture/dist/types'
+import { Popover, PopoverDisclosure, usePopoverState } from 'reakit'
 import { BlockTitle, useGetBlockTitleTextSnapshot } from './editor'
 import { isDataAssetBlock } from './editor/Blocks/utils'
 import { useStoryQueryVisulizations } from './editor/hooks/useStoryQueryVisulizations'
 import IconButton from './kit/IconButton'
 import { LazyTippy } from './LazyTippy'
+import { SearchInput } from './SearchInput'
 import { SideBarInspectQueryBlockPopover } from './SideBarInspectQueryBlockPopover'
+import { SideBarQueryItemDropdownMenu } from './SideBarQueryItemDropdownMenu'
 import { SideBarSection } from './SideBarSection'
 import { SideBarSectionHeader } from './SideBarSectionHeader'
-import { SideBarQueryItemDropdownMenu } from './SideBarQueryItemDropdownMenu'
-import PerfectScrollbar from 'react-perfect-scrollbar'
-import {
-  Dialog,
-  DialogBackdrop,
-  DialogDisclosure,
-  Popover,
-  PopoverDisclosure,
-  useDialogState,
-  usePopoverState
-} from 'reakit'
-import { SearchInput } from './SearchInput'
-import { useStoryResourceIds } from '@app/hooks/useStoryResourceIds'
-import { createTranscation, insertBlocksAndMoveOperations } from '@app/context/editorTranscations'
-import { useCommit } from '@app/hooks/useCommit'
+import { TippySingletonContextProvider } from './TippySingletonContextProvider'
 
 const StoryResources: React.FC<{ storyId: string }> = ({ storyId }) => {
   const resourceBlocks = useStoryResources(storyId)
@@ -97,7 +91,6 @@ export const CurrentStoryQueries: React.FC<{ storyId: string }> = ({ storyId }) 
     })
     questionEditor.open({ mode: 'SQL', blockId: newBlock.id, storyId: newBlock.storyId! })
   }, [blockTranscations, questionEditor, storyId])
-  const [source, target] = useSingleton()
 
   return storyId ? (
     <React.Suspense fallback={<></>}>
@@ -115,14 +108,10 @@ export const CurrentStoryQueries: React.FC<{ storyId: string }> = ({ storyId }) 
             }
           `}
         >
-          <Tippy singleton={source} delay={500} arrow={false} />
-          <ImportOperation tippySingleton={target} storyId={storyId} />
-          <IconButton
-            tippySingleton={target}
-            icon={IconCommonAdd}
-            hoverContent={t`Create a new query`}
-            onClick={createNewQuery}
-          />
+          <TippySingletonContextProvider delay={500} arrow={false}>
+            <ImportOperation storyId={storyId} />
+            <IconButton icon={IconCommonAdd} hoverContent={t`Create a new query`} onClick={createNewQuery} />
+          </TippySingletonContextProvider>
         </div>
       </SideBarSection>
       <StoryResources storyId={storyId} />{' '}
@@ -130,7 +119,7 @@ export const CurrentStoryQueries: React.FC<{ storyId: string }> = ({ storyId }) 
   ) : null
 }
 
-const ImportOperation: React.FC<{ tippySingleton: unknown; storyId: string }> = ({ tippySingleton, storyId }) => {
+const ImportOperation: React.FC<{ storyId: string }> = ({ storyId }) => {
   const popover = usePopoverState({ placement: 'right-start' })
 
   const { t } = useTranslation()
@@ -165,7 +154,6 @@ const ImportOperation: React.FC<{ tippySingleton: unknown; storyId: string }> = 
     <>
       <PopoverDisclosure
         as={IconButton}
-        tippySingleton={tippySingleton}
         hoverContent={t`Import a query from other stories`}
         icon={IconMenuImport}
         {...popover}

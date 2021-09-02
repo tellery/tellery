@@ -27,6 +27,7 @@ import { SideBarPinnedStoriesSection } from './SideBarPinnedStoriesSection'
 import { SideBarThoughtsSection } from './SideBarThoughtsSection'
 import { UserModal } from './UserModal'
 import { WorkspaceModal } from './WorkspaceModal'
+import { TippySingletonContextProvider } from './TippySingletonContextProvider'
 
 const FOLDED_WIDTH = 68
 const SIDEBAR_WIDTH = 274
@@ -168,24 +169,26 @@ const SideBarContent: React.FC = () => {
             margin-top: auto;
           `}
         >
-          <MainSideBarItem
-            icon={IconCommonSearch}
-            hoverTitle={t`Search`}
-            onClick={() => {
-              setOmniboxShow(true)
-              closeSideBar()
-            }}
-          />
-          <MainSideBarItem
-            icon={IconCommonHome}
-            hoverTitle={t`Home`}
-            onClick={() => {
-              history.push('/stories')
-              closeSideBar()
-            }}
-          />
-          {/* <MainSideBarItem icon={IconCommonAdd} hoverTitle="Create a new story" onClick={handleCreateNewSotry} /> */}
-          <MainSideBarItem icon={IconCommonSetting} hoverTitle={t`Settings`} onClick={showSettingsModal} />
+          <TippySingletonContextProvider delay={500} placement="right" arrow={false}>
+            <MainSideBarItem
+              icon={IconCommonSearch}
+              hoverTitle={t`Search`}
+              onClick={() => {
+                setOmniboxShow(true)
+                closeSideBar()
+              }}
+            />
+            <MainSideBarItem
+              icon={IconCommonHome}
+              hoverTitle={t`Home`}
+              onClick={() => {
+                history.push('/stories')
+                closeSideBar()
+              }}
+            />
+            {/* <MainSideBarItem icon={IconCommonAdd} hoverTitle="Create a new story" onClick={handleCreateNewSotry} /> */}
+            <MainSideBarItem icon={IconCommonSetting} hoverTitle={t`Settings`} onClick={showSettingsModal} />
+          </TippySingletonContextProvider>
         </div>
       </div>
       <FloatingSideBar show={!!activeSideBarTab}>

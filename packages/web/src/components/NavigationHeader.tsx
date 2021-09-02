@@ -25,6 +25,7 @@ import IconButton from './kit/IconButton'
 import { RefreshButton } from './RefreshButton'
 import { StoryConfigPopOver } from './StoryConfigPopOver'
 import { StoryVisits } from './StoryVisits'
+import { TippySingletonContextProvider } from './TippySingletonContextProvider'
 
 export const _NavigationHeader = (props: {
   storyId: string
@@ -54,114 +55,116 @@ export const _NavigationHeader = (props: {
 
   return (
     <>
-      {permissions.locked && (
-        <Tippy content="Locked" placement="bottom" delay={500}>
-          <span
-            className={css`
-              display: inline-flex;
-              flex: 0 0;
-              align-items: center;
-              justify-self: flex-start;
-              margin-right: 10px;
-            `}
-          >
-            <IconCommonLock />
-          </span>
-        </Tippy>
-      )}
-      {permissions.isPrivate && (
-        <Tippy content="Private" placement="bottom" delay={500}>
-          <span
-            className={css`
-              display: inline-flex;
-              flex: 0 0;
-              align-items: center;
-              justify-self: flex-start;
-              margin-right: 10px;
-            `}
-          >
-            <IconMenuShow />
-          </span>
-        </Tippy>
-      )}
-      <div
-        className={css`
-          flex: 1 1;
-          font-size: 16px;
-          line-height: 19px;
-          font-weight: 400;
-          color: ${ThemingVariables.colors.text[0]};
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        `}
-      >
-        {props.title}
-      </div>
-      <div
-        className={css`
-          font-size: 0;
-          display: flex;
-          flex: 0 0;
-          justify-self: flex-end;
-          justify-content: flex-end;
-          align-items: center;
-          margin-left: 10px;
-        `}
-      >
-        <StoryVisits storyId={props.storyId} />
+      <TippySingletonContextProvider delay={500} placement="bottom" arrow={false}>
+        {permissions.locked && (
+          <Tippy content="Locked" placement="bottom" delay={500}>
+            <span
+              className={css`
+                display: inline-flex;
+                flex: 0 0;
+                align-items: center;
+                justify-self: flex-start;
+                margin-right: 10px;
+              `}
+            >
+              <IconCommonLock />
+            </span>
+          </Tippy>
+        )}
+        {permissions.isPrivate && (
+          <Tippy content="Private" placement="bottom" delay={500}>
+            <span
+              className={css`
+                display: inline-flex;
+                flex: 0 0;
+                align-items: center;
+                justify-self: flex-start;
+                margin-right: 10px;
+              `}
+            >
+              <IconMenuShow />
+            </span>
+          </Tippy>
+        )}
         <div
           className={css`
-            height: 24px;
-            margin: 0 20px;
-            border-right: solid 1px ${ThemingVariables.colors.gray[1]};
+            flex: 1 1;
+            font-size: 16px;
+            line-height: 19px;
+            font-weight: 400;
+            color: ${ThemingVariables.colors.text[0]};
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
           `}
-        />
-        {permissions.canWrite && (
-          <>
-            <RefreshAllQuestionBlockButton storyId={props.storyId} />
+        >
+          {props.title}
+        </div>
+        <div
+          className={css`
+            font-size: 0;
+            display: flex;
+            flex: 0 0;
+            justify-self: flex-end;
+            justify-content: flex-end;
+            align-items: center;
+            margin-left: 10px;
+          `}
+        >
+          <StoryVisits storyId={props.storyId} />
+          <div
+            className={css`
+              height: 24px;
+              margin: 0 20px;
+              border-right: solid 1px ${ThemingVariables.colors.gray[1]};
+            `}
+          />
+          {permissions.canWrite && (
+            <>
+              <RefreshAllQuestionBlockButton storyId={props.storyId} />
+              <IconButton
+                hoverContent={props.format?.fullWidth ? 'Dsiable Full Width' : 'Full Width'}
+                icon={props.format?.fullWidth ? IconMenuNormalWidth : IconMenuFullWidth}
+                color={ThemingVariables.colors.text[0]}
+                className={css`
+                  margin-right: 20px;
+                `}
+                onClick={() => {
+                  setStoryFormat('fullWidth', !props.format?.fullWidth)
+                }}
+              />
+            </>
+          )}
+
+          {props.pinned ? (
             <IconButton
-              hoverContent={props.format?.fullWidth ? 'Dsiable Full Width' : 'Full Width'}
-              icon={props.format?.fullWidth ? IconMenuNormalWidth : IconMenuFullWidth}
-              color={ThemingVariables.colors.text[0]}
-              className={css`
-                margin-right: 20px;
-              `}
-              onClick={() => {
-                setStoryFormat('fullWidth', !props.format?.fullWidth)
+              hoverContent={'Favorite'}
+              icon={IconCommonStarFill}
+              onClick={async () => {
+                if (!workspaceView) {
+                  return
+                }
+                await blockTranscation.unpinStory(workspaceView.id, props.storyId)
+                refetchWorkspaceView()
               }}
             />
-          </>
-        )}
-
-        {props.pinned ? (
-          <IconButton
-            hoverContent={'Favorite'}
-            icon={IconCommonStarFill}
-            onClick={async () => {
-              if (!workspaceView) {
-                return
-              }
-              await blockTranscation.unpinStory(workspaceView.id, props.storyId)
-              refetchWorkspaceView()
-            }}
-          />
-        ) : (
-          <IconButton
-            hoverContent={'Favorite'}
-            icon={IconCommonStar}
-            color={ThemingVariables.colors.text[0]}
-            onClick={async () => {
-              if (!workspaceView) {
-                return
-              }
-              await blockTranscation.pinStory(workspaceView.id, props.storyId)
-              refetchWorkspaceView()
-            }}
-          />
-        )}
-        {props.storyId && <StoryConfigButton storyId={props.storyId} />}
-      </div>
+          ) : (
+            <IconButton
+              hoverContent={'Favorite'}
+              icon={IconCommonStar}
+              color={ThemingVariables.colors.text[0]}
+              onClick={async () => {
+                if (!workspaceView) {
+                  return
+                }
+                await blockTranscation.pinStory(workspaceView.id, props.storyId)
+                refetchWorkspaceView()
+              }}
+            />
+          )}
+          {props.storyId && <StoryConfigButton storyId={props.storyId} />}
+        </div>
+      </TippySingletonContextProvider>
     </>
   )
 }
