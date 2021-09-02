@@ -222,7 +222,7 @@ function QueryBuilderConfigInner(props: {
             color: ${ThemingVariables.colors.text[0]};
           `}
         >
-          Metric information
+          {activeMetricId ? 'Metric information' : 'New metric'}
         </h3>
         {activeMetricId ? (
           <>
@@ -309,7 +309,7 @@ function QueryBuilderConfigInner(props: {
                     margin-bottom: 4px;
                   `}
                 >
-                  Raw SQL
+                  SQL
                 </div>
                 <textarea
                   defaultValue={activeMetric.rawSql}
@@ -420,7 +420,7 @@ function MetricConigCreator(props: {
             ))}
             <MenuItemDivider />
             <MenuItem
-              title="Raw SQL"
+              title="Custom SQL metric"
               onClick={() => {
                 onClick()
                 setField({ name: '' })
@@ -434,7 +434,7 @@ function MetricConigCreator(props: {
           margin-top: 16px;
         `}
       >
-        {field ? (field.type ? field.name : 'Raw SQL') : 'Choose'}
+        {field ? (field.type ? field.name : 'Custom SQL metric') : 'Choose'}
       </FormDropdown>
       {field ? (
         field.type ? (
@@ -505,7 +505,7 @@ function MetricConigCreator(props: {
                 margin-bottom: 4px;
               `}
             >
-              Raw SQL
+              SQL
             </div>
             <textarea
               value={sql}
