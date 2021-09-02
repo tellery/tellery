@@ -21,9 +21,10 @@ export default forwardRef<
     size?: number
     hoverContent?: ReactNode
     spin?: boolean
+    tippySingleton?: any
   } & ButtonHTMLAttributes<HTMLButtonElement>
 >(function IconButton(props, ref) {
-  const { icon, spin, size, className, hoverContent, ...restProps } = props
+  const { icon, spin, size, className, hoverContent, tippySingleton, ...restProps } = props
   const iconProps = useMemo(
     () =>
       omitBy(
@@ -50,7 +51,13 @@ export default forwardRef<
   }, [controls, spin])
 
   return (
-    <Tippy content={hoverContent ?? null} hideOnClick={false} arrow={false} disabled={!hoverContent}>
+    <Tippy
+      singleton={tippySingleton}
+      content={hoverContent ?? null}
+      hideOnClick={false}
+      arrow={false}
+      disabled={!hoverContent}
+    >
       <button
         ref={ref}
         className={cx(

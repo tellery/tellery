@@ -29,8 +29,9 @@ import { useCommit } from '@app/hooks/useCommit'
 import { useFetchBlock } from '@app/hooks/useFetchBlock'
 import { useInterval } from '@app/hooks/useInterval'
 import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
+import { useStoryResourceIds } from '@app/hooks/useStoryResourceIds'
 import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
-import { BlockResourcesAtom, useBlockSnapshot } from '@app/store/block'
+import { useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { PopoverMotionVariants } from '@app/styles/animations'
 import { Editor } from '@app/types'
@@ -61,7 +62,6 @@ import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useMeasure } from 'react-use'
 import { Menu, MenuButton, MenuItem, MenuStateReturn, useMenuState } from 'reakit'
-import { useRecoilValue } from 'recoil'
 import invariant from 'tiny-invariant'
 import { BlockingUI } from '../BlockBase/BlockingUIBlock'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
@@ -287,7 +287,7 @@ const _VisualizationBlockContent: React.FC<{
   const queryBlock = useBlockSuspense<Editor.QueryBlock>(queryId)
   const snapshotId = queryBlock?.content?.snapshotId
   const commit = useCommit()
-  const storyBlockResources = useRecoilValue(BlockResourcesAtom(block.storyId!))
+  const storyBlockResources = useStoryResourceIds(block.storyId!)
 
   const mutateSnapshot = useRefreshSnapshot()
   const mutatingCount = useSnapshotMutating(queryBlock.id)
