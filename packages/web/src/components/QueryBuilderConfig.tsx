@@ -28,8 +28,15 @@ export default function QueryBuilderConfig(props: {
     setIsQueryBuilder(props.value.type === Editor.BlockType.QueryBuilder)
   }, [props.value.type])
   const snapshot = useSnapshot(props.value.content?.snapshotId)
+  const fields = useMemo(
+    () =>
+      snapshot?.data.fields
+        .filter((field) => field.sqlType)
+        .map((field) => ({ name: field.name, type: field.sqlType! })),
+    [snapshot?.data.fields]
+  )
 
-  if (!isQueryBuilder || !snapshot) {
+  if (!isQueryBuilder || !snapshot || !fields) {
     return (
       <div
         className={cx(
@@ -56,51 +63,6 @@ export default function QueryBuilderConfig(props: {
     )
   }
   return (
-    <QueryBuilderConfigInner
-      value={props.value}
-      onChange={props.onChange}
-      snapshot={snapshot}
-      className={props.className}
-    />
-  )
-}
-
-function QueryBuilderConfigInner(props: {
-  value: Editor.QueryBuilder
-  onChange(
-    fields: {
-      name: string
-      type: string
-    }[],
-    metrics: {
-      [id: string]: Metric
-    }
-  ): void
-  snapshot: Snapshot
-  className?: string
-}) {
-  const [activeMetric, setActiveMetric] = useState<string>()
-  const ref = useRef<HTMLDivElement>(null)
-  const dimensions = useDimensions(ref, 0)
-  const [metrics, setMetrics] = useState(props.value.content?.metrics || {})
-  useEffect(() => {
-    setMetrics(props.value.content?.metrics || {})
-  }, [props.value.content?.metrics])
-  const fields = useMemo(
-    () =>
-      props.snapshot.data.fields
-        .filter((field) => field.sqlType)
-        .map((field) => ({ name: field.name, type: field.sqlType! })),
-    [props.snapshot.data.fields]
-  )
-  const { onChange } = props
-  useEffect(() => {
-    if (fields) {
-      onChange(fields, metrics)
-    }
-  }, [fields, metrics, onChange])
-
-  return (
     <div
       className={cx(
         css`
@@ -109,6 +71,59 @@ function QueryBuilderConfigInner(props: {
         props.className
       )}
     >
+      <QueryBuilderConfigInner
+        fields={fields}
+        metrics={(props.value as Editor.QueryBuilder).content?.metrics}
+        onChange={(metrics) => {
+          props.onChange(fields, metrics)
+        }}
+      />
+      <Preview snapshot={snapshot} />
+    </div>
+  )
+}
+
+function Preview(props: { snapshot: Snapshot }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const dimensions = useDimensions(ref, 0)
+
+  return (
+    <div
+      ref={ref}
+      className={css`
+        height: 100%;
+        width: 0;
+        flex: 1;
+        padding: 20px;
+      `}
+    >
+      <table.Diagram
+        dimensions={dimensions}
+        config={table.initializeConfig(props.snapshot.data, {})}
+        data={props.snapshot.data}
+      />
+    </div>
+  )
+}
+
+function QueryBuilderConfigInner(props: {
+  fields: {
+    name: string
+    type: string
+  }[]
+  metrics?: {
+    [id: string]: Metric
+  }
+  onChange(metrics: { [id: string]: Metric }): void
+}) {
+  const [activeMetric, setActiveMetric] = useState<string>()
+  const [metrics, setMetrics] = useState(props.metrics || {})
+  useEffect(() => {
+    setMetrics(props.metrics || {})
+  }, [props.metrics])
+
+  return (
+    <>
       <div
         className={css`
           width: 280px;
@@ -211,7 +226,7 @@ function QueryBuilderConfigInner(props: {
           </>
         ) : (
           <MetricConigCreator
-            fields={fields}
+            fields={props.fields}
             metrics={metrics}
             onCreate={(ms) => {
               let id: string | undefined
@@ -228,22 +243,7 @@ function QueryBuilderConfigInner(props: {
           />
         )}
       </PerfectScrollbar>
-      <div
-        ref={ref}
-        className={css`
-          height: 100%;
-          width: 0;
-          flex: 1;
-          padding: 20px;
-        `}
-      >
-        <table.Diagram
-          dimensions={dimensions}
-          config={table.initializeConfig(props.snapshot.data, {})}
-          data={props.snapshot.data}
-        />
-      </div>
-    </div>
+    </>
   )
 }
 
