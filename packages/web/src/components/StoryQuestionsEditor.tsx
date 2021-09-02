@@ -1267,7 +1267,20 @@ const QueryEditorSideTabs: React.FC<{
             }}
           />
         )}
-        {queryBlockType === Editor.BlockType.QueryBuilder ? null : (
+        {queryBlockType === Editor.BlockType.SmartQuery ? (
+          <IconButton
+            icon={IconCommonMetrics}
+            className={css`
+              &::after {
+                display: ${mode === 'SMART_QUERY' ? 'visible' : 'none'};
+              }
+            `}
+            color={mode === 'SMART_QUERY' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
+            onClick={() => {
+              setMode('SMART_QUERY')
+            }}
+          />
+        ) : (
           <IconButton
             hoverContent="Query builder"
             icon={IconCommonDataAssetSetting}
@@ -1282,20 +1295,6 @@ const QueryEditorSideTabs: React.FC<{
             }}
           />
         )}
-        {queryBlockType === Editor.BlockType.SmartQuery ? (
-          <IconButton
-            icon={IconCommonMetrics}
-            className={css`
-              &::after {
-                display: ${mode === 'SMART_QUERY' ? 'visible' : 'none'};
-              }
-            `}
-            color={mode === 'SMART_QUERY' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
-            onClick={() => {
-              setMode('SMART_QUERY')
-            }}
-          />
-        ) : null}
       </TippySingletonContextProvider>
     </div>
   )
