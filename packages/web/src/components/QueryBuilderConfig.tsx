@@ -376,6 +376,17 @@ function MetricConigCreator(props: {
 
   return (
     <>
+      <div
+        className={css`
+          font-weight: 500;
+          font-size: 12px;
+          color: ${ThemingVariables.colors.text[1]};
+          margin-top: 12px;
+          margin-bottom: 4px;
+        `}
+      >
+        Column
+      </div>
       <FormDropdown
         menu={({ onClick }) => (
           <MenuWrapper>
@@ -404,11 +415,21 @@ function MetricConigCreator(props: {
         className={css`
           width: 100%;
           text-align: start;
-          margin-top: 16px;
         `}
       >
         {field ? (field.type ? field.name : 'Raw SQL') : 'Choose'}
       </FormDropdown>
+      <div
+        className={css`
+          font-weight: 500;
+          font-size: 12px;
+          color: ${ThemingVariables.colors.text[1]};
+          margin-top: 12px;
+          margin-bottom: 4px;
+        `}
+      >
+        Calculations
+      </div>
       {field ? (
         field.type ? (
           getFuncs(field.type, spec?.queryBuilderSpec.aggregation).map((func) => (
@@ -504,7 +525,14 @@ function MetricItem(props: {
           justify-content: space-between;
         `}
       >
-        {props.func}
+        <div
+          className={css`
+            font-size: 12px;
+            line-height: 14px;
+          `}
+        >
+          {props.func}
+        </div>
         <FormSwitch
           disabled={props.disabled}
           checked={typeof props.value !== 'undefined'}
