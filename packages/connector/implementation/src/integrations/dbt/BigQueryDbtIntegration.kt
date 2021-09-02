@@ -2,9 +2,9 @@ package io.tellery.integrations
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.module.kotlin.readValue
-import entities.NewProfile
 import io.tellery.connectors.BigQueryConnector
 import io.tellery.connectors.fields.BigQueryFields
+import io.tellery.entities.NewProfile
 import java.util.*
 
 @Type("BigQuery")

@@ -5,8 +5,6 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.protobuf.util.JsonFormat
-import entities.Integration
-import entities.NewProfile
 import getResourceFileURL
 import getResourceString
 import io.kotest.common.ExperimentalKotest
@@ -18,6 +16,8 @@ import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.mockk.*
+import io.tellery.entities.Integration
+import io.tellery.entities.NewProfile
 import io.tellery.grpc.DbtBlock
 import io.tellery.grpc.QuestionBlockContent
 import io.tellery.managers.DbtManagerV2

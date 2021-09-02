@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package tellery.grpc;
+option java_package = "io.tellery.grpc";
+option java_outer_classname = "TelleryConnectorProto";
+option java_multiple_files = true;
+
+import "google/protobuf/empty.proto";
+import "connector.proto";
+
+service ConnectorV2 {
+  rpc GetDatabases (google.protobuf.Empty) returns (Databases);
+  rpc GetCollections (GetCollectionRequestV2) returns (Collections);
+  rpc GetCollectionSchema (GetCollectionSchemaRequestV2) returns (Schema);
+  rpc Query (SubmitQueryRequestV2) returns (stream QueryResult);
+  rpc ImportFromFile (ImportRequestV2) returns (ImportResult);
+}
+
+message GetCollectionRequestV2 {
+  string database = 1;
+}
+
+message GetCollectionSchemaRequestV2 {
+  string database = 1;
+  string collection = 2;
+  string schema = 3;
+}
+
+message SubmitQueryRequestV2 {
+  string sql = 1;
+  string questionId = 2;
+  int32 maxRow = 3;
+}
+
+message ImportRequestV2 {
+  string database = 1;
+  string collection = 2;
+  string schema = 3;
+  string url = 4;
+}

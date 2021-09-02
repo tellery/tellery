@@ -1,7 +1,5 @@
 package io.tellery.entities
 
-import entities.NewProfile
-
 data class Profile(
     val type: String,
     val name: String,

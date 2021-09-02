@@ -1,7 +1,7 @@
 package io.tellery.managers.impl
 
-import entities.Integration
-import entities.NewProfile
+import io.tellery.entities.Integration
+import io.tellery.entities.NewProfile
 import io.tellery.managers.ProfileManager
 import org.ktorm.database.Database
 import org.ktorm.dsl.*
