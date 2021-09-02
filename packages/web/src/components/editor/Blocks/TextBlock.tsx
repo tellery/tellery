@@ -26,12 +26,15 @@ const _TextBlock: React.ForwardRefRenderFunction<any, TextBlockProps> = ({ block
 
   return (
     <>
-      <ContentEditable
-        block={block}
-        className={TEXT_BLOCK_CLASS.get(block.type)}
-        ref={editableRef}
-        readonly={readonly}
-      ></ContentEditable>
+      {/* TODO: suspense story assets */}
+      <React.Suspense fallback={<></>}>
+        <ContentEditable
+          block={block}
+          className={TEXT_BLOCK_CLASS.get(block.type)}
+          ref={editableRef}
+          readonly={readonly}
+        ></ContentEditable>
+      </React.Suspense>
       {children}
     </>
   )

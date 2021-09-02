@@ -105,6 +105,7 @@ export const SideBarQueryItemDropdownMenuContent: React.FC<{
           <MenuItemDivider />
           <MenuConfirmPopover
             width={180}
+            disabled={visulizationsCount !== 0}
             content={
               <div>
                 <div
