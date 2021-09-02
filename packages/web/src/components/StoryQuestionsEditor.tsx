@@ -732,20 +732,22 @@ export const StoryQuestionEditor: React.FC<{
         ;(draftBlock as Editor.QueryBuilder).content!.fields = fields
         ;(draftBlock as Editor.QueryBuilder).content!.metrics = metrics
       }
+      if (fields?.length && Object.keys(metrics || {}).length) {
+        draftBlock.type = Editor.BlockType.QueryBuilder
+      }
 
       if (draftBlock.type === Editor.BlockType.SmartQuery) {
         ;(draftBlock as Editor.SmartQueryBlock).content!.metricIds = metricIds
         ;(draftBlock as Editor.SmartQueryBlock).content!.dimensions = dimensions
+      }
+      if (metricIds.length && dimensions.length) {
+        draftBlock.type = Editor.BlockType.SmartQuery
       }
 
       draftBlock.content!.snapshotId = snapShotId
       draftBlock.content!.error = null
       draftBlock.content!.title = queryTitle ?? []
       draftBlock.content!.lastRunAt = Date.now()
-
-      if (fields?.length && Object.keys(metrics || {}).length) {
-        draftBlock.type = Editor.BlockType.QueryBuilder
-      }
     })
     setVisualizationBlock(block.id, (draftBlock) => {
       draftBlock.content!.visualization = visualizationConfig
