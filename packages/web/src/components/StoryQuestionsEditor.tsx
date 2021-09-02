@@ -7,6 +7,7 @@ import {
   IconCommonError,
   IconCommonLock,
   IconCommonDataAsset,
+  IconCommonDataAssetSetting,
   IconCommonRun,
   IconCommonSave,
   IconCommonSql,
@@ -1255,7 +1256,7 @@ const QueryEditorSideTabs: React.FC<{
       {queryBlockType === Editor.BlockType.SQL || queryBlockType === Editor.BlockType.QueryBuilder ? (
         <Tippy content="Query builder" arrow={false} singleton={target}>
           <IconButton
-            icon={IconCommonDataAsset}
+            icon={IconCommonDataAssetSetting}
             className={css`
               &::after {
                 display: ${mode === 'QUERY_BUILDER' ? 'visible' : 'none'};

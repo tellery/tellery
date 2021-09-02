@@ -55,7 +55,7 @@ export default function QueryBuilderConfig(props: {
               variant="primary"
               onClick={() => setIsQueryBuilder(true)}
             >
-              Convert as data assets
+              Create as data asset
             </FormButton>
           </div>
         </Tippy>
