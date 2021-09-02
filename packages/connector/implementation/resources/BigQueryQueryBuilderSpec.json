@@ -15,6 +15,7 @@
     }
   },
   "bucketization": {
+    "CHAR,VARCHAR,LONGVARCHAR,TINYINT,SMALLINT,INTEGER,BIGINT": {},
     "DATE,TIME,TIMESTAMP": {
       "byYear": "EXTRACT(YEAR FROM ?)",
       "byMonth": "FORMAT_DATE(\"%Y-%m\", ?)",
