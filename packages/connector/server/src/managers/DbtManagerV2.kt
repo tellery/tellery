@@ -22,7 +22,7 @@ import io.tellery.grpc.DbtBlock
 import io.tellery.grpc.QuestionBlockContent
 import io.tellery.integrations.BaseDbtProfile
 import io.tellery.integrations.DbtIntegration
-import io.tellery.integrations.Type
+import io.tellery.integrations.DbtIntegrationType
 import io.tellery.utils.GitUtilsV2.checkoutMasterAndPull
 import io.tellery.utils.GitUtilsV2.checkoutNewBranchAndCommitAndPush
 import io.tellery.utils.GitUtilsV2.cloneRemoteRepo
@@ -50,17 +50,17 @@ import entities.ProjectConfig as config
 class DbtManagerV2(private val profileManager: ProfileManager) {
     private val lock = ReentrantReadWriteLock()
     private val dbtIntegrationTypeToClass = DbtIntegration::class.allSubclasses
-        .filter { it.hasAnnotation<Type>() }
-        .associateBy { it.findAnnotation<Type>()!!.value }
+        .filter { it.hasAnnotation<DbtIntegrationType>() }
+        .associateBy { it.findAnnotation<DbtIntegrationType>()!!.value }
 
     /**
-     * Connector and context are a read more write fewer resources, so we store the state in memory
-     * to replace requesting from the database every time.
-     * Dbt profile file is a resource that needs to be async with the latest profile, and it is base
-     * on the file system, so we need to get a write lock before update it.
+     * Connector and context are read-more-write-fewer resources, so we store the state in memory
+     * to replace requesting from the database each time.
+     * Dbt profile file is a resource that needs to be async with the latest profile, and it is based
+     * on the file system, so we need to get a write lock before updating it.
      *
-     * In summary, we require a read-write lock in this class, get write lock when reload context and
-     * get read lock when do other dbt operate.
+     * In summary, we require a read-write lock in this class, get write lock when reloading context and
+     * get read lock when doing other dbt operations.
      */
     private var connector: NewProfile? = null
     private var context: Context? = null
@@ -90,7 +90,7 @@ class DbtManagerV2(private val profileManager: ProfileManager) {
         /**
          * FileUtils.forceMkdir() ignores the situation that dir is exists;
          * File.createNewFile() returns false while the file is exists;
-         * so it needn't to check the file is exists.
+         * so it doesn't need to check if the file is exists.
          */
         FileUtils.forceMkdir(globalRepoDir.toFile())
         FileUtils.forceMkdir(keyDir.toFile())
@@ -210,7 +210,7 @@ class DbtManagerV2(private val profileManager: ProfileManager) {
 
     /**
      * Insure the "dbt_project.yml" file has the valid "model" node,
-     * if it need update the project file, the function will push the diff to remote repository after updating file.
+     * if it need to update the project file, the function will push the diff to the remote repository after updating the file.
      *
      * The "tellery" file must be in the "model" node, and the value must be 'materialized: "ephemeral"',
      * the settings can make "dbt compile" command ignore the tellery folder during the compilation process.
@@ -268,8 +268,7 @@ class DbtManagerV2(private val profileManager: ProfileManager) {
     } ?: throw DbtContextNotInitException()
 
     private fun reloadDbtProfile() = connector?.let {
-        val clazz = dbtIntegrationTypeToClass[it.type]
-            ?: throw RuntimeException("The type(${it.type}) is not supported in dbt integration.")
+        val clazz = dbtIntegrationTypeToClass[it.type]!!
         val dbtIntegration = clazz.primaryConstructor!!.call()
         val dbtProfileMap =
             mapOf(context!!.name to Entity(Output(dbtIntegration.transformToDbtProfile(it))))

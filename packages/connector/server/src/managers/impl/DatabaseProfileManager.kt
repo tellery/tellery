@@ -1,5 +1,6 @@
 package io.tellery.managers.impl
 
+import entities.MissRequiredConfigException
 import io.tellery.entities.Integration
 import io.tellery.entities.NewProfile
 import io.tellery.managers.ProfileManager
@@ -15,7 +16,7 @@ import entities.ProjectConfig as config
 class DatabaseProfileManager : ProfileManager {
 
     val client: Database = Database.connect(
-        url = config.databaseURL ?: throw RuntimeException(),
+        url = config.databaseURL ?: throw MissRequiredConfigException("databaseURL"),
         driver = "org.postgresql.Driver",
         user = config.databaseUser,
         password = config.databasePassword

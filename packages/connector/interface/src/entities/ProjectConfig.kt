@@ -1,6 +1,7 @@
 package entities
 
 import com.typesafe.config.ConfigFactory
+import io.tellery.entities.CustomizedException
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -52,3 +53,6 @@ object ProjectConfig {
         CLUSTER("database")
     }
 }
+
+class MissRequiredConfigException(configName: String) :
+    CustomizedException("$configName is a required config field, you must set it to start the server.")

@@ -1,6 +1,4 @@
-package annotations
-
-import io.tellery.annotations.Config
+package io.tellery.annotations
 
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)

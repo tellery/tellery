@@ -7,7 +7,7 @@ import io.tellery.connectors.fields.BigQueryFields
 import io.tellery.entities.NewProfile
 import java.util.*
 
-@Type("BigQuery")
+@DbtIntegrationType("BigQuery")
 class BigQueryDbtIntegration : DbtIntegration() {
 
     override fun transformToDbtProfile(profile: NewProfile): BigQueryDbtProfile {
