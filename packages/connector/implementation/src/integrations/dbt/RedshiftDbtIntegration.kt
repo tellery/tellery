@@ -1,19 +1,19 @@
 package io.tellery.integrations
 
 import io.tellery.connectors.fields.RedshiftFields
-import io.tellery.entities.NewProfile
+import io.tellery.entities.ProfileEntity
 
 @DbtIntegrationType("Redshift")
 class RedshiftDbtIntegration : DbtIntegration() {
 
-    override fun transformToDbtProfile(profile: NewProfile): RedshiftDbtProfile {
+    override fun transformToDbtProfile(profileEntity: ProfileEntity): RedshiftDbtProfile {
         return RedshiftDbtProfile(
-            host = getValueOrThrowException(profile, RedshiftFields.ENDPOINT),
-            port = getValueOrThrowException(profile, RedshiftFields.PORT).toInt(),
-            user = getValueOrThrowException(profile, RedshiftFields.USERNAME),
-            password = getValueOrThrowException(profile, RedshiftFields.PASSWORD),
-            dbname = getValueOrThrowException(profile, RedshiftFields.DATABASE),
-            schema = getValueOrThrowException(profile, RedshiftFields.SCHEMA)
+            host = getValueOrThrowException(profileEntity, RedshiftFields.ENDPOINT),
+            port = getValueOrThrowException(profileEntity, RedshiftFields.PORT).toInt(),
+            user = getValueOrThrowException(profileEntity, RedshiftFields.USERNAME),
+            password = getValueOrThrowException(profileEntity, RedshiftFields.PASSWORD),
+            dbname = getValueOrThrowException(profileEntity, RedshiftFields.DATABASE),
+            schema = getValueOrThrowException(profileEntity, RedshiftFields.SCHEMA)
         )
     }
 

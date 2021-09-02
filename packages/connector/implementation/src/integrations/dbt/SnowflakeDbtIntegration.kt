@@ -1,21 +1,21 @@
 package io.tellery.integrations
 
 import io.tellery.connectors.fields.SnowflakeFields
-import io.tellery.entities.NewProfile
+import io.tellery.entities.ProfileEntity
 
 @DbtIntegrationType("Snowflake")
 class SnowflakeDbtIntegration : DbtIntegration() {
 
-    override fun transformToDbtProfile(profile: NewProfile): BaseDbtProfile {
-        val account = getValueOrThrowException(profile, SnowflakeFields.ACCOUNT_NAME)
-        val region = getValueOrThrowException(profile, SnowflakeFields.REGION_ID)
+    override fun transformToDbtProfile(profileEntity: ProfileEntity): BaseDbtProfile {
+        val account = getValueOrThrowException(profileEntity, SnowflakeFields.ACCOUNT_NAME)
+        val region = getValueOrThrowException(profileEntity, SnowflakeFields.REGION_ID)
         return SnowflakeDbtProfile(
             account = "$account.$region",
-            user = getValueOrThrowException(profile, SnowflakeFields.USERNAME),
-            password = getValueOrThrowException(profile, SnowflakeFields.PASSWORD),
-            database = getValueOrThrowException(profile, SnowflakeFields.DATABASE),
-            schema = getValueOrThrowException(profile, SnowflakeFields.SCHEMA),
-            warehouse = getValueOrThrowException(profile, SnowflakeFields.WAREHOUSE)
+            user = getValueOrThrowException(profileEntity, SnowflakeFields.USERNAME),
+            password = getValueOrThrowException(profileEntity, SnowflakeFields.PASSWORD),
+            database = getValueOrThrowException(profileEntity, SnowflakeFields.DATABASE),
+            schema = getValueOrThrowException(profileEntity, SnowflakeFields.SCHEMA),
+            warehouse = getValueOrThrowException(profileEntity, SnowflakeFields.WAREHOUSE)
         )
     }
 

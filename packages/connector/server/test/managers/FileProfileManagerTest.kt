@@ -9,12 +9,12 @@ import io.kotest.engine.spec.tempdir
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockkObject
-import io.tellery.entities.Integration
-import io.tellery.entities.NewProfile
+import io.tellery.entities.IntegrationEntity
+import io.tellery.entities.ProfileEntity
 import io.tellery.managers.impl.FileProfileManager
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
-import entities.ProjectConfig as config
+import io.tellery.entities.ProjectConfig as config
 
 @ExperimentalKotest
 class FileProfileManagerTest : FunSpec({
@@ -41,31 +41,31 @@ class FileProfileManagerTest : FunSpec({
     }
 
     context("create a profile") {
-        val profile: NewProfile = mapper.readValue(profileURL)
+        val profileEntity: ProfileEntity = mapper.readValue(profileURL)
 
-        pm.upsertProfile(profile)
+        pm.upsertProfile(profileEntity)
 
-        val profileAfterSaved: NewProfile =
+        val profileEntityAfterSaved: ProfileEntity =
             mapper.readValue(config.profilePath.readText())
 
-        profileAfterSaved shouldBe profile
+        profileEntityAfterSaved shouldBe profileEntity
     }
 
     context("update a profile") {
         config.profilePath.writeText(profileURL.readText())
 
-        val profile: NewProfile = mapper.readValue(profileURL)
-        val configs = HashMap(profile.configs)
+        val profileEntity: ProfileEntity = mapper.readValue(profileURL)
+        val configs = HashMap(profileEntity.configs)
         configs["Username"] = "test"
         configs["Password"] = "test"
-        profile.configs = configs
+        profileEntity.configs = configs
 
-        pm.upsertProfile(profile)
+        pm.upsertProfile(profileEntity)
 
-        val profileAfterUpdate: NewProfile =
+        val profileEntityAfterUpdate: ProfileEntity =
             mapper.readValue(config.profilePath.readText())
 
-        profileAfterUpdate.let {
+        profileEntityAfterUpdate.let {
             configs["Username"] shouldBe "test"
             configs["Password"] shouldBe "test"
         }
@@ -74,41 +74,41 @@ class FileProfileManagerTest : FunSpec({
     context("get a profile") {
         config.profilePath.writeText(profileURL.readText())
 
-        val profile: NewProfile = mapper.readValue(profileURL)
-        val profileFromGet = pm.getProfileById(profile.id)
+        val profileEntity: ProfileEntity = mapper.readValue(profileURL)
+        val profileFromGet = pm.getProfileById(profileEntity.id)
 
-        profileFromGet!! shouldBe profile
+        profileFromGet!! shouldBe profileEntity
     }
 
     context("create a integration") {
-        val integration: Integration = mapper.readValue(integrationURL)
-        integration.id = null
+        val integrationEntity: IntegrationEntity = mapper.readValue(integrationURL)
+        integrationEntity.id = null
 
-        pm.upsertIntegration(integration)
+        pm.upsertIntegration(integrationEntity)
 
-        val integrationsAfterSaved: List<Integration> =
+        val integrationsAfterSaved: List<IntegrationEntity> =
             mapper.readValue(config.integrationPath.readText())
 
         integrationsAfterSaved.size shouldBe 1
         integrationsAfterSaved[0].let {
             it.id shouldBe 1
-            it.type shouldBe integration.type
-            it.profileId shouldBe integration.profileId
-            it.configs shouldBe integration.configs
+            it.type shouldBe integrationEntity.type
+            it.profileId shouldBe integrationEntity.profileId
+            it.configs shouldBe integrationEntity.configs
         }
     }
 
     context("update a integration") {
-        val integration: Integration = mapper.readValue(integrationURL)
-        config.integrationPath.writeText(mapper.writeValueAsString(listOf(integration)))
+        val integrationEntity: IntegrationEntity = mapper.readValue(integrationURL)
+        config.integrationPath.writeText(mapper.writeValueAsString(listOf(integrationEntity)))
 
-        val configs = HashMap(integration.configs)
+        val configs = HashMap(integrationEntity.configs)
         configs["Dbt Project Name"] = "test"
         configs["Git Url"] = "test"
-        integration.configs = configs
-        pm.upsertIntegration(integration)
+        integrationEntity.configs = configs
+        pm.upsertIntegration(integrationEntity)
 
-        val integrationsAfterUpdated: List<Integration> =
+        val integrationsAfterUpdated: List<IntegrationEntity> =
             mapper.readValue(config.integrationPath.readText())
 
         integrationsAfterUpdated.size shouldBe 1
@@ -119,23 +119,23 @@ class FileProfileManagerTest : FunSpec({
     }
 
     context("get a integration") {
-        val integration: Integration = mapper.readValue(integrationURL)
-        config.integrationPath.writeText(mapper.writeValueAsString(listOf(integration)))
+        val integrationEntity: IntegrationEntity = mapper.readValue(integrationURL)
+        config.integrationPath.writeText(mapper.writeValueAsString(listOf(integrationEntity)))
 
-        val integrationsFromGet = pm.getAllIntegrationInProfile(integration.profileId)
+        val integrationsFromGet = pm.getAllIntegrationInProfile(integrationEntity.profileId)
 
         integrationsFromGet.size shouldBe 1
-        integrationsFromGet[0] shouldBe integration
+        integrationsFromGet[0] shouldBe integrationEntity
     }
 
     context("delete a integration") {
         val url = getResourceFileURL("/integrations/integration_1.json")
-        val integration: Integration = mapper.readValue(url)
-        config.integrationPath.writeText(mapper.writeValueAsString(listOf(integration)))
+        val integrationEntity: IntegrationEntity = mapper.readValue(url)
+        config.integrationPath.writeText(mapper.writeValueAsString(listOf(integrationEntity)))
 
-        pm.deleteIntegration(integration.id!!)
+        pm.deleteIntegration(integrationEntity.id!!)
 
-        val integrationsAfterDeleted: List<Integration> =
+        val integrationsAfterDeleted: List<IntegrationEntity> =
             mapper.readValue(config.integrationPath.readText())
 
         integrationsAfterDeleted.size shouldBe 0
