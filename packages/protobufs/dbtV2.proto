@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package tellery.grpc;
+option java_package = "io.tellery.grpc";
+option java_outer_classname = "TelleryDbtV2Proto";
+option java_multiple_files = true;
+
+import "google/protobuf/empty.proto";
+import "dbt.proto";
+
+service DbtV2 {
+  rpc GenerateKeyPair (google.protobuf.Empty) returns (GenerateKeyPairResponseV2);
+  rpc PullRepo (google.protobuf.Empty) returns (PullRepoResponseV2);
+  rpc PushRepo (PushRepoRequestV2) returns (google.protobuf.Empty);
+}
+
+message GenerateKeyPairResponseV2 {
+  string publicKey = 1;
+}
+
+message PullRepoResponseV2 {
+  repeated DbtBlock blocks = 1;
+}
+
+message PushRepoRequestV2 {
+  repeated QuestionBlockContent blocks = 1;
+}

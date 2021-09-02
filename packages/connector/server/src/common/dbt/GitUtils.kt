@@ -15,6 +15,7 @@ import org.eclipse.jgit.util.FS
 import java.text.SimpleDateFormat
 import java.util.*
 
+@Deprecated("")
 object GitUtils {
 
     private val dateFormat: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss")

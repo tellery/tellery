@@ -14,6 +14,7 @@ import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.primaryConstructor
 
+@Deprecated("")
 object ProfileManager {
 
     private val logger = KotlinLogging.logger {}

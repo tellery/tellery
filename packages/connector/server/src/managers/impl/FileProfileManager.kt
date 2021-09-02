@@ -4,7 +4,6 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import entities.Integration
 import entities.NewProfile
-import entities.ProjectConfig
 import io.tellery.managers.ProfileManager
 import org.apache.commons.io.FileUtils
 import java.nio.file.Path
@@ -12,12 +11,13 @@ import kotlin.io.path.createFile
 import kotlin.io.path.notExists
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
+import entities.ProjectConfig as config
 
-class FileProfileManager(private val appConfig: ProjectConfig) : ProfileManager {
+class FileProfileManager : ProfileManager {
 
-    private var globalConfigDir: Path = appConfig.globalConfigDir
-    private var profilePath: Path = appConfig.profilePath
-    private var integrationPath: Path = appConfig.integrationPath
+    private var globalConfigDir: Path = config.globalConfigDir
+    private var profilePath: Path = config.profilePath
+    private var integrationPath: Path = config.integrationPath
 
     companion object {
         private val mapper = jacksonObjectMapper()

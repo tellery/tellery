@@ -39,6 +39,7 @@ import java.util.concurrent.Executors
 import java.util.function.Consumer
 
 
+@Deprecated("")
 object DbtManager {
 
     private var rootFolder: File

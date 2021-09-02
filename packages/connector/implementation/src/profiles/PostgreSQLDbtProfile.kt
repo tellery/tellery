@@ -5,6 +5,7 @@ import io.tellery.connectors.annotations.Dbt
 import io.tellery.connectors.fields.PostgreSQLFields
 import io.tellery.entities.Profile
 
+@Deprecated("")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Dbt(type = "PostgreSQL")
 class PostgreSQLDbtProfile(profile: Profile) : BaseDbtProfile() {

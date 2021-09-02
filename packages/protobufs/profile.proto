@@ -8,10 +8,13 @@ option java_multiple_files = true;
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/empty.proto";
 import "connector.proto";
+import "config.proto";
 
 service ProfileService {
+  rpc GetProfileConfigs (google.protobuf.Empty) returns (AvailableConfigs);
   rpc GetProfile (google.protobuf.Empty) returns (Profile);
   rpc UpsertProfile (UpsertProfileRequestV2) returns (Profile);
+  rpc GetIntegrationConfigs (google.protobuf.Empty) returns (AvailableConfigs);
   rpc ListIntegrations (google.protobuf.Empty) returns (ListIntegrationsResponse);
   rpc UpsertIntegration (UpsertIntegrationRequest) returns (Integration);
   rpc DeleteIntegration (DeleteIntegrationRequest) returns (google.protobuf.Empty);

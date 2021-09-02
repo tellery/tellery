@@ -4,10 +4,13 @@ import com.typesafe.config.ConfigFactory
 import java.nio.file.Path
 import kotlin.io.path.Path
 
-class ProjectConfig {
+object ProjectConfig {
 
     private val appConfig = ConfigFactory.load()
     private val env = System.getenv()
+
+    val port: Int
+        get() = env.getOrDefault("server.port", "50051").toInt()
 
     val deployModel: DeployModel
         get() = DeployModel.valueOf(
@@ -37,8 +40,15 @@ class ProjectConfig {
 
     val integrationPath: Path
         get() = globalConfigDir.resolve(appConfig.getString("integration.path"))
-    
-    enum class DeployModel {
-        LOCAL, CLUSTER
+
+    val dbtGlobalRepoDir: Path
+        get() = globalConfigDir.resolve(appConfig.getString("dbt.repoFolderPath"))
+
+    val dbtKeyConfigDir: Path
+        get() = globalConfigDir.resolve(appConfig.getString("dbt.keyFolderPath"))
+
+    enum class DeployModel(val profileManagerName: String) {
+        LOCAL("file"),
+        CLUSTER("database")
     }
 }
