@@ -38,9 +38,10 @@ import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useCreateSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
-import { blockIdGenerator, DEFAULT_TITLE, DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
+import { blockIdGenerator, DEFAULT_TIPPY_DELAY, DEFAULT_TITLE, DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import MonacoEditor from '@monaco-editor/react'
+import Tippy from '@tippyjs/react'
 import { dequal } from 'dequal'
 import { motion, MotionValue, useMotionValue, useTransform } from 'framer-motion'
 import { produce } from 'immer'
@@ -258,16 +259,23 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
                 height: 100%;
               `}
             >
-              <IconButton
-                hoverContent={open ? 'Click to close query editor' : 'Click to open query editor'}
-                icon={open ? IconCommonArrowDropDown : IconCommonArrowUpDown}
-                onClick={() => {
-                  setOpen(!open)
-                }}
-                className={css`
-                  margin-left: auto;
-                `}
-              />
+              <Tippy
+                content={open ? 'Click to close query editor' : 'Click to open query editor'}
+                hideOnClick
+                arrow={false}
+                delay={[500, 0]}
+                duration={[500, 0]}
+              >
+                <IconButton
+                  icon={open ? IconCommonArrowDropDown : IconCommonArrowUpDown}
+                  onClick={() => {
+                    setOpen(!open)
+                  }}
+                  className={css`
+                    margin-left: auto;
+                  `}
+                />
+              </Tippy>
             </div>
           </div>
         </TabList>
@@ -959,7 +967,7 @@ export const StoryQuestionEditor: React.FC<{
             `}
           />
         </div>
-        <TippySingletonContextProvider delay={500} arrow={false}>
+        <TippySingletonContextProvider arrow={false}>
           {isDBT ? null : (
             <div
               className={css`

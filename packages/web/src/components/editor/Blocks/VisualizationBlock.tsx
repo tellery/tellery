@@ -37,7 +37,7 @@ import { useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { PopoverMotionVariants } from '@app/styles/animations'
 import { Editor } from '@app/types'
-import { addPrefixToBlockTitle, snapshotToCSV, TELLERY_MIME_TYPES } from '@app/utils'
+import { addPrefixToBlockTitle, DEFAULT_TIPPY_DELAY, snapshotToCSV, TELLERY_MIME_TYPES } from '@app/utils'
 import { css, cx, keyframes } from '@emotion/css'
 import styled from '@emotion/styled'
 import Tippy from '@tippyjs/react'
@@ -944,7 +944,7 @@ export const MoreDropdownSelect: React.FC<{
                   content="Freeze the data returned by the query to prevent accidental refreshing."
                   placement="left"
                   maxWidth={260}
-                  delay={500}
+                  delay={DEFAULT_TIPPY_DELAY}
                   arrow={false}
                 >
                   <StyledMenuItem

@@ -20,6 +20,7 @@ import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
 import { useTippySingleton } from '@app/hooks/useTippySingleton'
 import { ThemingVariables } from '@app/styles'
 import { Editor, Story, Thought } from '@app/types'
+import { DEFAULT_TIPPY_DELAY } from '@app/utils'
 import { DndItemDataBlockType, DnDItemTypes } from '@app/utils/dnd'
 import { useDraggable } from '@dnd-kit/core'
 import { css } from '@emotion/css'
@@ -108,7 +109,7 @@ export const CurrentStoryQueries: React.FC<{ storyId: string }> = ({ storyId }) 
             }
           `}
         >
-          <TippySingletonContextProvider delay={500} arrow={false}>
+          <TippySingletonContextProvider arrow={false}>
             <ImportOperation storyId={storyId} />
             <IconButton icon={IconCommonAdd} hoverContent={t`Create a new query`} onClick={createNewQuery} />
           </TippySingletonContextProvider>
@@ -425,7 +426,7 @@ const StoryDataAssetItemWithInspectPopover: React.FC<{ blockId: string; storyId:
           <SideBarInspectQueryBlockPopover blockId={blockId}></SideBarInspectQueryBlockPopover>
         </motion.div>
       )}
-      delay={500}
+      delay={DEFAULT_TIPPY_DELAY}
       hideOnClick={true}
       animation={true}
       onMount={tippyAnimation.onMount}

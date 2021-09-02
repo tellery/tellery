@@ -445,10 +445,7 @@ const BlockTextOperationMenuInner = ({
         `}
       >
         <TippySingletonContextProvider delay={500} arrow={false} placement="top">
-          {/* <Tippy singleton={source} delay={500} arrow={false} placement="top" /> */}
-
           <ToggleTypeOperation
-            // parentSafeToRemove={safeToRemove}
             toggleBlockType={(type: Editor.BlockType) => {
               if (!currentBlock?.id) return
               editor?.updateBlockProps?.(currentBlock.id, ['type'], type)

@@ -15,6 +15,7 @@ import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
 import { ThemingVariables } from '@app/styles'
 import type { Story } from '@app/types'
+import { DEFAULT_TIPPY_DELAY } from '@app/utils'
 import { css } from '@emotion/css'
 import Tippy from '@tippyjs/react'
 import { dequal } from 'dequal'
@@ -55,9 +56,9 @@ export const _NavigationHeader = (props: {
 
   return (
     <>
-      <TippySingletonContextProvider delay={500} placement="bottom" arrow={false}>
+      <TippySingletonContextProvider placement="bottom" arrow={false}>
         {permissions.locked && (
-          <Tippy content="Locked" placement="bottom" delay={500}>
+          <Tippy content="Locked" placement="bottom" delay={DEFAULT_TIPPY_DELAY}>
             <span
               className={css`
                 display: inline-flex;
@@ -72,7 +73,7 @@ export const _NavigationHeader = (props: {
           </Tippy>
         )}
         {permissions.isPrivate && (
-          <Tippy content="Private" placement="bottom" delay={500}>
+          <Tippy content="Private" placement="bottom" delay={DEFAULT_TIPPY_DELAY}>
             <span
               className={css`
                 display: inline-flex;
