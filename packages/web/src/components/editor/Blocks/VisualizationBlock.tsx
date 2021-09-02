@@ -18,6 +18,7 @@ import { MenuItemDivider } from '@app/components/MenuItemDivider'
 // import { MenuItem } from '@app/components/MenuItem'
 // import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { RefreshButton } from '@app/components/RefreshButton'
+import { TippySingletonContextProvider } from '@app/components/TippySingletonContextProvider'
 import { Diagram } from '@app/components/v11n'
 import { charts } from '@app/components/v11n/charts'
 import { Config, Data, Type } from '@app/components/v11n/types'
@@ -29,15 +30,17 @@ import { useCommit } from '@app/hooks/useCommit'
 import { useFetchBlock } from '@app/hooks/useFetchBlock'
 import { useInterval } from '@app/hooks/useInterval'
 import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
+import { useStoryResourceIds } from '@app/hooks/useStoryResourceIds'
 import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
-import { BlockResourcesAtom, useBlockSnapshot } from '@app/store/block'
+import { TippySingletonContext } from '@app/hooks/useTippySingleton'
+import { useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { PopoverMotionVariants } from '@app/styles/animations'
 import { Editor } from '@app/types'
-import { addPrefixToBlockTitle, snapshotToCSV, TELLERY_MIME_TYPES } from '@app/utils'
+import { addPrefixToBlockTitle, DEFAULT_TIPPY_DELAY, snapshotToCSV, TELLERY_MIME_TYPES } from '@app/utils'
 import { css, cx, keyframes } from '@emotion/css'
 import styled from '@emotion/styled'
-import Tippy, { useSingleton } from '@tippyjs/react'
+import Tippy from '@tippyjs/react'
 import copy from 'copy-to-clipboard'
 import dayjs from 'dayjs'
 import download from 'downloadjs'
@@ -61,7 +64,6 @@ import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useMeasure } from 'react-use'
 import { Menu, MenuButton, MenuItem, MenuStateReturn, useMenuState } from 'reakit'
-import { useRecoilValue } from 'recoil'
 import invariant from 'tiny-invariant'
 import { BlockingUI } from '../BlockBase/BlockingUIBlock'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
@@ -287,7 +289,7 @@ const _VisualizationBlockContent: React.FC<{
   const queryBlock = useBlockSuspense<Editor.QueryBlock>(queryId)
   const snapshotId = queryBlock?.content?.snapshotId
   const commit = useCommit()
-  const storyBlockResources = useRecoilValue(BlockResourcesAtom(block.storyId!))
+  const storyBlockResources = useStoryResourceIds(block.storyId!)
 
   const mutateSnapshot = useRefreshSnapshot()
   const mutatingCount = useSnapshotMutating(queryBlock.id)
@@ -754,8 +756,9 @@ export const LazyRenderDiagram: React.FC<{ data?: Data; config: Config<Type> }> 
 export const MoreDropdownSelect: React.FC<{
   block: Editor.VisualizationBlock
   className?: string
+  hoverContent?: ReactNode
   setIsActive: (active: boolean) => void
-}> = ({ block, setIsActive, className }) => {
+}> = ({ block, setIsActive, className, hoverContent }) => {
   const { data: user } = useUser(block?.lastEditedById ?? null)
   const editor = useEditor<Editor.VisualizationBlock>()
   const { readonly } = useBlockBehavior()
@@ -781,25 +784,30 @@ export const MoreDropdownSelect: React.FC<{
     <>
       <MenuButton
         {...menu}
-        className={css`
-          border: none;
-          background: transparent;
-          outline: none;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          outline: none;
-          border: none;
-          border-radius: 4px;
-          font-size: 16px;
-          font-weight: 500;
-          padding: 0;
-          cursor: pointer;
-          background: transparent;
-        `}
-      >
-        <IconCommonMore color={ThemingVariables.colors.gray[5]} />
-      </MenuButton>
+        hoverContent={hoverContent}
+        color={ThemingVariables.colors.gray[5]}
+        icon={IconCommonMore}
+        as={IconButton}
+        className={cx(
+          css`
+            border: none;
+            background: transparent;
+            outline: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            outline: none;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            padding: 0;
+            cursor: pointer;
+            background: transparent;
+          `,
+          className
+        )}
+      ></MenuButton>
 
       <Menu
         {...menu}
@@ -936,7 +944,7 @@ export const MoreDropdownSelect: React.FC<{
                   content="Freeze the data returned by the query to prevent accidental refreshing."
                   placement="left"
                   maxWidth={260}
-                  delay={500}
+                  delay={DEFAULT_TIPPY_DELAY}
                   arrow={false}
                 >
                   <StyledMenuItem
@@ -1119,22 +1127,24 @@ const _StyledMenuItem: React.ForwardRefRenderFunction<
 
 const StyledMenuItem = forwardRef(_StyledMenuItem)
 
-const VisBlockRefereshButton: React.FC<{ block: Editor.VisualizationBlock }> = ({ block }) => {
+const VisBlockRefereshButton: React.FC<{
+  block: Editor.VisualizationBlock
+  hoverContent?: ReactNode
+  className: string
+}> = ({ block, hoverContent, className }) => {
   const dataAssetBlock = useBlockSuspense(block.content!.queryId!)
   const { readonly } = useBlockBehavior()
   const mutateSnapshot = useRefreshSnapshot()
   const mutatingCount = useSnapshotMutating(dataAssetBlock.id)
   const loading = mutatingCount !== 0
   return !readonly && isExecuteableBlockType(dataAssetBlock.type) ? (
-    <QuestionBlockIconButton>
-      <RefreshButton
-        color={ThemingVariables.colors.gray[5]}
-        loading={loading}
-        onClick={
-          loading ? () => mutateSnapshot.cancel(dataAssetBlock.id) : () => mutateSnapshot.execute(dataAssetBlock)
-        }
-      />
-    </QuestionBlockIconButton>
+    <RefreshButton
+      color={ThemingVariables.colors.gray[5]}
+      loading={loading}
+      hoverContent={hoverContent}
+      className={className}
+      onClick={loading ? () => mutateSnapshot.cancel(dataAssetBlock.id) : () => mutateSnapshot.execute(dataAssetBlock)}
+    />
   ) : null
 }
 
@@ -1145,7 +1155,6 @@ const TitleButtonsInner: React.FC<{
 }> = ({ block, slim, setIsActive }) => {
   const { t } = useTranslation()
   const questionEditor = useQuestionEditor(block.storyId!)
-  const [source, target] = useSingleton()
   return (
     <div
       className={css`
@@ -1154,54 +1163,49 @@ const TitleButtonsInner: React.FC<{
         flex-shrink: 0;
       `}
     >
-      <Tippy singleton={source} delay={500} arrow={false} />
-      {slim === false && (
-        <>
-          <Tippy content={t`Refresh`} singleton={target}>
-            <span>{block.content?.queryId && <VisBlockRefereshButton block={block} />}</span>
-          </Tippy>
-
-          <Tippy content={t`Visualization options`} singleton={target}>
-            <QuestionBlockIconButton>
-              <IconButton
-                icon={IconVisualizationSetting}
-                color={ThemingVariables.colors.gray[5]}
-                onClick={() => questionEditor.open({ mode: 'VIS', blockId: block.id, storyId: block.storyId! })}
-              />
-            </QuestionBlockIconButton>
-          </Tippy>
-          <Tippy content={t`Edit SQL`} singleton={target}>
-            <QuestionBlockIconButton>
-              <IconButton
-                icon={IconCommonSql}
-                color={ThemingVariables.colors.gray[5]}
-                onClick={() => questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })}
-              />
-            </QuestionBlockIconButton>
-          </Tippy>
-        </>
-      )}
-      {block.content?.queryId && (
-        <Tippy content={t`More`} singleton={target}>
-          <QuestionBlockIconButton>
-            <MoreDropdownSelect block={block} setIsActive={setIsActive} />
-          </QuestionBlockIconButton>
-        </Tippy>
-      )}
+      <TippySingletonContextProvider delay={500} arrow={false}>
+        {slim === false && (
+          <>
+            {block.content?.queryId && (
+              <VisBlockRefereshButton className={QuestionBlockIconButton} hoverContent={t`Refresh`} block={block} />
+            )}
+            <IconButton
+              hoverContent={t`Visualization options`}
+              icon={IconVisualizationSetting}
+              color={ThemingVariables.colors.gray[5]}
+              onClick={() => questionEditor.open({ mode: 'VIS', blockId: block.id, storyId: block.storyId! })}
+              className={QuestionBlockIconButton}
+            />
+            <IconButton
+              hoverContent={t`Edit SQL`}
+              className={QuestionBlockIconButton}
+              icon={IconCommonSql}
+              color={ThemingVariables.colors.gray[5]}
+              onClick={() => questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })}
+            />
+          </>
+        )}
+        {block.content?.queryId && (
+          <MoreDropdownSelect
+            hoverContent={t`More`}
+            block={block}
+            setIsActive={setIsActive}
+            className={QuestionBlockIconButton}
+          />
+        )}
+      </TippySingletonContextProvider>
     </div>
   )
 }
 
-const QuestionBlockIconButton = styled.div`
+const QuestionBlockIconButton = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  > button {
-    width: 36px;
-    height: 36px;
-    cursor: pointer;
-    padding: 5px;
-  }
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  padding: 5px;
   :hover {
     background: ${ThemingVariables.colors.text[0]};
   }

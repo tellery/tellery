@@ -2,11 +2,11 @@ import {
   IconCommonArrowDropDown,
   IconCommonArrowUpDown,
   IconCommonClose,
+  IconCommonDataAsset,
   IconCommonDbt,
   IconCommonDownstream,
   IconCommonError,
   IconCommonLock,
-  IconCommonDataAsset,
   IconCommonDataAssetSetting,
   IconCommonRun,
   IconCommonSave,
@@ -44,7 +44,7 @@ import { Dimension, Editor, Metric } from '@app/types'
 import { blockIdGenerator, DEFAULT_TITLE, DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import MonacoEditor from '@monaco-editor/react'
-import Tippy, { useSingleton } from '@tippyjs/react'
+import Tippy from '@tippyjs/react'
 import { dequal } from 'dequal'
 import { motion, MotionValue, useMotionValue, useTransform } from 'framer-motion'
 import { produce } from 'immer'
@@ -67,6 +67,7 @@ import IconButton from './kit/IconButton'
 import QueryBuilderConfig from './QueryBuilderConfig'
 import QuestionDownstreams from './QuestionDownstreams'
 import SmartQueryConfig from './SmartQueryConfig'
+import { TippySingletonContextProvider } from './TippySingletonContextProvider'
 import { charts } from './v11n/charts'
 import { Config, Type } from './v11n/types'
 
@@ -276,16 +277,23 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
                 height: 100%;
               `}
             >
-              <IconButton
-                hoverContent={open ? 'Click to close query editor' : 'Click to open query editor'}
-                icon={open ? IconCommonArrowDropDown : IconCommonArrowUpDown}
-                onClick={() => {
-                  setOpen(!open)
-                }}
-                className={css`
-                  margin-left: auto;
-                `}
-              />
+              <Tippy
+                content={open ? 'Click to close query editor' : 'Click to open query editor'}
+                hideOnClick
+                arrow={false}
+                delay={[500, 0]}
+                duration={[500, 0]}
+              >
+                <IconButton
+                  icon={open ? IconCommonArrowDropDown : IconCommonArrowUpDown}
+                  onClick={() => {
+                    setOpen(!open)
+                  }}
+                  className={css`
+                    margin-left: auto;
+                  `}
+                />
+              </Tippy>
             </div>
           </div>
         </TabList>
@@ -934,8 +942,6 @@ export const StoryQuestionEditor: React.FC<{
     queryBlock.type === Editor.BlockType.QueryBuilder ||
     queryBlock.type === Editor.BlockType.SmartQuery
 
-  const [source, target] = useSingleton()
-
   return (
     <TabPanel
       {...tab}
@@ -1023,45 +1029,43 @@ export const StoryQuestionEditor: React.FC<{
             `}
           />
         </div>
-        <Tippy singleton={source} delay={500} arrow={false} />
-
-        {isDBT ? null : (
-          <div
-            className={css`
-              display: inline-flex;
-              align-items: center;
-              > * {
-                margin: 0 10px;
-              }
-            `}
-          >
-            {mode === 'SQL' && (sqlError || sqlSidePanel) && (
+        <TippySingletonContextProvider arrow={false}>
+          {isDBT ? null : (
+            <div
+              className={css`
+                display: inline-flex;
+                align-items: center;
+                > * {
+                  margin: 0 10px;
+                }
+              `}
+            >
+              {mode === 'SQL' && (sqlError || sqlSidePanel) && (
+                <IconButton
+                  icon={IconCommonError}
+                  color={ThemingVariables.colors.negative[0]}
+                  onClick={() => {
+                    setSqlSidePanel(!sqlSidePanel)
+                  }}
+                />
+              )}
               <IconButton
-                icon={IconCommonError}
-                color={ThemingVariables.colors.negative[0]}
-                onClick={() => {
-                  setSqlSidePanel(!sqlSidePanel)
-                }}
-              />
-            )}
-            <Tippy content={mutatingCount !== 0 ? 'Cancel Query' : 'Execute Query'} singleton={target}>
-              <IconButton
+                hoverContent={mutatingCount !== 0 ? 'Cancel Query' : 'Execute Query'}
                 icon={mutatingCount !== 0 ? IconCommonClose : IconCommonRun}
                 color={ThemingVariables.colors.primary[1]}
                 disabled={!isExecuteableBlockType(queryBlock.type)}
                 onClick={mutatingCount !== 0 ? cancelExecuteSql : run}
               />
-            </Tippy>
-            <Tippy content={'Save'} singleton={target}>
               <IconButton
+                hoverContent="Save"
                 disabled={!isDraft || readonly === true}
                 icon={IconCommonSave}
                 onClick={save}
                 color={ThemingVariables.colors.primary[1]}
               />
-            </Tippy>
-          </div>
-        )}
+            </div>
+          )}
+        </TippySingletonContextProvider>
       </div>
       <div
         className={css`
@@ -1191,7 +1195,6 @@ const QueryEditorSideTabs: React.FC<{
   queryBlockId: string
 }> = ({ mode, setMode, blockType, queryBlockType, queryBlockId }) => {
   const isDBT = queryBlockType === Editor.BlockType.DBT
-  const [source, target] = useSingleton()
   const { data: downstreams } = useQuestionDownstreams(queryBlockId)
 
   return (
@@ -1220,9 +1223,9 @@ const QueryEditorSideTabs: React.FC<{
         }
       `}
     >
-      <Tippy singleton={source} delay={500} arrow={false} placement="right" />
-      <Tippy content={isDBT ? 'View DBT' : 'Edit SQL'} singleton={target}>
+      <TippySingletonContextProvider delay={500} arrow={false} hideOnClick placement="right">
         <IconButton
+          hoverContent={isDBT ? 'View DBT' : 'Edit SQL'}
           icon={isDBT ? IconCommonDbt : IconCommonSql}
           className={css`
             &::after {
@@ -1234,10 +1237,9 @@ const QueryEditorSideTabs: React.FC<{
             setMode('SQL')
           }}
         />
-      </Tippy>
-      {blockType === Editor.BlockType.Visualization && (
-        <Tippy content="Visualization options" arrow={false} singleton={target}>
+        {blockType === Editor.BlockType.Visualization && (
           <IconButton
+            hoverContent="Visualization options"
             icon={IconVisualizationSetting}
             className={css`
               &::after {
@@ -1249,11 +1251,10 @@ const QueryEditorSideTabs: React.FC<{
               setMode('VIS')
             }}
           />
-        </Tippy>
-      )}
-      {downstreams.length === 0 || (
-        <Tippy content="Downstreams" arrow={false} singleton={target}>
+        )}
+        {downstreams.length === 0 || (
           <IconButton
+            hoverContent="Downstreams"
             icon={IconCommonDownstream}
             className={css`
               &::after {
@@ -1265,11 +1266,10 @@ const QueryEditorSideTabs: React.FC<{
               setMode('DOWNSTREAM')
             }}
           />
-        </Tippy>
-      )}
-      {queryBlockType === Editor.BlockType.SQL || queryBlockType === Editor.BlockType.QueryBuilder ? (
-        <Tippy content="Query builder" arrow={false} singleton={target}>
+        )}
+        {queryBlockType === Editor.BlockType.QueryBuilder ? null : (
           <IconButton
+            hoverContent="Query builder"
             icon={IconCommonDataAssetSetting}
             className={css`
               &::after {
@@ -1281,10 +1281,8 @@ const QueryEditorSideTabs: React.FC<{
               setMode('QUERY_BUILDER')
             }}
           />
-        </Tippy>
-      ) : null}
-      {queryBlockType === Editor.BlockType.SmartQuery ? (
-        <Tippy content="Metrics" arrow={false} singleton={target}>
+        )}
+        {queryBlockType === Editor.BlockType.SmartQuery ? (
           <IconButton
             icon={IconCommonMetrics}
             className={css`
@@ -1297,8 +1295,8 @@ const QueryEditorSideTabs: React.FC<{
               setMode('SMART_QUERY')
             }}
           />
-        </Tippy>
-      ) : null}
+        ) : null}
+      </TippySingletonContextProvider>
     </div>
   )
 }

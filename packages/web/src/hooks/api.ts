@@ -176,6 +176,14 @@ export function useSearchMetrics(
   return useSearchBlocks(keyword, limit, Editor.BlockType.QueryBuilder, options)
 }
 
+export function useSearchSQLQueries(
+  keyword: string,
+  limit: number,
+  options?: UseQueryOptions<SearchBlockResult<Editor.BlockType.SQL>>
+) {
+  return useSearchBlocks(keyword, limit, Editor.BlockType.SQL, options)
+}
+
 export function useSearchDBTBlocks(
   keyword: string,
   limit: number,

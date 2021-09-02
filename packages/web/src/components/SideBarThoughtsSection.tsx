@@ -16,7 +16,8 @@ import { useTranslation } from 'react-i18next'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import { Calendar } from './Calendar'
 import { BlockContentOverview } from './editor/BlockContentOverview'
-import IconButton from './kit/IconButton'
+import { FormButton } from './kit/FormButton'
+// import IconButton from './kit/IconButton'
 import { MenuItemDivider } from './MenuItemDivider'
 import { SideBarContentLayout } from './SideBarContentLayout'
 
@@ -117,13 +118,36 @@ export const SideBarThoughtsSection = () => {
           >
             {dayjs(activeStartDate).format('MMM YYYY')}
           </div>
-          <IconButton
+          {/* <IconButton
             icon={IconCommonAdd}
             hoverContent={t`Capture today's thought`}
             disabled={showCreateTodaysNotes === false}
             onClick={createTodaysNotes}
-          />
+          /> */}
         </div>
+        {showCreateTodaysNotes && (
+          <FormButton
+            variant="secondary"
+            className={css`
+              background: transparent;
+              width: calc(100% - 16px);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin: 0 8px;
+            `}
+            disabled={!showCreateTodaysNotes}
+            onClick={createTodaysNotes}
+          >
+            <IconCommonAdd
+              color={showCreateTodaysNotes ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.text[1]}
+              className={css`
+                margin-right: 4px;
+              `}
+            />
+            <span>{t`Capture today's thought`}</span>
+          </FormButton>
+        )}
         <PerfectScrollbar
           className={css`
             flex: 1;

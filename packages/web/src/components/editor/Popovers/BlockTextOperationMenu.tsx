@@ -33,10 +33,12 @@ import {
   tokenPosition2SplitedTokenPosition
 } from '@app/components/editor/helpers/tokenManipulation'
 import { FormButton } from '@app/components/kit/FormButton'
+import { TippySingletonContextProvider } from '@app/components/TippySingletonContextProvider'
 import { createTranscation } from '@app/context/editorTranscations'
 import { useBlockSuspense } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
 import { useStoryResources } from '@app/hooks/useStoryResources'
+import { useTippySingleton } from '@app/hooks/useTippySingleton'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
@@ -44,11 +46,12 @@ import { Editor, Story } from '@app/types'
 import { blockIdGenerator, DEFAULT_TITLE, TelleryGlyph } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import styled from '@emotion/styled'
-import Tippy, { useSingleton } from '@tippyjs/react'
+import Tippy from '@tippyjs/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import isHotkey from 'is-hotkey'
 import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { usePopper } from 'react-popper'
+import TextareaAutosize from 'react-textarea-autosize'
 import { useEvent } from 'react-use'
 import { atom, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil'
 import invariant from 'tiny-invariant'
@@ -58,7 +61,6 @@ import { useEditor, useGetBlockTitleTextSnapshot } from '../hooks'
 import { useInlineFormulaPopoverState } from '../hooks/useInlineFormulaPopoverState'
 import { useStorySelection } from '../hooks/useStorySelection'
 import { useVariable } from '../hooks/useVariable'
-import TextareaAutosize from 'react-textarea-autosize'
 const MARK_TYPES = Object.values(Editor.InlineType)
 
 const InlineEditingAtom = atom({ key: 'InlineEditingAtom', default: false })
@@ -73,8 +75,6 @@ const useInlineEditingValue = () => {
 const useSetInlineEditing = () => {
   return useSetRecoilState(InlineEditingAtom)
 }
-
-type SingletonObject = unknown
 
 export const BlockTextOperationMenu = (props: { storyId: string }) => {
   const [open, setOpen] = useState(false)
@@ -413,8 +413,6 @@ const BlockTextOperationMenuInner = ({
     }
   }, [inlineEditing, markHandler, markdMap, selectedTokens, toggleReference])
 
-  const [source, target] = useSingleton()
-
   return (
     <div
       {...pop.attributes.popper}
@@ -446,87 +444,78 @@ const BlockTextOperationMenuInner = ({
           height: 40px;
         `}
       >
-        <Tippy singleton={source} delay={500} arrow={false} placement="top" />
-
-        <ToggleTypeOperation
-          // parentSafeToRemove={safeToRemove}
-          toggleBlockType={(type: Editor.BlockType) => {
-            if (!currentBlock?.id) return
-            editor?.updateBlockProps?.(currentBlock.id, ['type'], type)
-            setOpen(false)
-          }}
-          currentType={currentBlock?.type}
-        />
-        <VerticalDivider />
-        <AddLinkOperation markHandler={markHandler} referenceRange={range} />
-        <VerticalDivider />
-        <OperationButtonWithHoverContent
-          tippySingleton={target}
-          type={Editor.InlineType.Bold}
-          hoverContent="Bold"
-          onClick={() => markHandler(Editor.InlineType.Bold, [], !!markdMap.get(Editor.InlineType.Bold))}
-          active={!!markdMap.get(Editor.InlineType.Bold)}
-          icon={IconFontBold}
-        />
-        <OperationButtonWithHoverContent
-          tippySingleton={target}
-          type={Editor.InlineType.Italic}
-          hoverContent="Italic"
-          onClick={() => markHandler(Editor.InlineType.Italic, [], !!markdMap.get(Editor.InlineType.Italic))}
-          active={!!markdMap.get(Editor.InlineType.Italic)}
-          icon={IconFontItalic}
-        />
-        <OperationButtonWithHoverContent
-          type={Editor.InlineType.Underline}
-          tippySingleton={target}
-          hoverContent="Underline"
-          onClick={() => markHandler(Editor.InlineType.Underline, [], !!markdMap.get(Editor.InlineType.Underline))}
-          active={!!markdMap.get(Editor.InlineType.Underline)}
-          icon={IconFontUnderline}
-        />
-        <OperationButtonWithHoverContent
-          type={Editor.InlineType.Strike}
-          tippySingleton={target}
-          hoverContent="Strike-through"
-          onClick={() => markHandler(Editor.InlineType.Strike, [], !!markdMap.get(Editor.InlineType.Strike))}
-          active={!!markdMap.get(Editor.InlineType.Strike)}
-          icon={IconFontStrikethrough}
-        />
-        <OperationButtonWithHoverContent
-          type={Editor.InlineType.Code}
-          tippySingleton={target}
-          hoverContent="Inline code"
-          onClick={() => markHandler(Editor.InlineType.Code, [], !!markdMap.get(Editor.InlineType.Code))}
-          active={!!markdMap.get(Editor.InlineType.Code)}
-          icon={IconFontCode}
-        />
-        <OperationButtonWithHoverContent
-          type={Editor.InlineType.Reference}
-          tippySingleton={target}
-          hoverContent="Reference story"
-          onClick={toggleReference}
-          active={!!markdMap.get(Editor.InlineType.Reference)}
-          icon={IconFontStory}
-        />
-        <VerticalDivider />
-        <InlineFormulaPopover
-          editHandler={editFormula}
-          referenceRange={range}
-          storyId={currentBlock.storyId!}
-          tippySingleton={target}
-          initValue={(markdMap.get(Editor.InlineType.Formula) as string) ?? selectionString ?? ''}
-        />
-        {/* <InlineEquationPopover setInlineEditing={setInlineEditing} markHandler={markHandler} referenceRange={range} /> */}
-        <OperationButtonWithHoverContent
-          type={Editor.InlineType.Hightlighted}
-          tippySingleton={target}
-          hoverContent="Highlight"
-          onClick={() =>
-            markHandler(Editor.InlineType.Hightlighted, [], !!markdMap.get(Editor.InlineType.Hightlighted))
-          }
-          active={!!markdMap.get(Editor.InlineType.Hightlighted)}
-          icon={IconFontColor}
-        />
+        <TippySingletonContextProvider delay={500} arrow={false} placement="top">
+          <ToggleTypeOperation
+            toggleBlockType={(type: Editor.BlockType) => {
+              if (!currentBlock?.id) return
+              editor?.updateBlockProps?.(currentBlock.id, ['type'], type)
+              setOpen(false)
+            }}
+            currentType={currentBlock?.type}
+          />
+          <VerticalDivider />
+          <AddLinkOperation markHandler={markHandler} referenceRange={range} />
+          <VerticalDivider />
+          <OperationButtonWithHoverContent
+            type={Editor.InlineType.Bold}
+            hoverContent="Bold"
+            onClick={() => markHandler(Editor.InlineType.Bold, [], !!markdMap.get(Editor.InlineType.Bold))}
+            active={!!markdMap.get(Editor.InlineType.Bold)}
+            icon={IconFontBold}
+          />
+          <OperationButtonWithHoverContent
+            type={Editor.InlineType.Italic}
+            hoverContent="Italic"
+            onClick={() => markHandler(Editor.InlineType.Italic, [], !!markdMap.get(Editor.InlineType.Italic))}
+            active={!!markdMap.get(Editor.InlineType.Italic)}
+            icon={IconFontItalic}
+          />
+          <OperationButtonWithHoverContent
+            type={Editor.InlineType.Underline}
+            hoverContent="Underline"
+            onClick={() => markHandler(Editor.InlineType.Underline, [], !!markdMap.get(Editor.InlineType.Underline))}
+            active={!!markdMap.get(Editor.InlineType.Underline)}
+            icon={IconFontUnderline}
+          />
+          <OperationButtonWithHoverContent
+            type={Editor.InlineType.Strike}
+            hoverContent="Strike-through"
+            onClick={() => markHandler(Editor.InlineType.Strike, [], !!markdMap.get(Editor.InlineType.Strike))}
+            active={!!markdMap.get(Editor.InlineType.Strike)}
+            icon={IconFontStrikethrough}
+          />
+          <OperationButtonWithHoverContent
+            type={Editor.InlineType.Code}
+            hoverContent="Inline code"
+            onClick={() => markHandler(Editor.InlineType.Code, [], !!markdMap.get(Editor.InlineType.Code))}
+            active={!!markdMap.get(Editor.InlineType.Code)}
+            icon={IconFontCode}
+          />
+          <OperationButtonWithHoverContent
+            type={Editor.InlineType.Reference}
+            hoverContent="Reference story"
+            onClick={toggleReference}
+            active={!!markdMap.get(Editor.InlineType.Reference)}
+            icon={IconFontStory}
+          />
+          <VerticalDivider />
+          <InlineFormulaPopover
+            editHandler={editFormula}
+            referenceRange={range}
+            storyId={currentBlock.storyId!}
+            initValue={(markdMap.get(Editor.InlineType.Formula) as string) ?? selectionString ?? ''}
+          />
+          {/* <InlineEquationPopover setInlineEditing={setInlineEditing} markHandler={markHandler} referenceRange={range} /> */}
+          <OperationButtonWithHoverContent
+            type={Editor.InlineType.Hightlighted}
+            hoverContent="Highlight"
+            onClick={() =>
+              markHandler(Editor.InlineType.Hightlighted, [], !!markdMap.get(Editor.InlineType.Hightlighted))
+            }
+            active={!!markdMap.get(Editor.InlineType.Hightlighted)}
+            icon={IconFontColor}
+          />
+        </TippySingletonContextProvider>
       </motion.div>
     </div>
   )
@@ -538,8 +527,8 @@ const OperationButtonWithHoverContent: React.FC<{
   onClick: () => void
   icon: React.ForwardRefExoticComponent<React.SVGAttributes<SVGElement>>
   active: boolean
-  tippySingleton: SingletonObject
-}> = ({ type, hoverContent, tippySingleton, onClick, active, icon }) => {
+}> = ({ type, hoverContent, onClick, active, icon }) => {
+  const tippySingleton = useTippySingleton()
   return (
     <>
       <Tippy
@@ -1022,7 +1011,6 @@ const InlineFormulaPopover = (props: {
   referenceRange: Range | null
   editHandler: (formula: string) => void
   storyId: string
-  tippySingleton: SingletonObject
   initValue: string
 }) => {
   const [open, setOpen] = useInlineFormulaPopoverState()
@@ -1058,7 +1046,6 @@ const InlineFormulaPopover = (props: {
     <>
       <OperationButtonWithHoverContent
         active={false}
-        tippySingleton={props.tippySingleton}
         icon={IconCommonFormula}
         hoverContent="Inline formula"
         type={Editor.InlineType.Variable}

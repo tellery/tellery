@@ -12,5 +12,13 @@
   "Data Assets": "Data Assets",
   "You pasted {{count}} visualization block": "You pasted {{count}} visualization block",
   "You pasted {{count}} visualization block_plural": "You pasted {{count}} visualization blocks",
-  "Duplicate data assets too": "Duplicate data assets too"
+  "Duplicate data assets too": "Duplicate data assets at the same time",
+  "Refreshing... {{mutatingCount}} / {{totalCount}}, click to stop": "Refreshing... {{mutatingCount}} / {{totalCount}}, click to stop",
+  "Refresh {{count}} query": "Refresh {{count}} query",
+  "Refresh {{count}} queries_plural": "Refresh {{count}} queries_plural",
+  "Queries": "Queries",
+  "Refresh": "Refresh",
+  "Visualization options": "Visualization options",
+  "Edit SQL": "Edit SQL",
+  "More": "More"
 }

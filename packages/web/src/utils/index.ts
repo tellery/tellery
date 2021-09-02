@@ -19,6 +19,8 @@ export enum TELLERY_MIME_TYPES {
   MONACO = 'vscode-editor-data'
 }
 
+export const DEFAULT_TIPPY_DELAY: [number, number] = [500, 250]
+
 export const DEFAULT_TITLE = 'Untitled'
 export const FIRST_LINE_OR_LAST_LINE_THERESHOLD = 10
 export const WS_URI = env.WEB_SOCKET_URI

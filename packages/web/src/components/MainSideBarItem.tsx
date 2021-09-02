@@ -1,4 +1,5 @@
 import { useBindHovering } from '@app/hooks'
+import { useTippySingleton } from '@app/hooks/useTippySingleton'
 import { ThemingVariables } from '@app/styles'
 import { css, cx } from '@emotion/css'
 import Tippy from '@tippyjs/react'
@@ -15,7 +16,7 @@ export function MainSideBarItem(props: {
 }) {
   const Icon = props.icon
   const [bindHoveringEvents, isHovering] = useBindHovering()
-
+  const tippySingleton = useTippySingleton()
   useEffect(() => {
     if (isHovering) {
       props.onHover?.()
@@ -28,6 +29,7 @@ export function MainSideBarItem(props: {
       content={props.hoverTitle ?? null}
       hideOnClick={false}
       arrow={false}
+      singleton={tippySingleton}
       placement="right"
     >
       <div>
