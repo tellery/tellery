@@ -19,13 +19,14 @@ import { useStoryResources } from '@app/hooks/useStoryResources'
 import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
 import { useTippySingleton } from '@app/hooks/useTippySingleton'
 import { ThemingVariables } from '@app/styles'
+import { PopoverMotionVariants } from '@app/styles/animations'
 import { Editor, Story, Thought } from '@app/types'
 import { DEFAULT_TIPPY_DELAY } from '@app/utils'
 import { DndItemDataBlockType, DnDItemTypes } from '@app/utils/dnd'
 import { useDraggable } from '@dnd-kit/core'
 import { css } from '@emotion/css'
 import Tippy from '@tippyjs/react'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import React, { memo, ReactNode, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import PerfectScrollbar from 'react-perfect-scrollbar'
@@ -121,11 +122,9 @@ export const CurrentStoryQueries: React.FC<{ storyId: string }> = ({ storyId }) 
 }
 
 const ImportOperation: React.FC<{ storyId: string }> = ({ storyId }) => {
-  const popover = usePopoverState({ placement: 'right-start' })
-
+  const popover = usePopoverState({ placement: 'right-start', animated: true, modal: true })
   const { t } = useTranslation()
   const [keyword, setKeyword] = useState('')
-
   const { data } = useSearchSQLQueries(keyword, 10)
   const storyResources = useStoryResourceIds(storyId)
   const commit = useCommit()
@@ -159,122 +158,126 @@ const ImportOperation: React.FC<{ storyId: string }> = ({ storyId }) => {
         icon={IconMenuImport}
         {...popover}
       ></PopoverDisclosure>
-      <Popover
-        {...popover}
-        aria-label="Welcome"
-        className={css`
-          position: fixed;
-          left: 0;
-          right: 0;
-          top: 100px;
-          margin: auto;
-          width: 360px;
-          box-shadow: ${ThemingVariables.boxShadows[0]};
-          background-color: ${ThemingVariables.colors.gray[5]};
-          z-index: 1000;
-          border-radius: 8px;
-        `}
-      >
-        <div
-          className={css`
-            padding: 18px;
-          `}
-        >
-          <SearchInput
-            onChange={(e) => {
-              setKeyword(e.target.value)
-            }}
-            className={css``}
-          />
-        </div>
-        <div
-          className={css`
-            max-height: 300px;
-            overflow: auto;
-            padding: 0 18px;
-            padding-bottom: 10px;
-            > * + * {
-              margin-top: 10px;
-            }
-          `}
-        >
-          {data?.searchResults.map((blockId) => {
-            const block = data?.blocks[blockId]
-            const story = data?.blocks[block.storyId!]
-            if (storyResources?.includes(blockId)) return null
-            return (
+      <Popover {...popover} aria-label="Welcome" className={css``}>
+        <AnimatePresence>
+          {popover.visible && (
+            <motion.div
+              initial={'inactive'}
+              animate={'active'}
+              exit={'inactive'}
+              variants={PopoverMotionVariants.scale}
+              transition={{ duration: 0.15 }}
+              className={css`
+                width: 360px;
+                box-shadow: ${ThemingVariables.boxShadows[0]};
+                background-color: ${ThemingVariables.colors.gray[5]};
+                border-radius: 8px;
+                margin: auto;
+              `}
+            >
               <div
-                key={block.id}
                 className={css`
-                  /* box-shadow: ${ThemingVariables.boxShadows[0]}; */
-                  background-color: ${ThemingVariables.colors.gray[5]};
-                  border-radius: 8px;
-                  padding: 8px;
-                  cursor: pointer;
-                  :hover {
-                    background-color: ${ThemingVariables.colors.primary[4]};
-                  }
-                  display: flex;
-                  align-items: center;
+                  padding: 18px;
                 `}
-                onClick={() => {
-                  importQueryToStory(blockId)
-                }}
               >
-                <div
-                  className={css`
-                    flex: 1;
-                    overflow: hidden;
-                  `}
-                >
-                  <div
-                    className={css`
-                      color: ${ThemingVariables.colors.text[0]};
-                      font-size: 14px;
-                      display: flex;
-                      align-items: center;
-                      overflow: hidden;
-                    `}
-                  >
-                    <IconCommonSql
-                      className={css`
-                        margin-right: 5px;
-                      `}
-                    />
-                    <div
-                      className={css`
-                        white-space: nowrap;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                      `}
-                    >
-                      <BlockTitle block={block} />
-                    </div>
-                  </div>
-                  <div
-                    className={css`
-                      color: ${ThemingVariables.colors.text[2]};
-                      margin-top: 5px;
-                      font-size: 14px;
-                      white-space: nowrap;
-                      overflow: hidden;
-                      text-overflow: ellipsis;
-                    `}
-                  >
-                    <BlockTitle block={story} />
-                  </div>
-                </div>
-                <div
-                  className={css`
-                    flex-shrink: 0;
-                  `}
-                >
-                  <IconCommonAdd />
-                </div>
+                <SearchInput
+                  onChange={(e) => {
+                    setKeyword(e.target.value)
+                  }}
+                  className={css``}
+                />
               </div>
-            )
-          })}
-        </div>
+              <div
+                className={css`
+                  max-height: 300px;
+                  overflow: auto;
+                  padding: 0 18px;
+                  padding-bottom: 10px;
+                  > * + * {
+                    margin-top: 10px;
+                  }
+                `}
+              >
+                {data?.searchResults.map((blockId) => {
+                  const block = data?.blocks[blockId]
+                  const story = data?.blocks[block.storyId!]
+                  if (storyResources?.includes(blockId)) return null
+                  return (
+                    <div
+                      key={block.id}
+                      className={css`
+                        /* box-shadow: ${ThemingVariables.boxShadows[0]}; */
+                        background-color: ${ThemingVariables.colors.gray[5]};
+                        border-radius: 8px;
+                        padding: 8px;
+                        cursor: pointer;
+                        :hover {
+                          background-color: ${ThemingVariables.colors.primary[4]};
+                        }
+                        display: flex;
+                        align-items: center;
+                      `}
+                      onClick={() => {
+                        importQueryToStory(blockId)
+                      }}
+                    >
+                      <div
+                        className={css`
+                          flex: 1;
+                          overflow: hidden;
+                        `}
+                      >
+                        <div
+                          className={css`
+                            color: ${ThemingVariables.colors.text[0]};
+                            font-size: 14px;
+                            display: flex;
+                            align-items: center;
+                            overflow: hidden;
+                          `}
+                        >
+                          <IconCommonSql
+                            className={css`
+                              margin-right: 5px;
+                            `}
+                          />
+                          <div
+                            className={css`
+                              white-space: nowrap;
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                            `}
+                          >
+                            <BlockTitle block={block} />
+                          </div>
+                        </div>
+                        <div
+                          className={css`
+                            color: ${ThemingVariables.colors.text[2]};
+                            margin-top: 5px;
+                            font-size: 14px;
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                          `}
+                        >
+                          <BlockTitle block={story} />
+                        </div>
+                      </div>
+                      <div
+                        className={css`
+                          flex-shrink: 0;
+                        `}
+                      >
+                        <IconCommonAdd />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </Popover>
     </>
   )
