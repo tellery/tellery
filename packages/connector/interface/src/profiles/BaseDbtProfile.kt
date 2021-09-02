@@ -2,6 +2,7 @@ package io.tellery.connectors.profiles
 
 import io.tellery.entities.Profile
 
+@Deprecated("")
 open class BaseDbtProfile {
 
     open lateinit var type: String

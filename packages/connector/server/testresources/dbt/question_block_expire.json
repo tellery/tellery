@@ -1,0 +1,4 @@
+{
+  "name": "welcome_to tellery-dbt-block-1",
+  "sql": "select * from {{ ref('my_first_dbt_model') }} limit 10"
+}

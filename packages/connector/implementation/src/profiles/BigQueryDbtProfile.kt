@@ -9,6 +9,7 @@ import io.tellery.connectors.fields.BigQueryFields
 import io.tellery.entities.Profile
 import java.util.*
 
+@Deprecated("")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Dbt(type = "BigQuery")
 class BigQueryDbtProfile(profile: Profile) : BaseDbtProfile() {

@@ -3,6 +3,7 @@ package io.tellery.common.dbt
 import io.tellery.entities.Profile
 import java.io.File
 
+@Deprecated("")
 data class DbtRepository(
     val name: String,
     val gitRepoFolder: File,

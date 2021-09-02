@@ -1,47 +1,49 @@
 package io.tellery
 
-import entities.ProjectConfig
 import io.tellery.managers.ConnectorManagerV2
+import io.tellery.managers.DbtManagerV2
+import io.tellery.managers.IntegrationManager
 import io.tellery.managers.ProfileManager
 import io.tellery.managers.impl.DatabaseProfileManager
 import io.tellery.managers.impl.FileProfileManager
+import io.tellery.services.DbtV2Service
 import io.tellery.services.ProfileService
+import io.tellery.services.RpcService
 import org.koin.core.module.Module
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
-import org.ktorm.database.Database
+import entities.ProjectConfig as config
 
 object Modules {
 
     fun providesAppModule(): Module {
         return module {
-            single { ProjectConfig() }
-            single { providesDatabaseClient(get()) }
-            single { providesProfileManager(get(), get()) }
-            single { ConnectorManagerV2(get(), get()) }
+            // Manager
+            single<ProfileManager>(named("file")) { FileProfileManager() }
+            single<ProfileManager>(named("database")) { DatabaseProfileManager() }
+            single { IntegrationManager() }
+            single {
+                ConnectorManagerV2(
+                    get(qualifier = named(config.deployModel.profileManagerName))
+                )
+            }
+            single {
+                DbtManagerV2(
+                    get(qualifier = named(config.deployModel.profileManagerName))
+                )
+            }
 
             // Service
-            single { ProfileService(get(), get()) }
+            single {
+                ProfileService(
+                    get(),
+                    get(qualifier = named(config.deployModel.profileManagerName)),
+                    get(),
+                    get()
+                )
+            }
+            single { DbtV2Service(get()) }
+            single { RpcService(get(), get()) }
         }
     }
-
-    private fun providesProfileManager(
-        config: ProjectConfig,
-        database: Database
-    ): ProfileManager = when (config.deployModel) {
-        ProjectConfig.DeployModel.LOCAL -> FileProfileManager(config)
-        ProjectConfig.DeployModel.CLUSTER -> DatabaseProfileManager(database)
-        else -> throw RuntimeException()
-    }
-
-    private fun providesDatabaseClient(config: ProjectConfig): Database? =
-        when (config.deployModel) {
-            ProjectConfig.DeployModel.LOCAL -> null
-            ProjectConfig.DeployModel.CLUSTER -> Database.connect(
-                url = config.databaseURL ?: throw RuntimeException(),
-                driver = "org.postgresql.Driver",
-                user = config.databaseUser,
-                password = config.databasePassword
-            )
-            else -> throw RuntimeException()
-        }
 }

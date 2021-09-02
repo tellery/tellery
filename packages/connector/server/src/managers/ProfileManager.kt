@@ -10,7 +10,7 @@ interface ProfileManager {
     fun upsertProfile(profile: NewProfile): NewProfile
 
     fun getAllIntegrationInProfile(profileId: String): List<Integration>
-
+    
     fun getIntegrationInProfileAndByType(profileId: String, type: String): Integration?
 
     fun upsertIntegration(integration: Integration): Integration

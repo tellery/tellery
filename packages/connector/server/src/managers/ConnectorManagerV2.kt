@@ -11,10 +11,7 @@ import java.lang.reflect.InvocationTargetException
 import kotlin.reflect.KClass
 import kotlin.reflect.full.*
 
-class ConnectorManagerV2(
-    private val rm: ProfileManager,
-    private val config: ProjectConfig
-) {
+class ConnectorManagerV2(val profileManager: ProfileManager) {
     private lateinit var connector: BaseConnector
 
     companion object {
@@ -31,50 +28,57 @@ class ConnectorManagerV2(
                 it.findAnnotation<Connector>()!!.type
             }
 
-            logger.info { "Loaded Connectors ${dbTypeToClassMap.keys.joinToString(", ")}" }
+            logger.info { "Loaded Connectors: ${dbTypeToClassMap.keys.joinToString(", ")}" }
 
             availableConfig = dbTypeToClassMap.values.map { it.findAnnotation()!! }
         }
     }
 
-    init {
-        initializeConnector()
-    }
+    fun reloadConnector() {
+        profileManager
+            .getProfileById(ProjectConfig.workspaceId)
+            ?.let { profile ->
+                // initialize connector instance
+                val clazz = dbTypeToClassMap[profile.type]!!
+                connector = clazz.primaryConstructor!!.call()
+                connector.initByProfile(Profile(profile))
 
-    fun initializeConnector() {
-        val profile = rm.getProfileById(config.workspaceId) ?: throw RuntimeException()
-
-        // initialize connector instance
-        val clazz = dbTypeToClassMap[profile.type]!!
-        connector = clazz.primaryConstructor!!.call()
-        connector.initByProfile(Profile(profile))
-
-        // initialize connector import dispatcher
-        connector.importDispatcher =
-            connector::class.declaredMemberFunctions
-                .filter { it.hasAnnotation<HandleImport>() }
-                .associateBy {
-                    it.findAnnotation<HandleImport>()!!.type
-                }
-                .mapValues { (_, func) ->
-                    suspend fun(
-                        database: String,
-                        collection: String,
-                        schema: String?,
-                        content: ByteArray
-                    ) {
-                        try {
-                            func.callSuspend(connector, database, collection, schema, content)
-                        } catch (e: InvocationTargetException) {
-                            throw e.targetException
+                // initialize connector import dispatcher
+                connector.importDispatcher =
+                    connector::class.declaredMemberFunctions
+                        .filter { it.hasAnnotation<HandleImport>() }
+                        .associateBy {
+                            it.findAnnotation<HandleImport>()!!.type
                         }
-                    }
-                }
+                        .mapValues { (_, func) ->
+                            suspend fun(
+                                database: String,
+                                collection: String,
+                                schema: String?,
+                                content: ByteArray
+                            ) {
+                                try {
+                                    func.callSuspend(
+                                        connector,
+                                        database,
+                                        collection,
+                                        schema,
+                                        content
+                                    )
+                                } catch (e: InvocationTargetException) {
+                                    throw e.targetException
+                                }
+                            }
+                        }
 
-        logger.info(
-            "initialized profile {}; loaded import handler {}",
-            profile.toString(),
-            connector.importDispatcher.keys
-        )
+                logger.info(
+                    "initialized profile {}; loaded import handler {}",
+                    profile.toString(),
+                    connector.importDispatcher.keys
+                )
+            }
+            ?: logger.warn { "Can not init the connector, maybe the workspace have no profile." }
     }
+
+    fun getConfigs() = availableConfig
 }

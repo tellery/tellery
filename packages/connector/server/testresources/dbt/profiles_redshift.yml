@@ -1,0 +1,12 @@
+---
+projectC:
+  outputs:
+    dev:
+      host: "examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com"
+      port: 5439
+      user: "abc"
+      password: "def"
+      dbname: "my_db"
+      schema: "PUBLIC"
+      type: "redshift"
+  target: "dev"

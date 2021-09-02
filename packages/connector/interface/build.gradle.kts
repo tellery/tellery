@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 val coroutinesVersion: String by project
 val logbackVersion: String by project
 val grpcVersion: String by project
+val jacksonVersion: String by project
 
 // Version for releasing snapshot, should be the next version (one to be released)
 val snapshotVersion = "0.8.1"
@@ -50,6 +51,8 @@ dependencies {
 
     api("com.github.kittinunf.fuel:fuel:2.3.1")
     api("com.github.kittinunf.fuel:fuel-coroutines:2.3.1")
+
+    api("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
 }
 
 java {

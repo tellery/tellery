@@ -1,0 +1,12 @@
+---
+projectC:
+  outputs:
+    dev:
+      account: "xy12345.us-ease-2.aws"
+      user: "abc"
+      password: "def"
+      database: "dbt"
+      schema: "PUBLIC"
+      warehouse: "dbt_wh"
+      type: "snowflake"
+  target: "dev"

@@ -2,33 +2,69 @@ package io.tellery.services
 
 import com.google.protobuf.Empty
 import entities.NewProfile
-import entities.ProjectConfig
+import io.tellery.annotations.Config
+import io.tellery.configs.AvailableConfig
+import io.tellery.configs.AvailableConfigs
+import io.tellery.configs.ConfigField
 import io.tellery.grpc.KVEntry
+import io.tellery.managers.ConnectorManagerV2
+import io.tellery.managers.DbtManagerV2
+import io.tellery.managers.IntegrationManager
 import io.tellery.managers.ProfileManager
 import io.tellery.profile.*
+import entities.ProjectConfig as config
 
 class ProfileService(
-    private val rm: ProfileManager,
-    private val config: ProjectConfig
+    private val dbtManager: DbtManagerV2,
+    private val profileManager: ProfileManager,
+    private val connectorManager: ConnectorManagerV2,
+    private val integrationManager: IntegrationManager
 ) : ProfileServiceCoroutineGrpc.ProfileServiceImplBase() {
 
+    override suspend fun getProfileConfigs(request: Empty): AvailableConfigs {
+        return AvailableConfigs {
+            addAllAvailableConfigs(connectorManager.getConfigs().map {
+                AvailableConfig {
+                    type = it.type
+                    addAllConfigs(it.configs.map(::buildConfigFieldFromAnnotation))
+                }
+            })
+        }
+    }
+
     override suspend fun getProfile(request: Empty): Profile {
-        val profile = rm.getProfileById(config.workspaceId)
+        val profile = profileManager.getProfileById(config.workspaceId)
         return buildProtoProfile(profile!!)
     }
 
     override suspend fun upsertProfile(request: UpsertProfileRequestV2): Profile {
-        val profile = NewProfile(
-            id = config.workspaceId,
-            type = request.type,
-            credential = request.credential,
-            configs = request.configsList.associate { it.key to it.value }
+        val profile = profileManager.upsertProfile(
+            NewProfile(
+                id = config.workspaceId,
+                type = request.type,
+                credential = request.credential,
+                configs = request.configsList.associate { it.key to it.value }
+            )
         )
-        return buildProtoProfile(rm.upsertProfile(profile))
+
+        connectorManager.reloadConnector()
+        dbtManager.reloadContext()
+        return buildProtoProfile(profile)
+    }
+
+    override suspend fun getIntegrationConfigs(request: Empty): AvailableConfigs {
+        return AvailableConfigs {
+            addAllAvailableConfigs(integrationManager.getConfigs().map {
+                AvailableConfig {
+                    type = it.type
+                    addAllConfigs(it.configs.map(::buildConfigFieldFromAnnotation))
+                }
+            })
+        }
     }
 
     override suspend fun listIntegrations(request: Empty): ListIntegrationsResponse {
-        val integrations = rm.getAllIntegrationInProfile(config.workspaceId)
+        val integrations = profileManager.getAllIntegrationInProfile(config.workspaceId)
         return ListIntegrationsResponse {
             addAllIntegrations(integrations.map { buildProtoIntegration(it) })
         }
@@ -42,12 +78,24 @@ class ProfileService(
             type = request.type,
             configs = request.configsList.associate { it.key to it.value }
         )
-        return buildProtoIntegration(rm.upsertIntegration(integration))
+        return buildProtoIntegration(profileManager.upsertIntegration(integration))
     }
 
     override suspend fun deleteIntegration(request: DeleteIntegrationRequest): Empty {
-        rm.deleteIntegration(request.id)
+        profileManager.deleteIntegration(request.id)
         return Empty.getDefaultInstance()
+    }
+
+    private fun buildConfigFieldFromAnnotation(confAnnotation: Config): ConfigField {
+        return ConfigField {
+            name = confAnnotation.name
+            type = confAnnotation.type.name
+            description = confAnnotation.description
+            hint = confAnnotation.hint
+            required = confAnnotation.required
+            secret = confAnnotation.secret
+            fillHint = confAnnotation.fillHint
+        }
     }
 
     private fun buildProtoProfile(profile: NewProfile): Profile {

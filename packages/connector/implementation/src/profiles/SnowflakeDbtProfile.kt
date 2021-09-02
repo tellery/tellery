@@ -5,6 +5,7 @@ import io.tellery.connectors.annotations.Dbt
 import io.tellery.connectors.fields.SnowflakeFields
 import io.tellery.entities.Profile
 
+@Deprecated("")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Dbt(type = "Snowflake")
 class SnowflakeDbtProfile(profile: Profile) : BaseDbtProfile() {

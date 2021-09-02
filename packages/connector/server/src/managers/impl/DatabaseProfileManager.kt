@@ -10,16 +10,23 @@ import org.ktorm.schema.int
 import org.ktorm.schema.varchar
 import org.ktorm.support.postgresql.hstore
 import org.ktorm.support.postgresql.insertOrUpdate
+import entities.ProjectConfig as config
 
-class DatabaseProfileManager(private val client: Database) : ProfileManager {
-    override fun getProfileById(workspaceId: String): NewProfile? {
-        return client
-            .from(ProfileDTO)
+class DatabaseProfileManager : ProfileManager {
+
+    val client: Database = Database.connect(
+        url = config.databaseURL ?: throw RuntimeException(),
+        driver = "org.postgresql.Driver",
+        user = config.databaseUser,
+        password = config.databasePassword
+    )
+
+    override fun getProfileById(workspaceId: String): NewProfile? =
+        client.from(ProfileDTO)
             .select()
             .where { ProfileDTO.id eq workspaceId }
             .map { ProfileDTO.createEntity(it) }
             .firstOrNull()
-    }
 
     override fun upsertProfile(profile: NewProfile): NewProfile {
         client.insertOrUpdate(ProfileDTO) {
@@ -36,14 +43,12 @@ class DatabaseProfileManager(private val client: Database) : ProfileManager {
         return profile
     }
 
-    override fun getIntegrationInProfileAndByType(profileId: String, type: String): Integration? {
-        return client
-            .from(IntegrationDTO)
+    override fun getIntegrationInProfileAndByType(profileId: String, type: String): Integration? =
+        client.from(IntegrationDTO)
             .select()
             .where { (IntegrationDTO.type eq type) and (IntegrationDTO.profileId eq profileId) }
             .map { IntegrationDTO.createEntity(it) }
             .firstOrNull()
-    }
 
     override fun upsertIntegration(integration: Integration): Integration {
         if (integration.id == null) {
@@ -61,17 +66,14 @@ class DatabaseProfileManager(private val client: Database) : ProfileManager {
                 where { it.id eq integration.id!! }
             }
         }
-
         return integration
     }
 
-    override fun getAllIntegrationInProfile(profileId: String): List<Integration> {
-        return client
-            .from(IntegrationDTO)
+    override fun getAllIntegrationInProfile(profileId: String): List<Integration> =
+        client.from(IntegrationDTO)
             .select()
             .where { IntegrationDTO.profileId eq profileId }
             .map { IntegrationDTO.createEntity(it) }
-    }
 
     override fun deleteIntegration(id: Int) {
         client.delete(IntegrationDTO) { it.id eq id }

@@ -4,16 +4,16 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import entities.Integration
 import entities.NewProfile
+import entities.ProjectConfig
 import execSqlScript
 import getResourceFileURL
 import io.kotest.common.ExperimentalKotest
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.mockk.every
+import io.mockk.mockkObject
 import io.tellery.managers.impl.DatabaseProfileManager
-import org.ktorm.database.Database
-import org.ktorm.logging.ConsoleLogger
-import org.ktorm.logging.LogLevel
 import org.testcontainers.containers.PostgreSQLContainer
 
 @ExperimentalKotest
@@ -25,37 +25,34 @@ class DatabaseProfileManagerTest : FunSpec({
     pgContainer.withPassword("test")
 
     val mapper = jacksonObjectMapper()
-    val profileURL = getResourceFileURL("/profiles/profile_1.json")
+    val profileURL = getResourceFileURL("/profiles/profile_redshift.json")
     val integrationURL = getResourceFileURL("/integrations/integration_1.json")
 
-    lateinit var database: Database
-    lateinit var rm: DatabaseProfileManager
+    lateinit var pm: DatabaseProfileManager
 
     beforeSpec {
         pgContainer.start()
-        database = Database.connect(
-            url = pgContainer.jdbcUrl,
-            driver = pgContainer.driverClassName,
-            user = pgContainer.username,
-            password = pgContainer.password,
-            logger = ConsoleLogger(threshold = LogLevel.TRACE)
-        )
-        rm = DatabaseProfileManager(database)
+        mockkObject(ProjectConfig)
+        every { ProjectConfig.databaseURL } answers { pgContainer.jdbcUrl }
+        every { ProjectConfig.databaseUser } answers { pgContainer.username }
+        every { ProjectConfig.databasePassword } answers { pgContainer.password }
+
+        pm = DatabaseProfileManager()
     }
 
     beforeTest {
-        execSqlScript(database, "/sql/init-profile-data.sql")
+        execSqlScript(pm.client, "/sql/init-profile-data.sql")
     }
 
     afterTest {
-        execSqlScript(database, "/sql/cleanup-profile-data.sql")
+        execSqlScript(pm.client, "/sql/cleanup-profile-data.sql")
     }
 
     context("create and get a profile") {
         val profile: NewProfile = mapper.readValue(profileURL)
 
-        rm.upsertProfile(profile)
-        val profileAfterSaved = rm.getProfileById(profile.id)
+        pm.upsertProfile(profile)
+        val profileAfterSaved = pm.getProfileById(profile.id)
 
         profileAfterSaved shouldBe profile
     }
@@ -63,15 +60,15 @@ class DatabaseProfileManagerTest : FunSpec({
     context("update a profile") {
         val profile: NewProfile = mapper.readValue(profileURL)
 
-        rm.upsertProfile(profile)
+        pm.upsertProfile(profile)
 
         val configs = HashMap(profile.configs)
         configs["Username"] = "test"
         configs["Password"] = "test"
         profile.configs = configs
 
-        rm.upsertProfile(profile)
-        val profileAfterUpdated = rm.getProfileById(profile.id)
+        pm.upsertProfile(profile)
+        val profileAfterUpdated = pm.getProfileById(profile.id)
 
         profileAfterUpdated.let {
             configs["Username"] shouldBe "test"
@@ -81,14 +78,14 @@ class DatabaseProfileManagerTest : FunSpec({
 
     context("create and get a integration") {
         val profile: NewProfile = mapper.readValue(profileURL)
-        rm.upsertProfile(profile)
+        pm.upsertProfile(profile)
 
         val integration: Integration = mapper.readValue(integrationURL)
         integration.id = null
-        rm.upsertIntegration(integration)
+        pm.upsertIntegration(integration)
 
         val integrationAfterSaved =
-            rm.getIntegrationInProfileAndByType(integration.profileId, integration.type)
+            pm.getIntegrationInProfileAndByType(integration.profileId, integration.type)
 
         integrationAfterSaved.let {
             it!!.id shouldNotBe null
@@ -100,23 +97,23 @@ class DatabaseProfileManagerTest : FunSpec({
 
     context("update a integration") {
         val profile: NewProfile = mapper.readValue(profileURL)
-        rm.upsertProfile(profile)
+        pm.upsertProfile(profile)
 
         val integration: Integration = mapper.readValue(integrationURL)
         integration.id = null
-        rm.upsertIntegration(integration)
+        pm.upsertIntegration(integration)
 
         val integrationAfterSaved =
-            rm.getIntegrationInProfileAndByType(integration.profileId, integration.type)
+            pm.getIntegrationInProfileAndByType(integration.profileId, integration.type)
 
         val configs = HashMap(integrationAfterSaved!!.configs)
         configs["Dbt Project Name"] = "test"
         configs["Git Url"] = "test"
         integrationAfterSaved.configs = configs
-        rm.upsertIntegration(integrationAfterSaved)
+        pm.upsertIntegration(integrationAfterSaved)
 
         val integrationAfterUpdated =
-            rm.getIntegrationInProfileAndByType(
+            pm.getIntegrationInProfileAndByType(
                 integrationAfterSaved.profileId,
                 integrationAfterSaved.type
             )
@@ -129,19 +126,19 @@ class DatabaseProfileManagerTest : FunSpec({
 
     context("delete a integration") {
         val profile: NewProfile = mapper.readValue(profileURL)
-        rm.upsertProfile(profile)
+        pm.upsertProfile(profile)
 
         val integration: Integration = mapper.readValue(integrationURL)
         integration.id = null
-        rm.upsertIntegration(integration)
+        pm.upsertIntegration(integration)
 
         val integrationAfterSaved =
-            rm.getIntegrationInProfileAndByType(integration.profileId, integration.type)
+            pm.getIntegrationInProfileAndByType(integration.profileId, integration.type)
 
-        rm.deleteIntegration(integrationAfterSaved!!.id!!)
+        pm.deleteIntegration(integrationAfterSaved!!.id!!)
 
         val integrationAfterDeleted =
-            rm.getIntegrationInProfileAndByType(
+            pm.getIntegrationInProfileAndByType(
                 integrationAfterSaved.profileId,
                 integrationAfterSaved.type
             )
