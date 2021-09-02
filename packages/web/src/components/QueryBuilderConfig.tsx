@@ -19,15 +19,17 @@ import produce from 'immer'
 import Tippy from '@tippyjs/react'
 
 export default function QueryBuilderConfig(props: {
-  value: Editor.QueryBlock
+  snapshotId?: string
+  type: Editor.BlockType
+  metrics?: { [id: string]: Metric }
   onChange(fields: { name: string; type: string }[], metrics: { [id: string]: Metric }): void
   className?: string
 }) {
   const [isQueryBuilder, setIsQueryBuilder] = useState(false)
   useEffect(() => {
-    setIsQueryBuilder(props.value.type === Editor.BlockType.QueryBuilder)
-  }, [props.value.type])
-  const snapshot = useSnapshot(props.value.content?.snapshotId)
+    setIsQueryBuilder(props.type === Editor.BlockType.QueryBuilder)
+  }, [props.type])
+  const snapshot = useSnapshot(props.snapshotId)
   const fields = useMemo(
     () =>
       snapshot?.data.fields
@@ -73,8 +75,9 @@ export default function QueryBuilderConfig(props: {
     >
       <QueryBuilderConfigInner
         fields={fields}
-        metrics={(props.value as Editor.QueryBuilder).content?.metrics}
+        value={props.metrics || {}}
         onChange={(metrics) => {
+          console.log('metrics', metrics)
           props.onChange(fields, metrics)
         }}
       />
@@ -111,17 +114,13 @@ function QueryBuilderConfigInner(props: {
     name: string
     type: string
   }[]
-  metrics?: {
+  value: {
     [id: string]: Metric
   }
-  onChange(metrics: { [id: string]: Metric }): void
+  onChange(value: { [id: string]: Metric }): void
 }) {
   const [activeMetricId, setActiveMetricId] = useState<string>()
-  const [metrics, setMetrics] = useState(props.metrics || {})
-  useEffect(() => {
-    setMetrics(props.metrics || {})
-  }, [props.metrics])
-  const activeMetric = activeMetricId ? metrics[activeMetricId] : undefined
+  const activeMetric = activeMetricId ? props.value?.[activeMetricId] : undefined
 
   return (
     <>
@@ -161,7 +160,7 @@ function QueryBuilderConfigInner(props: {
             `}
           />
         </div>
-        {Object.entries(metrics).map(([id, metric]) => (
+        {Object.entries(props.value).map(([id, metric]) => (
           <div
             key={id}
             onClick={() => {
@@ -331,8 +330,8 @@ function QueryBuilderConfigInner(props: {
               variant="danger"
               onClick={() => {
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const { [activeMetricId]: _removed, ...rest } = metrics
-                setMetrics(rest)
+                const { [activeMetricId]: _removed, ...rest } = props.value
+                props.onChange(rest)
                 setActiveMetricId(undefined)
               }}
               className={css`
@@ -346,11 +345,11 @@ function QueryBuilderConfigInner(props: {
         ) : (
           <MetricConigCreator
             fields={props.fields}
-            metrics={metrics}
+            metrics={props.value}
             onCreate={(ms) => {
               let id: string | undefined
-              setMetrics({
-                ...metrics,
+              props.onChange({
+                ...props.value,
                 ...ms.reduce<{ [id: string]: Metric }>((obj, m) => {
                   id = blockIdGenerator()
                   obj[id] = m

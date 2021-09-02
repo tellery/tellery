@@ -76,7 +76,10 @@ const DragConstraints = {
   bottom: -300
 }
 
-const updateOldDraft = (oldDraft?: EditorDraft, block?: Editor.QueryBlock | Editor.VisualizationBlock) => {
+const updateOldDraft = (
+  oldDraft?: EditorDraft,
+  block?: Editor.QueryBlock | Editor.VisualizationBlock | Editor.QueryBuilder | Editor.SmartQueryBlock
+) => {
   if (!oldDraft) return undefined
 
   const updatedDraft = emitFalsyObject({
@@ -763,7 +766,7 @@ export const StoryQuestionEditor: React.FC<{
         ;(draftBlock as Editor.SmartQueryBlock).content!.metricIds = metricIds
         ;(draftBlock as Editor.SmartQueryBlock).content!.dimensions = dimensions
       }
-      if (metricIds.length && dimensions.length) {
+      if (metricIds?.length && dimensions?.length) {
         draftBlock.type = Editor.BlockType.SmartQuery
       }
 
@@ -1164,7 +1167,9 @@ export const StoryQuestionEditor: React.FC<{
         )}
         {mode === 'QUERY_BUILDER' && (
           <QueryBuilderConfig
-            value={queryBlock}
+            snapshotId={snapShotId}
+            type={queryBlock.type}
+            metrics={metrics}
             onChange={setQueryBuilderContent}
             className={css`
               flex: 1;
