@@ -275,13 +275,13 @@ function MetricConigCreator(props: {
   useEffect(() => {
     setMap(
       Object.values(props.metrics).reduce<Record<string, string>>((obj, metric) => {
-        if ('fieldName' in metric) {
+        if ('fieldName' in metric && metric.fieldName === field?.name && metric.fieldType === field.type) {
           obj[metric.func] = `${metric.func}(${metric.fieldName})`
         }
         return obj
       }, {})
     )
-  }, [props.metrics])
+  }, [field, props.metrics])
 
   return (
     <>
