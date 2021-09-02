@@ -299,6 +299,34 @@ function QueryBuilderConfigInner(props: {
                 </span>
               </div>
             )}
+            {activeMetric && 'rawSql' in activeMetric && (
+              <>
+                <div
+                  className={css`
+                    font-weight: 500;
+                    font-size: 12px;
+                    color: ${ThemingVariables.colors.text[1]};
+                    margin-top: 12px;
+                    margin-bottom: 4px;
+                  `}
+                >
+                  Raw SQL
+                </div>
+                <textarea
+                  defaultValue={activeMetric.rawSql}
+                  disabled={true}
+                  className={css`
+                    width: 100%;
+                    height: 200px;
+                    resize: none;
+                    border-radius: 8px;
+                    border: 1px solid ${ThemingVariables.colors.gray[1]};
+                    outline: none;
+                    padding: 8px;
+                  `}
+                />
+              </>
+            )}
             <FormButton
               variant="danger"
               onClick={() => {
@@ -376,17 +404,6 @@ function MetricConigCreator(props: {
 
   return (
     <>
-      <div
-        className={css`
-          font-weight: 500;
-          font-size: 12px;
-          color: ${ThemingVariables.colors.text[1]};
-          margin-top: 12px;
-          margin-bottom: 4px;
-        `}
-      >
-        Column
-      </div>
       <FormDropdown
         menu={({ onClick }) => (
           <MenuWrapper>
@@ -415,48 +432,62 @@ function MetricConigCreator(props: {
         className={css`
           width: 100%;
           text-align: start;
+          margin-top: 16px;
         `}
       >
         {field ? (field.type ? field.name : 'Raw SQL') : 'Choose'}
       </FormDropdown>
-      <div
-        className={css`
-          font-weight: 500;
-          font-size: 12px;
-          color: ${ThemingVariables.colors.text[1]};
-          margin-top: 12px;
-          margin-bottom: 4px;
-        `}
-      >
-        Calculations
-      </div>
       {field ? (
         field.type ? (
-          getFuncs(field.type, spec?.queryBuilderSpec.aggregation).map((func) => (
-            <MetricItem
-              key={func}
-              disabled={!!metrics[`${field.name}/${field.type}/${func}`]}
-              fieldName={field.name}
-              func={func}
-              value={map[func]}
-              onChange={(value) => {
-                setMap(
-                  produce((draft) => {
-                    if (value === undefined) {
-                      delete draft[func]
-                    } else {
-                      draft[func] = value
-                    }
-                  })
-                )
-              }}
+          <>
+            <div
               className={css`
-                margin-top: 8px;
+                font-weight: 500;
+                font-size: 12px;
+                color: ${ThemingVariables.colors.text[1]};
+                margin-top: 12px;
+                margin-bottom: 4px;
               `}
-            />
-          ))
+            >
+              Calculations
+            </div>
+            {getFuncs(field.type, spec?.queryBuilderSpec.aggregation).map((func) => (
+              <MetricItem
+                key={func}
+                disabled={!!metrics[`${field.name}/${field.type}/${func}`]}
+                fieldName={field.name}
+                func={func}
+                value={map[func]}
+                onChange={(value) => {
+                  setMap(
+                    produce((draft) => {
+                      if (value === undefined) {
+                        delete draft[func]
+                      } else {
+                        draft[func] = value
+                      }
+                    })
+                  )
+                }}
+                className={css`
+                  margin-top: 8px;
+                `}
+              />
+            ))}
+          </>
         ) : (
           <>
+            <div
+              className={css`
+                font-weight: 500;
+                font-size: 12px;
+                color: ${ThemingVariables.colors.text[1]};
+                margin-top: 12px;
+                margin-bottom: 4px;
+              `}
+            >
+              Name
+            </div>
             <FormInput
               value={sqlName}
               onChange={(e) => {
@@ -466,6 +497,17 @@ function MetricConigCreator(props: {
                 margin-top: 8px;
               `}
             />
+            <div
+              className={css`
+                font-weight: 500;
+                font-size: 12px;
+                color: ${ThemingVariables.colors.text[1]};
+                margin-top: 12px;
+                margin-bottom: 4px;
+              `}
+            >
+              Raw SQL
+            </div>
             <textarea
               value={sql}
               onChange={(e) => {
@@ -476,6 +518,14 @@ function MetricConigCreator(props: {
                 width: 100%;
                 height: 200px;
                 resize: none;
+                border-radius: 8px;
+                border: 1px solid ${ThemingVariables.colors.gray[1]};
+                outline: none;
+                padding: 8px;
+                :active,
+                :focus {
+                  border: 1px solid ${ThemingVariables.colors.primary[1]};
+                }
               `}
             />
           </>
