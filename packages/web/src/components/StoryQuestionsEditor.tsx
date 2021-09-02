@@ -87,7 +87,21 @@ const updateOldDraft = (oldDraft?: EditorDraft, block?: Editor.QueryBlock | Edit
         ? oldDraft.visConfig
         : undefined,
     snapshotId:
-      oldDraft.snapshotId !== (block as Editor.QueryBlock)?.content?.snapshotId ? oldDraft.snapshotId : undefined
+      oldDraft.snapshotId !== (block as Editor.QueryBlock)?.content?.snapshotId ? oldDraft.snapshotId : undefined,
+    fields:
+      dequal(oldDraft.fields, (block as Editor.QueryBuilder).content?.fields) === false ? oldDraft.fields : undefined,
+    metrics:
+      dequal(oldDraft.metrics, (block as Editor.QueryBuilder).content?.metrics) === false
+        ? oldDraft.metrics
+        : undefined,
+    metricIds:
+      dequal(oldDraft.metricIds, (block as Editor.SmartQueryBlock).content?.metricIds) === false
+        ? oldDraft.metricIds
+        : undefined,
+    dimensions:
+      dequal(oldDraft.dimensions, (block as Editor.SmartQueryBlock).content?.dimensions) === false
+        ? oldDraft.dimensions
+        : undefined
   })
 
   return updatedDraft
