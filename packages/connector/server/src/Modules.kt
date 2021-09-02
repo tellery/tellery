@@ -6,6 +6,7 @@ import io.tellery.managers.IntegrationManager
 import io.tellery.managers.ProfileManager
 import io.tellery.managers.impl.DatabaseProfileManager
 import io.tellery.managers.impl.FileProfileManager
+import io.tellery.services.ConnectorV2Service
 import io.tellery.services.DbtV2Service
 import io.tellery.services.ProfileService
 import io.tellery.services.RpcService
@@ -43,6 +44,7 @@ object Modules {
                 )
             }
             single { DbtV2Service(get()) }
+            single { ConnectorV2Service(get()) }
             single { RpcService(get(), get()) }
         }
     }
