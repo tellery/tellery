@@ -33,6 +33,7 @@ async function translateSmartQuery(
   smartQuery: SmartQueryExecution,
   queryBuilderSpec: QueryBuilderSpec,
 ): Promise<string> {
+  const { identifier, aggregation, bucketization } = queryBuilderSpec
   const { queryBuilderId, metricIds, dimensions: dimensionsRaw } = smartQuery
 
   const queryBuilderBlockEntity = await getRepository(BlockEntity).findOne(queryBuilderId)
@@ -50,16 +51,20 @@ async function translateSmartQuery(
   const measures = _(metricIds)
     .map((id) => metricsById?.[id])
     .compact()
-    .map((it) => assembleSelectField(it, queryBuilderSpec.aggregation, queryBuilderSpec.identifier))
+    .map((it) => assembleSelectField(it, aggregation, identifier))
     .value()
 
-  const dimensions = dimensionsRaw.map((it) =>
-    assembleSelectField(it, queryBuilderSpec.bucketization, queryBuilderSpec.identifier),
-  )
+  const dimensions = dimensionsRaw.map((it) => assembleSelectField(it, bucketization, identifier))
 
-  return `SELECT ${dimensions.join(', ')}, ${measures.join(', ')}
+  const selectClause = [...dimensions, ...measures].join(', ')
+  const groupByClause =
+    dimensions && dimensions.length > 0
+      ? `GROUP BY ${_.range(1, dimensions.length + 1).join(', ')}`
+      : ''
+
+  return `SELECT ${selectClause}
 FROM {{ ${queryBuilderId} }}
-GROUP BY ${_.range(1, dimensions.length + 1).join(', ')}`
+${groupByClause}`
 }
 
 function assembleSelectField(
