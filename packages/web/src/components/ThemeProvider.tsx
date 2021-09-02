@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { Helmet } from 'react-helmet'
 import { objectKeyValueMapperDeep, TelleryTheme, TelleryThemeLight, ThemeContext } from '../styles/index'
 
@@ -11,10 +11,6 @@ export const ThemeProvider: React.FC<{ theme?: TelleryTheme }> = ({ children, th
     })
     return keyValues.join('\n')
   }, [])
-
-  useEffect(() => {
-    console.log(styleHTML)
-  }, [styleHTML])
 
   return (
     <>
