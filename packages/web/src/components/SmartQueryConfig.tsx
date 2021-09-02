@@ -6,7 +6,6 @@ import { css, cx } from '@emotion/css'
 import Tippy from '@tippyjs/react'
 import { lowerCase, uniq, uniqBy } from 'lodash'
 import { ReactNode, useState } from 'react'
-import FormDropdown from './kit/FormDropdown'
 import { MenuItem } from './MenuItem'
 import { MenuWrapper } from './MenuWrapper'
 
@@ -178,7 +177,7 @@ export default function SmartQueryConfig(props: {
                           {Object.keys(spec.queryBuilderSpec.bucketization[field.sqlType]).map((func) => (
                             <MenuItem
                               key={func}
-                              title={func}
+                              title={lowerCase(func)}
                               disabled={
                                 !!props.dimensions.find(
                                   (dimension) =>
