@@ -46,3 +46,14 @@ export async function getSuperUser(): Promise<User> {
   superUser = User.fromEntity(user)
   return superUser
 }
+
+/**
+ * only use this function in the middleware
+ * for request handling, set `ctx.auth_token` and delegate further logic to the user middleware
+ */
+export function setUserToken(ctx: Context, token: string | null): void {
+  ctx.set(USER_TOKEN_HEADER_KEY, token ?? '')
+  ctx.cookies.set(USER_TOKEN_HEADER_KEY, token, {
+    expires: token ? new Date(new Date().getTime() + 10 * 365 * 24 * 60 * 60) : new Date(0), // never expires if token is valid, else 1970-01-01
+  })
+}
