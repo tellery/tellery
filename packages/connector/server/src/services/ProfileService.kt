@@ -40,12 +40,11 @@ class ProfileService(
         return buildProtoProfile(profile!!)
     }
 
-    override suspend fun upsertProfile(request: UpsertProfileRequestV2): Profile {
+    override suspend fun upsertProfile(request: UpsertProfileRequest): Profile {
         val profile = profileManager.upsertProfile(
             ProfileEntity(
                 id = config.workspaceId,
                 type = request.type,
-                credential = request.credential,
                 configs = request.configsList.associate { it.key to it.value }
             )
         )
@@ -111,7 +110,6 @@ class ProfileService(
         return Profile {
             id = profileEntity.id
             type = profileEntity.type
-            credential = profileEntity.credential
             addAllConfigs(profileEntity.configs.entries.map {
                 KVEntry {
                     key = it.key

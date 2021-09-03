@@ -12,6 +12,12 @@ object ProjectConfig {
     val port: Int
         get() = env.getOrDefault("server.port", "50051").toInt()
 
+    val credCertPath: String?
+        get() = env["server.credential.certificate"]
+
+    val credKeyPath: String?
+        get() = env["server.credential.key"]
+
     val deployModel: DeployModel
         get() = DeployModel.valueOf(
             env.getOrDefault(

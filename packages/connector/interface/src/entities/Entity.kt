@@ -1,15 +1,28 @@
 package io.tellery.entities
 
 data class ProfileEntity(
-    // unique id
     var id: String,
     var type: String,
-    var credential: String?,
     var configs: Map<String, String?>
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (other !is ProfileEntity) {
+            return false
+        }
+        return type == other.type &&
+                id == other.id &&
+                configs.entries.fold(true) { acc, (k, v) -> return acc && other.configs[k] == v }
+    }
+
+    override fun hashCode(): Int {
+        var result = type.hashCode()
+        result = 31 * result + id.hashCode()
+        result = 31 * result + configs.hashCode()
+        return result
+    }
+}
 
 data class IntegrationEntity(
-    // unique id
     var id: Int?,
     var profileId: String,
     var type: String,

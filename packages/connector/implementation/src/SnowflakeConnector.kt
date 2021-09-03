@@ -6,7 +6,7 @@ import io.tellery.annotations.Connector
 import io.tellery.annotations.HandleImport
 import io.tellery.connectors.fields.SnowflakeFields
 import io.tellery.entities.CollectionField
-import io.tellery.entities.Profile
+import io.tellery.entities.ProfileEntity
 import io.tellery.entities.TypeField
 import io.tellery.utils.buildOptionalsFromConfigs
 import io.tellery.utils.readCSV
@@ -82,7 +82,7 @@ class SnowflakeConnector : JDBCConnector() {
     override val transactionIsolationLevel = Connection.TRANSACTION_READ_COMMITTED
     override val defaultSchema = null
 
-    override fun buildConnectionStr(profile: Profile): String {
+    override fun buildConnectionStr(profile: ProfileEntity): String {
         val accountName = profile.configs[SnowflakeFields.ACCOUNT_NAME]
         val regionId = profile.configs[SnowflakeFields.REGION_ID]
         val role = profile.configs[SnowflakeFields.ROLE]
