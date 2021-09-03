@@ -14,7 +14,7 @@ interface IConnector {
 
     fun importSanityCheck(database: String, collection: String, schema: String?) // throw exceptions
 
-    fun initByProfile(profile: Profile)
+    fun initByProfile(profile: ProfileEntity)
 
     suspend fun getCollections(dbName: String): List<CollectionField>
 
