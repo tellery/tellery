@@ -24,24 +24,28 @@
     </a>
 </p>
 
+
+
 Tellery is a BI tool connecting your data and team. As easy as using a notebook. As powerful as a data modelling tool.
 
+Instead of querying on tables and columns directly, Tellery users can ask questions against [data assets](https://demo.tellery.io/story/vtkequmHGz5QBD9WjVflU), which provides a semantic layer for your data.
 
-Instead of querying on tables and columns directly, Tellery users can operate on [data assets](https://demo.tellery.io/story/vtkequmHGz5QBD9WjVflU), which are well-maintained models in your workspace. It makes your metrics more consistent and easier to maintain. 
+* Data asset let business users extract metrics without the assistance of analysts.
+* Building dashboards and reports on data assets make your business logic more consistent and easier to maintain.
+* Tellery comes with a bucket of building blocks. From reports to dashboards, you can tailor it to your own need to unlock the value of data asset.
 
-
-To deliver better value of the data assets, Tellery comes with a notebook interface and a bucket of building blocks. From reports to dashboards, you can tailor it to your need to unlock the value of data.
 
 
 ## Features
 
 - Familiar notebook interface where you can create charts and texts with drag-and-drop ease
-- Declare data assets using SQL and reuse them everywhere 
-- Integrate with dbt repository and import dbt models as data assets
+- Maintain business logic consistently and collaboratively
+- Let anyone on your team extract metrics without knowing SQL
+- Rich text styling and markdown syntax for telling story
+- Smooth integration with dbt
 - A modern SQL editor with multi-tabs and auto-complete
-- Write analytical narratives using Markdown syntax
-- Capture exploratory analyses and associate them with bi-directional links
-- Collaborate and review work in real-time with multiplayer
+- Capture ad-hoc analyses in a daily view
+- Collaborate in real-time with multiplayer
 
 
 ## Supported databases
@@ -98,6 +102,7 @@ Learn how to start analysis with Tellery:
 
 - [Configure a database](https://tellery.io/docs/how-to-use/configure-database/) to connect to your own dataset
 - [Create a new story](https://tellery.io/docs/how-to-use/create-story)
+- [Create a Data asset](https://demo.tellery.io/story/vtkequmHGz5QBD9WjVflU)
 
 
 ## Community support
