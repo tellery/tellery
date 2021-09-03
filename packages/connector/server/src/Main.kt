@@ -31,7 +31,7 @@ fun providesAppModule(): Module {
         single { ProfileService(get(), get(), get(), get()) }
         single { DbtService(get()) }
         single { ConnectorService(get()) }
-        single { RpcService(get(), get()) }
+        single { RpcService(get(), get(), get()) }
     }
 }
 
