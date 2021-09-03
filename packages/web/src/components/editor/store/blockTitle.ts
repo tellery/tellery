@@ -24,20 +24,23 @@ export const BlockTitleAssetsAtoms = selectorFamily<Record<string, any>, { block
               const referenceBlockLoadable = get(noWait(TelleryBlockAtom(referenceBlockId)))
               if (referenceBlockLoadable.state === 'hasValue' && referenceBlockLoadable.contents) {
                 const referenceBlock = referenceBlockLoadable.contents
+                // result.set(referenceBlockId, referenceBlock)
                 result[referenceBlockId] = referenceBlock
               }
             }
           } else if (entity.formula) {
             const formula = entity.formula[1] as string
-            const formulaResultLoadable = get(noWait(VariableAtomFamily({ storyId: storyId, formula })))
+            const formulaResultLoadable = get(noWait(VariableAtomFamily({ storyId, formula })))
             if (formulaResultLoadable.state === 'hasValue' && formulaResultLoadable.contents !== undefined) {
               const formulaResult = formulaResultLoadable.contents
               result[formula] = formulaResult
+              // result.set(formula, formulaResult)
             }
           }
         }
       }
-      return result
+      // TODO: workaround for recoil bug, see https://github.com/facebookexperimental/Recoil/issues/103
+      return new Promise((resolve) => setTimeout(() => resolve(result), 0))
     },
   cachePolicy_UNSTABLE: {
     eviction: 'most-recent'
