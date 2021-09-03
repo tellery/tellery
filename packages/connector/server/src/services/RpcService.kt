@@ -5,6 +5,7 @@ import io.grpc.ServerBuilder
 import io.grpc.protobuf.services.ProtoReflectionService
 import io.grpc.util.TransmitStatusRuntimeExceptionInterceptor
 import mu.KotlinLogging
+import java.io.File
 import io.tellery.entities.ProjectConfig as config
 
 class RpcService(
@@ -19,9 +20,25 @@ class RpcService(
     }
 
     init {
-        val partialBuilder = ServerBuilder.forPort(config.port)
+        var partialBuilder = ServerBuilder.forPort(config.port)
 
-        // TODO: about credential
+        if (config.credCertPath != null && config.credKeyPath != null) {
+            try {
+                logger.info("Starting server in secure mode.")
+                partialBuilder = partialBuilder.useTransportSecurity(
+                    File(config.credCertPath),
+                    File(config.credKeyPath)
+                )
+            } catch (e: Exception) {
+                logger.error(
+                    "Error happens on loading credentials: {}, Starting server in insecure mode",
+                    e.message
+                )
+                e.printStackTrace()
+            }
+        } else {
+            logger.info("Credentials has not been setup, starting server in insecure mode")
+        }
 
         server = partialBuilder
             .addService(dbtService)

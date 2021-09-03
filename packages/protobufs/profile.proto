@@ -13,7 +13,7 @@ import "base.proto";
 service ProfileService {
   rpc GetProfileConfigs (google.protobuf.Empty) returns (AvailableConfigs);
   rpc GetProfile (google.protobuf.Empty) returns (Profile);
-  rpc UpsertProfile (UpsertProfileRequestV2) returns (Profile);
+  rpc UpsertProfile (UpsertProfileRequest) returns (Profile);
   rpc GetIntegrationConfigs (google.protobuf.Empty) returns (AvailableConfigs);
   rpc ListIntegrations (google.protobuf.Empty) returns (ListIntegrationsResponse);
   rpc UpsertIntegration (UpsertIntegrationRequest) returns (Integration);
@@ -23,8 +23,7 @@ service ProfileService {
 message Profile {
   string id = 1;
   string type = 2;
-  string credential = 3;
-  repeated KVEntry configs = 4;
+  repeated KVEntry configs = 3;
 }
 
 message Integration {
@@ -34,7 +33,7 @@ message Integration {
   repeated KVEntry configs = 4;
 }
 
-message UpsertProfileRequestV2 {
+message UpsertProfileRequest {
   string type = 1;
   string credential = 2;
   repeated KVEntry configs = 3;

@@ -49,7 +49,6 @@ class App : KoinComponent {
     val connectorManager: ConnectorManager by inject()
 }
 
-
 fun main() {
     startKoin {
         printLogger(Level.ERROR)

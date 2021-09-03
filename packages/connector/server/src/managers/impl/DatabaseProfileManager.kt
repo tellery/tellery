@@ -33,11 +33,9 @@ class DatabaseProfileManager : ProfileManager {
         client.insertOrUpdate(ProfileDTO) {
             set(it.id, profileEntity.id)
             set(it.type, profileEntity.type)
-            set(it.credential, profileEntity.credential)
             set(it.configs, profileEntity.configs)
             onConflict(it.id) {
                 set(it.type, profileEntity.type)
-                set(it.credential, profileEntity.credential)
                 set(it.configs, profileEntity.configs)
             }
         }
@@ -86,14 +84,12 @@ class DatabaseProfileManager : ProfileManager {
     object ProfileDTO : BaseTable<ProfileEntity>("profile") {
         val id = varchar("id").primaryKey()
         val type = varchar("type")
-        val credential = varchar("credential")
         val configs = hstore("configs")
 
 
         override fun doCreateEntity(row: QueryRowSet, withReferences: Boolean) = ProfileEntity(
             id = row[id].orEmpty(),
             type = row[type].orEmpty(),
-            credential = row[credential],
             configs = if (row[configs] != null) row[configs]!!.toMap() else mapOf()
         )
     }

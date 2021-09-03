@@ -25,11 +25,7 @@ import io.tellery.integrations.DbtIntegration
 import io.tellery.integrations.DbtIntegration.Companion.DBT_PROJECT_FIELD
 import io.tellery.integrations.DbtIntegration.Companion.GIT_URL_FIELD
 import io.tellery.integrations.DbtIntegrationType
-import io.tellery.utils.GitUtil.checkoutMasterAndPull
-import io.tellery.utils.GitUtil.checkoutNewBranchAndCommitAndPush
-import io.tellery.utils.GitUtil.cloneRemoteRepo
-import io.tellery.utils.GitUtil.commitAndPush
-import io.tellery.utils.allSubclasses
+import io.tellery.utils.*
 import mu.KotlinLogging
 import org.apache.commons.io.FileUtils
 import org.jetbrains.annotations.TestOnly

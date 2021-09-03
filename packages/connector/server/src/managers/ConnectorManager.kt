@@ -4,7 +4,6 @@ import io.tellery.annotations.Connector
 import io.tellery.annotations.HandleImport
 import io.tellery.connectors.BaseConnector
 import io.tellery.entities.CustomizedException
-import io.tellery.entities.Profile
 import io.tellery.entities.ProjectConfig
 import io.tellery.utils.allSubclasses
 import mu.KotlinLogging
@@ -47,8 +46,7 @@ class ConnectorManager(private val profileManager: ProfileManager) {
                 val clazz = dbTypeToClassMap[profile.type]!!
                 connector = clazz.primaryConstructor!!.call()
                 connector!!.let { conn ->
-                    // TODO: use one profile
-                    conn.initByProfile(Profile(profile))
+                    conn.initByProfile(profile)
 
                     // initialize connector import dispatcher
                     conn.importDispatcher =

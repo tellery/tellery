@@ -15,103 +15,101 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.io.path.absolutePathString
 
-object GitUtil {
-    fun cloneRemoteRepo(
-        dir: Path,
-        uri: String,
-        privateKey: Path
-    ) = Git.cloneRepository()
-        .setDirectory(dir.toFile())
-        .setURI(uri)
-        .setProgressMonitor(SimpleProgressMonitor())
-        .setTransportConfigCallback {
-            (it as SshTransport).sshSessionFactory = providesSshSessionFactory(privateKey)
-        }
-        .call()
-        .use {}
+fun cloneRemoteRepo(
+    dir: Path,
+    uri: String,
+    privateKey: Path
+) = Git.cloneRepository()
+    .setDirectory(dir.toFile())
+    .setURI(uri)
+    .setProgressMonitor(SimpleProgressMonitor())
+    .setTransportConfigCallback {
+        (it as SshTransport).sshSessionFactory = providesSshSessionFactory(privateKey)
+    }
+    .call()
+    .use {}
 
-    fun checkoutMasterAndPull(
-        dir: Path,
-        privateKey: Path
-    ): PullResult = Git.open(dir.toFile())
-        .use {
-            // JGit can't get the remote head ref.
-            // 0: Local HEAD
-            // 1: Local default
-            // remote 1: Remote default
-            val defaultBranchRef = it.repository.refDatabase.refs[1].name
-            it.checkout().setName(defaultBranchRef).call()
-            it.pull()
-                .setContentMergeStrategy(ContentMergeStrategy.THEIRS)
-                .setTransportConfigCallback { t ->
-                    (t as SshTransport).sshSessionFactory = providesSshSessionFactory(privateKey)
-                }
-                .call()
-        }
-
-    fun checkoutNewBranchAndCommitAndPush(
-        dir: Path,
-        privateKey: Path,
-        message: String
-    ) {
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss")
-        val branchName = "tellery/update-${dateFormat.format(Date())}"
-        Git.open(dir.toFile())
-            .use {
-                it.checkout().setCreateBranch(true).setName(branchName).call()
+fun checkoutMasterAndPull(
+    dir: Path,
+    privateKey: Path
+): PullResult = Git.open(dir.toFile())
+    .use {
+        // JGit can't get the remote head ref.
+        // 0: Local HEAD
+        // 1: Local default
+        // remote 1: Remote default
+        val defaultBranchRef = it.repository.refDatabase.refs[1].name
+        it.checkout().setName(defaultBranchRef).call()
+        it.pull()
+            .setContentMergeStrategy(ContentMergeStrategy.THEIRS)
+            .setTransportConfigCallback { t ->
+                (t as SshTransport).sshSessionFactory = providesSshSessionFactory(privateKey)
             }
-        commitAndPush(dir, privateKey, message)
+            .call()
     }
 
-    fun commitAndPush(
-        dir: Path,
-        privateKey: Path,
-        message: String
-    ): MutableIterable<PushResult> = Git.open(dir.toFile())
+fun checkoutNewBranchAndCommitAndPush(
+    dir: Path,
+    privateKey: Path,
+    message: String
+) {
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss")
+    val branchName = "tellery/update-${dateFormat.format(Date())}"
+    Git.open(dir.toFile())
         .use {
-            it.add().addFilepattern(".").call()
-            it.commit().setAll(true).setMessage(message).call()
-            it.push()
-                .setTransportConfigCallback { t ->
-                    (t as SshTransport).sshSessionFactory = providesSshSessionFactory(privateKey)
-                }
-                .call()
+            it.checkout().setCreateBranch(true).setName(branchName).call()
         }
+    commitAndPush(dir, privateKey, message)
+}
 
-    private fun providesSshSessionFactory(privateKey: Path): SshSessionFactory {
-        return object : JschConfigSessionFactory() {
-            override fun configure(hc: OpenSshConfig.Host, session: Session) {
-                session.setConfig("StrictHostKeyChecking", "no")
+fun commitAndPush(
+    dir: Path,
+    privateKey: Path,
+    message: String
+): MutableIterable<PushResult> = Git.open(dir.toFile())
+    .use {
+        it.add().addFilepattern(".").call()
+        it.commit().setAll(true).setMessage(message).call()
+        it.push()
+            .setTransportConfigCallback { t ->
+                (t as SshTransport).sshSessionFactory = providesSshSessionFactory(privateKey)
             }
-
-            @Throws(JSchException::class)
-            override fun createDefaultJSch(fs: FS): JSch {
-                val jSch = super.createDefaultJSch(fs)
-                jSch.addIdentity(privateKey.absolutePathString())
-                return jSch
-            }
-        }
+            .call()
     }
 
-    class SimpleProgressMonitor : ProgressMonitor {
-        companion object {
-            private val logger = KotlinLogging.logger { }
+private fun providesSshSessionFactory(privateKey: Path): SshSessionFactory {
+    return object : JschConfigSessionFactory() {
+        override fun configure(hc: OpenSshConfig.Host, session: Session) {
+            session.setConfig("StrictHostKeyChecking", "no")
         }
 
-        override fun start(totalTasks: Int) {
-            logger.debug { "Starting work on $totalTasks tasks." }
+        @Throws(JSchException::class)
+        override fun createDefaultJSch(fs: FS): JSch {
+            val jSch = super.createDefaultJSch(fs)
+            jSch.addIdentity(privateKey.absolutePathString())
+            return jSch
         }
+    }
+}
 
-        override fun beginTask(title: String?, totalWork: Int) {
-            logger.debug { "Start $title: $totalWork" }
-        }
+class SimpleProgressMonitor : ProgressMonitor {
+    companion object {
+        private val logger = KotlinLogging.logger { }
+    }
 
-        override fun update(completed: Int) {}
+    override fun start(totalTasks: Int) {
+        logger.debug { "Starting work on $totalTasks tasks." }
+    }
 
-        override fun endTask() {}
+    override fun beginTask(title: String?, totalWork: Int) {
+        logger.debug { "Start $title: $totalWork" }
+    }
 
-        override fun isCancelled(): Boolean {
-            return false
-        }
+    override fun update(completed: Int) {}
+
+    override fun endTask() {}
+
+    override fun isCancelled(): Boolean {
+        return false
     }
 }
