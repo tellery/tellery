@@ -813,6 +813,7 @@ export const MoreDropdownSelect: React.FC<{
         style={{
           outline: 'none'
         }}
+        aria-label="menu"
       >
         <AnimatePresence>
           {menu.visible && (

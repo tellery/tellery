@@ -5,19 +5,18 @@ import {
   useConnectorsUpsertProfile,
   useWorkspaceDetail
 } from '@app/hooks/api'
+import { useLoggedUser } from '@app/hooks/useAuth'
+import { ThemingVariables } from '@app/styles'
 import type { AvailableConfig, ProfileConfig } from '@app/types'
 import { css } from '@emotion/css'
-import { useMemo, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useForm, UseFormRegister } from 'react-hook-form'
+import { FormButton } from './kit/FormButton'
+import FormFileButton from './kit/FormFileButton'
 import FormInput from './kit/FormInput'
 import FormLabel from './kit/FormLabel'
 import FormSelect from './kit/FormSelect'
 import FormSwitch from './kit/FormSwitch'
-import { FormButton } from './kit/FormButton'
-import { ThemingVariables } from '@app/styles'
-import { useLoggedUser } from '@app/hooks/useAuth'
-import FormFileButton from './kit/FormFileButton'
-import PerfectScrollbar from 'react-perfect-scrollbar'
 
 export function WorkspaceDatabases(props: { onClose(): void }) {
   const { data: workspace } = useWorkspaceDetail()
@@ -93,13 +92,13 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
       >
         Database Profile
       </h2>
-      <PerfectScrollbar
+      <div
         className={css`
           flex: 1;
           margin-top: 20px;
           padding: 0 32px;
+          overflow-y: auto;
         `}
-        options={{ suppressScrollX: true }}
       >
         <form>
           <FormLabel required={true}>Type</FormLabel>
@@ -151,7 +150,7 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
               )
             )}
         </form>
-      </PerfectScrollbar>
+      </div>
       <FormButton
         className={css`
           margin: 20px 32px 0;

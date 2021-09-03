@@ -74,6 +74,7 @@ export const SideBarMetricsSection: React.FC<{ storyId: string }> = ({ storyId }
               <Tab.Panel
                 className={css`
                   height: 100%;
+                  overflow-y: auto;
                 `}
               >
                 {tab.Component}

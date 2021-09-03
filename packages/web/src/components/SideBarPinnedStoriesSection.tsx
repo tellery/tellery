@@ -7,7 +7,6 @@ import dayjs from 'dayjs'
 import React from 'react'
 import ContentLoader from 'react-content-loader'
 import { useTranslation } from 'react-i18next'
-import PerfectScrollbar from 'react-perfect-scrollbar'
 import Avatar from './Avatar'
 import { useGetBlockTitleTextSnapshot } from './editor'
 import { SideBarContentLayout } from './SideBarContentLayout'
@@ -32,7 +31,7 @@ export const SideBarPinnedStoriesSection = () => {
 
 const WorkspaceItems: React.FC<{ storyIds: string[] }> = ({ storyIds }) => {
   return (
-    <PerfectScrollbar
+    <div
       className={css`
         flex: 1;
         overflow-y: auto;
@@ -41,14 +40,14 @@ const WorkspaceItems: React.FC<{ storyIds: string[] }> = ({ storyIds }) => {
           margin-top: 10px;
         }
       `}
-      options={{ suppressScrollX: true }}
+      // options={{ suppressScrollX: true }}
     >
       {storyIds.map((storyId) => (
         <React.Suspense key={storyId} fallback={<SideBarLoader />}>
           <StoryCard blockId={storyId} />
         </React.Suspense>
       ))}
-    </PerfectScrollbar>
+    </div>
   )
 }
 

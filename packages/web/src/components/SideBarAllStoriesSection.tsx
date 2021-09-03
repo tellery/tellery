@@ -7,7 +7,6 @@ import { css } from '@emotion/css'
 import dayjs from 'dayjs'
 import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import PerfectScrollbar from 'react-perfect-scrollbar'
 import Avatar from './Avatar'
 import { CircularLoading } from './CircularLoading'
 import { useGetBlockTitleTextSnapshot } from './editor'
@@ -100,14 +99,14 @@ export const SideBarAllStoriesSection = () => {
             `}
           />
         </div>
-        <PerfectScrollbar
+        <div
           className={css`
             flex: 1;
             margin-top: 8px;
             overflow-y: auto;
             min-height: 40%;
           `}
-          options={{ suppressScrollX: true }}
+          // options={{ suppressScrollX: true }}
           onScroll={(e) => {
             if (
               hasNextPage &&
@@ -131,7 +130,7 @@ export const SideBarAllStoriesSection = () => {
               <CircularLoading size={20} color={ThemingVariables.colors.primary[1]} />
             )}
           </div>
-        </PerfectScrollbar>
+        </div>
       </div>
     </SideBarContentLayout>
   )

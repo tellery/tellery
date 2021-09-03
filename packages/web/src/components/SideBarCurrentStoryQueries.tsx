@@ -18,7 +18,6 @@ import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { useStoryResourceIds } from '@app/hooks/useStoryResourceIds'
 import { useStoryResources } from '@app/hooks/useStoryResources'
 import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
-import { useTippySingleton } from '@app/hooks/useTippySingleton'
 import { ThemingVariables } from '@app/styles'
 import { PopoverMotionVariants } from '@app/styles/animations'
 import { Editor, Story, Thought } from '@app/types'
@@ -30,7 +29,6 @@ import Tippy from '@tippyjs/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import React, { memo, ReactNode, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import PerfectScrollbar from 'react-perfect-scrollbar'
 import { ReactEventHandlers } from 'react-use-gesture/dist/types'
 import { Popover, PopoverDisclosure, usePopoverState } from 'reakit'
 import { BlockTitle, useGetBlockTitleTextSnapshot } from './editor'
@@ -51,17 +49,16 @@ const StoryResources: React.FC<{ storyId: string }> = ({ storyId }) => {
   if (!storyId) return null
 
   return (
-    <PerfectScrollbar
+    <div
       className={css`
         flex: 1;
-        overflow-y: auto;
       `}
-      options={{ suppressScrollX: true }}
+      // options={{ suppressScrollX: true }}
     >
       {resourceBlocks.map((block) => {
         return <StoryDataAssetItem key={block.id} blockId={block.id} storyId={storyId} />
       })}
-    </PerfectScrollbar>
+    </div>
   )
 }
 

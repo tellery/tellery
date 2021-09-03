@@ -1,14 +1,13 @@
-import { IconCommonSql, IconCommonDataAsset, IconCommonDbt } from '@app/assets/icons'
+import { IconCommonDataAsset, IconCommonDbt, IconCommonSql } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useSearchDBTBlocks, useSearchMetrics } from '@app/hooks/api'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
-import { DnDItemTypes, DndItemDataBlockType } from '@app/utils/dnd'
+import { DndItemDataBlockType, DnDItemTypes } from '@app/utils/dnd'
 import { useDraggable } from '@dnd-kit/core'
 import { css } from '@emotion/css'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import PerfectScrollbar from 'react-perfect-scrollbar'
 import { useGetBlockTitleTextSnapshot } from './editor'
 import { SideBarLoader } from './SideBarLoader'
 import { SideBarSection } from './SideBarSection'
@@ -144,15 +143,14 @@ const DBTSection: React.FC<{ storyId: string }> = ({ storyId }) => {
 }
 export const SideBarDataAssets: React.FC<{ storyId: string }> = ({ storyId }) => {
   return (
-    <PerfectScrollbar
+    <div
       className={css`
         flex: 1;
         overflow-y: auto;
       `}
-      options={{ suppressScrollX: true }}
     >
       <AllMetricsSection storyId={storyId} />
       <DBTSection storyId={storyId} />
-    </PerfectScrollbar>
+    </div>
   )
 }

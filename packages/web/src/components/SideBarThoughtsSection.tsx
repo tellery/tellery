@@ -13,7 +13,6 @@ import { css } from '@emotion/css'
 import dayjs from 'dayjs'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import PerfectScrollbar from 'react-perfect-scrollbar'
 import { Calendar } from './Calendar'
 import { BlockContentOverview } from './editor/BlockContentOverview'
 import { FormButton } from './kit/FormButton'
@@ -148,16 +147,15 @@ export const SideBarThoughtsSection = () => {
             <span>{t`Capture today's thought`}</span>
           </FormButton>
         )}
-        <PerfectScrollbar
+        <div
           className={css`
             flex: 1;
             margin-top: 8px;
             overflow-y: auto;
           `}
-          options={{ suppressScrollX: true }}
         >
           {currentMonthThoughts && <StoryCards thoughtIds={currentMonthThoughts} />}
-        </PerfectScrollbar>
+        </div>
       </div>
     </SideBarContentLayout>
   )

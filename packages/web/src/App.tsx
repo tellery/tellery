@@ -11,34 +11,38 @@ import { AuthProvider } from './components/AuthProvider'
 import { Routes } from './routes'
 import { ThemeProvider } from './components/ThemeProvider'
 import { queryClient } from './utils'
+import { CustomizedScrollbarProvider } from './components/CustomizedScrollbarProvider'
 
 const App: React.FC = () => {
   return (
-    <ThemeProvider>
-      <RecoilRoot>
-        <QueryClientProvider client={queryClient}>
-          <Router>
-            <Switch>
-              <AuthProvider>
-                <Routes />
-              </AuthProvider>
-            </Switch>
-          </Router>
-          <ToastContainer
-            position="top-center"
-            autoClose={3000}
-            hideProgressBar
-            newestOnTop={false}
-            transition={Slide}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-          />
-        </QueryClientProvider>
-      </RecoilRoot>
-    </ThemeProvider>
+    <>
+      <ThemeProvider>
+        <CustomizedScrollbarProvider />
+        <RecoilRoot>
+          <QueryClientProvider client={queryClient}>
+            <Router>
+              <Switch>
+                <AuthProvider>
+                  <Routes />
+                </AuthProvider>
+              </Switch>
+            </Router>
+            <ToastContainer
+              position="top-center"
+              autoClose={3000}
+              hideProgressBar
+              newestOnTop={false}
+              transition={Slide}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+            />
+          </QueryClientProvider>
+        </RecoilRoot>
+      </ThemeProvider>
+    </>
   )
 }
 

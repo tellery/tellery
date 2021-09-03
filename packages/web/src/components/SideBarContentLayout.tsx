@@ -27,6 +27,8 @@ export const SideBarContentLayout: React.FC<{ title: ReactNode }> = ({ children,
           className={css`
             flex: 1;
             overflow-y: hidden;
+            display: flex;
+            flex-direction: column;
           `}
         >
           {children}
