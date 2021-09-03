@@ -7,7 +7,7 @@ import mu.KotlinLogging
 import io.tellery.entities.ProjectConfig as config
 
 class RpcService(
-    dbtService: DbtV2Service,
+    dbtService: DbtService,
     profileService: ProfileService
 ) {
     private var server: Server

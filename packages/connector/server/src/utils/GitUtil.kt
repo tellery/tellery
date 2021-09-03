@@ -15,7 +15,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.io.path.absolutePathString
 
-object GitUtilsV2 {
+object GitUtil {
     fun cloneRemoteRepo(
         dir: Path,
         uri: String,
