@@ -15,10 +15,10 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useLayoutEffect,
   useMemo,
   useRef,
-  useState,
-  useLayoutEffect
+  useState
 } from 'react'
 import invariant from 'tiny-invariant'
 import { isDataAssetBlock, isVisualizationBlock } from '../Blocks/utils'
@@ -209,7 +209,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
     }
   }, [isFocusing, willFlush, localSelection, block.id, readonly, leavesHtml])
 
-  const onMutation = useCallback(() => {
+  const syncInput = useCallback(() => {
     invariant(editor, 'editor context is null,')
     logger('is focusing', isFocusing, localSelection)
     if (!isComposing.current && editbleRef.current && isFocusing) {
@@ -291,8 +291,6 @@ const _ContentEditable: React.ForwardRefRenderFunction<
     splitedTokens,
     titleTokens
   ])
-
-  const onInput = onMutation
 
   const keyword = useMemo(() => {
     if (keywordRange === null || keywordRange.type === TellerySelectionType.Block) {
@@ -421,7 +419,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
               }
             `
         )}
-        onInput={onInput}
+        onInput={syncInput}
         onCompositionStart={() => {
           isComposing.current = true
           setComposingState(true)
@@ -429,7 +427,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
         onCompositionEnd={() => {
           isComposing.current = false
           setComposingState(false)
-          onInput()
+          syncInput()
         }}
         // placeholder="Type '/' for commands"
         suppressContentEditableWarning={true}
@@ -552,6 +550,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
           }
         }}
         onBlurCapture={() => {
+          // syncInput()
           setShowReferenceDropdown(false)
         }}
         onMouseDown={(e) => {
