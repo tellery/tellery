@@ -1,4 +1,4 @@
-package managers
+package io.tellery.managers
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
@@ -20,8 +20,6 @@ import io.tellery.entities.IntegrationEntity
 import io.tellery.entities.ProfileEntity
 import io.tellery.grpc.DbtBlock
 import io.tellery.grpc.QuestionBlockContent
-import io.tellery.managers.DbtManager
-import io.tellery.managers.ProfileManager
 import io.tellery.utils.GitUtil
 import org.apache.commons.io.FileUtils
 import java.io.BufferedReader
@@ -78,11 +76,7 @@ class DbtManagerTest : FunSpec({
                 )
             } returns integrationEntity
 
-<<<<<<< Updated upstream
-            val dbtManager = DbtManagerV2(pm)
-=======
             val dbtManager = DbtManager(pm)
->>>>>>> Stashed changes
             dbtManager.setDbtProfilePath(profilePath)
             dbtManager.reloadContext()
 

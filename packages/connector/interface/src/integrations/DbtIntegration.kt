@@ -5,17 +5,11 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.grpc.Status
 import io.tellery.annotations.Config
 import io.tellery.annotations.Integration
-<<<<<<< Updated upstream
-import io.tellery.connectors.annotations.Dbt
-import io.tellery.entities.CustomizedException
-import io.tellery.entities.ProfileEntity
-=======
 import io.tellery.entities.CustomizedException
 import io.tellery.entities.ProfileEntity
 import io.tellery.integrations.DbtIntegration.Companion.DBT_PROJECT_FIELD
 import io.tellery.integrations.DbtIntegration.Companion.GIT_URL_FIELD
 import io.tellery.integrations.DbtIntegration.Companion.PUBLIC_KEY_FIELD
->>>>>>> Stashed changes
 
 @Integration(
     type = "dbt",

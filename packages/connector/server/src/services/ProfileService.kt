@@ -8,14 +8,8 @@ import io.tellery.configs.AvailableConfigs
 import io.tellery.configs.ConfigField
 import io.tellery.entities.IntegrationEntity
 import io.tellery.entities.ProfileEntity
-<<<<<<< Updated upstream
-import io.tellery.grpc.KVEntry
-import io.tellery.managers.ConnectorManagerV2
-import io.tellery.managers.DbtManagerV2
-=======
 import io.tellery.managers.ConnectorManager
 import io.tellery.managers.DbtManager
->>>>>>> Stashed changes
 import io.tellery.managers.IntegrationManager
 import io.tellery.managers.ProfileManager
 import io.tellery.profile.*
