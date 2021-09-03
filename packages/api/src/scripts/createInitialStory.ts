@@ -96,6 +96,7 @@ async function main() {
     parentTable: BlockParentType.BLOCK,
     storyId,
     content: {
+      queryId: questionId,
       visualization: {
         keys: ['sepal_length', 'sepal_width', 'petal_length', 'petal_width', 'variety'],
         type: 'Pie',
@@ -115,7 +116,7 @@ async function main() {
     createdById: superUser.id,
     lastEditedById: superUser.id,
     format: { width: 0.7, aspectRatio: 1.7777777777777777 },
-    type: BlockType.SQL,
+    type: BlockType.VISUALIZATION,
     children: [],
     resources: [],
     alive: true,
