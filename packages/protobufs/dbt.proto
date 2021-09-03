@@ -8,22 +8,13 @@ option java_multiple_files = true;
 import "google/protobuf/empty.proto";
 
 service Dbt {
-  rpc GenerateKeyPair (GenerateKeyPairRequest) returns (GenerateKeyPairResponse);
-  rpc PullRepo (PullRepoRequest) returns (PullRepoResponse);
+  rpc GenerateKeyPair (google.protobuf.Empty) returns (GenerateKeyPairResponse);
+  rpc PullRepo (google.protobuf.Empty) returns (PullRepoResponse);
   rpc PushRepo (PushRepoRequest) returns (google.protobuf.Empty);
-  rpc RefreshWorkspace (google.protobuf.Empty) returns (google.protobuf.Empty);
-}
-
-message GenerateKeyPairRequest {
-  string profile = 1;
 }
 
 message GenerateKeyPairResponse {
   string publicKey = 1;
-}
-
-message PullRepoRequest {
-  string profile = 1;
 }
 
 message PullRepoResponse {
@@ -31,8 +22,7 @@ message PullRepoResponse {
 }
 
 message PushRepoRequest {
-  string profile = 1;
-  repeated QuestionBlockContent blocks = 2;
+  repeated QuestionBlockContent blocks = 1;
 }
 
 message DbtBlock {

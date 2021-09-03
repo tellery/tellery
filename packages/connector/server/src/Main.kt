@@ -1,80 +1,64 @@
 package io.tellery
 
-import io.grpc.Server
-import io.grpc.ServerBuilder
-import io.grpc.protobuf.services.ProtoReflectionService
-import io.grpc.util.TransmitStatusRuntimeExceptionInterceptor
-import io.tellery.common.ConfigManager
-import io.tellery.common.ConnectorManager
-import io.tellery.common.dbt.DbtManager
+import io.tellery.entities.ProjectConfig
+import io.tellery.managers.ConnectorManager
+import io.tellery.managers.DbtManager
+import io.tellery.managers.IntegrationManager
+import io.tellery.managers.ProfileManager
+import io.tellery.managers.impl.DatabaseProfileManager
+import io.tellery.managers.impl.FileProfileManager
 import io.tellery.services.ConnectorService
 import io.tellery.services.DbtService
-import mu.KotlinLogging
-import java.io.File
+import io.tellery.services.ProfileService
+import io.tellery.services.RpcService
+import org.koin.core.component.KoinApiExtension
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import org.koin.core.context.startKoin
+import org.koin.core.logger.Level
+import org.koin.core.module.Module
+import org.koin.dsl.module
 
+fun providesAppModule(): Module {
+    return module {
+        // Manager
+        single { providesProfileManager() }
+        single { IntegrationManager() }
+        single { ConnectorManager(get()) }
+        single { DbtManager(get()) }
 
-class ConnectorServer(
-    val port: Int = 50051,
-) {
-    val logger = KotlinLogging.logger { }
-
-    var server: Server
-
-    init {
-        var partialBuilder = ServerBuilder
-            .forPort(port)
-        if (ConfigManager.credential != null) {
-            val credCertPath = ConfigManager.credential!!.certificate
-            val credKeyPath = ConfigManager.credential!!.key
-            try {
-                logger.info("Starting server in secure mode")
-                partialBuilder =
-                    partialBuilder.useTransportSecurity(File(credCertPath), File(credKeyPath))
-            } catch (e: Exception) {
-                logger.info(
-                    "Error happens on loading credentials: {}, Starting server in insecure mode",
-                    e.message
-                )
-                e.printStackTrace()
-            }
-        } else {
-            logger.info("Credentials has not been setup, starting server in insecure mode")
-        }
-        server = partialBuilder
-            .addService(ConnectorService())
-            .addService(DbtService())
-            .addService(ProtoReflectionService.newInstance())
-            .intercept(TransmitStatusRuntimeExceptionInterceptor.instance())
-            .build()
-    }
-
-    fun start() {
-        server.start()
-        logger.info("Server started, listening on {}", port)
-        Runtime.getRuntime().addShutdownHook(
-            Thread {
-                logger.info("*** shutting down gRPC server since JVM is shutting down")
-                this@ConnectorServer.stop()
-                logger.info("*** server shut down")
-            }
-        )
-    }
-
-    private fun stop() {
-        server.shutdown()
-        ConfigManager.close()
-    }
-
-    fun blockUntilShutdown() {
-        server.awaitTermination()
+        // Service
+        single { ProfileService(get(), get(), get(), get()) }
+        single { DbtService(get()) }
+        single { ConnectorService(get()) }
+        single { RpcService(get(), get()) }
     }
 }
+
+fun providesProfileManager(): ProfileManager? =
+    when (ProjectConfig.deployModel) {
+        ProjectConfig.DeployModel.LOCAL -> FileProfileManager()
+        ProjectConfig.DeployModel.CLUSTER -> DatabaseProfileManager()
+        else -> null
+    }
+
+@OptIn(KoinApiExtension::class)
+class App : KoinComponent {
+    val server: RpcService by inject()
+    val dbtManager: DbtManager by inject()
+    val connectorManager: ConnectorManager by inject()
+}
+
 
 fun main() {
-    ConnectorManager.init()
-    DbtManager.initDbtWorkspace()
-    val server = ConnectorServer(50051)
-    server.start()
-    server.blockUntilShutdown()
-}
+    startKoin {
+        printLogger(Level.ERROR)
+        modules(providesAppModule())
+    }
 
+    val app = App()
+    app.server.start()
+    app.connectorManager.reloadConnector()
+    app.dbtManager.reloadContext()
+    app.server.blockUntilShutdown()
+}
