@@ -22,7 +22,7 @@ import java.sql.Time
 import java.sql.Timestamp
 
 class ConnectorService(private val connectorManager: ConnectorManager) :
-    ConnectorCoroutineGrpc.ConnectorImplBase() {
+    ConnectorServiceCoroutineGrpc.ConnectorServiceImplBase() {
 
     private val serializer = GsonBuilder()
         .serializeSpecialFloatingPointValues()
@@ -32,7 +32,7 @@ class ConnectorService(private val connectorManager: ConnectorManager) :
         .create()
 
     override suspend fun getDatabases(request: Empty): Databases {
-        return withErrorWrapper(request) {
+        return withErrorWrapper {
             Databases {
                 addAllDatabase(
                     connectorManager.getConnector().getCachedDatabases()
@@ -42,10 +42,10 @@ class ConnectorService(private val connectorManager: ConnectorManager) :
     }
 
     override suspend fun getCollections(request: GetCollectionRequest): Collections {
-        return withErrorWrapper(request) { req ->
+        return withErrorWrapper {
             Collections {
                 addAllCollections(
-                    connectorManager.getConnector().getCachedCollections(req.database)
+                    connectorManager.getConnector().getCachedCollections(request.database)
                         .map {
                             CollectionField {
                                 collection = it.collection
@@ -60,11 +60,15 @@ class ConnectorService(private val connectorManager: ConnectorManager) :
     }
 
     override suspend fun getCollectionSchema(request: GetCollectionSchemaRequest): Schema {
-        return withErrorWrapper(request) { req ->
+        return withErrorWrapper {
             Schema {
                 addAllFields(
                     connectorManager.getConnector()
-                        .getCachedCollectionSchema(req.database, req.collection, req.schema)
+                        .getCachedCollectionSchema(
+                            request.database,
+                            request.collection,
+                            request.schema
+                        )
                         .map {
                             SchemaField {
                                 name = it.name
@@ -123,20 +127,20 @@ class ConnectorService(private val connectorManager: ConnectorManager) :
     }
 
     override suspend fun importFromFile(request: ImportRequest): ImportResult {
-        return withErrorWrapper(request) { req ->
+        return withErrorWrapper {
             val connector = connectorManager.getConnector()
 
             connector.import(
-                req.database,
-                req.collection,
-                req.schema.ifBlank { null },
-                req.url
+                request.database,
+                request.collection,
+                request.schema.ifBlank { null },
+                request.url
             )
 
             ImportResult {
-                database = req.database
-                collection = req.collection
-                if (req.schema.isNotBlank()) schema = req.schema
+                database = request.database
+                collection = request.collection
+                if (request.schema.isNotBlank()) schema = request.schema
             }
         }
     }

@@ -1,29 +1,38 @@
 package io.tellery.services
 
 import com.google.protobuf.Empty
-import io.tellery.grpc.DbtCoroutineGrpc
+import io.tellery.common.withErrorWrapper
+import io.tellery.grpc.DbtServiceCoroutineGrpc
 import io.tellery.grpc.GenerateKeyPairResponse
 import io.tellery.grpc.PullRepoResponse
 import io.tellery.grpc.PushRepoRequest
 import io.tellery.managers.DbtManager
 
-class DbtService(private val dbtManager: DbtManager) : DbtCoroutineGrpc.DbtImplBase() {
+class DbtService(private val dbtManager: DbtManager) :
+    DbtServiceCoroutineGrpc.DbtServiceImplBase() {
 
     override suspend fun generateKeyPair(request: Empty): GenerateKeyPairResponse {
-        return GenerateKeyPairResponse {
-            publicKey = dbtManager.generateKeyPair()
+        return withErrorWrapper {
+            GenerateKeyPairResponse {
+                publicKey = dbtManager.generateKeyPair()
+            }
         }
     }
 
     override suspend fun pullRepo(request: Empty): PullRepoResponse {
-        dbtManager.pullRepo()
-        return PullRepoResponse {
-            addAllBlocks(dbtManager.listBlocks())
+        return withErrorWrapper {
+            dbtManager.pullRepo()
+            PullRepoResponse {
+                addAllBlocks(dbtManager.listBlocks())
+            }
+
         }
     }
 
     override suspend fun pushRepo(request: PushRepoRequest): Empty {
-        dbtManager.pushRepo(request.blocksList)
-        return Empty.getDefaultInstance()
+        return withErrorWrapper {
+            dbtManager.pushRepo(request.blocksList)
+            Empty.getDefaultInstance()
+        }
     }
 }

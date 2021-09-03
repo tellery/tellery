@@ -7,7 +7,7 @@ option java_multiple_files = true;
 
 import "google/protobuf/empty.proto";
 
-service Dbt {
+service DbtService {
   rpc GenerateKeyPair (google.protobuf.Empty) returns (GenerateKeyPairResponse);
   rpc PullRepo (google.protobuf.Empty) returns (PullRepoResponse);
   rpc PushRepo (PushRepoRequest) returns (google.protobuf.Empty);

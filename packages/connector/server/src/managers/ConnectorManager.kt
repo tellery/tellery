@@ -4,8 +4,10 @@ import io.tellery.annotations.Connector
 import io.tellery.annotations.HandleImport
 import io.tellery.connectors.BaseConnector
 import io.tellery.entities.CustomizedException
+import io.tellery.entities.ProfileSpecEntity
 import io.tellery.entities.ProjectConfig
 import io.tellery.utils.allSubclasses
+import io.tellery.utils.toBase64
 import mu.KotlinLogging
 import java.lang.reflect.InvocationTargetException
 import java.util.concurrent.locks.ReentrantReadWriteLock
@@ -17,6 +19,7 @@ import kotlin.reflect.full.*
 class ConnectorManager(private val profileManager: ProfileManager) {
     private val lock = ReentrantReadWriteLock()
     private var connector: BaseConnector? = null
+    private var profileSpec: ProfileSpecEntity? = null
 
     companion object {
         private val logger = KotlinLogging.logger {}
@@ -76,6 +79,8 @@ class ConnectorManager(private val profileManager: ProfileManager) {
                                 }
                             }
 
+                    profileSpec = loadProfileSpecByType(profile.type)
+
                     logger.info(
                         "initialized profile {}; loaded import handler {}",
                         profile.toString(),
@@ -91,6 +96,23 @@ class ConnectorManager(private val profileManager: ProfileManager) {
     }
 
     fun getConfigs() = availableConfig
+
+    fun getProfileSpec(): ProfileSpecEntity = lock.read {
+        profileSpec ?: throw ConnectorNotInitException()
+    }
+
+    private fun loadProfileSpecByType(type: String): ProfileSpecEntity {
+        val resourceLoader = Thread.currentThread().contextClassLoader::getResource
+        val tokenizer =
+            resourceLoader("${type.replace('/', '-')}Tokenizer.js")?.readBytes()?.toBase64()
+        val queryBuilderSpec =
+            resourceLoader("${type.replace('/', '-')}QueryBuilderSpec.json")?.readBytes()
+                ?.toBase64()
+
+        requireNotNull(tokenizer) { "Tokenizer file of $type is not correctly placed into the resources" }
+        requireNotNull(queryBuilderSpec) { "MetricSupport file of $type is not correctly placed into the resources" }
+        return ProfileSpecEntity(type, tokenizer, queryBuilderSpec)
+    }
 }
 
 class ConnectorNotInitException :

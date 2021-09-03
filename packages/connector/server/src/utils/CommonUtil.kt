@@ -9,9 +9,9 @@ import java.sql.SQLException
 
 private val logger = KotlinLogging.logger { }
 
-suspend fun <S, T> withErrorWrapper(request: S, handler: suspend (request: S) -> T): T {
+suspend fun <T> withErrorWrapper(handler: suspend () -> T): T {
     try {
-        return handler(request)
+        return handler()
     } catch (e: Exception) {
         throw errorWrapper(e, handler.javaClass.enclosingMethod.name)
     }
