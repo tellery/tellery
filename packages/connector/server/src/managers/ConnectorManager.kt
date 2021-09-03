@@ -15,7 +15,7 @@ import kotlin.concurrent.write
 import kotlin.reflect.KClass
 import kotlin.reflect.full.*
 
-class ConnectorManagerV2(val profileManager: ProfileManager) {
+class ConnectorManager(private val profileManager: ProfileManager) {
     private val lock = ReentrantReadWriteLock()
     private var connector: BaseConnector? = null
 
@@ -47,6 +47,7 @@ class ConnectorManagerV2(val profileManager: ProfileManager) {
                 val clazz = dbTypeToClassMap[profile.type]!!
                 connector = clazz.primaryConstructor!!.call()
                 connector!!.let { conn ->
+                    // TODO: use one profile
                     conn.initByProfile(Profile(profile))
 
                     // initialize connector import dispatcher

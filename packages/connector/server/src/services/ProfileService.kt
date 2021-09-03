@@ -2,23 +2,23 @@ package io.tellery.services
 
 import com.google.protobuf.Empty
 import io.tellery.annotations.Config
+import io.tellery.base.KVEntry
 import io.tellery.configs.AvailableConfig
 import io.tellery.configs.AvailableConfigs
 import io.tellery.configs.ConfigField
 import io.tellery.entities.IntegrationEntity
 import io.tellery.entities.ProfileEntity
-import io.tellery.grpc.KVEntry
-import io.tellery.managers.ConnectorManagerV2
-import io.tellery.managers.DbtManagerV2
+import io.tellery.managers.ConnectorManager
+import io.tellery.managers.DbtManager
 import io.tellery.managers.IntegrationManager
 import io.tellery.managers.ProfileManager
 import io.tellery.profile.*
 import io.tellery.entities.ProjectConfig as config
 
 class ProfileService(
-    private val dbtManager: DbtManagerV2,
+    private val dbtManager: DbtManager,
     private val profileManager: ProfileManager,
-    private val connectorManager: ConnectorManagerV2,
+    private val connectorManager: ConnectorManager,
     private val integrationManager: IntegrationManager
 ) : ProfileServiceCoroutineGrpc.ProfileServiceImplBase() {
 

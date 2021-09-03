@@ -1,5 +1,7 @@
 package io.tellery.managers
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -13,8 +15,6 @@ import com.jcraft.jsch.JSch
 import com.jcraft.jsch.KeyPair
 import io.grpc.Status
 import io.tellery.common.assertInternalError
-import io.tellery.common.dbt.Constants
-import io.tellery.common.dbt.model.Manifest
 import io.tellery.entities.CustomizedException
 import io.tellery.entities.IntegrationEntity
 import io.tellery.entities.ProfileEntity
@@ -22,11 +22,12 @@ import io.tellery.grpc.DbtBlock
 import io.tellery.grpc.QuestionBlockContent
 import io.tellery.integrations.BaseDbtProfile
 import io.tellery.integrations.DbtIntegration
+import io.tellery.integrations.DbtIntegration.Companion.DBT_PROJECT_FIELD
 import io.tellery.integrations.DbtIntegrationType
-import io.tellery.utils.GitUtilsV2.checkoutMasterAndPull
-import io.tellery.utils.GitUtilsV2.checkoutNewBranchAndCommitAndPush
-import io.tellery.utils.GitUtilsV2.cloneRemoteRepo
-import io.tellery.utils.GitUtilsV2.commitAndPush
+import io.tellery.utils.GitUtil.checkoutMasterAndPull
+import io.tellery.utils.GitUtil.checkoutNewBranchAndCommitAndPush
+import io.tellery.utils.GitUtil.cloneRemoteRepo
+import io.tellery.utils.GitUtil.commitAndPush
 import io.tellery.utils.allSubclasses
 import mu.KotlinLogging
 import org.apache.commons.io.FileUtils
@@ -47,7 +48,7 @@ import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.primaryConstructor
 import io.tellery.entities.ProjectConfig as config
 
-class DbtManagerV2(private val profileManager: ProfileManager) {
+class DbtManager(private val profileManager: ProfileManager) {
     private val lock = ReentrantReadWriteLock()
     private val dbtIntegrationTypeToClass = DbtIntegration::class.allSubclasses
         .filter { it.hasAnnotation<DbtIntegrationType>() }
@@ -357,16 +358,16 @@ class DbtManagerV2(private val profileManager: ProfileManager) {
             keyDir: Path,
             integrationEntity: IntegrationEntity
         ) : this(
-            name = integrationEntity.configs[Constants.PROFILE_DBT_PROJECT_FIELD]!!,
-            repoDir = globalRepoDir.resolve(integrationEntity.configs[Constants.PROFILE_DBT_PROJECT_FIELD]!!),
-            sshKeyDir = keyDir.resolve(integrationEntity.configs[Constants.PROFILE_DBT_PROJECT_FIELD]!!),
+            name = integrationEntity.configs[DBT_PROJECT_FIELD]!!,
+            repoDir = globalRepoDir.resolve(integrationEntity.configs[DBT_PROJECT_FIELD]!!),
+            sshKeyDir = keyDir.resolve(integrationEntity.configs[DBT_PROJECT_FIELD]!!),
             privateKey = keyDir
-                .resolve(integrationEntity.configs[Constants.PROFILE_DBT_PROJECT_FIELD]!!)
+                .resolve(integrationEntity.configs[DBT_PROJECT_FIELD]!!)
                 .resolve("dbt_rsa"),
             publicKey = keyDir
-                .resolve(integrationEntity.configs[Constants.PROFILE_DBT_PROJECT_FIELD]!!)
+                .resolve(integrationEntity.configs[DBT_PROJECT_FIELD]!!)
                 .resolve("dbt_rsa.pub"),
-            gitUrl = integrationEntity.configs[Constants.PROFILE_GIT_URL_FIELD]!!,
+            gitUrl = integrationEntity.configs[DBT_PROJECT_FIELD]!!,
         )
     }
 
@@ -375,6 +376,60 @@ class DbtManagerV2(private val profileManager: ProfileManager) {
      */
     data class Entity(val outputs: Output, val target: String = "dev")
     data class Output(val dev: BaseDbtProfile)
+
+    /**
+     * serialize dbt manifest file
+     */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class Manifest(
+        val nodes: Map<String, DbtModel>,
+        val sources: Map<String, DbtModel>
+    )
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class DbtModel(
+        @JsonProperty("raw_sql") val rawSql: String?,
+        @JsonProperty("compiled_sql") val compiledSql: String?,
+        @JsonProperty("resource_type") val resourceType: String,
+        @JsonProperty("relation_name") val relationName: String?,
+        @JsonProperty("source_name") val sourceName: String?,
+        @JsonProperty("unique_id") val uniqueId: String,
+        val name: String,
+        val database: String,
+        val schema: String,
+        val description: String,
+        val config: Config,
+        val path: String?
+    ) {
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        data class Config(
+            val enabled: Boolean,
+            val materialized: String?
+        )
+
+        fun toDbtBlock(): DbtBlock {
+            val builder = DbtBlock.newBuilder()
+                .setType(if (resourceType == "model") DbtBlock.Type.MODEL else DbtBlock.Type.SOURCE)
+                .setName(name)
+                .setUniqueId(uniqueId)
+                .setDescription(description)
+
+            if (rawSql != null) builder.rawSql = rawSql
+            if (compiledSql != null) builder.compiledSql = compiledSql
+            if (config.materialized != null) builder.materialized = when (config.materialized) {
+                "view" -> DbtBlock.Materialization.VIEW
+                "table" -> DbtBlock.Materialization.TABLE
+                "incremental" -> DbtBlock.Materialization.INCREMENTAL
+                "ephemeral" -> DbtBlock.Materialization.EPHEMERAL
+                else -> DbtBlock.Materialization.UNKNOWN
+            }
+
+            if (sourceName != null) builder.sourceName = sourceName
+            // Relation name is null when the materialized of table is ephemeral
+            if (relationName != null) builder.relationName = relationName
+            return builder.build()
+        }
+    }
 
     private class StreamGobbler(
         val inputStream: InputStream,
