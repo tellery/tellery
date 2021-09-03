@@ -174,21 +174,17 @@ export const StoryQueryVisulizationBlocksAtom = selectorFamily<
     ({ storyId, queryId }) =>
     ({ get }) => {
       const result: Editor.VisualizationBlock[] = []
-      const nodeStack = [storyId]
+      const blocksMap = get(TelleryStoryBlocks(storyId))
 
-      while (nodeStack.length !== 0) {
-        const currentNodeId = nodeStack.pop()
-        invariant(currentNodeId, 'currentNodeId is null')
-        const currentNode = get(TelleryBlockAtom(currentNodeId))
+      Object.values(blocksMap).forEach((block) => {
+        const currentNode = block
         if (
           currentNode.type === Editor.BlockType.Visualization &&
           (currentNode as Editor.VisualizationBlock).content?.queryId === queryId
         ) {
           result.push(currentNode as Editor.VisualizationBlock)
         }
-        const children = currentNode.children ?? []
-        nodeStack.push(...children)
-      }
+      })
 
       return result
     },

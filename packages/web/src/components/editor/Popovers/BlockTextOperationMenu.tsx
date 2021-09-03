@@ -42,6 +42,7 @@ import { useTippySingleton } from '@app/hooks/useTippySingleton'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
+import { PopoverMotionVariants } from '@app/styles/animations'
 import { Editor, Story } from '@app/types'
 import { blockIdGenerator, DEFAULT_TITLE, TelleryGlyph } from '@app/utils'
 import { css, cx } from '@emotion/css'
@@ -430,9 +431,10 @@ const BlockTextOperationMenuInner = ({
       `}
     >
       <motion.div
-        initial={{ opacity: 0, transform: 'scale(0.8)' }}
-        animate={{ opacity: 1, transform: 'scale(1)' }}
-        exit={{ opacity: 0, transform: 'scale(0.8)' }}
+        initial={'inactive'}
+        animate={'active'}
+        exit={'inactive'}
+        variants={PopoverMotionVariants.scale}
         transition={{ duration: 0.15 }}
         className={css`
           outline: none;

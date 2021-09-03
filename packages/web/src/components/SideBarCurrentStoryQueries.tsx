@@ -343,8 +343,12 @@ const _StoryDataAssetItemContentDraggable: React.FC<{
 
 const StoryDataAssetItemContentDraggable = memo(_StoryDataAssetItemContentDraggable)
 
-const StoryDataAssetItemContent: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
-  const block = useBlockSuspense(blockId)
+const StoryDataAssetItemContentInner: React.FC<{
+  block: Editor.Block
+  storyId: string
+  blockId: string
+  isHovering: boolean
+}> = ({ block, storyId, blockId, isHovering }) => {
   const getBlockTitle = useGetBlockTitleTextSnapshot()
 
   const { t } = useTranslation()
@@ -361,18 +365,10 @@ const StoryDataAssetItemContent: React.FC<{ blockId: string; storyId: string }> 
     }
     return IconCommonSql
   }, [block.storyId, block.type, storyId])
-
-  const [hoveringHandlers, isHovering] = useBindHovering()
-
   const queryVisulizations = useStoryQueryVisulizations(storyId, blockId)
 
   return (
-    <StoryDataAssetItemContentDraggable
-      hoveringHandlers={hoveringHandlers}
-      storyId={storyId}
-      blockId={blockId}
-      isDataAssest={isDataAssetBlock(block.type)}
-    >
+    <>
       <IconType
         color={ThemingVariables.colors.gray[0]}
         className={css`
@@ -420,6 +416,22 @@ const StoryDataAssetItemContent: React.FC<{ blockId: string; storyId: string }> 
           visulizationsCount={queryVisulizations.length}
         />
       </div>
+    </>
+  )
+}
+
+const StoryDataAssetItemContent: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
+  const block = useBlockSuspense(blockId)
+  const [hoveringHandlers, isHovering] = useBindHovering()
+
+  return (
+    <StoryDataAssetItemContentDraggable
+      hoveringHandlers={hoveringHandlers}
+      storyId={storyId}
+      blockId={blockId}
+      isDataAssest={isDataAssetBlock(block.type)}
+    >
+      <StoryDataAssetItemContentInner block={block} isHovering={isHovering} storyId={storyId} blockId={blockId} />
     </StoryDataAssetItemContentDraggable>
   )
 }

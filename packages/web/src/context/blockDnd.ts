@@ -1,48 +1,15 @@
 import { getBlockElementById } from '@app/components/editor/helpers/contentEditable'
 import { BlockSnapshot, getBlockFromSnapshot } from '@app/store/block'
 import { Direction, Editor } from '@app/types'
-import { DnDItemTypes } from '@app/utils/dnd'
-import { CollisionDetection, useDraggable } from '@dnd-kit/core'
-import { css } from '@emotion/css'
+import { CollisionDetection } from '@dnd-kit/core'
 import debug from 'debug'
-import React, { useRef } from 'react'
-import { atom, atomFamily, selector } from 'recoil'
 import invariant from 'tiny-invariant'
 export const logger = debug('tellery:dnd')
-
-interface BlockAreaInterface {
-  blockId: string
-  direction: Direction
-}
 
 export interface XYCoord {
   x: number
   y: number
 }
-
-export const BlockDroppingArea = atomFamily<BlockAreaInterface | null, string>({
-  key: 'BlockDroppingArea',
-  default: null
-})
-
-export const DroppingAreaAtom = atom<BlockAreaInterface | null>({
-  key: 'DroppingAreaAtom',
-  default: null
-})
-
-export const DroppingArea = selector<BlockAreaInterface | null>({
-  key: 'DroppingArea',
-  get: ({ get }) => get(DroppingAreaAtom),
-  set: ({ set, get }, newValue) => {
-    const currentDroppingBlockId = get(DroppingAreaAtom)?.blockId
-    const newBlockId = (newValue as BlockAreaInterface)?.blockId
-    if (currentDroppingBlockId && currentDroppingBlockId !== newBlockId) {
-      set(BlockDroppingArea(currentDroppingBlockId as string), null)
-    }
-    set(DroppingAreaAtom, newValue)
-    set(BlockDroppingArea(newBlockId), newValue)
-  }
-})
 
 export const MouseSensorOptions = {
   // Require the mouse to move by 10 pixels before activating
@@ -57,38 +24,6 @@ export const getFakeDragbleElement = () => {
   const element = document.getElementById('fake-drag-handler')
   invariant(element, 'element is null')
   return element
-}
-
-export const FileDraggble: React.FC = () => {
-  const ref = useRef<HTMLDivElement | null>(null)
-  const blockDrag = useDraggable({
-    id: `drag-native`,
-    data: {
-      type: DnDItemTypes.File,
-      id: 'native',
-      storyId: '0'
-    }
-  })
-
-  return (
-    <div
-      ref={(_ref) => {
-        ref.current = _ref
-        blockDrag.setNodeRef(_ref)
-      }}
-      id="fake-drag-handler"
-      {...blockDrag.listeners}
-      {...blockDrag.attributes}
-      className={css`
-        width: 10px;
-        height: 10px;
-        position: fixed;
-        left: 0;
-        top: 0;
-        pointer-events: none;
-      `}
-    ></div>
-  )
 }
 
 const getMinvalueEntry = (entries: [string, number][]) => {
