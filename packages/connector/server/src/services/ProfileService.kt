@@ -51,6 +51,7 @@ class ProfileService(
         )
 
         connectorManager.reloadConnector()
+        // TODO: load all integrations
         dbtManager.reloadContext()
         return buildProtoProfile(profile)
     }
@@ -81,6 +82,8 @@ class ProfileService(
             type = request.type,
             configs = request.configsList.associate { it.key to it.value }
         )
+        // TODO: load the integration matched the type
+        dbtManager.reloadContext()
         return buildProtoIntegration(profileManager.upsertIntegration(integration))
     }
 

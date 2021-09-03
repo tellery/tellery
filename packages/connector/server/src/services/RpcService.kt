@@ -2,13 +2,15 @@ package io.tellery.services
 
 import io.grpc.Server
 import io.grpc.ServerBuilder
+import io.grpc.protobuf.services.ProtoReflectionService
 import io.grpc.util.TransmitStatusRuntimeExceptionInterceptor
 import mu.KotlinLogging
 import io.tellery.entities.ProjectConfig as config
 
 class RpcService(
     dbtService: DbtService,
-    profileService: ProfileService
+    profileService: ProfileService,
+    connectorService: ConnectorService
 ) {
     private var server: Server
 
@@ -24,6 +26,8 @@ class RpcService(
         server = partialBuilder
             .addService(dbtService)
             .addService(profileService)
+            .addService(connectorService)
+            .addService(ProtoReflectionService.newInstance())
             .intercept(TransmitStatusRuntimeExceptionInterceptor.instance())
             .build()
     }

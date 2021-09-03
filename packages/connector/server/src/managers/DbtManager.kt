@@ -23,6 +23,7 @@ import io.tellery.grpc.QuestionBlockContent
 import io.tellery.integrations.BaseDbtProfile
 import io.tellery.integrations.DbtIntegration
 import io.tellery.integrations.DbtIntegration.Companion.DBT_PROJECT_FIELD
+import io.tellery.integrations.DbtIntegration.Companion.GIT_URL_FIELD
 import io.tellery.integrations.DbtIntegrationType
 import io.tellery.utils.GitUtil.checkoutMasterAndPull
 import io.tellery.utils.GitUtil.checkoutNewBranchAndCommitAndPush
@@ -367,7 +368,7 @@ class DbtManager(private val profileManager: ProfileManager) {
             publicKey = keyDir
                 .resolve(integrationEntity.configs[DBT_PROJECT_FIELD]!!)
                 .resolve("dbt_rsa.pub"),
-            gitUrl = integrationEntity.configs[DBT_PROJECT_FIELD]!!,
+            gitUrl = integrationEntity.configs[GIT_URL_FIELD]!!,
         )
     }
 
