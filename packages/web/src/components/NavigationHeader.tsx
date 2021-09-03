@@ -122,7 +122,9 @@ export const _NavigationHeader = (props: {
           />
           {permissions.canWrite && (
             <>
-              <RefreshAllQuestionBlockButton storyId={props.storyId} />
+              <React.Suspense fallback={<></>}>
+                <RefreshAllQuestionBlockButton storyId={props.storyId} />
+              </React.Suspense>
               <IconButton
                 hoverContent={props.format?.fullWidth ? 'Dsiable Full Width' : 'Full Width'}
                 icon={props.format?.fullWidth ? IconMenuNormalWidth : IconMenuFullWidth}

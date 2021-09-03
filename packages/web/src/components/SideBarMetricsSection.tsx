@@ -70,14 +70,15 @@ export const SideBarMetricsSection: React.FC<{ storyId: string }> = ({ storyId }
           `}
         >
           {TABS.map((tab) => (
-            <Tab.Panel
-              className={css`
-                height: 100%;
-              `}
-              key={tab.name}
-            >
-              {tab.Component}
-            </Tab.Panel>
+            <React.Suspense fallback={<></>} key={tab.name}>
+              <Tab.Panel
+                className={css`
+                  height: 100%;
+                `}
+              >
+                {tab.Component}
+              </Tab.Panel>
+            </React.Suspense>
           ))}
         </Tab.Panels>
       </Tab.Group>
