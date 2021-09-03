@@ -25,7 +25,7 @@ const Image = styled(Img)`
   top: 0;
 `
 
-const ImageLoader = () => (
+const ImageLoader: React.FC = () => (
   <div
     className={css`
       height: 100%;
@@ -93,7 +93,7 @@ const ImageBlock: BlockComponent<
               src={fileLoader({ src: block.content.fileKey, workspaceId: workspace.id })}
               decode={false}
               loading={'lazy'}
-              loader={ImageLoader}
+              loader={<ImageLoader />}
             ></Image>
           )}
           {readonly === false && (
