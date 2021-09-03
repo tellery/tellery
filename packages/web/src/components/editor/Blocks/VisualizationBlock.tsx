@@ -691,8 +691,6 @@ export const SnapshotUpdatedAt: React.FC<{
 
 export const LazyRenderDiagram: React.FC<{ data?: Data; config: Config<Type> }> = ({ data, config }) => {
   const ref = useRef<HTMLDivElement>(null)
-
-  // const chart = useChart(config?.type)
   const [rendered, setRendered] = useState(false)
   const isOnSCreen = useOnScreen(ref)
   const [dimensions, setDimensions] = useState<DOMRect>()

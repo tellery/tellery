@@ -1,18 +1,22 @@
+// import { CircularLoading } from '@app/components/CircularLoading'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useWorkspace } from '@app/hooks/useWorkspace'
+import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { fileLoader } from '@app/utils'
 import { css } from '@emotion/css'
 import styled from '@emotion/styled'
 import { motion } from 'framer-motion'
 import React, { useEffect, useRef } from 'react'
+// import ContentLoader from 'react-content-loader'
+import { Img } from 'react-image'
 import { BlockResizer } from '../BlockBase/BlockResizer'
 import { UploadFilePlaceHolder } from '../BlockBase/UploadFilePlaceHolder'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
 import { BlockComponent, registerBlock } from './utils'
 
-const Image = styled.img`
+const Image = styled(Img)`
   width: 100%;
   height: 100%;
   object-fit: fill;
@@ -20,6 +24,22 @@ const Image = styled.img`
   left: 0;
   top: 0;
 `
+
+const ImageLoader = () => (
+  <div
+    className={css`
+      height: 100%;
+      width: 100%;
+      background: ${ThemingVariables.colors.gray[4]};
+      position: absolute;
+      left: 0;
+      top: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    `}
+  ></div>
+)
 
 const ImageBlock: BlockComponent<
   React.FC<{
@@ -38,12 +58,12 @@ const ImageBlock: BlockComponent<
       blockTranscation.updateBlockProps(block.storyId!, block.id, ['content'], { fileKey: '' })
     }
     // TODO: COMPACT CODE, remove later
-    if (!block.format?.aspectRatio && block.content?.imageInfo) {
-      blockTranscation.updateBlockProps(block.storyId!, block.id, ['format'], {
-        width: 1,
-        aspectRatio: block.content!.imageInfo!.width / block.content!.imageInfo!.height
-      })
-    }
+    // if (!block.format?.aspectRatio && block.content?.imageInfo) {
+    //   blockTranscation.updateBlockProps(block.storyId!, block.id, ['format'], {
+    //     width: 1,
+    //     aspectRatio: block.content!.imageInfo!.width / block.content!.imageInfo!.height
+    //   })
+    // }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -69,7 +89,12 @@ const ImageBlock: BlockComponent<
           ref={contentRef}
         >
           {block.content?.fileKey && block.content.imageInfo && (
-            <Image src={fileLoader({ src: block.content.fileKey, workspaceId: workspace.id })}></Image>
+            <Image
+              src={fileLoader({ src: block.content.fileKey, workspaceId: workspace.id })}
+              decode={false}
+              loading={'lazy'}
+              loader={ImageLoader}
+            ></Image>
           )}
           {readonly === false && (
             <BlockResizer

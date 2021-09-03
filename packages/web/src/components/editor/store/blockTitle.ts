@@ -30,7 +30,7 @@ export const BlockTitleAssetsAtoms = selectorFamily<Record<string, any>, { block
           } else if (entity.formula) {
             const formula = entity.formula[1] as string
             const formulaResultLoadable = get(noWait(VariableAtomFamily({ storyId: storyId, formula })))
-            if (formulaResultLoadable.state === 'hasValue' && formulaResultLoadable.contents) {
+            if (formulaResultLoadable.state === 'hasValue' && formulaResultLoadable.contents !== undefined) {
               const formulaResult = formulaResultLoadable.contents
               result[formula] = formulaResult
             }

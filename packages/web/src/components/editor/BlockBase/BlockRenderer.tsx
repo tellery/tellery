@@ -125,6 +125,16 @@ const getTextElement = (token: Editor.Token, index: number, classNames?: string)
   return textSpan
 }
 
+export const FormulaResultValueRenderer: React.FC<{ value: any }> = ({ value }) => {
+  if (typeof value === 'number') {
+    return <>{value}</>
+  } else if (typeof value === 'string') {
+    return <>{value}</>
+  } else {
+    return <>{JSON.stringify(value)}</>
+  }
+}
+
 export const Token = ({
   token,
   index,
@@ -158,7 +168,13 @@ export const Token = ({
           className={cx(classNames, 'tellery-hoverable-token', 'tellery-formula-token')}
         >
           <span style={{ whiteSpace: 'nowrap' }}></span>
-          <span>{assetsMap[formulaEntity[1]] ? JSON.stringify(assetsMap[formulaEntity[1]]) : 'loading...'}</span>
+          <span>
+            {assetsMap[formulaEntity[1]] !== undefined ? (
+              <FormulaResultValueRenderer value={assetsMap[formulaEntity[1]]} />
+            ) : (
+              'loading...'
+            )}
+          </span>
           <span style={{ whiteSpace: 'nowrap' }}></span>
         </a>
       </>

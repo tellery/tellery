@@ -103,7 +103,7 @@ export const useBlockFormat = (block: Editor.Block) => {
 
       const format = {
         width: DEFAULT_WIDTH,
-        aspectRatio: DEFAULT_ASPECT_RATIO
+        aspectRatio: block.format?.aspectRatio ?? DEFAULT_ASPECT_RATIO
       }
       // const widthValue = width.get()
       // const heightValue = height.get()
@@ -125,7 +125,7 @@ export const useBlockFormat = (block: Editor.Block) => {
         y.set(0)
       }, 0)
     },
-    [blockTranscation, block.storyId, block.id, width, height, x, y]
+    [block.format?.aspectRatio, block.storyId, block.id, blockTranscation, width, height, x, y]
   )
 
   return useMemo(

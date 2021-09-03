@@ -1,10 +1,21 @@
 import { cx, css } from '@emotion/css'
 import BoringAvatar from 'boring-avatars'
+import { Img } from 'react-image'
+import ContentLoader from 'react-content-loader'
+import React from 'react'
+
+const AvatarLoader: React.FC<{ size: number }> = ({ size }) => (
+  <ContentLoader width={size} height={size} viewBox={`0 0 40 40`}>
+    <circle cx="20" cy="20" r="20" />
+  </ContentLoader>
+)
 
 export default function Avatar(props: { className?: string; size: number; email: string; src?: string }) {
   return props.src ? (
-    <img
+    <Img
       src={props.src}
+      loader={<AvatarLoader size={props.size} />}
+      decode={false}
       className={cx(
         css`
           width: ${props.size}px;

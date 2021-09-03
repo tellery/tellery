@@ -55,6 +55,7 @@ import TextareaAutosize from 'react-textarea-autosize'
 import { useEvent } from 'react-use'
 import { atom, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil'
 import invariant from 'tiny-invariant'
+import { FormulaResultValueRenderer } from '../BlockBase/BlockRenderer'
 import { isTextBlock } from '../Blocks/utils'
 import { EditorPopover } from '../EditorPopover'
 import { useEditor, useGetBlockTitleTextSnapshot } from '../hooks'
@@ -827,13 +828,7 @@ const AddLinkOperation = (props: {
 
 const FormulaResultRenderer: React.FC<{ storyId: string; formula: string }> = ({ storyId, formula }) => {
   const variableValue = useVariable(storyId, formula)
-  if (typeof variableValue === 'number') {
-    return <>{variableValue}</>
-  } else if (typeof variableValue === 'string') {
-    return <>{variableValue}</>
-  } else {
-    return <>{JSON.stringify(variableValue)}</>
-  }
+  return <FormulaResultValueRenderer value={variableValue} />
 }
 
 const InlineFormulaInput: React.FC<{

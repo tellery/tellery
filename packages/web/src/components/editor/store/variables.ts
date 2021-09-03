@@ -48,14 +48,14 @@ export const VariableAtomFamily = selectorFamily<any, { storyId: string; formula
 
       for (const variableName in variableMap) {
         const blockId = variableMap[variableName]
-        const block = (await get(TelleryBlockAtom(blockId))) as Editor.SQLBlock
+        const block = get(TelleryBlockAtom(blockId)) as Editor.SQLBlock
 
         if (!block) return NaN
 
         const snapshotId = block.content?.snapshotId
         if (!snapshotId) return NaN
 
-        const snapshot = await get(TellerySnapshotAtom(snapshotId))
+        const snapshot = get(TellerySnapshotAtom(snapshotId))
         if (!snapshot) return NaN
 
         scope[variableName] = math.evaluate(JSON.stringify(snapshot.data?.records ?? [[]]))
