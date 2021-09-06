@@ -1724,10 +1724,10 @@
   dependencies:
     immutability-helper "*"
 
-"@types/is-hotkey@^0.1.4":
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/@types/is-hotkey/-/is-hotkey-0.1.4.tgz#4aa47254a4b5139b6af6ce9567ff0ea6ea490471"
-  integrity sha512-WkDPhxo2k20zHl4zeR/5MHew+O7kfkQLXjRuD2fjH1s0eYPxxMdXWw5Y6lTqmJFbcMkOm1wKLgRzAf+hNcJVSw==
+"@types/is-hotkey@^0.1.5":
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/@types/is-hotkey/-/is-hotkey-0.1.5.tgz#f3123ba21228c0408c10594abf378caddbb802f8"
+  integrity sha512-pZTb6AsG7I56FJgYA8Cbit3cB3NGVwyHgwyUCENjXewTQChOtQaxaV+u6BO4hqtS1o9KT1wML+NRkGhQZ6swtA==
 
 "@types/is-url@^1.2.30":
   version "1.2.30"
