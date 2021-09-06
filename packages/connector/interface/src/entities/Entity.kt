@@ -28,3 +28,5 @@ data class IntegrationEntity(
     var type: String,
     var configs: Map<String, String?>
 )
+
+data class ProfileSpecEntity(val type: String, val tokenizer: String, val queryBuilderSpec: String)

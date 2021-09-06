@@ -8,9 +8,8 @@ option java_multiple_files = true;
 import "google/protobuf/empty.proto";
 import "displayType.proto";
 import "sqlType.proto";
-import "base.proto";
 
-service Connector {
+service ConnectorService {
   rpc GetDatabases (google.protobuf.Empty) returns (Databases);
   rpc GetCollections (GetCollectionRequest) returns (Collections);
   rpc GetCollectionSchema (GetCollectionSchemaRequest) returns (Schema);
