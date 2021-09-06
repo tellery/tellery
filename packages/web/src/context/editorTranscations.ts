@@ -179,22 +179,12 @@ export const getDuplicatedBlocksFragment = (
 export const getDuplicatedBlocks = (
   blocks: Editor.BaseBlock[],
   storyId: string,
-  snapshot: BlockSnapshot,
   resourceMapping?: Record<string, string>
 ) => {
   const duplicatedBlocks = blocks.map((block) => {
     if (block.type === Editor.BlockType.Visualization) {
       const fragBlock = block as Editor.VisualizationBlock
       const originalQueryId = fragBlock.content?.queryId
-      if (originalQueryId) {
-        const queryBlock = getBlockFromSnapshot(originalQueryId, snapshot)
-        const isStoryQuery = queryBlock.storyId === storyId
-        if (isStoryQuery && resourceMapping && resourceMapping[originalQueryId] === undefined) {
-          const newId = blockIdGenerator()
-          resourceMapping[originalQueryId] = newId
-          // resourceMapping[newId] = originalQueryId
-        }
-      }
       return createEmptyBlock<Editor.VisualizationBlock>({
         type: fragBlock.type,
         storyId,
@@ -208,7 +198,7 @@ export const getDuplicatedBlocks = (
       })
     } else {
       const fragBlock = block
-      const newBlock = createEmptyBlock({
+      return createEmptyBlock({
         type: fragBlock.type,
         storyId,
         parentId: storyId,
@@ -216,10 +206,6 @@ export const getDuplicatedBlocks = (
         children: fragBlock.children,
         format: fragBlock.format
       })
-      if (resourceMapping?.[fragBlock.id]) {
-        newBlock.id = resourceMapping[fragBlock.id]
-      }
-      return newBlock
     }
   })
 
@@ -264,7 +250,7 @@ export const addInsertBlockOperations = (
 ) => {
   // const block = getBlockFromGlobalStore(blockId)
   const blocks = blockIds.map((id) => getBlockFromSnapshot(id, snapshot))
-  const duplicatedBlocks = getDuplicatedBlocks(blocks, targetStoryId, snapshot, resourceMapping)
+  const duplicatedBlocks = getDuplicatedBlocks(blocks, targetStoryId, resourceMapping)
   let afterId = ''
 
   for (let i = 0; i < duplicatedBlocks.length; i++) {
@@ -325,29 +311,29 @@ export const duplicateStoryTranscation = ({
   const story = getBlockFromSnapshot(storyId, snapshot)
 
   const resourceMapping: Record<string, string> = {}
-  // const oldResources = story.resources?.map((id) => getBlockFromSnapshot(id, snapshot)) ?? []
-  // const newResources = oldResources.map((block) => {
-  //   if (block.storyId === storyId) {
-  //     const newId = blockIdGenerator()
-  //     resourceMapping[block.id] = newId
-  //     return createEmptyBlock({ ...block, id: newId, storyId: newStoryId, parentId: newStoryId })
-  //   } else {
-  //     resourceMapping[block.id] = block.id
-  //     return block
-  //   }
-  // })
+  const oldResources = story.resources?.map((id) => getBlockFromSnapshot(id, snapshot)) ?? []
+  const newResources = oldResources.map((block) => {
+    if (block.storyId === storyId) {
+      const newId = blockIdGenerator()
+      resourceMapping[block.id] = newId
+      return createEmptyBlock({ ...block, id: newId, storyId: newStoryId, parentId: newStoryId })
+    } else {
+      resourceMapping[block.id] = block.id
+      return block
+    }
+  })
 
-  // for (const resourceBlock of newResources) {
-  //   if (resourceBlock.storyId === newStoryId) {
-  //     operations.push({
-  //       cmd: 'set',
-  //       id: resourceBlock.id,
-  //       path: [],
-  //       args: resourceBlock,
-  //       table: 'block'
-  //     })
-  //   }
-  // }
+  for (const resourceBlock of newResources) {
+    if (resourceBlock.storyId === newStoryId) {
+      operations.push({
+        cmd: 'set',
+        id: resourceBlock.id,
+        path: [],
+        args: resourceBlock,
+        table: 'block'
+      })
+    }
+  }
 
   operations.push({
     cmd: 'set',
@@ -358,6 +344,7 @@ export const duplicateStoryTranscation = ({
       alive: true,
       parentId: wroskapceId,
       parentTable: Editor.BlockParentType.WORKSPACE,
+      resources: newResources.map((block) => block.id),
       content: { ...story.content, title: addPrefixToBlockTitle(story.content?.title, 'smart query of') },
       children: [],
       type: Editor.BlockType.Story,
@@ -394,7 +381,7 @@ export const insertBlocksAndMoveOperations = ({
   storyId: string
   direction: 'top' | 'left' | 'bottom' | 'right' | 'child'
   snapshot: BlockSnapshot
-  path?: 'children'
+  path: 'children' | 'resources'
 }) => {
   const operations: Operation[] = []
 
@@ -439,7 +426,7 @@ export const moveBlocksTranscation = ({
   direction: 'top' | 'left' | 'bottom' | 'right' | 'child'
   deleteSourceBlock: boolean
   snapshot: BlockSnapshot
-  path?: 'children'
+  path?: 'children' | 'resources'
 }) => {
   const operations: Operation[] = []
   const sourceBlocks = sourceBlockIds.map((id) => getBlockFromSnapshot(id, snapshot))

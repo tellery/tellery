@@ -178,6 +178,7 @@ export namespace Editor {
     parentTable: BlockParentType
     version: number
     children?: string[]
+    resources?: string[]
     alive: boolean
     permissions: Permission[]
     content?: {

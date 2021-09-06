@@ -392,7 +392,7 @@ const applyOperations = (
         logger('list after or before', operation, updatedBlock)
         invariant(updatedBlock, 'Block is not defined')
 
-        const arrayKey = operation.path[0] as 'children'
+        const arrayKey = operation.path[0] as 'children' | 'resources'
 
         if (!updatedBlock[arrayKey]) {
           updatedBlock = { ...updatedBlock, [arrayKey]: [] }
@@ -426,7 +426,7 @@ const applyOperations = (
 
           logger('listafter', updatedBlock)
         } else {
-          const index = updatedBlock[arrayKey]!.findIndex((id) => id === (operation.args as any).before)
+          const index = updatedBlock[arrayKey]?.findIndex((id) => id === (operation.args as any).before)
 
           updatedBlock = update(updatedBlock, {
             [arrayKey]: {

@@ -27,6 +27,7 @@ export const createEmptyBlock = <T extends Editor.BaseBlock = Editor.BaseBlock>(
     parentId: args?.parentId,
     updatedAt: now,
     createdAt: now,
+    resources: args.resources ?? [],
     // TODO: implement default permissions
     permissions: args.permissions ?? [{ role: 'manager', type: 'workspace' }],
     version: 0

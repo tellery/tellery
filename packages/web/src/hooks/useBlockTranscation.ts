@@ -82,7 +82,7 @@ export const useBlockTranscationProvider = () => {
         blocksFragment: { children: string[]; data: Record<string, Editor.BaseBlock> }
         targetBlockId: string
         direction: 'top' | 'left' | 'bottom' | 'right' | 'child'
-        path?: 'children'
+        path?: 'children' | 'resources'
       }
     ) => {
       return commit({
@@ -106,7 +106,7 @@ export const useBlockTranscationProvider = () => {
   )
 
   const removeBlocks = useCallback(
-    (storyId: string, targetBlockIds: string[], path: 'children' = 'children') => {
+    (storyId: string, targetBlockIds: string[], path: 'resources' | 'children' = 'children') => {
       return commit({
         transcation: (snapshot) => {
           const operations: Operation[] = []

@@ -62,7 +62,7 @@ const File2BlockProcessers: Record<
     })
     const sql = `select * from ${res.data.database}.${res.data.collection}`
     const title = `data from ${res.data.collection}`
-    const queryBlock = createEmptyBlock<Editor.SQLBlock>({
+    const dataAssetBlock = createEmptyBlock<Editor.SQLBlock>({
       type: Editor.BlockType.SQL,
       content: {
         sql,
@@ -75,10 +75,19 @@ const File2BlockProcessers: Record<
       operations: [
         {
           cmd: 'set',
-          id: queryBlock.id,
+          id: dataAssetBlock.id,
           path: [],
-          args: queryBlock,
+          args: dataAssetBlock,
           table: 'block'
+        },
+        {
+          cmd: 'listBefore',
+          id: block.storyId!,
+          path: ['resources'],
+          table: 'block',
+          args: {
+            id: dataAssetBlock.id
+          }
         },
         ...setBlockOperations<Editor.VisualizationBlock>({
           oldBlock: cloneDeep(block),
@@ -86,19 +95,10 @@ const File2BlockProcessers: Record<
             ...block,
             type: Editor.BlockType.Visualization,
             content: {
-              queryId: queryBlock.id
+              queryId: dataAssetBlock.id
             }
           }
-        }),
-        {
-          cmd: 'listBefore',
-          id: block.id,
-          path: ['children'],
-          table: 'block',
-          args: {
-            id: queryBlock.id
-          }
-        }
+        })
       ]
     })
   },
@@ -115,7 +115,7 @@ const File2BlockProcessers: Record<
       }
     })
 
-    const csvFile = new File([csvBuffer], `${getSafeFileName(file.name)}.csv`, {
+    const csvFile = new File([csvBuffer as BlobPart], `${getSafeFileName(file.name)}.csv`, {
       type: 'text/csv'
     })
 

@@ -1,17 +1,32 @@
-import { IconCommonBackLink, IconCommonCopy, IconCommonMore, IconCommonSql } from '@app/assets/icons'
+import {
+  IconCommonBackLink,
+  IconCommonCopy,
+  IconCommonMore,
+  IconCommonSql,
+  IconMenuDelete,
+  IconMenuDuplicate
+} from '@app/assets/icons'
 import { MenuItem } from '@app/components/MenuItem'
+import { MenuItemDivider } from '@app/components/MenuItemDivider'
+import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useOpenStory } from '@app/hooks'
+import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
+import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
+import { addPrefixToBlockTitle } from '@app/utils'
+import { css } from '@emotion/css'
 import copy from 'copy-to-clipboard'
 import { motion } from 'framer-motion'
-import React, { memo, useState } from 'react'
+import React, { memo, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import { useTippyMenuAnimation } from '../hooks/useTippyMenuAnimation'
+import { FormButton } from './kit/FormButton'
 import IconButton from './kit/IconButton'
 import { LazyTippy } from './LazyTippy'
+import { MenuConfirmPopover } from './MenuConfirmPopover'
 import { MenuWrapper } from './MenuWrapper'
 
 export const SideBarQueryItemDropdownMenuContent: React.FC<{
@@ -20,34 +35,35 @@ export const SideBarQueryItemDropdownMenuContent: React.FC<{
   storyId: string
   visulizationsCount: number
 }> = ({ block, onClose, storyId, visulizationsCount }) => {
-  // const blockTranscations = useBlockTranscations()
-  // const permissions = useStoryPermissions(block.id)
+  const blockTranscations = useBlockTranscations()
+  const permissions = useStoryPermissions(block.id)
   const { t } = useTranslation()
   const openStory = useOpenStory()
   const questionEditor = useQuestionEditor(storyId)
 
-  // const duplicateQueryHandler = useCallback(async () => {
-  //   onClose()
-  //   const newBlock = createEmptyBlock({
-  //     type: block.type,
-  //     storyId,
-  //     parentId: storyId,
-  //     content: { ...block.content, title: addPrefixToBlockTitle(block.content?.title, 'copy of') }
-  //   })
-  //   const newBlocks = [newBlock]
-  //   await blockTranscations.insertBlocks(storyId, {
-  //     blocksFragment: {
-  //       children: newBlocks.map((block) => block.id),
-  //       data: newBlocks.reduce((a, c) => {
-  //         a[c.id] = c
-  //         return a
-  //       }, {} as Record<string, Editor.BaseBlock>)
-  //     },
-  //     targetBlockId: storyId,
-  //     direction: 'child'
-  //   })
-  //   questionEditor.open({ mode: 'SQL', blockId: newBlock.id, storyId: newBlock.storyId! })
-  // }, [onClose, block.type, block.content, storyId, blockTranscations, questionEditor])
+  const duplicateQueryHandler = useCallback(async () => {
+    onClose()
+    const newBlock = createEmptyBlock({
+      type: block.type,
+      storyId,
+      parentId: storyId,
+      content: { ...block.content, title: addPrefixToBlockTitle(block.content?.title, 'copy of') }
+    })
+    const newBlocks = [newBlock]
+    await blockTranscations.insertBlocks(storyId, {
+      blocksFragment: {
+        children: newBlocks.map((block) => block.id),
+        data: newBlocks.reduce((a, c) => {
+          a[c.id] = c
+          return a
+        }, {} as Record<string, Editor.BaseBlock>)
+      },
+      targetBlockId: storyId,
+      direction: 'child',
+      path: 'resources'
+    })
+    questionEditor.open({ mode: 'SQL', blockId: newBlock.id, storyId: newBlock.storyId! })
+  }, [onClose, block.type, block.content, storyId, blockTranscations, questionEditor])
 
   return (
     <MenuWrapper>
@@ -79,7 +95,7 @@ export const SideBarQueryItemDropdownMenuContent: React.FC<{
           // setOpen(false)
         }}
       />
-      {/* {permissions.canWrite && (
+      {permissions.canWrite && (
         <>
           <MenuItem
             icon={<IconMenuDuplicate color={ThemingVariables.colors.text[0]} />}
@@ -136,7 +152,7 @@ export const SideBarQueryItemDropdownMenuContent: React.FC<{
             />
           </MenuConfirmPopover>
         </>
-      )} */}
+      )}
     </MenuWrapper>
   )
 }
