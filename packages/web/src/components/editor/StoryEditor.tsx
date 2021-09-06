@@ -698,45 +698,45 @@ const _StoryEditor: React.FC<{
         isVisualizationBlock(block.type)
       )
 
-      const unlinkAll = () => {
-        visBlocks.forEach((block) => {
-          blockAdminValue.getBlockInstanceById(block.id).then(({ blockRef }) => {
-            const visBlockRef = blockRef.current as any
-            visBlockRef.unLink()
-            visBlockRef.openMenu()
-          })
-        })
-      }
+      // const unlinkAll = () => {
+      //   visBlocks.forEach((block) => {
+      //     blockAdminValue.getBlockInstanceById(block.id).then(({ blockRef }) => {
+      //       const visBlockRef = blockRef.current as any
+      //       visBlockRef.unLink()
+      //       visBlockRef.openMenu()
+      //     })
+      //   })
+      // }
       if (visBlocks.length) {
-        toast(
-          <div
-            className={css`
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-            `}
-          >
-            <div
-              className={css`
-                color: ${ThemingVariables.colors.text[1]};
-              `}
-            >
-              {t('You pasted {{count}} visualization block', { count: visBlocks.length })}
-            </div>
-            <IconButton
-              hoverContent={t`Duplicate data assets too`}
-              icon={IconMenuDuplicate}
-              color={ThemingVariables.colors.text[0]}
-              className={css`
-                margin-left: 20px;
-              `}
-              onClick={() => {
-                unlinkAll()
-              }}
-            />
-          </div>,
-          { position: 'bottom-center', autoClose: 10000 }
-        )
+        // toast(
+        //   <div
+        //     className={css`
+        //       display: flex;
+        //       align-items: center;
+        //       justify-content: space-between;
+        //     `}
+        //   >
+        //     <div
+        //       className={css`
+        //         color: ${ThemingVariables.colors.text[1]};
+        //       `}
+        //     >
+        //       {t('You pasted {{count}} visualization block', { count: visBlocks.length })}
+        //     </div>
+        //     <IconButton
+        //       hoverContent={t`Duplicate data assets too`}
+        //       icon={IconMenuDuplicate}
+        //       color={ThemingVariables.colors.text[0]}
+        //       className={css`
+        //         margin-left: 20px;
+        //       `}
+        //       onClick={() => {
+        //         unlinkAll()
+        //       }}
+        //     />
+        //   </div>,
+        //   { position: 'bottom-center', autoClose: 10000 }
+        // )
       }
     },
     [blockAdminValue, focusBlockHandler, t]
@@ -753,7 +753,8 @@ const _StoryEditor: React.FC<{
         blockIds,
         getSubsetOfBlocksSnapshot(snapshot, blockIds),
         storyId,
-        targetBlock.parentId
+        targetBlock.parentId,
+        {}
       )
 
       blockTranscations.insertBlocks(storyId, {
@@ -1253,7 +1254,8 @@ const _StoryEditor: React.FC<{
             telleryBlocksData.children,
             telleryBlocksData.data,
             storyId,
-            targetBlock.id
+            targetBlock.id,
+            {}
           )
 
           blockTranscations.insertBlocks(storyId, {

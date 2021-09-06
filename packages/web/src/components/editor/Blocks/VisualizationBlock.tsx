@@ -471,7 +471,7 @@ const _QuestionBlockHeader: React.FC<{
 }> = ({ block }) => {
   const { t } = useTranslation()
   const queryBlock = useBlockSuspense(block.content?.queryId!)
-  const isReference = queryBlock.storyId !== block.storyId
+  const isReference = queryBlock.parentId !== block.id
   const [disableTippy, setDisableTippy] = useState(true)
 
   return (
@@ -487,7 +487,7 @@ const _QuestionBlockHeader: React.FC<{
       >
         {isReference && (
           <Tippy content={t`Click to navigate to the original story`} arrow={false}>
-            <Link to={`/story/${queryBlock.storyId}`}>
+            <Link to={`/story/${queryBlock.storyId}#${queryBlock.id}`}>
               <IconCommonBackLink
                 className={css`
                   margin-right: 5px;
