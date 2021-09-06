@@ -434,7 +434,7 @@ const BlockTextOperationMenuInner = ({
         initial={'inactive'}
         animate={'active'}
         exit={'inactive'}
-        variants={PopoverMotionVariants.scale}
+        variants={PopoverMotionVariants.fade}
         transition={{ duration: 0.15 }}
         className={css`
           outline: none;
