@@ -7,6 +7,7 @@ import {
   Collection,
   AvailableConfig,
   ProfileSpec,
+  Integration,
 } from '../../types/connector'
 import { DbtMetadata, ExportedBlockMetadata } from '../../types/dbt'
 import { IConnectorManager } from './interface'
@@ -15,36 +16,47 @@ import { IConnectorManager } from './interface'
  * only for test
  */
 export class FakeManager implements IConnectorManager {
-  async listAvailableConfigs(): Promise<AvailableConfig[]> {
+  async getProfileConfig(): Promise<AvailableConfig[]> {
     return []
   }
 
-  async getProfileSpec(_profile: string): Promise<ProfileSpec> {
+  async getProfileSpec(): Promise<ProfileSpec> {
     throw new Error('Method not implemented.')
   }
 
-  async listProfiles(): Promise<Profile[]> {
+  async getProfile(): Promise<Profile> {
+    throw new Error('Method not implemented.')
+  }
+
+  async upsertProfile(newProfile: Profile): Promise<Profile> {
+    return newProfile
+  }
+
+  async getIntegrationConfigs(): Promise<AvailableConfig[]> {
     return []
   }
 
-  async upsertProfile(_newProfile: Profile): Promise<Profile[]> {
+  async listIntegrations(): Promise<Integration[]> {
     return []
   }
 
-  async deleteProfile(_profile: string): Promise<Profile[]> {
+  async upsertIntegration(newIntegration: Integration): Promise<Integration> {
+    return newIntegration
+  }
+
+  async deleteIntegration(_integrationId: number): Promise<void> {
+    return
+  }
+
+  async listDatabases(): Promise<Database[]> {
     return []
   }
 
-  async listDatabases(_profile: string): Promise<Database[]> {
-    return []
-  }
-
-  async listCollections(_profile: string, _database: string): Promise<Collection[]> {
+  async listCollections(_database: string): Promise<Collection[]> {
     return []
   }
 
   async getCollectionSchema(
-    _profile: string,
     _database: string,
     _collection: string,
     _schema?: string,
@@ -52,7 +64,7 @@ export class FakeManager implements IConnectorManager {
     return []
   }
 
-  executeSql(_profile: string, _sql: string, _id: string): Readable {
+  executeSql(_sql: string, _id: string): Readable {
     return new Readable()
   }
 
@@ -61,7 +73,6 @@ export class FakeManager implements IConnectorManager {
   }
 
   async importFromFile(
-    _profile: string,
     _url: string,
     _database: string,
     _collection: string,
@@ -73,15 +84,15 @@ export class FakeManager implements IConnectorManager {
     }
   }
 
-  async generateKeyPair(_profile: string): Promise<string> {
+  async generateKeyPair(): Promise<string> {
     return 'fakePublicKey'
   }
 
-  async pullRepo(_profile: string): Promise<DbtMetadata[]> {
+  async pullRepo(): Promise<DbtMetadata[]> {
     return []
   }
 
-  async pushRepo(_profile: string, _blocks: ExportedBlockMetadata[]): Promise<void> {
-    throw new Error('Method not implemented.')
+  async pushRepo(_blocks: ExportedBlockMetadata[]): Promise<void> {
+    return
   }
 }

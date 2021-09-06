@@ -2,6 +2,29 @@ import { Transform, TransformCallback } from 'stream'
 import { credentials, ChannelCredentials } from 'grpc'
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb'
 import _ from 'lodash'
+import { AuthType, AuthData } from '../../types/auth'
+import { ConnectorServiceClient } from '../../protobufs/connector_grpc_pb'
+import { DbtServiceClient } from '../../protobufs/dbt_grpc_pb'
+import { ProfileServiceClient } from '../../protobufs/profile_grpc_pb'
+import { SQLType } from '../../protobufs/sqlType_pb'
+import { DisplayType } from '../../protobufs/displayType_pb'
+import {
+  GetCollectionRequest,
+  GetCollectionSchemaRequest,
+  SubmitQueryRequest,
+  QueryResult,
+  ImportRequest,
+} from '../../protobufs/connector_pb'
+import { DbtBlock, PushRepoRequest, QuestionBlockContent } from '../../protobufs/dbt_pb'
+import {
+  Profile as ProfilePb,
+  Integration as IntegrationPb,
+  UpsertProfileRequest,
+  DeleteIntegrationRequest,
+  UpsertIntegrationRequest,
+} from '../../protobufs/profile_pb'
+import { AvailableConfig as AvailableConfigPb } from '../../protobufs/config_pb'
+import { IConnectorManager } from './interface'
 import {
   Profile,
   TypeField,
@@ -9,35 +32,12 @@ import {
   Database,
   AvailableConfig,
   ProfileSpec,
+  Integration,
 } from '../../types/connector'
-import { AuthType, AuthData } from '../../types/auth'
-import {
-  GetDatabaseRequest,
-  GetCollectionRequest,
-  GetCollectionSchemaRequest,
-  UpsertProfileRequest,
-  DeleteProfileRequest,
-  SubmitQueryRequest,
-  QueryResult,
-  ImportRequest,
-  KVEntry,
-  ProfileBody,
-  GetProfileSpecRequest,
-} from '../../protobufs/connector_pb'
-import { SQLType } from '../../protobufs/sqlType_pb'
-import { DisplayType } from '../../protobufs/displayType_pb'
-import { ConnectorClient } from '../../protobufs/connector_grpc_pb'
-import { IConnectorManager } from './interface'
-import { beautyStream, beautyCall } from '../../utils/grpc'
-import { DbtClient } from '../../protobufs/dbt_grpc_pb'
-import {
-  GenerateKeyPairRequest,
-  DbtBlock,
-  PullRepoRequest,
-  PushRepoRequest,
-  QuestionBlockContent,
-} from '../../protobufs/dbt_pb'
 import { DbtMetadata, ExportedBlockMetadata } from '../../types/dbt'
+import { beautyStream, beautyCall } from '../../utils/grpc'
+import { KVEntry } from '../../protobufs/base_pb'
+import { Int32Value } from 'google-protobuf/google/protobuf/wrappers_pb'
 
 const grpcConnectorStorage = new Map<string, ConnectorManager>()
 
@@ -63,9 +63,11 @@ export function getGrpcConnector(
 }
 
 export class ConnectorManager implements IConnectorManager {
-  private client: ConnectorClient
+  private connectorClient: ConnectorServiceClient
 
-  private dbtClient: DbtClient
+  private profileClient: ProfileServiceClient
+
+  private dbtClient: DbtServiceClient
 
   private authType: AuthType
 
@@ -84,17 +86,17 @@ export class ConnectorManager implements IConnectorManager {
     } else {
       throw new Error(`Invalid auth type for grpcConnector: ${authType}`)
     }
-    this.client = new ConnectorClient(url, credential)
-    this.dbtClient = new DbtClient(url, credential)
+    this.connectorClient = new ConnectorServiceClient(url, credential)
+    this.profileClient = new ProfileServiceClient(url, credential)
+    this.dbtClient = new DbtServiceClient(url, credential)
   }
 
   public checkAuth(authType: AuthType, authData: AuthData): boolean {
     return this.authType === authType && this.authData === authData
   }
 
-  async listAvailableConfigs(): Promise<AvailableConfig[]> {
-    const configs = await beautyCall(this.client.getAvailableConfigs, this.client, new Empty())
-    return configs.getAvailableconfigsList().map((cfg) => ({
+  private renderAvaliableConfig(cfg: AvailableConfigPb): AvailableConfig {
+    return {
       type: cfg.getType(),
       configs: cfg.getConfigsList().map((i) => ({
         name: i.getName(),
@@ -105,12 +107,24 @@ export class ConnectorManager implements IConnectorManager {
         secret: i.getSecret(),
         fillHint: i.getFillhint(),
       })),
-    }))
+    }
   }
 
-  async getProfileSpec(profile: string): Promise<ProfileSpec> {
-    const request = new GetProfileSpecRequest().setName(profile)
-    const spec = await beautyCall(this.client.getProfileSpec, this.client, request)
+  async getProfileConfigs(): Promise<AvailableConfig[]> {
+    const configs = await beautyCall(
+      this.profileClient.getProfileConfigs,
+      this.profileClient,
+      new Empty(),
+    )
+    return configs.getAvailableconfigsList().map(this.renderAvaliableConfig)
+  }
+
+  async getProfileSpec(): Promise<ProfileSpec> {
+    const spec = await beautyCall(
+      this.profileClient.getProfileSpec,
+      this.profileClient,
+      new Empty(),
+    )
     const rawSpec = JSON.parse(Buffer.from(spec.getQuerybuilderspec(), 'base64').toString())
     const objConverter = (t: { [key: string]: { [key: string]: string } }) =>
       new Map(
@@ -126,53 +140,104 @@ export class ConnectorManager implements IConnectorManager {
     }
 
     return {
-      name: spec.getName(),
       type: spec.getType(),
       tokenizer: Buffer.from(spec.getTokenizer(), 'base64').toString(),
       queryBuilderSpec,
     }
   }
 
-  private profileToObject(item: ProfileBody): Profile {
+  private renderProfile(item: ProfilePb): Profile {
     return {
       type: item.getType(),
-      name: item.getName(),
-      configs: Object.fromEntries(item.getConfigsMap().toArray()),
+      id: item.getId(),
+      configs: Object.fromEntries(item.getConfigsList().map((i) => [i.getKey(), i.getValue()])),
     }
   }
 
-  async listProfiles(): Promise<Profile[]> {
-    const profiles = await beautyCall(this.client.getProfiles, this.client, new Empty())
-    return profiles.getProfilesList().map(this.profileToObject)
+  async getProfile(): Promise<Profile> {
+    const profile = await beautyCall(this.profileClient.getProfile, this.profileClient, new Empty())
+    return this.renderProfile(profile)
   }
 
-  async upsertProfile(profileBody: Profile): Promise<Profile[]> {
-    const { name, type, configs } = profileBody
-
+  async upsertProfile(profileBody: Profile): Promise<Profile> {
+    const { type, configs } = profileBody
     const request = new UpsertProfileRequest()
-      .setName(name)
       .setType(type)
       .setConfigsList(Object.entries(configs).map(([k, v]) => new KVEntry().setKey(k).setValue(v)))
 
-    const newProfiles = await beautyCall(this.client.upsertProfile, this.client, request)
-    return newProfiles.getProfilesList().map(this.profileToObject)
+    const newProfile = await beautyCall(
+      this.profileClient.upsertProfile,
+      this.profileClient,
+      request,
+    )
+    return this.renderProfile(newProfile)
   }
 
-  async deleteProfile(name: string): Promise<Profile[]> {
-    const request = new DeleteProfileRequest().setName(name)
-    const newProfiles = await beautyCall(this.client.deleteProfile, this.client, request)
-    return newProfiles.getProfilesList().map(this.profileToObject)
+  async getIntegrationConfigs(): Promise<AvailableConfig[]> {
+    const configs = await beautyCall(
+      this.profileClient.getIntegrationConfigs,
+      this.profileClient,
+      new Empty(),
+    )
+    return configs.getAvailableconfigsList().map(this.renderAvaliableConfig)
   }
 
-  async listDatabases(profile: string): Promise<Database[]> {
-    const request = new GetDatabaseRequest().setProfile(profile)
-    const databases = await beautyCall(this.client.getDatabases, this.client, request)
+  private renderIntegration(item: IntegrationPb): Integration {
+    return {
+      id: item.getId(),
+      profileId: item.getProfileid(),
+      type: item.getType(),
+      configs: Object.fromEntries(item.getConfigsList().map((i) => [i.getKey(), i.getValue()])),
+    }
+  }
+
+  async listIntegrations(): Promise<Integration[]> {
+    const integrations = await beautyCall(
+      this.profileClient.listIntegrations,
+      this.profileClient,
+      new Empty(),
+    )
+    return integrations.getIntegrationsList().map(this.renderIntegration)
+  }
+
+  async upsertIntegration(integrationBody: Integration): Promise<Integration> {
+    const { id, profileId, type, configs } = integrationBody
+
+    const request = new UpsertIntegrationRequest()
+      .setId(new Int32Value().setValue(id))
+      .setProfileid(profileId)
+      .setType(type)
+      .setConfigsList(Object.entries(configs).map(([k, v]) => new KVEntry().setKey(k).setValue(v)))
+
+    const newIntegration = await beautyCall(
+      this.profileClient.upsertIntegration,
+      this.profileClient,
+      request,
+    )
+    return this.renderIntegration(newIntegration)
+  }
+
+  async deleteIntegration(integrationId: number): Promise<void> {
+    const request = new DeleteIntegrationRequest().setId(integrationId)
+    await beautyCall(this.profileClient.deleteIntegration, this.profileClient, request)
+  }
+
+  async listDatabases(): Promise<Database[]> {
+    const databases = await beautyCall(
+      this.connectorClient.getDatabases,
+      this.connectorClient,
+      new Empty(),
+    )
     return databases.getDatabaseList()
   }
 
-  async listCollections(profile: string, database: string): Promise<Collection[]> {
-    const request = new GetCollectionRequest().setProfile(profile).setDatabase(database)
-    const collections = await beautyCall(this.client.getCollections, this.client, request)
+  async listCollections(database: string): Promise<Collection[]> {
+    const request = new GetCollectionRequest().setDatabase(database)
+    const collections = await beautyCall(
+      this.connectorClient.getCollections,
+      this.connectorClient,
+      request,
+    )
     return collections
       .getCollectionsList()
       .map(
@@ -184,19 +249,19 @@ export class ConnectorManager implements IConnectorManager {
   }
 
   async getCollectionSchema(
-    profile: string,
     database: string,
     collection: string,
     schema?: string,
   ): Promise<TypeField[]> {
-    let request = new GetCollectionSchemaRequest()
-      .setProfile(profile)
-      .setDatabase(database)
-      .setCollection(collection)
+    let request = new GetCollectionSchemaRequest().setDatabase(database).setCollection(collection)
     if (schema) {
       request = request.setSchema(schema)
     }
-    const collectionSchema = await beautyCall(this.client.getCollectionSchema, this.client, request)
+    const collectionSchema = await beautyCall(
+      this.connectorClient.getCollectionSchema,
+      this.connectorClient,
+      request,
+    )
     return collectionSchema.getFieldsList().map((item) => ({
       name: item.getName(),
       displayType: getEnumKey(DisplayType, item.getDisplaytype()),
@@ -205,7 +270,6 @@ export class ConnectorManager implements IConnectorManager {
   }
 
   executeSql(
-    profile: string,
     sql: string,
     identifier: string,
     maxRow?: number,
@@ -213,11 +277,10 @@ export class ConnectorManager implements IConnectorManager {
     errorHandler?: (e: Error) => void,
   ): Transform {
     const request = new SubmitQueryRequest()
-      .setProfile(profile)
       .setSql(sql)
-      .setMaxrow(maxRow || 1000)
-      .setQuestionid(flag || 'adhoc')
-    const resultSetStream = this.client.query(request)
+      .setMaxrow(maxRow ?? 1000)
+      .setQuestionid(flag ?? 'adhoc')
+    const resultSetStream = this.connectorClient.query(request)
     this.queryCancelHandler.set(identifier, () => resultSetStream.cancel())
     return beautyStream(resultSetStream, errorHandler).pipe(new QueryResultTransformer())
   }
@@ -242,7 +305,11 @@ export class ConnectorManager implements IConnectorManager {
     if (schema) {
       request = request.setSchema(schema)
     }
-    const importResult = await beautyCall(this.client.importFromFile, this.client, request)
+    const importResult = await beautyCall(
+      this.connectorClient.importFromFile,
+      this.connectorClient,
+      request,
+    )
     return {
       database: importResult.getDatabase(),
       collection: `${
@@ -251,15 +318,13 @@ export class ConnectorManager implements IConnectorManager {
     }
   }
 
-  async generateKeyPair(profile: string): Promise<string> {
-    const request = new GenerateKeyPairRequest().setProfile(profile)
-    const res = await beautyCall(this.dbtClient.generateKeyPair, this.dbtClient, request)
+  async generateKeyPair(): Promise<string> {
+    const res = await beautyCall(this.dbtClient.generateKeyPair, this.dbtClient, new Empty())
     return res.getPublickey()
   }
 
-  async pullRepo(profile: string): Promise<DbtMetadata[]> {
-    const request = new PullRepoRequest().setProfile(profile)
-    const res = await beautyCall(this.dbtClient.pullRepo, this.dbtClient, request)
+  async pullRepo(): Promise<DbtMetadata[]> {
+    const res = await beautyCall(this.dbtClient.pullRepo, this.dbtClient, new Empty())
     return res.getBlocksList().map(
       (raw) =>
         // remove blank values
@@ -276,12 +341,10 @@ export class ConnectorManager implements IConnectorManager {
     )
   }
 
-  async pushRepo(profile: string, blocks: ExportedBlockMetadata[]): Promise<void> {
-    const request = new PushRepoRequest()
-      .setProfile(profile)
-      .setBlocksList(
-        blocks.map(({ sql, name }) => new QuestionBlockContent().setSql(sql).setName(name)),
-      )
+  async pushRepo(blocks: ExportedBlockMetadata[]): Promise<void> {
+    const request = new PushRepoRequest().setBlocksList(
+      blocks.map(({ sql, name }) => new QuestionBlockContent().setSql(sql).setName(name)),
+    )
     await beautyCall(this.dbtClient.pushRepo, this.dbtClient, request)
   }
 }
