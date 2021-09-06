@@ -1,4 +1,5 @@
 import { fetchBlock, fetchSnapshot, fetchUser } from '@app/api'
+import { isQueryBlock } from '@app/components/editor/Blocks/utils'
 import type { Data } from '@app/components/v11n/types'
 import { applyTransactionsAsync, Operation, Transcation } from '@app/hooks/useCommit'
 import { Editor, Snapshot } from '@app/types'
@@ -26,8 +27,7 @@ export const blockUpdater = (newValue: Editor.Block | DefaultValue, oldValue: Ed
         ...newValue,
         content: dequal(newValue.content, oldValue.content) ? oldValue.content : newValue.content,
         format: dequal(newValue.format, oldValue.format) ? oldValue.format : newValue.format,
-        permissions: dequal(newValue.permissions, oldValue.permissions) ? oldValue.permissions : newValue.permissions,
-        resources: dequal(newValue.resources, oldValue.resources) ? oldValue.resources : newValue.resources
+        permissions: dequal(newValue.permissions, oldValue.permissions) ? oldValue.permissions : newValue.permissions
       }
     } else {
       return oldValue
@@ -89,16 +89,6 @@ export const BlockTitleAtom = selectorFamily({
     ({ get }) => {
       const atom = get(TelleryBlockAtom(blockId))
       return atom.content?.title
-    }
-})
-
-export const BlockResourcesAtom = selectorFamily({
-  key: 'blockResourcesAtom',
-  get:
-    (blockId: string) =>
-    ({ get }) => {
-      const atom = get(TelleryBlockAtom(blockId))
-      return atom.resources
     }
 })
 
@@ -258,7 +248,7 @@ export const getBlockFromSnapshot = (blockId: string, snapshot: BlockSnapshot): 
   return block
 }
 
-export const getBlockFromStoreMap = (blockId: string, snapshot: BlockSnapshot): Editor.BaseBlock | undefined => {
+export const getBlockFromStoreMap = (blockId: string, snapshot: BlockSnapshot): Editor.Block | undefined => {
   return snapshot.get(blockId)
 }
 
