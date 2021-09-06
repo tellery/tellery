@@ -6730,14 +6730,7 @@ rollup-pluginutils@^2.8.1:
   dependencies:
     estree-walker "^0.6.1"
 
-rollup@^2.38.5:
-  version "2.56.2"
-  resolved "https://registry.yarnpkg.com/rollup/-/rollup-2.56.2.tgz#a045ff3f6af53ee009b5f5016ca3da0329e5470f"
-  integrity sha512-s8H00ZsRi29M2/lGdm1u8DJpJ9ML8SUOpVVBd33XNeEeL3NVaTiUcSBHzBdF3eAyR0l7VSpsuoVUGrRHq7aPwQ==
-  optionalDependencies:
-    fsevents "~2.3.2"
-
-rollup@^2.56.2:
+rollup@^2.38.5, rollup@^2.56.2:
   version "2.56.3"
   resolved "https://registry.yarnpkg.com/rollup/-/rollup-2.56.3.tgz#b63edadd9851b0d618a6d0e6af8201955a77aeff"
   integrity sha512-Au92NuznFklgQCUcV96iXlxUbHuB1vQMaH76DHl5M11TotjOHwqk9CwcrT78+Tnv4FN9uTBxq6p4EJoYkpyekg==
@@ -7704,10 +7697,10 @@ vite-web-test-runner-plugin@^0.1.0:
   resolved "https://registry.yarnpkg.com/vite-web-test-runner-plugin/-/vite-web-test-runner-plugin-0.1.0.tgz#f6909daf826d27fe375fa6ff213a3fc8ec888669"
   integrity sha512-AXrkMbtU/QW9mJWzl0j7Zn9UKKwMo4zQw4BPeS4TknwF/tIMqluFdb9J2+QbLIUP72TeiAgobpS72oo/c7kDPw==
 
-vite@^2.5.1:
-  version "2.5.1"
-  resolved "https://registry.yarnpkg.com/vite/-/vite-2.5.1.tgz#953c71a034c07b3ae0448d57664ec9c6862f23a8"
-  integrity sha512-FwmLbbz8MB1pBs9dKoRDgpiqoijif8hSK1+NNUYc12/cnf+pM2UFhhQ1rcpXgbMhm/5c2USZdVAf0FSkSxaFDA==
+vite@^2.5.3:
+  version "2.5.3"
+  resolved "https://registry.yarnpkg.com/vite/-/vite-2.5.3.tgz#88d40a9efb9bec66bd87a7676c5689f35ff63742"
+  integrity sha512-1wMDnjflvtTTkMov8O/Xb5+w1/VW/Gw8oCf8f6dqgHn8lMOEqq0SaPtFEQeikFcOKCfSbiU0nEi0LDIx6DNsaQ==
   dependencies:
     esbuild "^0.12.17"
     postcss "^8.3.6"

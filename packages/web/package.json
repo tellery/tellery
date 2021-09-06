@@ -165,7 +165,7 @@
     "rollup-plugin-visualizer": "^5.5.2",
     "typescript": "^4.4.2",
     "url-loader": "^4.1.1",
-    "vite": "^2.5.1",
+    "vite": "^2.5.3",
     "vite-plugin-react-svg": "^0.2.0",
     "vite-plugin-sentry": "^1.0.9",
     "vite-react-jsx": "^1.1.2",
