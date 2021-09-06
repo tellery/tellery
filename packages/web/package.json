@@ -21,7 +21,7 @@
     "@headlessui/react": "^1.4.1",
     "@hookform/error-message": "^2.0.0",
     "@monaco-editor/react": "^4.2.2",
-    "@popperjs/core": "^2.9.3",
+    "@popperjs/core": "^2.10.1",
     "@react-hook/media-query": "^1.1.1",
     "@sentry/browser": "^6.11.0",
     "@sentry/react": "^6.11.0",
