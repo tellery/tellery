@@ -19,6 +19,20 @@ export enum TELLERY_MIME_TYPES {
   MONACO = 'vscode-editor-data'
 }
 
+const STORY_BLOCK_REGEX = new RegExp(`${window.location.protocol}//${window.location.host}/story/(\\S+)#(\\S+)`)
+
+export const parseTelleryUrl = (url: string) => {
+  if (STORY_BLOCK_REGEX.test(url)) {
+    const matches = STORY_BLOCK_REGEX.exec(url)!
+    const storyId = matches[1]
+    const blockId = matches[2]
+    return {
+      storyId,
+      blockId
+    }
+  }
+}
+
 export const DEFAULT_TIPPY_DELAY: [number, number] = [500, 250]
 
 export const DEFAULT_TITLE = 'Untitled'

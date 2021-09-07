@@ -739,7 +739,7 @@ const _StoryEditor: React.FC<{
         // )
       }
     },
-    [blockAdminValue, focusBlockHandler, t]
+    [focusBlockHandler]
   )
 
   const duplicateHandler = useCallback(
