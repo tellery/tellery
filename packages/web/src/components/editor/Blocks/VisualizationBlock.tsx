@@ -298,6 +298,18 @@ const _VisualizationBlockContent: React.FC<{
 
   const visualization = block.content?.visualization
 
+  // TODO: Compact code
+  // useEffect(() => {
+  //   if (queryId && block.children?.includes(queryId) && queryBlock.parentId !== block.id) {
+  //     commit({
+  //       transcation: createTranscation({
+  //         operations: [{ cmd: 'update', path: ['parentId'], args: block.id, table: 'block', id: queryId }]
+  //       }),
+  //       storyId: block.storyId!
+  //     })
+  //   }
+  // }, [block.children, block.id, block.storyId, commit, queryBlock.parentId, queryId])
+
   const { readonly } = useBlockBehavior()
   const contentRef = useRef<HTMLDivElement | null>(null)
 
@@ -487,7 +499,7 @@ const _QuestionBlockHeader: React.FC<{
       >
         {isReference && (
           <Tippy content={t`Click to navigate to the original story`} arrow={false}>
-            <Link to={`/story/${queryBlock.storyId}#${queryBlock.id}`}>
+            <Link to={`/story/${queryBlock.storyId}#${queryBlock.parentId}`}>
               <IconCommonBackLink
                 className={css`
                   margin-right: 5px;

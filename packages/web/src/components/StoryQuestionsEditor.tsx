@@ -868,7 +868,6 @@ export const StoryQuestionEditor: React.FC<{
     executeSQL,
     workspace.id,
     workspace.preferences.connectorId,
-    workspace.preferences.profile,
     isDraftSql,
     setMode,
     setSnapshotId,
