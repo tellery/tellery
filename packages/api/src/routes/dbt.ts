@@ -35,7 +35,8 @@ async function generateKeyPair(ctx: Context) {
   const payload = plainToClass(GenerateKeyPairRequest, ctx.request.body)
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
-  const manager = await getIConnectorManagerFromDB(payload.connectorId)
+  const { workspaceId, connectorId } = payload
+  const manager = await getIConnectorManagerFromDB(workspaceId, connectorId)
   const publicKey = await dbtService.generateKeyPair(manager, user.id, payload.workspaceId)
   ctx.body = {
     publicKey,
@@ -46,7 +47,8 @@ async function pullRepo(ctx: Context) {
   const payload = plainToClass(PullRepoRequest, ctx.request.body)
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
-  const manager = await getIConnectorManagerFromDB(payload.connectorId)
+  const { workspaceId, connectorId } = payload
+  const manager = await getIConnectorManagerFromDB(workspaceId, connectorId)
   await dbtService.pullRepo(manager, user.id, payload.workspaceId)
   ctx.body = {}
 }
@@ -55,7 +57,8 @@ async function pushRepo(ctx: Context) {
   const payload = plainToClass(PushRepoRequest, ctx.request.body)
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
-  const manager = await getIConnectorManagerFromDB(payload.connectorId)
+  const { workspaceId, connectorId } = payload
+  const manager = await getIConnectorManagerFromDB(workspaceId, connectorId)
   await dbtService.pushRepo(manager, user.id, payload.workspaceId)
   ctx.body = {}
 }

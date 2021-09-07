@@ -1,5 +1,5 @@
 import { Transform, TransformCallback } from 'stream'
-import { credentials, ChannelCredentials } from 'grpc'
+import { credentials, ChannelCredentials, Metadata } from 'grpc'
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb'
 import _ from 'lodash'
 import { AuthType, AuthData } from '../../types/auth'
@@ -39,6 +39,7 @@ import { beautyStream, beautyCall } from '../../utils/grpc'
 import { KVEntry } from '../../protobufs/base_pb'
 import { Int32Value } from 'google-protobuf/google/protobuf/wrappers_pb'
 
+// TODO: optimize cache
 const grpcConnectorStorage = new Map<string, ConnectorManager>()
 
 function getEnumKey<T>(obj: T, val: T[keyof T]): string {
@@ -46,23 +47,27 @@ function getEnumKey<T>(obj: T, val: T[keyof T]): string {
 }
 
 export function getGrpcConnector(
+  workspaceId: string,
   url: string,
   authType: AuthType,
   authData: AuthData,
 ): ConnectorManager {
-  const cachedConnectorManager = grpcConnectorStorage.get(url)
+  const key = `${workspaceId}-${url}`
+  const cachedConnectorManager = grpcConnectorStorage.get(key)
   if (cachedConnectorManager) {
     if (cachedConnectorManager.checkAuth(authType, authData)) {
       return cachedConnectorManager
     }
-    grpcConnectorStorage.delete(url)
+    grpcConnectorStorage.delete(key)
   }
-  const newConnectorManager = new ConnectorManager(url, authType, authData)
-  grpcConnectorStorage.set(url, newConnectorManager)
+  const newConnectorManager = new ConnectorManager(workspaceId, url, authType, authData)
+  grpcConnectorStorage.set(key, newConnectorManager)
   return newConnectorManager
 }
 
 export class ConnectorManager implements IConnectorManager {
+  private workspaceId: string
+
   private connectorClient: ConnectorServiceClient
 
   private profileClient: ProfileServiceClient
@@ -75,7 +80,8 @@ export class ConnectorManager implements IConnectorManager {
 
   private queryCancelHandler: Map<string, () => void> = new Map()
 
-  constructor(url: string, authType: AuthType, authData: AuthData) {
+  constructor(workspaceId: string, url: string, authType: AuthType, authData: AuthData) {
+    this.workspaceId = workspaceId
     this.authType = authType
     this.authData = authData
     let credential: ChannelCredentials
@@ -93,6 +99,12 @@ export class ConnectorManager implements IConnectorManager {
 
   public checkAuth(authType: AuthType, authData: AuthData): boolean {
     return this.authType === authType && this.authData === authData
+  }
+
+  private createMetadata(): Metadata {
+    const metadata = new Metadata()
+    metadata.set('workspaceId', this.workspaceId)
+    return metadata
   }
 
   private renderAvaliableConfig(cfg: AvailableConfigPb): AvailableConfig {
@@ -115,6 +127,7 @@ export class ConnectorManager implements IConnectorManager {
       this.profileClient.getProfileConfigs,
       this.profileClient,
       new Empty(),
+      this.createMetadata(),
     )
     return configs.getAvailableconfigsList().map(this.renderAvaliableConfig)
   }
@@ -124,6 +137,7 @@ export class ConnectorManager implements IConnectorManager {
       this.profileClient.getProfileSpec,
       this.profileClient,
       new Empty(),
+      this.createMetadata(),
     )
     const rawSpec = JSON.parse(Buffer.from(spec.getQuerybuilderspec(), 'base64').toString())
     const objConverter = (t: { [key: string]: { [key: string]: string } }) =>
@@ -155,7 +169,12 @@ export class ConnectorManager implements IConnectorManager {
   }
 
   async getProfile(): Promise<Profile> {
-    const profile = await beautyCall(this.profileClient.getProfile, this.profileClient, new Empty())
+    const profile = await beautyCall(
+      this.profileClient.getProfile,
+      this.profileClient,
+      new Empty(),
+      this.createMetadata(),
+    )
     return this.renderProfile(profile)
   }
 
@@ -169,6 +188,7 @@ export class ConnectorManager implements IConnectorManager {
       this.profileClient.upsertProfile,
       this.profileClient,
       request,
+      this.createMetadata(),
     )
     return this.renderProfile(newProfile)
   }
@@ -178,6 +198,7 @@ export class ConnectorManager implements IConnectorManager {
       this.profileClient.getIntegrationConfigs,
       this.profileClient,
       new Empty(),
+      this.createMetadata(),
     )
     return configs.getAvailableconfigsList().map(this.renderAvaliableConfig)
   }
@@ -196,6 +217,7 @@ export class ConnectorManager implements IConnectorManager {
       this.profileClient.listIntegrations,
       this.profileClient,
       new Empty(),
+      this.createMetadata(),
     )
     return integrations.getIntegrationsList().map(this.renderIntegration)
   }
@@ -213,13 +235,19 @@ export class ConnectorManager implements IConnectorManager {
       this.profileClient.upsertIntegration,
       this.profileClient,
       request,
+      this.createMetadata(),
     )
     return this.renderIntegration(newIntegration)
   }
 
   async deleteIntegration(integrationId: number): Promise<void> {
     const request = new DeleteIntegrationRequest().setId(integrationId)
-    await beautyCall(this.profileClient.deleteIntegration, this.profileClient, request)
+    await beautyCall(
+      this.profileClient.deleteIntegration,
+      this.profileClient,
+      request,
+      this.createMetadata(),
+    )
   }
 
   async listDatabases(): Promise<Database[]> {
@@ -227,6 +255,7 @@ export class ConnectorManager implements IConnectorManager {
       this.connectorClient.getDatabases,
       this.connectorClient,
       new Empty(),
+      this.createMetadata(),
     )
     return databases.getDatabaseList()
   }
@@ -237,6 +266,7 @@ export class ConnectorManager implements IConnectorManager {
       this.connectorClient.getCollections,
       this.connectorClient,
       request,
+      this.createMetadata(),
     )
     return collections
       .getCollectionsList()
@@ -261,6 +291,7 @@ export class ConnectorManager implements IConnectorManager {
       this.connectorClient.getCollectionSchema,
       this.connectorClient,
       request,
+      this.createMetadata(),
     )
     return collectionSchema.getFieldsList().map((item) => ({
       name: item.getName(),
@@ -280,7 +311,7 @@ export class ConnectorManager implements IConnectorManager {
       .setSql(sql)
       .setMaxrow(maxRow ?? 1000)
       .setQuestionid(flag ?? 'adhoc')
-    const resultSetStream = this.connectorClient.query(request)
+    const resultSetStream = this.connectorClient.query(request, this.createMetadata())
     this.queryCancelHandler.set(identifier, () => resultSetStream.cancel())
     return beautyStream(resultSetStream, errorHandler).pipe(new QueryResultTransformer())
   }
@@ -305,6 +336,7 @@ export class ConnectorManager implements IConnectorManager {
       this.connectorClient.importFromFile,
       this.connectorClient,
       request,
+      this.createMetadata(),
     )
     return {
       database: importResult.getDatabase(),
@@ -315,12 +347,22 @@ export class ConnectorManager implements IConnectorManager {
   }
 
   async generateKeyPair(): Promise<string> {
-    const res = await beautyCall(this.dbtClient.generateKeyPair, this.dbtClient, new Empty())
+    const res = await beautyCall(
+      this.dbtClient.generateKeyPair,
+      this.dbtClient,
+      new Empty(),
+      this.createMetadata(),
+    )
     return res.getPublickey()
   }
 
   async pullRepo(): Promise<DbtMetadata[]> {
-    const res = await beautyCall(this.dbtClient.pullRepo, this.dbtClient, new Empty())
+    const res = await beautyCall(
+      this.dbtClient.pullRepo,
+      this.dbtClient,
+      new Empty(),
+      this.createMetadata(),
+    )
     return res.getBlocksList().map(
       (raw) =>
         // remove blank values
@@ -341,7 +383,7 @@ export class ConnectorManager implements IConnectorManager {
     const request = new PushRepoRequest().setBlocksList(
       blocks.map(({ sql, name }) => new QuestionBlockContent().setSql(sql).setName(name)),
     )
-    await beautyCall(this.dbtClient.pushRepo, this.dbtClient, request)
+    await beautyCall(this.dbtClient.pushRepo, this.dbtClient, request, this.createMetadata())
   }
 }
 

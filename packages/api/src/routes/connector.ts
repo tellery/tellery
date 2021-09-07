@@ -232,7 +232,7 @@ async function addConnectorRouter(ctx: Context) {
   const id = await connectorService.addConnector(
     (req) => {
       try {
-        return getIConnectorManager(req.url, req.authType, req.authData)
+        return getIConnectorManager(payload.workspaceId, req.url, req.authType, req.authData)
       } catch (err: any) {
         return ctx.throw(400, errorResponse(err.toString()))
       }
@@ -250,7 +250,7 @@ async function getProfileConfigsRouter(ctx: Context) {
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
 
-  const manager = await getIConnectorManagerFromDB(payload.connectorId)
+  const manager = await getIConnectorManagerFromDB(payload.workspaceId, payload.connectorId)
 
   const configs = await connectorService.getProfileConfigs(manager, user.id, payload.workspaceId)
 
@@ -262,7 +262,7 @@ async function getProfileSpecRouter(ctx: Context) {
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
 
-  const manager = await getIConnectorManagerFromDB(payload.connectorId)
+  const manager = await getIConnectorManagerFromDB(payload.workspaceId, payload.connectorId)
 
   const converter = (
     map: Map<string, Map<string, string>>,
@@ -292,7 +292,9 @@ async function getProfileRouter(ctx: Context) {
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
 
-  const manager = await getIConnectorManagerFromDB(payload.connectorId)
+  const { workspaceId, connectorId } = payload
+
+  const manager = await getIConnectorManagerFromDB(workspaceId, connectorId)
 
   const profiles = await connectorService.getProfile(manager, user.id, payload.workspaceId)
 
@@ -304,9 +306,9 @@ async function upsertProfileRouter(ctx: Context) {
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
 
-  const { workspaceId, type, configs } = payload
+  const { workspaceId, connectorId, type, configs } = payload
 
-  const manager = await getIConnectorManagerFromDB(payload.connectorId)
+  const manager = await getIConnectorManagerFromDB(workspaceId, connectorId)
 
   const profileBody = {
     id: workspaceId,
@@ -323,7 +325,9 @@ async function getIntegrationConfigsRouter(ctx: Context) {
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
 
-  const manager = await getIConnectorManagerFromDB(payload.connectorId)
+  const { workspaceId, connectorId } = payload
+
+  const manager = await getIConnectorManagerFromDB(workspaceId, connectorId)
 
   const configs = await connectorService.getIntegrationConfigs(
     manager,
@@ -339,7 +343,9 @@ async function listIntegrationsRouter(ctx: Context) {
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
 
-  const manager = await getIConnectorManagerFromDB(payload.connectorId)
+  const { workspaceId, connectorId } = payload
+
+  const manager = await getIConnectorManagerFromDB(workspaceId, connectorId)
 
   const integrations = await connectorService.listIntegrations(
     manager,
@@ -354,9 +360,9 @@ async function upsertIntegrationRouter(ctx: Context) {
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
 
-  const { workspaceId, id, type, configs } = payload
+  const { workspaceId, connectorId, id, type, configs } = payload
 
-  const manager = await getIConnectorManagerFromDB(payload.connectorId)
+  const manager = await getIConnectorManagerFromDB(workspaceId, connectorId)
 
   const integraionBody = {
     id,
@@ -379,9 +385,9 @@ async function deleteIntegrationRouter(ctx: Context) {
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
 
-  const { workspaceId, id } = payload
+  const { workspaceId, connectorId, id } = payload
 
-  const manager = await getIConnectorManagerFromDB(payload.connectorId)
+  const manager = await getIConnectorManagerFromDB(workspaceId, connectorId)
 
   await connectorService.deleteIntegration(manager, user.id, workspaceId, id)
   ctx.body = {}
@@ -391,9 +397,9 @@ async function listDatabasesRouter(ctx: Context) {
   const payload = plainToClass(ListDatabasesRequest, ctx.request.body)
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
-  const { workspaceId } = payload
+  const { workspaceId, connectorId } = payload
 
-  const manager = await getIConnectorManagerFromDB(payload.connectorId)
+  const manager = await getIConnectorManagerFromDB(workspaceId, connectorId)
 
   const databases = await connectorService.listDatabases(manager, user.id, workspaceId)
 
@@ -404,9 +410,9 @@ async function listCollectionsRouter(ctx: Context) {
   const payload = plainToClass(ListCollectionsRequest, ctx.request.body)
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
-  const { workspaceId, database } = payload
+  const { workspaceId, connectorId, database } = payload
 
-  const manager = await getIConnectorManagerFromDB(payload.connectorId)
+  const manager = await getIConnectorManagerFromDB(workspaceId, connectorId)
 
   const collections = await connectorService.listCollections(
     manager,
@@ -422,9 +428,9 @@ async function getCollectionSchemaRouter(ctx: Context) {
   const payload = plainToClass(GetCollectionSchemaRequest, ctx.request.body)
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
-  const { workspaceId, database, collection, schema } = payload
+  const { workspaceId, connectorId, database, collection, schema } = payload
 
-  const manager = await getIConnectorManagerFromDB(payload.connectorId)
+  const manager = await getIConnectorManagerFromDB(workspaceId, connectorId)
 
   const fields = await connectorService.getCollectionSchema(
     manager,
@@ -445,7 +451,7 @@ async function execute(ctx: Context) {
     const user = mustGetUser(ctx)
     const { workspaceId, connectorId, sql, maxRow, questionId } = payload
 
-    const manager = await getIConnectorManagerFromDB(connectorId)
+    const manager = await getIConnectorManagerFromDB(workspaceId, connectorId)
 
     const { queryBuilderSpec } = await connectorService.getProfileSpec(
       manager,
@@ -487,9 +493,9 @@ async function importFromFile(ctx: Context) {
   const payload = plainToClass(ImportRequest, ctx.request.body)
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
-  const { workspaceId, key, database, collection, schema } = payload
+  const { workspaceId, connectorId, key, database, collection, schema } = payload
 
-  const manager = await getIConnectorManagerFromDB(payload.connectorId)
+  const manager = await getIConnectorManagerFromDB(workspaceId, connectorId)
 
   const correspondingUrl = (await storageService.objectProxy(user.id, workspaceId, key, {
     skipPermissionCheck: true,
@@ -516,9 +522,9 @@ async function translateSmartQueryRouter(ctx: Context) {
   const payload = plainToClass(TranslateSmartQueryRequest, ctx.request.body)
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
-  const { workspaceId, queryBuilderId, metricIds, dimensions } = payload
+  const { workspaceId, connectorId, queryBuilderId, metricIds, dimensions } = payload
 
-  const manager = await getIConnectorManagerFromDB(payload.connectorId)
+  const manager = await getIConnectorManagerFromDB(workspaceId, connectorId)
 
   const { queryBuilderSpec } = await connectorService.getProfileSpec(manager, user.id, workspaceId)
 
