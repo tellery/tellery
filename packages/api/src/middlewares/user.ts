@@ -7,7 +7,7 @@ import userService from '../services/user'
 import workspaceService from '../services/workspace'
 import { PermissionWorkspaceRole } from '../types/permission'
 import { isAnonymous } from '../utils/env'
-import { USER_TOKEN_HEADER_KEY } from '../utils/user'
+import { setUserToken, USER_TOKEN_HEADER_KEY } from '../utils/user'
 
 const ignorePaths = ['/api/users/login']
 
@@ -59,10 +59,7 @@ export default async function user(ctx: Context, next: Next): Promise<unknown> {
 
   // set token
   if (at || _.isNull(at)) {
-    ctx.set(USER_TOKEN_HEADER_KEY, at ?? '')
-    ctx.cookies.set(USER_TOKEN_HEADER_KEY, at, {
-      expires: new Date(new Date().getTime() + 10 * 365 * 24 * 60 * 60), // never expires
-    })
+    setUserToken(ctx, at)
   }
 
   return resp

@@ -28,24 +28,24 @@
 
 Tellery is a BI tool connecting your data and team. As easy as using a notebook. As powerful as a data modelling tool.
 
-Instead of querying on tables and columns directly, Tellery users can ask questions against [data assets](https://demo.tellery.io/story/vtkequmHGz5QBD9WjVflU), which provides a semantic layer for your data.
+Instead of querying on tables and columns directly, Tellery users can ask questions against [Data assets](https://demo.tellery.io/story/vtkequmHGz5QBD9WjVflU), which provide a semantic layer for your data:
 
-* Data asset let business users extract metrics without the assistance of analysts.
-* Building dashboards and reports on data assets make your business logic more consistent and easier to maintain.
-* Tellery comes with a bucket of building blocks. From reports to dashboards, you can tailor it to your own need to unlock the value of data asset.
+* Data assets let business users extract metrics without knowing SQL.
+* Building dashboards and reports on data assets make your analytic code more consistent and easier to maintain.
+
+
+Tellery comes with a bucket of building blocks. From reports to dashboards, you can tailor it to your own need to unlock the value of your data.
 
 
 
 ## Features
 
 - Familiar notebook interface where you can create charts and texts with drag-and-drop ease
-- Maintain business logic consistently and collaboratively
-- Let anyone on your team extract metrics without knowing SQL
 - Rich text styling and markdown syntax for telling story
-- Smooth integration with dbt
 - A modern SQL editor with multi-tabs and auto-complete
-- Capture ad-hoc analyses in a daily view
-- Collaborate in real-time with multiplayer
+- Capture daily ad-hoc analyses easily
+- Review work and collaborate in real-time with multiplayer
+- Import dbt models and sources and inspect their metadata while editing SQL
 
 
 ## Supported databases

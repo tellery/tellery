@@ -1,5 +1,4 @@
 import { fetchBlock, fetchSnapshot, fetchUser } from '@app/api'
-import { isQueryBlock } from '@app/components/editor/Blocks/utils'
 import type { Data } from '@app/components/v11n/types'
 import { applyTransactionsAsync, Operation, Transcation } from '@app/hooks/useCommit'
 import { Editor, Snapshot } from '@app/types'

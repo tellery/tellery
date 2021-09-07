@@ -51,15 +51,8 @@ const GridBlock: BlockComponent<
   }, [block.children, block.storyId, commit, widths])
 
   useEffect(() => {
-    if (ref.current === null) return
-    const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
-      setSingleColumn(entries[0].contentRect.width < BREAK_POINT)
-    })
-    resizeObserver.observe(ref.current)
-    return () => {
-      resizeObserver.disconnect()
-    }
-  }, [])
+    setSingleColumn(dimensions.width < BREAK_POINT)
+  }, [dimensions.width])
 
   useEffect(() => {
     if (isDragging === false && block.children?.length && blockChildren) {

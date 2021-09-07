@@ -942,7 +942,6 @@ export const StoryQuestionEditor: React.FC<{
     readonly ||
     queryBlock.type === Editor.BlockType.SnapshotBlock ||
     !!(visualizationBlock && queryBlock.storyId !== visualizationBlock?.storyId) ||
-    queryBlock.type === Editor.BlockType.QueryBuilder ||
     queryBlock.type === Editor.BlockType.SmartQuery
 
   return (
