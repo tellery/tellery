@@ -11,6 +11,7 @@ import {
   Collection,
   ConnectorDTO,
   Database,
+  Integration,
   Profile,
   ProfileSpec,
   TypeField,
@@ -33,7 +34,7 @@ export class ConnectorService {
     await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
 
     const manager = getManager(request)
-    await manager.listProfiles()
+    await manager.getProfile()
 
     const entity = new ConnectorEntity()
     entity.url = request.url
@@ -61,16 +62,16 @@ export class ConnectorService {
   }
 
   /**
-   * list available configs of a connector deployment
+   * list available profile configs of a connector deployment
    */
-  async listAvailableConfigs(
+  async getProfileConfigs(
     connectorManager: IConnectorManager,
     operatorId: string,
     workspaceId: string,
   ): Promise<AvailableConfig[]> {
     await canGetWorkspaceData(this.permission, operatorId, workspaceId)
 
-    return connectorManager.listAvailableConfigs()
+    return connectorManager.getProfileConfigs()
   }
 
   /**
@@ -81,20 +82,19 @@ export class ConnectorService {
     connectorManager: IConnectorManager,
     operatorId: string,
     workspaceId: string,
-    profileName: string,
   ): Promise<ProfileSpec> {
     await canGetWorkspaceData(this.permission, operatorId, workspaceId)
-    return connectorManager.getProfileSpec(profileName)
+    return connectorManager.getProfileSpec()
   }
 
-  async listProfiles(
+  async getProfile(
     connectorManager: IConnectorManager,
     operatorId: string,
     workspaceId: string,
-  ): Promise<Profile[]> {
+  ): Promise<Profile> {
     await canGetWorkspaceData(this.permission, operatorId, workspaceId)
 
-    return connectorManager.listProfiles()
+    return connectorManager.getProfile()
   }
 
   async upsertProfile(
@@ -102,44 +102,73 @@ export class ConnectorService {
     operatorId: string,
     workspaceId: string,
     newProfile: Profile,
-  ): Promise<Profile[]> {
+  ): Promise<Profile> {
     await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
 
     return connectorManager.upsertProfile(newProfile)
   }
 
-  async deleteProfile(
+  async getIntegrationConfigs(
     connectorManager: IConnectorManager,
     operatorId: string,
     workspaceId: string,
-    profileName: string,
-  ): Promise<Profile[]> {
+  ): Promise<AvailableConfig[]> {
+    await canGetWorkspaceData(this.permission, operatorId, workspaceId)
+
+    return connectorManager.getIntegrationConfigs()
+  }
+
+  async listIntegrations(
+    connectorManager: IConnectorManager,
+    operatorId: string,
+    workspaceId: string,
+  ): Promise<Integration[]> {
+    await canGetWorkspaceData(this.permission, operatorId, workspaceId)
+
+    return connectorManager.listIntegrations()
+  }
+
+  async upsertIntegration(
+    connectorManager: IConnectorManager,
+    operatorId: string,
+    workspaceId: string,
+    newIntegration: Integration,
+  ): Promise<Integration> {
     await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
 
-    return connectorManager.deleteProfile(profileName)
+    return connectorManager.upsertIntegration(newIntegration)
+  }
+
+  async deleteIntegration(
+    connectorManager: IConnectorManager,
+    operatorId: string,
+    workspaceId: string,
+    integrationId: number,
+  ): Promise<void> {
+    await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
+
+    return connectorManager.deleteIntegration(integrationId)
   }
 
   async listDatabases(
     connectorManager: IConnectorManager,
     operatorId: string,
     workspaceId: string,
-    profileName: string,
   ): Promise<Database[]> {
     await canGetWorkspaceData(this.permission, operatorId, workspaceId)
 
-    return connectorManager.listDatabases(profileName)
+    return connectorManager.listDatabases()
   }
 
   async listCollections(
     connectorManager: IConnectorManager,
     operatorId: string,
     workspaceId: string,
-    profileName: string,
     database: string,
   ): Promise<Collection[]> {
     await canGetWorkspaceData(this.permission, operatorId, workspaceId)
 
-    return connectorManager.listCollections(profileName, database)
+    return connectorManager.listCollections(database)
   }
 
   /**
@@ -149,21 +178,19 @@ export class ConnectorService {
     connectorManager: IConnectorManager,
     operatorId: string,
     workspaceId: string,
-    profile: string,
     database: string,
     collection: string,
     schema?: string,
   ): Promise<TypeField[]> {
     await canGetWorkspaceData(this.permission, operatorId, workspaceId)
 
-    return connectorManager.getCollectionSchema(profile, database, collection, schema)
+    return connectorManager.getCollectionSchema(database, collection, schema)
   }
 
   async executeSql(
     connectorManager: IConnectorManager,
     operatorId: string,
     workspaceId: string,
-    profileName: string,
     sqlStr: string,
     identifier: string,
     maxRow?: number,
@@ -172,7 +199,7 @@ export class ConnectorService {
   ): Promise<Readable> {
     await canGetWorkspaceData(this.permission, operatorId, workspaceId)
 
-    return connectorManager.executeSql(profileName, sqlStr, identifier, maxRow, flag, errorHandler)
+    return connectorManager.executeSql(sqlStr, identifier, maxRow, flag, errorHandler)
   }
 
   async cancelQuery(connectorManager: IConnectorManager, identifier: string): Promise<void> {
@@ -186,7 +213,6 @@ export class ConnectorService {
     connectorManager: IConnectorManager,
     operatorId: string,
     workspaceId: string,
-    profile: string,
     url: string,
     database: string,
     collection: string,
@@ -194,7 +220,7 @@ export class ConnectorService {
   ): Promise<{ database: string; collection: string }> {
     await canGetWorkspaceData(this.permission, operatorId, workspaceId)
 
-    return connectorManager.importFromFile(profile, url, database, collection, schema)
+    return connectorManager.importFromFile(url, database, collection, schema)
   }
 }
 
