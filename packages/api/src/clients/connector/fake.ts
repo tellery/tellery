@@ -16,7 +16,7 @@ import { IConnectorManager } from './interface'
  * only for test
  */
 export class FakeManager implements IConnectorManager {
-  async getProfileConfig(): Promise<AvailableConfig[]> {
+  async getProfileConfigs(): Promise<AvailableConfig[]> {
     return []
   }
 

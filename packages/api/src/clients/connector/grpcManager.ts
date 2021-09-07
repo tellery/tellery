@@ -297,11 +297,7 @@ export class ConnectorManager implements IConnectorManager {
     collection: string,
     schema?: string,
   ): Promise<{ database: string; collection: string }> {
-    let request = new ImportRequest()
-      .setUrl(url)
-      .setProfile(profile)
-      .setDatabase(database)
-      .setCollection(collection)
+    let request = new ImportRequest().setUrl(url).setDatabase(database).setCollection(collection)
     if (schema) {
       request = request.setSchema(schema)
     }

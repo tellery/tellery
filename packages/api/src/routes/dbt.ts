@@ -13,9 +13,6 @@ class GenerateKeyPairRequest {
 
   @IsDefined()
   connectorId!: string
-
-  @IsDefined()
-  profile!: string
 }
 
 class PullRepoRequest {
@@ -24,9 +21,6 @@ class PullRepoRequest {
 
   @IsDefined()
   connectorId!: string
-
-  @IsDefined()
-  profile!: string
 }
 
 class PushRepoRequest {
@@ -35,18 +29,14 @@ class PushRepoRequest {
 
   @IsDefined()
   connectorId!: string
-
-  @IsDefined()
-  profile!: string
 }
 
 async function generateKeyPair(ctx: Context) {
   const payload = plainToClass(GenerateKeyPairRequest, ctx.request.body)
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
-  const { workspaceId, connectorId, profile } = payload
-  const manager = await getIConnectorManagerFromDB(connectorId)
-  const publicKey = await dbtService.generateKeyPair(manager, user.id, workspaceId, profile)
+  const manager = await getIConnectorManagerFromDB(payload.connectorId)
+  const publicKey = await dbtService.generateKeyPair(manager, user.id, payload.workspaceId)
   ctx.body = {
     publicKey,
   }
@@ -56,9 +46,8 @@ async function pullRepo(ctx: Context) {
   const payload = plainToClass(PullRepoRequest, ctx.request.body)
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
-  const { workspaceId, connectorId, profile } = payload
-  const manager = await getIConnectorManagerFromDB(connectorId)
-  await dbtService.pullRepo(manager, user.id, workspaceId, profile)
+  const manager = await getIConnectorManagerFromDB(payload.connectorId)
+  await dbtService.pullRepo(manager, user.id, payload.workspaceId)
   ctx.body = {}
 }
 
@@ -66,9 +55,8 @@ async function pushRepo(ctx: Context) {
   const payload = plainToClass(PushRepoRequest, ctx.request.body)
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
-  const { workspaceId, connectorId, profile } = payload
-  const manager = await getIConnectorManagerFromDB(connectorId)
-  await dbtService.pushRepo(manager, user.id, workspaceId, profile)
+  const manager = await getIConnectorManagerFromDB(payload.connectorId)
+  await dbtService.pushRepo(manager, user.id, payload.workspaceId)
   ctx.body = {}
 }
 

@@ -26,20 +26,18 @@ export class DbtService {
     connectorManager: IConnectorManager,
     operatorId: string,
     workspaceId: string,
-    profile: string,
   ): Promise<string> {
     await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
-    return connectorManager.generateKeyPair(profile)
+    return connectorManager.generateKeyPair()
   }
 
   async pullRepo(
     connectorManager: IConnectorManager,
     operatorId: string,
     workspaceId: string,
-    profile: string,
   ): Promise<void> {
     await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
-    const metadata = await connectorManager.pullRepo(profile)
+    const metadata = await connectorManager.pullRepo()
     await this.updateDbtBlocksByMetadata(workspaceId, operatorId, metadata)
   }
 
@@ -47,11 +45,10 @@ export class DbtService {
     connectorManager: IConnectorManager,
     operatorId: string,
     workspaceId: string,
-    profile: string,
   ): Promise<void> {
     await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
     const exportedSqlBlock = await this.loadAllDbtBlockDescendent(workspaceId)
-    await connectorManager.pushRepo(profile, exportedSqlBlock)
+    await connectorManager.pushRepo(exportedSqlBlock)
   }
 
   async listCurrentDbtBlocks(workspaceId: string): Promise<BlockEntity[]> {
