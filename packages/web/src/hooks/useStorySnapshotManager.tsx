@@ -40,8 +40,7 @@ export const useRefreshSnapshot = () => {
           workspaceId: workspace.id,
           sql,
           questionId: originalBlockId,
-          connectorId: workspace.preferences.connectorId!,
-          profile: workspace.preferences.profile!
+          connectorId: workspace.preferences.connectorId!
         },
         mutationKey: ['story', queryBlock.storyId, queryBlock.id, originalBlockId].join('/'),
         onSuccess: async (data) => {
