@@ -817,8 +817,7 @@ export const StoryQuestionEditor: React.FC<{
       workspaceId: workspace.id,
       sql,
       questionId: queryBlock.id,
-      connectorId: workspace.preferences.connectorId!,
-      profile: workspace.preferences.profile!
+      connectorId: workspace.preferences.connectorId!
     })
     if (typeof data !== 'object' || data.errMsg) {
       setSQLError(data.errMsg ?? 'unknown error')
