@@ -11,11 +11,8 @@ import { createTranscation } from '@app/context/editorTranscations'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useBindHovering } from '@app/hooks'
 import { useBlockSuspense, useFetchStoryChunk, useSearchSQLQueries } from '@app/hooks/api'
-import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useCommit } from '@app/hooks/useCommit'
-import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
 import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
-import { useStoryResourceIds } from '@app/hooks/useStoryResourceIds'
 import { useStoryResources } from '@app/hooks/useStoryResources'
 import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
 import { ThemingVariables } from '@app/styles'
@@ -78,33 +75,8 @@ export const CurrentStoryQueries: React.FC<{ storyId: string }> = ({ storyId }) 
 }
 
 const Operations: React.FC<{ storyId: string }> = ({ storyId }) => {
-  const blockTranscations = useBlockTranscations()
-  const questionEditor = useQuestionEditor(storyId)
   const { t } = useTranslation()
 
-  const createNewQuery = useCallback(async () => {
-    if (!storyId) return
-    const newBlock = createEmptyBlock<Editor.SQLBlock>({
-      type: Editor.BlockType.SQL,
-      storyId,
-      parentId: storyId,
-      content: { sql: '' }
-    })
-    const newBlocks = [newBlock]
-    await blockTranscations.insertBlocks(storyId, {
-      blocksFragment: {
-        children: newBlocks.map((block) => block.id),
-        data: newBlocks.reduce((a, c) => {
-          a[c.id] = c
-          return a
-        }, {} as Record<string, Editor.BaseBlock>)
-      },
-      targetBlockId: storyId,
-      direction: 'child',
-      path: 'resources'
-    })
-    questionEditor.open({ mode: 'SQL', blockId: newBlock.id, storyId: newBlock.storyId! })
-  }, [blockTranscations, questionEditor, storyId])
   const permissions = useStoryPermissions(storyId)
 
   if (permissions.canWrite === false) return null
@@ -124,7 +96,7 @@ const Operations: React.FC<{ storyId: string }> = ({ storyId }) => {
     >
       <TippySingletonContextProvider arrow={false}>
         <ImportOperation storyId={storyId} />
-        <IconButton icon={IconCommonAdd} hoverContent={t`Create a new query`} onClick={createNewQuery} />
+        <IconButton icon={IconCommonAdd} hoverContent={t`Create a new query`} />
       </TippySingletonContextProvider>
     </div>
   )
@@ -135,7 +107,6 @@ const ImportOperation: React.FC<{ storyId: string }> = ({ storyId }) => {
   const { t } = useTranslation()
   const [keyword, setKeyword] = useState('')
   const { data } = useSearchSQLQueries(keyword, 10)
-  const storyResources = useStoryResourceIds(storyId)
   const commit = useCommit()
   const importQueryToStory = useCallback(
     (blockId: string) => {
@@ -210,7 +181,7 @@ const ImportOperation: React.FC<{ storyId: string }> = ({ storyId }) => {
                 {data?.searchResults.map((blockId) => {
                   const block = data?.blocks[blockId]
                   const story = data?.blocks[block.storyId!]
-                  if (storyResources?.includes(blockId)) return null
+                  // if (storyResources?.includes(blockId)) return null
                   return (
                     <div
                       key={block.id}

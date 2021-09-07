@@ -102,7 +102,8 @@ const _TelleryDNDContext: React.FC<{
               blockIds,
               getSubsetOfBlocksSnapshot(snapshot, blockIds),
               overStoryId,
-              targetBlock.parentId
+              targetBlock.parentId,
+              {}
             )
 
             blockTranscations.insertBlocks(overStoryId, {

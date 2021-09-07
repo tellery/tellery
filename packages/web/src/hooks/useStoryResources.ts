@@ -1,16 +1,24 @@
-import { BlockResourcesAtom, TelleryBlockAtom } from '@app/store/block'
+import { isQueryBlock } from '@app/components/editor/Blocks/utils'
+import { TelleryStoryBlocks } from '@app/store/block'
 import type { Editor } from '@app/types'
 import { selectorFamily, useRecoilValue } from 'recoil'
 
-export const StoryResourcesAtom = selectorFamily<Editor.BaseBlock[], string>({
-  key: 'TelleryStoryResourcesBlocks',
+export const StoryResourcesAtom = selectorFamily<Editor.QueryBlock[], string>({
+  key: 'StoryBlockResourcesAtom',
   get:
     (storyId) =>
     ({ get }) => {
-      const resourceIds = get(BlockResourcesAtom(storyId)) ?? []
-      const resources = resourceIds.map((id) => get(TelleryBlockAtom(id)))
+      const result: Editor.VisualizationBlock[] = []
+      const blocksMap = get(TelleryStoryBlocks(storyId))
 
-      return resources
+      Object.values(blocksMap).forEach((block) => {
+        const currentNode = block
+        if (isQueryBlock(block.type)) {
+          result.push(currentNode as Editor.VisualizationBlock)
+        }
+      })
+
+      return result
     },
   cachePolicy_UNSTABLE: {
     eviction: 'most-recent'

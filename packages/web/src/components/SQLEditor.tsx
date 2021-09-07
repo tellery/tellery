@@ -8,6 +8,7 @@ import { useWorkspace } from '@app/hooks/useWorkspace'
 import { SVG2DataURI } from '@app/lib/svg'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
+import { parseTelleryUrl } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import MonacoEditor, { useMonaco } from '@monaco-editor/react'
 import Tippy from '@tippyjs/react'
@@ -20,12 +21,10 @@ import { CircularLoading } from './CircularLoading'
 import { useGetBlockTitleTextSnapshot } from './editor'
 import { SQLViewer } from './SQLViewer'
 
-const STORY_BLOCK_REGEX = new RegExp(`${window.location.protocol}//${window.location.host}/story/(\\S+)#(\\S+)`)
-
 const trasnformPasteText = async (text: string, getBlock: (blockId: string) => Promise<Editor.BaseBlock>) => {
-  if (STORY_BLOCK_REGEX.test(text)) {
-    const matches = STORY_BLOCK_REGEX.exec(text)!
-    const blockId = matches[2]
+  const parsedUrlParams = parseTelleryUrl(text)
+  if (parsedUrlParams) {
+    const blockId = parsedUrlParams.blockId
     const block = await getBlock(blockId)
     if (block.type === Editor.BlockType.Visualization) {
       if ((block as Editor.VisualizationBlock).content?.queryId)
