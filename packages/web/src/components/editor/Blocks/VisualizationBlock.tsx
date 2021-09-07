@@ -267,27 +267,32 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
           <BlockPlaceHolder loading={false} text="New Question" />
         ) : (
           <>
-            <React.Suspense fallback={<BlockingUI blocking />}>
-              <motion.div
-                style={{
-                  paddingTop: props.blockFormat.paddingTop
-                }}
-                transition={{ duration: 0 }}
-                className={css`
-                  position: relative;
-                  display: inline-block;
-                  width: calc(100% + ${2 * BORDER_WIDTH + 2}px);
-                  min-height: 100px;
-                `}
-                ref={contentRef}
-              >
+            <React.Suspense fallback={<></>}>
+              <QuestionBlockStatus queryId={queryId} />
+            </React.Suspense>
+
+            <motion.div
+              style={{
+                paddingTop: props.blockFormat.paddingTop
+              }}
+              transition={{ duration: 0 }}
+              className={css`
+                position: relative;
+                display: inline-block;
+                width: calc(100% + ${2 * BORDER_WIDTH + 2}px);
+                min-height: 100px;
+                z-index: 10;
+              `}
+              ref={contentRef}
+            >
+              <React.Suspense fallback={<BlockingUI blocking />}>
                 <VisualizationBlockContent
                   queryId={queryId}
                   block={block}
                   blockFormat={props.blockFormat}
                   parentType={props.parentType}
                 />
-              </motion.div>
+              </React.Suspense>
               {readonly === false && (
                 <BlockResizer
                   blockFormat={props.blockFormat}
@@ -297,12 +302,12 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
                   offsetY={FOOTER_HEIGHT}
                 />
               )}
-              <div
-                className={css`
-                  height: ${FOOTER_HEIGHT}px;
-                `}
-              />
-            </React.Suspense>
+            </motion.div>
+            <div
+              className={css`
+                height: ${FOOTER_HEIGHT}px;
+              `}
+            />
           </>
         )}
       </div>
@@ -315,7 +320,7 @@ const _VisualizationBlockContent: React.FC<{
   block: Editor.VisualizationBlock
   blockFormat: BlockFormatInterface
   parentType: Editor.BlockType
-}> = ({ queryId, block, blockFormat, parentType }) => {
+}> = ({ queryId, block }) => {
   const queryBlock = useBlockSuspense<Editor.QueryBlock>(queryId)
   const snapshotId = queryBlock?.content?.snapshotId
   const commit = useCommit()
@@ -333,20 +338,19 @@ const _VisualizationBlockContent: React.FC<{
   const visualization = block.content?.visualization
 
   // TODO: Compact code
-  // useEffect(() => {
-  //   if (queryId && block.children?.includes(queryId) && queryBlock.parentId !== block.id) {
-  //     commit({
-  //       transcation: createTranscation({
-  //         operations: [{ cmd: 'update', path: ['parentId'], args: block.id, table: 'block', id: queryId }]
-  //       }),
-  //       storyId: block.storyId!
-  //     })
-  //   }
-  // }, [block.children, block.id, block.storyId, commit, queryBlock.parentId, queryId])
+  useEffect(() => {
+    if (queryId && block.children?.includes(queryId) && queryBlock.parentId !== block.id) {
+      commit({
+        transcation: createTranscation({
+          operations: [{ cmd: 'update', path: ['parentId'], args: block.id, table: 'block', id: queryId }]
+        }),
+        storyId: block.storyId!
+      })
+    }
+  }, [block.children, block.id, block.storyId, commit, queryBlock.parentId, queryId])
 
   return (
     <>
-      <QuestionBlockStatus queryBlock={queryBlock} />
       <React.Suspense fallback={<BlockingUI blocking />}>
         <QuestionBlockBody snapshotId={snapshotId} visualization={visualization} />
       </React.Suspense>
@@ -556,8 +560,9 @@ const _QuestionBlockHeader: React.FC<{
 const QuestionBlockHeader = memo(_QuestionBlockHeader)
 
 const QuestionBlockStatus: React.FC<{
-  queryBlock: Editor.QueryBlock
-}> = ({ queryBlock }) => {
+  queryId: string
+}> = ({ queryId }) => {
+  const queryBlock = useBlockSuspense<Editor.QueryBlock>(queryId)
   const mutatingCount = useSnapshotMutating(queryBlock.id)
 
   const loading = mutatingCount !== 0

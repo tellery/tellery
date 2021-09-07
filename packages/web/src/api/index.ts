@@ -293,12 +293,14 @@ export const sqlRequest = ({
   workspaceId,
   sql,
   questionId,
-  connectorId
+  connectorId,
+  profile
 }: {
   workspaceId: string
   sql: string
   questionId?: string
   connectorId: string
+  profile: string
 }) => {
   const source = axios.CancelToken.source()
 
@@ -309,7 +311,8 @@ export const sqlRequest = ({
         connectorId,
         sql,
         workspaceId,
-        questionId
+        questionId,
+        profile
       },
       {
         cancelToken: source.token,
