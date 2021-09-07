@@ -245,6 +245,8 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
   }, [])
 
   const [hoveringHandlers, hovering] = useBindHovering()
+  const contentRef = useRef<HTMLDivElement | null>(null)
+  const { readonly } = useBlockBehavior()
 
   return (
     <VisulizationInstructionsContext.Provider value={instructions}>
@@ -264,12 +266,44 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
         {queryId === undefined ? (
           <BlockPlaceHolder loading={false} text="New Question" />
         ) : (
-          <VisualizationBlockContent
-            queryId={queryId}
-            block={block}
-            blockFormat={props.blockFormat}
-            parentType={props.parentType}
-          />
+          <>
+            <React.Suspense fallback={<BlockingUI blocking />}>
+              <motion.div
+                style={{
+                  paddingTop: props.blockFormat.paddingTop
+                }}
+                transition={{ duration: 0 }}
+                className={css`
+                  position: relative;
+                  display: inline-block;
+                  width: calc(100% + ${2 * BORDER_WIDTH + 2}px);
+                  min-height: 100px;
+                `}
+                ref={contentRef}
+              >
+                <VisualizationBlockContent
+                  queryId={queryId}
+                  block={block}
+                  blockFormat={props.blockFormat}
+                  parentType={props.parentType}
+                />
+              </motion.div>
+              {readonly === false && (
+                <BlockResizer
+                  blockFormat={props.blockFormat}
+                  contentRef={contentRef}
+                  parentType={props.parentType}
+                  blockId={block.id}
+                  offsetY={FOOTER_HEIGHT}
+                />
+              )}
+              <div
+                className={css`
+                  height: ${FOOTER_HEIGHT}px;
+                `}
+              />
+            </React.Suspense>
+          </>
         )}
       </div>
     </VisulizationInstructionsContext.Provider>
@@ -310,43 +344,12 @@ const _VisualizationBlockContent: React.FC<{
   //   }
   // }, [block.children, block.id, block.storyId, commit, queryBlock.parentId, queryId])
 
-  const { readonly } = useBlockBehavior()
-  const contentRef = useRef<HTMLDivElement | null>(null)
-
   return (
     <>
       <QuestionBlockStatus queryBlock={queryBlock} />
-      <motion.div
-        style={{
-          paddingTop: blockFormat.paddingTop
-        }}
-        transition={{ duration: 0 }}
-        className={css`
-          position: relative;
-          display: inline-block;
-          width: calc(100% + ${2 * BORDER_WIDTH + 2}px);
-          min-height: 100px;
-        `}
-        ref={contentRef}
-      >
-        <React.Suspense fallback={<BlockingUI blocking />}>
-          <QuestionBlockBody snapshotId={snapshotId} visualization={visualization} />
-        </React.Suspense>
-        {readonly === false && (
-          <BlockResizer
-            blockFormat={blockFormat}
-            contentRef={contentRef}
-            parentType={parentType}
-            blockId={block.id}
-            offsetY={FOOTER_HEIGHT}
-          />
-        )}
-      </motion.div>
-      <div
-        className={css`
-          height: ${FOOTER_HEIGHT}px;
-        `}
-      />
+      <React.Suspense fallback={<BlockingUI blocking />}>
+        <QuestionBlockBody snapshotId={snapshotId} visualization={visualization} />
+      </React.Suspense>
     </>
   )
 }

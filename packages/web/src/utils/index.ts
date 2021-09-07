@@ -20,7 +20,7 @@ export enum TELLERY_MIME_TYPES {
 }
 
 const STORY_BLOCK_REGEX = new RegExp(
-  `${window.location.protocol}//${window.location.host}/story/([a-z|A-Z|0-9]+)(?:#([a-z|A-Z|0-9]+))?`
+  `${window.location.protocol}//${window.location.host}/story/([a-z|A-Z|0-9|_|-]+)(?:#([a-z|A-Z|0-9|_|-]+))?`
 )
 
 export const parseTelleryUrl = (url: string) => {
