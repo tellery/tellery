@@ -281,7 +281,6 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
                 display: inline-block;
                 width: calc(100% + ${2 * BORDER_WIDTH + 2}px);
                 min-height: 100px;
-                z-index: 10;
               `}
               ref={contentRef}
             >

@@ -235,7 +235,7 @@ export const RefreshAllQuestionBlockButton: React.FC<{ storyId: string }> = ({ s
                 mutatingCount: storySnapshotManger.mutating,
                 totalCount: storySnapshotManger.total
               })
-            : t('Refresh {{count}} query', { count: storySnapshotManger.total })
+            : t('Refresh {{count}} question', { count: storySnapshotManger.total })
         }
         color={ThemingVariables.colors.text[0]}
         loading={storySnapshotManger.mutating !== 0}
