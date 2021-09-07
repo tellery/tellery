@@ -814,7 +814,8 @@ export const MoreDropdownSelect: React.FC<{
         {...menu}
         hideOnClickOutside
         style={{
-          outline: 'none'
+          outline: 'none',
+          zIndex: 1000
         }}
         aria-label="menu"
       >
@@ -827,7 +828,6 @@ export const MoreDropdownSelect: React.FC<{
               transition={{ duration: 0.15 }}
               variants={PopoverMotionVariants.scale}
               className={css`
-                z-index: 1000;
                 background: ${ThemingVariables.colors.gray[5]};
                 box-shadow: ${ThemingVariables.boxShadows[0]};
                 border-radius: 8px;
