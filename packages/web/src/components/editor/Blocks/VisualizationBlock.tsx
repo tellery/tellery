@@ -30,22 +30,20 @@ import { useCommit } from '@app/hooks/useCommit'
 import { useFetchBlock } from '@app/hooks/useFetchBlock'
 import { useInterval } from '@app/hooks/useInterval'
 import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
-import { useStoryResourceIds } from '@app/hooks/useStoryResourceIds'
 import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
-import { TippySingletonContext } from '@app/hooks/useTippySingleton'
 import { useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { PopoverMotionVariants } from '@app/styles/animations'
 import { Editor } from '@app/types'
 import { addPrefixToBlockTitle, DEFAULT_TIPPY_DELAY, snapshotToCSV, TELLERY_MIME_TYPES } from '@app/utils'
 import { css, cx, keyframes } from '@emotion/css'
-import styled from '@emotion/styled'
 import Tippy from '@tippyjs/react'
 import copy from 'copy-to-clipboard'
 import dayjs from 'dayjs'
 import download from 'downloadjs'
 import { AnimatePresence, motion } from 'framer-motion'
 import html2canvas from 'html2canvas'
+import { editor } from 'monaco-editor'
 import React, {
   forwardRef,
   memo,
@@ -106,38 +104,38 @@ const useVisulizationBlockInstructionsProvider = (block: Editor.VisualizationBlo
     () => ({
       openMenu: () => {
         questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
-      },
-      unLink: async () => {
-        if (!queryId) return
-        const dataAssetBlock = await fetchBlock(queryId)
-        const newQueryBlock = createEmptyBlock({
-          type: Editor.BlockType.SQL,
-          storyId: block.storyId!,
-          parentId: block.storyId!,
-          content: { ...dataAssetBlock.content }
-        })
-        commit({
-          transcation: createTranscation({
-            operations: [
-              ...insertBlocksAndMoveOperations({
-                storyId: block.storyId!,
-                blocksFragment: {
-                  children: [newQueryBlock.id],
-                  data: { [newQueryBlock.id]: newQueryBlock }
-                },
-                targetBlockId: block.storyId!,
-                direction: 'child',
-                snapshot,
-                path: 'resources'
-              }),
-              { cmd: 'set', path: ['content', 'queryId'], args: newQueryBlock.id, table: 'block', id: block.id }
-            ]
-          }),
-          storyId: block.storyId!
-        })
       }
+      // unLink: async () => {
+      //   if (!queryId) return
+      //   const dataAssetBlock = await fetchBlock(queryId)
+      //   const newQueryBlock = createEmptyBlock({
+      //     type: Editor.BlockType.SQL,
+      //     storyId: block.storyId!,
+      //     parentId: block.id!,
+      //     content: { ...dataAssetBlock.content }
+      //   })
+      //   commit({
+      //     transcation: createTranscation({
+      //       operations: [
+      //         ...insertBlocksAndMoveOperations({
+      //           storyId: block.storyId!,
+      //           blocksFragment: {
+      //             children: [newQueryBlock.id],
+      //             data: { [newQueryBlock.id]: newQueryBlock }
+      //           },
+      //           targetBlockId: block.storyId!,
+      //           direction: 'child',
+      //           snapshot,
+      //           path: 'resources'
+      //         }),
+      //         { cmd: 'set', path: ['content', 'queryId'], args: newQueryBlock.id, table: 'block', id: block.id }
+      //       ]
+      //     }),
+      //     storyId: block.storyId!
+      //   })
+      // }
     }),
-    [block.id, block.storyId, commit, queryId, fetchBlock, questionEditor, snapshot]
+    [block.id, block.storyId, questionEditor]
   )
   return instructions
 }
@@ -188,10 +186,9 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
                 children: [newQueryBlock.id],
                 data: { [newQueryBlock.id]: newQueryBlock }
               },
-              targetBlockId: block.storyId!,
+              targetBlockId: block.id,
               direction: 'child',
-              snapshot,
-              path: 'resources'
+              snapshot
             }),
             { cmd: 'set', path: ['content', 'queryId'], args: newQueryBlock.id, table: 'block', id: block.id }
           ]
@@ -221,7 +218,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
         const newQueryBlock = createEmptyBlock({
           type: Editor.BlockType.SQL,
           storyId: block.storyId!,
-          parentId: block.storyId!
+          parentId: block.id!
         })
         commit({
           transcation: createTranscation({
@@ -232,10 +229,9 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
                   children: [newQueryBlock.id],
                   data: { [newQueryBlock.id]: newQueryBlock }
                 },
-                targetBlockId: block.storyId!,
+                targetBlockId: block.id!,
                 direction: 'child',
-                snapshot,
-                path: 'resources'
+                snapshot
               }),
               { cmd: 'set', path: ['content', 'queryId'], args: newQueryBlock.id, table: 'block', id: block.id }
             ]
@@ -249,6 +245,8 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
   }, [])
 
   const [hoveringHandlers, hovering] = useBindHovering()
+  const contentRef = useRef<HTMLDivElement | null>(null)
+  const { readonly } = useBlockBehavior()
 
   return (
     <VisulizationInstructionsContext.Provider value={instructions}>
@@ -268,12 +266,48 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
         {queryId === undefined ? (
           <BlockPlaceHolder loading={false} text="New Question" />
         ) : (
-          <VisualizationBlockContent
-            queryId={queryId}
-            block={block}
-            blockFormat={props.blockFormat}
-            parentType={props.parentType}
-          />
+          <>
+            <React.Suspense fallback={<></>}>
+              <QuestionBlockStatus queryId={queryId} />
+            </React.Suspense>
+
+            <motion.div
+              style={{
+                paddingTop: props.blockFormat.paddingTop
+              }}
+              transition={{ duration: 0 }}
+              className={css`
+                position: relative;
+                display: inline-block;
+                width: calc(100% + ${2 * BORDER_WIDTH + 2}px);
+                min-height: 100px;
+              `}
+              ref={contentRef}
+            >
+              <React.Suspense fallback={<BlockingUI blocking />}>
+                <VisualizationBlockContent
+                  queryId={queryId}
+                  block={block}
+                  blockFormat={props.blockFormat}
+                  parentType={props.parentType}
+                />
+              </React.Suspense>
+              {readonly === false && (
+                <BlockResizer
+                  blockFormat={props.blockFormat}
+                  contentRef={contentRef}
+                  parentType={props.parentType}
+                  blockId={block.id}
+                  offsetY={FOOTER_HEIGHT}
+                />
+              )}
+            </motion.div>
+            <div
+              className={css`
+                height: ${FOOTER_HEIGHT}px;
+              `}
+            />
+          </>
         )}
       </div>
     </VisulizationInstructionsContext.Provider>
@@ -285,11 +319,10 @@ const _VisualizationBlockContent: React.FC<{
   block: Editor.VisualizationBlock
   blockFormat: BlockFormatInterface
   parentType: Editor.BlockType
-}> = ({ queryId, block, blockFormat, parentType }) => {
+}> = ({ queryId, block }) => {
   const queryBlock = useBlockSuspense<Editor.QueryBlock>(queryId)
   const snapshotId = queryBlock?.content?.snapshotId
   const commit = useCommit()
-  const storyBlockResources = useStoryResourceIds(block.storyId!)
 
   const mutateSnapshot = useRefreshSnapshot()
   const mutatingCount = useSnapshotMutating(queryBlock.id)
@@ -303,56 +336,23 @@ const _VisualizationBlockContent: React.FC<{
 
   const visualization = block.content?.visualization
 
-  const { readonly } = useBlockBehavior()
-  const contentRef = useRef<HTMLDivElement | null>(null)
-
+  // TODO: Compact code
   useEffect(() => {
-    if (queryId && !storyBlockResources?.includes(queryId)) {
+    if (queryId && block.children?.includes(queryId) && queryBlock.parentId !== block.id) {
       commit({
         transcation: createTranscation({
-          operations: [
-            { cmd: 'listBefore', path: ['resources'], args: { id: queryId }, table: 'block', id: block.storyId! }
-          ]
+          operations: [{ cmd: 'update', path: ['parentId'], args: block.id, table: 'block', id: queryId }]
         }),
         storyId: block.storyId!
       })
     }
-  }, [block.storyId, commit, queryId, storyBlockResources])
+  }, [block.children, block.id, block.storyId, commit, queryBlock.parentId, queryId])
 
   return (
     <>
-      <QuestionBlockStatus queryBlock={queryBlock} />
-      <motion.div
-        style={{
-          paddingTop: blockFormat.paddingTop
-        }}
-        transition={{ duration: 0 }}
-        className={css`
-          position: relative;
-          display: inline-block;
-          width: calc(100% + ${2 * BORDER_WIDTH + 2}px);
-          min-height: 100px;
-        `}
-        ref={contentRef}
-      >
-        <React.Suspense fallback={<BlockingUI blocking />}>
-          <QuestionBlockBody snapshotId={snapshotId} visualization={visualization} />
-        </React.Suspense>
-        {readonly === false && (
-          <BlockResizer
-            blockFormat={blockFormat}
-            contentRef={contentRef}
-            parentType={parentType}
-            blockId={block.id}
-            offsetY={FOOTER_HEIGHT}
-          />
-        )}
-      </motion.div>
-      <div
-        className={css`
-          height: ${FOOTER_HEIGHT}px;
-        `}
-      />
+      <React.Suspense fallback={<BlockingUI blocking />}>
+        <QuestionBlockBody snapshotId={snapshotId} visualization={visualization} />
+      </React.Suspense>
     </>
   )
 }
@@ -413,6 +413,7 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
   { snapshotId?: string; visualization?: Config<Type> }
 > = ({ snapshotId, visualization }, ref) => {
   const snapshot = useSnapshot(snapshotId)
+  const editor = useEditor()
 
   const visualizationConfig = useMemo(() => {
     // ensure snapshot data is valid
@@ -430,6 +431,7 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
         e.stopPropagation()
       }}
       onClick={(e) => {
+        editor?.setSelectionState(null)
         e.stopPropagation()
       }}
       className={css`
@@ -487,7 +489,7 @@ const _QuestionBlockHeader: React.FC<{
 }> = ({ block }) => {
   const { t } = useTranslation()
   const queryBlock = useBlockSuspense(block.content?.queryId!)
-  const isReference = queryBlock.storyId !== block.storyId
+  const isReference = queryBlock.parentId !== block.id
   const [disableTippy, setDisableTippy] = useState(true)
 
   return (
@@ -503,7 +505,7 @@ const _QuestionBlockHeader: React.FC<{
       >
         {isReference && (
           <Tippy content={t`Click to navigate to the original story`} arrow={false}>
-            <Link to={`/story/${queryBlock.storyId}`}>
+            <Link to={`/story/${queryBlock.storyId}#${queryBlock.parentId}`}>
               <IconCommonBackLink
                 className={css`
                   margin-right: 5px;
@@ -557,8 +559,9 @@ const _QuestionBlockHeader: React.FC<{
 const QuestionBlockHeader = memo(_QuestionBlockHeader)
 
 const QuestionBlockStatus: React.FC<{
-  queryBlock: Editor.QueryBlock
-}> = ({ queryBlock }) => {
+  queryId: string
+}> = ({ queryId }) => {
+  const queryBlock = useBlockSuspense<Editor.QueryBlock>(queryId)
   const mutatingCount = useSnapshotMutating(queryBlock.id)
 
   const loading = mutatingCount !== 0

@@ -1,12 +1,13 @@
 import { IconCommonDrag } from '@app/assets/icons'
 import { editorTransformBlockPopoverState } from '@app/store'
 import { ThemingVariables } from '@app/styles'
+import { PopoverMotionVariants } from '@app/styles/animations'
 import { DndItemDataBlockIdsType, DnDItemTypes } from '@app/utils/dnd'
 import { useDraggable } from '@dnd-kit/core'
 import { css, cx } from '@emotion/css'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAtom } from 'jotai'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { memo, useEffect, useMemo, useState } from 'react'
 import { useBlockHovering } from '../../hooks/useBlockHovering'
 import { BlockOperation } from './BlockOperation'
 import { TellerySelectionType } from './helpers'
@@ -119,7 +120,7 @@ export const _BlockOperations: React.FC<{
       <BlockOperationPopover id={blockId} />
       <AnimatePresence>
         {(blockHovring || isDragging) && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div initial={'inactive'} animate={'active'} exit={'inactive'} variants={PopoverMotionVariants.fade}>
             <div
               style={{
                 opacity: blockHovring ? 1 : 0
@@ -148,4 +149,4 @@ export const _BlockOperations: React.FC<{
     </>
   )
 }
-export const BlockOperations = _BlockOperations
+export const BlockOperations = memo(_BlockOperations)

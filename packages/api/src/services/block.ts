@@ -41,18 +41,15 @@ export class BlockService {
           return true
         }
         const parentBlock = _(blockEntities).find((b2) => b1.parentId === b2.id)
-        return (
-          (parentBlock?.children ?? []).includes(b1.id) ||
-          (parentBlock?.resources ?? []).includes(b1.id)
-        )
+        return (parentBlock?.children ?? []).includes(b1.id)
       })
       .value()
-    // Getting external resources
-    // Since external block ids will be only in the story's resources & children, we can only examine the story block
+    // Getting external blocks
+    // Since external block ids will be only in the children of the story, we can only examine the story block
     // if such a property is generalized to all blocks, we have to do a recursive cte query
     const story = _(blockEntities).find((i) => i.parentTable === BlockParentType.WORKSPACE)
     if (story) {
-      const externalBlockIds = _([...(story.resources ?? []), ...(story.children ?? [])])
+      const externalBlockIds = _(story.children ?? [])
         .difference(_(blocks).map('id').value())
         .value()
       const externalBlockEntities = await getRepository(BlockEntity).find({

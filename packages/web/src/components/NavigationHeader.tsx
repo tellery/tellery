@@ -126,7 +126,7 @@ export const _NavigationHeader = (props: {
                 <RefreshAllQuestionBlockButton storyId={props.storyId} />
               </React.Suspense>
               <IconButton
-                hoverContent={props.format?.fullWidth ? 'Dsiable Full Width' : 'Full Width'}
+                hoverContent={props.format?.fullWidth ? 'Disable Full Width' : 'Full Width'}
                 icon={props.format?.fullWidth ? IconMenuNormalWidth : IconMenuFullWidth}
                 color={ThemingVariables.colors.text[0]}
                 className={css`
@@ -235,7 +235,7 @@ export const RefreshAllQuestionBlockButton: React.FC<{ storyId: string }> = ({ s
                 mutatingCount: storySnapshotManger.mutating,
                 totalCount: storySnapshotManger.total
               })
-            : t('Refresh {{count}} query', { count: storySnapshotManger.total })
+            : t('Refresh {{count}} question', { count: storySnapshotManger.total })
         }
         color={ThemingVariables.colors.text[0]}
         loading={storySnapshotManger.mutating !== 0}

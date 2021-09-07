@@ -59,7 +59,6 @@ async function main() {
     },
     type: BlockType.STORY,
     children: [visualizationId],
-    resources: [questionId],
     permissions: readonlyForWorkspace(superUser.id),
     createdById: superUser.id,
     lastEditedById: superUser.id,
@@ -70,7 +69,7 @@ async function main() {
     id: questionId,
     workspaceId: workspace.id,
     interKey: questionId,
-    parentId: story.id,
+    parentId: visualizationId,
     parentTable: BlockParentType.BLOCK,
     searchableText: 'Iris sample data',
     storyId,
@@ -84,7 +83,6 @@ async function main() {
     lastEditedById: superUser.id,
     type: BlockType.SQL,
     children: [],
-    resources: [],
     alive: true,
   })
 
@@ -117,8 +115,7 @@ async function main() {
     lastEditedById: superUser.id,
     format: { width: 0.7, aspectRatio: 1.7777777777777777 },
     type: BlockType.VISUALIZATION,
-    children: [],
-    resources: [],
+    children: [questionId],
     alive: true,
   })
 

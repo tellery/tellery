@@ -309,10 +309,10 @@ export const sqlRequest = ({
       '/api/connectors/executeSql',
       {
         connectorId,
-        profile,
         sql,
         workspaceId,
-        questionId
+        questionId,
+        profile
       },
       {
         cancelToken: source.token,

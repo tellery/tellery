@@ -4,6 +4,7 @@ import { css } from '@emotion/css'
 import React, { ReactNode, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Modifier, usePopper } from 'react-popper'
+import { PopoverMotionVariants } from '@app/styles/animations'
 
 interface PopoverProps {
   referenceElement: HTMLElement | null
@@ -69,9 +70,10 @@ export const _BlockPopoverContent = (props: PopoverProps) => {
         }}
       >
         <motion.div
-          initial={{ opacity: 0, transform: 'scale(0.8)' }}
-          animate={{ opacity: 1, transform: 'scale(1)' }}
-          exit={{ opacity: 0, transform: 'scale(0.8)' }}
+          initial={'inactive'}
+          animate={'active'}
+          exit={'inactive'}
+          variants={PopoverMotionVariants.scale}
           transition={{ duration: 0.15 }}
         >
           {props.children}

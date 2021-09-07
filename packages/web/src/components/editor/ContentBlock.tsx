@@ -2,6 +2,7 @@ import { useBlockSuspense } from '@app/hooks/api'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
+import { dequal } from 'dequal'
 import { AnimateSharedLayout, motion } from 'framer-motion'
 import React, { memo, useEffect, useMemo, useRef } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
@@ -72,7 +73,7 @@ const _ContentBlocks: React.FC<{
   )
 }
 
-export const ContentBlocks = memo(_ContentBlocks)
+export const ContentBlocks = memo(_ContentBlocks, (a, b) => dequal(a, b))
 
 export const _ContentBlockPure: React.FC<{
   id: string

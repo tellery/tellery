@@ -26,8 +26,7 @@ export const blockUpdater = (newValue: Editor.Block | DefaultValue, oldValue: Ed
         ...newValue,
         content: dequal(newValue.content, oldValue.content) ? oldValue.content : newValue.content,
         format: dequal(newValue.format, oldValue.format) ? oldValue.format : newValue.format,
-        permissions: dequal(newValue.permissions, oldValue.permissions) ? oldValue.permissions : newValue.permissions,
-        resources: dequal(newValue.resources, oldValue.resources) ? oldValue.resources : newValue.resources
+        permissions: dequal(newValue.permissions, oldValue.permissions) ? oldValue.permissions : newValue.permissions
       }
     } else {
       return oldValue
@@ -89,16 +88,6 @@ export const BlockTitleAtom = selectorFamily({
     ({ get }) => {
       const atom = get(TelleryBlockAtom(blockId))
       return atom.content?.title
-    }
-})
-
-export const BlockResourcesAtom = selectorFamily({
-  key: 'blockResourcesAtom',
-  get:
-    (blockId: string) =>
-    ({ get }) => {
-      const atom = get(TelleryBlockAtom(blockId))
-      return atom.resources
     }
 })
 
@@ -174,21 +163,17 @@ export const StoryQueryVisulizationBlocksAtom = selectorFamily<
     ({ storyId, queryId }) =>
     ({ get }) => {
       const result: Editor.VisualizationBlock[] = []
-      const nodeStack = [storyId]
+      const blocksMap = get(TelleryStoryBlocks(storyId))
 
-      while (nodeStack.length !== 0) {
-        const currentNodeId = nodeStack.pop()
-        invariant(currentNodeId, 'currentNodeId is null')
-        const currentNode = get(TelleryBlockAtom(currentNodeId))
+      Object.values(blocksMap).forEach((block) => {
+        const currentNode = block
         if (
           currentNode.type === Editor.BlockType.Visualization &&
           (currentNode as Editor.VisualizationBlock).content?.queryId === queryId
         ) {
           result.push(currentNode as Editor.VisualizationBlock)
         }
-        const children = currentNode.children ?? []
-        nodeStack.push(...children)
-      }
+      })
 
       return result
     },
@@ -262,7 +247,7 @@ export const getBlockFromSnapshot = (blockId: string, snapshot: BlockSnapshot): 
   return block
 }
 
-export const getBlockFromStoreMap = (blockId: string, snapshot: BlockSnapshot): Editor.BaseBlock | undefined => {
+export const getBlockFromStoreMap = (blockId: string, snapshot: BlockSnapshot): Editor.Block | undefined => {
   return snapshot.get(blockId)
 }
 

@@ -14,6 +14,7 @@ import {
   DragStartEvent,
   LayoutMeasuringStrategy,
   MouseSensor,
+  useDraggable,
   useSensor,
   useSensors
 } from '@dnd-kit/core'
@@ -23,7 +24,6 @@ import ReactTestUtils from 'react-dom/test-utils'
 import invariant from 'tiny-invariant'
 import {
   closetBorder,
-  FileDraggble,
   findDroppbleBlockIdAndDirection,
   getFakeDragbleElement,
   logger,
@@ -102,7 +102,8 @@ const _TelleryDNDContext: React.FC<{
               blockIds,
               getSubsetOfBlocksSnapshot(snapshot, blockIds),
               overStoryId,
-              targetBlock.parentId
+              targetBlock.parentId,
+              {}
             )
 
             blockTranscations.insertBlocks(overStoryId, {
@@ -308,5 +309,37 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
         </DragOverlay>
       </TelleryDNDContext>
     </div>
+  )
+}
+
+const FileDraggble: React.FC = () => {
+  const ref = useRef<HTMLDivElement | null>(null)
+  const blockDrag = useDraggable({
+    id: `drag-native`,
+    data: {
+      type: DnDItemTypes.File,
+      id: 'native',
+      storyId: '0'
+    }
+  })
+
+  return (
+    <div
+      ref={(_ref) => {
+        ref.current = _ref
+        blockDrag.setNodeRef(_ref)
+      }}
+      id="fake-drag-handler"
+      {...blockDrag.listeners}
+      {...blockDrag.attributes}
+      className={css`
+        width: 10px;
+        height: 10px;
+        position: fixed;
+        left: 0;
+        top: 0;
+        pointer-events: none;
+      `}
+    ></div>
   )
 }

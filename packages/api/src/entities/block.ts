@@ -50,12 +50,6 @@ export default class BlockEntity extends TelleryBaseWithoutIdEntity {
   @Column('varchar', { array: true, nullable: true })
   children?: string[]
 
-  /**
-   * ids of downstreaming assets
-   */
-  @Column('varchar', { array: true, nullable: true })
-  resources?: string[]
-
   @Column({ nullable: true })
   searchableText?: string
 

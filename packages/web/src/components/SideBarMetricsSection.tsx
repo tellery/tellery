@@ -12,7 +12,7 @@ export const SideBarMetricsSection: React.FC<{ storyId: string }> = ({ storyId }
   const TABS = useMemo(() => {
     if (!storyId) return []
     return [
-      { name: t`Current Page`, Component: <CurrentStoryQueries storyId={storyId} /> },
+      // { name: t`Current Page`, Component: <CurrentStoryQueries storyId={storyId} /> },
       {
         name: t`Data Assets`,
         Component: <SideBarDataAssets storyId={storyId} />

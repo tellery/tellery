@@ -234,13 +234,15 @@ export const deserialize = (el: Element, tokens?: Editor.Token[]): Editor.Token[
       continue
     }
 
-    switch (currentNode.nodeName) {
+    const elementNode = currentNode as HTMLElement
+
+    switch (elementNode.nodeName) {
       case 'BR': {
         children.push(['\n'])
         break
       }
       default: {
-        const tokenIndexStr = (currentNode as HTMLElement).dataset.tokenIndex
+        const tokenIndexStr = elementNode.dataset.tokenIndex
         if (tokenIndexStr) {
           const tokenIndex = parseInt(tokenIndexStr, 10)
           const token = tokens?.[tokenIndex]
@@ -260,13 +262,15 @@ export const deserialize = (el: Element, tokens?: Editor.Token[]): Editor.Token[
           }
 
           if (children[i]) {
-            children[i] = [(children[i][0] + currentNode.textContent) as string, token[1]]
+            const text = (children[i][0] + elementNode.innerText) as string
+            children[i] = token[1] ? [text, token[1]] : [text]
           } else {
-            children.push([currentNode.textContent as string, token[1]])
+            const text = elementNode.innerText as string
+            children.push(token[1] ? [text, token[1]] : [text])
           }
           break
         }
-        children.push([currentNode.textContent as string])
+        children.push([elementNode.innerText as string])
         break
       }
     }

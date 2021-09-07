@@ -23,7 +23,7 @@ export class VisualizationBlock extends Block {
       return []
     }
     const { queryId } = this.getContent()
-    if (!queryId) {
+    if (!queryId || (this.children ?? []).includes(queryId)) {
       return []
     }
     return [
