@@ -3,6 +3,7 @@ import { useBlockHovering } from '@app/hooks/useBlockHovering'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { ThemingVariables } from '@app/styles'
 import { CodeBlockLang, CodeBlockLangDisplayName, Editor } from '@app/types'
+import { TELLERY_MIME_TYPES } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import 'highlight.js/styles/default.css'
 import { lowlight } from 'lowlight'
@@ -10,7 +11,6 @@ import type { LowlightElementSpan, Text as LowLightText } from 'lowlight/lib/cor
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import invariant from 'tiny-invariant'
-// import { mergeTokens, splitBlockTokens } from '..'
 import { BlockRenderer } from '../BlockBase/BlockRenderer'
 import { ContentEditable } from '../BlockBase/ContentEditable'
 import { EditorPopover } from '../EditorPopover'
@@ -77,6 +77,19 @@ const CodeBlock: BlockComponent<
     return codeBlockRenderer(block.content.lang)
   }, [block.content.lang])
 
+  const pasteHandler = useCallback((e: React.ClipboardEvent<HTMLElement>) => {
+    if (e.clipboardData && e.clipboardData.files.length === 0) {
+      const telleryBlockDataStr = e.clipboardData.getData(TELLERY_MIME_TYPES.BLOCKS)
+      const telleryTokenDataStr = e.clipboardData.getData(TELLERY_MIME_TYPES.TOKEN)
+      const pureText = e.clipboardData.getData('text/plain')
+      if (!telleryBlockDataStr && !telleryTokenDataStr && pureText) {
+        e.clipboardData.clearData()
+        e.clipboardData.setData('text/plain', pureText)
+        e.stopPropagation()
+      }
+    }
+  }, [])
+
   return (
     <>
       <div
@@ -107,6 +120,7 @@ const CodeBlock: BlockComponent<
             document.execCommand('insertText', false, '  ')
           }
         }}
+        onPaste={pasteHandler}
       >
         <CodeBlockOperation block={block as Editor.CodeBlock} />
         <ContentEditable block={block} placeHolderStrategy="never" tokensRenderer={languageRender}></ContentEditable>

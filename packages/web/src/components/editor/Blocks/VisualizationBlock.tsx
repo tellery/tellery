@@ -46,6 +46,7 @@ import dayjs from 'dayjs'
 import download from 'downloadjs'
 import { AnimatePresence, motion } from 'framer-motion'
 import html2canvas from 'html2canvas'
+import { editor } from 'monaco-editor'
 import React, {
   forwardRef,
   memo,
@@ -413,6 +414,7 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
   { snapshotId?: string; visualization?: Config<Type> }
 > = ({ snapshotId, visualization }, ref) => {
   const snapshot = useSnapshot(snapshotId)
+  const editor = useEditor()
 
   const visualizationConfig = useMemo(() => {
     // ensure snapshot data is valid
@@ -430,6 +432,7 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
         e.stopPropagation()
       }}
       onClick={(e) => {
+        editor?.setSelectionState(null)
         e.stopPropagation()
       }}
       className={css`

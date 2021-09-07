@@ -126,7 +126,7 @@ export const _NavigationHeader = (props: {
                 <RefreshAllQuestionBlockButton storyId={props.storyId} />
               </React.Suspense>
               <IconButton
-                hoverContent={props.format?.fullWidth ? 'Dsiable Full Width' : 'Full Width'}
+                hoverContent={props.format?.fullWidth ? 'Disable Full Width' : 'Full Width'}
                 icon={props.format?.fullWidth ? IconMenuNormalWidth : IconMenuFullWidth}
                 color={ThemingVariables.colors.text[0]}
                 className={css`

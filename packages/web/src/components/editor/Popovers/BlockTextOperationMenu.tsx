@@ -106,10 +106,19 @@ export const BlockTextOperationMenu = (props: { storyId: string }) => {
     return range?.toString()
   }, [range])
 
+  useEvent(
+    'mouseup',
+    useCallback(() => {
+      if (selectionString?.length) {
+        setOpen(true)
+      } else {
+        setOpen(false)
+      }
+    }, [selectionString?.length])
+  )
+
   useEffect(() => {
-    if (selectionString?.length) {
-      setOpen(true)
-    } else {
+    if (!selectionString?.length) {
       setOpen(false)
     }
   }, [selectionString?.length])
@@ -434,7 +443,7 @@ const BlockTextOperationMenuInner = ({
         initial={'inactive'}
         animate={'active'}
         exit={'inactive'}
-        variants={PopoverMotionVariants.scale}
+        variants={PopoverMotionVariants.fade}
         transition={{ duration: 0.15 }}
         className={css`
           outline: none;
