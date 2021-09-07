@@ -755,6 +755,7 @@ export const StoryQuestionEditor: React.FC<{
       }
 
       if (draftBlock.type === Editor.BlockType.QueryBuilder) {
+        ;(draftBlock as Editor.SQLBlock).content!.sql = sql
         ;(draftBlock as Editor.QueryBuilder).content!.fields = fields
         ;(draftBlock as Editor.QueryBuilder).content!.metrics = metrics
       }
