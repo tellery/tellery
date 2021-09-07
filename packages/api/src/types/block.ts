@@ -65,7 +65,6 @@ type BlockDTO = {
   content: any
   format?: any
   children?: string[]
-  resources?: string[]
   createdAt: number
   updatedAt: number
   permissions: PermissionsDTO
