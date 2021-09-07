@@ -38,7 +38,7 @@ async function main() {
     },
   )
 
-  const newConnector = await getIConnectorManagerFromDB(connectorId)
+  const newConnector = await getIConnectorManagerFromDB(workspace.id, connectorId)
   await newConnector.upsertProfile({
     id: workspace.id,
     type: 'PostgreSQL',
