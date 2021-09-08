@@ -296,9 +296,9 @@ async function getProfileRouter(ctx: Context) {
 
   const manager = await getIConnectorManagerFromDB(workspaceId, connectorId)
 
-  const profiles = await connectorService.getProfile(manager, user.id, payload.workspaceId)
+  const profile = await connectorService.getProfile(manager, user.id, payload.workspaceId)
 
-  ctx.body = { profiles }
+  ctx.body = { profile }
 }
 
 async function upsertProfileRouter(ctx: Context) {
@@ -316,8 +316,8 @@ async function upsertProfileRouter(ctx: Context) {
     configs: Object.fromEntries(configs),
   }
 
-  const profiles = await connectorService.upsertProfile(manager, user.id, workspaceId, profileBody)
-  ctx.body = { profiles }
+  const profile = await connectorService.upsertProfile(manager, user.id, workspaceId, profileBody)
+  ctx.body = { profile }
 }
 
 async function getIntegrationConfigsRouter(ctx: Context) {
