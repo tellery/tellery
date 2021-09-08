@@ -1,4 +1,5 @@
 import test from 'ava'
+import bluebird from 'bluebird'
 import _, { filter } from 'lodash'
 import { nanoid } from 'nanoid'
 import { getRepository, In } from 'typeorm'
@@ -111,13 +112,16 @@ test('sort user members', async (t) => {
   const uid1 = uuid()
   const uid2 = uuid()
   const uid3 = uuid()
-  const workspace = await workspaceService.create(uid1, 'test')
-  await workspaceService.join(workspace.id, uid3, await getInviteCode(workspace.id))
+  const workspace = await workspaceService.create(uid1, 'sorttest')
+  await bluebird.delay(100)
   await workspaceService.join(workspace.id, uid2, await getInviteCode(workspace.id))
+  await bluebird.delay(100)
+  await workspaceService.join(workspace.id, uid3, await getInviteCode(workspace.id))
 
   const w = await workspaceService.get(uid1, workspace.id)
-  // desc order by updatedAt
-  t.deepEqual(_(w.members).map('userId').value(), [uid1, uid2, uid3])
+  // desc order by joinAt
+  // uid1 in the very beginning
+  t.deepEqual(_(w.members).map('userId').value(), [uid1, uid3, uid2])
 
   await getRepository(WorkspaceEntity).delete(w.id)
 })
