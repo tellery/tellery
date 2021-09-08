@@ -31,7 +31,11 @@ function provision(_: ProvisionRequest): ProvisionBody {
 
   const { url, fields: form } = s3Client.createPresignedPost({
     Bucket: s3Config.bucket,
-    Fields: { key },
+    Fields: {
+      'Cache-Control': 'public, max-age=31104000',
+      success_action_status: '200',
+      key,
+    },
     Expires: expiresIn,
   })
 

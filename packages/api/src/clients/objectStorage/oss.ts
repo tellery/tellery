@@ -31,9 +31,10 @@ function provision(_: ProvisionRequest): ProvisionBody {
   const signature = crypto.createHmac('sha1', ossConfig.secretKey).update(policy).digest('base64')
 
   const form = {
+    'Cache-Control': 'public, max-age=31104000',
+    Signature: signature,
     OSSAccessKeyId: ossConfig.accessKey,
     policy,
-    signature,
     key,
     expire: expiresIn.toString(),
     success_action_status: '200',
