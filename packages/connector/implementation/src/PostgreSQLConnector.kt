@@ -5,7 +5,7 @@ import io.tellery.annotations.Config.ConfigType
 import io.tellery.annotations.Connector
 import io.tellery.annotations.HandleImport
 import io.tellery.connectors.fields.PostgreSQLFields
-import io.tellery.entities.Profile
+import io.tellery.entities.ProfileEntity
 import io.tellery.entities.TypeField
 import io.tellery.utils.buildOptionalsFromConfigs
 import io.tellery.utils.readCSV
@@ -72,7 +72,7 @@ class PostgreSQLConnector : JDBCConnector() {
         "PG_TOAST",
     )
 
-    override fun buildConnectionStr(profile: Profile): String {
+    override fun buildConnectionStr(profile: ProfileEntity): String {
         val endpoint = profile.configs[PostgreSQLFields.ENDPOINT]
         val port = profile.configs[PostgreSQLFields.PORT]
         val database = profile.configs[PostgreSQLFields.DATABASE]

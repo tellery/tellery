@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package tellery.grpc;
+option java_package = "io.tellery.profile";
+option java_outer_classname = "TelleryProfileProto";
+option java_multiple_files = true;
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/empty.proto";
+import "config.proto";
+import "base.proto";
+
+service ProfileService {
+  rpc GetProfileConfigs (google.protobuf.Empty) returns (AvailableConfigs);
+  rpc GetProfile (google.protobuf.Empty) returns (Profile);
+  rpc GetProfileSpec(google.protobuf.Empty) returns (ProfileSpec);
+  rpc UpsertProfile (UpsertProfileRequest) returns (Profile);
+  rpc GetIntegrationConfigs (google.protobuf.Empty) returns (AvailableConfigs);
+  rpc ListIntegrations (google.protobuf.Empty) returns (ListIntegrationsResponse);
+  rpc UpsertIntegration (UpsertIntegrationRequest) returns (Integration);
+  rpc DeleteIntegration (DeleteIntegrationRequest) returns (google.protobuf.Empty);
+}
+
+message Profile {
+  string id = 1;
+  string type = 2;
+  repeated KVEntry configs = 3;
+}
+
+message Integration {
+  int32 id = 1;
+  string profileId = 2;
+  string type = 3;
+  repeated KVEntry configs = 4;
+}
+
+
+message UpsertProfileRequest {
+  string type = 1;
+  string credential = 2;
+  repeated KVEntry configs = 3;
+}
+
+message ListIntegrationsResponse {
+  repeated Integration integrations = 1;
+}
+
+message UpsertIntegrationRequest {
+  google.protobuf.Int32Value id = 1;
+  string profileId = 2;
+  string type = 3;
+  repeated KVEntry configs = 4;
+}
+
+message DeleteIntegrationRequest {
+  int32 id = 1;
+}
+
+message ProfileSpec {
+  string type = 1;
+  string tokenizer = 2;
+  string queryBuilderSpec = 3;
+}

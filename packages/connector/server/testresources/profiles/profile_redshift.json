@@ -1,0 +1,12 @@
+{
+  "id": "12345",
+  "type": "Redshift",
+  "configs": {
+    "Endpoint": "examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com",
+    "Port": "5439",
+    "Database": "my_db",
+    "Username": "abc",
+    "Password": "def",
+    "Schema": "PUBLIC"
+  }
+}

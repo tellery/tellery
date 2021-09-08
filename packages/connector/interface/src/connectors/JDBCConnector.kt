@@ -30,18 +30,18 @@ abstract class JDBCConnector : BaseConnector() {
             scope.coroutineContext.dataSource.connection
 
 
-    abstract fun buildConnectionStr(profile: Profile): String
+    abstract fun buildConnectionStr(profile: ProfileEntity): String
 
-    open fun additionalConfigurationForDataSource(profile: Profile) {
+    open fun additionalConfigurationForDataSource(profile: ProfileEntity) {
     }
 
-    override fun initByProfile(profile: Profile) {
+    override fun initByProfile(profile: ProfileEntity) {
 
         // Check driverClassName first, since the driver might be loaded from external
         try {
             Class.forName(driverClassName)
         } catch (e: ClassNotFoundException) {
-            throw JDBCDriverClassNotFoundException(profile.name, driverClassName)
+            throw JDBCDriverClassNotFoundException(profile.id, driverClassName)
         }
 
         this.dataSource = HikariDataSource().apply {

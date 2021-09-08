@@ -1,51 +1,37 @@
 package io.tellery.services
 
-import com.google.common.base.Strings
 import com.google.protobuf.Empty
-import io.tellery.common.dbt.DbtManager
 import io.tellery.common.withErrorWrapper
-import io.tellery.grpc.*
+import io.tellery.grpc.DbtServiceCoroutineGrpc
+import io.tellery.grpc.GenerateKeyPairResponse
+import io.tellery.grpc.PullRepoResponse
+import io.tellery.grpc.PushRepoRequest
+import io.tellery.managers.DbtManager
 
-class DbtService : DbtCoroutineGrpc.DbtImplBase() {
+class DbtService(private val dbtManager: DbtManager) :
+    DbtServiceCoroutineGrpc.DbtServiceImplBase() {
 
-    override suspend fun generateKeyPair(request: GenerateKeyPairRequest): GenerateKeyPairResponse {
-        return withErrorWrapper(request) { req ->
-            assert(!Strings.isNullOrEmpty(req.profile)) { "Profile name cannot be null or empty." }
-
-            val publicKey = DbtManager.generateRepoKeyPair(req.profile)
-
+    override suspend fun generateKeyPair(request: Empty): GenerateKeyPairResponse {
+        return withErrorWrapper {
             GenerateKeyPairResponse {
-                this.publicKey = publicKey
+                publicKey = dbtManager.generateKeyPair()
             }
         }
     }
 
-    override suspend fun pullRepo(request: PullRepoRequest): PullRepoResponse {
-        return withErrorWrapper(request) { req ->
-            assert(!Strings.isNullOrEmpty(req.profile)) { "Profile name cannot be null or empty." }
-
-            DbtManager.pullRepo(req.profile)
-            val blocks = DbtManager.listBlocks(req.profile)
-
+    override suspend fun pullRepo(request: Empty): PullRepoResponse {
+        return withErrorWrapper {
+            dbtManager.pullRepo()
             PullRepoResponse {
-                addAllBlocks(blocks)
+                addAllBlocks(dbtManager.listBlocks())
             }
+
         }
     }
 
     override suspend fun pushRepo(request: PushRepoRequest): Empty {
-        return withErrorWrapper(request) { req ->
-            assert(!Strings.isNullOrEmpty(req.profile)) { "Profile name cannot be null or empty." }
-            assert(req.blocksList != null) { " Blocks cannot be null" }
-
-            DbtManager.pushRepo(req.profile, req.blocksList)
-            Empty.getDefaultInstance()
-        }
-    }
-
-    override suspend fun refreshWorkspace(request: Empty): Empty {
-        return withErrorWrapper(request) {
-            DbtManager.initDbtWorkspace()
+        return withErrorWrapper {
+            dbtManager.pushRepo(request.blocksList)
             Empty.getDefaultInstance()
         }
     }

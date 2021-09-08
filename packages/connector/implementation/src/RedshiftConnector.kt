@@ -6,7 +6,7 @@ import io.tellery.annotations.Connector
 import io.tellery.annotations.HandleImport
 import io.tellery.connectors.fields.RedshiftFields
 import io.tellery.entities.ImportFailureException
-import io.tellery.entities.Profile
+import io.tellery.entities.ProfileEntity
 import io.tellery.entities.TypeField
 import io.tellery.utils.S3Storage
 import io.tellery.utils.readCSV
@@ -101,18 +101,18 @@ class RedshiftConnector : JDBCConnector() {
 
     private var s3Client: S3Storage? = null
 
-    override fun buildConnectionStr(profile: Profile): String {
+    override fun buildConnectionStr(profile: ProfileEntity): String {
         val endpoint = profile.configs[RedshiftFields.ENDPOINT]
         val port = profile.configs[RedshiftFields.PORT]
         val database = profile.configs[RedshiftFields.DATABASE]
         return "jdbc:redshift://${endpoint}:${port}/${database}"
     }
 
-    override fun initByProfile(profile: Profile) {
+    override fun initByProfile(profile: ProfileEntity) {
         super.initByProfile(profile)
         s3Client = S3Storage.buildFromConfigs(profile.configs)
         s3Client?.run {
-            logger.info("{} has initialized s3 client", profile.name)
+            logger.info("{} has initialized s3 client", profile.id)
         }
     }
 

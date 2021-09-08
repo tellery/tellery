@@ -9,17 +9,29 @@ import { IConnectorManager } from './interface'
 
 // NOTE: If you want to get a connector manager anywhere else, you should go with this function
 export function getIConnectorManager(
+  workspaceId: string,
   url: string,
   authType: AuthType,
   authData: AuthData,
 ): IConnectorManager {
-  return getGrpcConnector(url, authType, authData)
+  return getGrpcConnector(workspaceId, url, authType, authData)
 }
 
-export async function getIConnectorManagerFromDB(connectorId: string): Promise<IConnectorManager> {
-  const connector = await getRepository(ConnectorEntity).findOne(connectorId)
+export async function getIConnectorManagerFromDB(
+  workspaceId: string,
+  connectorId: string,
+): Promise<IConnectorManager> {
+  const connector = await getRepository(ConnectorEntity).findOne({
+    id: connectorId,
+    workspaceId,
+  })
   if (connector) {
-    return getIConnectorManager(connector.url, connector.authType, connector.authData)
+    return getIConnectorManager(
+      connector.workspaceId,
+      connector.url,
+      connector.authType,
+      connector.authData,
+    )
   }
   throw NotFoundError.resourceNotFound(connectorId)
 }

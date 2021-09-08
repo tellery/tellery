@@ -17,15 +17,21 @@ type AvailableConfig = {
 }
 
 type ProfileSpec = {
-  name: string
   type: string
   tokenizer: string
   queryBuilderSpec: QueryBuilderSpec
 }
 
 type Profile = {
+  id: string
   type: string
-  name: string
+  configs: { [key: string]: string }
+}
+
+type Integration = {
+  id: number
+  profileId: string
+  type: string
   configs: { [key: string]: string }
 }
 
@@ -51,10 +57,6 @@ type AddConnectorDTO = {
 type Database = string
 type Collection = string
 
-enum ConnectionType {
-  JDBC = 'jdbc',
-}
-
 type ConnectorDTO = {
   id: string
   url: string
@@ -65,7 +67,7 @@ export {
   AvailableConfig,
   ProfileSpec,
   Profile,
-  ConnectionType,
+  Integration,
   Database,
   Collection,
   SqlQueryResult,

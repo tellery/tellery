@@ -1,0 +1,13 @@
+{
+  "id": "12345",
+  "type": "Snowflake",
+  "configs": {
+    "Account Name": "xy12345",
+    "Region Id": "us-ease-2.aws",
+    "Username": "abc",
+    "Password": "def",
+    "Database": "dbt",
+    "Schema": "PUBLIC",
+    "Warehouse": "dbt_wh"
+  }
+}
