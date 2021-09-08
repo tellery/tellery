@@ -53,7 +53,13 @@ export async function getSuperUser(): Promise<User> {
  */
 export function setUserToken(ctx: Context, token: string | null): void {
   ctx.set(USER_TOKEN_HEADER_KEY, token ?? '')
-  ctx.cookies.set(USER_TOKEN_HEADER_KEY, token, {
-    expires: token ? new Date(new Date().getTime() + 10 * 365 * 24 * 60 * 60) : new Date(0), // never expires if token is valid, else 1970-01-01
-  })
+  // if token is not valid, set expireAt to 1970-01-01
+  const opts = token
+    ? {
+        maxAge: 60 * 60 * 24 * 365 * 1000,
+      }
+    : {
+        expiresAt: new Date(0),
+      }
+  ctx.cookies.set(USER_TOKEN_HEADER_KEY, token, opts)
 }
