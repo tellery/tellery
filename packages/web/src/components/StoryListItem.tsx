@@ -4,11 +4,12 @@ import { take } from 'lodash'
 import React, { CSSProperties, useRef } from 'react'
 import { IconCommonStar, IconCommonStarFill, IconMenuDelete } from '@app/assets/icons'
 import { useGetBlockTitleTextSnapshot } from '@app/components/editor'
-import { ThemingVariables } from '@app/styles'
+import { breakpoints, ThemingVariables } from '@app/styles'
 import type { Editor, UserInfo } from '@app/types'
 import { Link } from 'react-router-dom'
 import IconButton from './kit/IconButton'
 import Avatar from './Avatar'
+import { between } from 'polished'
 
 export type StoryListItemValue = {
   id: string
@@ -39,7 +40,7 @@ export function StoryListItem(props: {
       className={cx(
         css`
           width: 100%;
-          padding: 0 120px;
+          padding: 0 ${between('20px', '120px')};
           display: flex;
           flex-direction: column;
           justify-content: flex-end;
@@ -143,42 +144,44 @@ export function StoryListItem(props: {
             </Link>
           ) : null}
         </div>
-        <div
-          className={css`
-            width: 200px;
-            align-items: center;
-            justify-content: flex-start;
-          `}
-        >
-          {props.value.user ? (
-            <>
-              <Avatar
-                src={props.value.user.avatar}
-                email={props.value.user.email}
-                size={24}
-                className={css`
-                  margin-right: 4px;
-                  flex-shrink: 0;
-                `}
-              />
-              <span
-                className={css`
-                  font-size: 14px;
-                  line-height: 20px;
-                  text-align: center;
-                  padding: 0 1px;
-                  color: ${ThemingVariables.colors.text[0]};
-                  overflow: hidden;
-                  text-overflow: ellipsis;
-                  white-space: nowrap;
-                `}
-              >
-                {props.value.user.name}
-              </span>
-            </>
-          ) : null}
-        </div>
-        {props.width >= 960 ? (
+        {props.width >= breakpoints[1] && (
+          <div
+            className={css`
+              width: 200px;
+              align-items: center;
+              justify-content: flex-start;
+            `}
+          >
+            {props.value.user ? (
+              <>
+                <Avatar
+                  src={props.value.user.avatar}
+                  email={props.value.user.email}
+                  size={24}
+                  className={css`
+                    margin-right: 4px;
+                    flex-shrink: 0;
+                  `}
+                />
+                <span
+                  className={css`
+                    font-size: 14px;
+                    line-height: 20px;
+                    text-align: center;
+                    padding: 0 1px;
+                    color: ${ThemingVariables.colors.text[0]};
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                  `}
+                >
+                  {props.value.user.name}
+                </span>
+              </>
+            ) : null}
+          </div>
+        )}
+        {props.width >= breakpoints[2] ? (
           <div
             className={css`
               width: 200px;
@@ -230,7 +233,7 @@ export function StoryListItem(props: {
             ) : null}
           </div>
         ) : null}
-        {props.width >= 1100 ? (
+        {props.width >= breakpoints[3] ? (
           <div
             className={css`
               width: 150px;

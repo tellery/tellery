@@ -8,12 +8,13 @@ import {
   IconMenuShow
 } from '@app/assets/icons'
 import { createTranscation } from '@app/context/editorTranscations'
+import { useMediaQuery } from '@app/hooks'
 import { useWorkspaceView } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useCommit } from '@app/hooks/useCommit'
 import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
-import { ThemingVariables } from '@app/styles'
+import { breakpoints, ThemingVariables } from '@app/styles'
 import type { Story } from '@app/types'
 import { DEFAULT_TIPPY_DELAY } from '@app/utils'
 import { css } from '@emotion/css'
@@ -53,6 +54,7 @@ export const _NavigationHeader = (props: {
     [props.format, props.storyId, commit]
   )
   const permissions = useStoryPermissions(props.storyId)
+  const isSmallScreen = useMediaQuery(`only screen and (max-width: ${breakpoints[1]}px)`)
 
   return (
     <>
@@ -112,7 +114,7 @@ export const _NavigationHeader = (props: {
             margin-left: 10px;
           `}
         >
-          <StoryVisits storyId={props.storyId} />
+          {isSmallScreen === false && <StoryVisits storyId={props.storyId} />}
           <div
             className={css`
               height: 24px;

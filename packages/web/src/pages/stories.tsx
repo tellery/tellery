@@ -5,7 +5,7 @@ import { IconCommonSearch } from '@app/assets/icons'
 import { useGetBlockTitleTextSnapshot } from '@app/components/editor'
 import { StoryListItem, StoryListItemValue } from '@app/components/StoryListItem'
 import { AnimateSharedLayout, motion } from 'framer-motion'
-import { useSearchParams } from '@app/hooks'
+import { useMediaQuery, useSearchParams } from '@app/hooks'
 import { useStoriesSearch, useWorkspaceView } from '@app/hooks/api'
 import { SVG2DataURI } from '@app/lib/svg'
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -14,8 +14,9 @@ import mergeRefs from 'react-merge-refs'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import { areEqual, ListChildComponentProps, ListOnScrollProps, VariableSizeList } from 'react-window'
 import InfiniteLoader from 'react-window-infinite-loader'
-import { ThemingVariables } from '@app/styles'
+import { breakpoints, mq, ThemingVariables } from '@app/styles'
 import { NewStoryButton } from '@app/components/NewStoryButton'
+import { between } from 'polished'
 
 const RenderItem = memo(function Item({ index, style, data }: ListChildComponentProps) {
   const { isItemLoaded, isFooter, items, workspaceView, refetch, refetchWorkspaceView, large, width } = data
@@ -119,15 +120,22 @@ const Page = () => {
   const isFooter = useCallback((index: number) => index === items.length, [items])
   const { data: workspaceView, refetch: refetchWorkspaceView } = useWorkspaceView()
   // eslint-disable-next-line react/display-name
-  const [sticky, setSticky] = useState(false)
+  const isSmallScreen = useMediaQuery(`only screen and (max-width: ${breakpoints[1]}px)`)
+  const [sticky, setSticky] = useState(isSmallScreen)
   const handleScroll = useCallback(
     (e: ListOnScrollProps) => {
+      if (isSmallScreen) return
       if (sticky !== e.scrollOffset > 0) {
         setSticky(e.scrollOffset > 0)
       }
     },
-    [sticky]
+    [isSmallScreen, sticky]
   )
+  useEffect(() => {
+    if (isSmallScreen) {
+      setSticky(true)
+    }
+  }, [isSmallScreen])
   const large = !!keyword
   const listRef = useRef<VariableSizeList>(null)
   useEffect(() => {
@@ -169,7 +177,7 @@ const Page = () => {
                       flex-direction: row;
                       box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.08);
                       height: 76px;
-                      padding: 0 120px;
+                      padding: 0 ${between('30px', '120px')};
                     `
                   : css`
                       flex-direction: column;
@@ -182,19 +190,19 @@ const Page = () => {
                 className={cx(
                   sticky
                     ? css`
-                        font-size: 24px;
+                        font-size: ${between('20px', '24px')};
                         line-height: 30px;
                         font-weight: 500;
                       `
                     : css`
-                        font-size: 48px;
                         line-height: 59px;
                         font-weight: 700;
                         margin: 40px 0 20px;
+                        font-size: ${between('30px', '48px')};
                       `
                 )}
               >
-                All Stories
+                Stories
               </motion.h1>
               <motion.div
                 layout="position"
@@ -207,7 +215,6 @@ const Page = () => {
                   autoFocus={true}
                   className={css`
                     flex-shrink: 0;
-                    width: 500px;
                     height: 44px;
                     background: ${ThemingVariables.colors.gray[5]};
                     border: 1px solid ${ThemingVariables.colors.gray[1]};
@@ -218,11 +225,11 @@ const Page = () => {
                     padding: 0 15px;
                     background-repeat: no-repeat;
                     background-position: calc(100% - 15px) 50%;
-
                     &::placeholder {
                       font-size: 16px;
                       color: ${ThemingVariables.colors.gray[0]};
                     }
+                    width: ${between('120px', '500px')};
                   `}
                   style={{ backgroundImage: SVG2DataURI(IconCommonSearch) }}
                   placeholder="Search"
@@ -250,68 +257,75 @@ const Page = () => {
                 />
               </motion.div>
             </div>
-            <motion.div
-              layoutId="header"
-              layout="position"
-              className={css`
-                font-weight: 500;
-                font-size: 16px;
-                height: 60px;
-                line-height: 60px;
-                box-shadow: 0px 1px 0px ${ThemingVariables.colors.gray[1]};
-                display: flex;
-                width: calc(100% - 240px);
-                margin: 0 120px;
-                & > div {
-                  padding: 0 15px;
-                  text-align: start;
-                  vertical-align: middle;
-                  display: inline-block;
-                  flex-shrink: 0;
-                }
-              `}
-            >
-              <div
+            {width >= breakpoints[0] && (
+              <motion.div
+                layoutId="header"
+                layout="position"
                 className={css`
-                  flex: 1;
-                  width: 0;
+                  font-weight: 500;
+                  font-size: 16px;
+                  height: 60px;
+                  line-height: 60px;
+                  box-shadow: 0px 1px 0px ${ThemingVariables.colors.gray[1]};
+                  display: flex;
+                  margin: 0 ${between('20px', '120px')};
+
+                  & > div {
+                    padding: 0 15px;
+                    text-align: start;
+                    vertical-align: middle;
+                    display: inline-block;
+                    flex-shrink: 0;
+                  }
                 `}
               >
-                Story
-              </div>
-              <div
-                className={css`
-                  width: 200px;
-                `}
-              >
-                Owner
-              </div>
-              {width >= 960 ? (
                 <div
                   className={css`
-                    width: 200px;
+                    flex: 1;
+                    width: 0;
                   `}
                 >
-                  Related Stories
+                  Story
                 </div>
-              ) : null}
-              {width >= 1100 ? (
+                {width >= breakpoints[0] && (
+                  <div
+                    className={css`
+                      width: 200px;
+                    `}
+                  >
+                    Owner
+                  </div>
+                )}
+                {width >= breakpoints[1] ? (
+                  <div
+                    className={css`
+                      width: 200px;
+                    `}
+                  >
+                    Related Stories
+                  </div>
+                ) : null}
+                {width >= breakpoints[2] ? (
+                  <div
+                    className={css`
+                      width: 150px;
+                    `}
+                  >
+                    Last Modified
+                  </div>
+                ) : null}
                 <div
                   className={css`
-                    width: 150px;
+                    width: 90px;
                   `}
-                >
-                  Last Modified
-                </div>
-              ) : null}
-              <div
-                className={css`
-                  width: 90px;
-                `}
-              />
-            </motion.div>
+                />
+              </motion.div>
+            )}
           </div>
           <div
+            // style={{
+            //   paddingTop: sticky ? (width >= breakpoints[0] ? 60 : 0) + 76 : 264
+            // }}
             className={css`
               height: 100%;
               overflow: hidden;
@@ -347,7 +361,12 @@ const Page = () => {
                         ref={mergeRefs([ref, listRef])}
                         width={width}
                         height={height}
-                        itemSize={(index) => (index === 0 ? 264 : 0) + (large ? 92 : 60)}
+                        // itemSize={(index) => (large ? 32 : 0) + 20}
+                        itemSize={(index) =>
+                          (isSmallScreen === false && index === 0 ? 264 : 0) +
+                          (isSmallScreen === true && index === 0 ? 76 : 0) +
+                          (large ? 92 : 60)
+                        }
                       >
                         {RenderItem}
                       </VariableSizeList>

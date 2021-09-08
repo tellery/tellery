@@ -324,7 +324,7 @@ export const sqlRequest = ({
       const { fields, records, errMsg } = data
       const count: { [key: string]: number } = {}
       return {
-        fields: fields.map(({ name, ...rest }) => {
+        fields: fields?.map(({ name, ...rest }) => {
           count[name] = (count[name] || 0) + 1
           if (count[name] > 1) {
             return { ...rest, name: `${name}_${count[name] - 1}` }

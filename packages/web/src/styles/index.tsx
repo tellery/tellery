@@ -25,7 +25,12 @@ export interface TelleryTheme {
     visualizationOtherHighlight: string
   }
   boxShadows: string[]
+  // breakpoints: number[]
 }
+
+export const breakpoints = [576, 768, 992, 1200]
+
+export const mq = breakpoints.map((bp) => `@media (min-width: ${bp}px)`)
 
 /**
  * @see https://www.figma.com/file/uwiGCVNaUZfcKoFn2iSmus/Tellery-Style-Guide
@@ -67,6 +72,7 @@ export const TelleryThemeLight: TelleryTheme = {
     visualizationOtherHighlight: '#999999'
   },
   boxShadows: ['0px 1px 4px rgba(0, 0, 0, 0.08), 0px 1px 2px rgba(0, 0, 0, 0.08), 0px 4px 12px rgba(0, 0, 0, 0.16)']
+  // breakpoints: [576, 768, 992, 1200]
 }
 
 type DeepPartial<T> = {
@@ -76,12 +82,12 @@ type DeepPartial<T> = {
 export function objectKeyValueMapperDeep<T = {}>(obj: T, iterator: (key: string, value: string) => string) {
   const variablesMap: T = cloneDeep(obj)
 
-  function recurse(obj: DeepPartial<T>, current: DeepPartial<T>, prefix: string) {
+  function iter(obj: DeepPartial<T>, current: DeepPartial<T>, prefix: string) {
     for (const key in obj) {
       const value = obj[key] as unknown as DeepPartial<T>
       if (value !== undefined) {
         if (typeof value === 'object') {
-          recurse(value, current[key]! as unknown as DeepPartial<T>, `${prefix}-${kebabCase(key)}`)
+          iter(value, current[key]! as unknown as DeepPartial<T>, `${prefix}-${kebabCase(key)}`)
         } else {
           current[key] = iterator(`${prefix}-${kebabCase(key)}`, value)
         }
@@ -89,7 +95,7 @@ export function objectKeyValueMapperDeep<T = {}>(obj: T, iterator: (key: string,
     }
   }
 
-  recurse(obj, variablesMap, '-')
+  iter(obj, variablesMap, '-')
 
   return variablesMap as T
 }
