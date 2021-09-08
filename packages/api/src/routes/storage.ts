@@ -55,6 +55,7 @@ async function getFile(ctx: Context) {
       'Cache-Control': 'public, max-age=31104000',
     })
   } else {
+    ctx.status = 301
     ctx.redirect(fetchedObject)
   }
 }
