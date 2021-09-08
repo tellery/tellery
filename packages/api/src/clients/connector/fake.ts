@@ -25,7 +25,11 @@ export class FakeManager implements IConnectorManager {
   }
 
   async getProfile(): Promise<Profile> {
-    throw new Error('Method not implemented.')
+    return {
+      id: 'fake',
+      type: 'fake',
+      configs: {},
+    }
   }
 
   async upsertProfile(newProfile: Profile): Promise<Profile> {
