@@ -18,11 +18,11 @@ object ProjectConfig {
     val credKeyPath: String?
         get() = env["server.credential.key"]
 
-    val deployModel: DeployModel
-        get() = DeployModel.valueOf(
+    val deployMode: DeployMode
+        get() = DeployMode.valueOf(
             env.getOrDefault(
-                "connector.deployModel",
-                DeployModel.LOCAL.name
+                "connector.deployMode",
+                DeployMode.LOCAL.name
             )
         )
 
@@ -53,7 +53,7 @@ object ProjectConfig {
     val dbtKeyConfigDir: Path
         get() = globalConfigDir.resolve(appConfig.getString("dbt.keyFolderPath"))
 
-    enum class DeployModel(val profileManagerName: String) {
+    enum class DeployMode(val profileManagerName: String) {
         LOCAL("file"),
         CLUSTER("database")
     }

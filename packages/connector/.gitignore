@@ -7,3 +7,5 @@
 *.iws
 
 /extra
+config.json
+.env

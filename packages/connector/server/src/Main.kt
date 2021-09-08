@@ -36,9 +36,9 @@ fun providesAppModule(): Module {
 }
 
 fun providesProfileManager(): ProfileManager? =
-    when (ProjectConfig.deployModel) {
-        ProjectConfig.DeployModel.LOCAL -> FileProfileManager()
-        ProjectConfig.DeployModel.CLUSTER -> DatabaseProfileManager()
+    when (ProjectConfig.deployMode) {
+        ProjectConfig.DeployMode.LOCAL -> FileProfileManager()
+        ProjectConfig.DeployMode.CLUSTER -> DatabaseProfileManager()
         else -> null
     }
 
