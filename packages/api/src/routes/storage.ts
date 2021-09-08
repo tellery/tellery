@@ -47,12 +47,14 @@ async function getFile(ctx: Context) {
   if (!fetchedObject) {
     ctx.throw(404)
   }
+  ctx.set({
+    'Cache-Control': 'public, max-age=31104000',
+  })
   if (fetchedObject instanceof Object) {
     const { content, contentType } = fetchedObject
     ctx.body = content
     ctx.set({
       'Content-Type': contentType,
-      'Cache-Control': 'public, max-age=31104000',
     })
   } else {
     ctx.redirect(fetchedObject)

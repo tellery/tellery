@@ -31,9 +31,10 @@ function provision(_: ProvisionRequest): ProvisionBody {
   const signature = crypto.createHmac('sha1', ossConfig.secretKey).update(policy).digest('base64')
 
   const form = {
+    'Cache-Control': 'public, max-age=31104000',
+    Signature: signature,
     OSSAccessKeyId: ossConfig.accessKey,
     policy,
-    signature,
     key,
     expire: expiresIn.toString(),
     success_action_status: '200',
@@ -48,7 +49,7 @@ function provision(_: ProvisionRequest): ProvisionBody {
 
 function getTemporaryUrl(fileKey: string, opts: { ttl?: number } = {}): string {
   const { bucket } = ossConfig
-  const { ttl = 60 * 10 } = opts
+  const { ttl = 60 * 60 * 24 * 30 * 12 } = opts
   const expires = Math.floor(Date.now() / 1000) + ttl
   const info = ['GET', '', '', expires, `/${bucket}/${fileKey}`].join('\n')
   const signature = crypto
