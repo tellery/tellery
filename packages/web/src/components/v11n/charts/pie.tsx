@@ -93,10 +93,10 @@ export const pie: Chart<Type.PIE> = {
     }, [filter, dimension, measurement, props.config, total])
     useEffect(() => {
       if (
-        orderBy(props.config.slices, ['value', 'key'])
+        orderBy(props.config.slices, ['key'])
           .map(({ key }) => key)
           .join() ===
-        orderBy(data, ['value', 'key'])
+        orderBy(data, ['key'])
           .map(({ key }) => key)
           .join()
       ) {
