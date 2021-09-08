@@ -49,7 +49,7 @@ function provision(_: ProvisionRequest): ProvisionBody {
 
 function getTemporaryUrl(fileKey: string, opts: { ttl?: number } = {}): string {
   const { bucket } = ossConfig
-  const { ttl = 60 * 10 } = opts
+  const { ttl = 60 * 60 * 24 * 30 * 12 } = opts
   const expires = Math.floor(Date.now() / 1000) + ttl
   const info = ['GET', '', '', expires, `/${bucket}/${fileKey}`].join('\n')
   const signature = crypto
