@@ -7,7 +7,7 @@ import {
   IconCommonThoughts
 } from '@app/assets/icons'
 import { MainSideBarItem } from '@app/components/MainSideBarItem'
-import { useConnectorsListProfiles } from '@app/hooks/api'
+import { useConnectorsGetProfile } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useSideBarConfig } from '@app/hooks/useSideBarConfig'
 import { useWorkspace } from '@app/hooks/useWorkspace'
@@ -73,15 +73,13 @@ const SideBarContent: React.FC = () => {
   const ref = useRef(null)
   const history = useHistory()
   const workspace = useWorkspace()
-  const { data: profiles } = useConnectorsListProfiles(workspace.preferences.connectorId)
+  const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)
   const setOmniboxShow = useUpdateAtom(omniboxShowState)
   const closeSideBar = useCallback(() => {
     !!activeSideBarTab && setActiveSideBarTab(null)
   }, [activeSideBarTab])
 
   useClickAway(ref, closeSideBar)
-
-  const hasNoProfile = profiles?.length === 0
 
   const showSettingsModal = useCallback(() => {
     setModalContent(
@@ -94,10 +92,10 @@ const SideBarContent: React.FC = () => {
   }, [])
 
   useEffect(() => {
-    if (hasNoProfile) {
+    if (profile === null) {
       showSettingsModal()
     }
-  }, [hasNoProfile, showSettingsModal])
+  }, [profile, showSettingsModal])
   const { t } = useTranslation()
 
   return (

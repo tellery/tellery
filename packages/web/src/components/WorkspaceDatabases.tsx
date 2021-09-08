@@ -1,7 +1,7 @@
 import {
   useConnectorsList,
-  useConnectorsListAvailableConfigs,
-  useConnectorsListProfiles,
+  useConnectorsGetProfileConfigs,
+  useConnectorsGetProfile,
   useConnectorsUpsertProfile,
   useWorkspaceDetail
 } from '@app/hooks/api'
@@ -51,11 +51,7 @@ export function WorkspaceDatabases(props: { onClose(): void }) {
 
 function Connector(props: { id: string; url: string; name: string; onClose(): void }) {
   const { data: workspace } = useWorkspaceDetail()
-  const { data: profileConfigs, refetch } = useConnectorsListProfiles(props.id)
-  const profileConfig = useMemo(
-    () => profileConfigs?.find((p) => p.name === workspace?.preferences.profile),
-    [profileConfigs, workspace?.preferences.profile]
-  )
+  const { data: profileConfig, refetch } = useConnectorsGetProfile(props.id)
   const { register, reset, handleSubmit, watch, setValue } = useForm<ProfileConfig>({
     defaultValues: profileConfig,
     mode: 'onBlur'
@@ -64,7 +60,7 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
   useEffect(() => {
     reset(profileConfig)
   }, [profileConfig, reset])
-  const { data: availableConfigs } = useConnectorsListAvailableConfigs(props.id)
+  const { data: availableConfigs } = useConnectorsGetProfileConfigs(props.id)
   const availableConfig = useMemo(() => availableConfigs?.find((ac) => ac.type === type), [availableConfigs, type])
   const handleUpsertProfile = useConnectorsUpsertProfile(props.id)
   const { onClose } = props

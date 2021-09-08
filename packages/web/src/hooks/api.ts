@@ -618,19 +618,19 @@ export const useConnectorsList = () => {
   )
 }
 
-export const useConnectorsListProfiles = (connectorId?: string) => {
+export const useConnectorsGetProfile = (connectorId?: string) => {
   const workspace = useWorkspace()
-  return useQuery<ProfileConfig[]>(
-    ['connector', 'listProfiles', connectorId, workspace],
+  return useQuery<ProfileConfig>(
+    ['connector', 'getProfile', connectorId, workspace],
     () =>
       request
-        .post('/api/connectors/listProfiles', { connectorId, workspaceId: workspace.id })
-        .then((res) => res.data.profiles),
+        .post('/api/connectors/getProfile', { connectorId, workspaceId: workspace.id })
+        .then((res) => res.data.profile),
     { enabled: !!connectorId }
   )
 }
 
-export const useConnectorsListAvailableConfigs = (connectorId?: string) => {
+export const useConnectorsGetProfileConfigs = (connectorId?: string) => {
   const workspace = useWorkspace()
   return useQuery<
     {
@@ -638,10 +638,10 @@ export const useConnectorsListAvailableConfigs = (connectorId?: string) => {
       configs: AvailableConfig[]
     }[]
   >(
-    ['connector', 'listAvailableConfigs', connectorId, workspace],
+    ['connector', 'getProfileConfigs', connectorId, workspace.id],
     () =>
       request
-        .post('/api/connectors/listAvailableConfigs', { connectorId, workspaceId: workspace.id })
+        .post('/api/connectors/getProfileConfigs', { connectorId, workspaceId: workspace.id })
         .then((res) => res.data.configs),
     {
       enabled: !!connectorId

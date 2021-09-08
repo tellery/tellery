@@ -1,5 +1,5 @@
-import { useBlockSuspense } from '@app/hooks/api'
-import { useProfileType } from '@app/hooks/useProfileType'
+import { useBlockSuspense, useConnectorsGetProfile } from '@app/hooks/api'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { css } from '@emotion/css'
@@ -10,7 +10,8 @@ import { SQLViewer } from './SQLViewer'
 
 export const SideBarInspectQueryBlockPopover: React.FC<{ blockId: string }> = ({ blockId }) => {
   const block = useBlockSuspense<Editor.QueryBlock>(blockId)
-  const profileType = useProfileType()
+  const workspace = useWorkspace()
+  const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)
 
   return (
     <MenuWrapper>
@@ -27,10 +28,10 @@ export const SideBarInspectQueryBlockPopover: React.FC<{ blockId: string }> = ({
           height: 300px;
         `}
       >
-        {profileType && (
+        {profile && (
           <SQLViewer
             blockId={block.id!}
-            languageId={profileType!}
+            languageId={profile.type}
             value={(block as Editor.SQLBlock).content?.sql ?? ''}
             padding={{ top: 10, bottom: 10 }}
           />

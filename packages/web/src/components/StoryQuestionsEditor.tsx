@@ -19,7 +19,7 @@ import { Configuration } from '@app/components/v11n'
 import { useBindHovering, usePrevious } from '@app/hooks'
 import {
   useBlockSuspense,
-  useConnectorsListProfiles,
+  useConnectorsGetProfile,
   useExecuteSQL,
   useQuestionDownstreams,
   useSnapshot,
@@ -56,7 +56,6 @@ import { Tab, TabList, TabPanel, TabStateReturn, useTabState } from 'reakit/Tab'
 import invariant from 'tiny-invariant'
 import YAML from 'yaml'
 import { setBlockTranscation } from '../context/editorTranscations'
-import { useProfileType } from '../hooks/useProfileType'
 import { BlockingUI } from './BlockingUI'
 import { CircularLoading } from './CircularLoading'
 import { BlockTitle, useGetBlockTitleTextSnapshot } from './editor'
@@ -159,9 +158,9 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
   })
   const y = useMotionValue(resizeConfig.y)
   const height = useTransform(y, (y) => Math.abs(y - 0.5 * DRAG_HANDLE_WIDTH))
-
-  const profileType = useProfileType()
-  useSqlEditor(profileType)
+  const workspace = useWorkspace()
+  const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)
+  useSqlEditor(profile?.type)
 
   const [questionBlocksMap] = useQuestionEditorBlockMapState(storyId)
   const [activeId, setActiveId] = useQuestionEditorActiveIdState(storyId)
@@ -800,11 +799,8 @@ export const StoryQuestionEditor: React.FC<{
 
   // const mutateBlock = useMutateBlock<Editor.QuestionBlock>()
   const workspace = useWorkspace()
-  const { data: profiles } = useConnectorsListProfiles(workspace.preferences.connectorId)
-  const profileType = useMemo(
-    () => profiles?.find((profile) => profile.name === workspace.preferences.profile)?.type,
-    [profiles, workspace.preferences.profile]
-  )
+  const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)
+  const profileType = profile?.type
   const createSnapshot = useCreateSnapshot()
 
   const run = useCallback(async () => {

@@ -1,7 +1,7 @@
 import { IconCommonArrowLeft, IconCommonArrowRight } from '@app/assets/icons'
 import {
   useConnectorsList,
-  useConnectorsListProfiles,
+  useConnectorsGetProfile,
   useGenerateKeyPair,
   usePullRepo,
   usePushRepo,
@@ -34,11 +34,7 @@ export function WorkspaceIntegrations() {
     () => connectors?.find((c) => c.id === workspace?.preferences.connectorId),
     [connectors, workspace?.preferences.connectorId]
   )
-  const { data: profiles } = useConnectorsListProfiles(connector?.id)
-  const profile = useMemo(
-    () => profiles?.find((p) => p.name === workspace?.preferences.profile),
-    [profiles, workspace?.preferences.profile]
-  )
+  const { data: profile } = useConnectorsGetProfile(connector?.id)
   const user = useLoggedUser()
   const me = useMemo(() => workspace?.members.find(({ userId }) => userId === user.id), [user.id, workspace?.members])
   const disabled = me?.role !== 'admin'
@@ -128,12 +124,7 @@ export function WorkspaceIntegrations() {
 }
 
 function DBTIntegration(props: { connectorId: string; onClose: () => void }) {
-  const { data: workspace } = useWorkspaceDetail()
-  const { data: profiles, refetch } = useConnectorsListProfiles(props.connectorId)
-  const profile = useMemo(
-    () => profiles?.find((p) => p.name === workspace?.preferences.profile),
-    [profiles, workspace?.preferences.profile]
-  )
+  const { data: profile, refetch } = useConnectorsGetProfile(props.connectorId)
   const { register, watch, reset } = useForm<ProfileConfig>({
     defaultValues: profile,
     mode: 'onBlur'
