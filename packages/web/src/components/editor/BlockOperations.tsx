@@ -88,7 +88,7 @@ const BlockDragOperation: React.FC<{
         className={cx(
           'no-select',
           css`
-            cursor: pointer;
+            cursor: grab;
             width: 22px;
           `
         )}

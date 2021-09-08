@@ -51,7 +51,7 @@ export const DataAssetItem: React.FC<{ block: Editor.BaseBlock; currentStoryId: 
       className={css`
         display: flex;
         align-items: center;
-        cursor: pointer;
+        cursor: grab;
         padding: 6px 16px;
         margin-bottom: 5px;
         user-select: none;

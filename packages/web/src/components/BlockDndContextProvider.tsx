@@ -18,7 +18,8 @@ import {
   useSensor,
   useSensors
 } from '@dnd-kit/core'
-import { css } from '@emotion/css'
+import { css, cx } from '@emotion/css'
+import { Global } from '@emotion/react'
 import React, { memo, ReactNode, useCallback, useRef, useState } from 'react'
 import ReactTestUtils from 'react-dom/test-utils'
 import invariant from 'tiny-invariant'
@@ -301,11 +302,22 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
         {children}
         <DragOverlay
           dropAnimation={null}
-          className={css`
+          className={cx(css`
             opacity: 0.5;
-          `}
+          `)}
         >
-          {isDragging && <React.Suspense fallback={<div>loading...</div>}>{previewData}</React.Suspense>}
+          {isDragging && (
+            <>
+              <React.Suspense fallback={<div>loading...</div>}>{previewData}</React.Suspense>
+              <Global
+                styles={{
+                  '*': {
+                    cursor: 'grabbing'
+                  }
+                }}
+              />
+            </>
+          )}
         </DragOverlay>
       </TelleryDNDContext>
     </div>
