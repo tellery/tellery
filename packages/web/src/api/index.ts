@@ -319,7 +319,22 @@ export const sqlRequest = ({
         transformResponse: (res) => JSON5.parse(res)
       }
     )
-    .then((res) => res.data as Data)
+    .then((res) => {
+      const data = res.data as Data
+      const { fields, records, errMsg } = data
+      const count: { [key: string]: number } = {}
+      return {
+        fields: fields.map(({ name, ...rest }) => {
+          count[name] = (count[name] || 0) + 1
+          if (count[name] > 1) {
+            return { ...rest, name: `${name}_${count[name] - 1}` }
+          }
+          return { ...rest, name }
+        }),
+        records,
+        errMsg
+      }
+    })
     .catch((err) => {
       throw err.response.data
     })
