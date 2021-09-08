@@ -35,6 +35,7 @@ export const uploadFile = async (file: Blob, workspaceId: string) => {
     formData.append(key, provision.form[key])
   }
   formData.append('file', file)
+
   try {
     await fetch(provision.url, {
       method: 'post',

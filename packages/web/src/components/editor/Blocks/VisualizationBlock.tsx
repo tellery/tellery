@@ -95,47 +95,40 @@ interface QuestionBlockProps {
 
 const useVisulizationBlockInstructionsProvider = (block: Editor.VisualizationBlock) => {
   const commit = useCommit()
-  const fetchBlock = useFetchBlock()
   const questionEditor = useQuestionEditor(block.storyId!)
-  const snapshot = useBlockSnapshot()
-  const queryId = block.content?.queryId
+  const fromQueryId = block.content?.fromQueryId
 
   const instructions = useMemo(
     () => ({
       openMenu: () => {
         questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
+      },
+      restoreOriginalQueryId: async () => {
+        if (!fromQueryId) return
+        const operations = []
+        operations.push({ cmd: 'set', path: ['content', 'queryId'], args: fromQueryId, table: 'block', id: block.id })
+        if (block.children?.length) {
+          for (let i = 0; i < block.children.length; i++) {
+            const childId = block.children[i]
+            operations.push({
+              cmd: 'listRemove',
+              path: ['children'],
+              args: { id: childId },
+              table: 'block',
+              id: block.id
+            })
+            operations.push({ cmd: 'update', path: ['alive'], args: false, table: 'block', id: childId })
+          }
+        }
+        commit({
+          transcation: createTranscation({
+            operations: operations
+          }),
+          storyId: block.storyId!
+        })
       }
-      // unLink: async () => {
-      //   if (!queryId) return
-      //   const dataAssetBlock = await fetchBlock(queryId)
-      //   const newQueryBlock = createEmptyBlock({
-      //     type: Editor.BlockType.SQL,
-      //     storyId: block.storyId!,
-      //     parentId: block.id!,
-      //     content: { ...dataAssetBlock.content }
-      //   })
-      //   commit({
-      //     transcation: createTranscation({
-      //       operations: [
-      //         ...insertBlocksAndMoveOperations({
-      //           storyId: block.storyId!,
-      //           blocksFragment: {
-      //             children: [newQueryBlock.id],
-      //             data: { [newQueryBlock.id]: newQueryBlock }
-      //           },
-      //           targetBlockId: block.storyId!,
-      //           direction: 'child',
-      //           snapshot,
-      //           path: 'resources'
-      //         }),
-      //         { cmd: 'set', path: ['content', 'queryId'], args: newQueryBlock.id, table: 'block', id: block.id }
-      //       ]
-      //     }),
-      //     storyId: block.storyId!
-      //   })
-      // }
     }),
-    [block.id, block.storyId, questionEditor]
+    [block.children, block.id, block.storyId, commit, fromQueryId, questionEditor]
   )
   return instructions
 }

@@ -158,6 +158,7 @@ export namespace Editor {
     visualization?: Config<Type>
     queryId?: string
     fromDataAssetId?: string
+    fromQueryId?: string
   }
 
   export type CodeBlockContent = {

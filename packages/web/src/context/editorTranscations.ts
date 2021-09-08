@@ -166,6 +166,7 @@ export const getDuplicatedBlocksFragment = (
         parentId: parentId,
         content: {
           ...vizBlock.content,
+          fromQueryId: vizBlock.content?.queryId,
           queryId: vizBlock.content?.queryId
             ? blockMapping[vizBlock.content.queryId] ?? vizBlock.content?.queryId
             : undefined
@@ -220,7 +221,8 @@ export const getDuplicatedBlocks = (
         parentId: storyId,
         content: {
           ...fragBlock.content,
-          queryId: newId
+          queryId: newId,
+          fromQueryId: originalQueryId
         },
         children: [],
         format: fragBlock.format

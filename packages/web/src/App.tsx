@@ -12,6 +12,7 @@ import { Routes } from './routes'
 import { ThemeProvider } from './components/ThemeProvider'
 import { queryClient } from './utils'
 import { CustomizedScrollbarProvider } from './components/CustomizedScrollbarProvider'
+import { css } from '@emotion/css'
 
 const App: React.FC = () => {
   return (
@@ -38,6 +39,11 @@ const App: React.FC = () => {
               pauseOnFocusLoss
               draggable
               pauseOnHover
+              bodyClassName={css`
+                > div {
+                  width: 100%;
+                }
+              `}
             />
           </QueryClientProvider>
         </RecoilRoot>

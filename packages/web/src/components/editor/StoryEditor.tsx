@@ -1,4 +1,4 @@
-import { IconMenuDuplicate } from '@app/assets/icons'
+import { IconCommonAdd, IconCommonBackLink, IconMenuDuplicate } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useBlockSuspense, useFetchStoryChunk } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
@@ -698,52 +698,52 @@ const _StoryEditor: React.FC<{
       const blockId = currentBlock.id
 
       focusBlockHandler(blockId, currentBlock.storyId, false)
-      const visBlocks: Editor.VisualizationBlock[] = Object.values(duplicatedBlocksFragment.data).filter((block) =>
-        isVisualizationBlock(block.type)
+      const originalQuestionsBlocks: Editor.VisualizationBlock[] = Object.values(duplicatedBlocksFragment.data).filter(
+        (block) => isVisualizationBlock(block.type) && block.children?.length !== 0
       )
 
-      // const unlinkAll = () => {
-      //   visBlocks.forEach((block) => {
-      //     blockAdminValue.getBlockInstanceById(block.id).then(({ blockRef }) => {
-      //       const visBlockRef = blockRef.current as any
-      //       visBlockRef.unLink()
-      //       visBlockRef.openMenu()
-      //     })
-      //   })
-      // }
-      if (visBlocks.length) {
-        // toast(
-        //   <div
-        //     className={css`
-        //       display: flex;
-        //       align-items: center;
-        //       justify-content: space-between;
-        //     `}
-        //   >
-        //     <div
-        //       className={css`
-        //         color: ${ThemingVariables.colors.text[1]};
-        //       `}
-        //     >
-        //       {t('You pasted {{count}} visualization block', { count: visBlocks.length })}
-        //     </div>
-        //     <IconButton
-        //       hoverContent={t`Duplicate data assets too`}
-        //       icon={IconMenuDuplicate}
-        //       color={ThemingVariables.colors.text[0]}
-        //       className={css`
-        //         margin-left: 20px;
-        //       `}
-        //       onClick={() => {
-        //         unlinkAll()
-        //       }}
-        //     />
-        //   </div>,
-        //   { position: 'bottom-center', autoClose: 10000 }
-        // )
+      const linkAll = () => {
+        originalQuestionsBlocks.forEach((block) => {
+          blockAdminValue.getBlockInstanceById(block.id).then(({ blockRef }) => {
+            const visBlockRef = blockRef.current as any
+            visBlockRef.restoreOriginalQueryId()
+          })
+        })
+      }
+
+      if (originalQuestionsBlocks.length) {
+        toast(
+          <div
+            className={css`
+              display: flex;
+              align-items: center;
+              width: 100%;
+            `}
+          >
+            <div
+              className={css`
+                color: ${ThemingVariables.colors.text[1]};
+              `}
+            >
+              {t('You pasted {{count}} question', { count: originalQuestionsBlocks.length })}
+            </div>
+            <IconButton
+              hoverContent={t`Create linked question`}
+              icon={IconCommonBackLink}
+              color={ThemingVariables.colors.text[0]}
+              className={css`
+                margin-left: auto;
+              `}
+              onClick={() => {
+                linkAll()
+              }}
+            />
+          </div>,
+          { position: 'bottom-center', autoClose: 10000 }
+        )
       }
     },
-    [focusBlockHandler]
+    [blockAdminValue, focusBlockHandler, t]
   )
 
   const duplicateHandler = useCallback(
