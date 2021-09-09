@@ -1,4 +1,4 @@
-import { IconCommonAdd, IconCommonBackLink, IconMenuDuplicate } from '@app/assets/icons'
+import { IconCommonBackLink } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useBlockSuspense, useFetchStoryChunk } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
@@ -19,13 +19,12 @@ import copy from 'copy-to-clipboard'
 import debug from 'debug'
 import { dequal } from 'dequal'
 import { motion } from 'framer-motion'
+import update from 'immutability-helper'
 import isHotkey from 'is-hotkey'
 import React, { CSSProperties, memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import update from 'immutability-helper'
-
 import { useClickAway, useEvent, useScrollbarWidth } from 'react-use'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import invariant from 'tiny-invariant'
@@ -94,6 +93,7 @@ import { BlockTextOperationMenu } from './Popovers/BlockTextOperationMenu'
 import { TransformPastedMenu } from './Popovers/TransformPastedMenu'
 import { StoryBlockOperatorsProvider } from './StoryBlockOperatorsProvider'
 import { getFilteredOrderdSubsetOfBlocks, getSubsetOfBlocksSnapshot } from './utils'
+
 const logger = debug('tellery:editor')
 
 const useEditorClipboardManager = (

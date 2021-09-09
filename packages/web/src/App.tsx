@@ -40,8 +40,8 @@ const App: React.FC = () => {
               draggable
               pauseOnHover
               bodyClassName={css`
-                > div {
-                  width: 100%;
+                > div:last-child {
+                  flex: 1;
                 }
               `}
             />
