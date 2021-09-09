@@ -1,7 +1,7 @@
 import { BlockingUI } from '@app/components/BlockingUI'
 import { StoryEditor, tokensToText } from '@app/components/editor'
 import { NavigationHeader } from '@app/components/NavigationHeader'
-import { SideBarMetricsSection } from '@app/components/SideBarMetricsSection'
+import { SideBarRight } from '@app/components/SideBarRight'
 import { StoryBackLinks } from '@app/components/StoryBackLinks'
 import { StoryQuestionsEditor } from '@app/components/StoryQuestionsEditor'
 import { useMediaQuery } from '@app/hooks'
@@ -70,6 +70,12 @@ const _Page: React.FC = () => {
               </React.Suspense>
             </div>
             <Layout>
+              <StoryContainer>
+                <React.Suspense fallback={<BlockingUI blocking size={50} />}>
+                  <StoryContent storyId={id} />
+                  <StoryQuestionsEditor key={id} storyId={id} />
+                </React.Suspense>
+              </StoryContainer>
               {matches && (
                 <div
                   className={css`
@@ -77,16 +83,10 @@ const _Page: React.FC = () => {
                   `}
                 >
                   <React.Suspense fallback={<div></div>}>
-                    <SideBarMetricsSection storyId={id} />
+                    <SideBarRight storyId={id} />
                   </React.Suspense>
                 </div>
               )}
-              <StoryContainer>
-                <React.Suspense fallback={<BlockingUI blocking size={50} />}>
-                  <StoryContent storyId={id} />
-                  <StoryQuestionsEditor key={id} storyId={id} />
-                </React.Suspense>
-              </StoryContainer>
             </Layout>
           </div>
           {/* <SecondaryEditor /> */}
