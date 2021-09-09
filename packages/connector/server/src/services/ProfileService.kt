@@ -1,12 +1,14 @@
 package io.tellery.services
 
 import com.google.protobuf.Empty
+import io.grpc.Status
 import io.tellery.annotations.Config
 import io.tellery.base.KVEntry
 import io.tellery.common.withErrorWrapper
 import io.tellery.configs.AvailableConfig
 import io.tellery.configs.AvailableConfigs
 import io.tellery.configs.ConfigField
+import io.tellery.entities.CustomizedException
 import io.tellery.entities.IntegrationEntity
 import io.tellery.entities.ProfileEntity
 import io.tellery.managers.ConnectorManager
@@ -41,7 +43,8 @@ class ProfileService(
     override suspend fun getProfile(request: Empty): Profile {
         return withErrorWrapper {
             val profile = profileManager.getProfileById(config.workspaceId)
-            buildProtoProfile(profile!!)
+                ?: throw CustomizedException("The profile hasn't be created.", Status.NOT_FOUND)
+            buildProtoProfile(profile)
         }
     }
 
