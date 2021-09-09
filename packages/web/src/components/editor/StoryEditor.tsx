@@ -1363,12 +1363,19 @@ const _StoryEditor: React.FC<{
               const content = firstPargraph ?? ''
               const currentBlock = getBlockFromSnapshot(selectionState.anchor.blockId, snapshot)
               const [tokens1, tokens2] = splitBlockTokens(currentBlock!.content!.title || [], selectionState)
-              const beforeToken = mergeTokens([...tokens1, [content, [[Editor.InlineType.Link, content]]]])
-              const afterToken = tokens2
-              updateBlockTitle(currentBlock.id, mergeTokens([...beforeToken, ...afterToken]))
-              setTimeout(() => {
-                afterUrlPasted(content)
-              }, 0)
+
+              if (isUrl(content)) {
+                const beforeToken = mergeTokens([...tokens1, [content, [[Editor.InlineType.Link, content]]]])
+                const afterToken = tokens2
+                updateBlockTitle(currentBlock.id, mergeTokens([...beforeToken, ...afterToken]))
+                setTimeout(() => {
+                  afterUrlPasted(content)
+                }, 0)
+              } else {
+                const beforeToken = mergeTokens([...tokens1, [content]])
+                const afterToken = tokens2
+                updateBlockTitle(currentBlock.id, mergeTokens([...beforeToken, ...afterToken]))
+              }
             } else if (selectionState.type === TellerySelectionType.Inline) {
               const content = firstPargraph ?? ''
               logger('is url', isUrl(content))
