@@ -8,12 +8,18 @@ import {
   IconVisualizationScatter,
   IconVisualizationNumber
 } from '@app/assets/icons'
-import { useBlock } from '@app/hooks/api'
+import { setBlockTranscation } from '@app/context/editorTranscations'
+import { useBlock, useBlockSuspense, useSnapshot } from '@app/hooks/api'
+import { useCommit } from '@app/hooks/useCommit'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { css } from '@emotion/css'
+import produce from 'immer'
+import { WritableDraft } from 'immer/dist/internal'
+import { useCallback, useEffect, useState } from 'react'
 import IconButton from './kit/IconButton'
-import { Type } from './v11n/types'
+import { charts } from './v11n/charts'
+import { Config, Type } from './v11n/types'
 
 const icons = {
   [Type.TABLE]: IconVisualizationTable,
@@ -26,9 +32,27 @@ const icons = {
   [Type.NUMBER]: IconVisualizationNumber
 }
 
-export default function SideBarVisualizationConfig(props: { storyId: string; blockId: string }) {
-  const block = useBlock<Editor.VisualizationBlock>(props.blockId)
-  const config = block.data?.content?.visualization
+export default function SideBarVisualizationConfig<T extends Type = Type>(props: { storyId: string; blockId: string }) {
+  const block = useBlockSuspense<Editor.VisualizationBlock>(props.blockId)
+  const { data: queryBlock } = useBlock<Editor.QueryBlock>(block.content?.queryId!)
+  const snapshot = useSnapshot(queryBlock?.content?.snapshotId)
+  const commit = useCommit()
+  const config = block?.content?.visualization
+  const [cache, setCache] = useState<{ [T in Type]?: Config<T> }>({})
+  useEffect(() => {
+    setCache({})
+  }, [snapshot?.data?.fields])
+  useEffect(() => {
+    setCache((old) => (config ? { ...old, [config.type]: config } : old))
+  }, [config])
+  const setBlock = useCallback(
+    (update: (block: WritableDraft<Editor.VisualizationBlock>) => void) => {
+      const oldBlock = block
+      const newBlock = produce(oldBlock, update)
+      commit({ transcation: setBlockTranscation({ oldBlock, newBlock }), storyId: props.storyId })
+    },
+    [block, commit, props.storyId]
+  )
 
   return (
     <div
@@ -52,7 +76,16 @@ export default function SideBarVisualizationConfig(props: { storyId: string; blo
             justify-content: center;
           `}
           onClick={() => {
-            console.log(123)
+            if (t === config?.type) {
+              return
+            }
+            setBlock((draft) => {
+              if (draft?.content) {
+                draft.content.visualization = snapshot?.data
+                  ? (charts[t].initializeConfig(snapshot.data, cache) as Config<T>)
+                  : undefined
+              }
+            })
           }}
         />
       ))}
