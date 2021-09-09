@@ -1244,7 +1244,7 @@ const QueryEditorSideTabs: React.FC<{
             setMode('SQL')
           }}
         />
-        {blockType === Editor.BlockType.Visualization && (
+        {/* {blockType === Editor.BlockType.Visualization && (
           <IconButton
             hoverContent="Visualization options"
             icon={IconVisualizationSetting}
@@ -1258,7 +1258,7 @@ const QueryEditorSideTabs: React.FC<{
               setMode('VIS')
             }}
           />
-        )}
+        )} */}
         {downstreams.length === 0 || (
           <IconButton
             hoverContent="Downstreams"

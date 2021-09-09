@@ -5,7 +5,7 @@ import { ThemingVariables } from '@app/styles'
 import { CodeBlockLang, CodeBlockLangDisplayName, Editor } from '@app/types'
 import { TELLERY_MIME_TYPES } from '@app/utils'
 import { css, cx } from '@emotion/css'
-import 'highlight.js/styles/default.css'
+import 'highlight.js/styles/github.css'
 import { lowlight } from 'lowlight'
 import type { LowlightElementSpan, Text as LowLightText } from 'lowlight/lib/core'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -191,7 +191,7 @@ const CodeBlockOperation = (props: {
           setOpen(true)
         }}
       >
-        {CodeBlockLangDisplayName[props.block.content?.lang || CodeBlockLang.JavaScript]}
+        {CodeBlockLangDisplayName[props.block.content?.lang || CodeBlockLang.SQL]}
       </div>
       <EditorPopover open={open} setOpen={setOpen} referenceElement={ref.current} placement="left-start">
         <div

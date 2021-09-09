@@ -25,15 +25,41 @@ export type Permissions = Permission[]
 export enum CodeBlockLang {
   TypeScipt = 'TypeScript',
   JavaScript = 'JavaScript',
-  SQL = 'SQL'
+  Java = 'Java',
+  SQL = 'SQL',
+  Python = 'Python',
+  C = 'C',
+  CPP = 'CPP',
+  HTML = 'HTML',
+  CSS = 'CSS',
+  Kotlin = 'Kotlin',
+  Swift = 'Swift',
+  R = 'R',
+  Golang = 'Golang',
+  Yaml = 'Yaml',
+  JSON = 'JSON',
+  Markdown = 'Markdown'
   // PGSQL = 'PostgreSQL',
   // SQLMore = 'SQLMore'
 }
 
 export const CodeBlockLangDisplayName = {
+  [CodeBlockLang.SQL]: 'SQL',
+  [CodeBlockLang.Python]: 'Python',
+  [CodeBlockLang.Java]: 'Java',
+  [CodeBlockLang.Markdown]: 'Markdown',
+  [CodeBlockLang.R]: 'R',
+  [CodeBlockLang.C]: 'C',
+  [CodeBlockLang.CPP]: 'C++',
   [CodeBlockLang.TypeScipt]: 'TypeScript',
   [CodeBlockLang.JavaScript]: 'JavaScript',
-  [CodeBlockLang.SQL]: 'SQL'
+  [CodeBlockLang.HTML]: 'HTML',
+  [CodeBlockLang.CSS]: 'CSS',
+  [CodeBlockLang.Kotlin]: 'Kotlin',
+  [CodeBlockLang.Swift]: 'Swift',
+  [CodeBlockLang.Golang]: 'Golang',
+  [CodeBlockLang.Yaml]: 'Yaml',
+  [CodeBlockLang.JSON]: 'JSON'
   // [CodeBlockLang.PGSQL]: 'PostgreSQL'
   // [CodeBlockLang.SQLMore]: 'SQL More'
 }
