@@ -24,7 +24,6 @@ import type { Path } from 'd3-path'
 import type { CurveGenerator } from 'd3-shape'
 import { compact, head, keyBy, mapValues, sortBy, sum, tail, upperFirst } from 'lodash'
 import React, { MouseEvent, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import PerfectScrollbar from 'react-perfect-scrollbar'
 import { ConfigButton } from '../components/ConfigButton'
 import { ConfigInput } from '../components/ConfigInput'
 import { ConfigLabel } from '../components/ConfigLabel'
@@ -353,16 +352,9 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
     )
 
     return (
-      <div
-        className={css`
-          display: flex;
-          height: 100%;
-          width: calc(150px + 225px);
-        `}
-      >
+      <>
         <div
           className={css`
-            height: 100%;
             flex-shrink: 0;
             padding: 5px;
             box-shadow: 1px 0px 0px ${ThemingVariables.colors.gray[1]};
@@ -387,12 +379,10 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
             </ConfigButton>
           ))}
         </div>
-        <PerfectScrollbar
+        <div
           className={css`
             padding: 20px;
-            flex: 1;
           `}
-          options={{ suppressScrollX: true }}
         >
           {tab === Tab.DATA ? (
             <>
@@ -689,8 +679,8 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
               ) : null}
             </>
           ) : null}
-        </PerfectScrollbar>
-      </div>
+        </div>
+      </>
     )
   },
 

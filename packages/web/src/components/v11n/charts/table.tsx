@@ -33,12 +33,10 @@ export const table: Chart<Type.TABLE> = {
 
   Configuration(props) {
     return (
-      <PerfectScrollbar
+      <div
         className={css`
           padding: 20px;
-          width: 225px;
         `}
-        options={{ suppressScrollX: true }}
       >
         <ConfigLabel top={0}>Columns</ConfigLabel>
         <h4
@@ -117,7 +115,7 @@ export const table: Chart<Type.TABLE> = {
             </div>
           )}
         />
-      </PerfectScrollbar>
+      </div>
     )
   },
 

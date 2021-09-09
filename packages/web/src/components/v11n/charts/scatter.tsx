@@ -14,7 +14,6 @@ import {
   ZAxis
 } from '@tellery/recharts'
 import { groupBy, orderBy } from 'lodash'
-import PerfectScrollbar from 'react-perfect-scrollbar'
 import { useTextWidth } from '@tag0/use-text-width'
 import { DisplayType, Type } from '../types'
 import type { Chart } from './base'
@@ -96,16 +95,9 @@ export const scatter: Chart<Type.SCATTER> = {
     const displayTypes = useDataFieldsDisplayType(props.data.fields)
 
     return (
-      <div
-        className={css`
-          height: 100%;
-          display: flex;
-          width: calc(150px + 225px);
-        `}
-      >
+      <>
         <div
           className={css`
-            height: 100%;
             flex-shrink: 0;
             padding: 5px;
             box-shadow: 1px 0px 0px ${ThemingVariables.colors.gray[1]};
@@ -131,12 +123,10 @@ export const scatter: Chart<Type.SCATTER> = {
           ))}
         </div>
 
-        <PerfectScrollbar
+        <div
           className={css`
             padding: 20px;
-            flex: 1;
           `}
-          options={{ suppressScrollX: true }}
         >
           {tab === Tab.DATA ? (
             <>
@@ -383,8 +373,8 @@ export const scatter: Chart<Type.SCATTER> = {
               </div>
             </>
           ) : null}
-        </PerfectScrollbar>
-      </div>
+        </div>
+      </>
     )
   },
 

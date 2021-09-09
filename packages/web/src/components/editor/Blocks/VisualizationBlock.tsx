@@ -30,6 +30,7 @@ import { useCommit } from '@app/hooks/useCommit'
 import { useFetchBlock } from '@app/hooks/useFetchBlock'
 import { useInterval } from '@app/hooks/useInterval'
 import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
+import { useSideBarQuestionEditor } from '@app/hooks/useSideBarQuestionEditor'
 import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
 import { useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
@@ -780,6 +781,7 @@ export const MoreDropdownSelect: React.FC<{
   const canConvertDataAsset = !readonly && queryBlock.storyId === block.storyId
   const getSnapshot = useGetSnapshot()
   const questionEditor = useQuestionEditor(block.storyId!)
+  const sideBarQuestionEditor = useSideBarQuestionEditor(block.storyId!)
   const { t } = useTranslation()
   const mutateSnapshot = useRefreshSnapshot()
   const canRefresh = !readonly && isExecuteableBlockType(queryBlock.type)
@@ -910,7 +912,7 @@ export const MoreDropdownSelect: React.FC<{
                 title={t`Visualization options`}
                 icon={<IconVisualizationSetting color={ThemingVariables.colors.text[0]} />}
                 onClick={() => {
-                  questionEditor.open({ mode: 'VIS', blockId: block.id, storyId: block.storyId! })
+                  sideBarQuestionEditor.open({ blockId: block.id, activeTab: 'Visulization' })
                   closeMenu()
                 }}
               />
@@ -1170,6 +1172,7 @@ const TitleButtonsInner: React.FC<{
 }> = ({ block, slim, setIsActive }) => {
   const { t } = useTranslation()
   const questionEditor = useQuestionEditor(block.storyId!)
+  const sideBarQuestionEditor = useSideBarQuestionEditor(block.storyId!)
   return (
     <div
       className={css`
@@ -1188,7 +1191,7 @@ const TitleButtonsInner: React.FC<{
               hoverContent={t`Visualization options`}
               icon={IconVisualizationSetting}
               color={ThemingVariables.colors.gray[5]}
-              onClick={() => questionEditor.open({ mode: 'VIS', blockId: block.id, storyId: block.storyId! })}
+              onClick={() => sideBarQuestionEditor.open({ blockId: block.id, activeTab: 'Visulization' })}
               className={QuestionBlockIconButton}
             />
             <IconButton
