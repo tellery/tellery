@@ -851,8 +851,8 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
             ? props.config.shapes.filter((group) => group.groupId === 'right').length
             : 0)
         return {
-          left: props.dimensions.width / result100.length / (barsCount || 1) + 10,
-          right: props.dimensions.width / result100.length / (barsCount || 1) + 10
+          left: (props.dimensions.width - 64) / result100.length / (barsCount || 1),
+          right: (props.dimensions.width - 64) / result100.length / (barsCount || 1)
         }
       }
       return undefined
