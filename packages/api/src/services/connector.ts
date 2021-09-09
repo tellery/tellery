@@ -34,7 +34,7 @@ export class ConnectorService {
     await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
 
     const manager = getManager(request)
-    await manager.getProfile()
+    await manager.getProfileConfigs()
 
     const entity = new ConnectorEntity()
     entity.url = request.url
