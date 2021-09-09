@@ -1,5 +1,5 @@
 import { ThemingVariables } from '@app/styles'
-import { css, cx } from '@emotion/css'
+import { css } from '@emotion/css'
 import { Tab } from '@headlessui/react'
 import React, { Fragment, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -42,7 +42,6 @@ export const SideBarRight: React.FC<{ storyId: string }> = ({ storyId }) => {
   const [sideBarEditorState] = useSideBarQuestionEditorState(storyId)
   const currentBlockId = sideBarEditorState?.blockId ?? storyId
   const currentBlock = useBlock(currentBlockId)
-
   const showVisulizationTab = useMemo(() => {
     return currentBlock.data && isVisualizationBlock(currentBlock.data.type)
   }, [currentBlock.data])
@@ -73,6 +72,9 @@ export const SideBarRight: React.FC<{ storyId: string }> = ({ storyId }) => {
             white-space: nowrap;
           `}
         >
+          <Tab as={Fragment}>
+            {({ selected }) => <SideBarTabHeader selected={selected}>{t`Data Assets`}</SideBarTabHeader>}
+          </Tab>
           {showVisulizationTab && (
             <Tab as={Fragment}>
               {({ selected }) => <SideBarTabHeader selected={selected}>{t`Visulization`}</SideBarTabHeader>}
@@ -88,9 +90,6 @@ export const SideBarRight: React.FC<{ storyId: string }> = ({ storyId }) => {
               {({ selected }) => <SideBarTabHeader selected={selected}>{t`Downstream`}</SideBarTabHeader>}
             </Tab>
           )}
-          <Tab as={Fragment}>
-            {({ selected }) => <SideBarTabHeader selected={selected}>{t`Data Assets`}</SideBarTabHeader>}
-          </Tab>
         </Tab.List>
         <Tab.Panels
           className={css`

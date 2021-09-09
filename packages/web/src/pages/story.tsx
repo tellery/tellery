@@ -79,7 +79,7 @@ const _Page: React.FC = () => {
               {matches && (
                 <div
                   className={css`
-                    width: 240px;
+                    width: 304px;
                   `}
                 >
                   <React.Suspense fallback={<div></div>}>
