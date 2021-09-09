@@ -20,9 +20,9 @@ const _BlockInner: React.ForwardRefRenderFunction<
   if (block.alive === false) {
     return <DeletedBlock block={block}></DeletedBlock>
   }
-  if (block.permissions.length === 0) {
-    return <NoPermissionBlock block={block} />
-  }
+  // if (block.permissions?.length === 0) {
+  //   return <NoPermissionBlock block={block} />
+  // }
 
   const Component = Blocks[block.type]
   if (!Component) {

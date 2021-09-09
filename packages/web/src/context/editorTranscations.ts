@@ -359,7 +359,8 @@ export const duplicateStoryTranscation = ({
       children: [],
       type: Editor.BlockType.Story,
       storyId: newStoryId,
-      format: { ...story.format }
+      format: { ...story.format },
+      permissions: [{ role: 'manager', type: 'workspace' }]
     }),
     table: 'block'
   })

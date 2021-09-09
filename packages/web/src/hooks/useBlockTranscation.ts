@@ -60,7 +60,8 @@ export const useBlockTranscationProvider = () => {
                 content: { title: title ? [[title]] : [] },
                 children: [],
                 type: Editor.BlockType.Story,
-                storyId: id
+                storyId: id,
+                permissions: [{ role: 'manager', type: 'workspace' }]
               })
             }
           ]
