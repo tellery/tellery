@@ -159,7 +159,7 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
   const y = useMotionValue(resizeConfig.y)
   const height = useTransform(y, (y) => Math.abs(y - 0.5 * DRAG_HANDLE_WIDTH))
   const placeholderHeight = useTransform(height, (height) => (open ? height : 0))
-  const translateY = useMotionValue(0)
+  const translateY = useMotionValue(height.get() - 44)
 
   const workspace = useWorkspace()
   const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)
@@ -188,7 +188,7 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
     const controls = animate(translateY, open ? 0 : height.get() - 44, {
       type: 'tween',
       ease: 'easeInOut',
-      duration: 0.35
+      duration: 0.25
     })
 
     return controls.stop
