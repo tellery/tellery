@@ -14,7 +14,6 @@ import {
   ZAxis
 } from '@tellery/recharts'
 import { groupBy, orderBy } from 'lodash'
-import PerfectScrollbar from 'react-perfect-scrollbar'
 import { useTextWidth } from '@tag0/use-text-width'
 import { DisplayType, Type } from '../types'
 import type { Chart } from './base'
@@ -124,12 +123,10 @@ export const scatter: Chart<Type.SCATTER> = {
           ))}
         </div>
 
-        <PerfectScrollbar
+        <div
           className={css`
             padding: 20px;
-            flex: 1;
           `}
-          options={{ suppressScrollX: true }}
         >
           {tab === Tab.DATA ? (
             <>
@@ -376,7 +373,7 @@ export const scatter: Chart<Type.SCATTER> = {
               </div>
             </>
           ) : null}
-        </PerfectScrollbar>
+        </div>
       </>
     )
   },

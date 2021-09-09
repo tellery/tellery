@@ -3,7 +3,6 @@ import { orderBy, sumBy } from 'lodash'
 import { css } from '@emotion/css'
 import { Pie, Label, PieChart, Tooltip, Legend, Cell } from '@tellery/recharts'
 import { useTextWidth } from '@tag0/use-text-width'
-import PerfectScrollbar from 'react-perfect-scrollbar'
 import { DisplayType, Type } from '../types'
 import type { Chart } from './base'
 import { LegendContentVertical } from '../components/LegendContentVertical'
@@ -141,12 +140,10 @@ export const pie: Chart<Type.PIE> = {
             </ConfigButton>
           ))}
         </div>
-        <PerfectScrollbar
+        <div
           className={css`
             padding: 20px;
-            flex: 1;
           `}
-          options={{ suppressScrollX: true }}
         >
           {tab === Tab.DATA ? (
             <>
@@ -239,7 +236,7 @@ export const pie: Chart<Type.PIE> = {
               ) : null}
             </>
           ) : null}
-        </PerfectScrollbar>
+        </div>
       </>
     )
   },
