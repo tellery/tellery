@@ -15,7 +15,7 @@ import { useEditor } from './hooks'
 import { useStorySelection } from './hooks/useStorySelection'
 import { BlockOperationPopover } from './Popovers/BlockOperationPopover'
 
-const BlockDragOperation: React.FC<{
+const _BlockDragOperation: React.FC<{
   blockId: string
   storyId: string
   dragRef: React.MutableRefObject<HTMLDivElement | null>
@@ -106,6 +106,8 @@ const BlockDragOperation: React.FC<{
   )
 }
 
+const BlockDragOperation = memo(_BlockDragOperation)
+
 export const _BlockOperations: React.FC<{
   blockId: string
   storyId: string
@@ -114,6 +116,9 @@ export const _BlockOperations: React.FC<{
   const { blockId } = props
   const blockHovring = useBlockHovering(blockId)
   const [isDragging, setIsDragging] = useState(false)
+  const operations = useMemo(() => {
+    return <BlockDragOperation {...props} setIsDragging={setIsDragging} />
+  }, [props])
 
   return (
     <>
@@ -140,7 +145,7 @@ export const _BlockOperations: React.FC<{
                   display: flex;
                 `}
               >
-                <BlockDragOperation {...props} setIsDragging={setIsDragging} />
+                {operations}
               </div>
             </div>
           </motion.div>

@@ -22,7 +22,7 @@ import type { OffsetModifier } from '@popperjs/core/lib/modifiers/offset'
 import copy from 'copy-to-clipboard'
 import dayjs from 'dayjs'
 import { useAtom } from 'jotai'
-import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import React, { memo, ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import invariant from 'tiny-invariant'
 import { MenuItem } from '../../MenuItem'
@@ -53,7 +53,7 @@ const PopperModifiers: Partial<Partial<OffsetModifier | FlipModifier>>[] = [
   }
 ]
 
-export const BlockOperationPopover = (props: { id: string; children?: ReactNode }) => {
+const _BlockOperationPopover = (props: { id: string; children?: ReactNode }) => {
   const { id } = props
 
   const [open, setOpen] = useAtom(editorTransformBlockPopoverState(id))
@@ -100,6 +100,8 @@ export const BlockOperationPopover = (props: { id: string; children?: ReactNode 
     </EditorPopover>
   )
 }
+
+export const BlockOperationPopover = memo(_BlockOperationPopover)
 
 export const BlockPopoverInner: React.FC<{ id: string; requestClose: () => void }> = ({ id, requestClose }) => {
   const block = useBlockSuspense<Editor.ContentBlock>(id)

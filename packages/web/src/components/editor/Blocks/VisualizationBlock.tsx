@@ -238,8 +238,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
   }, [])
 
   const [hoveringHandlers, hovering] = useBindHovering()
-  const contentRef = useRef<HTMLDivElement | null>(null)
-  const { readonly } = useBlockBehavior()
+  const { small } = useBlockBehavior()
 
   return (
     <VisulizationInstructionsContext.Provider value={instructions}>
@@ -253,59 +252,79 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
       >
         <React.Suspense fallback={<></>}>
           {block.content?.queryId && <QuestionBlockHeader block={block} />}
-          <QuestionBlockButtons block={block} show={hovering} slim={rect.width < 260} />
+          {!small && <QuestionBlockButtons block={block} show={hovering} slim={rect.width < 260} />}
         </React.Suspense>
 
         {queryId === undefined ? (
           <BlockPlaceHolder loading={false} text="New Question" />
         ) : (
-          <>
-            <React.Suspense fallback={<></>}>
-              <QuestionBlockStatus queryId={queryId} />
-            </React.Suspense>
-
-            <motion.div
-              style={{
-                paddingTop: props.blockFormat.paddingTop
-              }}
-              transition={{ duration: 0 }}
-              className={css`
-                position: relative;
-                display: inline-block;
-                width: calc(100% + ${2 * BORDER_WIDTH + 2}px);
-                min-height: 100px;
-              `}
-              ref={contentRef}
-            >
-              <React.Suspense fallback={<BlockingUI blocking />}>
-                <VisualizationBlockContent
-                  queryId={queryId}
-                  block={block}
-                  blockFormat={props.blockFormat}
-                  parentType={props.parentType}
-                />
-              </React.Suspense>
-              {readonly === false && (
-                <BlockResizer
-                  blockFormat={props.blockFormat}
-                  contentRef={contentRef}
-                  parentType={props.parentType}
-                  blockId={block.id}
-                  offsetY={FOOTER_HEIGHT}
-                />
-              )}
-            </motion.div>
-            <div
-              className={css`
-                height: ${FOOTER_HEIGHT}px;
-              `}
-            />
-          </>
+          <VisualizationBlockBody
+            queryId={queryId}
+            block={block}
+            blockFormat={props.blockFormat}
+            parentType={props.parentType}
+          />
         )}
       </div>
     </VisulizationInstructionsContext.Provider>
   )
 }
+
+const _VisualizationBlockBody: React.FC<{
+  queryId: string
+  blockFormat: BlockFormatInterface
+  block: Editor.VisualizationBlock
+  parentType: Editor.BlockType
+}> = ({ queryId, blockFormat, block, parentType }) => {
+  const contentRef = useRef<HTMLDivElement | null>(null)
+  const { readonly } = useBlockBehavior()
+  return (
+    <>
+      <React.Suspense fallback={<></>}>
+        <QuestionBlockStatus queryId={queryId} />
+      </React.Suspense>
+
+      <motion.div
+        style={{
+          paddingTop: blockFormat.paddingTop
+        }}
+        transition={{ duration: 0 }}
+        className={css`
+          position: relative;
+          display: inline-block;
+          width: calc(100% + ${2 * BORDER_WIDTH + 2}px);
+          min-height: 100px;
+        `}
+        ref={contentRef}
+      >
+        <React.Suspense fallback={<BlockingUI blocking />}>
+          <VisualizationBlockContent
+            queryId={queryId}
+            block={block}
+            blockFormat={blockFormat}
+            parentType={parentType}
+          />
+        </React.Suspense>
+        {readonly === false && (
+          <BlockResizer
+            blockFormat={blockFormat}
+            contentRef={contentRef}
+            parentType={parentType}
+            blockId={block.id}
+            offsetY={FOOTER_HEIGHT}
+          />
+        )}
+      </motion.div>
+      <div
+        className={css`
+          height: ${FOOTER_HEIGHT}px;
+        `}
+      />
+    </>
+  )
+}
+
+const VisualizationBlockBody = memo(_VisualizationBlockBody)
 
 const _VisualizationBlockContent: React.FC<{
   queryId: string
@@ -372,32 +391,32 @@ export const QuestionBlockButtons: React.FC<{
   show: boolean
   slim: boolean
 }> = ({ block, show, slim }) => {
-  const { small } = useBlockBehavior()
   const [isActive, setIsActive] = useState(false)
 
+  const content = useMemo(
+    () => <TitleButtonsInner block={block} slim={slim} setIsActive={setIsActive} />,
+    [block, slim]
+  )
+
   return (
-    <AnimatePresence>
-      {!small && (show || isActive) && (
-        <motion.div
-          initial={'inactive'}
-          animate={'active'}
-          exit={'inactive'}
-          variants={PopoverMotionVariants.fade}
-          transition={{ duration: 0.25 }}
-          className={css`
-            position: absolute;
-            right: 0;
-            top: 0;
-            margin: 10px;
-            background: rgba(51, 51, 51, 0.7);
-            border-radius: 8px;
-            overflow: hidden;
-          `}
-        >
-          <TitleButtonsInner block={block} slim={slim} setIsActive={setIsActive} />
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <motion.div
+      transition={{ duration: 0.25 }}
+      style={{
+        opacity: show || isActive ? 1 : 0
+      }}
+      className={css`
+        position: absolute;
+        right: 0;
+        top: 0;
+        margin: 10px;
+        background: rgba(51, 51, 51, 0.7);
+        border-radius: 8px;
+        transition: opacity 250ms ease-in-out;
+        overflow: hidden;
+      `}
+    >
+      {content}
+    </motion.div>
   )
 }
 
@@ -551,7 +570,7 @@ const _QuestionBlockHeader: React.FC<{
 
 const QuestionBlockHeader = memo(_QuestionBlockHeader)
 
-const QuestionBlockStatus: React.FC<{
+const _QuestionBlockStatus: React.FC<{
   queryId: string
 }> = ({ queryId }) => {
   const queryBlock = useBlockSuspense<Editor.QueryBlock>(queryId)
@@ -655,6 +674,7 @@ const QuestionBlockStatus: React.FC<{
     </>
   )
 }
+const QuestionBlockStatus = memo(_QuestionBlockStatus)
 
 export const SnapshotUpdatedAt: React.FC<{
   loading: boolean
