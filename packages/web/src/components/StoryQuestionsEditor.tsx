@@ -188,7 +188,7 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
     const controls = animate(translateY, open ? 0 : height.get() - 44, {
       type: 'tween',
       ease: 'easeInOut',
-      duration: 0.15
+      duration: 0.35
     })
 
     return controls.stop

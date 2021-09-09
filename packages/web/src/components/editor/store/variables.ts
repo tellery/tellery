@@ -65,9 +65,9 @@ export const VariableAtomFamily = selectorFamily<any, { storyId: string; formula
         const node = math.parse(replacedFormula)
         const code = node.compile()
         const result = code.evaluate(scope)
-        return result
+        return new Promise((resolve) => setTimeout(() => resolve(result), 0))
       } catch (err) {
-        return NaN
+        return new Promise((resolve) => setTimeout(() => resolve(NaN), 0))
       }
     },
   cachePolicy_UNSTABLE: {

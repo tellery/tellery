@@ -13,7 +13,7 @@ interface PopoverProps {
   open: boolean
   setOpen: (open: boolean) => void
   children: ReactNode
-  modifiers?: Partial<Modifier<'offset' | 'flip', Options>>[] | undefined
+  modifiers?: ReadonlyArray<Modifier<unknown>>
   placement?: Placement
   disableClickThrough?: boolean
   lockBodyScroll?: boolean
@@ -57,6 +57,11 @@ export const _EditorPopoverContent = (props: PopoverProps) => {
         options: {
           offset: [0, 10]
         }
+      },
+      {
+        name: 'preventOverflow',
+        enabled: true,
+        options: { boundary: document.getElementsByTagName('main')[0], padding: 10 }
       }
     ]
   })

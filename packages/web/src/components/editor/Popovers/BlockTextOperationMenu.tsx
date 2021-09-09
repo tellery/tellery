@@ -51,6 +51,7 @@ import Tippy from '@tippyjs/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import isHotkey from 'is-hotkey'
 import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { usePopper } from 'react-popper'
 import TextareaAutosize from 'react-textarea-autosize'
 import { useEvent } from 'react-use'
@@ -123,7 +124,7 @@ export const BlockTextOperationMenu = (props: { storyId: string }) => {
     }
   }, [selectionString?.length])
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {open && range && currentBlockId && selectionString?.length && (
         <BlockTextOperationMenuInner
@@ -133,7 +134,8 @@ export const BlockTextOperationMenu = (props: { storyId: string }) => {
           selectionString={selectionString ?? ''}
         />
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   )
 }
 
@@ -170,10 +172,15 @@ const BlockTextOperationMenuInner = ({
       return null
     }
   }, [range, currentBlock, setOpen])
-
   const pop = usePopper(range, modalRef, {
     placement: 'top',
+    strategy: 'fixed',
     modifiers: [
+      {
+        name: 'preventOverflow',
+        enabled: true,
+        options: { boundary: document.getElementsByTagName('main')[0], padding: 10 }
+      },
       {
         name: 'offset',
         enabled: true,
@@ -436,7 +443,7 @@ const BlockTextOperationMenuInner = ({
         e.stopPropagation()
       }}
       className={css`
-        z-index: 10;
+        z-index: 1000;
       `}
     >
       <motion.div
