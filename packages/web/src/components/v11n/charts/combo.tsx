@@ -353,16 +353,9 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
     )
 
     return (
-      <div
-        className={css`
-          display: flex;
-          height: 100%;
-          width: calc(150px + 225px);
-        `}
-      >
+      <>
         <div
           className={css`
-            height: 100%;
             flex-shrink: 0;
             padding: 5px;
             box-shadow: 1px 0px 0px ${ThemingVariables.colors.gray[1]};
@@ -690,7 +683,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
             </>
           ) : null}
         </PerfectScrollbar>
-      </div>
+      </>
     )
   },
 

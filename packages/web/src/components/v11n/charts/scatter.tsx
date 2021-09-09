@@ -96,16 +96,9 @@ export const scatter: Chart<Type.SCATTER> = {
     const displayTypes = useDataFieldsDisplayType(props.data.fields)
 
     return (
-      <div
-        className={css`
-          height: 100%;
-          display: flex;
-          width: calc(150px + 225px);
-        `}
-      >
+      <>
         <div
           className={css`
-            height: 100%;
             flex-shrink: 0;
             padding: 5px;
             box-shadow: 1px 0px 0px ${ThemingVariables.colors.gray[1]};
@@ -384,7 +377,7 @@ export const scatter: Chart<Type.SCATTER> = {
             </>
           ) : null}
         </PerfectScrollbar>
-      </div>
+      </>
     )
   },
 

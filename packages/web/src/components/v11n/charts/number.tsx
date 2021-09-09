@@ -35,12 +35,7 @@ export const number: Chart<Type.NUMBER> = {
     const { onConfigChange } = props
 
     return (
-      <div
-        className={css`
-          padding: 20px;
-          width: 225px;
-        `}
-      >
+      <>
         <ConfigLabel top={0}>Value</ConfigLabel>
         <ConfigSelect
           options={props.config.columns}
@@ -71,7 +66,7 @@ export const number: Chart<Type.NUMBER> = {
             onConfigChange('suffix', suffix)
           }}
         />
-      </div>
+      </>
     )
   },
 
