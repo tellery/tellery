@@ -97,10 +97,10 @@ const CodeBlock: BlockComponent<
           css`
             display: flex;
             padding: 30px;
-            line-height: 1;
-            font-size: 1em;
+            line-height: 1.6;
+            font-size: 12px;
             background-color: ${ThemingVariables.colors.primary[5]};
-            font-family: monospace;
+            font-family: 'SF Mono', SFMono-Regular, ui-monospace, 'DejaVu Sans Mono', Menlo, Consolas, monospace;
             white-space: pre;
             overflow: auto;
             position: relative;
