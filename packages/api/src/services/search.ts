@@ -1,6 +1,6 @@
 /* eslint-disable no-case-declarations */
 import _ from 'lodash'
-import { getRepository } from 'typeorm'
+import { getRepository, In } from 'typeorm'
 
 import { Block } from '../core/block'
 import { getIPermission, IPermission } from '../core/permission'
@@ -33,18 +33,18 @@ export class SearchService {
     requestFilters?: { [k: string]: any },
   ): Promise<SearchDataDTO> {
     const types = _(typeList).isEmpty() ? Object.values(SearchableResourceType) : typeList!
+    const blockPermissionFilter = await this.permission.getSearchBlocksQuery(
+      operatorId,
+      workspaceId,
+    )
     const getFiltersBySearchResourceType = async (
       type: SearchableResourceType,
     ): Promise<SearchFilter> => {
       let query: SearchFilter
       switch (type) {
         case SearchableResourceType.BLOCK || SearchableResourceType._SQL:
-          const permissionFilter = await this.permission.getSearchBlocksQuery(
-            operatorId,
-            workspaceId,
-          )
           query = mergeSearchFilters([
-            permissionFilter,
+            blockPermissionFilter,
             {
               query: (t?: string) => `${t!}.alive = :alive`,
               parameters: {
@@ -74,11 +74,20 @@ export class SearchService {
         .value()
 
     // pad story blocks
-    const blockMap = getResultMap(SearchableResourceType.BLOCK)
-    const sids = _(blockMap).values().map('storyId').uniq().value() as string[]
+    const rawBlockMap = getResultMap(SearchableResourceType.BLOCK)
+    const sids = _(rawBlockMap).values().map('storyId').uniq().value() as string[]
 
-    // here no need for checking permission, cuz user must be privileged
-    const stories = await getRepository(BlockEntity).findByIds(sids)
+    // check permission again, since loaded blocks with permission may belong to a story with no permission
+    const stories = await getRepository(BlockEntity)
+      .createQueryBuilder('block')
+      .where(blockPermissionFilter.query('block'), blockPermissionFilter.parameters)
+      .andWhere({ id: In(sids) })
+      .getMany()
+
+    const loadedSids = _(stories).map('id').value()
+
+    const blockMap = _.pickBy(rawBlockMap, (val) => loadedSids.includes(val.storyId))
+
     _(stories)
       .map((e) => Block.fromEntity(e).toDTO())
       .forEach((r) => {
