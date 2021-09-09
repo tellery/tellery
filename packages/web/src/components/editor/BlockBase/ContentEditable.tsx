@@ -296,7 +296,6 @@ const _ContentEditable: React.ForwardRefRenderFunction<
     if (keywordRange === null || keywordRange.type === TellerySelectionType.Block) {
       return ''
     }
-    // logger('keyword', keywordRange)
     const range = {
       start:
         tokenPosition2SplitedTokenPosition(
@@ -438,13 +437,11 @@ const _ContentEditable: React.ForwardRefRenderFunction<
             if (showReferenceDropdown || showSlashCommandDropdown) {
               if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'Enter') {
                 e.preventDefault()
-                e.stopPropagation()
                 return
               }
               if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                 setShowReferenceDropdown(false)
                 setShowSlashCommandDropdown(false)
-                // onKeyDown?.(e)
                 return
               }
             }
@@ -458,7 +455,6 @@ const _ContentEditable: React.ForwardRefRenderFunction<
                 localSelection.focus.nodeIndex === 0 &&
                 localSelection.focus.offset === 0
               ) {
-                e.preventDefault()
                 if (isDataAssetBlock(block.type) || isVisualizationBlock(block.type)) {
                   e.stopPropagation()
                 } else if (block.type !== Editor.BlockType.Text && block.type !== Editor.BlockType.Story) {

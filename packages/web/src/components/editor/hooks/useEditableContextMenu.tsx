@@ -45,11 +45,11 @@ export const useEditableContextMenu = (
       setNavigatingMode('mouse')
     }
 
-    currentElement?.addEventListener('keydown', onKeyDown)
+    document?.addEventListener('keydown', onKeyDown)
     document?.addEventListener('mousemove', onMouseMove)
 
     return () => {
-      currentElement?.removeEventListener('keydown', onKeyDown)
+      document?.removeEventListener('keydown', onKeyDown)
       document?.addEventListener('mousemove', onMouseMove)
     }
   }, [setIndex, open, actions?.length, index, element, actions])

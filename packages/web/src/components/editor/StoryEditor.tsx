@@ -779,6 +779,8 @@ const _StoryEditor: React.FC<{
 
   const globalKeyDownHandler = useCallback(
     (e: KeyboardEvent) => {
+      if (e.defaultPrevented) return
+
       const selectionState = getSelection()
       if (selectionState === null || locked) {
         return
@@ -866,6 +868,7 @@ const _StoryEditor: React.FC<{
     (e: React.KeyboardEvent) => {
       logger('key down', e)
       const selectionState = getSelection()
+      if (e.defaultPrevented) return
 
       if (selectionState === null || locked) {
         return
