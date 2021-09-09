@@ -106,16 +106,16 @@ export const BlockTextOperationMenu = (props: { storyId: string }) => {
     return range?.toString()
   }, [range])
 
-  useEvent(
-    'mouseup',
-    useCallback(() => {
-      if (selectionString?.length) {
-        setOpen(true)
-      } else {
-        setOpen(false)
-      }
-    }, [selectionString?.length])
-  )
+  const updateOpenStatus = useCallback(() => {
+    if (selectionString?.length) {
+      setOpen(true)
+    } else {
+      setOpen(false)
+    }
+  }, [selectionString?.length])
+
+  useEvent('mouseup', updateOpenStatus)
+  useEvent('keyup', updateOpenStatus)
 
   useEffect(() => {
     if (!selectionString?.length) {

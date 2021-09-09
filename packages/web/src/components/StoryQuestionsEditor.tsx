@@ -46,7 +46,7 @@ import { css, cx } from '@emotion/css'
 import MonacoEditor from '@monaco-editor/react'
 import Tippy from '@tippyjs/react'
 import { dequal } from 'dequal'
-import { motion, MotionValue, useMotionValue, useTransform } from 'framer-motion'
+import { animate, motion, MotionValue, useMotionValue, useTransform } from 'framer-motion'
 import { produce } from 'immer'
 import isHotkey from 'is-hotkey'
 import { omit } from 'lodash'
@@ -158,6 +158,9 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
   })
   const y = useMotionValue(resizeConfig.y)
   const height = useTransform(y, (y) => Math.abs(y - 0.5 * DRAG_HANDLE_WIDTH))
+  const placeholderHeight = useTransform(height, (height) => (open ? height : 0))
+  const translateY = useMotionValue(0)
+
   const workspace = useWorkspace()
   const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)
   useSqlEditor(profile?.type)
@@ -171,15 +174,8 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
   }, [questionBlocksMap])
 
   useEffect(() => {
-    // tab.setCurrentId(activeId)
     tab.setSelectedId(activeId)
   }, [activeId, tab])
-
-  // const isDirty = useMemo(() => {
-  //   return opendQuestionBlockIds.some((id) => {
-  //     return !!questionBlocksMap[id].draft
-  //   })
-  // }, [opendQuestionBlockIds, questionBlocksMap])
 
   useEffect(() => {
     if (opendQuestionBlockIds.length === 0) {
@@ -188,21 +184,30 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
     }
   }, [opendQuestionBlockIds, setActiveId, setOpen])
 
+  useEffect(() => {
+    const controls = animate(translateY, open ? 0 : height.get() - 44, {
+      type: 'tween',
+      ease: 'easeInOut',
+      duration: 0.15
+    })
+
+    return controls.stop
+  }, [height, open, translateY])
+
   return (
     <>
-      <div
+      <motion.div
         style={{
-          height: open ? `${height.get()}px` : '44px',
+          height: placeholderHeight,
           flexShrink: 0
         }}
-      ></div>
+      ></motion.div>
 
       <motion.div
         style={{
           height: height,
-          transform: open ? 'translateY(0%)' : `translateY(${height.get() - 44}px)`
+          y: translateY
         }}
-        transition={{ duration: 0.15 }}
         className={css`
           position: absolute;
           bottom: 0;
@@ -211,7 +216,6 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
           width: 100%;
           user-select: none;
           z-index: 1000;
-          transition: transform 0.25s;
           display: flex;
           flex-direction: column;
           background-color: ${ThemingVariables.colors.gray[5]};
