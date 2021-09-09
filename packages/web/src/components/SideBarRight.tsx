@@ -8,6 +8,7 @@ import { useSideBarQuestionEditorState } from '../hooks/useSideBarQuestionEditor
 import styled from '@emotion/styled'
 import { useBlock } from '@app/hooks/api'
 import { isVisualizationBlock } from './editor/Blocks/utils'
+import SideBarVisualizationConfig from './SideBarVisualizationConfig'
 
 const SideBarDownStream: React.FC<{ storyId: string; blockId: string }> = ({ storyId, blockId }) => {
   return (
@@ -27,14 +28,15 @@ const StyledTabPanel = styled(Tab.Panel)`
 const SideBarTabHeader = styled.button<{ selected: boolean }>`
   font-style: normal;
   font-weight: 500;
+  height: 40px;
   font-size: 12px;
-  line-height: 15px;
   color: ${ThemingVariables.colors.text[1]};
   background: transparent;
   border: none;
-  padding: 15px;
+  margin-left: 16px;
+  padding: 0;
   cursor: pointer;
-  color: ${(props) => (props.selected ? ThemingVariables.colors.text[0] : ThemingVariables.colors.text[1])};
+  color: ${(props) => (props.selected ? ThemingVariables.colors.text[0] : ThemingVariables.colors.text[2])};
 `
 
 export const SideBarRight: React.FC<{ storyId: string }> = ({ storyId }) => {
@@ -70,6 +72,7 @@ export const SideBarRight: React.FC<{ storyId: string }> = ({ storyId }) => {
             border-bottom: solid 1px ${ThemingVariables.colors.gray[1]};
             overflow-x: auto;
             white-space: nowrap;
+            padding-right: 16px;
           `}
         >
           <Tab as={Fragment}>
@@ -100,7 +103,9 @@ export const SideBarRight: React.FC<{ storyId: string }> = ({ storyId }) => {
           {showVisulizationTab && (
             <StyledTabPanel>
               <React.Suspense fallback={<></>}>
-                {sideBarEditorState?.blockId && <SideBarDownStream storyId={storyId} blockId={currentBlockId} />}
+                {sideBarEditorState?.blockId && (
+                  <SideBarVisualizationConfig storyId={storyId} blockId={currentBlockId} />
+                )}
               </React.Suspense>
             </StyledTabPanel>
           )}
