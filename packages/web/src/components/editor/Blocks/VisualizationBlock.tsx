@@ -94,7 +94,7 @@ interface QuestionBlockProps {
   parentType: Editor.BlockType
 }
 
-const useVisulizationBlockInstructionsProvider = (block: Editor.VisualizationBlock) => {
+const useVisualizationBlockInstructionsProvider = (block: Editor.VisualizationBlock) => {
   const commit = useCommit()
   const questionEditor = useQuestionEditor(block.storyId!)
   const fromQueryId = block.content?.fromQueryId
@@ -134,12 +134,12 @@ const useVisulizationBlockInstructionsProvider = (block: Editor.VisualizationBlo
   return instructions
 }
 
-const VisulizationInstructionsContext = React.createContext<ReturnType<
-  typeof useVisulizationBlockInstructionsProvider
+const VisualizationInstructionsContext = React.createContext<ReturnType<
+  typeof useVisualizationBlockInstructionsProvider
 > | null>(null)
 
-const useVisulizationBlockInstructions = () => {
-  const context = useContext(VisulizationInstructionsContext)
+const useVisualizationBlockInstructions = () => {
+  const context = useContext(VisualizationInstructionsContext)
   return context
 }
 
@@ -153,7 +153,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
   const queryId = block.content?.queryId
   const fromDataAssetId = block.content?.fromDataAssetId
   const fetchBlock = useFetchBlock()
-  const instructions = useVisulizationBlockInstructionsProvider(block)
+  const instructions = useVisualizationBlockInstructionsProvider(block)
 
   useImperativeHandle(ref, () => instructions, [instructions])
 
@@ -242,7 +242,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
   const { small } = useBlockBehavior()
 
   return (
-    <VisulizationInstructionsContext.Provider value={instructions}>
+    <VisualizationInstructionsContext.Provider value={instructions}>
       <div
         ref={(el) => {
           measureRef(el as unknown as HTMLDivElement)
@@ -267,7 +267,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
           />
         )}
       </div>
-    </VisulizationInstructionsContext.Provider>
+    </VisualizationInstructionsContext.Provider>
   )
 }
 
@@ -912,7 +912,7 @@ export const MoreDropdownSelect: React.FC<{
                 title={t`Visualization options`}
                 icon={<IconVisualizationSetting color={ThemingVariables.colors.text[0]} />}
                 onClick={() => {
-                  sideBarQuestionEditor.open({ blockId: block.id, activeTab: 'Visulization' })
+                  sideBarQuestionEditor.open({ blockId: block.id, activeTab: 'Visualization' })
                   closeMenu()
                 }}
               />
@@ -1191,7 +1191,7 @@ const TitleButtonsInner: React.FC<{
               hoverContent={t`Visualization options`}
               icon={IconVisualizationSetting}
               color={ThemingVariables.colors.gray[5]}
-              onClick={() => sideBarQuestionEditor.open({ blockId: block.id, activeTab: 'Visulization' })}
+              onClick={() => sideBarQuestionEditor.open({ blockId: block.id, activeTab: 'Visualization' })}
               className={QuestionBlockIconButton}
             />
             <IconButton

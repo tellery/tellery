@@ -1,8 +1,8 @@
-import { StoryQueryVisulizationBlocksAtom } from '@app/store/block'
+import { StoryQueryVisualizationBlocksAtom } from '@app/store/block'
 import { useRecoilValue } from 'recoil'
 
-export const useStoryQueryVisulizations = (storyId: string, queryId: string) => {
-  const Visulizations = useRecoilValue(StoryQueryVisulizationBlocksAtom({ storyId, queryId }))
+export const useStoryQueryVisualizations = (storyId: string, queryId: string) => {
+  const Visualizations = useRecoilValue(StoryQueryVisualizationBlocksAtom({ storyId, queryId }))
 
-  return Visulizations
+  return Visualizations
 }

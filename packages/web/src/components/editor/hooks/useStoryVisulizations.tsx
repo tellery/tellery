@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { isVisualizationBlock } from '../Blocks/utils'
 import { getFilteredOrderdSubsetOfBlocks } from '../utils'
 
-export const useStoryVisulizations = (storyId: string) => {
+export const useStoryVisualizations = (storyId: string) => {
   const storyBlocksMap = useStoryBlocksMap(storyId)
   const questionLikeBlocks = useMemo(() => {
     if (!storyBlocksMap) return []

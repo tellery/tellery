@@ -154,11 +154,11 @@ export const TelleryStoryBlocks = selectorFamily<Record<string, Editor.BaseBlock
   }
 })
 
-export const StoryQueryVisulizationBlocksAtom = selectorFamily<
+export const StoryQueryVisualizationBlocksAtom = selectorFamily<
   Editor.VisualizationBlock[],
   { storyId: string; queryId: string }
 >({
-  key: 'StoryQueryVisulizationBlocksAtom',
+  key: 'StoryQueryVisualizationBlocksAtom',
   get:
     ({ storyId, queryId }) =>
     ({ get }) => {

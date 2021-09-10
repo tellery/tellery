@@ -5,36 +5,17 @@ import React, { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { SideBarDataAssets } from './SideBarDataAssets'
 import { useSideBarQuestionEditorState } from '../hooks/useSideBarQuestionEditor'
-import styled from '@emotion/styled'
 import { useBlock } from '@app/hooks/api'
 import { isVisualizationBlock } from './editor/Blocks/utils'
 import SideBarVisualizationConfig from './SideBarVisualizationConfig'
-
-const StyledTabPanel = styled.div`
-  height: 100%;
-  overflow-y: auto;
-`
-
-const SideBarTabHeader = styled.button<{ selected: boolean }>`
-  font-style: normal;
-  font-weight: 500;
-  height: 40px;
-  font-size: 12px;
-  color: ${ThemingVariables.colors.text[1]};
-  background: transparent;
-  border: none;
-  margin-left: 16px;
-  padding: 0;
-  cursor: pointer;
-  color: ${(props) => (props.selected ? ThemingVariables.colors.text[0] : ThemingVariables.colors.text[2])};
-`
+import { SideBarTabHeader, StyledTabPanel } from './v11n/components/Tab'
 
 export const SideBarRight: React.FC<{ storyId: string }> = ({ storyId }) => {
   const { t } = useTranslation()
   const [sideBarEditorState] = useSideBarQuestionEditorState(storyId)
   const currentBlockId = sideBarEditorState?.blockId ?? storyId
   const currentBlock = useBlock(currentBlockId)
-  const showVisulizationTab = useMemo(() => {
+  const showVisualizationTab = useMemo(() => {
     return currentBlock.data && isVisualizationBlock(currentBlock.data.type)
   }, [currentBlock.data])
   const tab = useTabState()
@@ -65,15 +46,11 @@ export const SideBarRight: React.FC<{ storyId: string }> = ({ storyId }) => {
         <Tab as={SideBarTabHeader} {...tab} id="Data Assets" selected={tab.selectedId === 'Data Assets'}>
           {t`Data Assets`}
         </Tab>
-        <Tab
-          as={SideBarTabHeader}
-          {...tab}
-          id="Visulization"
-          selected={tab.selectedId === 'Visulization'}
-          disabled={!showVisulizationTab}
-        >
-          {t`Visulization`}
-        </Tab>
+        {showVisualizationTab && (
+          <Tab as={SideBarTabHeader} {...tab} id="Visualization" selected={tab.selectedId === 'Visualization'}>
+            {t`Visualization`}
+          </Tab>
+        )}
       </TabList>
       <div
         className={css`
