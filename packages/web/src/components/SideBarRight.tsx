@@ -65,15 +65,11 @@ export const SideBarRight: React.FC<{ storyId: string }> = ({ storyId }) => {
         <Tab as={SideBarTabHeader} {...tab} id="Data Assets" selected={tab.selectedId === 'Data Assets'}>
           {t`Data Assets`}
         </Tab>
-        <Tab
-          as={SideBarTabHeader}
-          {...tab}
-          id="Visualization"
-          selected={tab.selectedId === 'Visualization'}
-          disabled={!showVisualizationTab}
-        >
-          {t`Visualization`}
-        </Tab>
+        {showVisualizationTab && (
+          <Tab as={SideBarTabHeader} {...tab} id="Visualization" selected={tab.selectedId === 'Visualization'}>
+            {t`Visualization`}
+          </Tab>
+        )}
       </TabList>
       <div
         className={css`
