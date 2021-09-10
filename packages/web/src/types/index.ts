@@ -145,6 +145,7 @@ export namespace Editor {
     SmartQuery = 'smart_query',
     SQL = 'sql',
     DBT = 'dbt',
+    Control = 'control',
 
     // embeds
     Embed = 'embed',
@@ -272,6 +273,14 @@ export namespace Editor {
     content: ContentBlock['content'] & CodeBlockContent
   }
 
+  export interface ControlBlock extends ContentBlock {
+    content: ContentBlock['content'] & {
+      name: string
+      defaultValue: any
+      type: 'text' | 'number'
+    }
+  }
+
   export interface ImageBlock extends ContentBlock {
     content?: ContentBlock['content'] & {
       fileKey?: string
@@ -311,6 +320,7 @@ export namespace Editor {
     | DataAssetBlock
     | VisualizationBlock
     | SmartQueryBlock
+    | ControlBlock
 }
 
 export interface ImageInfo {

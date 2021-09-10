@@ -4,7 +4,7 @@ import axios from 'axios'
 import type { User } from '@app/hooks/api'
 import { debounce, isEmpty, omitBy } from 'lodash'
 import { toast } from 'react-toastify'
-import type { BackLinks, Editor, Snapshot, Story, Thought } from '@app/types'
+import type { BackLinks, Dimension, Editor, Snapshot, Story, Thought, Workspace } from '@app/types'
 import { emitBlockUpdate } from '@app/utils/remoteStoreObserver'
 import JSON5 from 'json5'
 
@@ -19,6 +19,24 @@ request.interceptors.response.use(undefined, (error) => {
   }
   return Promise.reject(error)
 })
+
+export const translateSmartQuery = async (
+  workspace: Workspace,
+  queryBuilderId?: string,
+  metricIds: string[] = [],
+  dimensions: Dimension[] = []
+) => {
+  return request.post('/api/connectors/translateSmartQuery', {
+    workspaceId: workspace.id,
+    connectorId: workspace.preferences.connectorId,
+    queryBuilderId,
+    metricIds,
+    dimensions
+  })
+}
+
+export const getWorkspaceList = async () =>
+  request.post('/api/workspaces/list').then((res) => res.data.workspaces as Workspace[])
 
 export const userLogin = async ({ email, password }: { email: string; password: string }) => {
   const { data } = await request.post<User>('/api/users/login', { email, password })

@@ -19,9 +19,13 @@ export enum TELLERY_MIME_TYPES {
   MONACO = 'vscode-editor-data'
 }
 
+export const BLOCK_ID_REGX = /\{\{([a-z|A-Z|0-9|_|-]+)\}\}/
+
 const STORY_BLOCK_REGEX = new RegExp(
   `${window.location.protocol}//${window.location.host}/story/([a-z|A-Z|0-9|_|-]+)(?:#([a-z|A-Z|0-9|_|-]+))?`
 )
+
+export const isBlockId = (text: string) => text.match(BLOCK_ID_REGX)
 
 export const parseTelleryUrl = (url: string) => {
   if (STORY_BLOCK_REGEX.test(url)) {
