@@ -39,7 +39,6 @@ fun providesProfileManager(): ProfileManager? =
     when (ProjectConfig.deployMode) {
         ProjectConfig.DeployMode.LOCAL -> FileProfileManager()
         ProjectConfig.DeployMode.CLUSTER -> DatabaseProfileManager()
-        else -> null
     }
 
 @OptIn(KoinApiExtension::class)
