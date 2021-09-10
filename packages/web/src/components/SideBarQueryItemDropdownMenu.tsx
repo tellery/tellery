@@ -18,8 +18,8 @@ export const SideBarQueryItemDropdownMenuContent: React.FC<{
   block: Editor.DataAssetBlock
   onClose: () => void
   storyId: string
-  visulizationsCount: number
-}> = ({ block, onClose, storyId, visulizationsCount }) => {
+  visualizationsCount: number
+}> = ({ block, onClose, storyId, visualizationsCount }) => {
   // const blockTranscations = useBlockTranscations()
   // const permissions = useStoryPermissions(block.id)
   const { t } = useTranslation()
@@ -89,7 +89,7 @@ export const SideBarQueryItemDropdownMenuContent: React.FC<{
           <MenuItemDivider />
           <MenuConfirmPopover
             width={180}
-            disabled={visulizationsCount !== 0}
+            disabled={visualizationsCount !== 0}
             content={
               <div>
                 <div
@@ -122,7 +122,7 @@ export const SideBarQueryItemDropdownMenuContent: React.FC<{
             }
           >
             <MenuItem
-              disabled={visulizationsCount !== 0}
+              disabled={visualizationsCount !== 0}
               icon={<IconMenuDelete color={ThemingVariables.colors.negative[0]} />}
               title={
                 <span
@@ -145,8 +145,8 @@ const _SideBarQueryItemDropdownMenu: React.FC<{
   block: Editor.DataAssetBlock
   storyId: string
   show: boolean
-  visulizationsCount: number
-}> = ({ block, storyId, show, visulizationsCount }) => {
+  visualizationsCount: number
+}> = ({ block, storyId, show, visualizationsCount }) => {
   const tippyAnimation = useTippyMenuAnimation('scale')
   const [displaying, setDisplaying] = useState(false)
 
@@ -160,7 +160,7 @@ const _SideBarQueryItemDropdownMenu: React.FC<{
             onClose={() => {
               instance?.hide()
             }}
-            visulizationsCount={visulizationsCount}
+            visualizationsCount={visualizationsCount}
           />
         </motion.div>
       )}

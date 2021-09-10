@@ -30,7 +30,7 @@ import { ReactEventHandlers } from 'react-use-gesture/dist/types'
 import { Popover, PopoverDisclosure, usePopoverState } from 'reakit'
 import { BlockTitle, useGetBlockTitleTextSnapshot } from './editor'
 import { isDataAssetBlock } from './editor/Blocks/utils'
-import { useStoryQueryVisulizations } from './editor/hooks/useStoryQueryVisulizations'
+import { useStoryQueryVisualizations } from './editor/hooks/useStoryQueryVisualizations'
 import IconButton from './kit/IconButton'
 import { LazyTippy } from './LazyTippy'
 import { SearchInput } from './SearchInput'
@@ -336,7 +336,7 @@ const StoryDataAssetItemContentInner: React.FC<{
     }
     return IconCommonSql
   }, [block.storyId, block.type, storyId])
-  const queryVisulizations = useStoryQueryVisulizations(storyId, blockId)
+  const queryVisualizations = useStoryQueryVisualizations(storyId, blockId)
 
   return (
     <>
@@ -359,7 +359,7 @@ const StoryDataAssetItemContentInner: React.FC<{
           text-overflow: ellipsis;
         `}
         style={{
-          color: queryVisulizations.length ? ThemingVariables.colors.text[0] : ThemingVariables.colors.text[1]
+          color: queryVisualizations.length ? ThemingVariables.colors.text[0] : ThemingVariables.colors.text[1]
         }}
       >
         {getBlockTitle(block)}
@@ -384,7 +384,7 @@ const StoryDataAssetItemContentInner: React.FC<{
           block={block}
           storyId={storyId}
           show={isHovering}
-          visulizationsCount={queryVisulizations.length}
+          visualizationsCount={queryVisualizations.length}
         />
       </div>
     </>

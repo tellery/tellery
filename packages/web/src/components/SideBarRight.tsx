@@ -34,7 +34,7 @@ export const SideBarRight: React.FC<{ storyId: string }> = ({ storyId }) => {
   const [sideBarEditorState] = useSideBarQuestionEditorState(storyId)
   const currentBlockId = sideBarEditorState?.blockId ?? storyId
   const currentBlock = useBlock(currentBlockId)
-  const showVisulizationTab = useMemo(() => {
+  const showVisualizationTab = useMemo(() => {
     return currentBlock.data && isVisualizationBlock(currentBlock.data.type)
   }, [currentBlock.data])
   const tab = useTabState()
@@ -68,11 +68,11 @@ export const SideBarRight: React.FC<{ storyId: string }> = ({ storyId }) => {
         <Tab
           as={SideBarTabHeader}
           {...tab}
-          id="Visulization"
-          selected={tab.selectedId === 'Visulization'}
-          disabled={!showVisulizationTab}
+          id="Visualization"
+          selected={tab.selectedId === 'Visualization'}
+          disabled={!showVisualizationTab}
         >
-          {t`Visulization`}
+          {t`Visualization`}
         </Tab>
       </TabList>
       <div
