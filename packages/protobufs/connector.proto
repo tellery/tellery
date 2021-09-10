@@ -70,6 +70,7 @@ message QueryResult {
     Schema fields = 1;
     bytes row = 2;
     bool truncated = 3;
+    string error = 4;
   }
 }
 
