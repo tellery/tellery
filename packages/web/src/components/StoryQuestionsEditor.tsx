@@ -694,9 +694,9 @@ export const StoryQuestionEditor: React.FC<{
         if (snapshotId) {
           draftBlock.content!.snapshotId = snapshotId
           draftBlock.content!.error = null
-          draftBlock.content!.title = queryTitle ?? []
           draftBlock.content!.lastRunAt = Date.now()
         }
+        draftBlock.content!.title = queryTitle ?? []
       })
     },
     [block, isDraft, readonly, setSqlBlock, queryBlock.id, fields, metrics, metricIds, dimensions, sql, queryTitle]
