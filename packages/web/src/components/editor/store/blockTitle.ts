@@ -2,7 +2,7 @@ import { TelleryBlockAtom } from '@app/store/block'
 import { Editor } from '@app/types'
 import { noWait, selectorFamily } from 'recoil'
 import { extractEntitiesFromToken } from '..'
-import { VariableAtomFamily } from './variables'
+import { FormulaSelectorFamily } from './variables'
 
 export const BlockTitleAssetsAtoms = selectorFamily<Record<string, any>, { blockId: string; storyId: string }>({
   key: 'BlockTitleAssetsAtoms',
@@ -30,7 +30,7 @@ export const BlockTitleAssetsAtoms = selectorFamily<Record<string, any>, { block
             }
           } else if (entity.formula) {
             const formula = entity.formula[1] as string
-            const formulaResultLoadable = get(noWait(VariableAtomFamily({ storyId, formula })))
+            const formulaResultLoadable = get(noWait(FormulaSelectorFamily({ storyId, formula })))
             if (formulaResultLoadable.state === 'hasValue' && formulaResultLoadable.contents !== undefined) {
               const formulaResult = formulaResultLoadable.contents
               result[formula] = formulaResult

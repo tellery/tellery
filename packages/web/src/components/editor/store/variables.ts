@@ -1,7 +1,8 @@
 import { TelleryBlockAtom, TellerySnapshotAtom } from '@app/store/block'
 import type { Editor } from '@app/types'
+import { BLOCK_ID_REGX, isBlockId } from '@app/utils'
 import * as math from 'mathjs'
-import { selectorFamily } from 'recoil'
+import { atomFamily, selectorFamily } from 'recoil'
 import invariant from 'tiny-invariant'
 
 const VARIABLE_PREIFX = 'telleryvariable'
@@ -14,8 +15,6 @@ function* varibleNameMaker() {
   }
 }
 
-const BLOCK_ID_REGX = /\{\{(.*?)\}\}/
-
 const replaceIdsWithVariable = (formula: string) => {
   let result = formula
   const vriableMap: Record<string, string> = {}
@@ -23,7 +22,7 @@ const replaceIdsWithVariable = (formula: string) => {
   const variableNameGen = varibleNameMaker()
 
   while (true) {
-    const match = result.match(BLOCK_ID_REGX)
+    const match = isBlockId(result)
     if (match) {
       const blockId = match[1] as string
       const variableName = variableNameGen.next().value
@@ -38,8 +37,13 @@ const replaceIdsWithVariable = (formula: string) => {
   return [vriableMap, result] as [Record<string, string>, string]
 }
 
-export const VariableAtomFamily = selectorFamily<any, { storyId: string; formula: string }>({
-  key: 'VariableAtom',
+export const VariableAtomFamily = atomFamily<unknown, { storyId: string; name: string }>({
+  key: 'VariableAtomFamily',
+  default: undefined
+})
+
+export const FormulaSelectorFamily = selectorFamily<any, { storyId: string; formula: string }>({
+  key: 'FormulaSelectorFamily',
   get:
     ({ storyId, formula }) =>
     async ({ get }) => {

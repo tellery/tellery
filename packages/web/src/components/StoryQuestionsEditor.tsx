@@ -732,25 +732,8 @@ export const StoryQuestionEditor: React.FC<{
     setSQLError(null)
     setSqlSidePanel(false)
     const snapshotId = blockIdGenerator()
-    // queryClient.setQueryData(['snapshot', snapshotId], { id: snapshotId, data, sql })
-    // if (isDraftSql) {
-    //   // TODO: fix snap shot question id
-    //   await createSnapshot({
-    //     snapshotId,
-    //     questionId: queryBlock.id,
-    //     sql: sql,
-    //     data: data,
-    //     workspaceId: workspace.id
-    //   })
-    //   setSnapshotId(snapshotId)
-    // } else {
     const originalBlockId = queryBlock.id
     invariant(queryBlock, 'originalBlock is undefined')
-    // mutateBlock(
-    //   originalBlockId,
-    //   { ...originalBlock, content: { ...originalBlock.content, snapshotId: snapshotId } },
-    //   false
-    // )
     // TODO: fix snap shot question id
     await createSnapshot({
       snapshotId,
@@ -760,12 +743,6 @@ export const StoryQuestionEditor: React.FC<{
       workspaceId: workspace.id
     })
 
-    // if (!readonly) {
-    //   setSqlBlock(queryBlock.id, (draftBlock: Editor.QueryBlock) => {
-    //     draftBlock.content!.snapshotId = snapshotId
-    //   })
-    // }
-    // }
     save(snapshotId)
     sidebarEditor.open({ blockId: block.id, activeTab: 'Visualization' })
   }, [

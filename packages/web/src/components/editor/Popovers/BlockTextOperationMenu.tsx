@@ -63,7 +63,7 @@ import { EditorPopover } from '../EditorPopover'
 import { useEditor, useGetBlockTitleTextSnapshot } from '../hooks'
 import { useInlineFormulaPopoverState } from '../hooks/useInlineFormulaPopoverState'
 import { useStorySelection } from '../hooks/useStorySelection'
-import { useVariable } from '../hooks/useVariable'
+import { useFormula } from '../hooks/useFormula'
 const MARK_TYPES = Object.values(Editor.InlineType)
 
 const InlineEditingAtom = atom({ key: 'InlineEditingAtom', default: false })
@@ -845,7 +845,7 @@ const AddLinkOperation = (props: {
 }
 
 const FormulaResultRenderer: React.FC<{ storyId: string; formula: string }> = ({ storyId, formula }) => {
-  const variableValue = useVariable(storyId, formula)
+  const variableValue = useFormula(storyId, formula)
   return <FormulaResultValueRenderer value={variableValue} />
 }
 

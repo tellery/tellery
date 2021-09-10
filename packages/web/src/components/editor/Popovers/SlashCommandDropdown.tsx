@@ -237,6 +237,11 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
         action: createOrToggleBlock(Editor.BlockType.Equation),
         icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
       }
+      // {
+      //   title: 'Text Input',
+      //   action: createOrToggleBlock(Editor.BlockType.Control),
+      //   icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
+      // }
     ].filter((item) => item.title.toLowerCase().indexOf(keyword.toLowerCase()) !== -1)
   }, [createOrToggleBlock, keyword])
 

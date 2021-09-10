@@ -11,6 +11,7 @@ import { useIsMutating, useQueryClient } from 'react-query'
 import invariant from 'tiny-invariant'
 import { useBlockSuspense, useFetchStoryChunk } from './api'
 import { useCommit } from './useCommit'
+import { useGetCompiledSQL } from './useCompiledQuery'
 import { useStoryPermissions } from './useStoryPermissions'
 import { useStoryResources } from './useStoryResources'
 
@@ -19,11 +20,12 @@ export const useRefreshSnapshot = () => {
   const workspace = useWorkspace()
   const queryClient = useQueryClient()
   const createSnapshot = useCreateSnapshot()
+  const getCompiledSQL = useGetCompiledSQL()
 
   const execute = useCallback(
-    (queryBlock: Editor.QueryBlock) => {
+    async (queryBlock: Editor.QueryBlock) => {
       const originalBlockId = queryBlock.id
-      const sql = (queryBlock as Editor.SQLBlock).content?.sql ?? ''
+      const sql = await getCompiledSQL(queryBlock.storyId!, queryBlock.id)
       const mutationCount = queryClient
         .getMutationCache()
         .getAll()
@@ -112,6 +114,7 @@ export const useRefreshSnapshot = () => {
     [
       commit,
       createSnapshot,
+      getCompiledSQL,
       queryClient,
       workspace.id,
       workspace.preferences.connectorId,
