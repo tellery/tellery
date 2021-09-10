@@ -32,6 +32,7 @@ enum BlockType {
   SNAPSHOT = 'snapshot',
   VARIABLE = 'variable',
   SMART_QUERY = 'smart_query',
+  CONTROL = 'control',
 
   // embeds
   EMBED = 'embed',

@@ -14,6 +14,7 @@ import { EmbedBlock } from './embed'
 import { EquationBlock } from './equation'
 import { ExcalidrawBlock } from './excalidraw'
 import { FigmaBlock } from './figma'
+import { ControlBlock } from './control'
 import { FileBlock } from './file'
 import { GistBlock } from './gist'
 import { GoogleDriveBlock } from './googleDrive'
@@ -88,6 +89,7 @@ const blockConstructors = {
   [BlockType.YOUTUBE]: YouTubeBlock,
   [BlockType.SNAPSHOT]: SnapshotBlock,
   [BlockType.VARIABLE]: VariableBlock,
+  [BlockType.CONTROL]: ControlBlock,
 
   // deprecated
   [BlockType.QUESTION]: SqlBlock,
