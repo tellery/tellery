@@ -44,7 +44,7 @@ export function getBlockConstructor(type: BlockType): BlockConstructor {
   const c = constructs[type]
 
   if (!c) {
-    throw InvalidArgumentError.new('unknown block type')
+    throw InvalidArgumentError.new(`unknown block type: ${type}`)
   }
   return c
 }

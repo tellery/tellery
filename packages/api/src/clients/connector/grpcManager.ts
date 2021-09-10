@@ -168,14 +168,22 @@ export class ConnectorManager implements IConnectorManager {
     }
   }
 
-  async getProfile(): Promise<Profile> {
-    const profile = await beautyCall(
-      this.profileClient.getProfile,
-      this.profileClient,
-      new Empty(),
-      this.createMetadata(),
-    )
-    return this.renderProfile(profile)
+  async getProfile(): Promise<Profile | undefined> {
+    try {
+      const profile = await beautyCall(
+        this.profileClient.getProfile,
+        this.profileClient,
+        new Empty(),
+        this.createMetadata(),
+      )
+      return this.renderProfile(profile)
+    } catch (e: any) {
+      // special case for no profile
+      if (e.status === 404) {
+        return undefined
+      }
+      throw e
+    }
   }
 
   async upsertProfile(profileBody: Profile): Promise<Profile> {
@@ -391,6 +399,8 @@ class QueryResultTransformer extends Transform {
   nonStreamFields: {
     fields: TypeField[]
     truncated: boolean
+    upstreamErr?: string
+    errMsg?: string
   }
 
   initialized: boolean
@@ -413,7 +423,12 @@ class QueryResultTransformer extends Transform {
       this.push(`"records": [`)
       this.initialized = true
     }
+    if (row.hasError()) {
+      this.nonStreamFields.upstreamErr = 'SQL Exception Error'
+      this.nonStreamFields.errMsg = row.getError()
+    }
     if (row.hasFields()) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       this.nonStreamFields.fields = row
         .getFields()!
         .getFieldsList()

@@ -24,7 +24,18 @@ export function beautyCall<ReqT, RespT>(
       if (errCount < 3 && e.code && e.code === grpc.status.UNAVAILABLE) {
         return beautyCall(func, client, request, metadata, options, errCount + 1)
       }
-      throw createError(e.code === 2 ? 500 : 400, {
+      let code: number
+      switch (e.code) {
+        case grpc.status.UNKNOWN:
+          code = 500
+          break
+        case grpc.status.NOT_FOUND:
+          code = 404
+          break
+        default:
+          code = 400
+      }
+      throw createError(code, {
         upstreamErr: errorResponse(e.details).errMsg,
         errMsg: e.message,
       })

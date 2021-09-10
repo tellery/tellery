@@ -18,6 +18,7 @@ import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.consumeEach
 import java.nio.charset.StandardCharsets
 import java.sql.Date
+import java.sql.SQLException
 import java.sql.Time
 import java.sql.Timestamp
 
@@ -96,6 +97,11 @@ class ConnectorService(private val connectorManager: ConnectorManager) :
                         is TruncateException -> {
                             responseChannel.send(QueryResult {
                                 truncated = true
+                            })
+                        }
+                        is SQLException -> {
+                            responseChannel.send(QueryResult {
+                                error = cursor.value.message
                             })
                         }
                         else -> throw errorWrapper(cursor.value, "query")
