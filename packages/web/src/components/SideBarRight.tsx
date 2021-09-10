@@ -20,9 +20,10 @@ export const SideBarRight: React.FC<{ storyId: string }> = ({ storyId }) => {
   }, [currentBlock.data])
   const tab = useTabState()
   const { setSelectedId } = tab
+
   useEffect(() => {
     setSelectedId(sideBarEditorState?.activeTab || 'Data Assets')
-  }, [setSelectedId, sideBarEditorState?.activeTab])
+  }, [setSelectedId, sideBarEditorState])
 
   return (
     <div

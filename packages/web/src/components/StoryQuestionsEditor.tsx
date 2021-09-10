@@ -3,26 +3,23 @@ import {
   IconCommonArrowUpDown,
   IconCommonClose,
   IconCommonDataAsset,
+  IconCommonDataAssetSetting,
   IconCommonDbt,
   IconCommonDownstream,
   IconCommonError,
   IconCommonLock,
-  IconCommonDataAssetSetting,
+  IconCommonMetrics,
   IconCommonRun,
   IconCommonSave,
-  IconCommonSql,
-  IconVisualizationSetting,
-  IconCommonMetrics
+  IconCommonSql
 } from '@app/assets/icons'
 import { SQLEditor } from '@app/components/SQLEditor'
-import { Configuration } from '@app/components/v11n'
-import { useBindHovering, usePrevious } from '@app/hooks'
+import { useBindHovering } from '@app/hooks'
 import {
   useBlockSuspense,
   useConnectorsGetProfile,
   useExecuteSQL,
   useQuestionDownstreams,
-  useSnapshot,
   useTranslateSmartQuery
 } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
@@ -35,6 +32,7 @@ import {
   useQuestionEditorBlockMapState,
   useQuestionEditorOpenState
 } from '@app/hooks/useQuestionEditor'
+import { useSideBarQuestionEditor } from '@app/hooks/useSideBarQuestionEditor'
 import { useSqlEditor } from '@app/hooks/useSqlEditor'
 import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { useWorkspace } from '@app/hooks/useWorkspace'
@@ -67,8 +65,6 @@ import QueryBuilderConfig from './QueryBuilderConfig'
 import QuestionDownstreams from './QuestionDownstreams'
 import SmartQueryConfig from './SmartQueryConfig'
 import { TippySingletonContextProvider } from './TippySingletonContextProvider'
-import { charts } from './v11n/charts'
-import { Config, Type } from './v11n/types'
 
 const DragConstraints = {
   top: -700,
@@ -516,20 +512,6 @@ export const StoryQuestionEditor: React.FC<{
 
   const commit = useCommit()
 
-  const setVisualizationBlock = useCallback<SetBlock<Editor.VisualizationBlock>>(
-    (id, update) => {
-      if (!visualizationBlock) return
-      const oldBlock = visualizationBlock
-      const newBlock = produce(oldBlock, update)
-
-      commit({
-        transcation: setBlockTranscation({ oldBlock, newBlock }),
-        storyId: oldBlock.storyId!
-      })
-    },
-    [commit, visualizationBlock]
-  )
-
   const setSqlBlock = useCallback<SetBlock<Editor.QueryBlock>>(
     (id, update) => {
       const oldBlock = queryBlock
@@ -551,6 +533,7 @@ export const StoryQuestionEditor: React.FC<{
   const isDraft = !!questionBlockState?.draft
   const originalSQL = (queryBlock as Editor.SQLBlock)?.content?.sql
   const snapShotId = questionBlockState?.draft?.snapshotId ?? queryBlock?.content?.snapshotId
+
   const queryTitle = questionBlockState?.draft?.title ?? queryBlock?.content?.title
   const fields = questionBlockState?.draft?.fields ?? (queryBlock as Editor.QueryBuilder)?.content?.fields
   const metrics = questionBlockState?.draft?.metrics ?? (queryBlock as Editor.QueryBuilder)?.content?.metrics
@@ -564,8 +547,6 @@ export const StoryQuestionEditor: React.FC<{
     metricIds,
     dimensions
   )
-
-  const snapshot = useSnapshot(snapShotId)
 
   useEffect(() => {
     setQuestionBlocksMap((blocksMap) => {
@@ -661,70 +642,6 @@ export const StoryQuestionEditor: React.FC<{
     [id, setQuestionBlocksMap, queryBlock]
   )
 
-  const previousSnapshot = usePrevious(snapshot)
-
-  const visualizationConfig = useMemo(() => {
-    if (snapshot?.data && typeof snapshot?.data === 'object' && !snapshot.data.errMsg) {
-      return (
-        questionBlockState?.draft?.visConfig ??
-        (block as Editor.VisualizationBlock)?.content?.visualization ??
-        charts[Type.TABLE].initializeConfig(snapshot.data, {})
-      )
-    } else {
-      return undefined
-    }
-  }, [block, questionBlockState?.draft?.visConfig, snapshot?.data])
-
-  const setVisConfig = useCallback<
-    (config: Config<Type> | undefined | ((config: Config<Type> | undefined) => Config<Type> | undefined)) => void
-  >(
-    (update) => {
-      setQuestionBlocksMap((blocksMap) => {
-        const oldConfig = visualizationConfig
-        const newConfig = typeof update === 'function' ? update(oldConfig ?? undefined) : update
-        return {
-          ...blocksMap,
-          [id]: {
-            ...blocksMap[id],
-            draft: emitFalsyObject({
-              ...blocksMap[id].draft,
-              visConfig: dequal(newConfig, (block as Editor.VisualizationBlock).content?.visualization)
-                ? undefined
-                : newConfig
-            })
-          }
-        }
-      })
-    },
-    [block, id, setQuestionBlocksMap, visualizationConfig]
-  )
-
-  useEffect(() => {
-    if (previousSnapshot?.data && snapshot?.data) {
-      if (dequal(previousSnapshot.data.fields, snapshot?.data.fields) === false) {
-        setVisConfig((old) => charts[old?.type || Type.TABLE].initializeConfig(snapshot?.data, {}))
-      }
-    }
-  }, [previousSnapshot, setVisConfig, snapshot])
-
-  const setSnapshotId = useCallback(
-    (snapshotId: string) => {
-      setQuestionBlocksMap((blocksMap) => {
-        return {
-          ...blocksMap,
-          [id]: {
-            ...blocksMap[id],
-            draft: emitFalsyObject({
-              ...blocksMap[id].draft,
-              snapshotId: snapshotId
-            })
-          }
-        }
-      })
-    },
-    [id, setQuestionBlocksMap]
-  )
-
   const setMode = useCallback(
     (mode: QueryEditorMode) => {
       setQuestionBlocksMap((blocksMap) => {
@@ -742,62 +659,48 @@ export const StoryQuestionEditor: React.FC<{
 
   const executeSQL = useExecuteSQL(`draft/${block.id}`)
 
-  const save = useCallback(async () => {
-    if (!block) {
-      toast.error('block is undefined')
-      return
-    }
-    if (isDraft !== true) return
-    if (readonly) {
-      toast.error('question is readonly')
-      return
-    }
-    setSqlBlock(queryBlock.id, (draftBlock) => {
-      if (draftBlock.type === Editor.BlockType.SQL) {
-        ;(draftBlock as Editor.SQLBlock).content!.sql = sql
+  const save = useCallback(
+    async (snapshotId?: string) => {
+      if (!block) {
+        toast.error('block is undefined')
+        return
       }
+      if (isDraft !== true) return
+      if (readonly) {
+        toast.error('question is readonly')
+        return
+      }
+      setSqlBlock(queryBlock.id, (draftBlock) => {
+        if (draftBlock.type === Editor.BlockType.SQL) {
+          ;(draftBlock as Editor.SQLBlock).content!.sql = sql
+        }
 
-      if (draftBlock.type === Editor.BlockType.QueryBuilder) {
-        ;(draftBlock as Editor.SQLBlock).content!.sql = sql
-        ;(draftBlock as Editor.QueryBuilder).content!.fields = fields
-        ;(draftBlock as Editor.QueryBuilder).content!.metrics = metrics
-      }
-      if (fields?.length && Object.keys(metrics || {}).length) {
-        draftBlock.type = Editor.BlockType.QueryBuilder
-      }
+        if (draftBlock.type === Editor.BlockType.QueryBuilder) {
+          ;(draftBlock as Editor.SQLBlock).content!.sql = sql
+          ;(draftBlock as Editor.QueryBuilder).content!.fields = fields
+          ;(draftBlock as Editor.QueryBuilder).content!.metrics = metrics
+        }
+        if (fields?.length && Object.keys(metrics || {}).length) {
+          draftBlock.type = Editor.BlockType.QueryBuilder
+        }
 
-      if (draftBlock.type === Editor.BlockType.SmartQuery) {
-        ;(draftBlock as Editor.SmartQueryBlock).content!.metricIds = metricIds
-        ;(draftBlock as Editor.SmartQueryBlock).content!.dimensions = dimensions
-      }
-      if (metricIds?.length && dimensions?.length) {
-        draftBlock.type = Editor.BlockType.SmartQuery
-      }
-
-      draftBlock.content!.snapshotId = snapShotId
-      draftBlock.content!.error = null
-      draftBlock.content!.title = queryTitle ?? []
-      draftBlock.content!.lastRunAt = Date.now()
-    })
-    setVisualizationBlock(block.id, (draftBlock) => {
-      draftBlock.content!.visualization = visualizationConfig
-    })
-  }, [
-    block,
-    isDraft,
-    readonly,
-    setSqlBlock,
-    queryBlock.id,
-    setVisualizationBlock,
-    snapShotId,
-    queryTitle,
-    fields,
-    metrics,
-    sql,
-    metricIds,
-    dimensions,
-    visualizationConfig
-  ])
+        if (draftBlock.type === Editor.BlockType.SmartQuery) {
+          ;(draftBlock as Editor.SmartQueryBlock).content!.metricIds = metricIds
+          ;(draftBlock as Editor.SmartQueryBlock).content!.dimensions = dimensions
+        }
+        if (metricIds?.length && dimensions?.length) {
+          draftBlock.type = Editor.BlockType.SmartQuery
+        }
+        if (snapshotId) {
+          draftBlock.content!.snapshotId = snapshotId
+          draftBlock.content!.error = null
+          draftBlock.content!.title = queryTitle ?? []
+          draftBlock.content!.lastRunAt = Date.now()
+        }
+      })
+    },
+    [block, isDraft, readonly, setSqlBlock, queryBlock.id, fields, metrics, metricIds, dimensions, sql, queryTitle]
+  )
 
   const [sqlError, setSQLError] = useState<string | null>(null)
 
@@ -806,11 +709,11 @@ export const StoryQuestionEditor: React.FC<{
   const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)
   const profileType = profile?.type
   const createSnapshot = useCreateSnapshot()
+  const sidebarEditor = useSideBarQuestionEditor(storyId)
 
   const run = useCallback(async () => {
     if (!queryBlock) return
     if (!sql) return
-
     if (!isExecuteableBlockType(queryBlock.type)) {
       return
     }
@@ -830,53 +733,52 @@ export const StoryQuestionEditor: React.FC<{
     setSqlSidePanel(false)
     const snapshotId = blockIdGenerator()
     // queryClient.setQueryData(['snapshot', snapshotId], { id: snapshotId, data, sql })
-    if (isDraftSql) {
-      // TODO: fix snap shot question id
-      await createSnapshot({
-        snapshotId,
-        questionId: queryBlock.id,
-        sql: sql,
-        data: data,
-        workspaceId: workspace.id
-      })
-      setSnapshotId(snapshotId)
-    } else {
-      const originalBlockId = queryBlock.id
-      invariant(queryBlock, 'originalBlock is undefined')
-      // mutateBlock(
-      //   originalBlockId,
-      //   { ...originalBlock, content: { ...originalBlock.content, snapshotId: snapshotId } },
-      //   false
-      // )
-      // TODO: fix snap shot question id
-      await createSnapshot({
-        snapshotId,
-        questionId: originalBlockId,
-        sql: sql,
-        data: data,
-        workspaceId: workspace.id
-      })
+    // if (isDraftSql) {
+    //   // TODO: fix snap shot question id
+    //   await createSnapshot({
+    //     snapshotId,
+    //     questionId: queryBlock.id,
+    //     sql: sql,
+    //     data: data,
+    //     workspaceId: workspace.id
+    //   })
+    //   setSnapshotId(snapshotId)
+    // } else {
+    const originalBlockId = queryBlock.id
+    invariant(queryBlock, 'originalBlock is undefined')
+    // mutateBlock(
+    //   originalBlockId,
+    //   { ...originalBlock, content: { ...originalBlock.content, snapshotId: snapshotId } },
+    //   false
+    // )
+    // TODO: fix snap shot question id
+    await createSnapshot({
+      snapshotId,
+      questionId: originalBlockId,
+      sql: sql,
+      data: data,
+      workspaceId: workspace.id
+    })
 
-      if (!readonly) {
-        setSqlBlock(queryBlock.id, (draftBlock: Editor.QueryBlock) => {
-          draftBlock.content!.snapshotId = snapshotId
-        })
-      }
-    }
-    setMode('VIS')
+    // if (!readonly) {
+    //   setSqlBlock(queryBlock.id, (draftBlock: Editor.QueryBlock) => {
+    //     draftBlock.content!.snapshotId = snapshotId
+    //   })
+    // }
+    // }
+    save(snapshotId)
+    sidebarEditor.open({ blockId: block.id, activeTab: 'Visualization' })
   }, [
+    queryBlock,
     sql,
-    createSnapshot,
     executeSQL,
     workspace.id,
     workspace.preferences.connectorId,
     workspace.preferences.profile,
-    isDraftSql,
-    setMode,
-    setSnapshotId,
-    queryBlock,
-    readonly,
-    setSqlBlock
+    createSnapshot,
+    save,
+    sidebarEditor,
+    block.id
   ])
 
   const cancelExecuteSql = useCallback(() => {
@@ -1063,7 +965,7 @@ export const StoryQuestionEditor: React.FC<{
                 hoverContent="Save"
                 disabled={!isDraft || readonly === true}
                 icon={IconCommonSave}
-                onClick={save}
+                onClick={() => save()}
                 color={ThemingVariables.colors.primary[1]}
               />
             </div>
@@ -1143,19 +1045,6 @@ export const StoryQuestionEditor: React.FC<{
               </div>
             )}
           </>
-        )}
-        {mode === 'VIS' && (
-          <Configuration
-            data={snapshot?.data}
-            config={visualizationConfig}
-            onConfigChange={setVisConfig}
-            className={cx(
-              css`
-                flex: 1;
-                overflow: hidden;
-              `
-            )}
-          />
         )}
         {mode === 'DOWNSTREAM' && (
           <QuestionDownstreams
