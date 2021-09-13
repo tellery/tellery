@@ -1,6 +1,7 @@
 import {
   IconCommonLock,
   IconCommonMore,
+  IconCommonSidebar,
   IconCommonStar,
   IconCommonStarFill,
   IconMenuFullWidth,
@@ -12,10 +13,11 @@ import { useMediaQuery } from '@app/hooks'
 import { useWorkspaceView } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useCommit } from '@app/hooks/useCommit'
+import { useRightSideBarConfig } from '@app/hooks/useRightSideBarConfig'
 import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
 import { breakpoints, ThemingVariables } from '@app/styles'
-import type { Story } from '@app/types'
+import { Editor, Story } from '@app/types'
 import { DEFAULT_TIPPY_DELAY } from '@app/utils'
 import { css } from '@emotion/css'
 import Tippy from '@tippyjs/react'
@@ -29,32 +31,8 @@ import { StoryConfigPopOver } from './StoryConfigPopOver'
 import { StoryVisits } from './StoryVisits'
 import { TippySingletonContextProvider } from './TippySingletonContextProvider'
 
-export const _NavigationHeader = (props: {
-  storyId: string
-  title?: string
-  pinned?: boolean
-  format: Story['format']
-}) => {
-  const { data: workspaceView, refetch: refetchWorkspaceView } = useWorkspaceView()
-  const commit = useCommit()
-  const blockTranscation = useBlockTranscations()
-  const setStoryFormat = useCallback(
-    async (key: string, value: boolean | string) => {
-      const newFormat = {
-        ...props.format,
-        [key]: value
-      }
-      await commit({
-        storyId: props.storyId,
-        transcation: createTranscation({
-          operations: [{ cmd: 'update', path: ['format'], args: newFormat, table: 'block', id: props.storyId }]
-        })
-      })
-    },
-    [props.format, props.storyId, commit]
-  )
+const StoryTitle: React.FC<{ storyId: string; title?: string }> = (props) => {
   const permissions = useStoryPermissions(props.storyId)
-  const isSmallScreen = useMediaQuery(`only screen and (max-width: ${breakpoints[1]}px)`)
 
   return (
     <>
@@ -103,73 +81,150 @@ export const _NavigationHeader = (props: {
         >
           {props.title}
         </div>
+      </TippySingletonContextProvider>
+    </>
+  )
+}
+
+const ThoughtTitle = () => {
+  return (
+    <div
+      className={css`
+        flex: 1;
+      `}
+    >
+      Thought
+    </div>
+  )
+}
+
+const SidebarButton = () => {
+  const [rightSideBarState, setRightSideBarState] = useRightSideBarConfig()
+
+  return (
+    <IconButton
+      hoverContent={rightSideBarState.folded ? 'Open sidebar' : 'Close sidebar'}
+      icon={IconCommonSidebar}
+      onClick={async () => {
+        setRightSideBarState((oldState) => ({ ...oldState, folded: !oldState.folded }))
+      }}
+    />
+  )
+}
+
+export const _NavigationHeader = (props: {
+  storyId: string
+  title?: string
+  pinned?: boolean
+  format: Story['format']
+  type: Editor.BlockType
+}) => {
+  const { data: workspaceView, refetch: refetchWorkspaceView } = useWorkspaceView()
+  const commit = useCommit()
+  const blockTranscation = useBlockTranscations()
+  const setStoryFormat = useCallback(
+    async (key: string, value: boolean | string) => {
+      const newFormat = {
+        ...props.format,
+        [key]: value
+      }
+      await commit({
+        storyId: props.storyId,
+        transcation: createTranscation({
+          operations: [{ cmd: 'update', path: ['format'], args: newFormat, table: 'block', id: props.storyId }]
+        })
+      })
+    },
+    [props.format, props.storyId, commit]
+  )
+  const permissions = useStoryPermissions(props.storyId)
+  const isSmallScreen = useMediaQuery(`only screen and (max-width: ${breakpoints[1]}px)`)
+
+  return (
+    <>
+      {props.type === Editor.BlockType.Story && <StoryTitle title={props.title} storyId={props.storyId} />}
+      {props.type === Editor.BlockType.Thought && <ThoughtTitle />}
+
+      <div
+        className={css`
+          font-size: 0;
+          display: flex;
+          flex: 0 0;
+          justify-self: flex-end;
+          justify-content: flex-end;
+          align-items: center;
+          margin-left: 10px;
+        `}
+      >
+        {isSmallScreen === false && <StoryVisits storyId={props.storyId} />}
         <div
           className={css`
-            font-size: 0;
+            height: 24px;
+            margin: 0 20px;
+            border-right: solid 1px ${ThemingVariables.colors.gray[1]};
+          `}
+        />
+        <div
+          className={css`
+            > * + * {
+              margin-left: 20px;
+            }
             display: flex;
-            flex: 0 0;
-            justify-self: flex-end;
-            justify-content: flex-end;
-            align-items: center;
-            margin-left: 10px;
           `}
         >
-          {isSmallScreen === false && <StoryVisits storyId={props.storyId} />}
-          <div
-            className={css`
-              height: 24px;
-              margin: 0 20px;
-              border-right: solid 1px ${ThemingVariables.colors.gray[1]};
-            `}
-          />
+          <SidebarButton />
           {permissions.canWrite && (
             <>
               <React.Suspense fallback={<></>}>
                 <RefreshAllQuestionBlockButton storyId={props.storyId} />
               </React.Suspense>
-              <IconButton
-                hoverContent={props.format?.fullWidth ? 'Disable Full Width' : 'Full Width'}
-                icon={props.format?.fullWidth ? IconMenuNormalWidth : IconMenuFullWidth}
-                color={ThemingVariables.colors.text[0]}
-                className={css`
-                  margin-right: 20px;
-                `}
-                onClick={() => {
-                  setStoryFormat('fullWidth', !props.format?.fullWidth)
-                }}
-              />
+              {props.type === Editor.BlockType.Story && (
+                <IconButton
+                  hoverContent={props.format?.fullWidth ? 'Disable Full Width' : 'Full Width'}
+                  icon={props.format?.fullWidth ? IconMenuNormalWidth : IconMenuFullWidth}
+                  color={ThemingVariables.colors.text[0]}
+                  onClick={() => {
+                    setStoryFormat('fullWidth', !props.format?.fullWidth)
+                  }}
+                />
+              )}
             </>
           )}
 
-          {props.pinned ? (
-            <IconButton
-              hoverContent={'Favorite'}
-              icon={IconCommonStarFill}
-              onClick={async () => {
-                if (!workspaceView) {
-                  return
-                }
-                await blockTranscation.unpinStory(workspaceView.id, props.storyId)
-                refetchWorkspaceView()
-              }}
-            />
-          ) : (
-            <IconButton
-              hoverContent={'Favorite'}
-              icon={IconCommonStar}
-              color={ThemingVariables.colors.text[0]}
-              onClick={async () => {
-                if (!workspaceView) {
-                  return
-                }
-                await blockTranscation.pinStory(workspaceView.id, props.storyId)
-                refetchWorkspaceView()
-              }}
-            />
+          {props.type === Editor.BlockType.Story && (
+            <>
+              {props.pinned ? (
+                <IconButton
+                  hoverContent={'Favorite'}
+                  icon={IconCommonStarFill}
+                  onClick={async () => {
+                    if (!workspaceView) {
+                      return
+                    }
+                    await blockTranscation.unpinStory(workspaceView.id, props.storyId)
+                    refetchWorkspaceView()
+                  }}
+                />
+              ) : (
+                <IconButton
+                  hoverContent={'Favorite'}
+                  icon={IconCommonStar}
+                  color={ThemingVariables.colors.text[0]}
+                  onClick={async () => {
+                    if (!workspaceView) {
+                      return
+                    }
+                    await blockTranscation.pinStory(workspaceView.id, props.storyId)
+                    refetchWorkspaceView()
+                  }}
+                />
+              )}
+            </>
           )}
-          {props.storyId && <StoryConfigButton storyId={props.storyId} />}
+
+          {props.storyId && props.type === Editor.BlockType.Story && <StoryConfigButton storyId={props.storyId} />}
         </div>
-      </TippySingletonContextProvider>
+      </div>
     </>
   )
 }
@@ -203,13 +258,7 @@ const StoryConfigButton: React.FC<{ storyId: string }> = ({ storyId }) => {
         ]
       }}
     >
-      <IconButton
-        icon={IconCommonMore}
-        color={ThemingVariables.colors.text[0]}
-        className={css`
-          margin-left: 20px;
-        `}
-      />
+      <IconButton icon={IconCommonMore} color={ThemingVariables.colors.text[0]} />
     </Tippy>
   )
 }
@@ -225,7 +274,6 @@ export const RefreshAllQuestionBlockButton: React.FC<{ storyId: string }> = ({ s
         width: 20px;
         height: 20px;
         display: flex;
-        margin-right: 20px;
         align-items: center;
         justify-content: center;
       `}

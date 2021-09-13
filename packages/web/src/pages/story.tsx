@@ -7,6 +7,7 @@ import { StoryQuestionsEditor } from '@app/components/StoryQuestionsEditor'
 import { useMediaQuery } from '@app/hooks'
 import { useBlockSuspense, useFetchStoryChunk, useRecordStoryVisits, useStoryPinnedStatus } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
+import { useRightSideBarConfig } from '@app/hooks/useRightSideBarConfig'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { BlockFormatAtom, BlockTitleAtom, BlockTypeAtom } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
@@ -24,7 +25,7 @@ const _Page: React.FC = () => {
   const recordVisits = useRecordStoryVisits()
   const user = useLoggedUser()
   const workspace = useWorkspace()
-  const matches = useMediaQuery('only screen and (min-width: 700px)')
+  const [rightSideBarState] = useRightSideBarConfig()
 
   useEffect(() => {
     if (id) {
@@ -70,29 +71,48 @@ const _Page: React.FC = () => {
               </React.Suspense>
             </div>
             <Layout>
-              <StoryContainer>
+              <StoryContainer
+                style={{
+                  width: rightSideBarState.folded ? 'calc(100% - 0px)' : `calc(100% - ${rightSideBarState.width}px)`
+                }}
+              >
                 <React.Suspense fallback={<BlockingUI blocking size={50} />}>
                   <StoryContent storyId={id} />
                   <StoryQuestionsEditor key={id} storyId={id} />
                 </React.Suspense>
               </StoryContainer>
-              {matches && (
-                <div
-                  className={css`
-                    width: 305px;
-                  `}
-                >
-                  <React.Suspense fallback={<div></div>}>
-                    <SideBarRight storyId={id} />
-                  </React.Suspense>
-                </div>
-              )}
+              <RightSideBar storyId={id} />
             </Layout>
           </div>
-          {/* <SecondaryEditor /> */}
         </div>
       </VerticalLayout>
     </>
+  )
+}
+
+const RightSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
+  const [rightSideBarState] = useRightSideBarConfig()
+  const matches = useMediaQuery('only screen and (min-width: 700px)')
+
+  const rightSideBarOpen = matches && !rightSideBarState.folded
+
+  return (
+    <div
+      className={css`
+        position: absolute;
+        right: 0;
+        top: 0;
+        transition: transform 250ms ease;
+      `}
+      style={{
+        width: rightSideBarState.width,
+        transform: `translateX(${rightSideBarOpen ? '0' : '100%'})`
+      }}
+    >
+      <React.Suspense fallback={<div></div>}>
+        <SideBarRight storyId={storyId} />
+      </React.Suspense>
+    </div>
   )
 }
 
@@ -155,10 +175,7 @@ const StoryHeader: React.FC<{ storyId: string }> = ({ storyId }) => {
           background-color: #fff;
         `}
       >
-        {storyType === Editor.BlockType.Story && (
-          <NavigationHeader format={storyForamt} storyId={storyId} title={title} pinned={pinned} />
-        )}
-        {storyType === Editor.BlockType.Thought && <>Thoughts</>}
+        <NavigationHeader format={storyForamt} storyId={storyId} title={title} pinned={pinned} type={storyType} />
       </div>
     </>
   )
@@ -184,9 +201,10 @@ const StoryContainer = styled.div`
   display: flex;
   position: relative;
   flex-direction: column;
-  flex: 1;
+  /* flex: 1; */
   align-self: stretch;
   overflow: hidden;
+  transition: width 250ms ease;
 `
 
 export default _Page

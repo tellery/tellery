@@ -20,9 +20,13 @@ const ControlBlock: BlockComponent<
   const { readonly } = useBlockBehavior()
   const workspace = useWorkspace()
   const blockTranscation = useBlockTranscations()
-  const [variableValue, setVariableValue] = useVariable(block.storyId!, block.content.name ?? block.id)
+  const variableName = block.content.name ?? block.id
+  const [variableValue, setVariableValue] = useVariable(block.storyId!, variableName)
 
   useEffect(() => {
+    if (!block.content.type) {
+      blockTranscation.updateBlockProps(block.storyId!, block.id, ['content', 'type'], 'text')
+    }
     if (!block.content.name) {
       blockTranscation.updateBlockProps(block.storyId!, block.id, ['content', 'name'], block.id)
     }
@@ -46,9 +50,16 @@ const ControlBlock: BlockComponent<
     <div
       className={css`
         display: flex;
-        justify-content: center;
       `}
     >
+      name:
+      <input
+        onChange={(e) => {
+          blockTranscation.updateBlockProps(block.storyId!, block.id, ['content', 'name'], e.currentTarget.value)
+        }}
+        value={variableName}
+      />
+      value:
       {block.content.type === 'text' && (
         <input
           onBlur={(e) => {
@@ -73,4 +84,4 @@ ControlBlock.meta = {
   isResizeable: false
 }
 
-registerBlock(Editor.BlockType.Image, ControlBlock)
+registerBlock(Editor.BlockType.Control, ControlBlock)

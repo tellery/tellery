@@ -43,6 +43,7 @@ import IconCommonSave from './common/save.svg?component'
 import IconCommonSearch from './common/search.svg?component'
 import IconCommonSetting from './common/setting.svg?component'
 import IconCommonShare from './common/share.svg?component'
+import IconCommonSidebar from './common/sidebar.svg?component'
 import IconCommonSql from './common/sql.svg?component'
 import IconCommonStarFill from './common/star_fill.svg?component'
 import IconCommonStar from './common/star.svg?component'
@@ -154,6 +155,7 @@ export {
   IconCommonSearch,
   IconCommonSetting,
   IconCommonShare,
+  IconCommonSidebar,
   IconCommonSql,
   IconCommonStarFill,
   IconCommonStar,
