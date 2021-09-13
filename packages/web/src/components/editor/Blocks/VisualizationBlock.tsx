@@ -5,13 +5,13 @@ import {
   IconCommonLock,
   IconCommonMore,
   IconCommonRefresh,
+  IconCommonSetting,
   IconCommonSql,
   IconCommonUnlock,
   IconMenuDelete,
   IconMenuDownload,
   IconMenuDuplicate,
-  IconMiscNoResult,
-  IconVisualizationSetting
+  IconMiscNoResult
 } from '@app/assets/icons'
 import IconButton from '@app/components/kit/IconButton'
 import { MenuItemDivider } from '@app/components/MenuItemDivider'
@@ -899,7 +899,7 @@ export const MoreDropdownSelect: React.FC<{
               {canRefresh && (
                 <StyledMenuItem
                   {...menu}
-                  title={t`Refresh Query`}
+                  title={t`Refresh question`}
                   icon={<IconCommonRefresh color={ThemingVariables.colors.text[0]} />}
                   onClick={() => {
                     mutateSnapshot.execute(queryBlock)
@@ -909,8 +909,8 @@ export const MoreDropdownSelect: React.FC<{
               )}
               <StyledMenuItem
                 {...menu}
-                title={t`Visualization options`}
-                icon={<IconVisualizationSetting color={ThemingVariables.colors.text[0]} />}
+                title={t`Question settings`}
+                icon={<IconCommonSetting color={ThemingVariables.colors.text[0]} />}
                 onClick={() => {
                   sideBarQuestionEditor.open({ blockId: block.id, activeTab: 'Visualization' })
                   closeMenu()
@@ -1188,8 +1188,8 @@ const TitleButtonsInner: React.FC<{
               <VisBlockRefereshButton className={QuestionBlockIconButton} hoverContent={t`Refresh`} block={block} />
             )}
             <IconButton
-              hoverContent={t`Visualization options`}
-              icon={IconVisualizationSetting}
+              hoverContent={t`Settings`}
+              icon={IconCommonSetting}
               color={ThemingVariables.colors.gray[5]}
               onClick={() => sideBarQuestionEditor.open({ blockId: block.id, activeTab: 'Visualization' })}
               className={QuestionBlockIconButton}

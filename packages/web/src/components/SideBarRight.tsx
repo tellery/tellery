@@ -1,12 +1,10 @@
 import { ThemingVariables } from '@app/styles'
 import { css } from '@emotion/css'
 import { Tab, TabList, TabPanel, useTabState } from 'reakit/Tab'
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { SideBarDataAssets } from './SideBarDataAssets'
 import { useSideBarQuestionEditorState } from '../hooks/useSideBarQuestionEditor'
-import { useBlock } from '@app/hooks/api'
-import { isVisualizationBlock } from './editor/Blocks/utils'
 import SideBarVisualizationConfig from './SideBarVisualizationConfig'
 import { SideBarTabHeader, StyledTabPanel } from './v11n/components/Tab'
 
@@ -14,10 +12,6 @@ export const SideBarRight: React.FC<{ storyId: string }> = ({ storyId }) => {
   const { t } = useTranslation()
   const [sideBarEditorState] = useSideBarQuestionEditorState(storyId)
   const currentBlockId = sideBarEditorState?.blockId ?? storyId
-  const currentBlock = useBlock(currentBlockId)
-  const showVisualizationTab = useMemo(() => {
-    return currentBlock.data && isVisualizationBlock(currentBlock.data.type)
-  }, [currentBlock.data])
   const tab = useTabState()
   const { setSelectedId } = tab
 
@@ -47,13 +41,7 @@ export const SideBarRight: React.FC<{ storyId: string }> = ({ storyId }) => {
         <Tab as={SideBarTabHeader} {...tab} id="Data Assets" selected={tab.selectedId === 'Data Assets'}>
           {t`Data Assets`}
         </Tab>
-        <Tab
-          as={SideBarTabHeader}
-          {...tab}
-          id="Visualization"
-          selected={tab.selectedId === 'Visualization'}
-          disabled={!showVisualizationTab}
-        >
+        <Tab as={SideBarTabHeader} {...tab} id="Visualization" selected={tab.selectedId === 'Visualization'}>
           {t`Visualization`}
         </Tab>
       </TabList>

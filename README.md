@@ -26,7 +26,12 @@
 
 
 
-Tellery comes with a bucket of lego-ish building blocks. From reports to dashboards, Tellery can be tailored to your needs. Tellery users can ask questions against [Data assets](https://demo.tellery.io/story/vtkequmHGz5QBD9WjVflU) instead of communicating in only tables tables and columns. Data assets provide a central business abstraction over your data. Data assets let business users get answers in just a few of clicks. Tellery will automatically roll-up the metrics on the fly. Delivering insights through data assets make your metrics consistent and easy to maintain. Data assets can also be incorporated into deep analyses with SQL.
+Tellery comes with a bucket of lego-ish building blocks. From reports to dashboards, Tellery can be tailored to your needs. Tellery users can ask questions against [Data assets](https://demo.tellery.io/story/vtkequmHGz5QBD9WjVflU) instead of communicating in only tables and columns. Data assets provide a central business abstraction over your data.
+
+
+- [x] 💎 Let business users get answers in just a few clicks. Tellery will automatically roll up the metrics on the fly.
+- [x] 📏 Delivering insights through data assets make your metrics consistent and easy to maintain.
+- [x] 💪 Data assets can also be incorporated into deep analyses with SQL.
 
 
 
