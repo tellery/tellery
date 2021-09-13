@@ -181,14 +181,14 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
   }, [opendQuestionBlockIds, setActiveId, setOpen])
 
   useEffect(() => {
-    const controls = animate(translateY, open ? 0 : height.get() - 44, {
+    const controls = animate(translateY, open ? 0 : height.get() - (opendQuestionBlockIds.length ? 44 : 0), {
       type: 'tween',
       ease: 'easeInOut',
       duration: 0.25
     })
 
     return controls.stop
-  }, [height, open, translateY])
+  }, [height, open, opendQuestionBlockIds.length, translateY])
 
   return (
     <>
