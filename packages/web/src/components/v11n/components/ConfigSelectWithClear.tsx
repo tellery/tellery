@@ -1,8 +1,8 @@
-import { css } from '@emotion/css'
+import { css, cx } from '@emotion/css'
 
 import { TelleryThemeLight, ThemingVariables } from '@app/styles'
 import { SVG2DataURI } from '@app/lib/svg'
-import { IconCommonArrowDropDown, IconCommonClose } from '@app/assets/icons'
+import { IconCommonArrowDropDown, IconCommonClose, IconCommonSub } from '@app/assets/icons'
 
 export function ConfigSelectWithClear(props: {
   className?: string
@@ -14,23 +14,25 @@ export function ConfigSelectWithClear(props: {
 }) {
   return (
     <div
-      className={css`
-        width: 185px;
-        border: 1px solid ${ThemingVariables.colors.gray[1]};
-        border-radius: 8px;
-        outline: none;
-        padding-left: 9px;
-        appearance: none;
-        background-repeat: no-repeat;
-        background-position: calc(100% - 4px) 50%;
-        cursor: pointer;
-        text-overflow: ellipsis;
-        font-size: 14px;
-        font-weight: 400;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      `}
+      className={cx(
+        css`
+          height: 32px;
+          width: 160px;
+          outline: none;
+          padding-left: 6px;
+          appearance: none;
+          background-repeat: no-repeat;
+          background-position: calc(100% - 4px) 50%;
+          cursor: pointer;
+          text-overflow: ellipsis;
+          font-size: 12px;
+          font-weight: 400;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        `,
+        props.className
+      )}
     >
       <select
         className={css`
@@ -45,10 +47,10 @@ export function ConfigSelectWithClear(props: {
           display: block;
           width: 100%;
           padding-right: 30px;
+          color: ${props.value ? ThemingVariables.colors.text[0] : ThemingVariables.colors.text[2]};
         `}
         style={{
-          color: props.value ? ThemingVariables.colors.text[0] : ThemingVariables.colors.text[1],
-          backgroundImage: SVG2DataURI(IconCommonArrowDropDown, TelleryThemeLight.colors.gray[0])
+          backgroundImage: SVG2DataURI(IconCommonArrowDropDown, TelleryThemeLight.colors.text[0])
         }}
         value={props.value || ''}
         onChange={(e) => {
@@ -67,18 +69,17 @@ export function ConfigSelectWithClear(props: {
       <div
         className={css`
           cursor: pointer;
-          height: 36px;
-          width: 36px;
+          height: 32px;
+          width: 32px;
           display: flex;
           align-items: center;
           justify-content: center;
-          background: ${ThemingVariables.colors.gray[2]};
         `}
         onClick={() => {
           props.onChange(undefined)
         }}
       >
-        <IconCommonClose color={ThemingVariables.colors.gray[0]} />
+        <IconCommonSub color={ThemingVariables.colors.text[0]} />
       </div>
     </div>
   )

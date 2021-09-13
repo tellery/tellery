@@ -29,11 +29,10 @@ export function ConfigSelect(props: {
           padding: 9px 26px 9px 6px;
           appearance: none;
           background-repeat: no-repeat;
-          background-position: calc(100% - 4px) 50%;
+          background-position: calc(100% - 6px) 50%;
           cursor: pointer;
           text-overflow: ellipsis;
           display: block;
-          padding-right: 30px;
           color: ${props.value ? ThemingVariables.colors.text[0] : ThemingVariables.colors.text[1]};
           :disabled {
             cursor: not-allowed;
