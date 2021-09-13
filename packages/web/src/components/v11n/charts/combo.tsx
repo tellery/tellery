@@ -1079,7 +1079,7 @@ function AxisSelect(props: {
           background-repeat: no-repeat;
           background-position: 50% 50%;
           color: transparent;
-
+          background-image: ${SVG2DataURI(IconCommonAdd, TelleryThemeLight.colors.text[props.disabled ? 2 : 0])};
           &:disabled {
             cursor: not-allowed;
           }
@@ -1087,9 +1087,6 @@ function AxisSelect(props: {
         props.className
       )}
       disabled={props.disabled}
-      style={{
-        backgroundImage: SVG2DataURI(IconCommonAdd, TelleryThemeLight.colors.text[0])
-      }}
       value={''}
       onChange={
         props.disabled
