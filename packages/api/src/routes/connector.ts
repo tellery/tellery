@@ -12,7 +12,7 @@ import { mustGetUser } from '../utils/user'
 import { streamHttpErrorCb, withKeepaliveStream } from '../utils/stream'
 import { StorageError, UnauthorizedError } from '../error/error'
 import { translate } from '../core/translator'
-import { SelectBuilder } from '../types/queryBuilder'
+import { filterSpec, SelectBuilder } from '../types/queryBuilder'
 import { translateSmartQuery } from '../core/translator/smartQuery'
 
 class AddConnectorRequest {
@@ -283,6 +283,7 @@ async function getProfileSpecRouter(ctx: Context) {
       ...queryBuilderSpec,
       aggregation: converter(aggregation),
       bucketization: converter(bucketization),
+      filter: filterSpec,
     },
   }
 }
