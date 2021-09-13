@@ -33,8 +33,7 @@ export function ConfigSelectWithClear(props: {
           align-items: center;
           justify-content: space-between;
           :focus,
-          :active,
-          :hover {
+          :active {
             border: 1px solid ${ThemingVariables.colors.primary[2]};
           }
         `,
@@ -47,18 +46,18 @@ export function ConfigSelectWithClear(props: {
           border: none;
           outline: none;
           cursor: pointer;
+          background-color: transparent;
           background-repeat: no-repeat;
           background-position: calc(100% - 7px) 50%;
           flex: 1;
           text-overflow: ellipsis;
           display: block;
           width: 100%;
+          height: 32px;
           padding-right: 30px;
           color: ${props.value ? ThemingVariables.colors.text[0] : ThemingVariables.colors.text[2]};
+          background-image: ${SVG2DataURI(IconCommonArrowDropDown, TelleryThemeLight.colors.text[0])};
         `}
-        style={{
-          backgroundImage: SVG2DataURI(IconCommonArrowDropDown, TelleryThemeLight.colors.text[0])
-        }}
         value={props.value || ''}
         onChange={(e) => {
           props.onChange(e.target.value)
