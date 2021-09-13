@@ -11,7 +11,6 @@ import { ConfigButton } from '../components/ConfigButton'
 import { ConfigLabel } from '../components/ConfigLabel'
 import { ConfigSelect } from '../components/ConfigSelect'
 import { ConfigNumericInput } from '../components/ConfigNumericInput'
-import { ConfigSwitch } from '../components/ConfigSwitch'
 import { SliceSelector } from '../components/SliceSelector'
 import { ThemingVariables } from '@app/styles'
 import { CustomTooltip } from '../components/CustomTooltip'
@@ -19,6 +18,7 @@ import { fontFamily } from '../constants'
 import { useCrossFilter } from '@app/hooks/useDataRecords'
 import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 import i18n from '@app/i18n'
+import FormSwitch from '@app/components/kit/FormSwitch'
 
 enum Tab {
   DATA = 'Data',
@@ -179,17 +179,17 @@ export const pie: Chart<Type.PIE> = {
           {tab === Tab.DISPLAY ? (
             <>
               <ConfigLabel top={0}>Show total</ConfigLabel>
-              <ConfigSwitch
-                value={props.config.showTotal}
-                onChange={(showTotal) => {
-                  onConfigChange('showTotal', showTotal)
+              <FormSwitch
+                checked={props.config.showTotal}
+                onChange={(e) => {
+                  onConfigChange('showTotal', e.target.checked)
                 }}
               />
               <ConfigLabel>Show legend</ConfigLabel>
-              <ConfigSwitch
-                value={props.config.showLegend}
-                onChange={(showLegend) => {
-                  onConfigChange('showLegend', showLegend)
+              <FormSwitch
+                checked={props.config.showLegend}
+                onChange={(e) => {
+                  onConfigChange('showLegend', e.target.checked)
                 }}
               />
               <ConfigLabel>Slices</ConfigLabel>

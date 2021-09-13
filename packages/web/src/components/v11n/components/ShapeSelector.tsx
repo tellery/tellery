@@ -1,11 +1,11 @@
 import { cx, css } from '@emotion/css'
 import { CSSProperties, ReactNode } from 'react'
 
-import { ConfigSwitch } from './ConfigSwitch'
 import type { Config, Type } from '../types'
 import { ThemingVariables } from '@app/styles'
 import { IconCommonCheck } from '@app/assets/icons'
 import Tippy from '@tippyjs/react'
+import FormSwitch from '@app/components/kit/FormSwitch'
 
 export function ShapeSelector(props: {
   className?: string
@@ -81,12 +81,12 @@ export function ShapeSelector(props: {
             >
               Trend line
             </Label>
-            <ConfigSwitch
-              value={props.value.hasTrendline}
-              onChange={(hasTrendline) => {
+            <FormSwitch
+              checked={props.value.hasTrendline}
+              onChange={(e) => {
                 onChange({
                   ...props.value,
-                  hasTrendline
+                  hasTrendline: e.target.checked
                 })
               }}
             />

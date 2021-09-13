@@ -10,8 +10,8 @@ import { ConfigSelect } from '../components/ConfigSelect'
 import { ThemingVariables } from '@app/styles'
 import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 import { useDataRecords } from '@app/hooks/useDataRecords'
-import { ConfigSwitch } from '../components/ConfigSwitch'
 import { ConfigInput } from '../components/ConfigInput'
+import FormSwitch from '@app/components/kit/FormSwitch'
 
 export const number: Chart<Type.NUMBER> = {
   type: Type.NUMBER,
@@ -50,10 +50,10 @@ export const number: Chart<Type.NUMBER> = {
           placeholder="Please select"
         />
         <ConfigLabel>Compare</ConfigLabel>
-        <ConfigSwitch
-          value={!!props.config.compare}
-          onChange={(compare) => {
-            onConfigChange('compare', compare)
+        <FormSwitch
+          checked={!!props.config.compare}
+          onChange={(e) => {
+            onConfigChange('compare', e.target.checked)
           }}
         />
         <ConfigLabel>Prefix</ConfigLabel>

@@ -13,8 +13,8 @@ import {
 import { ThemingVariables } from '@app/styles'
 import { ComboShape, ComboStack, Config, Type } from '../types'
 import { ConfigSelect } from './ConfigSelect'
-import { ConfigSwitch } from './ConfigSwitch'
 import Tippy from '@tippyjs/react'
+import FormSwitch from '@app/components/kit/FormSwitch'
 
 const lineTypes: Config<Type.COMBO>['groups'][0]['type'][] = ['linear', 'monotone', 'step']
 
@@ -131,12 +131,12 @@ export function MoreSettingPopover(props: {
         >
           Connect nulls
         </Label>
-        <ConfigSwitch
-          value={props.value.connectNulls}
-          onChange={(value) => {
+        <FormSwitch
+          checked={props.value.connectNulls}
+          onChange={(e) => {
             onChange({
               ...props.value,
-              connectNulls: value
+              connectNulls: e.target.checked
             })
           }}
         />
