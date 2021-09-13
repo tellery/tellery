@@ -17,7 +17,6 @@ import { groupBy, orderBy } from 'lodash'
 import { useTextWidth } from '@tag0/use-text-width'
 import { DisplayType, Type } from '../types'
 import type { Chart } from './base'
-import { ConfigLabel } from '../components/ConfigLabel'
 import { ConfigSelectWithClear } from '../components/ConfigSelectWithClear'
 import { ConfigSelect } from '../components/ConfigSelect'
 import { CustomTooltip } from '../components/CustomTooltip'
@@ -32,7 +31,6 @@ import { ConfigInput } from '../components/ConfigInput'
 import { useDataRecords } from '@app/hooks/useDataRecords'
 import { ConfigTab } from '../components/ConfigTab'
 import { ConfigSection } from '../components/ConfigSection'
-import { ConfigDivider } from '../components/ConfigDivider'
 import { ConfigItem } from '../components/ConfigItem'
 
 const opacity = 0.15
@@ -93,8 +91,7 @@ export const scatter: Chart<Type.SCATTER> = {
     return (
       <ConfigTab tabs={['Data', 'Display', 'Axis']}>
         <div>
-          <ConfigSection>
-            <ConfigLabel>X axis</ConfigLabel>
+          <ConfigSection title="X axis">
             <ConfigSelect
               options={props.config.keys}
               value={props.config.xAxis}
@@ -111,9 +108,7 @@ export const scatter: Chart<Type.SCATTER> = {
               `}
             />
           </ConfigSection>
-          <ConfigDivider />
-          <ConfigSection>
-            <ConfigLabel>Y axis</ConfigLabel>
+          <ConfigSection title="Y axis">
             <ConfigSelect
               options={props.config.keys}
               value={props.config.yAxis}
@@ -126,9 +121,7 @@ export const scatter: Chart<Type.SCATTER> = {
               `}
             />
           </ConfigSection>
-          <ConfigDivider />
-          <ConfigSection>
-            <ConfigLabel>Color</ConfigLabel>
+          <ConfigSection title="Color">
             <ConfigSelectWithClear
               options={props.config.keys}
               value={props.config.color}
@@ -151,9 +144,7 @@ export const scatter: Chart<Type.SCATTER> = {
               `}
             />
           </ConfigSection>
-          <ConfigDivider />
-          <ConfigSection>
-            <ConfigLabel>Size</ConfigLabel>
+          <ConfigSection title="Size">
             <ConfigSelectWithClear
               options={props.config.keys}
               value={props.config.size}
@@ -168,8 +159,7 @@ export const scatter: Chart<Type.SCATTER> = {
           </ConfigSection>
         </div>
         <div>
-          <ConfigSection>
-            <ConfigLabel>Colors</ConfigLabel>
+          <ConfigSection title="Colors">
             {props.config.colors.map((color) => (
               <ColorSelector
                 key={color.key}
@@ -188,9 +178,7 @@ export const scatter: Chart<Type.SCATTER> = {
           </ConfigSection>
           {isNumeric(props.data.fields.find((field) => field.name === props.config.xAxis)?.displayType) ? (
             <>
-              <ConfigDivider />
-              <ConfigSection>
-                <ConfigLabel>X reference line</ConfigLabel>
+              <ConfigSection title="X reference line">
                 <ConfigItem label="Label">
                   <ConfigInput
                     value={props.config.referenceXLabel}
@@ -210,9 +198,7 @@ export const scatter: Chart<Type.SCATTER> = {
               </ConfigSection>
             </>
           ) : null}
-          <ConfigDivider />
-          <ConfigSection>
-            <ConfigLabel>Y reference line</ConfigLabel>
+          <ConfigSection title="Y reference line">
             <ConfigItem label="Label">
               <ConfigInput
                 value={props.config.referenceYLabel}
@@ -232,8 +218,7 @@ export const scatter: Chart<Type.SCATTER> = {
           </ConfigSection>
         </div>
         <div>
-          <ConfigSection>
-            <ConfigLabel>X axis</ConfigLabel>
+          <ConfigSection title="X axis">
             <ConfigItem label="Label">
               <ConfigInput
                 value={props.config.xLabel}
@@ -254,9 +239,7 @@ export const scatter: Chart<Type.SCATTER> = {
               />
             </ConfigItem>
           </ConfigSection>
-          <ConfigDivider />
-          <ConfigSection>
-            <ConfigLabel>Y axis</ConfigLabel>
+          <ConfigSection title="Y axis">
             <ConfigItem label="Label">
               <ConfigInput
                 value={props.config.yLabel}

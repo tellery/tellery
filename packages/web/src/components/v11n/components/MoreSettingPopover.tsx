@@ -244,7 +244,7 @@ export function MoreSettingPopover(props: {
     >
       <div
         className={css`
-          color: ${ThemingVariables.colors.primary[1]};
+          color: ${ThemingVariables.colors.text[0]};
           padding: 6px;
           line-height: 0;
           cursor: pointer;

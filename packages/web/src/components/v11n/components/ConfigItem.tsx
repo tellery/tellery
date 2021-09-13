@@ -25,6 +25,7 @@ export function ConfigItem(props: { label: string; children: ReactNode }) {
       <div
         className={css`
           width: 160px;
+          line-height: 0;
         `}
       >
         {props.children}

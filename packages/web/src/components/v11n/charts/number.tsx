@@ -50,12 +50,21 @@ export const number: Chart<Type.NUMBER> = {
             />
           </ConfigItem>
           <ConfigItem label="Compare">
-            <FormSwitch
-              checked={!!props.config.compare}
-              onChange={(e) => {
-                onConfigChange('compare', e.target.checked)
-              }}
-            />
+            <div
+              className={css`
+                display: flex;
+                justify-content: flex-end;
+                line-height: 0;
+                padding-right: 6px;
+              `}
+            >
+              <FormSwitch
+                checked={!!props.config.compare}
+                onChange={(e) => {
+                  onConfigChange('compare', e.target.checked)
+                }}
+              />
+            </div>
           </ConfigItem>
           <ConfigItem label="Prefix">
             <ConfigInput

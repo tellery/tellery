@@ -3,7 +3,6 @@ import { slice } from 'lodash'
 import React, { useMemo, useState, useEffect } from 'react'
 import { IconCommonArrowUnfold, IconMenuHide, IconMenuShow } from '@app/assets/icons'
 import { ThemingVariables } from '@app/styles'
-import { ConfigLabel } from '../components/ConfigLabel'
 import { SortableList } from '../components/SortableList'
 import { Type } from '../types'
 import { formatRecord, isNumeric, isTimeSeries } from '../utils'
@@ -36,8 +35,7 @@ export const table: Chart<Type.TABLE> = {
   Configuration(props) {
     return (
       <ConfigTab tabs={['Data']}>
-        <ConfigSection>
-          <ConfigLabel>Columns</ConfigLabel>
+        <ConfigSection title="Columns">
           <SortableList
             value={props.config.columnOrder}
             onChange={(value) => {

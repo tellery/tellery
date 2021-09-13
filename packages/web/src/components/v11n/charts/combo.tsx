@@ -24,10 +24,8 @@ import type { Path } from 'd3-path'
 import type { CurveGenerator } from 'd3-shape'
 import { compact, head, keyBy, mapValues, sortBy, sum, tail, upperFirst } from 'lodash'
 import React, { MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ConfigDivider } from '../components/ConfigDivider'
 import { ConfigInput } from '../components/ConfigInput'
 import { ConfigItem } from '../components/ConfigItem'
-import { ConfigLabel } from '../components/ConfigLabel'
 import { ConfigNumericInput } from '../components/ConfigNumericInput'
 import { ConfigSection } from '../components/ConfigSection'
 import { ConfigSelect } from '../components/ConfigSelect'
@@ -223,25 +221,23 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
     const renderAxisSelect = useCallback(
       (title: string, axise: 'xAxises' | 'dimensions' | 'yAxises' | 'y2Axises', disabled: boolean, first?: boolean) => {
         return (
-          <ConfigSection>
-            <ConfigLabel
-              right={
-                <AxisSelect
-                  options={props.config.axises}
-                  disabled={disabled}
-                  onSelect={(value) => {
-                    const array = [...axises[axise], value]
-                    if (axise === 'dimensions') {
-                      onConfigChange(axise, array)
-                    } else {
-                      onConfigChange(axise, array, mapAxis2Label(axise), calcLabel(array, axise))
-                    }
-                  }}
-                />
-              }
-            >
-              {title}
-            </ConfigLabel>
+          <ConfigSection
+            title={title}
+            right={
+              <AxisSelect
+                options={props.config.axises}
+                disabled={disabled}
+                onSelect={(value) => {
+                  const array = [...axises[axise], value]
+                  if (axise === 'dimensions') {
+                    onConfigChange(axise, array)
+                  } else {
+                    onConfigChange(axise, array, mapAxis2Label(axise), calcLabel(array, axise))
+                  }
+                }}
+              />
+            }
+          >
             <SortableList
               value={axises[axise]}
               onChange={(value) => {
@@ -349,15 +345,12 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
       <ConfigTab tabs={['Data', 'Display', 'Axis']}>
         <div>
           {renderAxisSelect('X axis', 'xAxises', false, true)}
-          <ConfigDivider />
           {renderAxisSelect('Dimension', 'dimensions', yAxises.length > 0 && y2Axises.length > 0)}
-          <ConfigDivider />
           {renderAxisSelect(
             'Y axis (Left)',
             'yAxises',
             dimensions.length > 0 && (yAxises.length > 0 || y2Axises.length > 0)
           )}
-          <ConfigDivider />
           {renderAxisSelect(
             'Y axis (Right)',
             'y2Axises',
@@ -365,25 +358,23 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
           )}
         </div>
         <div>
-          {props.config.groups.map((item, index) => (
-            <ConfigSection key={item.key}>
-              {index === 0 ? null : <ConfigDivider />}
-              <ConfigLabel
-                right={
-                  <MoreSettingPopover
-                    shapes={props.config.shapes.filter(({ groupId }) => groupId === item.key).length}
-                    value={item}
-                    onChange={(value) => {
-                      onConfigChange(
-                        'groups',
-                        props.config.groups.map((group) => (group.key === item.key ? { ...item, ...value } : group))
-                      )
-                    }}
-                  />
-                }
-              >
-                Y axis ({upperFirst(item.key)})
-              </ConfigLabel>
+          {props.config.groups.map((item) => (
+            <ConfigSection
+              key={item.key}
+              title={`Y axis (${upperFirst(item.key)})`}
+              right={
+                <MoreSettingPopover
+                  shapes={props.config.shapes.filter(({ groupId }) => groupId === item.key).length}
+                  value={item}
+                  onChange={(value) => {
+                    onConfigChange(
+                      'groups',
+                      props.config.groups.map((group) => (group.key === item.key ? { ...item, ...value } : group))
+                    )
+                  }}
+                />
+              }
+            >
               <SortableList
                 value={props.config.shapes.filter(({ groupId }) => groupId === item.key)}
                 onChange={(value) => {
@@ -404,9 +395,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
               />
             </ConfigSection>
           ))}
-          <ConfigDivider />
-          <ConfigSection>
-            <ConfigLabel>Y reference line</ConfigLabel>
+          <ConfigSection title="Y reference line">
             <ConfigItem label="Label">
               <ConfigInput
                 value={props.config.referenceYLabel}
@@ -437,8 +426,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
           </ConfigSection>
         </div>
         <div>
-          <ConfigSection>
-            <ConfigLabel>X axis</ConfigLabel>
+          <ConfigSection title="X axis">
             <ConfigItem label="Label">
               <ConfigInput
                 value={props.config.xLabel}
@@ -459,9 +447,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
               />
             </ConfigItem>
           </ConfigSection>
-          <ConfigDivider />
-          <ConfigSection>
-            <ConfigLabel>Y axis (Left)</ConfigLabel>
+          <ConfigSection title="Y axis (Left)">
             <ConfigItem label="Label">
               <ConfigInput
                 value={props.config.yLabel}
@@ -522,9 +508,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
           </ConfigSection>
           {props.config.y2Axises.length ? (
             <>
-              <ConfigDivider />
-              <ConfigSection>
-                <ConfigLabel>Y axis (Right)</ConfigLabel>
+              <ConfigSection title="Y axis (Right)">
                 <ConfigItem label="Label">
                   <ConfigInput
                     value={props.config.y2Label}

@@ -1,4 +1,3 @@
-import { ThemingVariables } from '@app/styles'
 import { css } from '@emotion/css'
 import { Tab, TabList, TabPanel, useTabState } from 'reakit/Tab'
 import React, { ReactNode, useEffect } from 'react'
@@ -25,7 +24,6 @@ export function ConfigTab(props: { tabs: string[]; tab?: string; children: React
       <TabList
         {...tabState}
         className={css`
-          border-bottom: solid 1px ${ThemingVariables.colors.gray[1]};
           overflow-x: auto;
           white-space: nowrap;
           padding-right: 16px;

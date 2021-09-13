@@ -27,7 +27,7 @@ export function ConfigSelect(props: {
           font-style: normal;
           font-weight: normal;
           font-size: 12px;
-          padding: 9px 26px 9px 6px;
+          padding: 0 26px 0 6px;
           appearance: none;
           background-repeat: no-repeat;
           background-position: calc(100% - 6px) 50%;

@@ -7,7 +7,6 @@ import { DisplayType, Type } from '../types'
 import type { Chart } from './base'
 import { LegendContentVertical } from '../components/LegendContentVertical'
 import { formatRecord, isNumeric, isTimeSeries } from '../utils'
-import { ConfigLabel } from '../components/ConfigLabel'
 import { ConfigSelect } from '../components/ConfigSelect'
 import { ConfigNumericInput } from '../components/ConfigNumericInput'
 import { SliceSelector } from '../components/SliceSelector'
@@ -21,7 +20,6 @@ import FormSwitch from '@app/components/kit/FormSwitch'
 import { ConfigTab } from '../components/ConfigTab'
 import { ConfigSection } from '../components/ConfigSection'
 import { ConfigItem } from '../components/ConfigItem'
-import { ConfigDivider } from '../components/ConfigDivider'
 
 const opacity = 0.15
 
@@ -146,25 +144,41 @@ export const pie: Chart<Type.PIE> = {
         <div>
           <ConfigSection>
             <ConfigItem label="Show total">
-              <FormSwitch
-                checked={props.config.showTotal}
-                onChange={(e) => {
-                  onConfigChange('showTotal', e.target.checked)
-                }}
-              />
+              <div
+                className={css`
+                  display: flex;
+                  justify-content: flex-end;
+                  line-height: 0;
+                  padding-right: 6px;
+                `}
+              >
+                <FormSwitch
+                  checked={props.config.showTotal}
+                  onChange={(e) => {
+                    onConfigChange('showTotal', e.target.checked)
+                  }}
+                />
+              </div>
             </ConfigItem>
             <ConfigItem label="Show legend">
-              <FormSwitch
-                checked={props.config.showLegend}
-                onChange={(e) => {
-                  onConfigChange('showLegend', e.target.checked)
-                }}
-              />
+              <div
+                className={css`
+                  display: flex;
+                  justify-content: flex-end;
+                  line-height: 0;
+                  padding-right: 6px;
+                `}
+              >
+                <FormSwitch
+                  checked={props.config.showLegend}
+                  onChange={(e) => {
+                    onConfigChange('showLegend', e.target.checked)
+                  }}
+                />
+              </div>
             </ConfigItem>
           </ConfigSection>
-          <ConfigDivider />
-          <ConfigSection>
-            <ConfigLabel>Slices</ConfigLabel>
+          <ConfigSection title="Slices">
             {props.config.slices.map((item) => (
               <SliceSelector
                 key={item.key}
