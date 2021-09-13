@@ -1084,6 +1084,7 @@ function AxisSelect(props: {
           appearance: none;
           border: none;
           outline: none;
+          border-radius: 4px;
           font-size: 14px;
           font-weight: 400;
           cursor: pointer;
@@ -1095,6 +1096,10 @@ function AxisSelect(props: {
           background-image: ${SVG2DataURI(IconCommonAdd, TelleryThemeLight.colors.text[props.disabled ? 2 : 0])};
           &:disabled {
             cursor: not-allowed;
+          }
+          :hover {
+            cursor: pointer;
+            background-color: ${ThemingVariables.colors.primary[5]};
           }
         `,
         props.className
