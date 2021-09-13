@@ -1,9 +1,10 @@
 import { cx, css } from '@emotion/css'
-import { CSSProperties, ReactNode } from 'react'
 import type { Config, Type } from '../types'
 import { ThemingVariables } from '@app/styles'
-import { IconCommonCheck } from '@app/assets/icons'
-import Tippy from '@tippyjs/react'
+import { ConfigPopover } from './ConfigPopover'
+import { ConfigSection } from './ConfigSection'
+import { ConfigItem } from './ConfigItem'
+import { ConfigColorPicker } from './ConfigColorPicker'
 
 export function ColorSelector(props: {
   className?: string
@@ -22,57 +23,30 @@ export function ColorSelector(props: {
           align-items: center;
           height: 32px;
           width: 100%;
+          border: 1px solid transparent;
+          border-radius: 4px;
+          :hover {
+            border: 1px solid ${ThemingVariables.colors.primary[2]};
+          }
         `
       )}
     >
-      <Tippy
-        theme="tellery"
-        arrow={false}
-        interactive={true}
-        trigger="click"
+      <ConfigPopover
+        title="Color detail"
         content={
-          <div
-            className={css`
-              padding: 20px;
-              width: 240px;
-              background: ${ThemingVariables.colors.gray[5]};
-              box-shadow: ${ThemingVariables.boxShadows[0]};
-              border-radius: 8px;
-            `}
-          >
-            <Label
-              className={css`
-                margin: -5px 0 8px 0;
-              `}
-            >
-              Color
-            </Label>
-            <div
-              className={css`
-                margin: -2.5px;
-                display: flex;
-                flex-wrap: wrap;
-              `}
-            >
-              {ThemingVariables.colors.visualization.map((color, index) => (
-                <Button
-                  key={color}
-                  onClick={() => {
-                    onChange({
-                      ...props.value,
-                      color: index
-                    })
-                  }}
-                  style={{
-                    backgroundColor: color,
-                    cursor: props.value.color === index ? 'default' : 'pointer'
-                  }}
-                >
-                  {props.value.color === index ? <IconCommonCheck color={ThemingVariables.colors.gray[5]} /> : ''}
-                </Button>
-              ))}
-            </div>
-          </div>
+          <ConfigSection>
+            <ConfigItem label="Color" multiline={true}>
+              <ConfigColorPicker
+                value={props.value.color}
+                onChange={(color) => {
+                  onChange({
+                    ...props.value,
+                    color
+                  })
+                }}
+              />
+            </ConfigItem>
+          </ConfigSection>
         }
       >
         <div
@@ -86,7 +60,7 @@ export function ColorSelector(props: {
             ThemingVariables.colors.visualizationOther};
           `}
         />
-      </Tippy>
+      </ConfigPopover>
       <span
         className={css`
           margin-left: 10px;
@@ -106,47 +80,5 @@ export function ColorSelector(props: {
         {props.value.key}
       </span>
     </div>
-  )
-}
-
-function Button(props: { style?: CSSProperties; onClick: () => void; children?: ReactNode }) {
-  return (
-    <button
-      onClick={props.onClick}
-      className={css`
-        appearance: none;
-        border: none;
-        outline: none;
-        width: 36px;
-        height: 36px;
-        border-radius: 6px;
-        margin: 2.5px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      `}
-      style={props.style}
-    >
-      {props.children}
-    </button>
-  )
-}
-
-function Label(props: { className?: string; children: ReactNode }) {
-  return (
-    <h5
-      className={cx(
-        props.className,
-        css`
-          font-style: normal;
-          font-weight: 500;
-          font-size: 12px;
-          line-height: 15px;
-          color: ${ThemingVariables.colors.text[1]};
-        `
-      )}
-    >
-      {props.children}
-    </h5>
   )
 }

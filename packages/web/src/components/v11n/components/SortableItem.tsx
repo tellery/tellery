@@ -27,10 +27,6 @@ export function SortableItem(props: { id: string; children: ReactNode }) {
         border-radius: 4px;
         height: 32px;
         width: 100%;
-        padding-left: 6px;
-        :hover {
-          background-color: ${ThemingVariables.colors.primary[5]};
-        }
         :hover > svg {
           opacity: 1;
         }

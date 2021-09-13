@@ -17,7 +17,6 @@ import { groupBy, orderBy } from 'lodash'
 import { useTextWidth } from '@tag0/use-text-width'
 import { DisplayType, Type } from '../types'
 import type { Chart } from './base'
-import { ConfigSelectWithClear } from '../components/ConfigSelectWithClear'
 import { ConfigSelect } from '../components/ConfigSelect'
 import { CustomTooltip } from '../components/CustomTooltip'
 import { formatNumber, formatRecord, isNumeric, isTimeSeries } from '../utils'
@@ -32,6 +31,8 @@ import { useDataRecords } from '@app/hooks/useDataRecords'
 import { ConfigTab } from '../components/ConfigTab'
 import { ConfigSection } from '../components/ConfigSection'
 import { ConfigItem } from '../components/ConfigItem'
+import ConfigIconButton from '../components/ConfigIconButton'
+import { IconCommonSub } from '@app/assets/icons'
 
 const opacity = 0.15
 
@@ -103,9 +104,6 @@ export const scatter: Chart<Type.SCATTER> = {
                 onConfigChange('xAxis', xAxis, 'xType', isNumeric(displayTypes[xAxis]) ? 'linear' : 'ordinal')
               }}
               placeholder="Please select"
-              className={css`
-                width: 100%;
-              `}
             />
           </ConfigSection>
           <ConfigSection title="Y axis">
@@ -116,46 +114,71 @@ export const scatter: Chart<Type.SCATTER> = {
                 onConfigChange('yAxis', yAxis, 'yLabel', yAxis)
               }}
               placeholder="Please select"
-              className={css`
-                width: 100%;
-              `}
             />
           </ConfigSection>
           <ConfigSection title="Color">
-            <ConfigSelectWithClear
-              options={props.config.keys}
-              value={props.config.color}
-              onChange={(color) => {
-                onConfigChange(
-                  'color',
-                  color,
-                  'colors',
-                  color
-                    ? Object.keys(groupBy(records, color)).map((c, index) => ({
-                        key: c,
-                        color: index
-                      }))
-                    : []
-                )
-              }}
-              placeholder="Please select"
+            <div
               className={css`
+                display: flex;
                 width: 100%;
               `}
-            />
+            >
+              <ConfigSelect
+                options={props.config.keys}
+                value={props.config.color}
+                onChange={(color) => {
+                  onConfigChange(
+                    'color',
+                    color,
+                    'colors',
+                    color
+                      ? Object.keys(groupBy(records, color)).map((c, index) => ({
+                          key: c,
+                          color: index
+                        }))
+                      : []
+                  )
+                }}
+                placeholder="Please select"
+              />
+              <ConfigIconButton
+                onClick={() => {
+                  onConfigChange('color', undefined, 'colors', [])
+                }}
+                className={css`
+                  margin-left: 4px;
+                `}
+              >
+                <IconCommonSub color={ThemingVariables.colors.text[0]} />
+              </ConfigIconButton>
+            </div>
           </ConfigSection>
           <ConfigSection title="Size">
-            <ConfigSelectWithClear
-              options={props.config.keys}
-              value={props.config.size}
-              onChange={(size) => {
-                onConfigChange('size', size)
-              }}
-              placeholder="Please select"
+            <div
               className={css`
+                display: flex;
                 width: 100%;
               `}
-            />
+            >
+              <ConfigSelect
+                options={props.config.keys}
+                value={props.config.size}
+                onChange={(size) => {
+                  onConfigChange('size', size)
+                }}
+                placeholder="Please select"
+              />
+              <ConfigIconButton
+                onClick={() => {
+                  onConfigChange('size', undefined)
+                }}
+                className={css`
+                  margin-left: 4px;
+                `}
+              >
+                <IconCommonSub color={ThemingVariables.colors.text[0]} />
+              </ConfigIconButton>
+            </div>
           </ConfigSection>
         </div>
         <div>

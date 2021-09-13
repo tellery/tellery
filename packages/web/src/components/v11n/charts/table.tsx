@@ -46,10 +46,16 @@ export const table: Chart<Type.TABLE> = {
                 className={css`
                   width: 100%;
                   font-size: 12px;
+                  padding-left: 6px;
+                  height: 32px;
                   color: ${ThemingVariables.colors.text[0]};
                   display: flex;
                   align-items: center;
                   justify-content: space-between;
+                  border-radius: 4px;
+                  :hover {
+                    background-color: ${ThemingVariables.colors.primary[5]};
+                  }
                 `}
               >
                 {props.config.columnVisibility[item] === false ? (
