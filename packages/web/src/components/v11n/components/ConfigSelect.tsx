@@ -42,9 +42,7 @@ export function ConfigSelect(props: {
           :disabled {
             cursor: not-allowed;
           }
-          :not(:disabled) :focus,
-          :active,
-          :hover {
+          :not(:disabled):hover {
             background-color: ${ThemingVariables.colors.primary[5]};
           }
         `,

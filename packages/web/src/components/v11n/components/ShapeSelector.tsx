@@ -25,6 +25,11 @@ export function ShapeSelector(props: {
           height: 32px;
           width: 100%;
           padding-left: 6px;
+          border: 1px solid transparent;
+          border-radius: 4px;
+          :hover {
+            border: 1px solid ${ThemingVariables.colors.primary[2]};
+          }
         `
       )}
     >

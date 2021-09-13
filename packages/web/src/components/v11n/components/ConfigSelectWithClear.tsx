@@ -32,8 +32,6 @@ export function ConfigSelectWithClear(props: {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          :focus,
-          :active,
           :hover {
             background-color: ${ThemingVariables.colors.primary[5]};
           }

@@ -23,6 +23,11 @@ export function ColorSelector(props: {
           align-items: center;
           height: 32px;
           width: 100%;
+          border: 1px solid transparent;
+          border-radius: 4px;
+          :hover {
+            border: 1px solid ${ThemingVariables.colors.primary[2]};
+          }
         `
       )}
     >
