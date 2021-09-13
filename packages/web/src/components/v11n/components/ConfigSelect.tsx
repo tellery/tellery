@@ -43,9 +43,9 @@ export function ConfigSelect(props: {
             cursor: not-allowed;
           }
           :not(:disabled) :focus,
-          :not(:disabled) :active,
-          :not(:disabled) :hover {
-            border: 1px solid ${ThemingVariables.colors.primary[2]};
+          :active,
+          :hover {
+            background-color: ${ThemingVariables.colors.primary[5]};
           }
         `,
         props.className

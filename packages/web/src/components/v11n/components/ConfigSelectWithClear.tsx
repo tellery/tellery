@@ -35,7 +35,7 @@ export function ConfigSelectWithClear(props: {
           :focus,
           :active,
           :hover {
-            border: 1px solid ${ThemingVariables.colors.primary[2]};
+            background-color: ${ThemingVariables.colors.primary[5]};
           }
         `,
         props.className

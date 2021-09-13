@@ -103,9 +103,6 @@ export const scatter: Chart<Type.SCATTER> = {
                 onConfigChange('xAxis', xAxis, 'xType', isNumeric(displayTypes[xAxis]) ? 'linear' : 'ordinal')
               }}
               placeholder="Please select"
-              className={css`
-                width: 100%;
-              `}
             />
           </ConfigSection>
           <ConfigSection title="Y axis">
@@ -116,9 +113,6 @@ export const scatter: Chart<Type.SCATTER> = {
                 onConfigChange('yAxis', yAxis, 'yLabel', yAxis)
               }}
               placeholder="Please select"
-              className={css`
-                width: 100%;
-              `}
             />
           </ConfigSection>
           <ConfigSection title="Color">
@@ -139,9 +133,6 @@ export const scatter: Chart<Type.SCATTER> = {
                 )
               }}
               placeholder="Please select"
-              className={css`
-                width: 100%;
-              `}
             />
           </ConfigSection>
           <ConfigSection title="Size">
@@ -152,9 +143,6 @@ export const scatter: Chart<Type.SCATTER> = {
                 onConfigChange('size', size)
               }}
               placeholder="Please select"
-              className={css`
-                width: 100%;
-              `}
             />
           </ConfigSection>
         </div>
