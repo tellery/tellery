@@ -142,15 +142,14 @@ export const scatter: Chart<Type.SCATTER> = {
                 placeholder="Please select"
               />
               <ConfigIconButton
+                icon={IconCommonSub}
                 onClick={() => {
                   onConfigChange('color', undefined, 'colors', [])
                 }}
                 className={css`
                   margin-left: 4px;
                 `}
-              >
-                <IconCommonSub color={ThemingVariables.colors.text[0]} />
-              </ConfigIconButton>
+              />
             </div>
           </ConfigSection>
           <ConfigSection title="Size">
@@ -169,15 +168,14 @@ export const scatter: Chart<Type.SCATTER> = {
                 placeholder="Please select"
               />
               <ConfigIconButton
+                icon={IconCommonSub}
                 onClick={() => {
                   onConfigChange('size', undefined)
                 }}
                 className={css`
                   margin-left: 4px;
                 `}
-              >
-                <IconCommonSub color={ThemingVariables.colors.text[0]} />
-              </ConfigIconButton>
+              />
             </div>
           </ConfigSection>
         </div>
