@@ -287,6 +287,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                     }}
                   />
                   <ConfigIconButton
+                    icon={IconCommonSub}
                     onClick={() => {
                       const array = axises[axise].filter((axis) => axis !== item)
                       if (axise === 'dimensions') {
@@ -298,9 +299,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                     className={css`
                       margin-left: 4px;
                     `}
-                  >
-                    <IconCommonSub color={ThemingVariables.colors.text[0]} />
-                  </ConfigIconButton>
+                  />
                 </div>
               )}
             />

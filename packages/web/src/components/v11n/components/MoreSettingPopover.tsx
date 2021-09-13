@@ -1,5 +1,5 @@
-import { cx, css } from '@emotion/css'
-import React, { CSSProperties, ReactNode, useCallback } from 'react'
+import { css } from '@emotion/css'
+import React, { useCallback } from 'react'
 
 import {
   IconVisualizationLineStyleLinear,
@@ -13,9 +13,11 @@ import {
 import { ThemingVariables } from '@app/styles'
 import { ComboShape, ComboStack, Config, Type } from '../types'
 import { ConfigSelect } from './ConfigSelect'
-import Tippy from '@tippyjs/react'
 import FormSwitch from '@app/components/kit/FormSwitch'
 import ConfigIconButton from './ConfigIconButton'
+import { ConfigItem } from './ConfigItem'
+import { ConfigPopover } from './ConfigPopover'
+import { ConfigSection } from './ConfigSection'
 
 const lineTypes: Config<Type.COMBO>['groups'][0]['type'][] = ['linear', 'monotone', 'step']
 
@@ -27,85 +29,45 @@ export function MoreSettingPopover(props: {
   const { onChange } = props
   const renderLineStyle = useCallback(() => {
     return (
-      <>
-        <Label
-          className={css`
-            margin: 15px 0 8px 0;
-          `}
-        >
-          Line style
-        </Label>
+      <ConfigItem label="Line style">
         <div
           className={css`
             margin: -2.5px;
+            padding-right: 6px;
             display: flex;
-            flex-wrap: wrap;
+            justify-content: flex-end;
           `}
         >
           {lineTypes.map((lineType) => (
-            <Button
+            <ConfigIconButton
               key={lineType}
+              icon={
+                {
+                  linear: IconVisualizationLineStyleLinear,
+                  monotone: IconVisualizationLineStyleMonotone,
+                  step: IconVisualizationLineStyleStep
+                }[lineType]
+              }
+              color={ThemingVariables.colors.text[0]}
               onClick={() => {
                 onChange({
                   ...props.value,
                   type: lineType
                 })
               }}
-              style={{
-                backgroundColor:
-                  props.value.type === lineType
-                    ? ThemingVariables.colors.primary[1]
-                    : ThemingVariables.colors.primary[3],
-                cursor: props.value.type === lineType ? 'default' : 'pointer'
-              }}
-            >
-              {
-                {
-                  linear: (
-                    <IconVisualizationLineStyleLinear
-                      color={
-                        props.value.type === lineType
-                          ? ThemingVariables.colors.gray[5]
-                          : ThemingVariables.colors.primary[1]
-                      }
-                    />
-                  ),
-                  monotone: (
-                    <IconVisualizationLineStyleMonotone
-                      color={
-                        props.value.type === lineType
-                          ? ThemingVariables.colors.gray[5]
-                          : ThemingVariables.colors.primary[1]
-                      }
-                    />
-                  ),
-                  step: (
-                    <IconVisualizationLineStyleStep
-                      color={
-                        props.value.type === lineType
-                          ? ThemingVariables.colors.gray[5]
-                          : ThemingVariables.colors.primary[1]
-                      }
-                    />
-                  )
-                }[lineType]
-              }
-            </Button>
+              className={css`
+                background-color: ${props.value.type === lineType ? ThemingVariables.colors.primary[4] : 'transparent'};
+                cursor: ${props.value.type === lineType ? 'default' : 'pointer'};
+              `}
+            />
           ))}
         </div>
-      </>
+      </ConfigItem>
     )
   }, [onChange, props.value])
   const renderStack = useCallback(() => {
     return (
-      <>
-        <Label
-          className={css`
-            margin: 15px 0 8px 0;
-          `}
-        >
-          Stack mode
-        </Label>
+      <ConfigItem label="Stack mode">
         <ConfigSelect
           className={css`
             width: 100%;
@@ -119,175 +81,93 @@ export function MoreSettingPopover(props: {
             })
           }}
         />
-      </>
+      </ConfigItem>
     )
   }, [onChange, props.value])
   const renderConnectNulls = useCallback(() => {
     return (
-      <>
-        <Label
+      <ConfigItem label="Connect nulls">
+        <div
           className={css`
-            margin: 15px 0 8px 0;
+            display: flex;
+            justify-content: flex-end;
+            line-height: 0;
+            padding-right: 6px;
           `}
         >
-          Connect nulls
-        </Label>
-        <FormSwitch
-          checked={props.value.connectNulls}
-          onChange={(e) => {
-            onChange({
-              ...props.value,
-              connectNulls: e.target.checked
-            })
-          }}
-        />
-      </>
+          <FormSwitch
+            checked={props.value.connectNulls}
+            onChange={(e) => {
+              onChange({
+                ...props.value,
+                connectNulls: e.target.checked
+              })
+            }}
+          />
+        </div>
+      </ConfigItem>
     )
   }, [onChange, props.value])
 
   return (
-    <Tippy
-      theme="tellery"
-      arrow={false}
-      interactive={true}
-      trigger="click"
+    <ConfigPopover
+      title="Shape details"
       content={
-        <div
-          className={css`
-            padding: 5px 20px 20px 20px;
-            width: 158px;
-            background: ${ThemingVariables.colors.gray[5]};
-            box-shadow: ${ThemingVariables.boxShadows[0]};
-            border-radius: 8px;
-          `}
-        >
-          <Label
-            className={css`
-              margin: 15px 0 8px 0;
-            `}
-          >
-            Type
-          </Label>
-          <div
-            className={css`
-              margin: -2.5px;
-              display: flex;
-              flex-wrap: wrap;
-            `}
-          >
-            {Object.values(ComboShape).map((shape) => (
-              <Button
-                key={shape}
-                onClick={() => {
-                  props.onChange({
-                    ...props.value,
-                    shape
-                  })
-                }}
-                style={{
-                  backgroundColor:
-                    props.value.shape === shape
-                      ? ThemingVariables.colors.primary[1]
-                      : ThemingVariables.colors.primary[3],
-                  cursor: props.value.shape === shape ? 'default' : 'pointer'
-                }}
-              >
-                {
-                  {
-                    [ComboShape.LINE]: (
-                      <IconVisualizationLine
-                        color={
-                          props.value.shape === shape
-                            ? ThemingVariables.colors.gray[5]
-                            : ThemingVariables.colors.primary[1]
-                        }
-                      />
-                    ),
-                    [ComboShape.BAR]: (
-                      <IconVisualizationBar
-                        color={
-                          props.value.shape === shape
-                            ? ThemingVariables.colors.gray[5]
-                            : ThemingVariables.colors.primary[1]
-                        }
-                      />
-                    ),
-                    [ComboShape.AREA]: (
-                      <IconVisualizationArea
-                        color={
-                          props.value.shape === shape
-                            ? ThemingVariables.colors.gray[5]
-                            : ThemingVariables.colors.primary[1]
-                        }
-                      />
-                    )
-                  }[shape]
-                }
-              </Button>
-            ))}
-          </div>
+        <ConfigSection>
+          <ConfigItem label="Type">
+            <div
+              className={css`
+                margin: -2.5px;
+                padding-right: 6px;
+                display: flex;
+                justify-content: flex-end;
+              `}
+            >
+              {Object.values(ComboShape).map((shape) => (
+                <ConfigIconButton
+                  key={shape}
+                  icon={
+                    {
+                      [ComboShape.LINE]: IconVisualizationLine,
+                      [ComboShape.BAR]: IconVisualizationBar,
+                      [ComboShape.AREA]: IconVisualizationArea
+                    }[shape]
+                  }
+                  color={ThemingVariables.colors.text[0]}
+                  onClick={() => {
+                    props.onChange({
+                      ...props.value,
+                      shape
+                    })
+                  }}
+                  className={css`
+                    background-color: ${props.value.shape === shape
+                      ? ThemingVariables.colors.primary[4]
+                      : 'transparent'};
+                    cursor: ${props.value.shape === shape ? 'default' : 'pointer'};
+                  `}
+                />
+              ))}
+            </div>
+          </ConfigItem>
           {props.value.shape === ComboShape.LINE ? (
-            <div>
+            <>
               {renderLineStyle()}
               {renderConnectNulls()}
-            </div>
+            </>
           ) : null}
-          {props.value.shape === ComboShape.BAR ? <div>{renderStack()}</div> : null}
+          {props.value.shape === ComboShape.BAR ? renderStack() : null}
           {props.value.shape === ComboShape.AREA ? (
-            <div>
+            <>
               {renderLineStyle()}
               {renderStack()}
               {renderConnectNulls()}
-            </div>
+            </>
           ) : null}
-        </div>
+        </ConfigSection>
       }
     >
-      <ConfigIconButton>
-        <IconCommonMore color={ThemingVariables.colors.text[0]} />
-      </ConfigIconButton>
-    </Tippy>
-  )
-}
-
-function Button(props: { style?: CSSProperties; onClick: () => void; children?: ReactNode }) {
-  return (
-    <button
-      onClick={props.onClick}
-      className={css`
-        appearance: none;
-        border: none;
-        outline: none;
-        width: 36px;
-        height: 36px;
-        border-radius: 6px;
-        margin: 2.5px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      `}
-      style={props.style}
-    >
-      {props.children}
-    </button>
-  )
-}
-
-function Label(props: { className?: string; children: ReactNode }) {
-  return (
-    <h5
-      className={cx(
-        props.className,
-        css`
-          font-style: normal;
-          font-weight: 500;
-          font-size: 12px;
-          line-height: 15px;
-          color: ${ThemingVariables.colors.text[1]};
-        `
-      )}
-    >
-      {props.children}
-    </h5>
+      <ConfigIconButton icon={IconCommonMore} />
+    </ConfigPopover>
   )
 }
