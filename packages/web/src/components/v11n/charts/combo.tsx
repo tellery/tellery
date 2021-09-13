@@ -1,4 +1,4 @@
-import { IconCommonAdd } from '@app/assets/icons'
+import { IconCommonAdd, IconCommonSub } from '@app/assets/icons'
 import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 import { useCrossFilter, useDataRecords } from '@app/hooks/useDataRecords'
 import i18n from '@app/i18n'
@@ -24,12 +24,12 @@ import type { Path } from 'd3-path'
 import type { CurveGenerator } from 'd3-shape'
 import { compact, head, keyBy, mapValues, sortBy, sum, tail, upperFirst } from 'lodash'
 import React, { MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import ConfigIconButton from '../components/ConfigIconButton'
 import { ConfigInput } from '../components/ConfigInput'
 import { ConfigItem } from '../components/ConfigItem'
 import { ConfigNumericInput } from '../components/ConfigNumericInput'
 import { ConfigSection } from '../components/ConfigSection'
 import { ConfigSelect } from '../components/ConfigSelect'
-import { ConfigSelectWithClear } from '../components/ConfigSelectWithClear'
 import { ConfigTab } from '../components/ConfigTab'
 import { CustomTooltip } from '../components/CustomTooltip'
 import { LegendContent } from '../components/LegendContent'
@@ -258,12 +258,17 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                 }
               }}
               renderItem={(item) => (
-                <ConfigSelectWithClear
-                  placeholder="Please select"
-                  options={props.config.axises}
-                  value={item}
-                  onChange={(value) => {
-                    if (value) {
+                <div
+                  className={css`
+                    display: flex;
+                    width: 100%;
+                  `}
+                >
+                  <ConfigSelect
+                    placeholder="Please select"
+                    options={props.config.axises}
+                    value={item}
+                    onChange={(value) => {
                       const array = axises[axise].map((axis) => (axis === item ? value : axis))
                       if (axise === 'dimensions') {
                         onConfigChange(axise, array)
@@ -279,16 +284,24 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                       } else {
                         onConfigChange(axise, array, mapAxis2Label(axise), calcLabel(array, axise))
                       }
-                    } else {
+                    }}
+                  />
+                  <ConfigIconButton
+                    onClick={() => {
                       const array = axises[axise].filter((axis) => axis !== item)
                       if (axise === 'dimensions') {
                         onConfigChange(axise, array)
                       } else {
                         onConfigChange(axise, array, mapAxis2Label(axise), calcLabel(array, axise))
                       }
-                    }
-                  }}
-                />
+                    }}
+                    className={css`
+                      margin-left: 4px;
+                    `}
+                  >
+                    <IconCommonSub color={ThemingVariables.colors.text[0]} />
+                  </ConfigIconButton>
+                </div>
               )}
             />
           </ConfigSection>
