@@ -23,7 +23,11 @@ export default function ConfigIconButton(
           outline: none;
           border: none;
           background-color: transparent;
-          :hover {
+          :disabled {
+            cursor: not-allowed;
+            background-color: transparent;
+          }
+          :not(:disabled):hover {
             cursor: pointer;
             background-color: ${ThemingVariables.colors.primary[5]};
           }

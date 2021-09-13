@@ -1093,10 +1093,11 @@ function AxisSelect(props: {
           background-position: 50% 50%;
           color: transparent;
           background-image: ${SVG2DataURI(IconCommonAdd, TelleryThemeLight.colors.text[props.disabled ? 2 : 0])};
-          &:disabled {
+          :disabled {
             cursor: not-allowed;
+            background-color: transparent;
           }
-          :hover {
+          :not(:disabled):hover {
             cursor: pointer;
             background-color: ${ThemingVariables.colors.primary[5]};
           }
