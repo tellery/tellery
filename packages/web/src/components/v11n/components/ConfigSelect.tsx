@@ -34,21 +34,20 @@ export function ConfigSelect(props: {
           cursor: pointer;
           text-overflow: ellipsis;
           display: block;
-          color: ${props.value ? ThemingVariables.colors.text[0] : ThemingVariables.colors.text[1]};
+          color: ${props.value ? ThemingVariables.colors.text[0] : ThemingVariables.colors.text[2]};
+          background-image: ${SVG2DataURI(
+            IconCommonArrowDropDown,
+            TelleryThemeLight.colors.text[props.disabled ? 2 : 0]
+          )};
           :disabled {
             cursor: not-allowed;
           }
-          :focus,
-          :active,
-          :hover {
-            border: 1px solid ${ThemingVariables.colors.primary[2]};
+          :not(:disabled):hover {
+            background-color: ${ThemingVariables.colors.primary[5]};
           }
         `,
         props.className
       )}
-      style={{
-        backgroundImage: SVG2DataURI(IconCommonArrowDropDown, TelleryThemeLight.colors.text[0])
-      }}
       value={props.value}
       onChange={(e) => {
         props.onChange(e.target.value)

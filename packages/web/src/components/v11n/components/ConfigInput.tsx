@@ -28,8 +28,6 @@ export function ConfigInput(props: {
           padding: 9px 6px;
           box-sizing: border-box;
 
-          :focus,
-          :active,
           :hover {
             border: 1px solid ${ThemingVariables.colors.primary[2]};
           }

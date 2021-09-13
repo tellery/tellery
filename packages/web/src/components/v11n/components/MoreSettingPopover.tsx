@@ -15,6 +15,7 @@ import { ComboShape, ComboStack, Config, Type } from '../types'
 import { ConfigSelect } from './ConfigSelect'
 import Tippy from '@tippyjs/react'
 import FormSwitch from '@app/components/kit/FormSwitch'
+import ConfigIconButton from './ConfigIconButton'
 
 const lineTypes: Config<Type.COMBO>['groups'][0]['type'][] = ['linear', 'monotone', 'step']
 
@@ -242,16 +243,9 @@ export function MoreSettingPopover(props: {
         </div>
       }
     >
-      <div
-        className={css`
-          color: ${ThemingVariables.colors.text[0]};
-          padding: 6px;
-          line-height: 0;
-          cursor: pointer;
-        `}
-      >
-        <IconCommonMore />
-      </div>
+      <ConfigIconButton>
+        <IconCommonMore color={ThemingVariables.colors.text[0]} />
+      </ConfigIconButton>
     </Tippy>
   )
 }
