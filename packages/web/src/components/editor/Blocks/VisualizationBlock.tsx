@@ -553,6 +553,7 @@ const _QuestionBlockHeader: React.FC<{
               <IconCommonBackLink
                 className={css`
                   margin-right: 5px;
+                  flex-shrink: 0;
                 `}
               />
             </Link>
@@ -562,6 +563,7 @@ const _QuestionBlockHeader: React.FC<{
           <IconCommonLock
             className={css`
               margin-right: 5px;
+              flex-shrink: 0;
             `}
           />
         )}
