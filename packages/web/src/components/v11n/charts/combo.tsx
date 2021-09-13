@@ -1,4 +1,4 @@
-import { IconCommonAdd, IconCommonArrowDropDown, IconCommonClose, IconCommonSub } from '@app/assets/icons'
+import { IconCommonAdd, IconCommonArrowDropDown, IconCommonSub } from '@app/assets/icons'
 import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 import { useCrossFilter, useDataRecords } from '@app/hooks/useDataRecords'
 import i18n from '@app/i18n'
@@ -26,6 +26,7 @@ import { compact, head, keyBy, mapValues, sortBy, sum, tail, upperFirst } from '
 import React, { MouseEvent, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ConfigDivider } from '../components/ConfigDivider'
 import { ConfigInput } from '../components/ConfigInput'
+import { ConfigItem } from '../components/ConfigItem'
 import { ConfigLabel } from '../components/ConfigLabel'
 import { ConfigNumericInput } from '../components/ConfigNumericInput'
 import { ConfigSection } from '../components/ConfigSection'
@@ -406,24 +407,24 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
           <ConfigDivider />
           <ConfigSection>
             <ConfigLabel>Y reference line</ConfigLabel>
-            <AxisFormItem label="Label">
+            <ConfigItem label="Label">
               <ConfigInput
                 value={props.config.referenceYLabel}
                 onChange={(value) => {
                   onConfigChange('referenceYLabel', value)
                 }}
               />
-            </AxisFormItem>
-            <AxisFormItem label="Value">
+            </ConfigItem>
+            <ConfigItem label="Value">
               <ConfigNumericInput
                 value={props.config.referenceYValue}
                 onChange={(value) => {
                   onConfigChange('referenceYValue', value)
                 }}
               />
-            </AxisFormItem>
+            </ConfigItem>
             {props.config.yAxises.length && props.config.y2Axises.length ? (
-              <AxisFormItem label="Y axis">
+              <ConfigItem label="Y axis">
                 <ConfigSelect
                   options={['left', 'right']}
                   value={props.config.referenceYAxis}
@@ -431,22 +432,22 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                     onConfigChange('referenceYAxis', value)
                   }}
                 />
-              </AxisFormItem>
+              </ConfigItem>
             ) : null}
           </ConfigSection>
         </div>
         <div>
           <ConfigSection>
             <ConfigLabel>X axis</ConfigLabel>
-            <AxisFormItem label="Label">
+            <ConfigItem label="Label">
               <ConfigInput
                 value={props.config.xLabel}
                 onChange={(value) => {
                   onConfigChange('xLabel', value)
                 }}
               />
-            </AxisFormItem>
-            <AxisFormItem label="Type">
+            </ConfigItem>
+            <ConfigItem label="Type">
               <ConfigSelect
                 disabled={props.config.xAxises.length > 1 || !isNumeric(displayTypes[props.config.xAxises[0]])}
                 options={['linear', 'ordinal']}
@@ -456,20 +457,20 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                   onConfigChange('xType', value)
                 }}
               />
-            </AxisFormItem>
+            </ConfigItem>
           </ConfigSection>
           <ConfigDivider />
           <ConfigSection>
             <ConfigLabel>Y axis (Left)</ConfigLabel>
-            <AxisFormItem label="Label">
+            <ConfigItem label="Label">
               <ConfigInput
                 value={props.config.yLabel}
                 onChange={(value) => {
                   onConfigChange('yLabel', value)
                 }}
               />
-            </AxisFormItem>
-            <AxisFormItem label="Scale">
+            </ConfigItem>
+            <ConfigItem label="Scale">
               <ConfigSelect
                 options={scaleTypes}
                 value={props.config.yScale}
@@ -477,8 +478,8 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                   onConfigChange('yScale', value, 'yRangeMin', value === 'log' ? undefined : 0)
                 }}
               />
-            </AxisFormItem>
-            <AxisFormItem label="Range">
+            </ConfigItem>
+            <ConfigItem label="Range">
               <div
                 className={css`
                   display: flex;
@@ -518,22 +519,22 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                   }}
                 />
               </div>
-            </AxisFormItem>
+            </ConfigItem>
           </ConfigSection>
           {props.config.y2Axises.length ? (
             <>
               <ConfigDivider />
               <ConfigSection>
                 <ConfigLabel>Y axis (Right)</ConfigLabel>
-                <AxisFormItem label="Label">
+                <ConfigItem label="Label">
                   <ConfigInput
                     value={props.config.y2Label}
                     onChange={(value) => {
                       onConfigChange('y2Label', value)
                     }}
                   />
-                </AxisFormItem>
-                <AxisFormItem label="Scale">
+                </ConfigItem>
+                <ConfigItem label="Scale">
                   <ConfigSelect
                     options={scaleTypes}
                     value={props.config.y2Scale}
@@ -541,8 +542,8 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                       onConfigChange('y2Scale', value, 'y2RangeMin', value === 'log' ? undefined : 0)
                     }}
                   />
-                </AxisFormItem>
-                <AxisFormItem label="Range">
+                </ConfigItem>
+                <ConfigItem label="Range">
                   <div
                     className={css`
                       display: flex;
@@ -582,7 +583,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                       }}
                     />
                   </div>
-                </AxisFormItem>
+                </ConfigItem>
               </ConfigSection>
             </>
           ) : null}
@@ -1111,31 +1112,6 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
       </ResponsiveContainer>
     )
   }
-}
-
-function AxisFormItem(props: { label: string; children: ReactNode }) {
-  return (
-    <div
-      className={css`
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        height: 32px;
-        padding-left: 6px;
-      `}
-    >
-      <div
-        className={css`
-          font-size: 12px;
-          color: ${ThemingVariables.colors.text[1]};
-          flex-shrink: 0;
-        `}
-      >
-        {props.label}
-      </div>
-      {props.children}
-    </div>
-  )
 }
 
 function AxisSelect(props: {
