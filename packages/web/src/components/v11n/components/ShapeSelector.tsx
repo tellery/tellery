@@ -1,11 +1,11 @@
 import { cx, css } from '@emotion/css'
-import { CSSProperties, ReactNode } from 'react'
-
 import type { Config, Type } from '../types'
 import { ThemingVariables } from '@app/styles'
-import { IconCommonCheck } from '@app/assets/icons'
-import Tippy from '@tippyjs/react'
 import FormSwitch from '@app/components/kit/FormSwitch'
+import { ConfigPopover } from './ConfigPopover'
+import { ConfigSection } from './ConfigSection'
+import { ConfigItem } from './ConfigItem'
+import { ConfigColorPicker } from './ConfigColorPicker'
 
 export function ShapeSelector(props: {
   className?: string
@@ -27,70 +27,42 @@ export function ShapeSelector(props: {
         `
       )}
     >
-      <Tippy
-        theme="tellery"
-        arrow={false}
-        interactive={true}
-        trigger="click"
+      <ConfigPopover
+        title="Shape details"
         content={
-          <div
-            className={css`
-              padding: 20px;
-              width: 240px;
-              background: ${ThemingVariables.colors.gray[5]};
-              box-shadow: ${ThemingVariables.boxShadows[0]};
-              border-radius: 8px;
-            `}
-          >
-            <Label
-              className={css`
-                margin: -5px 0 8px 0;
-              `}
-            >
-              Color
-            </Label>
-            <div
-              className={css`
-                margin: -2.5px;
-                display: flex;
-                flex-wrap: wrap;
-              `}
-            >
-              {ThemingVariables.colors.visualization.map((color, index) => (
-                <Button
-                  key={color}
-                  onClick={() => {
+          <ConfigSection>
+            <ConfigItem label="Color" multiline={true}>
+              <ConfigColorPicker
+                value={props.value.color}
+                onChange={(color) => {
+                  onChange({
+                    ...props.value,
+                    color
+                  })
+                }}
+              />
+            </ConfigItem>
+            <ConfigItem label="Trend line">
+              <div
+                className={css`
+                  display: flex;
+                  justify-content: flex-end;
+                  line-height: 0;
+                  padding-right: 6px;
+                `}
+              >
+                <FormSwitch
+                  checked={props.value.hasTrendline}
+                  onChange={(e) => {
                     onChange({
                       ...props.value,
-                      color: index
+                      hasTrendline: e.target.checked
                     })
                   }}
-                  style={{
-                    backgroundColor: color,
-                    cursor: props.value.color === index ? 'default' : 'pointer'
-                  }}
-                >
-                  {props.value.color === index ? <IconCommonCheck color={ThemingVariables.colors.gray[5]} /> : ''}
-                </Button>
-              ))}
-            </div>
-            <Label
-              className={css`
-                margin: 15px 0 8px 0;
-              `}
-            >
-              Trend line
-            </Label>
-            <FormSwitch
-              checked={props.value.hasTrendline}
-              onChange={(e) => {
-                onChange({
-                  ...props.value,
-                  hasTrendline: e.target.checked
-                })
-              }}
-            />
-          </div>
+                />
+              </div>
+            </ConfigItem>
+          </ConfigSection>
         }
       >
         <div
@@ -104,7 +76,7 @@ export function ShapeSelector(props: {
             ThemingVariables.colors.visualizationOther};
           `}
         />
-      </Tippy>
+      </ConfigPopover>
       <input
         className={css`
           margin-left: 10px;
@@ -130,47 +102,5 @@ export function ShapeSelector(props: {
         placeholder={props.value.key}
       />
     </div>
-  )
-}
-
-function Button(props: { style?: CSSProperties; onClick: () => void; children?: ReactNode }) {
-  return (
-    <button
-      onClick={props.onClick}
-      className={css`
-        appearance: none;
-        border: none;
-        outline: none;
-        width: 36px;
-        height: 36px;
-        border-radius: 6px;
-        margin: 2.5px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      `}
-      style={props.style}
-    >
-      {props.children}
-    </button>
-  )
-}
-
-function Label(props: { className?: string; children: ReactNode }) {
-  return (
-    <h5
-      className={cx(
-        props.className,
-        css`
-          font-style: normal;
-          font-weight: 500;
-          font-size: 12px;
-          line-height: 15px;
-          color: ${ThemingVariables.colors.text[1]};
-        `
-      )}
-    >
-      {props.children}
-    </h5>
   )
 }

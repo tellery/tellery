@@ -2,20 +2,23 @@ import { ThemingVariables } from '@app/styles'
 import { css } from '@emotion/css'
 import { ReactNode } from 'react'
 
-export function ConfigItem(props: { label: string; children: ReactNode }) {
+export function ConfigItem(props: { label: string; children: ReactNode; multiline?: boolean }) {
   return (
     <div
       className={css`
         display: flex;
-        align-items: center;
+        align-items: ${props.multiline ? 'flex-start' : 'center'};
         justify-content: space-between;
-        height: 32px;
+        height: ${props.multiline ? 'unset' : '32px'};
         padding-left: 6px;
       `}
     >
       <div
         className={css`
+          height: 32px;
           font-size: 12px;
+          line-height: 16px;
+          padding: 8px 0;
           color: ${ThemingVariables.colors.text[1]};
           flex-shrink: 0;
         `}
@@ -24,7 +27,7 @@ export function ConfigItem(props: { label: string; children: ReactNode }) {
       </div>
       <div
         className={css`
-          width: 160px;
+          width: ${props.multiline ? 'unset' : '160px'};
           line-height: 0;
         `}
       >

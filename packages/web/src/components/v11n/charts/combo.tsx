@@ -219,7 +219,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
     }, [onConfigChange, shapes, props.config.shapes])
     const displayTypes = useDataFieldsDisplayType(props.data.fields)
     const renderAxisSelect = useCallback(
-      (title: string, axise: 'xAxises' | 'dimensions' | 'yAxises' | 'y2Axises', disabled: boolean, first?: boolean) => {
+      (title: string, axise: 'xAxises' | 'dimensions' | 'yAxises' | 'y2Axises', disabled: boolean) => {
         return (
           <ConfigSection
             title={title}
@@ -344,7 +344,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
     return (
       <ConfigTab tabs={['Data', 'Display', 'Axis']}>
         <div>
-          {renderAxisSelect('X axis', 'xAxises', false, true)}
+          {renderAxisSelect('X axis', 'xAxises', false)}
           {renderAxisSelect('Dimension', 'dimensions', yAxises.length > 0 && y2Axises.length > 0)}
           {renderAxisSelect(
             'Y axis (Left)',
