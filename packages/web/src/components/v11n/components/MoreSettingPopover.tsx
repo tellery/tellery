@@ -1,5 +1,5 @@
 import { cx, css } from '@emotion/css'
-import React, { CSSProperties, ReactNode, useCallback, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, useCallback } from 'react'
 
 import {
   IconVisualizationLineStyleLinear,
@@ -7,13 +7,14 @@ import {
   IconVisualizationLineStyleStep,
   IconVisualizationLine,
   IconVisualizationBar,
-  IconVisualizationArea
+  IconVisualizationArea,
+  IconCommonMore
 } from '@app/assets/icons'
-import { BlockPopover } from '@app/components/BlockPopover'
 import { ThemingVariables } from '@app/styles'
 import { ComboShape, ComboStack, Config, Type } from '../types'
 import { ConfigSelect } from './ConfigSelect'
-import { ConfigSwitch } from './ConfigSwitch'
+import Tippy from '@tippyjs/react'
+import FormSwitch from '@app/components/kit/FormSwitch'
 
 const lineTypes: Config<Type.COMBO>['groups'][0]['type'][] = ['linear', 'monotone', 'step']
 
@@ -130,24 +131,26 @@ export function MoreSettingPopover(props: {
         >
           Connect nulls
         </Label>
-        <ConfigSwitch
-          value={props.value.connectNulls}
-          onChange={(value) => {
+        <FormSwitch
+          checked={props.value.connectNulls}
+          onChange={(e) => {
             onChange({
               ...props.value,
-              connectNulls: value
+              connectNulls: e.target.checked
             })
           }}
         />
       </>
     )
   }, [onChange, props.value])
-  const ref = useRef<HTMLSpanElement>(null)
-  const [open, setOpen] = useState(false)
 
   return (
-    <>
-      <BlockPopover placement="left" open={open} setOpen={setOpen} referenceElement={ref.current}>
+    <Tippy
+      theme="tellery"
+      arrow={false}
+      interactive={true}
+      trigger="click"
+      content={
         <div
           className={css`
             padding: 5px 20px 20px 20px;
@@ -237,20 +240,19 @@ export function MoreSettingPopover(props: {
             </div>
           ) : null}
         </div>
-      </BlockPopover>
-      <span
-        ref={ref}
+      }
+    >
+      <div
         className={css`
           color: ${ThemingVariables.colors.primary[1]};
+          padding: 6px;
+          line-height: 0;
           cursor: pointer;
         `}
-        onClick={() => {
-          setOpen(true)
-        }}
       >
-        more setting
-      </span>
-    </>
+        <IconCommonMore />
+      </div>
+    </Tippy>
   )
 }
 

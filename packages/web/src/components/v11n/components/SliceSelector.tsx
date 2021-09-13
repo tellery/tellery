@@ -1,47 +1,96 @@
 import { cx, css } from '@emotion/css'
-import { CSSProperties, ReactNode, useRef, useState } from 'react'
-
-import { BlockPopover } from '../../BlockPopover'
+import { CSSProperties, ReactNode } from 'react'
 import { ThemingVariables } from '@app/styles'
 import { IconCommonCheck } from '@app/assets/icons'
+import Tippy from '@tippyjs/react'
 
 export function SliceSelector(props: {
   className?: string
   value: { key: string; title: string; color: number }
   onChange(value: { key: string; title: string; color: number }): void
 }) {
-  const ref = useRef<HTMLDivElement>(null)
-  const [open, setOpen] = useState(false)
-
   return (
     <div
       className={cx(
         props.className,
         css`
-          border: 1px solid ${ThemingVariables.colors.gray[1]};
-          border-radius: 8px;
-          background-color: ${ThemingVariables.colors.gray[5]};
           overflow: hidden;
-          height: 36px;
-          width: 185px;
-          padding-left: 10px;
-          padding-right: 6px;
           display: inline-flex;
           align-items: center;
-          justify-content: space-between;
+          height: 32px;
+          width: 100%;
         `
       )}
     >
+      <Tippy
+        theme="tellery"
+        arrow={false}
+        interactive={true}
+        trigger="click"
+        content={
+          <div
+            className={css`
+              padding: 20px;
+              width: 240px;
+              background: ${ThemingVariables.colors.gray[5]};
+              box-shadow: ${ThemingVariables.boxShadows[0]};
+              border-radius: 8px;
+            `}
+          >
+            <div
+              className={css`
+                margin: -2.5px;
+                display: flex;
+                flex-wrap: wrap;
+              `}
+            >
+              {ThemingVariables.colors.visualization.map((color, index) => (
+                <Button
+                  key={color}
+                  onClick={() => {
+                    props.onChange({
+                      ...props.value,
+                      color: index
+                    })
+                  }}
+                  style={{
+                    backgroundColor: color,
+                    cursor: props.value.color === index ? 'default' : 'pointer'
+                  }}
+                >
+                  {props.value.color === index ? <IconCommonCheck color={ThemingVariables.colors.gray[5]} /> : ''}
+                </Button>
+              ))}
+            </div>
+          </div>
+        }
+      >
+        <div
+          className={css`
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            background-color: ${ThemingVariables.colors.visualization[props.value.color] ||
+            ThemingVariables.colors.visualizationOther};
+          `}
+        />
+      </Tippy>
       <input
         className={css`
-          font-size: 14px;
+          margin-left: 10px;
+          flex: 1;
+          width: 0;
+          font-size: 12px;
+          line-height: 14px;
           appearance: none;
           outline: none;
           border: none;
-          flex: 1;
-          width: 0;
-          font-weight: 400;
+          font-weight: normal;
           text-overflow: ellipsis;
+          background-color: transparent;
+          color: ${ThemingVariables.colors.text[0]};
         `}
         value={props.value.title}
         onChange={(e) => {
@@ -52,62 +101,6 @@ export function SliceSelector(props: {
         }}
         placeholder={props.value.key}
       />
-      <div
-        ref={ref}
-        className={css`
-          flex-shrink: 0;
-          margin-left: 10px;
-          width: 24px;
-          height: 24px;
-          border-radius: 4px;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background-color: ${ThemingVariables.colors.visualization[props.value.color] ||
-          ThemingVariables.colors.visualizationOther};
-        `}
-        onClick={() => {
-          setOpen(true)
-        }}
-      />
-      <BlockPopover open={open} setOpen={setOpen} placement="right" referenceElement={ref.current}>
-        <div
-          className={css`
-            padding: 20px;
-            width: 240px;
-            background: ${ThemingVariables.colors.gray[5]};
-            box-shadow: ${ThemingVariables.boxShadows[0]};
-            border-radius: 8px;
-          `}
-        >
-          <div
-            className={css`
-              margin: -2.5px;
-              display: flex;
-              flex-wrap: wrap;
-            `}
-          >
-            {ThemingVariables.colors.visualization.map((color, index) => (
-              <Button
-                key={color}
-                onClick={() => {
-                  props.onChange({
-                    ...props.value,
-                    color: index
-                  })
-                }}
-                style={{
-                  backgroundColor: color,
-                  cursor: props.value.color === index ? 'default' : 'pointer'
-                }}
-              >
-                {props.value.color === index ? <IconCommonCheck color={ThemingVariables.colors.gray[5]} /> : ''}
-              </Button>
-            ))}
-          </div>
-        </div>
-      </BlockPopover>
     </div>
   )
 }

@@ -5,13 +5,15 @@ import numeral from 'numeral'
 import type { Chart } from './base'
 import { Type } from '../types'
 import { formatRecord, isNumeric } from '../utils'
-import { ConfigLabel } from '../components/ConfigLabel'
 import { ConfigSelect } from '../components/ConfigSelect'
 import { ThemingVariables } from '@app/styles'
 import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 import { useDataRecords } from '@app/hooks/useDataRecords'
-import { ConfigSwitch } from '../components/ConfigSwitch'
 import { ConfigInput } from '../components/ConfigInput'
+import FormSwitch from '@app/components/kit/FormSwitch'
+import { ConfigSection } from '../components/ConfigSection'
+import { ConfigItem } from '../components/ConfigItem'
+import { ConfigTab } from '../components/ConfigTab'
 
 export const number: Chart<Type.NUMBER> = {
   type: Type.NUMBER,
@@ -35,42 +37,44 @@ export const number: Chart<Type.NUMBER> = {
     const { onConfigChange } = props
 
     return (
-      <div
-        className={css`
-          padding: 20px;
-        `}
-      >
-        <ConfigLabel top={0}>Value</ConfigLabel>
-        <ConfigSelect
-          options={props.config.columns}
-          value={props.config.field}
-          onChange={(field) => {
-            onConfigChange('field', field)
-          }}
-          placeholder="Please select"
-        />
-        <ConfigLabel>Compare</ConfigLabel>
-        <ConfigSwitch
-          value={!!props.config.compare}
-          onChange={(compare) => {
-            onConfigChange('compare', compare)
-          }}
-        />
-        <ConfigLabel>Prefix</ConfigLabel>
-        <ConfigInput
-          value={props.config.prefix || ''}
-          onChange={(prefix) => {
-            onConfigChange('prefix', prefix)
-          }}
-        />
-        <ConfigLabel>Suffix</ConfigLabel>
-        <ConfigInput
-          value={props.config.suffix || ''}
-          onChange={(suffix) => {
-            onConfigChange('suffix', suffix)
-          }}
-        />
-      </div>
+      <ConfigTab tabs={['Display']}>
+        <ConfigSection>
+          <ConfigItem label="Value">
+            <ConfigSelect
+              options={props.config.columns}
+              value={props.config.field}
+              onChange={(field) => {
+                onConfigChange('field', field)
+              }}
+              placeholder="Please select"
+            />
+          </ConfigItem>
+          <ConfigItem label="Compare">
+            <FormSwitch
+              checked={!!props.config.compare}
+              onChange={(e) => {
+                onConfigChange('compare', e.target.checked)
+              }}
+            />
+          </ConfigItem>
+          <ConfigItem label="Prefix">
+            <ConfigInput
+              value={props.config.prefix || ''}
+              onChange={(prefix) => {
+                onConfigChange('prefix', prefix)
+              }}
+            />
+          </ConfigItem>
+          <ConfigItem label="Suffix">
+            <ConfigInput
+              value={props.config.suffix || ''}
+              onChange={(suffix) => {
+                onConfigChange('suffix', suffix)
+              }}
+            />
+          </ConfigItem>
+        </ConfigSection>
+      </ConfigTab>
     )
   },
 

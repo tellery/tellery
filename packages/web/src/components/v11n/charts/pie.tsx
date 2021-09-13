@@ -7,11 +7,9 @@ import { DisplayType, Type } from '../types'
 import type { Chart } from './base'
 import { LegendContentVertical } from '../components/LegendContentVertical'
 import { formatRecord, isNumeric, isTimeSeries } from '../utils'
-import { ConfigButton } from '../components/ConfigButton'
 import { ConfigLabel } from '../components/ConfigLabel'
 import { ConfigSelect } from '../components/ConfigSelect'
 import { ConfigNumericInput } from '../components/ConfigNumericInput'
-import { ConfigSwitch } from '../components/ConfigSwitch'
 import { SliceSelector } from '../components/SliceSelector'
 import { ThemingVariables } from '@app/styles'
 import { CustomTooltip } from '../components/CustomTooltip'
@@ -19,11 +17,11 @@ import { fontFamily } from '../constants'
 import { useCrossFilter } from '@app/hooks/useDataRecords'
 import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 import i18n from '@app/i18n'
-
-enum Tab {
-  DATA = 'Data',
-  DISPLAY = 'Display'
-}
+import FormSwitch from '@app/components/kit/FormSwitch'
+import { ConfigTab } from '../components/ConfigTab'
+import { ConfigSection } from '../components/ConfigSection'
+import { ConfigItem } from '../components/ConfigItem'
+import { ConfigDivider } from '../components/ConfigDivider'
 
 const opacity = 0.15
 
@@ -110,134 +108,81 @@ export const pie: Chart<Type.PIE> = {
         }))
       )
     }, [data, onConfigChange, props.config.slices])
-    const [tab, setTab] = useState(Tab.DATA)
 
     return (
-      <>
-        <div
-          className={css`
-            flex-shrink: 0;
-            padding: 5px;
-            box-shadow: 1px 0px 0px ${ThemingVariables.colors.gray[1]};
-          `}
-        >
-          {Object.values(Tab).map((t) => (
-            <ConfigButton
-              key={t}
-              className={css`
-                width: 120px;
-
-                &:hover {
-                  background: ${ThemingVariables.colors.primary[4]};
-                }
-              `}
-              active={tab === t}
-              onClick={() => {
-                setTab(t)
+      <ConfigTab tabs={['Data', 'Display']}>
+        <ConfigSection>
+          <ConfigItem label="Dimension">
+            <ConfigSelect
+              options={props.config.keys}
+              value={props.config.dimension}
+              onChange={(dimension) => {
+                onConfigChange('dimension', dimension)
               }}
-            >
-              {t}
-            </ConfigButton>
-          ))}
-        </div>
-        <div
-          className={css`
-            padding: 20px;
-          `}
-        >
-          {tab === Tab.DATA ? (
-            <>
-              <ConfigLabel top={0}>Dimension</ConfigLabel>
-              <ConfigSelect
-                options={props.config.keys}
-                value={props.config.dimension}
-                onChange={(dimension) => {
-                  onConfigChange('dimension', dimension)
-                }}
-                placeholder="Please select"
-              />
-              <ConfigLabel>Value</ConfigLabel>
-              <ConfigSelect
-                options={props.config.keys}
-                value={props.config.measurement}
-                onChange={(measurement) => {
-                  onConfigChange('measurement', measurement)
-                }}
-                placeholder="Please select"
-              />
-              <ConfigLabel>Min percentage of slices</ConfigLabel>
-              <ConfigNumericInput
-                placeholder="%"
-                min={0}
-                value={props.config.minPercentage}
-                onChange={(minPercentage) => {
-                  onConfigChange('minPercentage', minPercentage)
+              placeholder="Please select"
+            />
+          </ConfigItem>
+          <ConfigItem label="Value">
+            <ConfigSelect
+              options={props.config.keys}
+              value={props.config.measurement}
+              onChange={(measurement) => {
+                onConfigChange('measurement', measurement)
+              }}
+              placeholder="Please select"
+            />
+          </ConfigItem>
+          <ConfigItem label="Min percentage">
+            <ConfigNumericInput
+              placeholder="%"
+              min={0}
+              value={props.config.minPercentage}
+              onChange={(minPercentage) => {
+                onConfigChange('minPercentage', minPercentage)
+              }}
+            />
+          </ConfigItem>
+        </ConfigSection>
+        <div>
+          <ConfigSection>
+            <ConfigItem label="Show total">
+              <FormSwitch
+                checked={props.config.showTotal}
+                onChange={(e) => {
+                  onConfigChange('showTotal', e.target.checked)
                 }}
               />
-            </>
-          ) : null}
-          {tab === Tab.DISPLAY ? (
-            <>
-              <ConfigLabel top={0}>Show total</ConfigLabel>
-              <ConfigSwitch
-                value={props.config.showTotal}
-                onChange={(showTotal) => {
-                  onConfigChange('showTotal', showTotal)
+            </ConfigItem>
+            <ConfigItem label="Show legend">
+              <FormSwitch
+                checked={props.config.showLegend}
+                onChange={(e) => {
+                  onConfigChange('showLegend', e.target.checked)
                 }}
               />
-              <ConfigLabel>Show legend</ConfigLabel>
-              <ConfigSwitch
-                value={props.config.showLegend}
-                onChange={(showLegend) => {
-                  onConfigChange('showLegend', showLegend)
+            </ConfigItem>
+          </ConfigSection>
+          <ConfigDivider />
+          <ConfigSection>
+            <ConfigLabel>Slices</ConfigLabel>
+            {props.config.slices.map((item) => (
+              <SliceSelector
+                key={item.key}
+                value={item}
+                onChange={(value) => {
+                  onConfigChange(
+                    'slices',
+                    props.config.slices.map((slice) => (slice.key === item.key ? { ...item, ...value } : slice))
+                  )
                 }}
-              />
-              <ConfigLabel>Slices</ConfigLabel>
-              <div
                 className={css`
-                  margin: -5px;
+                  padding: 0 6px;
                 `}
-              >
-                {props.config.slices.map((item) => (
-                  <SliceSelector
-                    key={item.key}
-                    className={css`
-                      margin: 5px;
-                    `}
-                    value={item}
-                    onChange={(value) => {
-                      onConfigChange(
-                        'slices',
-                        props.config.slices.map((slice) => (slice.key === item.key ? { ...item, ...value } : slice))
-                      )
-                    }}
-                  />
-                ))}
-              </div>
-              {props.config.slices.length === 0 ? (
-                <span
-                  className={css`
-                    margin-top: 10px;
-                    font-size: 14px;
-                    font-weight: 400;
-                    opacity: ${opacity};
-                    cursor: pointer;
-
-                    &:hover {
-                      text-decoration: underline;
-                    }
-                  `}
-                  onClick={() => {
-                    setTab(Tab.DATA)
-                  }}
-                >
-                  No slices. Click to configure data
-                </span>
-              ) : null}
-            </>
-          ) : null}
+              />
+            ))}
+          </ConfigSection>
         </div>
-      </>
+      </ConfigTab>
     )
   },
 

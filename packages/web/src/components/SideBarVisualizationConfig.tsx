@@ -84,7 +84,7 @@ export default function SideBarVisualizationConfig<T extends Type = Type>(props:
     <>
       <div
         className={css`
-          padding: 14px 8px;
+          padding: 14px 8px 0;
         `}
       >
         {Object.values(Type).map((t) => (

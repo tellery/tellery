@@ -2,7 +2,7 @@ import { css } from '@emotion/css'
 import type { ReactNode } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { IconCommonDrag } from '@app/assets/icons'
+import { IconCommonHandler } from '@app/assets/icons'
 import { ThemingVariables } from '@app/styles'
 
 import { useMemo } from 'react'
@@ -20,17 +20,18 @@ export function SortableItem(props: { id: string; children: ReactNode }) {
   return (
     <div
       className={css`
+        position: relative;
         display: inline-flex;
         align-items: center;
-        border: 1px solid ${ThemingVariables.colors.gray[1]};
-        border-radius: 8px;
         background-color: ${ThemingVariables.colors.gray[5]};
-        overflow: hidden;
-        height: 36px;
-        width: 185px;
-        margin: 5px;
-
-        &:hover > svg {
+        border-radius: 4px;
+        height: 32px;
+        width: 100%;
+        padding-left: 6px;
+        :hover {
+          background-color: ${ThemingVariables.colors.primary[5]};
+        }
+        :hover > svg {
           opacity: 1;
         }
       `}
@@ -38,10 +39,11 @@ export function SortableItem(props: { id: string; children: ReactNode }) {
       style={style}
       {...attributes}
     >
-      <IconCommonDrag
+      <IconCommonHandler
         color={ThemingVariables.colors.gray[0]}
         className={css`
-          margin: 0 -2px;
+          position: absolute;
+          left: -10px;
           opacity: 0;
           cursor: grab;
           &:active {

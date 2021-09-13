@@ -19,31 +19,35 @@ export function ConfigSelect(props: {
       disabled={props.disabled}
       className={cx(
         css`
-          width: 185px;
-          border: 1px solid ${ThemingVariables.colors.gray[1]};
-          border-radius: 8px;
+          width: 100%;
+          height: 32px;
+          border: 1px solid transparent;
+          border-radius: 4px;
           outline: none;
           font-style: normal;
           font-weight: normal;
-          font-size: 14px;
-          padding: 9px 26px 9px 9px;
+          font-size: 12px;
+          padding: 9px 26px 9px 6px;
           appearance: none;
           background-repeat: no-repeat;
-          background-position: calc(100% - 4px) 50%;
+          background-position: calc(100% - 6px) 50%;
           cursor: pointer;
           text-overflow: ellipsis;
           display: block;
-          padding-right: 30px;
+          color: ${props.value ? ThemingVariables.colors.text[0] : ThemingVariables.colors.text[1]};
           :disabled {
             cursor: not-allowed;
-            background-color: ${ThemingVariables.colors.gray[2]};
+          }
+          :focus,
+          :active,
+          :hover {
+            border: 1px solid ${ThemingVariables.colors.primary[2]};
           }
         `,
         props.className
       )}
       style={{
-        color: props.value ? ThemingVariables.colors.text[0] : ThemingVariables.colors.text[1],
-        backgroundImage: SVG2DataURI(IconCommonArrowDropDown, TelleryThemeLight.colors.gray[0])
+        backgroundImage: SVG2DataURI(IconCommonArrowDropDown, TelleryThemeLight.colors.text[0])
       }}
       value={props.value}
       onChange={(e) => {

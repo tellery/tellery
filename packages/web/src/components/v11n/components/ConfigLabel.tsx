@@ -1,21 +1,30 @@
 import { css } from '@emotion/css'
 import { ThemingVariables } from '@app/styles'
+import { ReactNode } from 'react'
 
-export function ConfigLabel(props: { children: string; top?: number; bottom?: number }) {
+export function ConfigLabel(props: { children: ReactNode; right?: ReactNode }) {
   return (
-    <h3
+    <div
       className={css`
-        font-style: normal;
-        font-weight: 500;
-        font-size: 16px;
-        line-height: 20px;
-        color: ${ThemingVariables.colors.text[0]};
-        margin-top: 24px;
-        margin-bottom: 10px;
+        height: 32px;
+        padding-left: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
       `}
-      style={{ marginTop: props.top, marginBottom: props.bottom }}
     >
-      {props.children}
-    </h3>
+      <h3
+        className={css`
+          font-style: normal;
+          font-weight: 500;
+          font-size: 12px;
+          line-height: 15px;
+          color: ${ThemingVariables.colors.text[0]};
+        `}
+      >
+        {props.children}
+      </h3>
+      {props.right ? <div>{props.right}</div> : null}
+    </div>
   )
 }
