@@ -11,71 +11,60 @@ import org.eclipse.jgit.merge.ContentMergeStrategy
 import org.eclipse.jgit.transport.*
 import org.eclipse.jgit.util.FS
 import java.nio.file.Path
-import java.text.SimpleDateFormat
-import java.util.*
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 import kotlin.io.path.absolutePathString
 
 fun cloneRemoteRepo(
     dir: Path,
     uri: String,
-    privateKey: Path
-) = Git.cloneRepository()
-    .setDirectory(dir.toFile())
-    .setURI(uri)
-    .setProgressMonitor(SimpleProgressMonitor())
-    .setTransportConfigCallback {
-        (it as SshTransport).sshSessionFactory = providesSshSessionFactory(privateKey)
-    }
-    .call()
-    .use {}
+    privateKey: Path,
+    lock: ReentrantLock
+) = lock.withLock {
+    Git.cloneRepository()
+        .setDirectory(dir.toFile())
+        .setURI(uri)
+        .setProgressMonitor(SimpleProgressMonitor())
+        .setTransportConfigCallback {
+            (it as SshTransport).sshSessionFactory = providesSshSessionFactory(privateKey)
+        }
+        .call()
+        .use {}
+}
 
-fun checkoutMasterAndPull(
-    dir: Path,
-    privateKey: Path
-): PullResult = Git.open(dir.toFile())
-    .use {
-        // JGit can't get the remote head ref.
-        // 0: Local HEAD
-        // 1: Local default
-        // remote 1: Remote default
-        val defaultBranchRef = it.repository.refDatabase.refs[1].name
-        it.checkout().setName(defaultBranchRef).call()
-        it.pull()
-            .setContentMergeStrategy(ContentMergeStrategy.THEIRS)
-            .setTransportConfigCallback { t ->
-                (t as SshTransport).sshSessionFactory = providesSshSessionFactory(privateKey)
-            }
-            .call()
-    }
-
-fun checkoutNewBranchAndCommitAndPush(
+fun pull(
     dir: Path,
     privateKey: Path,
-    message: String
-) {
-    val dateFormat = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss")
-    val branchName = "tellery/update-${dateFormat.format(Date())}"
+    lock: ReentrantLock
+): PullResult = lock.withLock {
     Git.open(dir.toFile())
         .use {
-            it.checkout().setCreateBranch(true).setName(branchName).call()
+            it.pull()
+                .setContentMergeStrategy(ContentMergeStrategy.THEIRS)
+                .setTransportConfigCallback { t ->
+                    (t as SshTransport).sshSessionFactory = providesSshSessionFactory(privateKey)
+                }
+                .call()
         }
-    commitAndPush(dir, privateKey, message)
 }
 
 fun commitAndPush(
     dir: Path,
     privateKey: Path,
-    message: String
-): MutableIterable<PushResult> = Git.open(dir.toFile())
-    .use {
-        it.add().addFilepattern(".").call()
-        it.commit().setAll(true).setMessage(message).call()
-        it.push()
-            .setTransportConfigCallback { t ->
-                (t as SshTransport).sshSessionFactory = providesSshSessionFactory(privateKey)
-            }
-            .call()
-    }
+    message: String,
+    lock: ReentrantLock
+): MutableIterable<PushResult> = lock.withLock {
+    Git.open(dir.toFile())
+        .use {
+            it.add().addFilepattern(".").call()
+            it.commit().setAll(true).setMessage(message).call()
+            it.push()
+                .setTransportConfigCallback { t ->
+                    (t as SshTransport).sshSessionFactory = providesSshSessionFactory(privateKey)
+                }
+                .call()
+        }
+}
 
 private fun providesSshSessionFactory(privateKey: Path): SshSessionFactory {
     return object : JschConfigSessionFactory() {

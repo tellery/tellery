@@ -20,9 +20,8 @@ import io.tellery.entities.IntegrationEntity
 import io.tellery.entities.ProfileEntity
 import io.tellery.grpc.DbtBlock
 import io.tellery.grpc.QuestionBlockContent
-import io.tellery.utils.checkoutMasterAndPull
-import io.tellery.utils.checkoutNewBranchAndCommitAndPush
 import io.tellery.utils.commitAndPush
+import io.tellery.utils.pull
 import org.apache.commons.io.FileUtils
 import java.io.BufferedReader
 import java.io.File
@@ -116,8 +115,8 @@ class DbtManagerTest : FunSpec({
             mockMap.entries
         ) { (path, time) ->
             mockkStatic(::commitAndPush.javaMethod!!.declaringClass.kotlin)
-            every { commitAndPush(any(), any(), any()) } returns mockk()
-            every { checkoutMasterAndPull(any(), any()) } returns mockk()
+            every { commitAndPush(any(), any(), any(), any()) } returns mockk()
+            every { pull(any(), any(), any()) } returns mockk()
 
             every { pm.getProfileById(workspaceId) } returns
                     mapper.readValue<ProfileEntity>(getResourceFileURL("/profiles/profile_bigquery.json"))
@@ -141,14 +140,14 @@ class DbtManagerTest : FunSpec({
 
             // assert
             projectFilePath.readText() shouldContain "ephemeral"
-            verify(exactly = time) { commitAndPush(any(), any(), any()) }
+            verify(exactly = time) { commitAndPush(any(), any(), any(), any()) }
         }
     }
 
     context("Should insert a block while the block was not there before.") {
-        mockkStatic(::checkoutMasterAndPull.javaMethod!!.declaringClass.kotlin)
-        every { checkoutMasterAndPull(any(), any()) } returns mockk()
-        every { checkoutNewBranchAndCommitAndPush(any(), any(), any()) } returns mockk()
+        mockkStatic(::pull.javaMethod!!.declaringClass.kotlin)
+        every { pull(any(), any(), any()) } returns mockk()
+        every { commitAndPush(any(), any(), any(), any()) } returns mockk()
 
         every { pm.getProfileById(workspaceId) } returns
                 mapper.readValue<ProfileEntity>(getResourceFileURL("/profiles/profile_bigquery.json"))
@@ -167,18 +166,19 @@ class DbtManagerTest : FunSpec({
         // assert
         telleryDir.listDirectoryEntries().map { it.name } shouldContain "${block.name}.sql"
         verify(exactly = 1) {
-            checkoutNewBranchAndCommitAndPush(
+            commitAndPush(
                 any(),
                 any(),
-                "feat(tellery): async model files in tellery dir.\ninsert ${block.name}.sql;\n"
+                "feat(tellery): async model files in tellery dir.\ninsert ${block.name}.sql;\n",
+                any()
             )
         }
     }
 
     context("Should update a block while the block has some changes.") {
-        mockkStatic(::checkoutMasterAndPull.javaMethod!!.declaringClass.kotlin)
-        every { checkoutMasterAndPull(any(), any()) } returns mockk()
-        every { checkoutNewBranchAndCommitAndPush(any(), any(), any()) } returns mockk()
+        mockkStatic(::pull.javaMethod!!.declaringClass.kotlin)
+        every { pull(any(), any(), any()) } returns mockk()
+        every { commitAndPush(any(), any(), any(), any()) } returns mockk()
 
         every { pm.getProfileById(workspaceId) } returns
                 mapper.readValue<ProfileEntity>(getResourceFileURL("/profiles/profile_bigquery.json"))
@@ -201,18 +201,19 @@ class DbtManagerTest : FunSpec({
         telleryDir.listDirectoryEntries().map { it.name } shouldContain "${latestBlock.name}.sql"
         blockPath.readText() shouldBe latestBlock.sql.toString()
         verify(exactly = 1) {
-            checkoutNewBranchAndCommitAndPush(
+            commitAndPush(
                 any(),
                 any(),
-                "feat(tellery): async model files in tellery dir.\nupdate ${latestBlock.name}.sql;\n"
+                "feat(tellery): async model files in tellery dir.\nupdate ${latestBlock.name}.sql;\n",
+                any()
             )
         }
     }
 
     context("Should delete the block while the block isn't exist.") {
-        mockkStatic(::checkoutMasterAndPull.javaMethod!!.declaringClass.kotlin)
-        every { checkoutMasterAndPull(any(), any()) } returns mockk()
-        every { checkoutNewBranchAndCommitAndPush(any(), any(), any()) } returns mockk()
+        mockkStatic(::pull.javaMethod!!.declaringClass.kotlin)
+        every { pull(any(), any(), any()) } returns mockk()
+        every { commitAndPush(any(), any(), any(), any()) } returns mockk()
 
         every { pm.getProfileById(workspaceId) } returns
                 mapper.readValue<ProfileEntity>(getResourceFileURL("/profiles/profile_bigquery.json"))
@@ -233,10 +234,11 @@ class DbtManagerTest : FunSpec({
         // assert
         telleryDir.listDirectoryEntries().map { it.name } shouldNotContain "${block.name}.sql"
         verify(exactly = 1) {
-            checkoutNewBranchAndCommitAndPush(
+            commitAndPush(
                 any(),
                 any(),
-                "feat(tellery): async model files in tellery dir.\ndelete ${block.name}.sql;\n"
+                "feat(tellery): async model files in tellery dir.\ndelete ${block.name}.sql;\n",
+                any()
             )
         }
     }

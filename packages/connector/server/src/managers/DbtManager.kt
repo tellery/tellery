@@ -25,7 +25,10 @@ import io.tellery.integrations.DbtIntegration
 import io.tellery.integrations.DbtIntegration.Companion.DBT_PROJECT_FIELD
 import io.tellery.integrations.DbtIntegration.Companion.GIT_URL_FIELD
 import io.tellery.integrations.DbtIntegrationType
-import io.tellery.utils.*
+import io.tellery.utils.allSubclasses
+import io.tellery.utils.cloneRemoteRepo
+import io.tellery.utils.commitAndPush
+import io.tellery.utils.pull
 import mu.KotlinLogging
 import org.apache.commons.io.FileUtils
 import org.jetbrains.annotations.TestOnly
@@ -35,6 +38,7 @@ import java.io.InputStream
 import java.io.InputStreamReader
 import java.nio.file.Path
 import java.util.concurrent.Executors
+import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import java.util.function.Consumer
 import kotlin.concurrent.read
@@ -46,7 +50,16 @@ import kotlin.reflect.full.primaryConstructor
 import io.tellery.entities.ProjectConfig as config
 
 class DbtManager(private val profileManager: ProfileManager) {
-    private val lock = ReentrantReadWriteLock()
+    /**
+     * Ensure that there is only one write status operation to execute at a time.
+     */
+    private val statusLock = ReentrantReadWriteLock()
+
+    /**
+     * Ensure that there is only one git operation to execute at a time.
+     */
+    private val gitLock = ReentrantLock()
+
     private val dbtIntegrationTypeToClass = DbtIntegration::class.allSubclasses
         .filter { it.hasAnnotation<DbtIntegrationType>() }
         .associateBy { it.findAnnotation<DbtIntegrationType>()!!.value }
@@ -71,7 +84,7 @@ class DbtManager(private val profileManager: ProfileManager) {
         private val logger = KotlinLogging.logger {}
     }
 
-    fun reloadContext() = lock.write {
+    fun reloadContext() = statusLock.write {
         val globalRepoDir = config.dbtGlobalRepoDir
         val keyDir = config.dbtKeyConfigDir
         val profile = profileManager.getProfileById(config.workspaceId)
@@ -98,7 +111,7 @@ class DbtManager(private val profileManager: ProfileManager) {
         reloadDbtProfile()
     }
 
-    fun generateKeyPair(): String = lock.read {
+    fun generateKeyPair(): String = statusLock.read {
         context?.let {
             if (it.publicKey.exists()) {
                 return it.publicKey.readText()
@@ -115,38 +128,38 @@ class DbtManager(private val profileManager: ProfileManager) {
         }
     }
 
-    fun pullRepo() = lock.read {
+    fun pullRepo() = statusLock.read {
         context?.let {
             if (!it.repoDir.exists()) {
                 try {
-                    cloneRemoteRepo(it.repoDir, it.gitUrl, it.privateKey)
+                    cloneRemoteRepo(it.repoDir, it.gitUrl, it.privateKey, gitLock)
                 } catch (ex: Exception) {
                     logger.error("Clone repository meeting some problem.", ex)
                     it.repoDir.deleteIfExists()
                 }
                 updateProjectConfig()
             }
-            checkoutMasterAndPull(it.repoDir, it.privateKey)
+            pull(it.repoDir, it.privateKey, gitLock)
         } ?: run {
             throw DbtContextNotInitException()
         }
     }
 
-    fun pushRepo(blocks: List<QuestionBlockContent>) = lock.read {
+    fun pushRepo(blocks: List<QuestionBlockContent>) = statusLock.read {
         context?.let {
             if (!it.repoDir.exists()) {
                 throw DbtRepositoryNotExistsException()
             }
 
-            checkoutMasterAndPull(it.repoDir, it.privateKey)
+            pull(it.repoDir, it.privateKey, gitLock)
             val commitMessage = overwriteDiffModels(blocks)
-            checkoutNewBranchAndCommitAndPush(it.repoDir, it.privateKey, commitMessage)
+            commitAndPush(it.repoDir, it.privateKey, commitMessage, gitLock)
         } ?: run {
             throw DbtContextNotInitException()
         }
     }
 
-    fun listBlocks(): List<DbtBlock> = lock.read {
+    fun listBlocks(): List<DbtBlock> = statusLock.read {
         context?.let {
             if (!it.repoDir.exists()) {
                 throw DbtRepositoryNotExistsException()
@@ -255,12 +268,13 @@ class DbtManager(private val profileManager: ProfileManager) {
         }
 
         if (hasChange) {
-            checkoutMasterAndPull(c.repoDir, c.privateKey)
+            pull(c.repoDir, c.privateKey, gitLock)
             overwriteFile(configFile, yamlMapper.writeValueAsString(configJsonNode))
             commitAndPush(
                 c.repoDir,
                 c.privateKey,
-                "feat(tellery): update dbt_project.yml"
+                "feat(tellery): update dbt_project.yml",
+                gitLock
             )
         }
     } ?: throw DbtContextNotInitException()
