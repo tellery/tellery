@@ -20,18 +20,25 @@ export function ConfigNumericInput(props: {
       max={props.max}
       className={cx(
         css`
-          border: 1px solid ${ThemingVariables.colors.gray[1]};
-          border-radius: 8px;
+          height: 32px;
+          width: 160px;
+          border-radius: 4px;
+          border: 1px solid transparent;
           outline: none;
-          font-size: 14px;
-          font-weight: 400;
-          padding: 9px;
-          height: 36px;
-          width: 185px;
+          font-style: normal;
+          font-weight: normal;
+          font-size: 12px;
+          line-height: 14px;
+          padding: 9px 6px;
           box-sizing: border-box;
 
+          :focus,
+          :active,
+          :hover {
+            border: 1px solid ${ThemingVariables.colors.primary[2]};
+          }
           &::placeholder {
-            color: ${ThemingVariables.colors.gray[0]};
+            color: ${ThemingVariables.colors.text[2]};
           }
         `,
         props.className

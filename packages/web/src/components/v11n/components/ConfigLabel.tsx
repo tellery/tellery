@@ -2,7 +2,7 @@ import { css } from '@emotion/css'
 import { ThemingVariables } from '@app/styles'
 import { ReactNode } from 'react'
 
-export function ConfigLabel(props: { children: string; right?: ReactNode }) {
+export function ConfigLabel(props: { children: ReactNode; right?: ReactNode }) {
   return (
     <div
       className={css`

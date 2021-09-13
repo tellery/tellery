@@ -8,7 +8,9 @@ export function ConfigTab(props: { tabs: string[]; tab?: string; children: React
   const tabState = useTabState()
   const { setSelectedId } = tabState
   useEffect(() => {
-    setSelectedId(props.tab || props.tabs[0])
+    if (props.tab) {
+      setSelectedId(props.tab)
+    }
   }, [props.tab, props.tabs, setSelectedId])
 
   return (

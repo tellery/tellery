@@ -48,6 +48,7 @@ import IconCommonSql from './common/sql.svg?component'
 import IconCommonStarFill from './common/star_fill.svg?component'
 import IconCommonStar from './common/star.svg?component'
 import IconCommonStoryBlock from './common/story_block.svg?component'
+import IconCommonSub from './common/sub.svg?component'
 import IconCommonThoughts from './common/thoughts.svg?component'
 import IconCommonTurn from './common/turn.svg?component'
 import IconCommonUnlink from './common/unlink.svg?component'
@@ -160,6 +161,7 @@ export {
   IconCommonStarFill,
   IconCommonStar,
   IconCommonStoryBlock,
+  IconCommonSub,
   IconCommonThoughts,
   IconCommonTurn,
   IconCommonUnlink,
