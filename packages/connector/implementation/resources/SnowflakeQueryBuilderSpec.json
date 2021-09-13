@@ -23,5 +23,28 @@
       "byWeek": "WEEKISO(?)",
       "byDate": "AS_DATE(?)"
     }
+  },
+  "comparator": {
+    "like": "? LIKE ?",
+    "isNull": "? IS NULL",
+    "isNotNull": "? IS NOT NULL",
+    "isTrue": "? IS TRUE",
+    "isFalse": "? IS False",
+    "greater": "? > ?",
+    "less": "? < ?",
+    "greaterOrEqual": "? >= ?",
+    "lessOrEqual": "? <= ?",
+    "notEqual": "? != ?",
+    "between": "? BETWEEN ? AND ?",
+    "notBetween": "? NOT BETWEEN ? AND ?",
+    "and": "AND",
+    "or": "OR"
+  },
+  "typeConversion": {
+    "TINYINT,SMALLINT,INTEGER,BIGINT,FLOAT,REAL,DOUBLE,NUMERIC,DECIMAL": "?",
+    "CHAR,VARCHAR,LONGVARCHAR": "'?'",
+    "DATE": "DATE '?'",
+    "TIME": "TIME '?'",
+    "TIMESTAMP": "TIMESTAMP '?'"
   }
 }

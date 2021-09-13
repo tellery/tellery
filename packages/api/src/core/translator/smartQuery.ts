@@ -4,6 +4,8 @@ import BlockEntity from '../../entities/block'
 import { NotFoundError } from '../../error/error'
 import { BlockType } from '../../types/block'
 import {
+  FilterBuilder,
+  filterSpec,
   QueryBuilderSpec,
   QueryBuilderTranslation,
   SelectBuilder,
@@ -33,8 +35,8 @@ async function translateSmartQuery(
   smartQuery: SmartQueryExecution,
   queryBuilderSpec: QueryBuilderSpec,
 ): Promise<string> {
-  const { identifier, aggregation, bucketization } = queryBuilderSpec
-  const { queryBuilderId, metricIds, dimensions: dimensionsRaw } = smartQuery
+  const { identifier, aggregation, bucketization, typeConversion } = queryBuilderSpec
+  const { queryBuilderId, metricIds, dimensions: dimensionsRaw, filters } = smartQuery
 
   const queryBuilderBlockEntity = await getRepository(BlockEntity).findOne(queryBuilderId)
   if (!queryBuilderBlockEntity) {
@@ -57,14 +59,24 @@ async function translateSmartQuery(
   const dimensions = dimensionsRaw.map((it) => assembleSelectField(it, bucketization, identifier))
 
   const selectClause = [...dimensions, ...measures].join(', ')
+  const whereClause = filters
+    ? `WHERE ${assembleWhereField(filters, typeConversion, identifier)}`
+    : ''
   const groupByClause =
     dimensions && dimensions.length > 0
       ? `GROUP BY ${_.range(1, dimensions.length + 1).join(', ')}`
       : ''
+  // automatically order by dimensions
+  const orderByClause =
+    dimensions && dimensions.length > 0
+      ? `ORDER BY ${_.range(1, dimensions.length + 1).join(', ')}`
+      : ''
 
   return `SELECT ${selectClause}
 FROM {{ ${queryBuilderId} }}
-${groupByClause}`
+${whereClause}
+${groupByClause}
+${orderByClause}`
 }
 
 function assembleSelectField(
@@ -87,6 +99,43 @@ function assembleSelectField(
     return `${translatedName} AS ${quotedName}`
   }
   return `${quotedFieldName} as ${quotedName}`
+}
+
+function wrapBracket(str: string): string {
+  return `(${str})`
+}
+
+function assembleWhereField(
+  builder: FilterBuilder,
+  typeConversion: Map<string, string>,
+  quote: string,
+): string {
+  if ('operator' in builder) {
+    const { operator, operands } = builder
+    if (operator === 'and') {
+      return wrapBracket(
+        (operands as FilterBuilder[])
+          .map((it) => assembleWhereField(it, typeConversion, quote))
+          .join(' AND '),
+      )
+    } else if (operator === 'or') {
+      return wrapBracket(
+        (operands as FilterBuilder[])
+          .map((it) => assembleWhereField(it, typeConversion, quote))
+          .join(' OR '),
+      )
+    } else {
+      throw new Error('unknown operator')
+    }
+  } else {
+    const { fieldName, fieldType, func, args } = builder
+    const quotedFieldName = quote.replace('?', fieldName)
+    const convertedArgs = args.map((i) => (typeConversion.get(fieldType) ?? '?').replace('?', i))
+    return [quotedFieldName, ...convertedArgs].reduce(
+      (acc, replacer) => acc.replace('?', replacer),
+      filterSpec.get(fieldType)?.get(func) ?? '?',
+    )
+  }
 }
 
 export { match, translate, translateSmartQuery }
