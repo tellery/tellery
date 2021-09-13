@@ -103,6 +103,7 @@ const RightSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
         right: 0;
         top: 0;
         transition: transform 250ms ease;
+        height: 100%;
       `}
       style={{
         width: rightSideBarState.width,

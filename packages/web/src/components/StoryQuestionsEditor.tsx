@@ -665,7 +665,7 @@ export const StoryQuestionEditor: React.FC<{
         toast.error('block is undefined')
         return
       }
-      if (isDraft !== true) return
+      // if (isDraft !== true) return
       if (readonly) {
         toast.error('question is readonly')
         return

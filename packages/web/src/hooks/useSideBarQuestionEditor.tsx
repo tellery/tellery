@@ -1,13 +1,16 @@
-import { useMemo, useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { atomFamily, useRecoilState, useSetRecoilState } from 'recoil'
+import { useSetRightSideBarConfig } from './useRightSideBarConfig'
 
 export const useSideBarQuestionEditor = (storyId: string) => {
   const setSideBarQuestionEditorState = useSetSideBarQuestionEditorState(storyId)
+  const setRightSideBarState = useSetRightSideBarConfig()
   const open = useCallback(
     ({ blockId, activeTab }: { blockId: string; activeTab: string }) => {
       setSideBarQuestionEditorState({ blockId, activeTab })
+      setRightSideBarState((state) => ({ ...state, folded: false }))
     },
-    [setSideBarQuestionEditorState]
+    [setRightSideBarState, setSideBarQuestionEditorState]
   )
   const close = useCallback(() => {
     setSideBarQuestionEditorState(null)
