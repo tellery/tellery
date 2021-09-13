@@ -24,6 +24,7 @@ export function ShapeSelector(props: {
           align-items: center;
           height: 32px;
           width: 100%;
+          padding-left: 6px;
         `
       )}
     >

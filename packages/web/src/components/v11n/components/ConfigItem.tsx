@@ -18,6 +18,7 @@ export function ConfigItem(props: { label: string; children: ReactNode; multilin
           height: 32px;
           font-size: 12px;
           line-height: 16px;
+          font-weight: normal;
           padding: 8px 0;
           color: ${ThemingVariables.colors.text[1]};
           flex-shrink: 0;

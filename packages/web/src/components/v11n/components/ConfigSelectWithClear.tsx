@@ -33,7 +33,8 @@ export function ConfigSelectWithClear(props: {
           align-items: center;
           justify-content: space-between;
           :focus,
-          :active {
+          :active,
+          :hover {
             border: 1px solid ${ThemingVariables.colors.primary[2]};
           }
         `,

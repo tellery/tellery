@@ -288,9 +288,6 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                       }
                     }
                   }}
-                  className={css`
-                    padding-left: 0;
-                  `}
                 />
               )}
             />

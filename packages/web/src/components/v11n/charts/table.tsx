@@ -46,6 +46,7 @@ export const table: Chart<Type.TABLE> = {
                 className={css`
                   width: 100%;
                   font-size: 12px;
+                  padding-left: 6px;
                   color: ${ThemingVariables.colors.text[0]};
                   display: flex;
                   align-items: center;
