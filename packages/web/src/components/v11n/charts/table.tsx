@@ -47,7 +47,6 @@ export const table: Chart<Type.TABLE> = {
               <div
                 className={css`
                   width: 100%;
-                  padding-right: 10px;
                   font-size: 12px;
                   color: ${ThemingVariables.colors.text[0]};
                   display: flex;
@@ -55,17 +54,6 @@ export const table: Chart<Type.TABLE> = {
                   justify-content: space-between;
                 `}
               >
-                <div
-                  className={css`
-                    flex: 1;
-                    width: 0;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    margin-right: 5px;
-                  `}
-                >
-                  {item}
-                </div>
                 {props.config.columnVisibility[item] === false ? (
                   <IconButton
                     icon={IconMenuHide}
@@ -95,6 +83,17 @@ export const table: Chart<Type.TABLE> = {
                     }}
                   />
                 )}
+                <div
+                  className={css`
+                    flex: 1;
+                    width: 0;
+                    margin-left: 10px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  `}
+                >
+                  {item}
+                </div>
               </div>
             )}
           />

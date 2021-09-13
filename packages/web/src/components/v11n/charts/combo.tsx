@@ -23,7 +23,7 @@ import {
 import type { Path } from 'd3-path'
 import type { CurveGenerator } from 'd3-shape'
 import { compact, head, keyBy, mapValues, sortBy, sum, tail, upperFirst } from 'lodash'
-import React, { MouseEvent, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ConfigDivider } from '../components/ConfigDivider'
 import { ConfigInput } from '../components/ConfigInput'
 import { ConfigItem } from '../components/ConfigItem'
@@ -484,7 +484,6 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                 className={css`
                   display: flex;
                   align-items: center;
-                  width: 160px;
                 `}
               >
                 <ConfigNumericInput

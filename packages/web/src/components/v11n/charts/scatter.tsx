@@ -279,7 +279,6 @@ export const scatter: Chart<Type.SCATTER> = {
                 className={css`
                   display: flex;
                   align-items: center;
-                  width: 160px;
                 `}
               >
                 <ConfigNumericInput

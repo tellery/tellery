@@ -19,9 +19,10 @@ export function ConfigSelect(props: {
       disabled={props.disabled}
       className={cx(
         css`
-          width: 160px;
+          width: 100%;
           height: 32px;
-          border: none;
+          border: 1px solid transparent;
+          border-radius: 4px;
           outline: none;
           font-style: normal;
           font-weight: normal;
@@ -36,6 +37,11 @@ export function ConfigSelect(props: {
           color: ${props.value ? ThemingVariables.colors.text[0] : ThemingVariables.colors.text[1]};
           :disabled {
             cursor: not-allowed;
+          }
+          :focus,
+          :active,
+          :hover {
+            border: 1px solid ${ThemingVariables.colors.primary[2]};
           }
         `,
         props.className

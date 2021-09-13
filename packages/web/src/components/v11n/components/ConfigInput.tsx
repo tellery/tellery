@@ -17,7 +17,7 @@ export function ConfigInput(props: {
         props.className,
         css`
           height: 32px;
-          width: 160px;
+          width: 100%;
           border-radius: 4px;
           border: 1px solid transparent;
           outline: none;

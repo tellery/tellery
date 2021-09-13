@@ -22,7 +22,13 @@ export function ConfigItem(props: { label: string; children: ReactNode }) {
       >
         {props.label}
       </div>
-      {props.children}
+      <div
+        className={css`
+          width: 160px;
+        `}
+      >
+        {props.children}
+      </div>
     </div>
   )
 }

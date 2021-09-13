@@ -2,7 +2,7 @@ import { css, cx } from '@emotion/css'
 
 import { TelleryThemeLight, ThemingVariables } from '@app/styles'
 import { SVG2DataURI } from '@app/lib/svg'
-import { IconCommonArrowDropDown, IconCommonClose, IconCommonSub } from '@app/assets/icons'
+import { IconCommonArrowDropDown, IconCommonSub } from '@app/assets/icons'
 
 export function ConfigSelectWithClear(props: {
   className?: string
@@ -17,7 +17,9 @@ export function ConfigSelectWithClear(props: {
       className={cx(
         css`
           height: 32px;
-          width: 160px;
+          width: 100%;
+          border: 1px solid transparent;
+          border-radius: 4px;
           outline: none;
           padding-left: 6px;
           appearance: none;
@@ -30,6 +32,11 @@ export function ConfigSelectWithClear(props: {
           display: flex;
           align-items: center;
           justify-content: space-between;
+          :focus,
+          :active,
+          :hover {
+            border: 1px solid ${ThemingVariables.colors.primary[2]};
+          }
         `,
         props.className
       )}
