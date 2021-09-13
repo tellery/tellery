@@ -13,6 +13,7 @@ import IconButton from '@app/components/kit/IconButton'
 import Tippy from '@tippyjs/react'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import { ConfigSection } from '../components/ConfigSection'
+import { ConfigTab } from '../components/ConfigTab'
 
 const TABLE_ROW_HEIGHT_MIN = 30
 
@@ -34,69 +35,71 @@ export const table: Chart<Type.TABLE> = {
 
   Configuration(props) {
     return (
-      <ConfigSection>
-        <ConfigLabel>Columns</ConfigLabel>
-        <SortableList
-          value={props.config.columnOrder}
-          onChange={(value) => {
-            props.onConfigChange('columnOrder', value)
-          }}
-          renderItem={(item) => (
-            <div
-              className={css`
-                width: 100%;
-                padding-right: 10px;
-                font-size: 12px;
-                color: ${ThemingVariables.colors.text[0]};
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-              `}
-            >
+      <ConfigTab tabs={['Data']}>
+        <ConfigSection>
+          <ConfigLabel>Columns</ConfigLabel>
+          <SortableList
+            value={props.config.columnOrder}
+            onChange={(value) => {
+              props.onConfigChange('columnOrder', value)
+            }}
+            renderItem={(item) => (
               <div
                 className={css`
-                  flex: 1;
-                  width: 0;
-                  overflow: hidden;
-                  text-overflow: ellipsis;
-                  margin-right: 5px;
+                  width: 100%;
+                  padding-right: 10px;
+                  font-size: 12px;
+                  color: ${ThemingVariables.colors.text[0]};
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
                 `}
               >
-                {item}
+                <div
+                  className={css`
+                    flex: 1;
+                    width: 0;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    margin-right: 5px;
+                  `}
+                >
+                  {item}
+                </div>
+                {props.config.columnVisibility[item] === false ? (
+                  <IconButton
+                    icon={IconMenuHide}
+                    color={ThemingVariables.colors.text[1]}
+                    className={css`
+                      flex-shrink: 0;
+                    `}
+                    onClick={() => {
+                      props.onConfigChange('columnVisibility', {
+                        ...props.config.columnVisibility,
+                        [item]: true
+                      })
+                    }}
+                  />
+                ) : (
+                  <IconButton
+                    icon={IconMenuShow}
+                    color={ThemingVariables.colors.text[1]}
+                    className={css`
+                      flex-shrink: 0;
+                    `}
+                    onClick={() => {
+                      props.onConfigChange('columnVisibility', {
+                        ...props.config.columnVisibility,
+                        [item]: false
+                      })
+                    }}
+                  />
+                )}
               </div>
-              {props.config.columnVisibility[item] === false ? (
-                <IconButton
-                  icon={IconMenuHide}
-                  color={ThemingVariables.colors.text[1]}
-                  className={css`
-                    flex-shrink: 0;
-                  `}
-                  onClick={() => {
-                    props.onConfigChange('columnVisibility', {
-                      ...props.config.columnVisibility,
-                      [item]: true
-                    })
-                  }}
-                />
-              ) : (
-                <IconButton
-                  icon={IconMenuShow}
-                  color={ThemingVariables.colors.text[1]}
-                  className={css`
-                    flex-shrink: 0;
-                  `}
-                  onClick={() => {
-                    props.onConfigChange('columnVisibility', {
-                      ...props.config.columnVisibility,
-                      [item]: false
-                    })
-                  }}
-                />
-              )}
-            </div>
-          )}
-        />
-      </ConfigSection>
+            )}
+          />
+        </ConfigSection>
+      </ConfigTab>
     )
   },
 
