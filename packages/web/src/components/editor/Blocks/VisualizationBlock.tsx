@@ -30,7 +30,11 @@ import { useCommit } from '@app/hooks/useCommit'
 import { useFetchBlock } from '@app/hooks/useFetchBlock'
 import { useInterval } from '@app/hooks/useInterval'
 import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
-import { useSideBarQuestionEditor } from '@app/hooks/useSideBarQuestionEditor'
+import {
+  useSetSideBarQuestionEditorState,
+  useSideBarQuestionEditor,
+  useSideBarQuestionEditorState
+} from '@app/hooks/useSideBarQuestionEditor'
 import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
 import { useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
@@ -240,6 +244,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
 
   const [hoveringHandlers, hovering] = useBindHovering()
   const { small } = useBlockBehavior()
+  const [sideBarQuestionEditorState, setSideBarQuestionEditorState] = useSideBarQuestionEditorState(block.storyId!)
 
   return (
     <VisualizationInstructionsContext.Provider value={instructions}>
@@ -249,7 +254,37 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
           elementRef.current = el
         }}
         {...hoveringHandlers()}
-        className={QuestionsBlockContainer}
+        className={cx(
+          QuestionsBlockContainer,
+          sideBarQuestionEditorState?.blockId === block.id &&
+            css`
+              :before {
+                content: ' ';
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                left: 0;
+                top: 0;
+                box-sizing: border-box;
+                border-radius: 20px;
+                border: 4px solid transparent;
+                border-color: ${ThemingVariables.colors.primary[3]};
+              }
+            `
+        )}
+        onClick={(e) => {
+          editor?.setSelectionState(null)
+          setSideBarQuestionEditorState((state) => {
+            if (state !== null) {
+              return {
+                ...state,
+                blockId: block.id
+              }
+            }
+            return state
+          })
+          e.stopPropagation()
+        }}
       >
         <React.Suspense fallback={<></>}>
           {block.content?.queryId && <QuestionBlockHeader block={block} />}
@@ -441,10 +476,6 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
     <div
       ref={ref}
       onCopy={(e) => {
-        e.stopPropagation()
-      }}
-      onClick={(e) => {
-        editor?.setSelectionState(null)
         e.stopPropagation()
       }}
       className={css`

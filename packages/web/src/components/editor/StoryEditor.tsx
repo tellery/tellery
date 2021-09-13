@@ -8,6 +8,7 @@ import { useFetchBlock } from '@app/hooks/useFetchBlock'
 import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
 import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
 import { useSelectionArea } from '@app/hooks/useSelectionArea'
+import { useSetSideBarQuestionEditorState } from '@app/hooks/useSideBarQuestionEditor'
 import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
 import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
@@ -273,7 +274,12 @@ const _StoryEditor: React.FC<{
               storyId: storyId
             })
           } else {
-            setSelectionState(null)
+            setSelectionState((current) => {
+              if (current?.type === TellerySelectionType.Block) {
+                return null
+              }
+              return current
+            })
           }
         }, 0),
       [setSelectionState, storyId]
@@ -1487,6 +1493,8 @@ const _StoryEditor: React.FC<{
     setSelectedBlocks
   ])
 
+  const setSideBarRightState = useSetSideBarQuestionEditorState(storyId)
+
   // stay
   const editorClickHandler = useCallback<React.MouseEventHandler<HTMLDivElement>>(
     (e) => {
@@ -1494,6 +1502,7 @@ const _StoryEditor: React.FC<{
       if (e.defaultPrevented) {
         return
       }
+      setSideBarRightState(null)
       const selectionState = getSelection()
       const contentRect = editorRef.current!.getBoundingClientRect()
       const x = e.clientX < contentRect.x + 100 ? contentRect.x + 101 : e.clientX
@@ -1520,7 +1529,7 @@ const _StoryEditor: React.FC<{
         }
       }
     },
-    [getSelection]
+    [getSelection, setSideBarRightState]
   )
 
   const [dimensions] = useDebouncedDimension(editorRef, 0, true)
