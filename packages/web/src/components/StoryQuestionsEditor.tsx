@@ -699,7 +699,7 @@ export const StoryQuestionEditor: React.FC<{
         draftBlock.content!.title = queryTitle ?? []
       })
     },
-    [block, isDraft, readonly, setSqlBlock, queryBlock.id, fields, metrics, metricIds, dimensions, sql, queryTitle]
+    [block, readonly, setSqlBlock, queryBlock.id, fields, metrics, metricIds, dimensions, sql, queryTitle]
   )
 
   const [sqlError, setSQLError] = useState<string | null>(null)

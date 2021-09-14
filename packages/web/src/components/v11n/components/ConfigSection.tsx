@@ -1,18 +1,32 @@
 import { ThemingVariables } from '@app/styles'
-import { css } from '@emotion/css'
+import { css, cx } from '@emotion/css'
 import { ReactNode } from 'react-router/node_modules/@types/react'
 
-export function ConfigSection(props: { title?: string; right?: ReactNode; children: ReactNode }) {
+export function ConfigSection(props: {
+  title?: string
+  right?: ReactNode
+  children: ReactNode
+  border?: 'top' | 'bottom' | false
+}) {
   return (
     <section
-      className={css`
-        padding: 8px 10px;
-        border-top: 1px solid #dedede;
+      className={cx(
+        css`
+          padding: 8px 10px;
 
-        > * + * {
-          margin-top: 4px;
-        }
-      `}
+          > * + * {
+            margin-top: 4px;
+          }
+        `,
+        (props.border === undefined || props.border === 'top') &&
+          css`
+            border-top: 1px solid #dedede;
+          `,
+        props.border === 'bottom' &&
+          css`
+            border-bottom: 1px solid #dedede;
+          `
+      )}
     >
       {props.title ? (
         <div

@@ -351,7 +351,7 @@ function QueryBuilderConfigInner(props: {
               props.onChange({
                 ...props.value,
                 ...ms.reduce<{ [id: string]: Metric }>((obj, m) => {
-                  id = blockIdGenerator()
+                  const id = blockIdGenerator()
                   obj[id] = m
                   return obj
                 }, {})

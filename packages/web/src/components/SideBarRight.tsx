@@ -1,4 +1,6 @@
+import { useBlockSuspense } from '@app/hooks/api'
 import { ThemingVariables } from '@app/styles'
+import { Editor } from '@app/types'
 import { css } from '@emotion/css'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
@@ -6,6 +8,7 @@ import { Tab, TabList, TabPanel, useTabState } from 'reakit/Tab'
 import { useSideBarQuestionEditorState } from '../hooks/useSideBarQuestionEditor'
 import { SideBarDataAssets } from './SideBarDataAssets'
 import SideBarVisualizationConfig from './SideBarVisualizationConfig'
+import SideBarModeling from './SideBarModeling'
 import { SideBarTabHeader, StyledTabPanel } from './v11n/components/Tab'
 
 export const DefaultSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
@@ -53,8 +56,10 @@ export const DefaultSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
 
 export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string }> = ({ storyId, blockId }) => {
   const tab = useTabState()
-  const [sideBarEditorState] = useSideBarQuestionEditorState(storyId)
   const { t } = useTranslation()
+  const block = useBlockSuspense<Editor.VisualizationBlock>(blockId)
+  const queryBlock = useBlockSuspense(block.content?.queryId || blockId)
+
   return (
     <div
       className={css`
@@ -77,6 +82,15 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
         <Tab as={SideBarTabHeader} {...tab} id="Visualization" selected={tab.selectedId === 'Visualization'}>
           {t`Visualization`}
         </Tab>
+        <Tab
+          as={SideBarTabHeader}
+          {...tab}
+          id="Modeling"
+          selected={tab.selectedId === 'Modeling'}
+          disabled={queryBlock.type === Editor.BlockType.SmartQuery}
+        >
+          {t`Modeling`}
+        </Tab>
       </TabList>
       <div
         className={css`
@@ -86,7 +100,12 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
       >
         <TabPanel as={StyledTabPanel} {...tab}>
           <React.Suspense fallback={<></>}>
-            {sideBarEditorState?.blockId && <SideBarVisualizationConfig storyId={storyId} blockId={blockId} />}
+            <SideBarVisualizationConfig storyId={storyId} blockId={blockId} />
+          </React.Suspense>
+        </TabPanel>
+        <TabPanel as={StyledTabPanel} {...tab}>
+          <React.Suspense fallback={<></>}>
+            <SideBarModeling storyId={storyId} blockId={blockId} />
           </React.Suspense>
         </TabPanel>
       </div>
