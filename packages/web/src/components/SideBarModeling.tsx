@@ -50,7 +50,7 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
     <>
       <ConfigSection
         title="Metrics"
-        border="bottom"
+        border={false}
         right={
           <ConfigPopoverWithTabs
             tabs={['Aggregated metric', 'Custom SQL metric']}
@@ -133,7 +133,7 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
         ))}
       </ConfigSection>
       {downstreams.length && queryBlock ? (
-        <ConfigSection title={`Downstreams (${downstreams.length})`} border={false}>
+        <ConfigSection title={`Downstreams (${downstreams.length})`}>
           <QuestionDownstreams blockId={queryBlock.id} storyId={props.storyId} />
         </ConfigSection>
       ) : null}
