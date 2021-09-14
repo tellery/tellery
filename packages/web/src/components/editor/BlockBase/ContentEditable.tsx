@@ -37,9 +37,10 @@ import {
   toggleMark,
   tokenPosition2SplitedTokenPosition
 } from '../helpers/tokenManipulation'
-import { useEditor, useLocalSelection } from '../hooks'
+import { useEditor } from '../hooks'
 import { useBlockTitleAssets } from '../hooks/useBlockTitleAssets'
 import { useSetInlineFormulaPopoverState } from '../hooks/useInlineFormulaPopoverState'
+import { useLocalSelection } from '../hooks/useStorySelection'
 import { BlockReferenceDropdown } from '../Popovers/BlockReferenceDropdown'
 import { SlashCommandDropdown } from '../Popovers/SlashCommandDropdown'
 import { decodeHTML } from '../utils'

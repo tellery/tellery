@@ -1,7 +1,6 @@
 import React, { useContext } from 'react'
 import type { Editor } from '@app/types'
 import type { TellerySelection } from '../helpers'
-import type { SetBlock } from '../types'
 import type { SetterOrUpdater } from 'recoil'
 
 export type EditorContextInterface<BlockType> = {

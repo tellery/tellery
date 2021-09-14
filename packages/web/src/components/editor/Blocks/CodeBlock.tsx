@@ -1,5 +1,4 @@
 import { MenuItem } from '@app/components/MenuItem'
-import { useBlockHovering } from '@app/hooks/useBlockHovering'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { ThemingVariables } from '@app/styles'
 import { CodeBlockLang, CodeBlockLangDisplayName, Editor } from '@app/types'
@@ -15,7 +14,8 @@ import { BlockRenderer } from '../BlockBase/BlockRenderer'
 import { ContentEditable } from '../BlockBase/ContentEditable'
 import { EditorPopover } from '../EditorPopover'
 import { mergeTokens, splitTokenAndMarkIndex, tokensToText } from '../helpers'
-import { useLocalSelection } from '../hooks'
+import { useBlockHovering } from '../hooks/useBlockHovering'
+import { useLocalSelection } from '../hooks/useStorySelection'
 import { BlockComponent, registerBlock } from './utils'
 
 const getSplitedTokens = (node: LowLightText | LowlightElementSpan, classnames: string[]): Editor.Token[] => {

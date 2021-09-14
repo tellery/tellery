@@ -1,5 +1,4 @@
 import { request, saveTranscations } from '@app/api'
-import { TelleryStorySelectionAtom } from '@app/components/editor'
 import type { TellerySelection } from '@app/components/editor/helpers'
 import { createTranscation } from '@app/context/editorTranscations'
 import { useWorkspace } from '@app/hooks/useWorkspace'
@@ -19,6 +18,7 @@ import { createContext, useContext, useMemo } from 'react'
 import { toast } from 'react-toastify'
 import { CallbackInterface, useRecoilCallback } from 'recoil'
 import { useLoggedUser } from './useAuth'
+import { TelleryStorySelectionAtom } from '@app/components/editor/hooks/useStorySelection'
 
 type Env = {
   selection?: TellerySelection

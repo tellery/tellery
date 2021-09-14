@@ -1,9 +1,32 @@
 /* eslint-disable camelcase */
 import { dequal } from 'dequal'
 import { useMemo } from 'react'
-import { useRecoilTransaction_UNSTABLE, useRecoilValue } from 'recoil'
+import { atomFamily, useRecoilTransaction_UNSTABLE, useRecoilValue } from 'recoil'
 import type { TelleryBlockSelection, TelleryInlineSelection, TellerySelection } from '../helpers'
-import { TelleryBlockSelectedAtom, TelleryBlockSelectionAtom, TelleryStorySelectionAtom } from '../store/selection'
+
+export const TelleryStorySelectionAtom = atomFamily<TellerySelection | null, string>({
+  key: 'TelleryGlobalSelection',
+  default: null
+})
+
+export const TelleryBlockSelectedAtom = atomFamily({
+  key: 'TelleryBlockSelected',
+  default: false
+})
+
+export const TelleryBlockSelectionAtom = atomFamily<TellerySelection | null, string>({
+  key: 'TelleryBlockSelection',
+  default: null
+})
+
+export const useBlockSelected = (blockId: string) => {
+  return useRecoilValue(TelleryBlockSelectedAtom(blockId))
+}
+
+export const useLocalSelection = (blockId: string) => {
+  const localSelection = useRecoilValue(TelleryBlockSelectionAtom(blockId))
+  return localSelection
+}
 
 export const useStorySelection = (storyId: string) => {
   const storySelection = useRecoilValue(TelleryStorySelectionAtom(storyId))
