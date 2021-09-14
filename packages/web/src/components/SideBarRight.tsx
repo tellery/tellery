@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { Tab, TabList, TabPanel, useTabState } from 'reakit/Tab'
 import { useSideBarQuestionEditorState } from '../hooks/useSideBarQuestionEditor'
 import { SideBarDataAssets } from './SideBarDataAssets'
-import SideBarVisualizationConfig from './SideBarVisualizationConfig'
+import SideBarVisualization from './SideBarVisualization'
 import SideBarModeling from './SideBarModeling'
 import { SideBarTabHeader, StyledTabPanel } from './v11n/components/Tab'
 
@@ -100,7 +100,7 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
       >
         <TabPanel as={StyledTabPanel} {...tab}>
           <React.Suspense fallback={<></>}>
-            <SideBarVisualizationConfig storyId={storyId} blockId={blockId} />
+            <SideBarVisualization storyId={storyId} blockId={blockId} />
           </React.Suspense>
         </TabPanel>
         <TabPanel as={StyledTabPanel} {...tab}>

@@ -22,6 +22,6 @@ export const charts = {
   [Type.NUMBER]: number
 } as { [T in Type]: Chart<T> }
 
-export function useChart<T extends Type>(type?: T) {
-  return useMemo(() => (type ? charts[type] : undefined), [type])
+export function useChart<T extends Type>(type: T) {
+  return useMemo(() => charts[type], [type])
 }
