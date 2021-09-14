@@ -217,10 +217,10 @@ function MetricConfigCreator(props: {
               onChange={(value) => {
                 setMap(
                   produce((draft) => {
-                    if (value === undefined) {
-                      delete draft[func]
-                    } else {
+                    if (value) {
                       draft[func] = value
+                    } else {
+                      delete draft[func]
                     }
                   })
                 )
@@ -306,8 +306,8 @@ function MetricItem(props: {
   fieldName: string
   disabled: boolean
   func: string
-  value?: string
-  onChange(value?: string): void
+  value: string
+  onChange(value: string): void
   className?: string
 }) {
   return (
@@ -321,9 +321,9 @@ function MetricItem(props: {
         >
           <CheckBox
             disabled={props.disabled}
-            value={typeof props.value !== 'undefined'}
+            value={!!props.value}
             onChange={(v) => {
-              props.onChange(v ? `${props.func}(${props.fieldName})` : undefined)
+              props.onChange(v ? `${props.func}(${props.fieldName})` : '')
             }}
           />
           <div
