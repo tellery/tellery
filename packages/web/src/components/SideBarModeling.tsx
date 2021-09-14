@@ -5,7 +5,7 @@ import { useCommit } from '@app/hooks/useCommit'
 import { ThemingVariables } from '@app/styles'
 import { Editor, Metric } from '@app/types'
 import { blockIdGenerator } from '@app/utils'
-import { css } from '@emotion/css'
+import { css, cx } from '@emotion/css'
 import produce from 'immer'
 import { WritableDraft } from 'immer/dist/internal'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -55,7 +55,7 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
             ({ onClose }) => (
               <ConfigSection>
                 {fields ? (
-                  <MetricConigCreator
+                  <MetricConfigCreator
                     fields={fields}
                     metrics={metrics}
                     onCreate={(ms) => {
@@ -78,7 +78,30 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
                 ) : null}
               </ConfigSection>
             ),
-            () => <ConfigSection>2</ConfigSection>
+            ({ onClose }) => (
+              <ConfigSection>
+                {fields ? (
+                  <MetricSQLCreator
+                    onCreate={(ms) => {
+                      setBlock((draft) => {
+                        draft.type = Editor.BlockType.QueryBuilder
+                        if (draft.content) {
+                          ;(draft as Editor.QueryBuilder).content!.metrics = {
+                            ...metrics,
+                            ...ms.reduce<{ [id: string]: Metric }>((obj, m) => {
+                              const id = blockIdGenerator()
+                              obj[id] = m
+                              return obj
+                            }, {})
+                          }
+                        }
+                      })
+                      onClose()
+                    }}
+                  />
+                ) : null}
+              </ConfigSection>
+            )
           ]}
         >
           <ConfigIconButton icon={IconCommonAdd} />
@@ -135,7 +158,7 @@ function getFuncs(type: string, aggregation?: Record<string, Record<string, stri
   return aggregation ? Object.keys(aggregation[type] || {}) : []
 }
 
-function MetricConigCreator(props: {
+function MetricConfigCreator(props: {
   fields: { name: string; type: string }[]
   metrics: { [id: string]: Metric }
   onCreate(metrics: Metric[]): void
@@ -180,14 +203,9 @@ function MetricConigCreator(props: {
           }}
         />
       </ConfigItem>
-      <div
-        className={css`
-          border-top: 1px solid ${ThemingVariables.colors.gray[1]};
-          margin: 8px -10px 8px 0 !important;
-        `}
-      />
       {field ? (
         <>
+          <Divider half={true} />
           <ConfigItem label="Calculations">null</ConfigItem>
           {getFuncs(field.type, spec?.queryBuilderSpec.aggregation).map((func) => (
             <MetricItem
@@ -211,12 +229,7 @@ function MetricConigCreator(props: {
           ))}
         </>
       ) : null}
-      <div
-        className={css`
-          border-top: 1px solid ${ThemingVariables.colors.gray[1]};
-          margin: 8px -10px !important;
-        `}
-      />
+      <Divider />
       <FormButton
         variant="secondary"
         disabled={!field || array.length === 0}
@@ -229,6 +242,54 @@ function MetricConigCreator(props: {
               .map(([func, name]) => ({ name, fieldName: field.name, fieldType: field.type!, func }))
               .filter(({ fieldName, fieldType, func }) => !metrics[`${fieldName}/${fieldType}/${func}`])
           )
+        }}
+        className={css`
+          width: 100%;
+          margin-top: 0;
+        `}
+      >
+        Add to metrics
+      </FormButton>
+    </>
+  )
+}
+
+function MetricSQLCreator(props: { onCreate(metrics: Metric[]): void }) {
+  const [name, setName] = useState('')
+  const [rawSql, setRawSql] = useState('')
+
+  return (
+    <>
+      <ConfigItem label="Metric name">
+        <ConfigInput value={name} onChange={setName} />
+      </ConfigItem>
+      <Divider half={true} />
+      <ConfigItem label="SQL">null</ConfigItem>
+      <textarea
+        value={rawSql}
+        onChange={(e) => {
+          setRawSql(e.target.value)
+        }}
+        spellCheck="false"
+        autoComplete="off"
+        className={css`
+          height: 160px;
+          width: 100%;
+          resize: none;
+          border: none;
+          outline: none;
+          background: ${ThemingVariables.colors.gray[3]};
+          border-radius: 4px;
+          padding: 8px;
+          margin-bottom: -3px;
+        `}
+      />
+      <Divider />
+      <FormButton
+        variant="secondary"
+        disabled={!name || !rawSql}
+        onClick={() => {
+          props.onCreate([{ name, rawSql }])
         }}
         className={css`
           width: 100%;
@@ -284,5 +345,24 @@ function MetricItem(props: {
         onChange={props.onChange}
       />
     </ConfigItem>
+  )
+}
+
+function Divider(props: { half?: boolean }) {
+  return (
+    <div
+      className={cx(
+        css`
+          border-top: 1px solid ${ThemingVariables.colors.gray[1]};
+        `,
+        props.half
+          ? css`
+              margin: 8px -10px 8px 0 !important;
+            `
+          : css`
+              margin: 8px -10px !important;
+            `
+      )}
+    />
   )
 }
