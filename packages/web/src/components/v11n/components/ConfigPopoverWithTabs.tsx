@@ -1,16 +1,23 @@
 import { ThemingVariables } from '@app/styles'
 import { css } from '@emotion/css'
 import Tippy from '@tippyjs/react'
-import { ReactNode } from 'react'
+import { ReactNode, useState } from 'react'
 import { ConfigTab } from './ConfigTab'
 
-export function ConfigPopoverWithTabs(props: { tabs: string[]; target: ReactNode; children: ReactNode[] }) {
+export function ConfigPopoverWithTabs(props: {
+  tabs: string[]
+  content: (({ onClose }: { onClose: () => void }) => ReactNode)[]
+  children: ReactNode
+}) {
+  const [visible, setVisible] = useState(false)
+
   return (
     <Tippy
       theme="tellery"
       arrow={false}
       interactive={true}
-      trigger="click"
+      visible={visible}
+      onClickOutside={() => setVisible(false)}
       content={
         <div
           className={css`
@@ -20,16 +27,19 @@ export function ConfigPopoverWithTabs(props: { tabs: string[]; target: ReactNode
             border-radius: 10px;
           `}
         >
-          <ConfigTab tabs={props.tabs}>{props.children}</ConfigTab>
+          <ConfigTab tabs={props.tabs}>
+            {props.content.map((content) => content({ onClose: () => setVisible(false) }))}
+          </ConfigTab>
         </div>
       }
     >
       <div
+        onClick={() => setVisible((old) => !old)}
         className={css`
           line-height: 0;
         `}
       >
-        {props.target}
+        {props.children}
       </div>
     </Tippy>
   )

@@ -351,7 +351,7 @@ function QueryBuilderConfigInner(props: {
               props.onChange({
                 ...props.value,
                 ...ms.reduce<{ [id: string]: Metric }>((obj, m) => {
-                  id = blockIdGenerator()
+                  const id = blockIdGenerator()
                   obj[id] = m
                   return obj
                 }, {})
@@ -369,7 +369,7 @@ function getFuncs(type: string, aggregation?: Record<string, Record<string, stri
   return aggregation ? Object.keys(aggregation[type] || {}) : []
 }
 
-function MetricConigCreator(props: {
+export function MetricConigCreator(props: {
   fields: { name: string; type: string }[]
   metrics: { [id: string]: Metric }
   onCreate(metrics: Metric[]): void

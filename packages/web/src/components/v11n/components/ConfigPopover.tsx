@@ -56,10 +56,10 @@ export function ConfigPopover(props: { title: string; content: ReactNode; childr
       }
     >
       <div
+        onClick={() => setVisible((old) => !old)}
         className={css`
           line-height: 0;
         `}
-        onClick={() => setVisible((old) => !old)}
       >
         {props.children}
       </div>
