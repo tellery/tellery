@@ -1,6 +1,6 @@
 import { IconCommonAdd, IconCommonSub } from '@app/assets/icons'
 import { setBlockTranscation } from '@app/context/editorTranscations'
-import { useBlock, useBlockSuspense, useGetProfileSpec, useSnapshot } from '@app/hooks/api'
+import { useBlock, useBlockSuspense, useGetProfileSpec, useQuestionDownstreams, useSnapshot } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
 import { ThemingVariables } from '@app/styles'
 import { Editor, Metric } from '@app/types'
@@ -11,6 +11,7 @@ import { WritableDraft } from 'immer/dist/internal'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CheckBox } from './CheckBox'
 import { FormButton } from './kit/FormButton'
+import QuestionDownstreams from './QuestionDownstreams'
 import ConfigIconButton from './v11n/components/ConfigIconButton'
 import { ConfigInput } from './v11n/components/ConfigInput'
 import { ConfigItem } from './v11n/components/ConfigItem'
@@ -43,92 +44,100 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
   )
   const metrics =
     queryBlock?.type === Editor.BlockType.QueryBuilder ? (queryBlock as Editor.QueryBuilder).content?.metrics || {} : {}
+  const { data: downstreams } = useQuestionDownstreams(queryBlock?.id)
 
   return (
-    <ConfigSection
-      title="Metrics"
-      border="bottom"
-      right={
-        <ConfigPopoverWithTabs
-          tabs={['Aggregated metric', 'Custom SQL metric']}
-          content={[
-            ({ onClose }) => (
-              <ConfigSection>
-                {fields ? (
-                  <MetricConfigCreator
-                    fields={fields}
-                    metrics={metrics}
-                    onCreate={(ms) => {
-                      setBlock((draft) => {
-                        draft.type = Editor.BlockType.QueryBuilder
-                        if (draft.content) {
-                          ;(draft as Editor.QueryBuilder).content!.metrics = {
-                            ...metrics,
-                            ...ms.reduce<{ [id: string]: Metric }>((obj, m) => {
-                              const id = blockIdGenerator()
-                              obj[id] = m
-                              return obj
-                            }, {})
+    <>
+      <ConfigSection
+        title="Metrics"
+        border="bottom"
+        right={
+          <ConfigPopoverWithTabs
+            tabs={['Aggregated metric', 'Custom SQL metric']}
+            content={[
+              ({ onClose }) => (
+                <ConfigSection>
+                  {fields ? (
+                    <MetricConfigCreator
+                      fields={fields}
+                      metrics={metrics}
+                      onCreate={(ms) => {
+                        setBlock((draft) => {
+                          draft.type = Editor.BlockType.QueryBuilder
+                          if (draft.content) {
+                            ;(draft as Editor.QueryBuilder).content!.metrics = {
+                              ...metrics,
+                              ...ms.reduce<{ [id: string]: Metric }>((obj, m) => {
+                                const id = blockIdGenerator()
+                                obj[id] = m
+                                return obj
+                              }, {})
+                            }
                           }
-                        }
-                      })
-                      onClose()
-                    }}
-                  />
-                ) : null}
-              </ConfigSection>
-            ),
-            ({ onClose }) => (
-              <ConfigSection>
-                {fields ? (
-                  <MetricSQLCreator
-                    onCreate={(ms) => {
-                      setBlock((draft) => {
-                        draft.type = Editor.BlockType.QueryBuilder
-                        if (draft.content) {
-                          ;(draft as Editor.QueryBuilder).content!.metrics = {
-                            ...metrics,
-                            ...ms.reduce<{ [id: string]: Metric }>((obj, m) => {
-                              const id = blockIdGenerator()
-                              obj[id] = m
-                              return obj
-                            }, {})
+                        })
+                        onClose()
+                      }}
+                    />
+                  ) : null}
+                </ConfigSection>
+              ),
+              ({ onClose }) => (
+                <ConfigSection>
+                  {fields ? (
+                    <MetricSQLCreator
+                      onCreate={(ms) => {
+                        setBlock((draft) => {
+                          draft.type = Editor.BlockType.QueryBuilder
+                          if (draft.content) {
+                            ;(draft as Editor.QueryBuilder).content!.metrics = {
+                              ...metrics,
+                              ...ms.reduce<{ [id: string]: Metric }>((obj, m) => {
+                                const id = blockIdGenerator()
+                                obj[id] = m
+                                return obj
+                              }, {})
+                            }
                           }
-                        }
-                      })
-                      onClose()
-                    }}
-                  />
-                ) : null}
-              </ConfigSection>
-            )
-          ]}
-        >
-          <ConfigIconButton icon={IconCommonAdd} />
-        </ConfigPopoverWithTabs>
-      }
-    >
-      {Object.entries(metrics).map(([metricId, metric]) => (
-        <MetricItem
-          key={metricId}
-          name={metric.name}
-          onChangeName={(name) => {
-            setBlock((draft) => {
-              if ((draft as Editor.QueryBuilder).content?.metrics?.[metricId]) {
-                ;(draft as Editor.QueryBuilder).content!.metrics![metricId].name = name
-              }
-            })
-          }}
-          onRemove={() => {
-            setBlock((draft) => {
-              if ((draft as Editor.QueryBuilder).content?.metrics) {
-                delete (draft as Editor.QueryBuilder).content!.metrics![metricId]
-              }
-            })
-          }}
-        />
-      ))}
-    </ConfigSection>
+                        })
+                        onClose()
+                      }}
+                    />
+                  ) : null}
+                </ConfigSection>
+              )
+            ]}
+          >
+            <ConfigIconButton icon={IconCommonAdd} />
+          </ConfigPopoverWithTabs>
+        }
+      >
+        {Object.entries(metrics).map(([metricId, metric]) => (
+          <MetricItem
+            key={metricId}
+            name={metric.name}
+            onChangeName={(name) => {
+              setBlock((draft) => {
+                if ((draft as Editor.QueryBuilder).content?.metrics?.[metricId]) {
+                  ;(draft as Editor.QueryBuilder).content!.metrics![metricId].name = name
+                }
+              })
+            }}
+            onRemove={() => {
+              setBlock((draft) => {
+                if ((draft as Editor.QueryBuilder).content?.metrics) {
+                  delete (draft as Editor.QueryBuilder).content!.metrics![metricId]
+                }
+              })
+            }}
+          />
+        ))}
+      </ConfigSection>
+      {downstreams.length && queryBlock ? (
+        <ConfigSection title={`Downstreams (${downstreams.length})`} border={false}>
+          <QuestionDownstreams blockId={queryBlock.id} storyId={props.storyId} />
+        </ConfigSection>
+      ) : null}
+    </>
   )
 }
 
