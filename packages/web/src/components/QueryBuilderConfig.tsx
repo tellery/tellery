@@ -369,7 +369,7 @@ function getFuncs(type: string, aggregation?: Record<string, Record<string, stri
   return aggregation ? Object.keys(aggregation[type] || {}) : []
 }
 
-export function MetricConigCreator(props: {
+function MetricConigCreator(props: {
   fields: { name: string; type: string }[]
   metrics: { [id: string]: Metric }
   onCreate(metrics: Metric[]): void

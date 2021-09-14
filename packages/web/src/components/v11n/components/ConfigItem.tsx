@@ -2,7 +2,7 @@ import { ThemingVariables } from '@app/styles'
 import { css } from '@emotion/css'
 import { ReactNode } from 'react'
 
-export function ConfigItem(props: { label: string; children: ReactNode; multiline?: boolean }) {
+export function ConfigItem(props: { label: ReactNode; children: ReactNode; multiline?: boolean }) {
   return (
     <div
       className={css`
@@ -13,19 +13,23 @@ export function ConfigItem(props: { label: string; children: ReactNode; multilin
         padding-left: 6px;
       `}
     >
-      <div
-        className={css`
-          height: 32px;
-          font-size: 12px;
-          line-height: 16px;
-          font-weight: normal;
-          padding: 8px 0;
-          color: ${ThemingVariables.colors.text[1]};
-          flex-shrink: 0;
-        `}
-      >
-        {props.label}
-      </div>
+      {typeof props.label === 'string' ? (
+        <div
+          className={css`
+            height: 32px;
+            font-size: 12px;
+            line-height: 16px;
+            font-weight: normal;
+            padding: 8px 0;
+            color: ${ThemingVariables.colors.text[1]};
+            flex-shrink: 0;
+          `}
+        >
+          {props.label}
+        </div>
+      ) : (
+        props.label
+      )}
       <div
         className={css`
           width: ${props.multiline ? 'unset' : '160px'};

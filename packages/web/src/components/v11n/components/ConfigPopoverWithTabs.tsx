@@ -18,6 +18,7 @@ export function ConfigPopoverWithTabs(props: {
       interactive={true}
       visible={visible}
       onClickOutside={() => setVisible(false)}
+      placement="auto-start"
       content={
         <div
           className={css`
