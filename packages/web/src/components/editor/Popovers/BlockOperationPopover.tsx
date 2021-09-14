@@ -55,14 +55,14 @@ const PopperModifiers: Partial<Partial<OffsetModifier | PreventOverflowModifier 
       altBoundary: true,
       padding: 10
     }
+  },
+  {
+    name: 'flip',
+    options: {
+      altBoundary: false,
+      fallbackPlacements: ['left']
+    }
   }
-  // {
-  //   name: 'flip',
-  //   options: {
-  //     altBoundary: true,
-  //     fallbackPlacements: ['bottom-start', 'top-start']
-  //   }
-  // }
 ]
 
 const _BlockOperationPopover = (props: { id: string; children?: ReactNode }) => {
