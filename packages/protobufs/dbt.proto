@@ -11,6 +11,7 @@ service DbtService {
   rpc GenerateKeyPair (google.protobuf.Empty) returns (GenerateKeyPairResponse);
   rpc PullRepo (google.protobuf.Empty) returns (PullRepoResponse);
   rpc PushRepo (PushRepoRequest) returns (google.protobuf.Empty);
+  rpc GetDiffs (google.protobuf.Empty) returns (GetDiffsResponse);
 }
 
 message GenerateKeyPairResponse {
@@ -23,6 +24,10 @@ message PullRepoResponse {
 
 message PushRepoRequest {
   repeated QuestionBlockContent blocks = 1;
+}
+
+message GetDiffsResponse {
+  int32 count = 1;
 }
 
 message DbtBlock {

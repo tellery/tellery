@@ -25,10 +25,7 @@ import io.tellery.integrations.DbtIntegration
 import io.tellery.integrations.DbtIntegration.Companion.DBT_PROJECT_FIELD
 import io.tellery.integrations.DbtIntegration.Companion.GIT_URL_FIELD
 import io.tellery.integrations.DbtIntegrationType
-import io.tellery.utils.allSubclasses
-import io.tellery.utils.cloneRemoteRepo
-import io.tellery.utils.commitAndPush
-import io.tellery.utils.pull
+import io.tellery.utils.*
 import mu.KotlinLogging
 import org.apache.commons.io.FileUtils
 import org.jetbrains.annotations.TestOnly
@@ -154,6 +151,19 @@ class DbtManager(private val profileManager: ProfileManager) {
             pull(it.repoDir, it.privateKey, gitLock)
             val commitMessage = overwriteDiffModels(blocks)
             commitAndPush(it.repoDir, it.privateKey, commitMessage, gitLock)
+        } ?: run {
+            throw DbtContextNotInitException()
+        }
+    }
+
+    fun getRemoteDiffs(): Int = statusLock.read {
+        context?.let {
+            if (!it.repoDir.exists()) {
+                throw DbtRepositoryNotExistsException()
+            }
+
+            val diffs = getDiffs(it.repoDir, it.privateKey, gitLock)
+            return diffs.size
         } ?: run {
             throw DbtContextNotInitException()
         }

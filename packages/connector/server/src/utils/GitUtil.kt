@@ -5,10 +5,16 @@ import com.jcraft.jsch.JSchException
 import com.jcraft.jsch.Session
 import mu.KotlinLogging
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.api.ListBranchCommand
 import org.eclipse.jgit.api.PullResult
+import org.eclipse.jgit.diff.DiffEntry
 import org.eclipse.jgit.lib.ProgressMonitor
+import org.eclipse.jgit.lib.Repository
 import org.eclipse.jgit.merge.ContentMergeStrategy
+import org.eclipse.jgit.revwalk.RevWalk
 import org.eclipse.jgit.transport.*
+import org.eclipse.jgit.treewalk.AbstractTreeIterator
+import org.eclipse.jgit.treewalk.CanonicalTreeParser
 import org.eclipse.jgit.util.FS
 import java.nio.file.Path
 import java.util.concurrent.locks.ReentrantLock
@@ -64,6 +70,47 @@ fun commitAndPush(
                 }
                 .call()
         }
+}
+
+fun getDiffs(
+    dir: Path,
+    privateKey: Path,
+    lock: ReentrantLock
+): List<DiffEntry> = lock.withLock {
+    Git.open(dir.toFile())
+        .use { git ->
+            /**
+             * fetch all remote branch updates and then git diff local master with remote master.
+             */
+            git.fetch()
+                .setCheckFetchedObjects(true)
+                .setTransportConfigCallback { t ->
+                    (t as SshTransport).sshSessionFactory = providesSshSessionFactory(privateKey)
+                }
+                .call()
+
+            val refs = git.branchList().setListMode(ListBranchCommand.ListMode.ALL).call()
+            val localMasterBranch = refs.first().name
+            val remoteMasterBranch = refs.first { it.name.startsWith("refs/remotes") }.name
+
+            val oldTreeParser = prepareTreeParser(git.repository, localMasterBranch)
+            val newTreeParser = prepareTreeParser(git.repository, remoteMasterBranch)
+            git.diff().setOldTree(oldTreeParser).setNewTree(newTreeParser).call()
+        }
+}
+
+private fun prepareTreeParser(repo: Repository, ref: String): AbstractTreeIterator {
+    val head = repo.exactRef(ref)
+    RevWalk(repo).use { walk ->
+        val commit = walk.parseCommit(head.objectId)
+        val tree = walk.parseTree(commit.tree.id)
+        val treeParser = CanonicalTreeParser()
+        repo.newObjectReader().use { reader ->
+            treeParser.reset(reader, tree.id)
+        }
+        walk.dispose()
+        return treeParser
+    }
 }
 
 private fun providesSshSessionFactory(privateKey: Path): SshSessionFactory {

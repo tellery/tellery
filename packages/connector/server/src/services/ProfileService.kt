@@ -90,15 +90,16 @@ class ProfileService(
     override suspend fun upsertIntegration(request: UpsertIntegrationRequest): Integration {
         return withErrorWrapper {
             val f = request.descriptorForType.findFieldByName("id")
-            val integration = IntegrationEntity(
+            var integration = IntegrationEntity(
                 id = if (request.hasField(f)) request.id.value else null,
                 profileId = config.workspaceId,
                 type = request.type,
                 configs = request.configsList.associate { it.key to it.value }
             )
+            integration = profileManager.upsertIntegration(integration)
             // TODO: load the integration matched the type
             dbtManager.reloadContext()
-            buildProtoIntegration(profileManager.upsertIntegration(integration))
+            buildProtoIntegration(integration)
         }
     }
 

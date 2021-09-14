@@ -2,10 +2,7 @@ package io.tellery.services
 
 import com.google.protobuf.Empty
 import io.tellery.common.withErrorWrapper
-import io.tellery.grpc.DbtServiceCoroutineGrpc
-import io.tellery.grpc.GenerateKeyPairResponse
-import io.tellery.grpc.PullRepoResponse
-import io.tellery.grpc.PushRepoRequest
+import io.tellery.grpc.*
 import io.tellery.managers.DbtManager
 
 class DbtService(private val dbtManager: DbtManager) :
@@ -33,6 +30,14 @@ class DbtService(private val dbtManager: DbtManager) :
         return withErrorWrapper {
             dbtManager.pushRepo(request.blocksList)
             Empty.getDefaultInstance()
+        }
+    }
+
+    override suspend fun getDiffs(request: Empty): GetDiffsResponse {
+        return withErrorWrapper {
+            GetDiffsResponse {
+                count = dbtManager.getRemoteDiffs()
+            }
         }
     }
 }
