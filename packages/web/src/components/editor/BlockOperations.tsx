@@ -5,15 +5,26 @@ import { PopoverMotionVariants } from '@app/styles/animations'
 import { DndItemDataBlockIdsType, DnDItemTypes } from '@app/utils/dnd'
 import { useDraggable } from '@dnd-kit/core'
 import { css, cx } from '@emotion/css'
+import styled from '@emotion/styled'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAtom } from 'jotai'
 import React, { memo, useEffect, useMemo, useState } from 'react'
-import { useBlockHovering } from '../../hooks/useBlockHovering'
-import { BlockOperation } from './BlockOperation'
 import { TellerySelectionType } from './helpers'
 import { useEditor } from './hooks'
+import { useBlockHovering } from './hooks/useBlockHovering'
 import { useStorySelection } from './hooks/useStorySelection'
 import { BlockOperationPopover } from './Popovers/BlockOperationPopover'
+
+const BlockOperation = styled.div<{ padding: number }>`
+  display: flex;
+  padding: ${(props) => props.padding}px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  :hover {
+    background-color: ${ThemingVariables.colors.primary[5]};
+  }
+`
 
 const _BlockDragOperation: React.FC<{
   blockId: string

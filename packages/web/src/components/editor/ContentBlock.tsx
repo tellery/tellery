@@ -16,7 +16,7 @@ import { DroppleableOverlay } from './DroppleableOverlay'
 import { useBlockAdmin } from './hooks/useBlockAdminProvider'
 import { BlockBehaviorConext, useBlockBehavior } from './hooks/useBlockBehavior'
 import { useBlockFormat } from './hooks/useBlockFormat'
-import { useBlockSelected } from './hooks/useBlockSelected'
+import { useBlockSelected } from './hooks/useStorySelection'
 
 function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   return (

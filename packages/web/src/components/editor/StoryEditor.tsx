@@ -84,7 +84,7 @@ import {
 } from './helpers'
 import { EditorContext, EditorContextInterface, useMouseMoveInEmitter } from './hooks'
 import { BlockAdminContext, useBlockAdminProvider } from './hooks/useBlockAdminProvider'
-import { useBlockHoveringState } from './hooks/useBlockHoveringState'
+import { useBlockHoveringState } from './hooks/useBlockHovering'
 import { useGetBlockLocalPreferences } from './hooks/useBlockLocalPreferences'
 import { useDebouncedDimension } from './hooks/useDebouncedDimensions'
 import { useSetPastedActions } from './hooks/usePastedActionsState'

@@ -117,16 +117,6 @@ const SideBarContent: React.FC = () => {
           position: relative;
         `}
       >
-        {/* <div
-          className={css`
-            cursor: pointer;
-            margin: 18px auto 0 auto;
-          `}
-          onClick={toggleFoldStatus}
-        >
-          <IconCommonMenu color={ThemingVariables.colors.gray[0]} />
-        </div> */}
-
         <UserSection
           onClick={() => {
             setModalContent(
@@ -167,7 +157,7 @@ const SideBarContent: React.FC = () => {
             margin-top: auto;
           `}
         >
-          <TippySingletonContextProvider delay={500} placement="right" arrow={false}>
+          <TippySingletonContextProvider delay={500} placement="right" arrow={false} hideOnClick>
             <MainSideBarItem
               icon={IconCommonSearch}
               hoverTitle={t`Search`}
