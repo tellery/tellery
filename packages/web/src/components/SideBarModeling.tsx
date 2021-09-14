@@ -109,46 +109,24 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
       }
     >
       {Object.entries(metrics).map(([metricId, metric]) => (
-        <div
+        <MetricItem
           key={metricId}
-          className={css`
-            height: 32px;
-            display: flex;
-            align-items: center;
-          `}
-        >
-          <ConfigInput
-            value={metric.name}
-            onChange={(name) => {
-              setBlock((draft) => {
-                if ((draft as Editor.QueryBuilder).content?.metrics?.[metricId]) {
-                  ;(draft as Editor.QueryBuilder).content!.metrics![metricId].name = name
-                }
-              })
-            }}
-            className={css`
-              flex: 1;
-              font-style: normal;
-              font-weight: normal;
-              font-size: 12px;
-              line-height: 14px;
-              color: ${ThemingVariables.colors.text[0]};
-            `}
-          />
-          <ConfigIconButton
-            icon={IconCommonSub}
-            onClick={() => {
-              setBlock((draft) => {
-                if ((draft as Editor.QueryBuilder).content?.metrics) {
-                  delete (draft as Editor.QueryBuilder).content!.metrics![metricId]
-                }
-              })
-            }}
-            className={css`
-              flex-shrink: 0;
-            `}
-          />
-        </div>
+          name={metric.name}
+          onChangeName={(name) => {
+            setBlock((draft) => {
+              if ((draft as Editor.QueryBuilder).content?.metrics?.[metricId]) {
+                ;(draft as Editor.QueryBuilder).content!.metrics![metricId].name = name
+              }
+            })
+          }}
+          onRemove={() => {
+            setBlock((draft) => {
+              if ((draft as Editor.QueryBuilder).content?.metrics) {
+                delete (draft as Editor.QueryBuilder).content!.metrics![metricId]
+              }
+            })
+          }}
+        />
       ))}
     </ConfigSection>
   )
@@ -156,6 +134,46 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
 
 function getFuncs(type: string, aggregation?: Record<string, Record<string, string>>): string[] {
   return aggregation ? Object.keys(aggregation[type] || {}) : []
+}
+
+function MetricItem(props: { name: string; onChangeName(name: string): void; onRemove(): void }) {
+  const [value, setValue] = useState('')
+  useEffect(() => {
+    setValue(props.name)
+  }, [props.name])
+
+  return (
+    <div
+      className={css`
+        height: 32px;
+        display: flex;
+        align-items: center;
+      `}
+    >
+      <ConfigInput
+        value={value}
+        onChange={setValue}
+        onBlur={() => {
+          props.onChangeName(value)
+        }}
+        className={css`
+          flex: 1;
+          font-style: normal;
+          font-weight: normal;
+          font-size: 12px;
+          line-height: 14px;
+          color: ${ThemingVariables.colors.text[0]};
+        `}
+      />
+      <ConfigIconButton
+        icon={IconCommonSub}
+        onClick={props.onRemove}
+        className={css`
+          flex-shrink: 0;
+        `}
+      />
+    </div>
+  )
 }
 
 function MetricConfigCreator(props: {
@@ -208,7 +226,7 @@ function MetricConfigCreator(props: {
           <Divider half={true} />
           <ConfigItem label="Calculations">null</ConfigItem>
           {getFuncs(field.type, spec?.queryBuilderSpec.aggregation).map((func) => (
-            <MetricItem
+            <CalculationItem
               key={func}
               disabled={!!metrics[`${field.name}/${field.type}/${func}`]}
               fieldName={field.name}
@@ -302,7 +320,7 @@ function MetricSQLCreator(props: { onCreate(metrics: Metric[]): void }) {
   )
 }
 
-function MetricItem(props: {
+function CalculationItem(props: {
   fieldName: string
   disabled: boolean
   func: string

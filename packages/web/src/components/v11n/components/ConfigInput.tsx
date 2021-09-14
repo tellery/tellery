@@ -4,6 +4,7 @@ import { ThemingVariables } from '@app/styles'
 export function ConfigInput(props: {
   value: string
   onChange(value: string): void
+  onBlur?(): void
   className?: string
   placeholder?: string
 }) {
@@ -13,6 +14,8 @@ export function ConfigInput(props: {
       onChange={(e) => {
         props.onChange(e.target.value)
       }}
+      placeholder={props.placeholder}
+      onBlur={props.onBlur}
       className={cx(
         props.className,
         css`
@@ -36,7 +39,6 @@ export function ConfigInput(props: {
           }
         `
       )}
-      placeholder={props.placeholder}
     />
   )
 }
