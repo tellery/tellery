@@ -1,11 +1,16 @@
+import { IconCommonDataAsset, IconCommonDbt, IconCommonEdit, IconCommonLock } from '@app/assets/icons'
 import { useBlockSuspense } from '@app/hooks/api'
+import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
+import { DEFAULT_TITLE } from '@app/utils'
 import { css } from '@emotion/css'
-import React from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Tab, TabList, TabPanel, useTabState } from 'reakit/Tab'
 import { useSideBarQuestionEditorState } from '../hooks/useSideBarQuestionEditor'
+import { ContentEditablePureText, EditableSimpleRef } from './editor/BlockBase/ContentEditablePureText'
+import IconButton from './kit/IconButton'
 import { SideBarDataAssets } from './SideBarDataAssets'
 import SideBarVisualization from './SideBarVisualization'
 import SideBarModeling from './SideBarModeling'
@@ -22,6 +27,7 @@ export const DefaultSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
         overflow-y: hidden;
         border-left: 1px solid #dedede;
         display: flex;
+        background-color: #fff;
         flex-direction: column;
       `}
     >
@@ -54,6 +60,95 @@ export const DefaultSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
   )
 }
 
+export const QuestionTitleEditor: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
+  const queryBlock = useBlockSuspense(blockId)
+  const blockTranscation = useBlockTranscations()
+  const setTitle = useCallback(
+    (title: Editor.Token[]) => {
+      blockTranscation.updateBlockProps(storyId, blockId, ['content', 'title'], title)
+    },
+    [blockId, blockTranscation, storyId]
+  )
+  const [titleEditing, setTitleEditing] = useState(false)
+  const contentEditableRef = useRef<EditableSimpleRef | null>(null)
+
+  return (
+    <div
+      className={css`
+        display: flex;
+        height: 40px;
+        padding-left: 10px;
+        border-bottom: 1px solid #dedede;
+        align-items: center;
+        justify-content: flex-start;
+      `}
+    >
+      <div
+        className={css`
+          margin-right: 10px;
+        `}
+      >
+        {queryBlock.type === Editor.BlockType.QueryBuilder ? (
+          <IconCommonDataAsset color={ThemingVariables.colors.text[0]} />
+        ) : null}
+        {queryBlock.type === Editor.BlockType.SnapshotBlock ? (
+          <IconCommonLock color={ThemingVariables.colors.text[0]} />
+        ) : null}
+        {queryBlock.type === Editor.BlockType.DBT ? <IconCommonDbt color={ThemingVariables.colors.text[0]} /> : null}
+      </div>
+      <ContentEditablePureText
+        tokens={queryBlock?.content?.title}
+        maxLines={1}
+        onChange={(tokens) => {
+          setTitle(tokens)
+        }}
+        ref={contentEditableRef}
+        disableEnter
+        // readonly={!titleEditing}
+        placeHolderStrategy="always"
+        placeHolderText={DEFAULT_TITLE}
+        textAlign="left"
+        onConfirm={() => {
+          setTitleEditing(false)
+        }}
+        onBlur={() => {
+          setTitleEditing(false)
+        }}
+        onFocus={() => {
+          setTitleEditing(true)
+        }}
+        className={css`
+          background: transparent;
+          min-width: 100px;
+          cursor: text;
+          background: transparent;
+          font-size: 20px;
+          text-align: center;
+          font-weight: 500;
+          font-size: 14px;
+          line-height: 24px;
+          color: ${ThemingVariables.colors.text[0]};
+        `}
+      />
+      {!titleEditing && (
+        <IconButton
+          icon={IconCommonEdit}
+          color={ThemingVariables.colors.gray[0]}
+          onClick={(e) => {
+            setTitleEditing(true)
+            setTimeout(() => {
+              contentEditableRef.current?.focus()
+            }, 0)
+          }}
+          className={css`
+            margin-left: 5px;
+          `}
+        />
+      )}
+    </div>
+  )
+}
+
 export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string }> = ({ storyId, blockId }) => {
   const tab = useTabState()
   const { t } = useTranslation()
@@ -67,9 +162,11 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
         overflow-y: hidden;
         border-left: 1px solid #dedede;
         display: flex;
+        background-color: #fff;
         flex-direction: column;
       `}
     >
+      <QuestionTitleEditor blockId={queryBlock.id} storyId={storyId} key={blockId} />
       <TabList
         {...tab}
         className={css`

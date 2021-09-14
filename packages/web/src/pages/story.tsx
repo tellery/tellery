@@ -60,7 +60,7 @@ const _Page: React.FC = () => {
                 flex-shrink: 0;
                 position: relative;
                 background: ${ThemingVariables.colors.gray[5]};
-                box-shadow: 0px 1px 0px ${ThemingVariables.colors.gray[1]};
+                border-bottom: solid 1px ${ThemingVariables.colors.gray[1]};
                 width: 100%;
                 align-items: center;
                 display: flex;

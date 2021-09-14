@@ -2,12 +2,10 @@ import {
   IconCommonArrowDropDown,
   IconCommonArrowUpDown,
   IconCommonClose,
-  IconCommonDataAsset,
   IconCommonDataAssetSetting,
   IconCommonDbt,
   IconCommonDownstream,
   IconCommonError,
-  IconCommonLock,
   IconCommonMetrics,
   IconCommonRun,
   IconCommonSave,
@@ -39,7 +37,7 @@ import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useCreateSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Dimension, Editor, Metric } from '@app/types'
-import { blockIdGenerator, DEFAULT_TITLE, DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
+import { blockIdGenerator, DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import MonacoEditor from '@monaco-editor/react'
 import Tippy from '@tippyjs/react'
@@ -57,7 +55,6 @@ import { setBlockTranscation } from '../context/editorTranscations'
 import { BlockingUI } from './BlockingUI'
 import { CircularLoading } from './CircularLoading'
 import { BlockTitle, useGetBlockTitleTextSnapshot } from './editor'
-import { ContentEditablePureText } from './editor/BlockBase/ContentEditablePureText'
 import { isExecuteableBlockType } from './editor/Blocks/utils'
 import type { SetBlock } from './editor/types'
 import IconButton from './kit/IconButton'
@@ -222,10 +219,11 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
           {...tab}
           aria-label="Question Editor Tabs"
           style={{
-            backgroundColor: open ? ThemingVariables.colors.primary[4] : ThemingVariables.colors.gray[5]
+            backgroundColor: ThemingVariables.colors.gray[4]
           }}
           className={css`
-            box-shadow: 0px -1px 0px ${ThemingVariables.colors.gray[1]};
+            border-top: solid 1px ${ThemingVariables.colors.gray[1]};
+            border-bottom: solid 1px ${ThemingVariables.colors.gray[1]};
             padding: 0 8px;
             transition: all 250ms;
             display: flex;
@@ -301,7 +299,7 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
         </TabList>
         {opendQuestionBlockIds.map((id) => (
           <React.Suspense key={id} fallback={<BlockingUI blocking={true} />}>
-            <StoryQuestionEditor tab={tab} id={id} setActiveId={setActiveId} storyId={storyId} />
+            <StoryQuestionEditor tab={tab} id={id} setActiveId={setActiveId} storyId={storyId} isOpen={open} />
           </React.Suspense>
         ))}
         {/* <div
@@ -452,18 +450,11 @@ const QuestionTab: React.FC<{
       {...bindHoveringEvents()}
       onClick={onClick}
       className={cx(
-        isOpen
-          ? css`
-              border-radius: 8px 8px 0 0;
-            `
-          : css`
-              border-radius: 8px;
-              background: ${ThemingVariables.colors.gray[4]};
-              margin-bottom: 8px;
-            `,
         css`
           margin-top: 8px;
+          margin-bottom: 8px;
           font-size: 12px;
+          border-radius: 8px;
           line-height: 14px;
           display: inline-flex;
           align-items: center;
@@ -475,10 +466,10 @@ const QuestionTab: React.FC<{
         `,
         isActive
           ? css`
-              background: ${ThemingVariables.colors.primary[5]};
+              background: ${ThemingVariables.colors.gray[1]};
             `
           : css`
-              background: ${ThemingVariables.colors.primary[4]};
+              background: ${ThemingVariables.colors.gray[2]};
             `
       )}
     >
@@ -492,9 +483,10 @@ export const StoryQuestionEditor: React.FC<{
   setActiveId: (update: SetStateAction<string | null>) => void | Promise<void>
   tab: TabStateReturn
   storyId: string
+  isOpen: boolean
   // block: Editor.QuestionBlock
   // originalBlock: Editor.QuestionBlock
-}> = ({ id, setActiveId, tab, storyId }) => {
+}> = ({ id, setActiveId, tab, storyId, isOpen }) => {
   const block = useBlockSuspense<Editor.VisualizationBlock | Editor.QueryBlock>(id)
   const visualizationBlock: Editor.VisualizationBlock | null =
     block.type === Editor.BlockType.Visualization ? block : null
@@ -559,24 +551,6 @@ export const StoryQuestionEditor: React.FC<{
       }
     })
   }, [queryBlock, visualizationBlock, id, setQuestionBlocksMap])
-
-  const setTitle = useCallback(
-    (title: Editor.Token[]) => {
-      setQuestionBlocksMap((blocksMap) => {
-        return {
-          ...blocksMap,
-          [id]: {
-            ...blocksMap[id],
-            draft: emitFalsyObject({
-              ...blocksMap[id].draft,
-              title: dequal(title, queryBlock?.content?.title) === false ? title : undefined
-            })
-          }
-        }
-      })
-    },
-    [id, setQuestionBlocksMap, queryBlock?.content?.title]
-  )
 
   const setSql = useCallback(
     (sql) => {
@@ -843,112 +817,53 @@ export const StoryQuestionEditor: React.FC<{
       ref={ref}
       onKeyDown={keyDownHandler}
     >
-      <div
-        className={css`
-          background-color: ${ThemingVariables.colors.primary[5]};
-          padding: 4px 10px;
-          display: flex;
-          height: 40px;
-          z-index: 2;
-        `}
-      >
+      {isOpen && (
         <div
           className={css`
-            flex: 1;
-            align-items: center;
-            justify-content: center;
-            display: flex;
+            position: absolute;
+            right: 50px;
+            top: -32px;
           `}
         >
-          {queryBlock.type === Editor.BlockType.QueryBuilder ? (
-            <IconCommonDataAsset
-              color={ThemingVariables.colors.text[0]}
-              className={css`
-                margin-left: 10px;
-              `}
-            />
-          ) : null}
-          {queryBlock.type === Editor.BlockType.SnapshotBlock ? (
-            <IconCommonLock
-              color={ThemingVariables.colors.text[0]}
-              className={css`
-                margin-left: 10px;
-              `}
-            />
-          ) : null}
-          {queryBlock.type === Editor.BlockType.DBT ? (
-            <IconCommonDbt
-              color={ThemingVariables.colors.text[0]}
-              className={css`
-                margin-left: 10px;
-              `}
-            />
-          ) : null}
-          <ContentEditablePureText
-            tokens={queryTitle}
-            maxLines={1}
-            onChange={(tokens) => {
-              setTitle(tokens)
-            }}
-            disableEnter
-            placeHolderStrategy="always"
-            placeHolderText={DEFAULT_TITLE}
-            textAlign="center"
-            className={css`
-              background: transparent;
-              text-align: center;
-              flex: 1;
-              min-width: 100px;
-              cursor: text;
-              background: transparent;
-              font-weight: 500;
-              font-size: 20px;
-              text-align: center;
-              font-weight: 500;
-              font-size: 14px;
-              line-height: 24px;
-              color: ${ThemingVariables.colors.text[0]};
-            `}
-          />
-        </div>
-        <TippySingletonContextProvider arrow={false}>
-          {isDBT ? null : (
-            <div
-              className={css`
-                display: inline-flex;
-                align-items: center;
-                > * {
-                  margin: 0 10px;
-                }
-              `}
-            >
-              {mode === 'SQL' && (sqlError || sqlSidePanel) && (
+          <TippySingletonContextProvider arrow={false}>
+            {isDBT ? null : (
+              <div
+                className={css`
+                  display: inline-flex;
+                  align-items: center;
+                  > * {
+                    margin: 0 10px;
+                  }
+                `}
+              >
+                {mode === 'SQL' && (sqlError || sqlSidePanel) && (
+                  <IconButton
+                    icon={IconCommonError}
+                    color={ThemingVariables.colors.negative[0]}
+                    onClick={() => {
+                      setSqlSidePanel(!sqlSidePanel)
+                    }}
+                  />
+                )}
                 <IconButton
-                  icon={IconCommonError}
-                  color={ThemingVariables.colors.negative[0]}
-                  onClick={() => {
-                    setSqlSidePanel(!sqlSidePanel)
-                  }}
+                  hoverContent={mutatingCount !== 0 ? 'Cancel Query' : 'Execute Query'}
+                  icon={mutatingCount !== 0 ? IconCommonClose : IconCommonRun}
+                  color={ThemingVariables.colors.primary[1]}
+                  disabled={!isExecuteableBlockType(queryBlock.type)}
+                  onClick={mutatingCount !== 0 ? cancelExecuteSql : run}
                 />
-              )}
-              <IconButton
-                hoverContent={mutatingCount !== 0 ? 'Cancel Query' : 'Execute Query'}
-                icon={mutatingCount !== 0 ? IconCommonClose : IconCommonRun}
-                color={ThemingVariables.colors.primary[1]}
-                disabled={!isExecuteableBlockType(queryBlock.type)}
-                onClick={mutatingCount !== 0 ? cancelExecuteSql : run}
-              />
-              <IconButton
-                hoverContent="Save"
-                disabled={!isDraft || readonly === true}
-                icon={IconCommonSave}
-                onClick={() => save()}
-                color={ThemingVariables.colors.primary[1]}
-              />
-            </div>
-          )}
-        </TippySingletonContextProvider>
-      </div>
+                <IconButton
+                  hoverContent="Save"
+                  disabled={!isDraft || readonly === true}
+                  icon={IconCommonSave}
+                  onClick={() => save()}
+                  color={ThemingVariables.colors.primary[1]}
+                />
+              </div>
+            )}
+          </TippySingletonContextProvider>
+        </div>
+      )}
       <div
         className={css`
           display: flex;
