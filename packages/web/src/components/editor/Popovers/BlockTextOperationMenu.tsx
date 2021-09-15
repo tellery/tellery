@@ -84,6 +84,7 @@ export const BlockTextOperationMenu = (props: { storyId: string }) => {
   const [selectionState] = useStorySelection(props.storyId)
   const [range, setRange] = useState<Range | null>(null)
   const inlineEditing = useInlineEditingValue()
+  const mouseDownRef = useRef<boolean>(false)
 
   useEvent(
     'selectionchange',
@@ -107,22 +108,25 @@ export const BlockTextOperationMenu = (props: { storyId: string }) => {
     return range?.toString()
   }, [range])
 
-  const updateOpenStatus = useCallback(() => {
+  const onMouseDown = useCallback(() => {
+    mouseDownRef.current = true
+  }, [])
+
+  const onMouseUp = useCallback(() => {
+    mouseDownRef.current = false
+  }, [])
+
+  useEvent('mouseup', onMouseUp)
+  useEvent('mousedown', onMouseDown)
+
+  useEffect(() => {
+    if (mouseDownRef.current) return
     if (selectionString?.length) {
       setOpen(true)
     } else {
       setOpen(false)
     }
-  }, [selectionString?.length])
-
-  useEvent('mouseup', updateOpenStatus)
-  useEvent('keyup', updateOpenStatus)
-
-  useEffect(() => {
-    if (!selectionString?.length) {
-      setOpen(false)
-    }
-  }, [selectionString?.length])
+  }, [selectionState, selectionString?.length])
 
   return createPortal(
     <AnimatePresence>
@@ -895,6 +899,7 @@ const InlineFormulaInput: React.FC<{
             border-radius: 8px;
             overflow: hidden;
             padding: 0 10px;
+            width: 420px;
             color: ${ThemingVariables.colors.text[1]};
           `,
           'no-select'
@@ -909,7 +914,6 @@ const InlineFormulaInput: React.FC<{
             font-size: 14px;
             line-height: 17px;
             color: ${ThemingVariables.colors.text[1]};
-            width: 420px;
             display: flex;
             flex-direction: column;
             padding-top: 10px;
