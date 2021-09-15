@@ -46,7 +46,7 @@ export const SideBarQueryItemDropdownMenuContent: React.FC<{
   //     targetBlockId: storyId,
   //     direction: 'child'
   //   })
-  //   questionEditor.open({ mode: 'SQL', blockId: newBlock.id, storyId: newBlock.storyId! })
+  //   questionEditor.open({ blockId: newBlock.id, storyId: newBlock.storyId! })
   // }, [onClose, block.type, block.content, storyId, blockTranscations, questionEditor])
 
   return (
@@ -55,7 +55,7 @@ export const SideBarQueryItemDropdownMenuContent: React.FC<{
         icon={<IconCommonSql color={ThemingVariables.colors.text[0]} />}
         title={t`Edit SQL`}
         onClick={(e) => {
-          questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
+          questionEditor.open({ blockId: block.id, storyId: block.storyId! })
           onClose()
         }}
       />

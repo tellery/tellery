@@ -106,7 +106,7 @@ const useVisualizationBlockInstructionsProvider = (block: Editor.VisualizationBl
   const instructions = useMemo(
     () => ({
       openMenu: () => {
-        questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
+        questionEditor.open({ blockId: block.id, storyId: block.storyId! })
       },
       restoreOriginalQueryId: async () => {
         if (!fromQueryId) return
@@ -954,7 +954,7 @@ export const MoreDropdownSelect: React.FC<{
                 title={t`Open in editor`}
                 icon={<IconCommonSql color={ThemingVariables.colors.text[0]} />}
                 onClick={() => {
-                  questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
+                  questionEditor.open({ blockId: block.id, storyId: block.storyId! })
                   closeMenu()
                 }}
               />
@@ -1232,7 +1232,7 @@ const TitleButtonsInner: React.FC<{
               className={QuestionBlockIconButton}
               icon={IconCommonSql}
               color={ThemingVariables.colors.gray[5]}
-              onClick={() => questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })}
+              onClick={() => questionEditor.open({ blockId: block.id, storyId: block.storyId! })}
             />
           </>
         )}

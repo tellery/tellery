@@ -325,11 +325,7 @@ const _StoryEditor: React.FC<{
 
     fetchBlock(blockId).then((block) => {
       if (isQueryBlock(block.type)) {
-        if (block.type === Editor.BlockType.SmartQuery) {
-          questionEditor.open({ mode: 'QUERY_BUILDER', blockId, storyId })
-        } else {
-          questionEditor.open({ mode: 'SQL', blockId, storyId })
-        }
+        questionEditor.open({ blockId, storyId })
       }
     })
     // TODO: if block not belong to this story...
