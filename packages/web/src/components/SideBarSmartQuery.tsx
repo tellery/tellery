@@ -31,8 +31,9 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
     (update: (block: WritableDraft<Editor.SmartQueryBlock>) => void) => {
       const oldBlock = smartQueryBlock
       const newBlock = produce(oldBlock, update)
-      mutateSnapshot.execute(newBlock)
-      commit({ transcation: setBlockTranscation({ oldBlock, newBlock }), storyId: props.storyId })
+      commit({ transcation: setBlockTranscation({ oldBlock, newBlock }), storyId: props.storyId }).then(() => {
+        mutateSnapshot.execute(newBlock)
+      })
     },
     [smartQueryBlock, mutateSnapshot, commit, props.storyId]
   )
