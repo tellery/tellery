@@ -501,8 +501,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
               setInlineformulaPopoverState(true)
               const range = new Range()
               range.selectNodeContents(tokenElement)
-              // restoreRange(range)
-              // setWillFlush(true)
+              restoreRange(range)
               editor?.setSelectionState({
                 storyId: block.storyId!,
                 type: TellerySelectionType.Inline,
