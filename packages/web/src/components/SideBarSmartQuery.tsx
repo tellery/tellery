@@ -173,7 +173,7 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
                     >
                       <MenuItem key={field.name + index} title={field.name} side={`${field.sqlType} >`} />
                     </Tippy>
-                  ) : (
+                  ) : field.sqlType && spec?.queryBuilderSpec.bucketization[field.sqlType] ? (
                     <MenuItem
                       key={field.name + index}
                       title={field.name}
@@ -200,7 +200,7 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
                         setDimensionVisible(false)
                       }}
                     />
-                  )
+                  ) : null
                 )}
               </MenuWrapper>
             }
