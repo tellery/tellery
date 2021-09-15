@@ -54,7 +54,7 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
             theme="tellery"
             arrow={false}
             offset={[0, 0]}
-            trigger="click"
+            appendTo={document.body}
             content={
               <MenuWrapper>
                 {Object.entries(queryBuilderBlock.content?.metrics || {}).map(([metricId, metric]) => (
@@ -80,6 +80,7 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
           >
             <ConfigIconButton
               icon={IconCommonAdd}
+              disabled={Object.keys(queryBuilderBlock.content?.metrics || {}).length === 0}
               onClick={() => {
                 setMetricVisible((old) => !old)
               }}
@@ -118,7 +119,7 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
             theme="tellery"
             arrow={false}
             offset={[0, 0]}
-            trigger="click"
+            appendTo={document.body}
             content={
               <MenuWrapper>
                 {snapshot.data.fields.map((field, index) =>
@@ -208,6 +209,7 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
           >
             <ConfigIconButton
               icon={IconCommonAdd}
+              disabled={snapshot.data.fields.length === 0}
               onClick={() => {
                 setDimensionVisible((old) => !old)
               }}
