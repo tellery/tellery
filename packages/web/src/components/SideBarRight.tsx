@@ -15,7 +15,7 @@ import { SideBarDataAssets } from './SideBarDataAssets'
 import SideBarVisualization from './SideBarVisualization'
 import SideBarModeling from './SideBarModeling'
 import { SideBarTabHeader, StyledTabPanel } from './v11n/components/Tab'
-import { blockTitleToText, tokensToText } from './editor'
+import SideBarSmartQuery from './SideBarSmartQuery'
 
 export const DefaultSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
   const tab = useTabState()
@@ -185,13 +185,7 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
         <Tab as={SideBarTabHeader} {...tab} id="Visualization" selected={tab.selectedId === 'Visualization'}>
           {t`Visualization`}
         </Tab>
-        <Tab
-          as={SideBarTabHeader}
-          {...tab}
-          id="Modeling"
-          selected={tab.selectedId === 'Modeling'}
-          disabled={queryBlock.type === Editor.BlockType.SmartQuery}
-        >
+        <Tab as={SideBarTabHeader} {...tab} id="Modeling" selected={tab.selectedId === 'Modeling'}>
           {t`Modeling`}
         </Tab>
       </TabList>
@@ -208,7 +202,11 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
         </TabPanel>
         <TabPanel as={StyledTabPanel} {...tab}>
           <React.Suspense fallback={<></>}>
-            <SideBarModeling storyId={storyId} blockId={blockId} />
+            {queryBlock.type === Editor.BlockType.SmartQuery ? (
+              <SideBarSmartQuery storyId={storyId} blockId={blockId} />
+            ) : (
+              <SideBarModeling storyId={storyId} blockId={blockId} />
+            )}
           </React.Suspense>
         </TabPanel>
       </div>

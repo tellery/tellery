@@ -6,7 +6,7 @@ export const useSideBarQuestionEditor = (storyId: string) => {
   const setSideBarQuestionEditorState = useSetSideBarQuestionEditorState(storyId)
   const setRightSideBarState = useSetRightSideBarConfig()
   const open = useCallback(
-    ({ blockId, activeTab }: { blockId: string; activeTab: string }) => {
+    ({ blockId, activeTab }: { blockId: string; activeTab: 'Visualization' | 'Modeling' }) => {
       setSideBarQuestionEditorState({ blockId, activeTab })
       setRightSideBarState((state) => ({ ...state, folded: false }))
     },
@@ -25,7 +25,10 @@ export const useSideBarQuestionEditor = (storyId: string) => {
   )
 }
 
-export const SideBarQuestionEditorAtom = atomFamily<{ blockId: string; activeTab: string } | null, string>({
+export const SideBarQuestionEditorAtom = atomFamily<
+  { blockId: string; activeTab: 'Visualization' | 'Modeling' } | null,
+  string
+>({
   default: null,
   key: 'SideBarQuestionEditorAtom'
 })
