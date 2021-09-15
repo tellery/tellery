@@ -246,6 +246,9 @@ const _ContentEditable: React.ForwardRefRenderFunction<
             range && setSelectionRange(range?.cloneRange())
           }
         }}
+        onClick={() => {
+          props.onClick?.()
+        }}
         onFocus={() => {
           console.log('is focusing')
           setIsFocusing(true)

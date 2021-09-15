@@ -13,6 +13,9 @@ import { ThemeProvider } from './components/ThemeProvider'
 import { queryClient } from './utils'
 import { CustomizedScrollbarProvider } from './components/CustomizedScrollbarProvider'
 import { css } from '@emotion/css'
+import { ThemingVariables } from './styles'
+import IconButton from './components/kit/IconButton'
+import { IconCommonClose } from './assets/icons'
 
 const App: React.FC = () => {
   return (
@@ -39,10 +42,23 @@ const App: React.FC = () => {
               pauseOnFocusLoss
               draggable
               pauseOnHover
+              closeButton={<IconButton icon={IconCommonClose}></IconButton>}
+              className={css`
+                --toastify-toast-min-height: 48px;
+                width: initial;
+                min-width: var(--toastify-toast-width);
+              `}
+              toastClassName={css`
+                border-radius: 10px;
+                box-shadow: ${ThemingVariables.boxShadows[0]};
+                padding: 16px;
+              `}
               bodyClassName={css`
                 > div:last-child {
                   flex: 1;
                 }
+                padding: 0;
+                margin: 0;
               `}
             />
           </QueryClientProvider>

@@ -27,6 +27,7 @@ import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useClickAway, useEvent, useScrollbarWidth } from 'react-use'
+import { Button } from 'reakit'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import invariant from 'tiny-invariant'
 import {
@@ -728,22 +729,31 @@ const _StoryEditor: React.FC<{
           >
             <div
               className={css`
-                color: ${ThemingVariables.colors.text[1]};
+                color: ${ThemingVariables.colors.text[0]};
               `}
             >
               {t('You pasted {{count}} question', { count: originalQuestionsBlocks.length })}
             </div>
-            <IconButton
-              hoverContent={t`Create linked question`}
-              icon={IconCommonBackLink}
+            <Button
               color={ThemingVariables.colors.text[0]}
               className={css`
-                margin-left: auto;
+                margin-left: 30px;
+                margin-right: 20px;
+                border: solid 1px ${ThemingVariables.colors.gray[1]};
+                outline: none;
+                background: transparent;
+                cursor: pointer;
+                padding: 5px 15px;
+                color: ${ThemingVariables.colors.text[0]};
+                font-size: 12px;
+                line-height: 14px;
               `}
               onClick={() => {
                 linkAll()
               }}
-            />
+            >
+              Stay in sync
+            </Button>
           </div>,
           { position: 'bottom-center', autoClose: 10000 }
         )

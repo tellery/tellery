@@ -15,6 +15,7 @@ import { SideBarDataAssets } from './SideBarDataAssets'
 import SideBarVisualization from './SideBarVisualization'
 import SideBarModeling from './SideBarModeling'
 import { SideBarTabHeader, StyledTabPanel } from './v11n/components/Tab'
+import { blockTitleToText, tokensToText } from './editor'
 
 export const DefaultSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
   const tab = useTabState()
@@ -76,8 +77,8 @@ export const QuestionTitleEditor: React.FC<{ blockId: string; storyId: string }>
     <div
       className={css`
         display: flex;
-        height: 40px;
-        padding-left: 10px;
+        min-height: 40px;
+        padding: 0 10px;
         border-bottom: 1px solid #dedede;
         align-items: center;
         justify-content: flex-start;
@@ -98,7 +99,6 @@ export const QuestionTitleEditor: React.FC<{ blockId: string; storyId: string }>
       </div>
       <ContentEditablePureText
         tokens={queryBlock?.content?.title}
-        maxLines={1}
         onChange={(tokens) => {
           setTitle(tokens)
         }}
@@ -110,6 +110,9 @@ export const QuestionTitleEditor: React.FC<{ blockId: string; storyId: string }>
         textAlign="left"
         onConfirm={() => {
           setTitleEditing(false)
+        }}
+        onClick={() => {
+          setTitleEditing(true)
         }}
         onBlur={() => {
           setTitleEditing(false)
@@ -127,6 +130,9 @@ export const QuestionTitleEditor: React.FC<{ blockId: string; storyId: string }>
           font-weight: 500;
           font-size: 14px;
           line-height: 24px;
+          /* white-space: nowrap; */
+          overflow-x: auto;
+          max-width: 100%;
           color: ${ThemingVariables.colors.text[0]};
         `}
       />
