@@ -195,7 +195,6 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
           className={css`
             border-top: solid 1px ${ThemingVariables.colors.gray[1]};
             border-bottom: solid 1px ${ThemingVariables.colors.gray[1]};
-            padding: 0 8px;
             transition: all 250ms;
             display: flex;
             position: relative;
@@ -211,6 +210,7 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
               flex-wrap: nowrap;
               overflow-x: auto;
               overflow-y: hidden;
+              padding: 0 8px;
               ::-webkit-scrollbar {
                 display: none;
               }
@@ -244,8 +244,9 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
                 top: 0;
                 bottom: 0;
                 right: 0;
-                padding: 0 16px;
+                padding: 0 12px;
                 height: 100%;
+                background-color: ${ThemingVariables.colors.gray[2]};
               `}
             >
               <Tippy
@@ -256,12 +257,16 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
                 duration={[500, 0]}
               >
                 <IconButton
-                  icon={open ? IconCommonArrowDropDown : IconCommonArrowUpDown}
+                  icon={IconCommonArrowDropDown}
                   onClick={() => {
                     setOpen(!open)
                   }}
+                  style={{
+                    transform: `rotate(${open ? '0' : '180deg'})`
+                  }}
                   className={css`
                     margin-left: auto;
+                    transition: transform 250ms;
                   `}
                 />
               </Tippy>
