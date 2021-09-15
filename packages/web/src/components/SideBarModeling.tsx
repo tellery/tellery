@@ -302,6 +302,8 @@ function MetricConfigCreator(props: {
               .map(([func, name]) => ({ name, fieldName: field.name, fieldType: field.type!, func }))
               .filter(({ fieldName, fieldType, func }) => !metrics[`${fieldName}/${fieldType}/${func}`])
           )
+          setField(undefined)
+          setMap({})
         }}
         className={css`
           width: 100%;
@@ -350,6 +352,8 @@ function MetricSQLCreator(props: { onCreate(metrics: Metric[]): void }) {
         disabled={!name || !rawSql}
         onClick={() => {
           props.onCreate([{ name, rawSql }])
+          setName('')
+          setRawSql('')
         }}
         className={css`
           width: 100%;
