@@ -185,9 +185,15 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
         <Tab as={SideBarTabHeader} {...tab} id="Visualization" selected={tab.selectedId === 'Visualization'}>
           {t`Visualization`}
         </Tab>
-        <Tab as={SideBarTabHeader} {...tab} id="Modeling" selected={tab.selectedId === 'Modeling'}>
-          {t`Modeling`}
-        </Tab>
+        {queryBlock.type === Editor.BlockType.SmartQuery ? (
+          <Tab as={SideBarTabHeader} {...tab} id="Data" selected={tab.selectedId === 'Data'}>
+            {t`Data`}
+          </Tab>
+        ) : (
+          <Tab as={SideBarTabHeader} {...tab} id="Modeling" selected={tab.selectedId === 'Modeling'}>
+            {t`Modeling`}
+          </Tab>
+        )}
       </TabList>
       <div
         className={css`
