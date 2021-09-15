@@ -25,7 +25,7 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
   const snapshot = useSnapshot(queryBlock.content?.snapshotId)
   const commit = useCommit()
   const setBlock = useCallback(
-    (update: (block: WritableDraft<Editor.VisualizationBlock>) => void) => {
+    (update: (block: WritableDraft<Editor.QueryBuilder>) => void) => {
       const oldBlock = queryBlock
       const newBlock = produce(oldBlock, update)
       commit({ transcation: setBlockTranscation({ oldBlock, newBlock }), storyId: props.storyId })
@@ -62,7 +62,7 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
                         onCreate={(ms) => {
                           setBlock((draft) => {
                             if (draft.content) {
-                              ;(draft as Editor.QueryBuilder).content!.metrics = {
+                              draft.content.metrics = {
                                 ...metrics,
                                 ...ms.reduce<{ [id: string]: Metric }>((obj, m) => {
                                   const id = blockIdGenerator()
@@ -85,7 +85,7 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
                         onCreate={(ms) => {
                           setBlock((draft) => {
                             if (draft.content) {
-                              ;(draft as Editor.QueryBuilder).content!.metrics = {
+                              draft.content.metrics = {
                                 ...metrics,
                                 ...ms.reduce<{ [id: string]: Metric }>((obj, m) => {
                                   const id = blockIdGenerator()
@@ -113,15 +113,15 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
               name={metric.name}
               onChangeName={(name) => {
                 setBlock((draft) => {
-                  if ((draft as Editor.QueryBuilder).content?.metrics?.[metricId]) {
-                    ;(draft as Editor.QueryBuilder).content!.metrics![metricId].name = name
+                  if (draft.content?.metrics?.[metricId]) {
+                    draft.content.metrics[metricId].name = name
                   }
                 })
               }}
               onRemove={() => {
                 setBlock((draft) => {
-                  if ((draft as Editor.QueryBuilder).content?.metrics) {
-                    delete (draft as Editor.QueryBuilder).content!.metrics![metricId]
+                  if (draft.content?.metrics) {
+                    delete draft.content.metrics[metricId]
                   }
                 })
               }}

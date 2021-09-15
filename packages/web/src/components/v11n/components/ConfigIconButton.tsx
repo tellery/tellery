@@ -1,18 +1,20 @@
 import { ThemingVariables } from '@app/styles'
 import { css, cx } from '@emotion/css'
-import { ButtonHTMLAttributes, FunctionComponent, SVGAttributes } from 'react'
+import { ButtonHTMLAttributes, forwardRef, FunctionComponent, SVGAttributes } from 'react'
 
-export default function ConfigIconButton(
-  props: ButtonHTMLAttributes<HTMLButtonElement> & {
+const ConfigIconButton = forwardRef<
+  HTMLButtonElement,
+  ButtonHTMLAttributes<HTMLButtonElement> & {
     icon: FunctionComponent<SVGAttributes<SVGElement>>
     color?: string
   }
-) {
+>(function ConfigIconButton(props, ref) {
   const { className, ...restProps } = props
   const color = props.disabled ? ThemingVariables.colors.text[2] : props.color || ThemingVariables.colors.text[0]
 
   return (
     <button
+      ref={ref}
       {...restProps}
       className={cx(
         css`
@@ -38,4 +40,6 @@ export default function ConfigIconButton(
       {props.icon({ color })}
     </button>
   )
-}
+})
+
+export default ConfigIconButton
