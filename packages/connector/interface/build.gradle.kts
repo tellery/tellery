@@ -6,7 +6,7 @@ val grpcVersion: String by project
 val jacksonVersion: String by project
 
 // Version for releasing snapshot, should be the next version (one to be released)
-val snapshotVersion = "0.8.1"
+val snapshotVersion = "0.8.2"
 
 repositories {
     jcenter()
