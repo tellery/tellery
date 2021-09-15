@@ -2,29 +2,17 @@ import {
   IconCommonArrowDropDown,
   IconCommonArrowUpDown,
   IconCommonClose,
-  IconCommonDataAssetSetting,
-  IconCommonDbt,
-  IconCommonDownstream,
   IconCommonError,
-  IconCommonMetrics,
   IconCommonRun,
-  IconCommonSave,
-  IconCommonSql
+  IconCommonSave
 } from '@app/assets/icons'
 import { SQLEditor } from '@app/components/SQLEditor'
 import { useBindHovering } from '@app/hooks'
-import {
-  useBlockSuspense,
-  useConnectorsGetProfile,
-  useExecuteSQL,
-  useQuestionDownstreams,
-  useTranslateSmartQuery
-} from '@app/hooks/api'
+import { useBlockSuspense, useConnectorsGetProfile, useExecuteSQL, useTranslateSmartQuery } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
 import { useLocalStorage } from '@app/hooks/useLocalStorage'
 import {
   EditorDraft,
-  QueryEditorMode,
   useDraftBlockMutating,
   useQuestionEditorActiveIdState,
   useQuestionEditorBlockMapState,
@@ -36,7 +24,7 @@ import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useCreateSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
-import { Dimension, Editor, Metric } from '@app/types'
+import { Editor } from '@app/types'
 import { blockIdGenerator, DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import MonacoEditor from '@monaco-editor/react'
@@ -58,9 +46,6 @@ import { BlockTitle, useGetBlockTitleTextSnapshot } from './editor'
 import { isExecuteableBlockType } from './editor/Blocks/utils'
 import type { SetBlock } from './editor/types'
 import IconButton from './kit/IconButton'
-import QueryBuilderConfig from './QueryBuilderConfig'
-import QuestionDownstreams from './QuestionDownstreams'
-import SmartQueryConfig from './SmartQueryConfig'
 import { TippySingletonContextProvider } from './TippySingletonContextProvider'
 
 const DragConstraints = {
@@ -83,21 +68,7 @@ const updateOldDraft = (
         ? oldDraft.visConfig
         : undefined,
     snapshotId:
-      oldDraft.snapshotId !== (block as Editor.QueryBlock)?.content?.snapshotId ? oldDraft.snapshotId : undefined,
-    fields:
-      dequal(oldDraft.fields, (block as Editor.QueryBuilder).content?.fields) === false ? oldDraft.fields : undefined,
-    metrics:
-      dequal(oldDraft.metrics, (block as Editor.QueryBuilder).content?.metrics) === false
-        ? oldDraft.metrics
-        : undefined,
-    metricIds:
-      dequal(oldDraft.metricIds, (block as Editor.SmartQueryBlock).content?.metricIds) === false
-        ? oldDraft.metricIds
-        : undefined,
-    dimensions:
-      dequal(oldDraft.dimensions, (block as Editor.SmartQueryBlock).content?.dimensions) === false
-        ? oldDraft.dimensions
-        : undefined
+      oldDraft.snapshotId !== (block as Editor.QueryBlock)?.content?.snapshotId ? oldDraft.snapshotId : undefined
   })
 
   return updatedDraft
@@ -486,7 +457,7 @@ export const StoryQuestionEditor: React.FC<{
   isOpen: boolean
   // block: Editor.QuestionBlock
   // originalBlock: Editor.QuestionBlock
-}> = ({ id, setActiveId, tab, storyId, isOpen }) => {
+}> = ({ id, tab, storyId, isOpen }) => {
   const block = useBlockSuspense<Editor.VisualizationBlock | Editor.QueryBlock>(id)
   const visualizationBlock: Editor.VisualizationBlock | null =
     block.type === Editor.BlockType.Visualization ? block : null
@@ -519,25 +490,17 @@ export const StoryQuestionEditor: React.FC<{
 
   const permissions = useStoryPermissions(visualizationBlock?.storyId ?? block.id)
 
-  const mode = questionBlockState?.mode ?? 'VIS'
   const readonly = permissions.readonly
-  const isDraftSql = !!questionBlockState?.draft?.sql
   const isDraft = !!questionBlockState?.draft
   const originalSQL = (queryBlock as Editor.SQLBlock)?.content?.sql
-  const snapShotId = questionBlockState?.draft?.snapshotId ?? queryBlock?.content?.snapshotId
 
   const queryTitle = questionBlockState?.draft?.title ?? queryBlock?.content?.title
-  const fields = questionBlockState?.draft?.fields ?? (queryBlock as Editor.QueryBuilder)?.content?.fields
-  const metrics = questionBlockState?.draft?.metrics ?? (queryBlock as Editor.QueryBuilder)?.content?.metrics
-  const metricIds = questionBlockState?.draft?.metricIds ?? (queryBlock as Editor.SmartQueryBlock)?.content?.metricIds
-  const dimensions =
-    questionBlockState?.draft?.dimensions ?? (queryBlock as Editor.SmartQueryBlock)?.content?.dimensions
   const { data: sql = questionBlockState?.draft?.sql ?? originalSQL ?? '' } = useTranslateSmartQuery(
     queryBlock.type === Editor.BlockType.SmartQuery
       ? (queryBlock as Editor.SmartQueryBlock).content.queryBuilderId
       : undefined,
-    metricIds,
-    dimensions
+    (queryBlock as Editor.SmartQueryBlock)?.content?.metricIds,
+    (queryBlock as Editor.SmartQueryBlock)?.content?.dimensions
   )
 
   useEffect(() => {
@@ -570,67 +533,6 @@ export const StoryQuestionEditor: React.FC<{
     [id, originalSQL, setQuestionBlocksMap]
   )
 
-  const setQueryBuilderContent = useCallback(
-    (fields: { name: string; type: string }[], metrics: { [id: string]: Metric }) => {
-      setQuestionBlocksMap((blocksMap) => {
-        return {
-          ...blocksMap,
-          [id]: {
-            ...blocksMap[id],
-            draft: emitFalsyObject({
-              ...blocksMap[id].draft,
-              fields:
-                dequal(fields, (queryBlock as Editor.QueryBuilder).content?.fields) === false ? fields : undefined,
-              metrics:
-                dequal(metrics, (queryBlock as Editor.QueryBuilder).content?.metrics) === false ? metrics : undefined
-            })
-          }
-        }
-      })
-    },
-    [id, setQuestionBlocksMap, queryBlock]
-  )
-
-  const setSmartQueryContent = useCallback(
-    (metricIds?: string[], dimensions?: Dimension[]) => {
-      setQuestionBlocksMap((blocksMap) => {
-        return {
-          ...blocksMap,
-          [id]: {
-            ...blocksMap[id],
-            draft: emitFalsyObject({
-              ...blocksMap[id].draft,
-              metricIds:
-                dequal(metricIds, (queryBlock as Editor.SmartQueryBlock).content?.metricIds) === false
-                  ? metricIds
-                  : undefined,
-              dimensions:
-                dequal(dimensions, (queryBlock as Editor.SmartQueryBlock).content?.dimensions) === false
-                  ? dimensions
-                  : undefined
-            })
-          }
-        }
-      })
-    },
-    [id, setQuestionBlocksMap, queryBlock]
-  )
-
-  const setMode = useCallback(
-    (mode: QueryEditorMode) => {
-      setQuestionBlocksMap((blocksMap) => {
-        return {
-          ...blocksMap,
-          [id]: {
-            ...blocksMap[id],
-            mode
-          }
-        }
-      })
-    },
-    [id, setQuestionBlocksMap]
-  )
-
   const executeSQL = useExecuteSQL(`draft/${block.id}`)
 
   const save = useCallback(
@@ -649,22 +551,6 @@ export const StoryQuestionEditor: React.FC<{
           ;(draftBlock as Editor.SQLBlock).content!.sql = sql
         }
 
-        if (draftBlock.type === Editor.BlockType.QueryBuilder) {
-          ;(draftBlock as Editor.SQLBlock).content!.sql = sql
-          ;(draftBlock as Editor.QueryBuilder).content!.fields = fields
-          ;(draftBlock as Editor.QueryBuilder).content!.metrics = metrics
-        }
-        if (fields?.length && Object.keys(metrics || {}).length) {
-          draftBlock.type = Editor.BlockType.QueryBuilder
-        }
-
-        if (draftBlock.type === Editor.BlockType.SmartQuery) {
-          ;(draftBlock as Editor.SmartQueryBlock).content!.metricIds = metricIds
-          ;(draftBlock as Editor.SmartQueryBlock).content!.dimensions = dimensions
-        }
-        if (metricIds?.length && dimensions?.length) {
-          draftBlock.type = Editor.BlockType.SmartQuery
-        }
         if (snapshotId) {
           draftBlock.content!.snapshotId = snapshotId
           draftBlock.content!.error = null
@@ -673,7 +559,7 @@ export const StoryQuestionEditor: React.FC<{
         draftBlock.content!.title = queryTitle ?? []
       })
     },
-    [block, readonly, setSqlBlock, queryBlock.id, fields, metrics, metricIds, dimensions, sql, queryTitle]
+    [block, readonly, setSqlBlock, queryBlock.id, sql, queryTitle]
   )
 
   const [sqlError, setSQLError] = useState<string | null>(null)
@@ -762,22 +648,6 @@ export const StoryQuestionEditor: React.FC<{
             e.stopPropagation()
             save()
           }
-        },
-        {
-          hotkeys: ['alt+v'],
-          handler: (e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            setMode('VIS')
-          }
-        },
-        {
-          hotkeys: ['alt+s'],
-          handler: (e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            setMode('SQL')
-          }
         }
       ]
       const matchingHandler = handlers.find((handler) =>
@@ -785,7 +655,7 @@ export const StoryQuestionEditor: React.FC<{
       )
       matchingHandler?.handler(e.nativeEvent)
     },
-    [run, save, setMode]
+    [run, save]
   )
 
   const mutatingCount = useDraftBlockMutating(block.id)
@@ -836,7 +706,7 @@ export const StoryQuestionEditor: React.FC<{
                   }
                 `}
               >
-                {mode === 'SQL' && (sqlError || sqlSidePanel) && (
+                {(sqlError || sqlSidePanel) && (
                   <IconButton
                     icon={IconCommonError}
                     color={ThemingVariables.colors.negative[0]}
@@ -871,223 +741,66 @@ export const StoryQuestionEditor: React.FC<{
           height: calc(100% - 40px);
         `}
       >
-        <QueryEditorSideTabs
-          readonly={sqlReadOnly}
-          mode={mode}
-          setMode={setMode}
-          queryBlockId={queryBlock.id}
-          blockType={block.type}
-          queryBlockType={queryBlock.type}
-        />
-        {mode === 'SQL' && (
-          <>
-            {isDBT ? (
-              <MonacoEditor
-                language="yaml"
-                theme="tellery"
-                value={YAML.stringify(omit(block.content, 'title'))}
-                options={{
-                  readOnly: true,
-                  padding: { top: 20, bottom: 0 }
-                }}
-                loading={<CircularLoading size={50} color={ThemingVariables.colors.gray[0]} />}
-                wrapperClassName={css`
-                  flex: 1;
-                  width: 0 !important;
-                `}
-              />
-            ) : (
-              <SQLEditor
-                className={css`
-                  flex: 1;
-                  width: 0 !important;
-                `}
-                blockId={block.id}
-                value={sql}
-                storyId={storyId}
-                padding={{ top: 20, bottom: 0 }}
-                languageId={profileType}
-                onChange={(e) => {
-                  setSql(e)
-                }}
-                onRun={run}
-                onSave={save}
-                readOnly={sqlReadOnly}
-              />
-            )}
-            {sqlSidePanel && (
-              <div
-                className={css`
-                  overflow: scroll;
-                  word-wrap: break-word;
-                  font-style: normal;
-                  font-weight: 500;
-                  font-size: 14px;
-                  flex: 0 0 400px;
-                  line-height: 24px;
-                  color: ${ThemingVariables.colors.negative[0]};
-                  margin: 15px;
-                  user-select: text;
-                  padding: 10px;
-                  border-radius: 10px;
-                  background: ${ThemingVariables.colors.negative[1]};
-                `}
-              >
-                {sqlError}
-              </div>
-            )}
-          </>
-        )}
-        {mode === 'DOWNSTREAM' && (
-          <QuestionDownstreams
-            blockId={queryBlock.id}
+        {isDBT ? (
+          <MonacoEditor
+            language="yaml"
+            theme="tellery"
+            value={YAML.stringify(omit(block.content, 'title'))}
+            options={{
+              readOnly: true,
+              padding: { top: 20, bottom: 0 }
+            }}
+            loading={<CircularLoading size={50} color={ThemingVariables.colors.gray[0]} />}
+            wrapperClassName={css`
+              flex: 1;
+              width: 0 !important;
+            `}
+          />
+        ) : (
+          <SQLEditor
+            className={css`
+              flex: 1;
+              width: 0 !important;
+            `}
+            blockId={block.id}
+            value={sql}
             storyId={storyId}
-            className={css`
-              flex: 1;
-            `}
+            padding={{ top: 20, bottom: 0 }}
+            languageId={profileType}
+            onChange={(e) => {
+              setSql(e)
+            }}
+            onRun={run}
+            onSave={save}
+            readOnly={sqlReadOnly}
           />
         )}
-        {mode === 'QUERY_BUILDER' && (
-          <QueryBuilderConfig
-            snapshotId={snapShotId}
-            type={queryBlock.type}
-            metrics={metrics}
-            onChange={setQueryBuilderContent}
+        {sqlSidePanel && (
+          <div
             className={css`
-              flex: 1;
+              overflow: scroll;
+              word-wrap: break-word;
+              font-style: normal;
+              font-weight: 500;
+              font-size: 14px;
+              flex: 0 0 400px;
+              line-height: 24px;
+              color: ${ThemingVariables.colors.negative[0]};
+              margin: 15px;
+              user-select: text;
+              padding: 10px;
+              border-radius: 10px;
+              background: ${ThemingVariables.colors.negative[1]};
             `}
-          />
-        )}
-        {mode === 'SMART_QUERY' && (
-          <SmartQueryConfig
-            queryBuilderId={(queryBlock as Editor.SmartQueryBlock).content.queryBuilderId}
-            metricIds={metricIds}
-            dimensions={dimensions}
-            onChange={setSmartQueryContent}
-            className={css`
-              flex: 1;
-            `}
-          />
+          >
+            {sqlError}
+          </div>
         )}
       </div>
     </TabPanel>
   )
 }
 
-const QueryEditorSideTabs: React.FC<{
-  readonly: boolean
-  mode: string
-  setMode: (mode: QueryEditorMode) => void
-  blockType: Editor.BlockType
-  queryBlockType: Editor.BlockType
-  queryBlockId: string
-}> = ({ readonly, mode, setMode, blockType, queryBlockType, queryBlockId }) => {
-  const isDBT = queryBlockType === Editor.BlockType.DBT
-  const { data: downstreams } = useQuestionDownstreams(queryBlockId)
-
-  return (
-    <div
-      className={css`
-        flex-shrink: 0;
-        width: 60px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        z-index: 1;
-        border-right: solid 1px ${ThemingVariables.colors.gray[1]};
-        & > button {
-          padding: 20px;
-          position: relative;
-        }
-        & > button::after {
-          content: '';
-          width: 4px;
-          height: 40px;
-          border-radius: 2px;
-          background: ${ThemingVariables.colors.primary[1]};
-          position: absolute;
-          top: 10px;
-          right: 0;
-        }
-      `}
-    >
-      <TippySingletonContextProvider delay={500} arrow={false} hideOnClick placement="right">
-        <IconButton
-          hoverContent={isDBT ? 'View DBT' : readonly ? 'View SQL' : 'Edit SQL'}
-          icon={isDBT ? IconCommonDbt : IconCommonSql}
-          className={css`
-            &::after {
-              display: ${mode === 'SQL' ? 'visible' : 'none'};
-            }
-          `}
-          color={mode === 'SQL' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
-          onClick={() => {
-            setMode('SQL')
-          }}
-        />
-        {/* {blockType === Editor.BlockType.Visualization && (
-          <IconButton
-            hoverContent="Visualization options"
-            icon={IconVisualizationSetting}
-            className={css`
-              &::after {
-                display: ${mode === 'VIS' ? 'visible' : 'none'};
-              }
-            `}
-            color={mode === 'VIS' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
-            onClick={() => {
-              setMode('VIS')
-            }}
-          />
-        )} */}
-        {downstreams.length === 0 || (
-          <IconButton
-            hoverContent="Downstreams"
-            icon={IconCommonDownstream}
-            className={css`
-              &::after {
-                display: ${mode === 'DOWNSTREAM' ? 'visible' : 'none'};
-              }
-            `}
-            color={mode === 'DOWNSTREAM' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
-            onClick={() => {
-              setMode('DOWNSTREAM')
-            }}
-          />
-        )}
-        {queryBlockType === Editor.BlockType.SmartQuery ? (
-          <IconButton
-            hoverContent="Smart query"
-            icon={IconCommonMetrics}
-            className={css`
-              &::after {
-                display: ${mode === 'SMART_QUERY' ? 'visible' : 'none'};
-              }
-            `}
-            color={mode === 'SMART_QUERY' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
-            onClick={() => {
-              setMode('SMART_QUERY')
-            }}
-          />
-        ) : (
-          <IconButton
-            hoverContent="Data asset"
-            icon={IconCommonDataAssetSetting}
-            className={css`
-              &::after {
-                display: ${mode === 'QUERY_BUILDER' ? 'visible' : 'none'};
-              }
-            `}
-            color={mode === 'QUERY_BUILDER' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
-            onClick={() => {
-              setMode('QUERY_BUILDER')
-            }}
-          />
-        )}
-      </TippySingletonContextProvider>
-    </div>
-  )
-}
 const emitFalsyObject = (object: EditorDraft) => {
   if (Object.values(object).some((value) => value !== undefined)) {
     return object

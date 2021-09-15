@@ -1,7 +1,7 @@
 import { css } from '@emotion/css'
 import { Tab, TabList, TabPanel, useTabState } from 'reakit/Tab'
 import React, { ReactNode, useEffect } from 'react'
-import { SideBarTabHeader, StyledTabPanel } from './Tab'
+import { SideBarTabHeader } from './Tab'
 
 export function ConfigTab(props: { tabs: string[]; tab?: string; children: ReactNode[] | ReactNode }) {
   const tabState = useTabState()
@@ -35,18 +35,11 @@ export function ConfigTab(props: { tabs: string[]; tab?: string; children: React
           </Tab>
         ))}
       </TabList>
-      <div
-        className={css`
-          flex: 1;
-          overflow-y: hidden;
-        `}
-      >
-        {props.tabs.map((tab, index) => (
-          <TabPanel key={tab} as={StyledTabPanel} {...tabState}>
-            {Array.isArray(props.children) ? props.children[index] : props.children}
-          </TabPanel>
-        ))}
-      </div>
+      {props.tabs.map((tab, index) => (
+        <TabPanel key={tab} {...tabState}>
+          {Array.isArray(props.children) ? props.children[index] : props.children}
+        </TabPanel>
+      ))}
     </div>
   )
 }

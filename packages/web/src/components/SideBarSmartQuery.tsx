@@ -1,65 +1,49 @@
-import { IconCommonAdd, IconCommonClose } from '@app/assets/icons'
-import { useBlock, useGetProfileSpec, useSnapshot } from '@app/hooks/api'
+import { IconCommonAdd, IconCommonSub } from '@app/assets/icons'
+import { setBlockTranscation } from '@app/context/editorTranscations'
+import { useBlockSuspense, useGetProfileSpec, useSnapshot } from '@app/hooks/api'
+import { useCommit } from '@app/hooks/useCommit'
 import { ThemingVariables } from '@app/styles'
-import { Dimension, Editor } from '@app/types'
+import { Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
 import Tippy from '@tippyjs/react'
+import produce from 'immer'
+import { WritableDraft } from 'immer/dist/internal'
 import { lowerCase, uniq, uniqBy } from 'lodash'
-import { ReactNode, useState } from 'react'
+import { ReactNode, useCallback, useState } from 'react'
 import { MenuItem } from './MenuItem'
 import { MenuWrapper } from './MenuWrapper'
+import ConfigIconButton from './v11n/components/ConfigIconButton'
+import { ConfigSection } from './v11n/components/ConfigSection'
 
-export default function SmartQueryConfig(props: {
-  queryBuilderId: string
-  metricIds: string[]
-  dimensions: Dimension[]
-  onChange(metricIds?: string[], dimensions?: Dimension[]): void
-  className?: string
-}) {
-  const { data: queryBuilderBlock } = useBlock<Editor.QueryBuilder>(props.queryBuilderId)
+export default function SideBarSmartQuery(props: { storyId: string; blockId: string }) {
+  const block = useBlockSuspense<Editor.VisualizationBlock>(props.blockId)
+  const smartQueryBlock = useBlockSuspense<Editor.SmartQueryBlock>(block.content?.queryId!)
+  const queryBuilderBlock = useBlockSuspense<Editor.QueryBuilder>(smartQueryBlock.content?.queryBuilderId)
   const snapshot = useSnapshot(queryBuilderBlock?.content?.snapshotId)
   const { data: spec } = useGetProfileSpec()
   const [metricVisible, setMetricVisible] = useState(false)
   const [dimensionVisible, setDimensionVisible] = useState(false)
+  const { metricIds, dimensions } = smartQueryBlock.content
+  const commit = useCommit()
+  const setBlock = useCallback(
+    (update: (block: WritableDraft<Editor.SmartQueryBlock>) => void) => {
+      const oldBlock = smartQueryBlock
+      const newBlock = produce(oldBlock, update)
+      commit({ transcation: setBlockTranscation({ oldBlock, newBlock }), storyId: props.storyId })
+    },
+    [smartQueryBlock, commit, props.storyId]
+  )
 
   if (!queryBuilderBlock || !snapshot) {
     return null
   }
 
   return (
-    <div
-      className={cx(
-        css`
-          display: flex;
-        `,
-        props.className
-      )}
-    >
-      <div
-        className={css`
-          width: 280px;
-          border-right: 1px solid ${ThemingVariables.colors.gray[1]};
-          padding: 16px;
-        `}
-      >
-        <div
-          className={css`
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-          `}
-        >
-          <h3
-            className={css`
-              margin: 0;
-              font-weight: 500;
-              font-size: 12px;
-              line-height: 15px;
-              color: ${ThemingVariables.colors.text[0]};
-            `}
-          >
-            Metrics
-          </h3>
+    <>
+      <ConfigSection
+        title="Measures"
+        border={false}
+        right={
           <Tippy
             visible={metricVisible}
             onClickOutside={() => {
@@ -77,9 +61,11 @@ export default function SmartQueryConfig(props: {
                   <MenuItem
                     key={metricId}
                     title={metric.name}
-                    disabled={metric.deprecated || props.metricIds.includes(metricId)}
+                    disabled={metric.deprecated || metricIds.includes(metricId)}
                     onClick={() => {
-                      props.onChange(uniq([...props.metricIds, metricId]), props.dimensions)
+                      setBlock((draft) => {
+                        draft.content.metricIds = uniq([...metricIds, metricId])
+                      })
                       setMetricVisible(false)
                     }}
                   />
@@ -92,28 +78,23 @@ export default function SmartQueryConfig(props: {
               margin-top: 8px;
             `}
           >
-            <div>
-              <IconCommonAdd
-                color={ThemingVariables.colors.text[0]}
-                onClick={() => {
-                  setMetricVisible((old) => !old)
-                }}
-                className={css`
-                  cursor: pointer;
-                `}
-              />
-            </div>
+            <ConfigIconButton
+              icon={IconCommonAdd}
+              onClick={() => {
+                setMetricVisible((old) => !old)
+              }}
+            />
           </Tippy>
-        </div>
-        {props.metricIds.map((metricId, index) =>
+        }
+      >
+        {metricIds.map((metricId, index) =>
           queryBuilderBlock.content?.metrics?.[metricId] ? (
             <ConfigItem
               key={metricId}
               onClick={() => {
-                props.onChange(
-                  props.metricIds.filter((_m, i) => i !== index),
-                  props.dimensions
-                )
+                setBlock((draft) => {
+                  draft.content.metricIds = metricIds.filter((_m, i) => i !== index)
+                })
               }}
               className={css`
                 margin-top: 8px;
@@ -123,32 +104,10 @@ export default function SmartQueryConfig(props: {
             </ConfigItem>
           ) : null
         )}
-      </div>
-      <div
-        className={css`
-          width: 280px;
-          border-right: 1px solid ${ThemingVariables.colors.gray[1]};
-          padding: 16px;
-        `}
-      >
-        <div
-          className={css`
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-          `}
-        >
-          <h3
-            className={css`
-              margin: 0;
-              font-weight: 500;
-              font-size: 12px;
-              line-height: 15px;
-              color: ${ThemingVariables.colors.text[0]};
-            `}
-          >
-            Dimensions
-          </h3>
+      </ConfigSection>
+      <ConfigSection
+        title="Dimensions"
+        right={
           <Tippy
             visible={dimensionVisible}
             onClickOutside={() => {
@@ -168,7 +127,7 @@ export default function SmartQueryConfig(props: {
                   Object.keys(spec.queryBuilderSpec.bucketization[field.sqlType]).length ? (
                     <Tippy
                       theme="tellery"
-                      placement="right-start"
+                      placement="left-start"
                       arrow={false}
                       interactive={true}
                       offset={[-12, 10]}
@@ -179,7 +138,7 @@ export default function SmartQueryConfig(props: {
                               key={func}
                               title={lowerCase(func)}
                               disabled={
-                                !!props.dimensions.find(
+                                !!dimensions.find(
                                   (dimension) =>
                                     dimension.fieldName === field.name &&
                                     dimension.fieldType === field.sqlType &&
@@ -187,11 +146,10 @@ export default function SmartQueryConfig(props: {
                                 )
                               }
                               onClick={() => {
-                                props.onChange(
-                                  props.metricIds,
-                                  uniqBy(
+                                setBlock((draft) => {
+                                  draft.content.dimensions = uniqBy(
                                     [
-                                      ...props.dimensions,
+                                      ...dimensions,
                                       {
                                         name: `${field.name} ${lowerCase(func)}`,
                                         fieldName: field.name,
@@ -201,7 +159,7 @@ export default function SmartQueryConfig(props: {
                                     ],
                                     (dimension) => `${dimension.name}${dimension.fieldType}${dimension.func}`
                                   )
-                                )
+                                })
                                 setDimensionVisible(false)
                               }}
                             />
@@ -217,16 +175,15 @@ export default function SmartQueryConfig(props: {
                       title={field.name}
                       side={field.sqlType}
                       disabled={
-                        !!props.dimensions.find(
+                        !!dimensions.find(
                           (dimension) => dimension.fieldName === field.name && dimension.fieldType === field.sqlType
                         )
                       }
                       onClick={() => {
-                        props.onChange(
-                          props.metricIds,
-                          uniqBy(
+                        setBlock((draft) => {
+                          draft.content.dimensions = uniqBy(
                             [
-                              ...props.dimensions,
+                              ...dimensions,
                               {
                                 name: field.name,
                                 fieldName: field.name,
@@ -235,7 +192,7 @@ export default function SmartQueryConfig(props: {
                             ],
                             (dimension) => `${dimension.name}${dimension.fieldType}${dimension.func}`
                           )
-                        )
+                        })
                         setDimensionVisible(false)
                       }}
                     />
@@ -249,27 +206,22 @@ export default function SmartQueryConfig(props: {
               margin-top: 8px;
             `}
           >
-            <div>
-              <IconCommonAdd
-                color={ThemingVariables.colors.text[0]}
-                onClick={() => {
-                  setDimensionVisible((old) => !old)
-                }}
-                className={css`
-                  cursor: pointer;
-                `}
-              />
-            </div>
+            <ConfigIconButton
+              icon={IconCommonAdd}
+              onClick={() => {
+                setDimensionVisible((old) => !old)
+              }}
+            />
           </Tippy>
-        </div>
-        {props.dimensions.map((dimension, index) => (
+        }
+      >
+        {dimensions.map((dimension, index) => (
           <ConfigItem
             key={dimension.name + index}
             onClick={() => {
-              props.onChange(
-                props.metricIds,
-                props.dimensions.filter((_d, i) => i !== index)
-              )
+              setBlock((draft) => {
+                draft.content.dimensions = dimensions.filter((_d, i) => i !== index)
+              })
             }}
             className={css`
               margin-top: 8px;
@@ -278,8 +230,8 @@ export default function SmartQueryConfig(props: {
             {dimension.name}
           </ConfigItem>
         ))}
-      </div>
-    </div>
+      </ConfigSection>
+    </>
   )
 }
 
@@ -288,29 +240,31 @@ function ConfigItem(props: { children: ReactNode; onClick(): void; className?: s
     <div
       className={cx(
         css`
-          height: 36px;
-          font-size: 12px;
-          color: ${ThemingVariables.colors.text[0]};
+          height: 32px;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 0 4px 0 16px;
-          & > svg {
-            opacity: 0;
-          }
-          &:hover > svg {
-            opacity: 1;
-          }
+          padding-left: 6px;
         `,
         props.className
       )}
     >
-      {props.children}
-      <IconCommonClose
-        color={ThemingVariables.colors.gray[0]}
+      <span
+        className={css`
+          font-style: normal;
+          font-weight: normal;
+          font-size: 12px;
+          line-height: 14px;
+          color: ${ThemingVariables.colors.text[0]};
+        `}
+      >
+        {props.children}
+      </span>
+      <ConfigIconButton
+        icon={IconCommonSub}
         onClick={props.onClick}
         className={css`
-          cursor: pointer;
+          margin-left: 4px;
         `}
       />
     </div>

@@ -14,6 +14,8 @@ export function ConfigPopover(props: { title: string; content: ReactNode; childr
       interactive={true}
       visible={visible}
       onClickOutside={() => setVisible(false)}
+      placement="left-start"
+      appendTo={document.body}
       content={
         <div
           className={css`

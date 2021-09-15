@@ -14,8 +14,9 @@ import IconButton from './kit/IconButton'
 import { SideBarDataAssets } from './SideBarDataAssets'
 import SideBarVisualization from './SideBarVisualization'
 import SideBarModeling from './SideBarModeling'
-import { SideBarTabHeader, StyledTabPanel } from './v11n/components/Tab'
-import { blockTitleToText, tokensToText } from './editor'
+import { SideBarTabHeader } from './v11n/components/Tab'
+import SideBarSmartQuery from './SideBarSmartQuery'
+import PerfectScrollbar from 'react-perfect-scrollbar'
 
 export const DefaultSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
   const tab = useTabState()
@@ -25,7 +26,6 @@ export const DefaultSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
     <div
       className={css`
         height: 100%;
-        overflow-y: hidden;
         border-left: 1px solid #dedede;
         display: flex;
         background-color: #fff;
@@ -45,18 +45,18 @@ export const DefaultSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
           {t`Data Assets`}
         </Tab>
       </TabList>
-      <div
+      <PerfectScrollbar
+        options={{ suppressScrollX: true }}
         className={css`
           flex: 1;
-          overflow-y: hidden;
         `}
       >
-        <TabPanel as={StyledTabPanel} {...tab}>
+        <TabPanel {...tab}>
           <React.Suspense fallback={<></>}>
             <SideBarDataAssets storyId={storyId} />
           </React.Suspense>
         </TabPanel>
-      </div>
+      </PerfectScrollbar>
     </div>
   )
 }
@@ -165,7 +165,6 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
     <div
       className={css`
         height: 100%;
-        overflow-y: hidden;
         border-left: 1px solid #dedede;
         display: flex;
         background-color: #fff;
@@ -185,33 +184,37 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
         <Tab as={SideBarTabHeader} {...tab} id="Visualization" selected={tab.selectedId === 'Visualization'}>
           {t`Visualization`}
         </Tab>
-        <Tab
-          as={SideBarTabHeader}
-          {...tab}
-          id="Modeling"
-          selected={tab.selectedId === 'Modeling'}
-          disabled={queryBlock.type === Editor.BlockType.SmartQuery}
-        >
-          {t`Modeling`}
-        </Tab>
+        {queryBlock.type === Editor.BlockType.SmartQuery ? (
+          <Tab as={SideBarTabHeader} {...tab} id="Data" selected={tab.selectedId === 'Data'}>
+            {t`Data`}
+          </Tab>
+        ) : (
+          <Tab as={SideBarTabHeader} {...tab} id="Modeling" selected={tab.selectedId === 'Modeling'}>
+            {t`Modeling`}
+          </Tab>
+        )}
       </TabList>
-      <div
+      <PerfectScrollbar
+        options={{ suppressScrollX: true }}
         className={css`
           flex: 1;
-          overflow-y: hidden;
         `}
       >
-        <TabPanel as={StyledTabPanel} {...tab}>
+        <TabPanel {...tab}>
           <React.Suspense fallback={<></>}>
             <SideBarVisualization storyId={storyId} blockId={blockId} />
           </React.Suspense>
         </TabPanel>
-        <TabPanel as={StyledTabPanel} {...tab}>
+        <TabPanel {...tab}>
           <React.Suspense fallback={<></>}>
-            <SideBarModeling storyId={storyId} blockId={blockId} />
+            {queryBlock.type === Editor.BlockType.SmartQuery ? (
+              <SideBarSmartQuery storyId={storyId} blockId={blockId} />
+            ) : (
+              <SideBarModeling storyId={storyId} blockId={blockId} />
+            )}
           </React.Suspense>
         </TabPanel>
-      </div>
+      </PerfectScrollbar>
     </div>
   )
 }

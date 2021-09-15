@@ -85,7 +85,12 @@ export const StoryBackwardsRefs = (props: { refs: Ref[]; storyId: string }) => {
   )
 }
 
-export const StoryRefs = (props: { refs: Ref[]; storyId: string; currentStoryId: string }) => {
+export const StoryRefs = (props: {
+  refs: Ref[]
+  storyId: string
+  currentStoryId: string
+  disablePreview?: boolean
+}) => {
   const { refs, storyId } = props
   const [hoverBlockId, setHoverBlockId] = useState<string | null>(null)
   const [modalRef, setModalRef] = useState<HTMLElement | null>(null)
@@ -204,7 +209,7 @@ export const StoryRefs = (props: { refs: Ref[]; storyId: string; currentStoryId:
               </>
             )}
           </div>
-          {hoverBlockId ? (
+          {hoverBlockId && !props.disablePreview ? (
             <div
               ref={setModalRef}
               {...pop.attributes.popper}

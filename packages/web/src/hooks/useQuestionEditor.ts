@@ -1,5 +1,5 @@
 import { Config, Type } from '@app/components/v11n/types'
-import { Dimension, Editor, Metric } from '@app/types'
+import { Editor } from '@app/types'
 import { useMemo } from 'react'
 import { useIsMutating } from 'react-query'
 // eslint-disable-next-line camelcase
@@ -10,19 +10,8 @@ import { atomFamily, useRecoilCallback, useRecoilState, useRecoilTransaction_UNS
 //   open: (arg: { mode: Mode }) => Promise<void>
 // }
 
-export type QueryEditorMode = 'SQL' | 'VIS' | 'DOWNSTREAM' | 'QUERY_BUILDER' | 'SMART_QUERY'
-
 export interface EditorDraft {
   sql?: string
-  fields?: {
-    name: string
-    type: string
-  }[]
-  metrics?: {
-    [id: string]: Metric
-  }
-  metricIds?: string[]
-  dimensions?: Dimension[]
   visConfig?: Config<Type>
   snapshotId?: string
   title?: Editor.Token[]
@@ -33,7 +22,6 @@ type BlockDraft = Record<
   {
     storyId: string
     draft?: EditorDraft
-    mode: QueryEditorMode
   }
 >
 
@@ -102,7 +90,7 @@ export const useCleanQuestionEditorHandler = (storyId: string) => {
 export const useOpenQuestionBlockIdHandler = (storyId: string) => {
   const handler = useRecoilTransaction_UNSTABLE(
     (recoilCallback) =>
-      ({ mode, blockId }: { mode: QueryEditorMode; blockId: string; storyId: string }) => {
+      ({ blockId }: { blockId: string; storyId: string }) => {
         recoilCallback.set(questionEditorActiveIdState(storyId), blockId)
         recoilCallback.set(questionEditorOpenState(storyId), true)
         recoilCallback.set(questionEditorBlockMapState(storyId), (state) => {
@@ -110,8 +98,7 @@ export const useOpenQuestionBlockIdHandler = (storyId: string) => {
             ...state,
             [blockId]: {
               ...state[blockId],
-              storyId,
-              mode
+              storyId
             }
           }
         })
