@@ -13,4 +13,10 @@ export const SideBarTabHeader = styled.button<{ selected: boolean }>`
   padding: 0;
   cursor: pointer;
   color: ${(props) => (props.selected ? ThemingVariables.colors.text[0] : ThemingVariables.colors.text[2])};
+
+  :disabled,
+  [aria-disabled] {
+    pointer-events: auto !important;
+    cursor: not-allowed !important;
+  }
 `

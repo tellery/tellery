@@ -200,31 +200,19 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
           padding-right: 16px;
         `}
       >
-        {queryBlock.type === Editor.BlockType.SmartQuery ? (
-          <Tab
-            as={SideBarTabHeader}
-            {...tab}
-            id="Data"
-            selected={tab.selectedId === 'Data'}
-            onClick={() => {
-              changeTab('Data')
-            }}
-          >
-            {t`Data`}
-          </Tab>
-        ) : (
-          <Tab
-            as={SideBarTabHeader}
-            {...tab}
-            id="Modeling"
-            selected={tab.selectedId === 'Modeling'}
-            onClick={() => {
-              changeTab('Modeling')
-            }}
-          >
-            {t`Modeling`}
-          </Tab>
-        )}
+        <Tab
+          as={SideBarTabHeader}
+          {...tab}
+          id="Data"
+          selected={tab.selectedId === 'Data'}
+          disabled={queryBlock.type !== Editor.BlockType.SmartQuery}
+          focusable={queryBlock.type === Editor.BlockType.SmartQuery}
+          onClick={() => {
+            changeTab('Data')
+          }}
+        >
+          {t`Data`}
+        </Tab>
         <Tab
           as={SideBarTabHeader}
           {...tab}
@@ -236,6 +224,19 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
         >
           {t`Visualization`}
         </Tab>
+        <Tab
+          as={SideBarTabHeader}
+          {...tab}
+          id="Modeling"
+          selected={tab.selectedId === 'Modeling'}
+          disabled={queryBlock.type === Editor.BlockType.SmartQuery}
+          focusable={queryBlock.type !== Editor.BlockType.SmartQuery}
+          onClick={() => {
+            changeTab('Modeling')
+          }}
+        >
+          {t`Modeling`}
+        </Tab>
       </TabList>
       <PerfectScrollbar
         options={{ suppressScrollX: true }}
@@ -245,16 +246,17 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
       >
         <TabPanel {...tab}>
           <React.Suspense fallback={<></>}>
-            {queryBlock.type === Editor.BlockType.SmartQuery ? (
-              <SideBarSmartQuery storyId={storyId} blockId={blockId} />
-            ) : (
-              <SideBarModeling storyId={storyId} blockId={blockId} />
-            )}
+            <SideBarSmartQuery storyId={storyId} blockId={blockId} />
           </React.Suspense>
         </TabPanel>
         <TabPanel {...tab}>
           <React.Suspense fallback={<></>}>
             <SideBarVisualization storyId={storyId} blockId={blockId} />
+          </React.Suspense>
+        </TabPanel>
+        <TabPanel {...tab}>
+          <React.Suspense fallback={<></>}>
+            <SideBarModeling storyId={storyId} blockId={blockId} />
           </React.Suspense>
         </TabPanel>
       </PerfectScrollbar>
