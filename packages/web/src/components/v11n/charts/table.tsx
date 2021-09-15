@@ -1,5 +1,5 @@
 import { css, cx } from '@emotion/css'
-import { slice } from 'lodash'
+import { slice, sortBy } from 'lodash'
 import React, { useMemo, useState, useEffect } from 'react'
 import { IconCommonArrowUnfold, IconMenuHide, IconMenuShow } from '@app/assets/icons'
 import { ThemingVariables } from '@app/styles'
@@ -33,11 +33,17 @@ export const table: Chart<Type.TABLE> = {
   },
 
   Configuration(props) {
+    // TODO: remove this
+    const idOrderOk = useMemo(
+      () => sortBy(props.config.columnOrder).join() === sortBy(props.data.fields.map(({ name }) => name)).join(),
+      [props.config.columnOrder, props.data.fields]
+    )
+
     return (
       <ConfigTab tabs={['Data']}>
         <ConfigSection title="Columns">
           <SortableList
-            value={props.config.columnOrder}
+            value={idOrderOk ? props.config.columnOrder : props.data.fields.map(({ name }) => name)}
             onChange={(value) => {
               props.onConfigChange('columnOrder', value)
             }}
