@@ -2,6 +2,7 @@ import { IconCommonAdd, IconCommonSub } from '@app/assets/icons'
 import { setBlockTranscation } from '@app/context/editorTranscations'
 import { useBlockSuspense, useGetProfileSpec, useSnapshot } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
+import { useRefreshSnapshot } from '@app/hooks/useStorySnapshotManager'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
@@ -25,13 +26,15 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
   const [dimensionVisible, setDimensionVisible] = useState(false)
   const { metricIds, dimensions } = smartQueryBlock.content
   const commit = useCommit()
-  const setBlock = useCallback(
+  const mutateSnapshot = useRefreshSnapshot()
+  const setSmartQueryBlock = useCallback(
     (update: (block: WritableDraft<Editor.SmartQueryBlock>) => void) => {
       const oldBlock = smartQueryBlock
       const newBlock = produce(oldBlock, update)
+      mutateSnapshot.execute(newBlock)
       commit({ transcation: setBlockTranscation({ oldBlock, newBlock }), storyId: props.storyId })
     },
-    [smartQueryBlock, commit, props.storyId]
+    [smartQueryBlock, mutateSnapshot, commit, props.storyId]
   )
 
   if (!queryBuilderBlock || !snapshot) {
@@ -63,7 +66,7 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
                     title={metric.name}
                     disabled={metric.deprecated || metricIds.includes(metricId)}
                     onClick={() => {
-                      setBlock((draft) => {
+                      setSmartQueryBlock((draft) => {
                         draft.content.metricIds = uniq([...metricIds, metricId])
                       })
                       setMetricVisible(false)
@@ -93,7 +96,7 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
             <ConfigItem
               key={metricId}
               onClick={() => {
-                setBlock((draft) => {
+                setSmartQueryBlock((draft) => {
                   draft.content.metricIds = metricIds.filter((_m, i) => i !== index)
                 })
               }}
@@ -147,7 +150,7 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
                                 )
                               }
                               onClick={() => {
-                                setBlock((draft) => {
+                                setSmartQueryBlock((draft) => {
                                   draft.content.dimensions = uniqBy(
                                     [
                                       ...dimensions,
@@ -181,7 +184,7 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
                         )
                       }
                       onClick={() => {
-                        setBlock((draft) => {
+                        setSmartQueryBlock((draft) => {
                           draft.content.dimensions = uniqBy(
                             [
                               ...dimensions,
@@ -221,7 +224,7 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
           <ConfigItem
             key={dimension.name + index}
             onClick={() => {
-              setBlock((draft) => {
+              setSmartQueryBlock((draft) => {
                 draft.content.dimensions = dimensions.filter((_d, i) => i !== index)
               })
             }}
