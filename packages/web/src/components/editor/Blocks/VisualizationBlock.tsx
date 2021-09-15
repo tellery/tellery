@@ -153,6 +153,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
   const fromDataAssetId = block.content?.fromDataAssetId
   const fetchBlock = useFetchBlock()
   const instructions = useVisualizationBlockInstructionsProvider(block)
+  const sidebarEditor = useSideBarQuestionEditor(block.storyId!)
 
   useImperativeHandle(ref, () => instructions, [instructions])
 
@@ -206,7 +207,9 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
 
     if (!queryId) {
       if (fromDataAssetId) {
-        createSmartQuery(fromDataAssetId)
+        createSmartQuery(fromDataAssetId).then((res) => {
+          sidebarEditor.open({ blockId: block.id, activeTab: 'Data' })
+        })
       } else {
         const newQueryBlock = createEmptyBlock({
           type: Editor.BlockType.SQL,

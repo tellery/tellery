@@ -5,7 +5,7 @@ import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { DEFAULT_TITLE } from '@app/utils'
 import { css } from '@emotion/css'
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useRef, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Tab, TabList, TabPanel, useTabState } from 'reakit/Tab'
 import { useSideBarQuestionEditorState } from '../hooks/useSideBarQuestionEditor'
@@ -160,6 +160,13 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
   const { t } = useTranslation()
   const block = useBlockSuspense<Editor.VisualizationBlock>(blockId)
   const queryBlock = useBlockSuspense(block.content?.queryId || blockId)
+  const [sideBarEditorState] = useSideBarQuestionEditorState(storyId)
+
+  useEffect(() => {
+    if (sideBarEditorState?.activeTab) {
+      tab.setSelectedId(sideBarEditorState?.activeTab)
+    }
+  }, [sideBarEditorState, tab])
 
   return (
     <div
