@@ -155,6 +155,7 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
                   draft.type = Editor.BlockType.QueryBuilder
                 })
               }}
+              disabled={!snapshot}
               className={css`
                 width: 100%;
               `}
