@@ -34,8 +34,11 @@ export const table: Chart<Type.TABLE> = {
 
   Configuration(props) {
     // TODO: remove this
-    const idOrderOk = useMemo(
-      () => sortBy(props.config.columnOrder).join() === sortBy(props.data.fields.map(({ name }) => name)).join(),
+    const columnOrder = useMemo(
+      () =>
+        sortBy(props.config.columnOrder).join() === sortBy(props.data.fields.map(({ name }) => name)).join()
+          ? props.config.columnOrder
+          : props.data.fields.map(({ name }) => name),
       [props.config.columnOrder, props.data.fields]
     )
 
@@ -43,7 +46,7 @@ export const table: Chart<Type.TABLE> = {
       <ConfigTab tabs={['Data']}>
         <ConfigSection title="Columns">
           <SortableList
-            value={idOrderOk ? props.config.columnOrder : props.data.fields.map(({ name }) => name)}
+            value={columnOrder}
             onChange={(value) => {
               props.onConfigChange('columnOrder', value)
             }}
@@ -113,19 +116,27 @@ export const table: Chart<Type.TABLE> = {
   },
 
   Diagram(props) {
+    // TODO: remove this
+    const columnOrder = useMemo(
+      () =>
+        sortBy(props.config.columnOrder).join() === sortBy(props.data.fields.map(({ name }) => name)).join()
+          ? props.config.columnOrder
+          : props.data.fields.map(({ name }) => name),
+      [props.config.columnOrder, props.data.fields]
+    )
     const order = useMemo<{ [key: string]: number }>(() => {
       const map = props.data.fields.reduce((obj, { name }, index) => {
         obj[name] = index
         return obj
       }, {} as { [name: string]: number })
-      return props.config.columnOrder.reduce((obj, name, index) => {
+      return columnOrder.reduce((obj, name, index) => {
         const item = props.data.fields[index]
         if (item) {
           obj[item.name] = map[name]
         }
         return obj
       }, {} as { [name: string]: number })
-    }, [props.config.columnOrder, props.data])
+    }, [columnOrder, props.data])
     const columns = useMemo(
       () =>
         props.data.fields
