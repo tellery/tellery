@@ -19,8 +19,8 @@ import { MenuItemDivider } from '@app/components/MenuItemDivider'
 // import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { RefreshButton } from '@app/components/RefreshButton'
 import { TippySingletonContextProvider } from '@app/components/TippySingletonContextProvider'
-import { Diagram } from '@app/components/v11n/Diagram'
 import { charts } from '@app/components/v11n/charts'
+import { Diagram } from '@app/components/v11n/Diagram'
 import { Config, Data, Type } from '@app/components/v11n/types'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useBindHovering, useOnScreen } from '@app/hooks'
@@ -30,11 +30,7 @@ import { useCommit } from '@app/hooks/useCommit'
 import { useFetchBlock } from '@app/hooks/useFetchBlock'
 import { useInterval } from '@app/hooks/useInterval'
 import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
-import {
-  useSetSideBarQuestionEditorState,
-  useSideBarQuestionEditor,
-  useSideBarQuestionEditorState
-} from '@app/hooks/useSideBarQuestionEditor'
+import { useSideBarQuestionEditor, useSideBarQuestionEditorState } from '@app/hooks/useSideBarQuestionEditor'
 import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
 import { useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
@@ -48,7 +44,6 @@ import dayjs from 'dayjs'
 import download from 'downloadjs'
 import { AnimatePresence, motion } from 'framer-motion'
 import html2canvas from 'html2canvas'
-import { editor } from 'monaco-editor'
 import React, {
   forwardRef,
   memo,
@@ -461,7 +456,6 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
   { snapshotId?: string; visualization?: Config<Type> }
 > = ({ snapshotId, visualization }, ref) => {
   const snapshot = useSnapshot(snapshotId)
-  const editor = useEditor()
 
   const visualizationConfig = useMemo(() => {
     // ensure snapshot data is valid
@@ -532,7 +526,7 @@ const _QuestionBlockHeader: React.FC<{
   block: Editor.VisualizationBlock
 }> = ({ block }) => {
   const { t } = useTranslation()
-  const queryBlock = useBlockSuspense(block.content?.queryId!)
+  const queryBlock = useBlockSuspense(block.content!.queryId!)
   const isReference = queryBlock.parentId !== block.id
   const [disableTippy, setDisableTippy] = useState(true)
 
@@ -549,7 +543,14 @@ const _QuestionBlockHeader: React.FC<{
       >
         {isReference && (
           <Tippy content={t`Click to navigate to the original story`} arrow={false}>
-            <Link to={`/story/${queryBlock.storyId}#${queryBlock.parentId}`}>
+            <Link
+              replace
+              to={() => ({
+                pathname: `/story/${queryBlock.storyId}`,
+                hash: `#${queryBlock.parentId}`,
+                state: {}
+              })}
+            >
               <IconCommonBackLink
                 className={css`
                   margin-right: 5px;
@@ -1206,6 +1207,12 @@ const TitleButtonsInner: React.FC<{
   const { t } = useTranslation()
   const questionEditor = useQuestionEditor(block.storyId!)
   const sideBarQuestionEditor = useSideBarQuestionEditor(block.storyId!)
+  const isOriginalQuestion = useMemo(() => {
+    if (block.children?.length && block.content?.queryId) {
+      return block.children.indexOf(block.content.queryId) !== -1
+    }
+    return false
+  }, [block.children, block.content.queryId])
   return (
     <div
       className={css`
@@ -1227,13 +1234,15 @@ const TitleButtonsInner: React.FC<{
               onClick={() => sideBarQuestionEditor.open({ blockId: block.id, activeTab: 'Visualization' })}
               className={QuestionBlockIconButton}
             />
-            <IconButton
-              hoverContent={t`Edit SQL`}
-              className={QuestionBlockIconButton}
-              icon={IconCommonSql}
-              color={ThemingVariables.colors.gray[5]}
-              onClick={() => questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })}
-            />
+            {isOriginalQuestion && (
+              <IconButton
+                hoverContent={t`Edit SQL`}
+                className={QuestionBlockIconButton}
+                icon={IconCommonSql}
+                color={ThemingVariables.colors.gray[5]}
+                onClick={() => questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })}
+              />
+            )}
           </>
         )}
         {block.content?.queryId && (
