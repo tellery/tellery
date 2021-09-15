@@ -486,9 +486,7 @@ export const useQuestionDownstreams = (id?: string) => {
   const items = useMemo(
     () =>
       compact(
-        links?.backwardRefs
-          ?.map(({ blockId }) => blocks?.[blockId])
-          .filter((block) => block && isDataAssetBlock(block.type))
+        links?.backwardRefs.filter((link) => link.type === 'question_ref')?.map(({ blockId }) => blocks?.[blockId])
       ),
     [blocks, links?.backwardRefs]
   )

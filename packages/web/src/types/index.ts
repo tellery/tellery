@@ -358,7 +358,7 @@ export interface Thought extends Editor.BaseBlock {
   }
 }
 
-export type Ref = { blockId: string; storyId: string }
+export type Ref = { blockId: string; storyId: string; type: 'block_ref' | 'question_ref' }
 
 export type Asset = Story | Editor.BaseBlock
 
