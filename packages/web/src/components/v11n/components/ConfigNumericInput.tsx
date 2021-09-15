@@ -1,5 +1,6 @@
 import { cx, css } from '@emotion/css'
 import { ThemingVariables } from '@app/styles'
+import { useEffect, useState } from 'react'
 
 export function ConfigNumericInput(props: {
   value?: number
@@ -9,12 +10,23 @@ export function ConfigNumericInput(props: {
   className?: string
   placeholder?: string
 }) {
+  const [value, setValue] = useState('')
+  useEffect(() => {
+    setValue(props.value?.toString() || '')
+  }, [props.value])
+
   return (
     <input
-      type="number"
-      value={props.value === undefined ? '' : props.value}
+      type="text"
+      inputMode="numeric"
+      pattern="[-+]?[0-9]*[.,]?[0-9]+"
+      value={value}
       onChange={(e) => {
-        props.onChange(e.target.valueAsNumber)
+        setValue(e.target.value)
+      }}
+      onBlur={() => {
+        const num = parseFloat(value)
+        props.onChange(Number.isNaN(num) ? undefined : num)
       }}
       min={props.min}
       max={props.max}
