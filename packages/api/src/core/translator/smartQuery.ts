@@ -61,10 +61,17 @@ async function translateSmartQuery(
     dimensions && dimensions.length > 0
       ? `GROUP BY ${_.range(1, dimensions.length + 1).join(', ')}`
       : ''
+  const datetimeDimensions = dimensionsRaw
+    .map((dim, index) => ({ index, dtype: _.get(dim, 'fieldType') }))
+    .filter(({ dtype }) => ['DATE', 'TIME', 'TIMESTAMP'].includes(dtype))
+    .map(({ index }) => index + 1)
+  const orderByClause =
+    datetimeDimensions.length > 0 ? `ORDER BY ${datetimeDimensions.join(', ')}` : ''
 
   return `SELECT ${selectClause}
 FROM {{ ${queryBuilderId} }}
-${groupByClause}`
+${groupByClause}
+${orderByClause}`
 }
 
 function assembleSelectField(
