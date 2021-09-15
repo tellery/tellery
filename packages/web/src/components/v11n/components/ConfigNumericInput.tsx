@@ -19,10 +19,9 @@ export function ConfigNumericInput(props: {
     <input
       type="text"
       inputMode="numeric"
-      pattern="[-+]?[0-9]*[.,]?[0-9]+"
       value={value}
       onChange={(e) => {
-        setValue(e.target.value)
+        setValue(e.target.value.match(/[-+]?[0-9]*[.,]?[0-9]*/)?.[0] || '')
       }}
       onBlur={() => {
         const num = parseFloat(value)

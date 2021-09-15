@@ -37,18 +37,18 @@ export const number: Chart<Type.NUMBER> = {
     const { onConfigChange } = props
 
     return (
-      <ConfigTab tabs={['Display']}>
+      <ConfigTab tabs={['Data', 'Display']}>
+        <ConfigSection title="Value">
+          <ConfigSelect
+            options={props.config.columns}
+            value={props.config.field}
+            onChange={(field) => {
+              onConfigChange('field', field)
+            }}
+            placeholder="Please select"
+          />
+        </ConfigSection>
         <ConfigSection>
-          <ConfigItem label="Value">
-            <ConfigSelect
-              options={props.config.columns}
-              value={props.config.field}
-              onChange={(field) => {
-                onConfigChange('field', field)
-              }}
-              placeholder="Please select"
-            />
-          </ConfigItem>
           <ConfigItem label="Compare">
             <div
               className={css`

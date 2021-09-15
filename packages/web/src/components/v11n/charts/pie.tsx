@@ -109,8 +109,8 @@ export const pie: Chart<Type.PIE> = {
 
     return (
       <ConfigTab tabs={['Data', 'Display']}>
-        <ConfigSection>
-          <ConfigItem label="Dimension">
+        <div>
+          <ConfigSection title="Dimension">
             <ConfigSelect
               options={props.config.keys}
               value={props.config.dimension}
@@ -119,8 +119,8 @@ export const pie: Chart<Type.PIE> = {
               }}
               placeholder="Please select"
             />
-          </ConfigItem>
-          <ConfigItem label="Value">
+          </ConfigSection>
+          <ConfigSection title="Value">
             <ConfigSelect
               options={props.config.keys}
               value={props.config.measurement}
@@ -129,18 +129,8 @@ export const pie: Chart<Type.PIE> = {
               }}
               placeholder="Please select"
             />
-          </ConfigItem>
-          <ConfigItem label="Min percentage">
-            <ConfigNumericInput
-              placeholder="%"
-              min={0}
-              value={props.config.minPercentage}
-              onChange={(minPercentage) => {
-                onConfigChange('minPercentage', minPercentage)
-              }}
-            />
-          </ConfigItem>
-        </ConfigSection>
+          </ConfigSection>
+        </div>
         <div>
           <ConfigSection>
             <ConfigItem label="Show total">
@@ -176,6 +166,16 @@ export const pie: Chart<Type.PIE> = {
                   }}
                 />
               </div>
+            </ConfigItem>
+            <ConfigItem label="Min percentage">
+              <ConfigNumericInput
+                placeholder="%"
+                min={0}
+                value={props.config.minPercentage}
+                onChange={(minPercentage) => {
+                  onConfigChange('minPercentage', minPercentage)
+                }}
+              />
             </ConfigItem>
           </ConfigSection>
           <ConfigSection title="Slices">
