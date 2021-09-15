@@ -1,6 +1,6 @@
 import { IconCommonAdd, IconCommonSub } from '@app/assets/icons'
 import { setBlockTranscation } from '@app/context/editorTranscations'
-import { useBlock, useBlockSuspense, useGetProfileSpec, useQuestionDownstreams, useSnapshot } from '@app/hooks/api'
+import { useBlockSuspense, useGetProfileSpec, useQuestionDownstreams, useSnapshot } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
 import { ThemingVariables } from '@app/styles'
 import { Editor, Metric } from '@app/types'
@@ -21,14 +21,11 @@ import { ConfigSelect } from './v11n/components/ConfigSelect'
 
 export default function SideBarModeling(props: { storyId: string; blockId: string }) {
   const block = useBlockSuspense<Editor.VisualizationBlock>(props.blockId)
-  const { data: queryBlock } = useBlock<Editor.QueryBlock>(block.content?.queryId!)
-  const snapshot = useSnapshot(queryBlock?.content?.snapshotId)
+  const queryBlock = useBlockSuspense<Editor.QueryBlock>(block.content?.queryId!)
+  const snapshot = useSnapshot(queryBlock.content?.snapshotId)
   const commit = useCommit()
   const setBlock = useCallback(
     (update: (block: WritableDraft<Editor.VisualizationBlock>) => void) => {
-      if (!queryBlock) {
-        return
-      }
       const oldBlock = queryBlock
       const newBlock = produce(oldBlock, update)
       commit({ transcation: setBlockTranscation({ oldBlock, newBlock }), storyId: props.storyId })
@@ -43,96 +40,131 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
     [snapshot?.data.fields]
   )
   const metrics =
-    queryBlock?.type === Editor.BlockType.QueryBuilder ? (queryBlock as Editor.QueryBuilder).content?.metrics || {} : {}
+    queryBlock.type === Editor.BlockType.QueryBuilder ? (queryBlock as Editor.QueryBuilder).content?.metrics || {} : {}
   const { data: downstreams } = useQuestionDownstreams(queryBlock?.id)
 
   return (
     <>
-      <ConfigSection
-        title="Metrics"
-        border={false}
-        right={
-          <ConfigPopoverWithTabs
-            tabs={['Aggregated metric', 'Custom SQL metric']}
-            content={[
-              ({ onClose }) => (
-                <ConfigSection>
-                  {fields ? (
-                    <MetricConfigCreator
-                      fields={fields}
-                      metrics={metrics}
-                      onCreate={(ms) => {
-                        setBlock((draft) => {
-                          draft.type = Editor.BlockType.QueryBuilder
-                          if (draft.content) {
-                            ;(draft as Editor.QueryBuilder).content!.metrics = {
-                              ...metrics,
-                              ...ms.reduce<{ [id: string]: Metric }>((obj, m) => {
-                                const id = blockIdGenerator()
-                                obj[id] = m
-                                return obj
-                              }, {})
+      {queryBlock.type === Editor.BlockType.QueryBuilder ? (
+        <ConfigSection
+          title="Metrics"
+          border={false}
+          right={
+            <ConfigPopoverWithTabs
+              tabs={['Aggregated metric', 'Custom SQL metric']}
+              content={[
+                ({ onClose }) => (
+                  <ConfigSection>
+                    {fields ? (
+                      <MetricConfigCreator
+                        fields={fields}
+                        metrics={metrics}
+                        onCreate={(ms) => {
+                          setBlock((draft) => {
+                            if (draft.content) {
+                              ;(draft as Editor.QueryBuilder).content!.metrics = {
+                                ...metrics,
+                                ...ms.reduce<{ [id: string]: Metric }>((obj, m) => {
+                                  const id = blockIdGenerator()
+                                  obj[id] = m
+                                  return obj
+                                }, {})
+                              }
                             }
-                          }
-                        })
-                        onClose()
-                      }}
-                    />
-                  ) : null}
-                </ConfigSection>
-              ),
-              ({ onClose }) => (
-                <ConfigSection>
-                  {fields ? (
-                    <MetricSQLCreator
-                      onCreate={(ms) => {
-                        setBlock((draft) => {
-                          draft.type = Editor.BlockType.QueryBuilder
-                          if (draft.content) {
-                            ;(draft as Editor.QueryBuilder).content!.metrics = {
-                              ...metrics,
-                              ...ms.reduce<{ [id: string]: Metric }>((obj, m) => {
-                                const id = blockIdGenerator()
-                                obj[id] = m
-                                return obj
-                              }, {})
+                          })
+                          onClose()
+                        }}
+                      />
+                    ) : null}
+                  </ConfigSection>
+                ),
+                ({ onClose }) => (
+                  <ConfigSection>
+                    {fields ? (
+                      <MetricSQLCreator
+                        onCreate={(ms) => {
+                          setBlock((draft) => {
+                            if (draft.content) {
+                              ;(draft as Editor.QueryBuilder).content!.metrics = {
+                                ...metrics,
+                                ...ms.reduce<{ [id: string]: Metric }>((obj, m) => {
+                                  const id = blockIdGenerator()
+                                  obj[id] = m
+                                  return obj
+                                }, {})
+                              }
                             }
-                          }
-                        })
-                        onClose()
-                      }}
-                    />
-                  ) : null}
-                </ConfigSection>
-              )
-            ]}
+                          })
+                          onClose()
+                        }}
+                      />
+                    ) : null}
+                  </ConfigSection>
+                )
+              ]}
+            >
+              <ConfigIconButton icon={IconCommonAdd} />
+            </ConfigPopoverWithTabs>
+          }
+        >
+          {Object.entries(metrics).map(([metricId, metric]) => (
+            <MetricItem
+              key={metricId}
+              name={metric.name}
+              onChangeName={(name) => {
+                setBlock((draft) => {
+                  if ((draft as Editor.QueryBuilder).content?.metrics?.[metricId]) {
+                    ;(draft as Editor.QueryBuilder).content!.metrics![metricId].name = name
+                  }
+                })
+              }}
+              onRemove={() => {
+                setBlock((draft) => {
+                  if ((draft as Editor.QueryBuilder).content?.metrics) {
+                    delete (draft as Editor.QueryBuilder).content!.metrics![metricId]
+                  }
+                })
+              }}
+            />
+          ))}
+        </ConfigSection>
+      ) : (
+        <ConfigSection border={false}>
+          <div
+            className={css`
+              padding: 0 6px;
+            `}
           >
-            <ConfigIconButton icon={IconCommonAdd} />
-          </ConfigPopoverWithTabs>
-        }
-      >
-        {Object.entries(metrics).map(([metricId, metric]) => (
-          <MetricItem
-            key={metricId}
-            name={metric.name}
-            onChangeName={(name) => {
-              setBlock((draft) => {
-                if ((draft as Editor.QueryBuilder).content?.metrics?.[metricId]) {
-                  ;(draft as Editor.QueryBuilder).content!.metrics![metricId].name = name
-                }
-              })
-            }}
-            onRemove={() => {
-              setBlock((draft) => {
-                if ((draft as Editor.QueryBuilder).content?.metrics) {
-                  delete (draft as Editor.QueryBuilder).content!.metrics![metricId]
-                }
-              })
-            }}
-          />
-        ))}
-      </ConfigSection>
-      {downstreams.length && queryBlock ? (
+            <p
+              className={css`
+                margin-bottom: 16px;
+                font-style: normal;
+                font-weight: normal;
+                font-size: 12px;
+                line-height: 14px;
+                text-align: justify;
+                color: ${ThemingVariables.colors.text[1]};
+              `}
+            >
+              Data assets let you define metrics on modeled data and anyone can explore them with just a few clicks.
+            </p>
+            <FormButton
+              variant="secondary"
+              onClick={() => {
+                setBlock((draft) => {
+                  draft.type = Editor.BlockType.QueryBuilder
+                })
+              }}
+              className={css`
+                width: 100%;
+              `}
+            >
+              Create as data asset
+            </FormButton>
+          </div>
+        </ConfigSection>
+      )}
+      {downstreams.length ? (
         <ConfigSection title={`Downstreams (${downstreams.length})`}>
           <QuestionDownstreams blockId={queryBlock.id} storyId={props.storyId} />
         </ConfigSection>
