@@ -15,15 +15,13 @@ import {
 } from '@app/assets/icons'
 import IconButton from '@app/components/kit/IconButton'
 import { MenuItemDivider } from '@app/components/MenuItemDivider'
-// import { MenuItem } from '@app/components/MenuItem'
-// import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { RefreshButton } from '@app/components/RefreshButton'
 import { TippySingletonContextProvider } from '@app/components/TippySingletonContextProvider'
 import { charts } from '@app/components/v11n/charts'
 import { Diagram } from '@app/components/v11n/Diagram'
 import { Config, Data, Type } from '@app/components/v11n/types'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
-import { useBindHovering, useOnScreen } from '@app/hooks'
+import { useOnScreen } from '@app/hooks'
 import { useBlockSuspense, useGetSnapshot, useSnapshot, useUser } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useCommit } from '@app/hooks/useCommit'
@@ -376,8 +374,13 @@ const _VisualizationBlockContent: React.FC<{
   const mutatingCount = useSnapshotMutating(queryBlock.id)
 
   useEffect(() => {
-    if (queryBlock.id && !snapshotId && (queryBlock as Editor.SQLBlock).content?.sql && mutatingCount === 0) {
-      mutateSnapshot.execute(queryBlock)
+    if (queryBlock.id && !snapshotId && mutatingCount === 0) {
+      if (
+        (queryBlock.type === Editor.BlockType.SQL && (queryBlock as Editor.SQLBlock).content?.sql) ||
+        queryBlock.type === Editor.BlockType.SmartQuery
+      ) {
+        mutateSnapshot.execute(queryBlock)
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -829,11 +832,12 @@ export const MoreDropdownSelect: React.FC<{
 
   useEffect(() => {
     setIsActive(menu.visible)
-  }, [menu, setIsActive])
+  }, [menu.visible, setIsActive])
 
   const closeMenu = useCallback(() => {
     menu.hide()
-  }, [menu])
+    setIsActive(false)
+  }, [menu, setIsActive])
 
   return (
     <>
@@ -1218,6 +1222,7 @@ const TitleButtonsInner: React.FC<{
     }
     return false
   }, [block.children, block.content?.queryId])
+
   return (
     <div
       className={css`

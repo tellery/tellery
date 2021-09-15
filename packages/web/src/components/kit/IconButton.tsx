@@ -97,7 +97,7 @@ export default forwardRef<
     <Tippy
       singleton={tippySingleton}
       content={hoverContent ?? null}
-      hideOnClick={false}
+      // hideOnClick={false}
       arrow={false}
       disabled={!hoverContent}
     >
