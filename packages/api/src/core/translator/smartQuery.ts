@@ -56,7 +56,7 @@ async function translateSmartQuery(
 
   const dimensions = dimensionsRaw.map((it) => assembleSelectField(it, bucketization, identifier))
 
-  const selectClause = [...dimensions, ...measures].join(', ')
+  const selectClause = [...dimensions, ...measures].join(', ') || '*'
   const groupByClause =
     dimensions && dimensions.length > 0
       ? `GROUP BY ${_.range(1, dimensions.length + 1).join(', ')}`
