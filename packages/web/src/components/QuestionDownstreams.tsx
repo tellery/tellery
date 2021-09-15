@@ -32,6 +32,7 @@ export default function QuestionDownstreams(props: { blockId: string; className?
           currentStoryId={props.storyId}
           storyId={storyId}
           refs={blocks.filter(({ storyId }) => !!storyId).map(({ id, storyId }) => ({ blockId: id, storyId })) as Ref[]}
+          disablePreview={true}
         />
       ))}
     </div>
