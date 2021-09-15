@@ -1212,7 +1212,7 @@ const TitleButtonsInner: React.FC<{
       return block.children.indexOf(block.content.queryId) !== -1
     }
     return false
-  }, [block.children, block.content.queryId])
+  }, [block.children, block.content?.queryId])
   return (
     <div
       className={css`
