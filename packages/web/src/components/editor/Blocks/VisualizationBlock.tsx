@@ -60,7 +60,7 @@ import DetectableOverflow from 'react-detectable-overflow'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { useMeasure } from 'react-use'
+import { useHoverDirty, useMeasure } from 'react-use'
 import { Menu, MenuButton, MenuItem, MenuStateReturn, useMenuState } from 'reakit'
 import invariant from 'tiny-invariant'
 import { BlockingUI } from '../BlockBase/BlockingUIBlock'
@@ -240,7 +240,9 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const [hoveringHandlers, hovering] = useBindHovering()
+  // const [hoveringHandlers, hovering] = useBindHovering()
+  const hovering = useHoverDirty(elementRef)
+
   const { small } = useBlockBehavior()
   const [sideBarQuestionEditorState, setSideBarQuestionEditorState] = useSideBarQuestionEditorState(block.storyId!)
 
@@ -251,7 +253,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
           measureRef(el as unknown as HTMLDivElement)
           elementRef.current = el
         }}
-        {...hoveringHandlers()}
+        // {...hoveringHandlers()}
         className={cx(
           QuestionsBlockContainer,
           sideBarQuestionEditorState?.blockId === block.id &&
@@ -1224,7 +1226,7 @@ const TitleButtonsInner: React.FC<{
         flex-shrink: 0;
       `}
     >
-      <TippySingletonContextProvider delay={500} arrow={false}>
+      <TippySingletonContextProvider delay={500} arrow={false} hideOnClick>
         {slim === false && (
           <>
             {block.content?.queryId && (

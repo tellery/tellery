@@ -1,4 +1,4 @@
-import { IconCommonDataAsset, IconCommonDbt, IconCommonSql } from '@app/assets/icons'
+import { IconCommonDataAsset, IconCommonDbt, IconCommonDrag, IconCommonHandler, IconCommonSql } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useSearchDBTBlocks, useSearchMetrics } from '@app/hooks/api'
 import { ThemingVariables } from '@app/styles'
@@ -52,24 +52,45 @@ export const DataAssetItem: React.FC<{ block: Editor.BaseBlock; currentStoryId: 
         display: flex;
         align-items: center;
         cursor: grab;
-        padding: 6px 16px;
-        margin-bottom: 5px;
+        padding: 6px;
+        margin: 0 10px 5px 10px;
         user-select: none;
+        height: 32px;
+        position: relative;
+        border-radius: 4px;
         :hover {
-          background: ${ThemingVariables.colors.primary[5]};
+          background: ${ThemingVariables.colors.gray[5]};
+          box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.12);
+        }
+        :hover {
+          > svg {
+            opacity: 1;
+          }
         }
       `}
       {...listeners}
       {...attributes}
       ref={setNodeRef}
     >
-      <IconType
+      <IconCommonHandler
+        className={css`
+          opacity: 0;
+          position: absolute;
+          left: -10px;
+          top: 0;
+          bottom: 0;
+          margin: auto;
+          transition: all 250ms;
+        `}
+        color={ThemingVariables.colors.gray[0]}
+      />
+      {/* <IconType
         color={ThemingVariables.colors.gray[0]}
         className={css`
           flex-shrink: 0;
           margin-right: 8px;
         `}
-      />
+      /> */}
 
       <span
         className={css`
@@ -101,9 +122,14 @@ const AllMetricsSection: React.FC<{ storyId: string }> = ({ storyId }) => {
 
   return (
     <>
-      <SideBarSection>
+      {/* <SideBarSection>
         <SideBarSectionHeader>{t`All Metrics`}</SideBarSectionHeader>
-      </SideBarSection>
+      </SideBarSection> */}
+      <div
+        className={css`
+          padding-top: 10px;
+        `}
+      ></div>
       {dataAssetBlocks.map((block) => {
         return (
           <React.Suspense key={block.id} fallback={<SideBarLoader />}>
@@ -150,7 +176,7 @@ export const SideBarDataAssets: React.FC<{ storyId: string }> = ({ storyId }) =>
       `}
     >
       <AllMetricsSection storyId={storyId} />
-      <DBTSection storyId={storyId} />
+      {/* <DBTSection storyId={storyId} /> */}
     </div>
   )
 }

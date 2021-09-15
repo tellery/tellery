@@ -160,13 +160,25 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
   const { t } = useTranslation()
   const block = useBlockSuspense<Editor.VisualizationBlock>(blockId)
   const queryBlock = useBlockSuspense(block.content?.queryId || blockId)
-  const [sideBarEditorState] = useSideBarQuestionEditorState(storyId)
+  const [sideBarEditorState, setSideBarEditorState] = useSideBarQuestionEditorState(storyId)
 
   useEffect(() => {
     if (sideBarEditorState?.activeTab) {
       tab.setSelectedId(sideBarEditorState?.activeTab)
     }
   }, [sideBarEditorState, tab])
+
+  const changeTab = useCallback(
+    (tab: 'Visualization' | 'Modeling' | 'Data') => {
+      setSideBarEditorState((value) => {
+        if (value) {
+          return { ...value, activeTab: tab }
+        }
+        return value
+      })
+    },
+    [setSideBarEditorState]
+  )
 
   return (
     <div
@@ -188,15 +200,39 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
           padding-right: 16px;
         `}
       >
-        <Tab as={SideBarTabHeader} {...tab} id="Visualization" selected={tab.selectedId === 'Visualization'}>
+        <Tab
+          as={SideBarTabHeader}
+          {...tab}
+          id="Visualization"
+          selected={tab.selectedId === 'Visualization'}
+          onClick={() => {
+            changeTab('Visualization')
+          }}
+        >
           {t`Visualization`}
         </Tab>
         {queryBlock.type === Editor.BlockType.SmartQuery ? (
-          <Tab as={SideBarTabHeader} {...tab} id="Data" selected={tab.selectedId === 'Data'}>
+          <Tab
+            as={SideBarTabHeader}
+            {...tab}
+            id="Data"
+            selected={tab.selectedId === 'Data'}
+            onClick={() => {
+              changeTab('Data')
+            }}
+          >
             {t`Data`}
           </Tab>
         ) : (
-          <Tab as={SideBarTabHeader} {...tab} id="Modeling" selected={tab.selectedId === 'Modeling'}>
+          <Tab
+            as={SideBarTabHeader}
+            {...tab}
+            id="Modeling"
+            selected={tab.selectedId === 'Modeling'}
+            onClick={() => {
+              changeTab('Modeling')
+            }}
+          >
             {t`Modeling`}
           </Tab>
         )}
