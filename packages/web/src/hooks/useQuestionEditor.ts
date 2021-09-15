@@ -10,8 +10,6 @@ import { atomFamily, useRecoilCallback, useRecoilState, useRecoilTransaction_UNS
 //   open: (arg: { mode: Mode }) => Promise<void>
 // }
 
-export type QueryEditorMode = 'SQL' | 'VIS'
-
 export interface EditorDraft {
   sql?: string
   visConfig?: Config<Type>
@@ -24,7 +22,6 @@ type BlockDraft = Record<
   {
     storyId: string
     draft?: EditorDraft
-    mode: QueryEditorMode
   }
 >
 
@@ -93,7 +90,7 @@ export const useCleanQuestionEditorHandler = (storyId: string) => {
 export const useOpenQuestionBlockIdHandler = (storyId: string) => {
   const handler = useRecoilTransaction_UNSTABLE(
     (recoilCallback) =>
-      ({ mode, blockId }: { mode: QueryEditorMode; blockId: string; storyId: string }) => {
+      ({ blockId }: { blockId: string; storyId: string }) => {
         recoilCallback.set(questionEditorActiveIdState(storyId), blockId)
         recoilCallback.set(questionEditorOpenState(storyId), true)
         recoilCallback.set(questionEditorBlockMapState(storyId), (state) => {
@@ -101,8 +98,7 @@ export const useOpenQuestionBlockIdHandler = (storyId: string) => {
             ...state,
             [blockId]: {
               ...state[blockId],
-              storyId,
-              mode
+              storyId
             }
           }
         })

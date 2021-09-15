@@ -2,11 +2,9 @@ import {
   IconCommonArrowDropDown,
   IconCommonArrowUpDown,
   IconCommonClose,
-  IconCommonDbt,
   IconCommonError,
   IconCommonRun,
-  IconCommonSave,
-  IconCommonSql
+  IconCommonSave
 } from '@app/assets/icons'
 import { SQLEditor } from '@app/components/SQLEditor'
 import { useBindHovering } from '@app/hooks'
@@ -15,7 +13,6 @@ import { useCommit } from '@app/hooks/useCommit'
 import { useLocalStorage } from '@app/hooks/useLocalStorage'
 import {
   EditorDraft,
-  QueryEditorMode,
   useDraftBlockMutating,
   useQuestionEditorActiveIdState,
   useQuestionEditorBlockMapState,
@@ -493,7 +490,6 @@ export const StoryQuestionEditor: React.FC<{
 
   const permissions = useStoryPermissions(visualizationBlock?.storyId ?? block.id)
 
-  const mode = questionBlockState?.mode ?? 'VIS'
   const readonly = permissions.readonly
   const isDraft = !!questionBlockState?.draft
   const originalSQL = (queryBlock as Editor.SQLBlock)?.content?.sql
@@ -535,21 +531,6 @@ export const StoryQuestionEditor: React.FC<{
       })
     },
     [id, originalSQL, setQuestionBlocksMap]
-  )
-
-  const setMode = useCallback(
-    (mode: QueryEditorMode) => {
-      setQuestionBlocksMap((blocksMap) => {
-        return {
-          ...blocksMap,
-          [id]: {
-            ...blocksMap[id],
-            mode
-          }
-        }
-      })
-    },
-    [id, setQuestionBlocksMap]
   )
 
   const executeSQL = useExecuteSQL(`draft/${block.id}`)
@@ -667,22 +648,6 @@ export const StoryQuestionEditor: React.FC<{
             e.stopPropagation()
             save()
           }
-        },
-        {
-          hotkeys: ['alt+v'],
-          handler: (e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            setMode('VIS')
-          }
-        },
-        {
-          hotkeys: ['alt+s'],
-          handler: (e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            setMode('SQL')
-          }
         }
       ]
       const matchingHandler = handlers.find((handler) =>
@@ -690,7 +655,7 @@ export const StoryQuestionEditor: React.FC<{
       )
       matchingHandler?.handler(e.nativeEvent)
     },
-    [run, save, setMode]
+    [run, save]
   )
 
   const mutatingCount = useDraftBlockMutating(block.id)
@@ -741,7 +706,7 @@ export const StoryQuestionEditor: React.FC<{
                   }
                 `}
               >
-                {mode === 'SQL' && (sqlError || sqlSidePanel) && (
+                {(sqlError || sqlSidePanel) && (
                   <IconButton
                     icon={IconCommonError}
                     color={ThemingVariables.colors.negative[0]}
@@ -776,132 +741,66 @@ export const StoryQuestionEditor: React.FC<{
           height: calc(100% - 40px);
         `}
       >
-        <QueryEditorSideTabs
-          readonly={sqlReadOnly}
-          mode={mode}
-          setMode={setMode}
-          queryBlockId={queryBlock.id}
-          blockType={block.type}
-          queryBlockType={queryBlock.type}
-        />
-        {mode === 'SQL' && (
-          <>
-            {isDBT ? (
-              <MonacoEditor
-                language="yaml"
-                theme="tellery"
-                value={YAML.stringify(omit(block.content, 'title'))}
-                options={{
-                  readOnly: true,
-                  padding: { top: 20, bottom: 0 }
-                }}
-                loading={<CircularLoading size={50} color={ThemingVariables.colors.gray[0]} />}
-                wrapperClassName={css`
-                  flex: 1;
-                  width: 0 !important;
-                `}
-              />
-            ) : (
-              <SQLEditor
-                className={css`
-                  flex: 1;
-                  width: 0 !important;
-                `}
-                blockId={block.id}
-                value={sql}
-                storyId={storyId}
-                padding={{ top: 20, bottom: 0 }}
-                languageId={profileType}
-                onChange={(e) => {
-                  setSql(e)
-                }}
-                onRun={run}
-                onSave={save}
-                readOnly={sqlReadOnly}
-              />
-            )}
-            {sqlSidePanel && (
-              <div
-                className={css`
-                  overflow: scroll;
-                  word-wrap: break-word;
-                  font-style: normal;
-                  font-weight: 500;
-                  font-size: 14px;
-                  flex: 0 0 400px;
-                  line-height: 24px;
-                  color: ${ThemingVariables.colors.negative[0]};
-                  margin: 15px;
-                  user-select: text;
-                  padding: 10px;
-                  border-radius: 10px;
-                  background: ${ThemingVariables.colors.negative[1]};
-                `}
-              >
-                {sqlError}
-              </div>
-            )}
-          </>
+        {isDBT ? (
+          <MonacoEditor
+            language="yaml"
+            theme="tellery"
+            value={YAML.stringify(omit(block.content, 'title'))}
+            options={{
+              readOnly: true,
+              padding: { top: 20, bottom: 0 }
+            }}
+            loading={<CircularLoading size={50} color={ThemingVariables.colors.gray[0]} />}
+            wrapperClassName={css`
+              flex: 1;
+              width: 0 !important;
+            `}
+          />
+        ) : (
+          <SQLEditor
+            className={css`
+              flex: 1;
+              width: 0 !important;
+            `}
+            blockId={block.id}
+            value={sql}
+            storyId={storyId}
+            padding={{ top: 20, bottom: 0 }}
+            languageId={profileType}
+            onChange={(e) => {
+              setSql(e)
+            }}
+            onRun={run}
+            onSave={save}
+            readOnly={sqlReadOnly}
+          />
+        )}
+        {sqlSidePanel && (
+          <div
+            className={css`
+              overflow: scroll;
+              word-wrap: break-word;
+              font-style: normal;
+              font-weight: 500;
+              font-size: 14px;
+              flex: 0 0 400px;
+              line-height: 24px;
+              color: ${ThemingVariables.colors.negative[0]};
+              margin: 15px;
+              user-select: text;
+              padding: 10px;
+              border-radius: 10px;
+              background: ${ThemingVariables.colors.negative[1]};
+            `}
+          >
+            {sqlError}
+          </div>
         )}
       </div>
     </TabPanel>
   )
 }
 
-const QueryEditorSideTabs: React.FC<{
-  readonly: boolean
-  mode: string
-  setMode: (mode: QueryEditorMode) => void
-  blockType: Editor.BlockType
-  queryBlockType: Editor.BlockType
-  queryBlockId: string
-}> = ({ readonly, mode, setMode, queryBlockType }) => {
-  const isDBT = queryBlockType === Editor.BlockType.DBT
-
-  return (
-    <div
-      className={css`
-        flex-shrink: 0;
-        width: 60px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        z-index: 1;
-        border-right: solid 1px ${ThemingVariables.colors.gray[1]};
-        & > button {
-          padding: 20px;
-          position: relative;
-        }
-        & > button::after {
-          content: '';
-          width: 4px;
-          height: 40px;
-          border-radius: 2px;
-          background: ${ThemingVariables.colors.primary[1]};
-          position: absolute;
-          top: 10px;
-          right: 0;
-        }
-      `}
-    >
-      <TippySingletonContextProvider delay={500} arrow={false} hideOnClick placement="right">
-        <IconButton
-          hoverContent={isDBT ? 'View DBT' : readonly ? 'View SQL' : 'Edit SQL'}
-          icon={isDBT ? IconCommonDbt : IconCommonSql}
-          className={css`
-            &::after {
-              display: ${mode === 'SQL' ? 'visible' : 'none'};
-            }
-          `}
-          color={mode === 'SQL' ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
-          onClick={() => {
-            setMode('SQL')
-          }}
-        />
-      </TippySingletonContextProvider>
-    </div>
-  )
-}
 const emitFalsyObject = (object: EditorDraft) => {
   if (Object.values(object).some((value) => value !== undefined)) {
     return object
