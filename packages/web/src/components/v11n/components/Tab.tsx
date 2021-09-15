@@ -1,11 +1,6 @@
 import { ThemingVariables } from '@app/styles'
 import styled from '@emotion/styled'
 
-export const StyledTabPanel = styled.div`
-  height: 100%;
-  overflow-y: auto;
-`
-
 export const SideBarTabHeader = styled.button<{ selected: boolean }>`
   font-style: normal;
   font-weight: 500;
