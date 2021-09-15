@@ -552,7 +552,7 @@ export const StoryQuestionEditor: React.FC<{
         return
       }
       setSqlBlock(queryBlock.id, (draftBlock) => {
-        if (draftBlock.type === Editor.BlockType.SQL) {
+        if (draftBlock.type === Editor.BlockType.SQL || draftBlock.type === Editor.BlockType.QueryBuilder) {
           ;(draftBlock as Editor.SQLBlock).content!.sql = sql
         }
 
