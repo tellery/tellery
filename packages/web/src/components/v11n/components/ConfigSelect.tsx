@@ -21,7 +21,7 @@ export function ConfigSelect(props: {
         css`
           width: 100%;
           height: 32px;
-          border: 1px solid transparent;
+          border: none;
           border-radius: 4px;
           outline: none;
           font-style: normal;
