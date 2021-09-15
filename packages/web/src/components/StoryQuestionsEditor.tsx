@@ -123,7 +123,7 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
   const y = useMotionValue(resizeConfig.y)
   const height = useTransform(y, (y) => Math.abs(y - 0.5 * DRAG_HANDLE_WIDTH))
   const placeholderHeight = useTransform(height, (height) => (open ? height : 0))
-  const translateY = useMotionValue(height.get() - 44)
+  const translateY = useMotionValue(height.get())
 
   const workspace = useWorkspace()
   const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)
@@ -681,7 +681,7 @@ export const StoryQuestionEditor: React.FC<{
           flex-direction: column;
           width: 100%;
           align-items: stretch;
-          height: calc(100% - 40px);
+          height: 100%;
         `
       )}
       ref={ref}
@@ -738,7 +738,7 @@ export const StoryQuestionEditor: React.FC<{
         className={css`
           display: flex;
           width: 100%;
-          height: calc(100% - 40px);
+          height: 100%;
         `}
       >
         {isDBT ? (
