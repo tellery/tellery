@@ -26,7 +26,6 @@ export const DefaultSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
     <div
       className={css`
         height: 100%;
-        overflow-y: hidden;
         border-left: 1px solid #dedede;
         display: flex;
         background-color: #fff;
@@ -46,10 +45,10 @@ export const DefaultSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
           {t`Data Assets`}
         </Tab>
       </TabList>
-      <div
+      <PerfectScrollbar
+        options={{ suppressScrollX: true }}
         className={css`
           flex: 1;
-          overflow-y: hidden;
         `}
       >
         <TabPanel {...tab}>
@@ -57,7 +56,7 @@ export const DefaultSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
             <SideBarDataAssets storyId={storyId} />
           </React.Suspense>
         </TabPanel>
-      </div>
+      </PerfectScrollbar>
     </div>
   )
 }
@@ -166,7 +165,6 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
     <div
       className={css`
         height: 100%;
-        overflow-y: hidden;
         border-left: 1px solid #dedede;
         display: flex;
         background-color: #fff;
@@ -200,7 +198,6 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
         options={{ suppressScrollX: true }}
         className={css`
           flex: 1;
-          overflow-y: hidden;
         `}
       >
         <TabPanel {...tab}>
