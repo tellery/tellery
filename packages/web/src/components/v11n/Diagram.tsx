@@ -4,7 +4,7 @@ import { css } from '@emotion/css'
 import { useMemo, useRef } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { useChart } from './charts'
-import type { Config, Data, Type } from './types'
+import { Config, Data, Type } from './types'
 
 function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   return (
@@ -29,7 +29,7 @@ export const Diagram = (props: {
   config: Config<Type> | undefined
   dimensions?: { width: number; height: number }
 }) => {
-  const chart = useChart(props.config?.type)
+  const chart = useChart(props.config?.type ?? Type.TABLE)
   const ref = useRef<HTMLDivElement>(null)
   const nativeDimensions = useDimensions(ref, 0, !props.dimensions)
   const chartDimensions = props.dimensions ?? nativeDimensions
