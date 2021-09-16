@@ -349,7 +349,7 @@ function TransclusionContentWidget(props: {
                     }
 
                     if (block.storyId === props.storyId) {
-                      open({ mode: 'SQL', storyId: block.storyId, blockId: block.id })
+                      open({ storyId: block.storyId, blockId: block.id })
                     } else {
                       openStoryHandler(block.storyId, { blockId: block.id })
                     }
@@ -391,7 +391,7 @@ function TransclusionContentWidget(props: {
                 return
               }
               openStoryHandler(block.storyId, { blockId: block.id, isAltKeyPressed: true })
-              open({ mode: 'SQL', storyId: block.storyId, blockId: block.id })
+              open({ storyId: block.storyId, blockId: block.id })
             }}
           >
             {title}

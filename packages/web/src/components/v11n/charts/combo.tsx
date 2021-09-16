@@ -1,4 +1,4 @@
-import { IconCommonAdd, IconCommonArrowDropDown, IconCommonClose } from '@app/assets/icons'
+import { IconCommonAdd, IconCommonSub } from '@app/assets/icons'
 import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 import { useCrossFilter, useDataRecords } from '@app/hooks/useDataRecords'
 import i18n from '@app/i18n'
@@ -23,12 +23,14 @@ import {
 import type { Path } from 'd3-path'
 import type { CurveGenerator } from 'd3-shape'
 import { compact, head, keyBy, mapValues, sortBy, sum, tail, upperFirst } from 'lodash'
-import React, { MouseEvent, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ConfigButton } from '../components/ConfigButton'
+import React, { MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import ConfigIconButton from '../components/ConfigIconButton'
 import { ConfigInput } from '../components/ConfigInput'
-import { ConfigLabel } from '../components/ConfigLabel'
+import { ConfigItem } from '../components/ConfigItem'
 import { ConfigNumericInput } from '../components/ConfigNumericInput'
+import { ConfigSection } from '../components/ConfigSection'
 import { ConfigSelect } from '../components/ConfigSelect'
+import { ConfigTab } from '../components/ConfigTab'
 import { CustomTooltip } from '../components/CustomTooltip'
 import { LegendContent } from '../components/LegendContent'
 import { MoreSettingPopover } from '../components/MoreSettingPopover'
@@ -42,12 +44,6 @@ import type { Chart } from './base'
 const splitter = ', '
 
 const opacity = 0.15
-
-enum Tab {
-  DATA = 'Data',
-  DISPLAY = 'Display',
-  AXIS = 'Axis'
-}
 
 const numberformat = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 2 })
 
@@ -123,7 +119,6 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const xAxises = props.config.dimensions ? props.config.xAxises : [head(props.config.xAxises)!]
     const { onConfigChange } = props
-    const [tab, setTab] = useState<Tab>(Tab.DATA)
     const axises = useMemo(
       () => ({
         xAxises,
@@ -225,14 +220,26 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
     }, [onConfigChange, shapes, props.config.shapes])
     const displayTypes = useDataFieldsDisplayType(props.data.fields)
     const renderAxisSelect = useCallback(
-      (title: string, axise: 'xAxises' | 'dimensions' | 'yAxises' | 'y2Axises', disabled: boolean, first?: boolean) => {
+      (title: string, axise: 'xAxises' | 'dimensions' | 'yAxises' | 'y2Axises', disabled: boolean) => {
         return (
-          <>
-            <ConfigLabel top={first ? 0 : undefined}>{title}</ConfigLabel>
+          <ConfigSection
+            title={title}
+            right={
+              <AxisSelect
+                options={props.config.axises}
+                disabled={disabled}
+                onSelect={(value) => {
+                  const array = [...axises[axise], value]
+                  if (axise === 'dimensions') {
+                    onConfigChange(axise, array)
+                  } else {
+                    onConfigChange(axise, array, mapAxis2Label(axise), calcLabel(array, axise))
+                  }
+                }}
+              />
+            }
+          >
             <SortableList
-              className={css`
-                margin: -5px;
-              `}
               value={axises[axise]}
               onChange={(value) => {
                 if (axise === 'dimensions') {
@@ -253,35 +260,16 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
               renderItem={(item) => (
                 <div
                   className={css`
-                    flex: 1;
-                    width: 0;
-                    font-size: 14px;
-                    font-weight: 400;
                     display: flex;
-                    align-items: center;
-                    justify-content: space-between;
+                    width: 100%;
                   `}
                 >
-                  <select
-                    className={css`
-                      appearance: none;
-                      border: none;
-                      outline: none;
-                      cursor: pointer;
-                      background-repeat: no-repeat;
-                      background-position: calc(100% - 7px) 50%;
-                      flex: 1;
-                      text-overflow: ellipsis;
-                      display: block;
-                      width: 100%;
-                      padding-right: 30px;
-                    `}
-                    style={{
-                      backgroundImage: SVG2DataURI(IconCommonArrowDropDown, TelleryThemeLight.colors.gray[0])
-                    }}
+                  <ConfigSelect
+                    placeholder="Please select"
+                    options={props.config.axises}
                     value={item}
-                    onChange={(e) => {
-                      const array = axises[axise].map((axis) => (axis === item ? e.target.value : axis))
+                    onChange={(value) => {
+                      const array = axises[axise].map((axis) => (axis === item ? value : axis))
                       if (axise === 'dimensions') {
                         onConfigChange(axise, array)
                       } else if (axise === 'xAxises') {
@@ -297,23 +285,9 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                         onConfigChange(axise, array, mapAxis2Label(axise), calcLabel(array, axise))
                       }
                     }}
-                  >
-                    {props.config.axises.map((axis) => (
-                      <option key={axis} value={axis}>
-                        {axis}
-                      </option>
-                    ))}
-                  </select>
-                  <div
-                    className={css`
-                      cursor: pointer;
-                      height: 36px;
-                      width: 36px;
-                      display: flex;
-                      align-items: center;
-                      justify-content: center;
-                      background: ${ThemingVariables.colors.gray[2]};
-                    `}
+                  />
+                  <ConfigIconButton
+                    icon={IconCommonSub}
                     onClick={() => {
                       const array = axises[axise].filter((axis) => axis !== item)
                       if (axise === 'dimensions') {
@@ -322,253 +296,205 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                         onConfigChange(axise, array, mapAxis2Label(axise), calcLabel(array, axise))
                       }
                     }}
-                  >
-                    <IconCommonClose color={ThemingVariables.colors.gray[0]} />
-                  </div>
+                    className={css`
+                      margin-left: 4px;
+                    `}
+                  />
                 </div>
               )}
-              footer={
-                <AxisSelect
-                  className={css`
-                    margin: 5px;
-                  `}
-                  options={props.config.axises}
-                  disabled={disabled}
-                  onSelect={(value) => {
-                    const array = [...axises[axise], value]
-                    if (axise === 'dimensions') {
-                      onConfigChange(axise, array)
-                    } else {
-                      onConfigChange(axise, array, mapAxis2Label(axise), calcLabel(array, axise))
-                    }
-                  }}
-                />
-              }
             />
-          </>
+          </ConfigSection>
         )
       },
       [axises, props.config.axises, onConfigChange, displayTypes]
     )
 
     return (
-      <>
-        <div
-          className={css`
-            flex-shrink: 0;
-            padding: 5px;
-            box-shadow: 1px 0px 0px ${ThemingVariables.colors.gray[1]};
-          `}
-        >
-          {Object.values(Tab).map((t) => (
-            <ConfigButton
-              key={t}
-              className={css`
-                width: 120px;
-
-                &:hover {
-                  background: ${ThemingVariables.colors.primary[4]};
-                }
-              `}
-              active={tab === t}
-              onClick={() => {
-                setTab(t)
-              }}
-            >
-              {t}
-            </ConfigButton>
-          ))}
+      <ConfigTab tabs={['Data', 'Display', 'Axis']}>
+        <div>
+          {renderAxisSelect('X axis', 'xAxises', false)}
+          {renderAxisSelect('Dimension', 'dimensions', yAxises.length > 0 && y2Axises.length > 0)}
+          {renderAxisSelect(
+            'Y axis (Left)',
+            'yAxises',
+            dimensions.length > 0 && (yAxises.length > 0 || y2Axises.length > 0)
+          )}
+          {renderAxisSelect(
+            'Y axis (Right)',
+            'y2Axises',
+            dimensions.length > 0 && (yAxises.length > 0 || y2Axises.length > 0)
+          )}
         </div>
-        <div
-          className={css`
-            padding: 20px;
-          `}
-        >
-          {tab === Tab.DATA ? (
-            <>
-              {renderAxisSelect('X axis', 'xAxises', false, true)}
-              {renderAxisSelect('Dimension', 'dimensions', yAxises.length > 0 && y2Axises.length > 0)}
-              {renderAxisSelect(
-                'Y axis (Left)',
-                'yAxises',
-                dimensions.length > 0 && (yAxises.length > 0 || y2Axises.length > 0)
-              )}
-              {renderAxisSelect(
-                'Y axis (Right)',
-                'y2Axises',
-                dimensions.length > 0 && (yAxises.length > 0 || y2Axises.length > 0)
-              )}
-            </>
-          ) : null}
-          {tab === Tab.DISPLAY ? (
-            <>
-              <ConfigLabel top={0}>Shapes</ConfigLabel>
-              {props.config.groups.map((item) => (
-                <div
-                  key={item.key}
-                  className={css`
-                    margin-bottom: 20px;
-                  `}
-                >
-                  <div
-                    className={css`
-                      display: flex;
-                      align-items: center;
-                      justify-content: space-between;
-                      font-size: 12px;
-                      margin-bottom: 5px;
-                    `}
-                  >
-                    <span
-                      className={css`
-                        color: ${ThemingVariables.colors.text[1]};
-                      `}
-                    >
-                      Y axis ({upperFirst(item.key)})
-                    </span>
-                    <MoreSettingPopover
-                      shapes={props.config.shapes.filter(({ groupId }) => groupId === item.key).length}
-                      value={item}
-                      onChange={(value) => {
-                        onConfigChange(
-                          'groups',
-                          props.config.groups.map((group) => (group.key === item.key ? { ...item, ...value } : group))
-                        )
-                      }}
-                    />
-                  </div>
-                  <SortableList
-                    value={props.config.shapes.filter(({ groupId }) => groupId === item.key)}
-                    onChange={(value) => {
-                      onConfigChange('shapes', value)
-                    }}
-                    renderItem={(item) => (
-                      <ShapeSelector
-                        key={item.key}
-                        value={item}
-                        onChange={(value) => {
-                          onConfigChange(
-                            'shapes',
-                            props.config.shapes.map((shape) => (shape.key === item.key ? { ...item, ...value } : shape))
-                          )
-                        }}
-                      />
-                    )}
-                    className={css`
-                      margin: -5px;
-                    `}
-                  />
-                </div>
-              ))}
-
-              {props.config.shapes.length === 0 ? (
-                <span
-                  className={css`
-                    margin-top: 10px;
-                    font-size: 14px;
-                    font-weight: 400;
-                    opacity: ${opacity};
-                    cursor: pointer;
-
-                    &:hover {
-                      text-decoration: underline;
-                    }
-                  `}
-                  onClick={() => {
-                    setTab(Tab.DATA)
+        <div>
+          {props.config.groups.map((item) => (
+            <ConfigSection
+              key={item.key}
+              title={`Y axis (${upperFirst(item.key)})`}
+              right={
+                <MoreSettingPopover
+                  shapes={props.config.shapes.filter(({ groupId }) => groupId === item.key).length}
+                  value={item}
+                  onChange={(value) => {
+                    onConfigChange(
+                      'groups',
+                      props.config.groups.map((group) => (group.key === item.key ? { ...item, ...value } : group))
+                    )
                   }}
-                >
-                  No shapes. Click to configure data
-                </span>
-              ) : null}
-              <ConfigLabel>Y reference line</ConfigLabel>
+                />
+              }
+            >
+              <SortableList
+                value={props.config.shapes.filter(({ groupId }) => groupId === item.key)}
+                onChange={(value) => {
+                  onConfigChange('shapes', value)
+                }}
+                renderItem={(item) => (
+                  <ShapeSelector
+                    key={item.key}
+                    value={item}
+                    onChange={(value) => {
+                      onConfigChange(
+                        'shapes',
+                        props.config.shapes.map((shape) => (shape.key === item.key ? { ...item, ...value } : shape))
+                      )
+                    }}
+                  />
+                )}
+              />
+            </ConfigSection>
+          ))}
+          <ConfigSection title="Y reference line">
+            <ConfigItem label="Label">
+              <ConfigInput
+                value={props.config.referenceYLabel}
+                onChange={(value) => {
+                  onConfigChange('referenceYLabel', value)
+                }}
+              />
+            </ConfigItem>
+            <ConfigItem label="Value">
+              <ConfigNumericInput
+                value={props.config.referenceYValue}
+                onChange={(value) => {
+                  onConfigChange('referenceYValue', value)
+                }}
+              />
+            </ConfigItem>
+            {props.config.yAxises.length && props.config.y2Axises.length ? (
+              <ConfigItem label="Y axis">
+                <ConfigSelect
+                  options={['left', 'right']}
+                  value={props.config.referenceYAxis}
+                  onChange={(value) => {
+                    onConfigChange('referenceYAxis', value)
+                  }}
+                />
+              </ConfigItem>
+            ) : null}
+          </ConfigSection>
+        </div>
+        <div>
+          <ConfigSection title="X axis">
+            <ConfigItem label="Label">
+              <ConfigInput
+                value={props.config.xLabel}
+                onChange={(value) => {
+                  onConfigChange('xLabel', value)
+                }}
+              />
+            </ConfigItem>
+            <ConfigItem label="Type">
+              <ConfigSelect
+                disabled={props.config.xAxises.length > 1 || !isNumeric(displayTypes[props.config.xAxises[0]])}
+                options={['linear', 'ordinal']}
+                placeholder="Please select"
+                value={props.config.xType}
+                onChange={(value) => {
+                  onConfigChange('xType', value)
+                }}
+              />
+            </ConfigItem>
+          </ConfigSection>
+          <ConfigSection title="Y axis (Left)">
+            <ConfigItem label="Label">
+              <ConfigInput
+                value={props.config.yLabel}
+                onChange={(value) => {
+                  onConfigChange('yLabel', value)
+                }}
+              />
+            </ConfigItem>
+            <ConfigItem label="Scale">
+              <ConfigSelect
+                options={scaleTypes}
+                value={props.config.yScale}
+                onChange={(value) => {
+                  onConfigChange('yScale', value, 'yRangeMin', value === 'log' ? undefined : 0)
+                }}
+              />
+            </ConfigItem>
+            <ConfigItem label="Range">
               <div
                 className={css`
-                  margin: -5px;
+                  display: flex;
+                  align-items: center;
                 `}
               >
-                <AxisFormItem label="Label">
-                  <ConfigInput
-                    value={props.config.referenceYLabel}
-                    onChange={(value) => {
-                      onConfigChange('referenceYLabel', value)
-                    }}
-                  />
-                </AxisFormItem>
-                <AxisFormItem label="Value">
-                  <ConfigNumericInput
-                    value={props.config.referenceYValue}
-                    onChange={(value) => {
-                      onConfigChange('referenceYValue', value)
-                    }}
-                  />
-                </AxisFormItem>
-                {props.config.yAxises.length && props.config.y2Axises.length ? (
-                  <AxisFormItem label="Y axis">
-                    <ConfigSelect
-                      options={['left', 'right']}
-                      value={props.config.referenceYAxis}
-                      onChange={(value) => {
-                        onConfigChange('referenceYAxis', value)
-                      }}
-                    />
-                  </AxisFormItem>
-                ) : null}
+                <ConfigNumericInput
+                  className={css`
+                    width: 0;
+                    flex: 1;
+                  `}
+                  placeholder="min"
+                  value={props.config.yRangeMin}
+                  onChange={(value) => {
+                    onConfigChange('yRangeMin', value)
+                  }}
+                />
+                <div
+                  className={css`
+                    width: 8px;
+                    height: 0px;
+                    border-top: 1px solid ${ThemingVariables.colors.gray[1]};
+                    margin: 0 8px;
+                    flex-shrink: 0;
+                  `}
+                />
+                <ConfigNumericInput
+                  className={css`
+                    width: 0;
+                    flex: 1;
+                  `}
+                  placeholder="max"
+                  value={props.config.yRangeMax}
+                  onChange={(value) => {
+                    onConfigChange('yRangeMax', value)
+                  }}
+                />
               </div>
-            </>
-          ) : null}
-          {tab === Tab.AXIS ? (
+            </ConfigItem>
+          </ConfigSection>
+          {props.config.y2Axises.length ? (
             <>
-              <ConfigLabel top={0}>X axis</ConfigLabel>
-              <div
-                className={css`
-                  margin: -5px;
-                `}
-              >
-                <AxisFormItem label="Label">
+              <ConfigSection title="Y axis (Right)">
+                <ConfigItem label="Label">
                   <ConfigInput
-                    value={props.config.xLabel}
+                    value={props.config.y2Label}
                     onChange={(value) => {
-                      onConfigChange('xLabel', value)
+                      onConfigChange('y2Label', value)
                     }}
                   />
-                </AxisFormItem>
-                <AxisFormItem label="Type">
-                  <ConfigSelect
-                    disabled={props.config.xAxises.length > 1 || !isNumeric(displayTypes[props.config.xAxises[0]])}
-                    options={['linear', 'ordinal']}
-                    placeholder="Please select"
-                    value={props.config.xType}
-                    onChange={(value) => {
-                      onConfigChange('xType', value)
-                    }}
-                  />
-                </AxisFormItem>
-              </div>
-              <ConfigLabel>Y axis (Left)</ConfigLabel>
-              <div
-                className={css`
-                  margin: -5px;
-                `}
-              >
-                <AxisFormItem label="Label">
-                  <ConfigInput
-                    value={props.config.yLabel}
-                    onChange={(value) => {
-                      onConfigChange('yLabel', value)
-                    }}
-                  />
-                </AxisFormItem>
-                <AxisFormItem label="Scale">
+                </ConfigItem>
+                <ConfigItem label="Scale">
                   <ConfigSelect
                     options={scaleTypes}
-                    value={props.config.yScale}
+                    value={props.config.y2Scale}
                     onChange={(value) => {
-                      onConfigChange('yScale', value, 'yRangeMin', value === 'log' ? undefined : 0)
+                      onConfigChange('y2Scale', value, 'y2RangeMin', value === 'log' ? undefined : 0)
                     }}
                   />
-                </AxisFormItem>
-                <AxisFormItem label="Range">
+                </ConfigItem>
+                <ConfigItem label="Range">
                   <div
                     className={css`
                       display: flex;
@@ -582,9 +508,9 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                         flex: 1;
                       `}
                       placeholder="min"
-                      value={props.config.yRangeMin}
+                      value={props.config.y2RangeMin}
                       onChange={(value) => {
-                        onConfigChange('yRangeMin', value)
+                        onConfigChange('y2RangeMin', value)
                       }}
                     />
                     <div
@@ -602,85 +528,18 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                         flex: 1;
                       `}
                       placeholder="max"
-                      value={props.config.yRangeMax}
+                      value={props.config.y2RangeMax}
                       onChange={(value) => {
-                        onConfigChange('yRangeMax', value)
+                        onConfigChange('y2RangeMax', value)
                       }}
                     />
                   </div>
-                </AxisFormItem>
-              </div>
-              {props.config.y2Axises.length ? (
-                <div
-                  className={css`
-                    margin: -5px;
-                  `}
-                >
-                  <ConfigLabel>Y axis (Right)</ConfigLabel>
-                  <AxisFormItem label="Label">
-                    <ConfigInput
-                      value={props.config.y2Label}
-                      onChange={(value) => {
-                        onConfigChange('y2Label', value)
-                      }}
-                    />
-                  </AxisFormItem>
-                  <AxisFormItem label="Scale">
-                    <ConfigSelect
-                      options={scaleTypes}
-                      value={props.config.y2Scale}
-                      onChange={(value) => {
-                        onConfigChange('y2Scale', value, 'y2RangeMin', value === 'log' ? undefined : 0)
-                      }}
-                    />
-                  </AxisFormItem>
-                  <AxisFormItem label="Range">
-                    <div
-                      className={css`
-                        display: flex;
-                        align-items: center;
-                        width: 185px;
-                      `}
-                    >
-                      <ConfigNumericInput
-                        className={css`
-                          width: 0;
-                          flex: 1;
-                        `}
-                        placeholder="min"
-                        value={props.config.y2RangeMin}
-                        onChange={(value) => {
-                          onConfigChange('y2RangeMin', value)
-                        }}
-                      />
-                      <div
-                        className={css`
-                          width: 8px;
-                          height: 0px;
-                          border-top: 1px solid ${ThemingVariables.colors.gray[1]};
-                          margin: 0 8px;
-                          flex-shrink: 0;
-                        `}
-                      />
-                      <ConfigNumericInput
-                        className={css`
-                          width: 0;
-                          flex: 1;
-                        `}
-                        placeholder="max"
-                        value={props.config.y2RangeMax}
-                        onChange={(value) => {
-                          onConfigChange('y2RangeMax', value)
-                        }}
-                      />
-                    </div>
-                  </AxisFormItem>
-                </div>
-              ) : null}
+                </ConfigItem>
+              </ConfigSection>
             </>
           ) : null}
         </div>
-      </>
+      </ConfigTab>
     )
   },
 
@@ -1206,28 +1065,6 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
   }
 }
 
-function AxisFormItem(props: { label: string; children: ReactNode }) {
-  return (
-    <div
-      className={css`
-        display: inline-block;
-        margin: 5px;
-      `}
-    >
-      <div
-        className={css`
-          font-size: 12px;
-          color: ${ThemingVariables.colors.text[1]};
-          margin-bottom: 5px;
-        `}
-      >
-        {props.label}
-      </div>
-      {props.children}
-    </div>
-  )
-}
-
 function AxisSelect(props: {
   className?: string
   options: string[]
@@ -1246,28 +1083,28 @@ function AxisSelect(props: {
           appearance: none;
           border: none;
           outline: none;
+          border-radius: 4px;
           font-size: 14px;
           font-weight: 400;
           cursor: pointer;
-          border: 1px solid ${ThemingVariables.colors.gray[1]};
-          border-radius: 8px;
-          height: 36px;
-          width: 185px;
+          height: 32px;
+          width: 32px;
           background-repeat: no-repeat;
           background-position: 50% 50%;
           color: transparent;
-
-          &:disabled {
+          background-image: ${SVG2DataURI(IconCommonAdd, TelleryThemeLight.colors.text[props.disabled ? 2 : 0])};
+          :disabled {
             cursor: not-allowed;
-            border: 1px dashed ${ThemingVariables.colors.gray[1]};
+            background-color: transparent;
+          }
+          :not(:disabled):hover {
+            cursor: pointer;
+            background-color: ${ThemingVariables.colors.primary[5]};
           }
         `,
         props.className
       )}
       disabled={props.disabled}
-      style={{
-        backgroundImage: SVG2DataURI(IconCommonAdd, TelleryThemeLight.colors.gray[0])
-      }}
       value={''}
       onChange={
         props.disabled

@@ -1,5 +1,4 @@
 import { useOnScreen } from '@app/hooks'
-import { ThemingVariables } from '@app/styles'
 import type { Ref } from '@app/types'
 import { css, cx } from '@emotion/css'
 import { useQuestionDownstreams } from '@app/hooks/api'
@@ -22,28 +21,18 @@ export default function QuestionDownstreams(props: { blockId: string; className?
     <div
       className={cx(
         css`
-          padding: 5px;
           overflow-y: scroll;
         `,
         props.className
       )}
     >
-      <h3
-        className={css`
-          margin: 0;
-          padding: 10px 20px;
-          color: ${ThemingVariables.colors.text[0]};
-        `}
-      >
-        Downstream{items.length > 1 ? 's' : ''} ({items.length})
-      </h3>
       {map(data, (blocks, storyId) => (
         <StoryRefs
           key={storyId}
           currentStoryId={props.storyId}
           storyId={storyId}
           refs={blocks.filter(({ storyId }) => !!storyId).map(({ id, storyId }) => ({ blockId: id, storyId })) as Ref[]}
-          isSQLEditor={true}
+          disablePreview={true}
         />
       ))}
     </div>

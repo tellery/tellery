@@ -1,9 +1,8 @@
 import { css, cx } from '@emotion/css'
-import { slice } from 'lodash'
+import { slice, sortBy } from 'lodash'
 import React, { useMemo, useState, useEffect } from 'react'
 import { IconCommonArrowUnfold, IconMenuHide, IconMenuShow } from '@app/assets/icons'
 import { ThemingVariables } from '@app/styles'
-import { ConfigLabel } from '../components/ConfigLabel'
 import { SortableList } from '../components/SortableList'
 import { Type } from '../types'
 import { formatRecord, isNumeric, isTimeSeries } from '../utils'
@@ -12,6 +11,8 @@ import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 import IconButton from '@app/components/kit/IconButton'
 import Tippy from '@tippyjs/react'
 import PerfectScrollbar from 'react-perfect-scrollbar'
+import { ConfigSection } from '../components/ConfigSection'
+import { ConfigTab } from '../components/ConfigTab'
 
 const TABLE_ROW_HEIGHT_MIN = 30
 
@@ -32,107 +33,110 @@ export const table: Chart<Type.TABLE> = {
   },
 
   Configuration(props) {
+    // TODO: remove this
+    const columnOrder = useMemo(
+      () =>
+        sortBy(props.config.columnOrder).join() === sortBy(props.data.fields.map(({ name }) => name)).join()
+          ? props.config.columnOrder
+          : props.data.fields.map(({ name }) => name),
+      [props.config.columnOrder, props.data.fields]
+    )
+
     return (
-      <div
-        className={css`
-          padding: 20px;
-        `}
-      >
-        <ConfigLabel top={0}>Columns</ConfigLabel>
-        <h4
-          className={css`
-            font-style: normal;
-            font-weight: 400;
-            font-size: 14px;
-            line-height: 17px;
-            margin-top: 5px;
-            margin-bottom: 5px;
-            opacity: 0.3;
-          `}
-        >
-          Drag to reorder columns
-        </h4>
-        <SortableList
-          className={css`
-            margin: 0 -5px;
-          `}
-          value={props.config.columnOrder}
-          onChange={(value) => {
-            props.onConfigChange('columnOrder', value)
-          }}
-          renderItem={(item) => (
-            <div
-              className={css`
-                width: 100%;
-                padding-right: 10px;
-                font-size: 14px;
-                font-weight: 400;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-              `}
-            >
+      <ConfigTab tabs={['Data']}>
+        <ConfigSection title="Columns">
+          <SortableList
+            value={columnOrder}
+            onChange={(value) => {
+              props.onConfigChange('columnOrder', value)
+            }}
+            renderItem={(item) => (
               <div
                 className={css`
-                  flex: 1;
-                  width: 0;
-                  overflow: hidden;
-                  text-overflow: ellipsis;
-                  margin-right: 5px;
+                  width: 100%;
+                  font-size: 12px;
+                  padding-left: 6px;
+                  height: 32px;
+                  color: ${ThemingVariables.colors.text[0]};
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                  border-radius: 4px;
+                  :hover {
+                    background-color: ${ThemingVariables.colors.primary[5]};
+                  }
                 `}
               >
-                {item}
+                {props.config.columnVisibility[item] === false ? (
+                  <IconButton
+                    icon={IconMenuHide}
+                    color={ThemingVariables.colors.text[1]}
+                    className={css`
+                      flex-shrink: 0;
+                    `}
+                    onClick={() => {
+                      props.onConfigChange('columnVisibility', {
+                        ...props.config.columnVisibility,
+                        [item]: true
+                      })
+                    }}
+                  />
+                ) : (
+                  <IconButton
+                    icon={IconMenuShow}
+                    color={ThemingVariables.colors.text[1]}
+                    className={css`
+                      flex-shrink: 0;
+                    `}
+                    onClick={() => {
+                      props.onConfigChange('columnVisibility', {
+                        ...props.config.columnVisibility,
+                        [item]: false
+                      })
+                    }}
+                  />
+                )}
+                <div
+                  className={css`
+                    flex: 1;
+                    width: 0;
+                    margin-left: 10px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  `}
+                >
+                  {item}
+                </div>
               </div>
-              {props.config.columnVisibility[item] === false ? (
-                <IconButton
-                  icon={IconMenuHide}
-                  color={ThemingVariables.colors.text[0]}
-                  className={css`
-                    flex-shrink: 0;
-                  `}
-                  onClick={() => {
-                    props.onConfigChange('columnVisibility', {
-                      ...props.config.columnVisibility,
-                      [item]: true
-                    })
-                  }}
-                />
-              ) : (
-                <IconButton
-                  icon={IconMenuShow}
-                  color={ThemingVariables.colors.text[0]}
-                  className={css`
-                    flex-shrink: 0;
-                  `}
-                  onClick={() => {
-                    props.onConfigChange('columnVisibility', {
-                      ...props.config.columnVisibility,
-                      [item]: false
-                    })
-                  }}
-                />
-              )}
-            </div>
-          )}
-        />
-      </div>
+            )}
+          />
+        </ConfigSection>
+      </ConfigTab>
     )
   },
 
   Diagram(props) {
+    // TODO: remove this
+    const columnOrder = useMemo(
+      () =>
+        sortBy(props.config.columnOrder).join() === sortBy(props.data.fields.map(({ name }) => name)).join()
+          ? props.config.columnOrder
+          : props.data.fields.map(({ name }) => name),
+      [props.config.columnOrder, props.data.fields]
+    )
     const order = useMemo<{ [key: string]: number }>(() => {
       const map = props.data.fields.reduce((obj, { name }, index) => {
         obj[name] = index
         return obj
       }, {} as { [name: string]: number })
-      return props.config.columnOrder.reduce((obj, name, index) => {
+      return columnOrder.reduce((obj, name, index) => {
         const item = props.data.fields[index]
         if (item) {
           obj[item.name] = map[name]
         }
         return obj
       }, {} as { [name: string]: number })
-    }, [props.config.columnOrder, props.data])
+    }, [columnOrder, props.data])
     const columns = useMemo(
       () =>
         props.data.fields

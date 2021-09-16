@@ -9,7 +9,7 @@ import {
   IconVisualizationNumber
 } from '@app/assets/icons'
 import { setBlockTranscation } from '@app/context/editorTranscations'
-import { useBlock, useBlockSuspense, useSnapshot } from '@app/hooks/api'
+import { useBlockSuspense, useSnapshot } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
@@ -32,20 +32,13 @@ const icons = {
   [Type.NUMBER]: IconVisualizationNumber
 }
 
-export default function SideBarVisualizationConfig<T extends Type = Type>(props: { storyId: string; blockId: string }) {
+export default function SideBarVisualization<T extends Type = Type>(props: { storyId: string; blockId: string }) {
   const block = useBlockSuspense<Editor.VisualizationBlock>(props.blockId)
-  const config = block?.content?.visualization
+  const config = block.content?.visualization
   const chart = useChart(config?.type || Type.TABLE)
-  const { data: queryBlock } = useBlock<Editor.QueryBlock>(block.content?.queryId!)
-  const snapshot = useSnapshot(queryBlock?.content?.snapshotId)
+  const queryBlock = useBlockSuspense<Editor.QueryBlock>(block.content?.queryId!)
+  const snapshot = useSnapshot(queryBlock.content?.snapshotId)
   const commit = useCommit()
-  const [cache, setCache] = useState<{ [T in Type]?: Config<T> }>({})
-  useEffect(() => {
-    setCache({})
-  }, [snapshot?.data?.fields])
-  useEffect(() => {
-    setCache((old) => (config ? { ...old, [config.type]: config } : old))
-  }, [config])
   const setBlock = useCallback(
     (update: (block: WritableDraft<Editor.VisualizationBlock>) => void) => {
       const oldBlock = block
@@ -54,6 +47,13 @@ export default function SideBarVisualizationConfig<T extends Type = Type>(props:
     },
     [block, commit, props.storyId]
   )
+  const [cache, setCache] = useState<{ [T in Type]?: Config<T> }>({})
+  useEffect(() => {
+    setCache({})
+  }, [snapshot?.data?.fields])
+  useEffect(() => {
+    setCache((old) => (config ? { ...old, [config.type]: config } : old))
+  }, [config])
   const handleConfigChange = useCallback(
     (
       key1: keyof Config<Type>,
@@ -84,7 +84,7 @@ export default function SideBarVisualizationConfig<T extends Type = Type>(props:
     <>
       <div
         className={css`
-          padding: 14px 8px;
+          padding: 14px 8px 0;
         `}
       >
         {Object.values(Type).map((t) => (

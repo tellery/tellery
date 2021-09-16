@@ -85,7 +85,12 @@ export const StoryBackwardsRefs = (props: { refs: Ref[]; storyId: string }) => {
   )
 }
 
-export const StoryRefs = (props: { refs: Ref[]; storyId: string; isSQLEditor?: boolean; currentStoryId: string }) => {
+export const StoryRefs = (props: {
+  refs: Ref[]
+  storyId: string
+  currentStoryId: string
+  disablePreview?: boolean
+}) => {
   const { refs, storyId } = props
   const [hoverBlockId, setHoverBlockId] = useState<string | null>(null)
   const [modalRef, setModalRef] = useState<HTMLElement | null>(null)
@@ -182,14 +187,10 @@ export const StoryRefs = (props: { refs: Ref[]; storyId: string; isSQLEditor?: b
                         <motion.div
                           key={block.id}
                           onMouseEnter={() => {
-                            if (!props.isSQLEditor) {
-                              setHoverBlockId(block.id)
-                            }
+                            setHoverBlockId(block.id)
                           }}
                           onMouseLeave={() => {
-                            if (!props.isSQLEditor) {
-                              setHoverBlockId(null)
-                            }
+                            setHoverBlockId(null)
                           }}
                           onClickCapture={(e) => {
                             e.preventDefault()
@@ -197,10 +198,6 @@ export const StoryRefs = (props: { refs: Ref[]; storyId: string; isSQLEditor?: b
                             openStory(block.storyId!, {
                               blockId: block.id
                             })
-
-                            if (props.isSQLEditor && props.currentStoryId === block.storyId) {
-                              openQuestion({ mode: 'SQL', storyId: block.storyId!, blockId: block.id })
-                            }
                           }}
                         >
                           <BlockContentOverview block={block} />
@@ -212,7 +209,7 @@ export const StoryRefs = (props: { refs: Ref[]; storyId: string; isSQLEditor?: b
               </>
             )}
           </div>
-          {hoverBlockId ? (
+          {hoverBlockId && !props.disablePreview ? (
             <div
               ref={setModalRef}
               {...pop.attributes.popper}

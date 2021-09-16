@@ -30,8 +30,8 @@ export function CheckBox(props: {
   )
 
   return props.value ? (
-    <IconCommonCheckboxFill color={ThemingVariables.colors.gray[1]} className={className} onClick={handleClick} />
+    <IconCommonCheckboxFill className={className} onClick={handleClick} />
   ) : (
-    <IconCommonCheckboxBlank color={ThemingVariables.colors.gray[1]} className={className} onClick={handleClick} />
+    <IconCommonCheckboxBlank className={className} onClick={handleClick} />
   )
 }

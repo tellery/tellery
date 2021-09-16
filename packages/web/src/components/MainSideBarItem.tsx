@@ -27,7 +27,6 @@ export function MainSideBarItem(props: {
     <Tippy
       disabled={!props.hoverTitle}
       content={props.hoverTitle ?? null}
-      hideOnClick={false}
       arrow={false}
       singleton={tippySingleton}
       placement="right"

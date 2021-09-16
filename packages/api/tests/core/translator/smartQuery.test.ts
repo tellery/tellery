@@ -55,11 +55,7 @@ const queryBuilderSpec = {
   ),
 }
 
-test.before(async () => {
-  await createDatabaseCon()
-})
-
-const mockQueryBuilderContent = {
+const queryBuilderContent = {
   title: [['qb1']],
   sql: 'select uid, visit, dt, cost from test',
   fields: [
@@ -106,6 +102,10 @@ const mockQueryBuilderContent = {
   },
 }
 
+test.before(async () => {
+  await createDatabaseCon()
+})
+
 test('smart query sql assemble', async (t) => {
   const storyId = nanoid()
   const queryBuilderId = nanoid()
@@ -117,7 +117,7 @@ test('smart query sql assemble', async (t) => {
     parentId: storyId,
     parentTable: BlockParentType.BLOCK,
     storyId,
-    content: mockQueryBuilderContent,
+    content: queryBuilderContent,
     type: BlockType.QUERY_BUILDER,
     children: [],
     alive: true,
@@ -145,7 +145,87 @@ test('smart query sql assemble', async (t) => {
   stringCompare(
     t,
     sql,
-    `SELECT to_date(\`dt\`) AS \`dt byDate\`, case when cost > 10 then 'high' else 'low' AS \`costHigh\`, count(distinct \`uid\`) AS \`active_user\`, percentile(visit, 0.95) AS \`visit_p95\` FROM {{ ${queryBuilderId} }} GROUP BY 1, 2 ORDER BY 1, 2`,
+    `SELECT to_date(\`dt\`) AS \`dt byDate\`, case when cost > 10 then 'high' else 'low' AS \`costHigh\`, count(distinct \`uid\`) AS \`active_user\`, percentile(visit, 0.95) AS \`visit_p95\` FROM {{ ${queryBuilderId} }} GROUP BY 1, 2 ORDER BY 1`,
+  )
+})
+
+test('smart query sql assemble (order by index)', async (t) => {
+  const storyId = nanoid()
+  const queryBuilderId = nanoid()
+
+  await getRepository(BlockEntity).save({
+    id: queryBuilderId,
+    workspaceId: 'test',
+    interKey: queryBuilderId,
+    parentId: storyId,
+    parentTable: BlockParentType.BLOCK,
+    storyId,
+    content: queryBuilderContent,
+    type: BlockType.QUERY_BUILDER,
+    children: [],
+    alive: true,
+  })
+
+  const smartQueryExecution: SmartQueryExecution = {
+    queryBuilderId,
+    metricIds: ['mid1', 'mid4'],
+    dimensions: [
+      {
+        name: 'costHigh',
+        rawSql: "case when cost > 10 then 'high' else 'low'",
+      },
+      {
+        name: 'dt byDate',
+        fieldName: 'dt',
+        fieldType: 'TIMESTAMP',
+        func: 'byDate',
+      },
+    ],
+  }
+
+  const sql = await translateSmartQuery(smartQueryExecution, queryBuilderSpec)
+  await getRepository(BlockEntity).delete([queryBuilderId])
+  stringCompare(
+    t,
+    sql,
+    `SELECT case when cost > 10 then 'high' else 'low' AS \`costHigh\`, to_date(\`dt\`) AS \`dt byDate\`, count(distinct \`uid\`) AS \`active_user\`, percentile(visit, 0.95) AS \`visit_p95\` FROM {{ ${queryBuilderId} }} GROUP BY 1, 2 ORDER BY 2`,
+  )
+})
+
+test('smart query sql assemble without order by', async (t) => {
+  const storyId = nanoid()
+  const queryBuilderId = nanoid()
+
+  await getRepository(BlockEntity).save({
+    id: queryBuilderId,
+    workspaceId: 'test',
+    interKey: queryBuilderId,
+    parentId: storyId,
+    parentTable: BlockParentType.BLOCK,
+    storyId,
+    content: queryBuilderContent,
+    type: BlockType.QUERY_BUILDER,
+    children: [],
+    alive: true,
+  })
+
+  const smartQueryExecution: SmartQueryExecution = {
+    queryBuilderId,
+    metricIds: ['mid1', 'mid4'],
+    dimensions: [
+      {
+        name: 'costHigh',
+        rawSql: "case when cost > 10 then 'high' else 'low'",
+      },
+    ],
+  }
+
+  const sql = await translateSmartQuery(smartQueryExecution, queryBuilderSpec)
+  await getRepository(BlockEntity).delete([queryBuilderId])
+  stringCompare(
+    t,
+    sql,
+    `SELECT case when cost > 10 then 'high' else 'low' AS \`costHigh\`, count(distinct \`uid\`) AS \`active_user\`, percentile(visit, 0.95) AS \`visit_p95\` FROM {{ ${queryBuilderId} }} GROUP BY 1, 2`,
   )
 })
 
@@ -160,7 +240,7 @@ test('smart query sql assemble without groupby', async (t) => {
     parentId: storyId,
     parentTable: BlockParentType.BLOCK,
     storyId,
-    content: mockQueryBuilderContent,
+    content: queryBuilderContent,
     type: BlockType.QUERY_BUILDER,
     children: [],
     alive: true,
@@ -181,6 +261,34 @@ test('smart query sql assemble without groupby', async (t) => {
   )
 })
 
+test('smart query sql without dimension and metric', async (t) => {
+  const storyId = nanoid()
+  const queryBuilderId = nanoid()
+
+  await getRepository(BlockEntity).save({
+    id: queryBuilderId,
+    workspaceId: 'test',
+    interKey: queryBuilderId,
+    parentId: storyId,
+    parentTable: BlockParentType.BLOCK,
+    storyId,
+    content: queryBuilderContent,
+    type: BlockType.QUERY_BUILDER,
+    children: [],
+    alive: true,
+  })
+
+  const smartQueryExecution = {
+    queryBuilderId,
+    metricIds: [],
+    dimensions: [],
+  }
+
+  const sql = await translateSmartQuery(smartQueryExecution, queryBuilderSpec)
+  await getRepository(BlockEntity).delete([queryBuilderId])
+  stringCompare(t, sql, `SELECT * FROM {{ ${queryBuilderId} }}`)
+})
+
 test('smart query sql assemble with condition', async (t) => {
   const storyId = nanoid()
   const queryBuilderId = nanoid()
@@ -192,7 +300,7 @@ test('smart query sql assemble with condition', async (t) => {
     parentId: storyId,
     parentTable: BlockParentType.BLOCK,
     storyId,
-    content: mockQueryBuilderContent,
+    content: queryBuilderContent,
     type: BlockType.QUERY_BUILDER,
     children: [],
     alive: true,
@@ -254,6 +362,6 @@ test('smart query sql assemble with condition', async (t) => {
   stringCompare(
     t,
     sql,
-    `SELECT to_date(\`dt\`) AS \`dt byDate\`, case when cost > 10 then 'high' else 'low' AS \`costHigh\`, count(distinct \`uid\`) AS \`active_user\`, percentile(visit, 0.95) AS \`visit_p95\` FROM {{ ${queryBuilderId} }} WHERE ((\`cost\` < 1000 OR \`uid\` != '123123123') AND \`dt\` IS BETWEEN timestamp('2020-01-01') AND timestamp('2020-03-01') AND \`cost\` IS NOT NULL) GROUP BY 1, 2 ORDER BY 1, 2`,
+    `SELECT to_date(\`dt\`) AS \`dt byDate\`, case when cost > 10 then 'high' else 'low' AS \`costHigh\`, count(distinct \`uid\`) AS \`active_user\`, percentile(visit, 0.95) AS \`visit_p95\` FROM {{ ${queryBuilderId} }} WHERE ((\`cost\` < 1000 OR \`uid\` != '123123123') AND \`dt\` IS BETWEEN timestamp('2020-01-01') AND timestamp('2020-03-01') AND \`cost\` IS NOT NULL) GROUP BY 1, 2 ORDER BY 1`,
   )
 })

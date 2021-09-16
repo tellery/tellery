@@ -19,6 +19,7 @@ import { TELLERY_MIME_TYPES } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import type { FlipModifier } from '@popperjs/core/lib/modifiers/flip'
 import type { OffsetModifier } from '@popperjs/core/lib/modifiers/offset'
+import { PreventOverflowModifier } from '@popperjs/core/lib/modifiers/preventOverflow'
 import copy from 'copy-to-clipboard'
 import dayjs from 'dayjs'
 import { useAtom } from 'jotai'
@@ -37,7 +38,7 @@ export interface OperationInterface {
   side?: ReactNode
 }
 
-const PopperModifiers: Partial<Partial<OffsetModifier | FlipModifier>>[] = [
+const PopperModifiers: Partial<Partial<OffsetModifier | PreventOverflowModifier | FlipModifier>>[] = [
   {
     name: 'offset',
     enabled: true,
@@ -46,9 +47,20 @@ const PopperModifiers: Partial<Partial<OffsetModifier | FlipModifier>>[] = [
     }
   },
   {
+    name: 'preventOverflow',
+    enabled: true,
+    options: {
+      boundary: document.getElementsByTagName('main')[0],
+      altAxis: true,
+      altBoundary: true,
+      padding: 10
+    }
+  },
+  {
     name: 'flip',
     options: {
-      fallbackPlacements: ['bottom-start', 'top-start']
+      altBoundary: false,
+      fallbackPlacements: ['left']
     }
   }
 ]

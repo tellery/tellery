@@ -20,7 +20,8 @@ class RpcService(
     }
 
     init {
-        var partialBuilder = ServerBuilder.forPort(config.port)
+        var partialBuilder = ServerBuilder
+            .forPort(config.port)
 
         if (config.credCertPath != null && config.credKeyPath != null) {
             try {

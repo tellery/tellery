@@ -37,9 +37,10 @@ import {
   toggleMark,
   tokenPosition2SplitedTokenPosition
 } from '../helpers/tokenManipulation'
-import { useEditor, useLocalSelection } from '../hooks'
+import { useEditor } from '../hooks'
 import { useBlockTitleAssets } from '../hooks/useBlockTitleAssets'
 import { useSetInlineFormulaPopoverState } from '../hooks/useInlineFormulaPopoverState'
+import { useLocalSelection } from '../hooks/useStorySelection'
 import { BlockReferenceDropdown } from '../Popovers/BlockReferenceDropdown'
 import { SlashCommandDropdown } from '../Popovers/SlashCommandDropdown'
 import { decodeHTML } from '../utils'
@@ -500,8 +501,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
               setInlineformulaPopoverState(true)
               const range = new Range()
               range.selectNodeContents(tokenElement)
-              // restoreRange(range)
-              // setWillFlush(true)
+              restoreRange(range)
               editor?.setSelectionState({
                 storyId: block.storyId!,
                 type: TellerySelectionType.Inline,

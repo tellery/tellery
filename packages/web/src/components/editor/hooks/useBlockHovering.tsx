@@ -1,4 +1,4 @@
-import { atom, atomFamily, selector } from 'recoil'
+import { useRecoilState, atom, atomFamily, selector, useRecoilValue } from 'recoil'
 
 export const IsBlockHovering = atomFamily({
   key: 'IsBlockHovering',
@@ -26,3 +26,11 @@ export const HovreringBlockId = selector<string | null>({
     }
   }
 })
+
+export const useBlockHovering = (blockId: string) => {
+  return useRecoilValue(IsBlockHovering(blockId))
+}
+
+export const useBlockHoveringState = () => {
+  return useRecoilState(HovreringBlockId)
+}

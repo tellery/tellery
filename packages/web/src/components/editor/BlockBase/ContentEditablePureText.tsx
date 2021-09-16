@@ -4,17 +4,17 @@ import type { Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
 import debug from 'debug'
 import { dequal } from 'dequal'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { decodeHTML } from '../utils'
 import { BlockRenderer } from './BlockRenderer'
 
 const logger = debug('tellery:contentEditable')
-export interface EditableRef {
-  openSlashCommandMenu: () => void
+export interface EditableSimpleRef {
+  focus: () => void
 }
 
 const _ContentEditable: React.ForwardRefRenderFunction<
-  EditableRef,
+  EditableSimpleRef,
   {
     tokens?: Editor.Token[]
     readonly?: boolean
@@ -32,6 +32,10 @@ const _ContentEditable: React.ForwardRefRenderFunction<
         [key: string]: Editor.Block
       }
     ) => string
+    onConfirm?: Function
+    onClick?: Function
+    onBlur?: Function
+    onFocus?: Function
   }
 > = (props, ref) => {
   const { tokens, onChange, readonly, maxLines = 0, tokensRenderer = BlockRenderer } = props
@@ -42,6 +46,18 @@ const _ContentEditable: React.ForwardRefRenderFunction<
   const [selectionRange, setSelectionRange] = useState<Range | null>(null)
   const [isFocusing, setIsFocusing] = useState(false)
   const [composingState, setComposingState] = useState(false)
+
+  useImperativeHandle(
+    ref,
+    () => {
+      return {
+        focus: () => {
+          editbleRef.current?.focus()
+        }
+      }
+    },
+    []
+  )
 
   useEffect(() => {
     if (!isComposing.current && tokens) {
@@ -144,7 +160,6 @@ const _ContentEditable: React.ForwardRefRenderFunction<
         css`
           display: flex;
           word-break: break-word;
-          flex: 1;
           align-items: flex-start;
           position: relative;
         `,
@@ -207,6 +222,9 @@ const _ContentEditable: React.ForwardRefRenderFunction<
         }}
         suppressContentEditableWarning={true}
         onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            props.onConfirm?.()
+          }
           if (props.disableEnter && e.key === 'Enter' && isComposing.current === false) {
             e.preventDefault()
             e.stopPropagation()
@@ -228,12 +246,17 @@ const _ContentEditable: React.ForwardRefRenderFunction<
             range && setSelectionRange(range?.cloneRange())
           }
         }}
+        onClick={() => {
+          props.onClick?.()
+        }}
         onFocus={() => {
           console.log('is focusing')
           setIsFocusing(true)
+          props.onFocus?.()
         }}
         onBlur={() => {
           setIsFocusing(false)
+          props.onBlur?.()
         }}
         onPaste={(e) => {
           e.preventDefault()

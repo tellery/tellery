@@ -9,7 +9,7 @@ import { dequal } from 'dequal'
 import { cloneDeep } from 'lodash'
 import { atomFamily, DefaultValue, selectorFamily, useRecoilCallback, Snapshot as RecoilSnapshot } from 'recoil'
 import invariant from 'tiny-invariant'
-import { WorkspaceIdAtom } from '../hooks/useWorkspaceIdAtom'
+import { WorkspaceIdAtom } from '../hooks/useWorkspace'
 
 export type BlockSnapshot = Map<string, Editor.BaseBlock>
 

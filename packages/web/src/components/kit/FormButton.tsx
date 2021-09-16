@@ -26,6 +26,7 @@ export function FormButton(
           height: 36px;
           border-radius: 8px;
           cursor: pointer;
+          font-weight: normal;
           &:disabled {
             font-weight: unset;
             cursor: not-allowed;
@@ -36,19 +37,16 @@ export function FormButton(
         `,
         {
           primary: css`
-            font-weight: normal;
             color: ${ThemingVariables.colors.gray[5]};
             background-color: ${ThemingVariables.colors.primary[1]};
             border: 1px solid ${ThemingVariables.colors.primary[1]};
           `,
           secondary: css`
-            font-weight: 600;
             color: ${ThemingVariables.colors.primary[1]};
             background-color: ${ThemingVariables.colors.gray[5]};
             border: 1px solid ${ThemingVariables.colors.primary[1]};
           `,
           danger: css`
-            font-weight: 600;
             color: ${ThemingVariables.colors.negative[0]};
             background-color: ${ThemingVariables.colors.gray[5]};
             border: 1px solid ${ThemingVariables.colors.negative[0]};

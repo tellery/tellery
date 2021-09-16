@@ -8,7 +8,6 @@ function getKey<T extends string | { key: string }>(item: T): string {
 }
 
 export function SortableList<T extends string | { key: string }>(props: {
-  className?: string
   value: T[]
   onChange(value: T[]): void
   renderItem(value: T): ReactNode
@@ -34,19 +33,17 @@ export function SortableList<T extends string | { key: string }>(props: {
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <div className={props.className}>
-        <SortableContext items={items}>
-          {props.value.map((item) => {
-            const key = getKey(item)
-            return (
-              <SortableItem key={key} id={key}>
-                {props.renderItem(item)}
-              </SortableItem>
-            )
-          })}
-        </SortableContext>
-        {props.footer}
-      </div>
+      <SortableContext items={items}>
+        {props.value.map((item) => {
+          const key = getKey(item)
+          return (
+            <SortableItem key={key} id={key}>
+              {props.renderItem(item)}
+            </SortableItem>
+          )
+        })}
+      </SortableContext>
+      {props.footer}
     </DndContext>
   )
 }

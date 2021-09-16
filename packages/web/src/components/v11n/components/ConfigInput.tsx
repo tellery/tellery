@@ -4,6 +4,7 @@ import { ThemingVariables } from '@app/styles'
 export function ConfigInput(props: {
   value: string
   onChange(value: string): void
+  onBlur?(): void
   className?: string
   placeholder?: string
 }) {
@@ -13,25 +14,31 @@ export function ConfigInput(props: {
       onChange={(e) => {
         props.onChange(e.target.value)
       }}
+      placeholder={props.placeholder}
+      onBlur={props.onBlur}
       className={cx(
         props.className,
         css`
-          border: 1px solid ${ThemingVariables.colors.gray[1]};
-          border-radius: 8px;
+          height: 32px;
+          width: 100%;
+          border-radius: 4px;
+          border: 1px solid transparent;
           outline: none;
-          font-size: 14px;
-          font-weight: 400;
-          padding: 9px;
-          height: 36px;
-          width: 185px;
+          font-style: normal;
+          font-weight: normal;
+          font-size: 12px;
+          line-height: 14px;
+          padding: 9px 6px;
           box-sizing: border-box;
 
+          :hover {
+            border: 1px solid ${ThemingVariables.colors.primary[2]};
+          }
           &::placeholder {
-            color: ${ThemingVariables.colors.gray[0]};
+            color: ${ThemingVariables.colors.text[2]};
           }
         `
       )}
-      placeholder={props.placeholder}
     />
   )
 }

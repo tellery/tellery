@@ -58,7 +58,7 @@ async function translateSmartQuery(
 
   const dimensions = dimensionsRaw.map((it) => assembleSelectField(it, bucketization, identifier))
 
-  const selectClause = [...dimensions, ...measures].join(', ')
+  const selectClause = [...dimensions, ...measures].join(', ') || '*'
   const whereClause = filters
     ? `WHERE ${assembleWhereField(filters, typeConversion, identifier)}`
     : ''
@@ -66,11 +66,12 @@ async function translateSmartQuery(
     dimensions && dimensions.length > 0
       ? `GROUP BY ${_.range(1, dimensions.length + 1).join(', ')}`
       : ''
-  // automatically order by dimensions
+  const datetimeDimensions = dimensionsRaw
+    .map((dim, index) => ({ index, dtype: _.get(dim, 'fieldType') }))
+    .filter(({ dtype }) => ['DATE', 'TIME', 'TIMESTAMP'].includes(dtype))
+    .map(({ index }) => index + 1)
   const orderByClause =
-    dimensions && dimensions.length > 0
-      ? `ORDER BY ${_.range(1, dimensions.length + 1).join(', ')}`
-      : ''
+    datetimeDimensions.length > 0 ? `ORDER BY ${datetimeDimensions.join(', ')}` : ''
 
   return `SELECT ${selectClause}
 FROM {{ ${queryBuilderId} }}

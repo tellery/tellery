@@ -27,6 +27,7 @@ import IconCommonEdit from './common/edit.svg?component'
 import IconCommonError from './common/error.svg?component'
 import IconCommonFold from './common/fold.svg?component'
 import IconCommonFormula from './common/formula.svg?component'
+import IconCommonHandler from './common/handler.svg?component'
 import IconCommonHome from './common/home.svg?component'
 import IconCommonLike from './common/like.svg?component'
 import IconCommonLink from './common/link.svg?component'
@@ -43,10 +44,12 @@ import IconCommonSave from './common/save.svg?component'
 import IconCommonSearch from './common/search.svg?component'
 import IconCommonSetting from './common/setting.svg?component'
 import IconCommonShare from './common/share.svg?component'
+import IconCommonSidebar from './common/sidebar.svg?component'
 import IconCommonSql from './common/sql.svg?component'
 import IconCommonStarFill from './common/star_fill.svg?component'
 import IconCommonStar from './common/star.svg?component'
 import IconCommonStoryBlock from './common/story_block.svg?component'
+import IconCommonSub from './common/sub.svg?component'
 import IconCommonThoughts from './common/thoughts.svg?component'
 import IconCommonTurn from './common/turn.svg?component'
 import IconCommonUnlink from './common/unlink.svg?component'
@@ -138,6 +141,7 @@ export {
   IconCommonError,
   IconCommonFold,
   IconCommonFormula,
+  IconCommonHandler,
   IconCommonHome,
   IconCommonLike,
   IconCommonLink,
@@ -154,10 +158,12 @@ export {
   IconCommonSearch,
   IconCommonSetting,
   IconCommonShare,
+  IconCommonSidebar,
   IconCommonSql,
   IconCommonStarFill,
   IconCommonStar,
   IconCommonStoryBlock,
+  IconCommonSub,
   IconCommonThoughts,
   IconCommonTurn,
   IconCommonUnlink,

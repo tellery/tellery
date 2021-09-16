@@ -19,7 +19,7 @@ export interface IConnectorManager {
 
   getProfileSpec(): Promise<ProfileSpec>
 
-  getProfile(): Promise<Profile>
+  getProfile(): Promise<Profile | undefined>
 
   upsertProfile(profileBody: Profile): Promise<Profile>
 

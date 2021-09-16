@@ -1,16 +1,8 @@
-import React, { useEffect } from 'react'
-import { useWorkspaceList } from '@app/hooks/api'
-import { WorkspaceContext } from '@app/hooks/useWorkspace'
-import { useWorkspaceIdState } from '@app/hooks/useWorkspaceIdAtom'
+import { useWorkspace } from '@app/hooks/useWorkspace'
+import React from 'react'
 
 export const WorkspaceProvider: React.FC = ({ children }) => {
-  const { data: workspaces } = useWorkspaceList({ suspense: true })
-  const currentWorkspace = workspaces?.[0]
-  const [, setWorkspaceId] = useWorkspaceIdState()
+  useWorkspace()
 
-  useEffect(() => {
-    setWorkspaceId(currentWorkspace?.id ?? null)
-  }, [currentWorkspace, setWorkspaceId])
-
-  return <WorkspaceContext.Provider value={currentWorkspace}>{children}</WorkspaceContext.Provider>
+  return <>{children}</>
 }

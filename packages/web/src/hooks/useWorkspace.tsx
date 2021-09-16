@@ -1,12 +1,38 @@
-import type { Workspace } from '@app/types'
-import { useContext, createContext } from 'react'
+import { getWorkspaceList } from '@app/api'
+import { Workspace } from '@app/types'
+import { atom, selector, useRecoilValue, useSetRecoilState } from 'recoil'
 
-export const WorkspaceContext = createContext<Workspace | undefined>(undefined)
+export const WorkspaceAtom = atom<Workspace>({
+  key: 'workspace',
+  default: selector({
+    key: 'workspace/Default',
+    get: async ({ get }) => {
+      const workspaces = await getWorkspaceList()
+      return workspaces[0]
+    },
+    cachePolicy_UNSTABLE: {
+      eviction: 'most-recent'
+    }
+  })
+})
 
-export function useWorkspace() {
-  const workspace = useContext(WorkspaceContext)
-  if (!workspace) {
-    throw new Error('no workspace')
+export const WorkspaceIdAtom = selector<string | null>({
+  key: 'workspaceId',
+  get: ({ get }) => {
+    const workspace = get(WorkspaceAtom)
+    return workspace?.id ?? null
   }
+})
+
+export const useSetWorkspaceState = () => {
+  return useSetRecoilState(WorkspaceAtom)
+}
+
+export const useWorkspace = () => {
+  const workspace = useRecoilValue(WorkspaceAtom)
   return workspace
+}
+
+export const useWorkspaceId = () => {
+  return useRecoilValue(WorkspaceIdAtom)
 }

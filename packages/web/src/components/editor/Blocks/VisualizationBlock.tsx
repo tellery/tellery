@@ -5,32 +5,30 @@ import {
   IconCommonLock,
   IconCommonMore,
   IconCommonRefresh,
+  IconCommonSetting,
   IconCommonSql,
   IconCommonUnlock,
   IconMenuDelete,
   IconMenuDownload,
   IconMenuDuplicate,
-  IconMiscNoResult,
-  IconVisualizationSetting
+  IconMiscNoResult
 } from '@app/assets/icons'
 import IconButton from '@app/components/kit/IconButton'
 import { MenuItemDivider } from '@app/components/MenuItemDivider'
-// import { MenuItem } from '@app/components/MenuItem'
-// import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { RefreshButton } from '@app/components/RefreshButton'
 import { TippySingletonContextProvider } from '@app/components/TippySingletonContextProvider'
-import { Diagram } from '@app/components/v11n'
 import { charts } from '@app/components/v11n/charts'
+import { Diagram } from '@app/components/v11n/Diagram'
 import { Config, Data, Type } from '@app/components/v11n/types'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
-import { useBindHovering, useOnScreen } from '@app/hooks'
+import { useOnScreen } from '@app/hooks'
 import { useBlockSuspense, useGetSnapshot, useSnapshot, useUser } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useCommit } from '@app/hooks/useCommit'
 import { useFetchBlock } from '@app/hooks/useFetchBlock'
 import { useInterval } from '@app/hooks/useInterval'
 import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
-import { useSideBarQuestionEditor } from '@app/hooks/useSideBarQuestionEditor'
+import { useSideBarQuestionEditor, useSideBarQuestionEditorState } from '@app/hooks/useSideBarQuestionEditor'
 import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
 import { useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
@@ -44,7 +42,6 @@ import dayjs from 'dayjs'
 import download from 'downloadjs'
 import { AnimatePresence, motion } from 'framer-motion'
 import html2canvas from 'html2canvas'
-import { editor } from 'monaco-editor'
 import React, {
   forwardRef,
   memo,
@@ -61,7 +58,7 @@ import DetectableOverflow from 'react-detectable-overflow'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { useMeasure } from 'react-use'
+import { useHoverDirty, useMeasure } from 'react-use'
 import { Menu, MenuButton, MenuItem, MenuStateReturn, useMenuState } from 'reakit'
 import invariant from 'tiny-invariant'
 import { BlockingUI } from '../BlockBase/BlockingUIBlock'
@@ -102,7 +99,7 @@ const useVisualizationBlockInstructionsProvider = (block: Editor.VisualizationBl
   const instructions = useMemo(
     () => ({
       openMenu: () => {
-        questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
+        questionEditor.open({ blockId: block.id, storyId: block.storyId! })
       },
       restoreOriginalQueryId: async () => {
         if (!fromQueryId) return
@@ -154,6 +151,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
   const fromDataAssetId = block.content?.fromDataAssetId
   const fetchBlock = useFetchBlock()
   const instructions = useVisualizationBlockInstructionsProvider(block)
+  const sidebarEditor = useSideBarQuestionEditor(block.storyId!)
 
   useImperativeHandle(ref, () => instructions, [instructions])
 
@@ -207,7 +205,9 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
 
     if (!queryId) {
       if (fromDataAssetId) {
-        createSmartQuery(fromDataAssetId)
+        createSmartQuery(fromDataAssetId).then((res) => {
+          sidebarEditor.open({ blockId: block.id, activeTab: 'Data' })
+        })
       } else {
         const newQueryBlock = createEmptyBlock({
           type: Editor.BlockType.SQL,
@@ -238,8 +238,11 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const [hoveringHandlers, hovering] = useBindHovering()
+  // const [hoveringHandlers, hovering] = useBindHovering()
+  const hovering = useHoverDirty(elementRef)
+
   const { small } = useBlockBehavior()
+  const [sideBarQuestionEditorState, setSideBarQuestionEditorState] = useSideBarQuestionEditorState(block.storyId!)
 
   return (
     <VisualizationInstructionsContext.Provider value={instructions}>
@@ -248,8 +251,38 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
           measureRef(el as unknown as HTMLDivElement)
           elementRef.current = el
         }}
-        {...hoveringHandlers()}
-        className={QuestionsBlockContainer}
+        // {...hoveringHandlers()}
+        className={cx(
+          QuestionsBlockContainer,
+          sideBarQuestionEditorState?.blockId === block.id &&
+            css`
+              :before {
+                content: ' ';
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                left: 0;
+                top: 0;
+                box-sizing: border-box;
+                border-radius: 20px;
+                border: 4px solid transparent;
+                border-color: ${ThemingVariables.colors.primary[3]};
+              }
+            `
+        )}
+        onClick={(e) => {
+          editor?.setSelectionState(null)
+          setSideBarQuestionEditorState((state) => {
+            if (state !== null) {
+              return {
+                ...state,
+                blockId: block.id
+              }
+            }
+            return state
+          })
+          e.stopPropagation()
+        }}
       >
         <React.Suspense fallback={<></>}>
           {block.content?.queryId && <QuestionBlockHeader block={block} />}
@@ -341,8 +374,13 @@ const _VisualizationBlockContent: React.FC<{
   const mutatingCount = useSnapshotMutating(queryBlock.id)
 
   useEffect(() => {
-    if (queryBlock.id && !snapshotId && (queryBlock as Editor.SQLBlock).content?.sql && mutatingCount === 0) {
-      mutateSnapshot.execute(queryBlock)
+    if (queryBlock.id && !snapshotId && mutatingCount === 0) {
+      if (
+        (queryBlock.type === Editor.BlockType.SQL && (queryBlock as Editor.SQLBlock).content?.sql) ||
+        queryBlock.type === Editor.BlockType.SmartQuery
+      ) {
+        mutateSnapshot.execute(queryBlock)
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -426,7 +464,6 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
   { snapshotId?: string; visualization?: Config<Type> }
 > = ({ snapshotId, visualization }, ref) => {
   const snapshot = useSnapshot(snapshotId)
-  const editor = useEditor()
 
   const visualizationConfig = useMemo(() => {
     // ensure snapshot data is valid
@@ -441,10 +478,6 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
     <div
       ref={ref}
       onCopy={(e) => {
-        e.stopPropagation()
-      }}
-      onClick={(e) => {
-        editor?.setSelectionState(null)
         e.stopPropagation()
       }}
       className={css`
@@ -501,7 +534,7 @@ const _QuestionBlockHeader: React.FC<{
   block: Editor.VisualizationBlock
 }> = ({ block }) => {
   const { t } = useTranslation()
-  const queryBlock = useBlockSuspense(block.content?.queryId!)
+  const queryBlock = useBlockSuspense(block.content!.queryId!)
   const isReference = queryBlock.parentId !== block.id
   const [disableTippy, setDisableTippy] = useState(true)
 
@@ -518,10 +551,18 @@ const _QuestionBlockHeader: React.FC<{
       >
         {isReference && (
           <Tippy content={t`Click to navigate to the original story`} arrow={false}>
-            <Link to={`/story/${queryBlock.storyId}#${queryBlock.parentId}`}>
+            <Link
+              replace
+              to={() => ({
+                pathname: `/story/${queryBlock.storyId}`,
+                hash: `#${queryBlock.parentId}`,
+                state: {}
+              })}
+            >
               <IconCommonBackLink
                 className={css`
                   margin-right: 5px;
+                  flex-shrink: 0;
                 `}
               />
             </Link>
@@ -531,6 +572,7 @@ const _QuestionBlockHeader: React.FC<{
           <IconCommonLock
             className={css`
               margin-right: 5px;
+              flex-shrink: 0;
             `}
           />
         )}
@@ -790,11 +832,12 @@ export const MoreDropdownSelect: React.FC<{
 
   useEffect(() => {
     setIsActive(menu.visible)
-  }, [menu, setIsActive])
+  }, [menu.visible, setIsActive])
 
   const closeMenu = useCallback(() => {
     menu.hide()
-  }, [menu])
+    setIsActive(false)
+  }, [menu, setIsActive])
 
   return (
     <>
@@ -899,7 +942,7 @@ export const MoreDropdownSelect: React.FC<{
               {canRefresh && (
                 <StyledMenuItem
                   {...menu}
-                  title={t`Refresh Query`}
+                  title={t`Refresh question`}
                   icon={<IconCommonRefresh color={ThemingVariables.colors.text[0]} />}
                   onClick={() => {
                     mutateSnapshot.execute(queryBlock)
@@ -909,8 +952,8 @@ export const MoreDropdownSelect: React.FC<{
               )}
               <StyledMenuItem
                 {...menu}
-                title={t`Visualization options`}
-                icon={<IconVisualizationSetting color={ThemingVariables.colors.text[0]} />}
+                title={t`Question settings`}
+                icon={<IconCommonSetting color={ThemingVariables.colors.text[0]} />}
                 onClick={() => {
                   sideBarQuestionEditor.open({ blockId: block.id, activeTab: 'Visualization' })
                   closeMenu()
@@ -921,7 +964,7 @@ export const MoreDropdownSelect: React.FC<{
                 title={t`Open in editor`}
                 icon={<IconCommonSql color={ThemingVariables.colors.text[0]} />}
                 onClick={() => {
-                  questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })
+                  questionEditor.open({ blockId: block.id, storyId: block.storyId! })
                   closeMenu()
                 }}
               />
@@ -1173,6 +1216,13 @@ const TitleButtonsInner: React.FC<{
   const { t } = useTranslation()
   const questionEditor = useQuestionEditor(block.storyId!)
   const sideBarQuestionEditor = useSideBarQuestionEditor(block.storyId!)
+  const isOriginalQuestion = useMemo(() => {
+    if (block.children?.length && block.content?.queryId) {
+      return block.children.indexOf(block.content.queryId) !== -1
+    }
+    return false
+  }, [block.children, block.content?.queryId])
+
   return (
     <div
       className={css`
@@ -1181,26 +1231,28 @@ const TitleButtonsInner: React.FC<{
         flex-shrink: 0;
       `}
     >
-      <TippySingletonContextProvider delay={500} arrow={false}>
+      <TippySingletonContextProvider delay={500} arrow={false} hideOnClick>
         {slim === false && (
           <>
             {block.content?.queryId && (
               <VisBlockRefereshButton className={QuestionBlockIconButton} hoverContent={t`Refresh`} block={block} />
             )}
             <IconButton
-              hoverContent={t`Visualization options`}
-              icon={IconVisualizationSetting}
+              hoverContent={t`Settings`}
+              icon={IconCommonSetting}
               color={ThemingVariables.colors.gray[5]}
               onClick={() => sideBarQuestionEditor.open({ blockId: block.id, activeTab: 'Visualization' })}
               className={QuestionBlockIconButton}
             />
-            <IconButton
-              hoverContent={t`Edit SQL`}
-              className={QuestionBlockIconButton}
-              icon={IconCommonSql}
-              color={ThemingVariables.colors.gray[5]}
-              onClick={() => questionEditor.open({ mode: 'SQL', blockId: block.id, storyId: block.storyId! })}
-            />
+            {isOriginalQuestion && (
+              <IconButton
+                hoverContent={t`Edit SQL`}
+                className={QuestionBlockIconButton}
+                icon={IconCommonSql}
+                color={ThemingVariables.colors.gray[5]}
+                onClick={() => questionEditor.open({ blockId: block.id, storyId: block.storyId! })}
+              />
+            )}
           </>
         )}
         {block.content?.queryId && (

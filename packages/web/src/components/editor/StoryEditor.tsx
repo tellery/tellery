@@ -8,6 +8,7 @@ import { useFetchBlock } from '@app/hooks/useFetchBlock'
 import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
 import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
 import { useSelectionArea } from '@app/hooks/useSelectionArea'
+import { useSetSideBarQuestionEditorState } from '@app/hooks/useSideBarQuestionEditor'
 import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
 import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
@@ -26,6 +27,7 @@ import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useClickAway, useEvent, useScrollbarWidth } from 'react-use'
+import { Button } from 'reakit'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import invariant from 'tiny-invariant'
 import {
@@ -83,7 +85,7 @@ import {
 } from './helpers'
 import { EditorContext, EditorContextInterface, useMouseMoveInEmitter } from './hooks'
 import { BlockAdminContext, useBlockAdminProvider } from './hooks/useBlockAdminProvider'
-import { useBlockHoveringState } from './hooks/useBlockHoveringState'
+import { useBlockHoveringState } from './hooks/useBlockHovering'
 import { useGetBlockLocalPreferences } from './hooks/useBlockLocalPreferences'
 import { useDebouncedDimension } from './hooks/useDebouncedDimensions'
 import { useSetPastedActions } from './hooks/usePastedActionsState'
@@ -273,7 +275,12 @@ const _StoryEditor: React.FC<{
               storyId: storyId
             })
           } else {
-            setSelectionState(null)
+            setSelectionState((current) => {
+              if (current?.type === TellerySelectionType.Block) {
+                return null
+              }
+              return current
+            })
           }
         }, 0),
       [setSelectionState, storyId]
@@ -318,11 +325,7 @@ const _StoryEditor: React.FC<{
 
     fetchBlock(blockId).then((block) => {
       if (isQueryBlock(block.type)) {
-        if (block.type === Editor.BlockType.SmartQuery) {
-          questionEditor.open({ mode: 'QUERY_BUILDER', blockId, storyId })
-        } else {
-          questionEditor.open({ mode: 'SQL', blockId, storyId })
-        }
+        questionEditor.open({ blockId, storyId })
       }
     })
     // TODO: if block not belong to this story...
@@ -722,22 +725,31 @@ const _StoryEditor: React.FC<{
           >
             <div
               className={css`
-                color: ${ThemingVariables.colors.text[1]};
+                color: ${ThemingVariables.colors.text[0]};
               `}
             >
               {t('You pasted {{count}} question', { count: originalQuestionsBlocks.length })}
             </div>
-            <IconButton
-              hoverContent={t`Create linked question`}
-              icon={IconCommonBackLink}
+            <Button
               color={ThemingVariables.colors.text[0]}
               className={css`
-                margin-left: auto;
+                margin-left: 30px;
+                margin-right: 20px;
+                border: solid 1px ${ThemingVariables.colors.gray[1]};
+                outline: none;
+                background: transparent;
+                cursor: pointer;
+                padding: 5px 15px;
+                color: ${ThemingVariables.colors.text[0]};
+                font-size: 12px;
+                line-height: 14px;
               `}
               onClick={() => {
                 linkAll()
               }}
-            />
+            >
+              Stay in sync
+            </Button>
           </div>,
           { position: 'bottom-center', autoClose: 10000 }
         )
@@ -1487,6 +1499,8 @@ const _StoryEditor: React.FC<{
     setSelectedBlocks
   ])
 
+  const setSideBarRightState = useSetSideBarQuestionEditorState(storyId)
+
   // stay
   const editorClickHandler = useCallback<React.MouseEventHandler<HTMLDivElement>>(
     (e) => {
@@ -1494,6 +1508,7 @@ const _StoryEditor: React.FC<{
       if (e.defaultPrevented) {
         return
       }
+      setSideBarRightState(null)
       const selectionState = getSelection()
       const contentRect = editorRef.current!.getBoundingClientRect()
       const x = e.clientX < contentRect.x + 100 ? contentRect.x + 101 : e.clientX
@@ -1520,7 +1535,7 @@ const _StoryEditor: React.FC<{
         }
       }
     },
-    [getSelection]
+    [getSelection, setSideBarRightState]
   )
 
   const [dimensions] = useDebouncedDimension(editorRef, 0, true)

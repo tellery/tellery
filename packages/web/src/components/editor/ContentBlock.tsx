@@ -16,7 +16,7 @@ import { DroppleableOverlay } from './DroppleableOverlay'
 import { useBlockAdmin } from './hooks/useBlockAdminProvider'
 import { BlockBehaviorConext, useBlockBehavior } from './hooks/useBlockBehavior'
 import { useBlockFormat } from './hooks/useBlockFormat'
-import { useBlockSelected } from './hooks/useBlockSelected'
+import { useBlockSelected } from './hooks/useStorySelection'
 
 function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   return (
@@ -249,6 +249,7 @@ const getBlockClassNames = (blockType: Editor.BlockType, isSelecteable: boolean)
       --text-color: ${ThemingVariables.colors.text[0]};
     `,
     'no-select',
+    'notranslate',
     isSelecteable && 'block-selectble',
     'tellery-block',
     `tellery-${blockType}-block`,

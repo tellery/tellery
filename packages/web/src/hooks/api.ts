@@ -9,7 +9,8 @@ import {
   ResourceType,
   SearchBlockResult,
   searchBlocks,
-  sqlRequest
+  sqlRequest,
+  translateSmartQuery
 } from '@app/api'
 import { isDataAssetBlock } from '@app/components/editor/Blocks/utils'
 import { useAsync } from '@app/hooks'
@@ -485,9 +486,7 @@ export const useQuestionDownstreams = (id?: string) => {
   const items = useMemo(
     () =>
       compact(
-        links?.backwardRefs
-          ?.map(({ blockId }) => blocks?.[blockId])
-          .filter((block) => block && isDataAssetBlock(block.type))
+        links?.backwardRefs.filter((link) => link.type === 'question_ref')?.map(({ blockId }) => blocks?.[blockId])
       ),
     [blocks, links?.backwardRefs]
   )
@@ -693,17 +692,7 @@ export function useTranslateSmartQuery(
   const workspace = useWorkspace()
   return useQuery<string>(
     ['connectors', 'translateSmartQuery', workspace.id, queryBuilderId, ...metricIds, JSON.stringify(dimensions)],
-    () =>
-      request
-        .post('/api/connectors/translateSmartQuery', {
-          workspaceId: workspace.id,
-          connectorId: workspace.preferences.connectorId,
-          profile: workspace.preferences.profile,
-          queryBuilderId,
-          metricIds,
-          dimensions
-        })
-        .then((res) => res.data.sql),
+    () => translateSmartQuery(workspace, queryBuilderId, metricIds, dimensions).then((res) => res.data.sql),
     { enabled: !!queryBuilderId }
   )
 }
