@@ -53,11 +53,12 @@ export const SlashCommandDropdown: React.FC<SlachCommandDropDown> = (props) => {
       setReferenceRange((_referenceRange) => {
         const range = tellerySelection2Native(selection)
         invariant(range, 'range is null')
-        if (range.getClientRects().length === 0) {
-          return range.startContainer as HTMLElement
-        } else {
-          return range
-        }
+        return range
+        // if (range.getClientRects().length === 0) {
+        //   return range.startContainer as HTMLElement
+        // } else {
+        //   return range
+        // }
       })
     } else {
       setOpen(false)
@@ -124,14 +125,14 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
   }, [currentBlock, editor, id, selection])
 
   const createOrToggleBlock = useCallback(
-    (blockType: Editor.BlockType) => (block: Editor.BaseBlock) => {
+    (options: Partial<Editor.Block>) => (block: Editor.BaseBlock) => {
       invariant(editor, 'editor is null')
       let blockId = ''
       if (isEmptyTitleBlock(block)) {
         blockId = block.id
-        editor.toggleBlockType(id, blockType, 0)
+        editor.toggleBlockType(id, options.type!, 0)
       } else {
-        const newBlock = editor.insertNewEmptyBlock(blockType, id, 'bottom')
+        const newBlock = editor.insertNewEmptyBlock(options, id, 'bottom')
         blockId = newBlock.id
         editor?.setSelectionState({
           type: TellerySelectionType.Inline,
@@ -141,7 +142,7 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
         })
       }
 
-      if (isVisualizationBlock(blockType)) {
+      if (isVisualizationBlock(options.type!)) {
         focusBlockHandler(blockId, block.storyId, true, false)
       }
 
@@ -159,42 +160,42 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
       // },
       {
         title: 'Question',
-        action: createOrToggleBlock(Editor.BlockType.Visualization),
+        action: createOrToggleBlock({ type: Editor.BlockType.Visualization }),
         icon: <IconCommonQuestion color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Heading 1',
-        action: createOrToggleBlock(Editor.BlockType.Header),
+        action: createOrToggleBlock({ type: Editor.BlockType.Header }),
         icon: <IconMenuH1 color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Heading 2',
-        action: createOrToggleBlock(Editor.BlockType.SubHeader),
+        action: createOrToggleBlock({ type: Editor.BlockType.SubHeader }),
         icon: <IconMenuH2 color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Heading 3',
-        action: createOrToggleBlock(Editor.BlockType.SubSubHeader),
+        action: createOrToggleBlock({ type: Editor.BlockType.SubSubHeader }),
         icon: <IconMenuH3 color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Checklist',
-        action: createOrToggleBlock(Editor.BlockType.Todo),
+        action: createOrToggleBlock({ type: Editor.BlockType.Todo }),
         icon: <IconMenuToDo color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Bullet List',
-        action: createOrToggleBlock(Editor.BlockType.BulletList),
+        action: createOrToggleBlock({ type: Editor.BlockType.BulletList }),
         icon: <IconMenuBulletedList color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Numbered List',
-        action: createOrToggleBlock(Editor.BlockType.NumberedList),
+        action: createOrToggleBlock({ type: Editor.BlockType.NumberedList }),
         icon: <IconMenuNumberList color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Toggle List',
-        action: createOrToggleBlock(Editor.BlockType.Toggle),
+        action: createOrToggleBlock({ type: Editor.BlockType.Toggle }),
         icon: <IconMenuToggleList color={ThemingVariables.colors.text[0]} />
       },
       // {
@@ -204,44 +205,68 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
       // },
       {
         title: 'Upload Image, Excel and CSV',
-        action: createOrToggleBlock(Editor.BlockType.File),
+        action: createOrToggleBlock({ type: Editor.BlockType.File }),
         icon: <IconMenuUpload color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Code',
-        action: createOrToggleBlock(Editor.BlockType.Code),
+        action: createOrToggleBlock({ type: Editor.BlockType.Code }),
         icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Quote',
-        action: createOrToggleBlock(Editor.BlockType.Quote),
+        action: createOrToggleBlock({ type: Editor.BlockType.Quote }),
         icon: <IconMenuQuote color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Embed',
-        action: createOrToggleBlock(Editor.BlockType.Embed),
+        action: createOrToggleBlock({ type: Editor.BlockType.Embed }),
         icon: <IconCommonLink color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Metabase (Beta)',
-        action: createOrToggleBlock(Editor.BlockType.Metabase),
+        action: createOrToggleBlock({ type: Editor.BlockType.Metabase }),
         icon: <IconCommonLink color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Line Divider',
-        action: createOrToggleBlock(Editor.BlockType.Divider),
+        action: createOrToggleBlock({ type: Editor.BlockType.Divider }),
         icon: <IconMenuDivider color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Block Equation (Beta)',
-        action: createOrToggleBlock(Editor.BlockType.Equation),
+        action: createOrToggleBlock({ type: Editor.BlockType.Equation }),
         icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Text Input',
-        action: createOrToggleBlock(Editor.BlockType.Control),
+        action: createOrToggleBlock({
+          type: Editor.BlockType.Control,
+          content: { type: 'text' } as any
+        }),
+        icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
+      },
+      {
+        title: 'Number Input',
+        action: createOrToggleBlock({
+          type: Editor.BlockType.Control,
+          content: { type: 'number' } as any
+        }),
         icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
       }
+      // {
+      //   title: 'Date Input',
+      //   action: createOrToggleBlock({
+      //     type: Editor.BlockType.Control,
+      //     content: { type: 'date', name: '', defaultValue: '' }
+      //   }),
+      //   icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
+      // }
+      // {
+      //   title: 'Select Input',
+      //   action: createOrToggleBlock({ type: Editor.BlockType.Control },content: { type: 'select' ,name:'',defaultValue:''}),
+      //   icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
+      // }
     ].filter((item) => item.title.toLowerCase().indexOf(keyword.toLowerCase()) !== -1)
   }, [createOrToggleBlock, keyword])
 

@@ -177,7 +177,7 @@ export const BlockPopoverInner: React.FC<{ id: string; requestClose: () => void 
             e.stopPropagation()
             requestClose()
             invariant(editor, 'editor context is null')
-            const newBlock = editor?.insertNewEmptyBlock(Editor.BlockType.Text, id, 'top')
+            const newBlock = editor?.insertNewEmptyBlock({ type: Editor.BlockType.Text }, id, 'top')
             invariant(newBlock, 'block not created')
             editor?.setSelectionState({
               type: TellerySelectionType.Inline,
@@ -198,7 +198,7 @@ export const BlockPopoverInner: React.FC<{ id: string; requestClose: () => void 
 
             invariant(editor, 'editor context is null')
 
-            const newBlock = editor?.insertNewEmptyBlock(Editor.BlockType.Text, id, 'bottom')
+            const newBlock = editor?.insertNewEmptyBlock({ type: Editor.BlockType.Text }, id, 'bottom')
             invariant(newBlock, 'block not created')
             editor?.setSelectionState({
               type: TellerySelectionType.Inline,

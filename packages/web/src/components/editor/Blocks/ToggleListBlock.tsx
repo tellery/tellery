@@ -25,7 +25,7 @@ export const ToggleListBlock: BlockComponent<
     (e) => {
       e.stopPropagation()
       invariant(editor, 'editor context is null')
-      const newBlock = editor?.insertNewEmptyBlock(Editor.BlockType.Text, block.id, 'child')
+      const newBlock = editor?.insertNewEmptyBlock({ type: Editor.BlockType.Text }, block.id, 'child')
       invariant(newBlock, 'block not created')
       editor?.setSelectionState({
         type: TellerySelectionType.Inline,

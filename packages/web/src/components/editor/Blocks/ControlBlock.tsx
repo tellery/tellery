@@ -24,16 +24,6 @@ const ControlBlock: BlockComponent<
   const [variableValue, setVariableValue] = useVariable(block.storyId!, variableName)
 
   useEffect(() => {
-    if (!block.content.type) {
-      blockTranscation.updateBlockProps(block.storyId!, block.id, ['content', 'type'], 'text')
-    }
-    if (!block.content.name) {
-      blockTranscation.updateBlockProps(block.storyId!, block.id, ['content', 'name'], block.id)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  useEffect(() => {
     if (variableValue === undefined && block.content.defaultValue) {
       setVariableValue(block.content.defaultValue)
     }
@@ -44,6 +34,14 @@ const ControlBlock: BlockComponent<
       setVariableValue(value)
     },
     [setVariableValue]
+  )
+
+  const setDefaultValue = useCallback(
+    (value: unknown) => {
+      blockTranscation.updateBlockProps(block.storyId!, block.id, ['content', 'defaultValue'], value)
+      setVariableValue(value)
+    },
+    [block.id, block.storyId, blockTranscation, setVariableValue]
   )
 
   return (
@@ -65,11 +63,16 @@ const ControlBlock: BlockComponent<
           onBlur={(e) => {
             submitChange(e.currentTarget.value)
           }}
+          // value={variableValue as string}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && e.shiftKey === false) {
               e.preventDefault()
               e.stopPropagation()
               submitChange(e.currentTarget.value)
+            } else if (e.key === 'Enter' && e.shiftKey === true) {
+              e.preventDefault()
+              e.stopPropagation()
+              setDefaultValue(e.currentTarget.value)
             }
           }}
         />

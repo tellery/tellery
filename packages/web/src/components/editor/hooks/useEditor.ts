@@ -5,7 +5,7 @@ import type { SetterOrUpdater } from 'recoil'
 
 export type EditorContextInterface<BlockType> = {
   insertNewEmptyBlock: (
-    blockType: Editor.BlockType,
+    blockOptions: Partial<Editor.Block>,
     targetBlockId: string,
     direction: 'top' | 'bottom' | 'child'
   ) => Editor.BaseBlock

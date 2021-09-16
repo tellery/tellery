@@ -1,4 +1,3 @@
-import { IconCommonBackLink } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useBlockSuspense, useFetchStoryChunk } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
@@ -43,7 +42,6 @@ import {
   splitToken,
   tokenPosition2SplitedTokenPosition
 } from '.'
-import IconButton from '../kit/IconButton'
 import { ThoughtItemHeader } from '../ThoughtItem'
 import {
   isBlockHasChildren,
@@ -463,12 +461,16 @@ const _StoryEditor: React.FC<{
 
   const insertNewEmptyBlock = useCallback(
     (
-      blockType: Editor.BlockType,
+      blockOptions: Partial<Editor.Block>,
       targetBlockId: string,
       direction: 'top' | 'bottom' | 'child' = 'bottom',
       path = 'children'
     ) => {
-      const newBlock = createEmptyBlock({ type: blockType, storyId: storyId, parentId: storyId })
+      const newBlock = createEmptyBlock({
+        ...blockOptions,
+        storyId: storyId,
+        parentId: storyId
+      } as Partial<Editor.Block>)
       blockTranscations.insertBlocks(storyId, {
         blocksFragment: {
           children: [newBlock.id],
@@ -513,7 +515,7 @@ const _StoryEditor: React.FC<{
       }
       case Editor.BlockType.Divider: {
         toggleBlockType(currentBlock.id, currentBlock.type, prefixLength)
-        insertNewEmptyBlock(newType, currentBlock.id, 'top')
+        insertNewEmptyBlock({ type: newType }, currentBlock.id, 'top')
         break
       }
       default:

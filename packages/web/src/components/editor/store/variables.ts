@@ -1,5 +1,5 @@
-import { TelleryBlockAtom, TellerySnapshotAtom } from '@app/store/block'
-import type { Editor } from '@app/types'
+import { TelleryBlockAtom, TellerySnapshotAtom, TelleryStoryBlocks } from '@app/store/block'
+import { Editor } from '@app/types'
 import { BLOCK_ID_REGX, isBlockId } from '@app/utils'
 import * as math from 'mathjs'
 import { atomFamily, selectorFamily } from 'recoil'
@@ -37,9 +37,42 @@ const replaceIdsWithVariable = (formula: string) => {
   return [vriableMap, result] as [Record<string, string>, string]
 }
 
+export const StoryVariables = selectorFamily<Record<string, unknown>, string>({
+  key: 'StoryQueryVisualizationBlocksAtom',
+  get:
+    (storyId) =>
+    ({ get }) => {
+      const result: Record<string, unknown> = {}
+      const blocksMap = get(TelleryStoryBlocks(storyId))
+
+      Object.values(blocksMap).forEach((block) => {
+        if (block.type === Editor.BlockType.Control) {
+          const controlBlock = block as Editor.ControlBlock
+          result[controlBlock.content.name] = controlBlock.content.defaultValue
+        }
+      })
+
+      return result
+    },
+  cachePolicy_UNSTABLE: {
+    eviction: 'most-recent'
+  }
+})
+
 export const VariableAtomFamily = atomFamily<unknown, { storyId: string; name: string }>({
   key: 'VariableAtomFamily',
-  default: undefined
+  default: selectorFamily<unknown, { storyId: string; name: string }>({
+    key: 'VariableAtomFamily/Default',
+    get:
+      ({ storyId, name }) =>
+      async ({ get }) => {
+        const variables = get(StoryVariables(storyId))
+        return variables[name]
+      },
+    cachePolicy_UNSTABLE: {
+      eviction: 'most-recent'
+    }
+  })
 })
 
 export const FormulaSelectorFamily = selectorFamily<any, { storyId: string; formula: string }>({

@@ -48,6 +48,29 @@ export const createEmptyBlock = <T extends Editor.BaseBlock = Editor.BaseBlock>(
         }
       }
     }
+    case Editor.BlockType.Control: {
+      const controlBlock = commonParts as unknown as Editor.ControlBlock
+      const getDefaultValue = (controlType: string) => {
+        if (controlType === 'text') return ''
+        if (controlType === 'number') return 1
+        if (controlType === 'date') return new Date()
+      }
+      return {
+        ...commonParts,
+        ...{
+          content: {
+            ...commonParts.content,
+            name: id,
+            defaultValue: getDefaultValue(controlBlock.content.type)
+          },
+          format: {
+            width: DEFAULT_QUESTION_BLOCK_WIDTH,
+            aspectRatio: DEFAULT_QUESTION_BLOCK_ASPECT_RATIO,
+            ...args.format
+          }
+        }
+      }
+    }
     default: {
       return commonParts
     }
