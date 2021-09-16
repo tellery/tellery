@@ -1,6 +1,5 @@
 import {
   IconCommonArrowDropDown,
-  IconCommonArrowUpDown,
   IconCommonClose,
   IconCommonError,
   IconCommonRun,
@@ -190,7 +189,8 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
           {...tab}
           aria-label="Question Editor Tabs"
           style={{
-            backgroundColor: ThemingVariables.colors.gray[4]
+            backgroundColor: ThemingVariables.colors.gray[4],
+            paddingRight: open ? 130 : 50
           }}
           className={css`
             border-top: solid 1px ${ThemingVariables.colors.gray[1]};
@@ -236,41 +236,36 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
                 </React.Suspense>
               )
             })}
-            <div
-              className={css`
-                display: flex;
-                align-items: center;
-                position: absolute;
-                top: 0;
-                bottom: 0;
-                right: 0;
-                padding: 0 12px;
-                height: 100%;
-                background-color: ${ThemingVariables.colors.gray[2]};
-              `}
+            <Tippy
+              content={open ? 'Click to close query editor' : 'Click to open query editor'}
+              hideOnClick
+              arrow={false}
+              delay={[500, 0]}
+              duration={[500, 0]}
             >
-              <Tippy
-                content={open ? 'Click to close query editor' : 'Click to open query editor'}
-                hideOnClick
-                arrow={false}
-                delay={[500, 0]}
-                duration={[500, 0]}
-              >
-                <IconButton
-                  icon={IconCommonArrowDropDown}
-                  onClick={() => {
-                    setOpen(!open)
-                  }}
-                  style={{
-                    transform: `rotate(${open ? '0' : '180deg'})`
-                  }}
-                  className={css`
-                    margin-left: auto;
-                    transition: transform 250ms;
-                  `}
-                />
-              </Tippy>
-            </div>
+              <IconButton
+                icon={IconCommonArrowDropDown}
+                onClick={() => {
+                  setOpen(!open)
+                }}
+                style={{
+                  transform: `rotate(${open ? '0' : '180deg'})`
+                }}
+                className={css`
+                  margin-left: auto;
+                  transition: transform 250ms;
+                  display: flex;
+                  align-items: center;
+                  position: absolute;
+                  top: 0;
+                  bottom: 0;
+                  right: 0;
+                  padding: 0 12px;
+                  height: 100%;
+                  background-color: ${ThemingVariables.colors.gray[2]};
+                `}
+              />
+            </Tippy>
           </div>
         </TabList>
         {opendQuestionBlockIds.map((id) => (
