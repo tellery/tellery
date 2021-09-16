@@ -393,6 +393,16 @@ export class ConnectorManager implements IConnectorManager {
     )
     await beautyCall(this.dbtClient.pushRepo, this.dbtClient, request, this.createMetadata())
   }
+
+  async getDiffs(): Promise<number> {
+    const res = await beautyCall(
+      this.dbtClient.getDiffs,
+      this.dbtClient,
+      new Empty(),
+      this.createMetadata(),
+    )
+    return res.getCount()
+  }
 }
 
 class QueryResultTransformer extends Transform {

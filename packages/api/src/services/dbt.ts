@@ -13,7 +13,7 @@ import { LinkEntity } from '../entities/link'
 import { BlockParentType, BlockType } from '../types/block'
 import { DbtMetadata, ExportedBlockMetadata } from '../types/dbt'
 import { LinkType } from '../types/link'
-import { canUpdateWorkspaceData } from '../utils/permission'
+import { canGetWorkspaceData, canUpdateWorkspaceData } from '../utils/permission'
 
 export class DbtService {
   private permission: IPermission
@@ -49,6 +49,15 @@ export class DbtService {
     await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
     const exportedSqlBlock = await this.loadAllDbtBlockDescendent(workspaceId)
     await connectorManager.pushRepo(exportedSqlBlock)
+  }
+
+  async getDiffs(
+    connectorManager: IConnectorManager,
+    operatorId: string,
+    workspaceId: string,
+  ): Promise<number> {
+    await canGetWorkspaceData(this.permission, operatorId, workspaceId)
+    return await connectorManager.getDiffs()
   }
 
   async listCurrentDbtBlocks(workspaceId: string): Promise<BlockEntity[]> {
