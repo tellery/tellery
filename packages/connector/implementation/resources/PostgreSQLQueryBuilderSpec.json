@@ -31,5 +31,12 @@
       "byWeek": "EXTRACT(WEEK FROM ?)",
       "byDate": "DATE(?)"
     }
+  },
+  "typeConversion": {
+    "TINYINT,SMALLINT,INTEGER,BIGINT,FLOAT,REAL,DOUBLE,NUMERIC,DECIMAL": "?",
+    "CHAR,VARCHAR,LONGVARCHAR": "'?'",
+    "DATE": "DATE '?'",
+    "TIME": "TIME '?'",
+    "TIMESTAMP": "TIMESTAMP '?'"
   }
 }
