@@ -192,24 +192,40 @@ const FloatingSideBar: React.FC<{ show: boolean }> = ({ children, show }) => {
   const [resizeConfig, setResizeConfig] = useSideBarConfig()
 
   return (
-    <motion.div
-      style={{
-        width: SIDEBAR_WIDTH,
-        x: show || resizeConfig.folded === false ? 0 : -SIDEBAR_WIDTH,
-        position: resizeConfig.folded ? 'absolute' : 'relative',
-        left: resizeConfig.folded ? `${FOLDED_WIDTH}px` : `0`,
-        zIndex: resizeConfig.folded ? -1 : 0
-      }}
-      className={css`
-        height: 100%;
-        top: 0;
-        background-color: ${ThemingVariables.colors.gray[3]};
-        overflow: hidden;
-        transition: transform 250ms;
-      `}
-    >
-      {children}
-    </motion.div>
+    <>
+      <div
+        className={css`
+          position: absolute;
+          height: 100vh;
+          width: 100vw;
+          background-color: rgba(0, 0, 0, 0.4);
+          pointer-events: none;
+          z-index: -1;
+          transition: opacity 250ms;
+        `}
+        style={{
+          opacity: show ? '1' : '0'
+        }}
+      ></div>
+      <motion.div
+        style={{
+          width: SIDEBAR_WIDTH,
+          x: show || resizeConfig.folded === false ? 0 : -SIDEBAR_WIDTH,
+          position: resizeConfig.folded ? 'absolute' : 'relative',
+          left: resizeConfig.folded ? `${FOLDED_WIDTH}px` : `0`,
+          zIndex: resizeConfig.folded ? -1 : 0
+        }}
+        className={css`
+          height: 100%;
+          top: 0;
+          background-color: ${ThemingVariables.colors.gray[3]};
+          overflow: hidden;
+          transition: transform 250ms;
+        `}
+      >
+        {children}
+      </motion.div>
+    </>
   )
 }
 
