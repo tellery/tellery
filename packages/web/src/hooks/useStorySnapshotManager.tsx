@@ -3,7 +3,7 @@ import { isExecuteableBlockType } from '@app/components/editor/Blocks/utils'
 import { createTranscation } from '@app/context/editorTranscations'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useCreateSnapshot } from '@app/store/block'
-import type { Editor, Story } from '@app/types'
+import { Editor, Story } from '@app/types'
 import { blockIdGenerator } from '@app/utils'
 import dayjs from 'dayjs'
 import React, { useCallback, useContext, useEffect, useMemo } from 'react'
@@ -26,15 +26,16 @@ export const useRefreshSnapshot = () => {
     async (queryBlock: Editor.QueryBlock) => {
       const originalBlockId = queryBlock.id
       const sql = await getCompiledSQL(queryBlock.storyId!, queryBlock.id)
-      const mutationCount = queryClient
+      const mutations = queryClient
         .getMutationCache()
         .getAll()
         .filter(
           (mutation) =>
             (mutation.options.mutationKey as string)?.endsWith(originalBlockId) && mutation.state.status === 'loading'
-        ).length
-
-      if (mutationCount >= 1) return
+        )
+      mutations.forEach((mutation) => {
+        mutation.cancel()
+      })
 
       queryClient.executeMutation({
         mutationFn: sqlRequest,
@@ -150,6 +151,7 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
   useFetchStoryChunk(storyId)
   const storyBlock = useBlockSuspense<Story>(storyId)
   const resourcesBlocks = useStoryResources(storyId)
+  const queryClient = useQueryClient()
 
   const executeableQuestionBlocks = useMemo(() => {
     return resourcesBlocks.filter((block) => isExecuteableBlockType(block.type))
@@ -169,6 +171,24 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshOnInit, refreshSnapshot])
+
+  useEffect(() => {
+    for (const queryBlock of resourcesBlocks) {
+      const snapshotId = queryBlock?.content?.snapshotId
+      const blockId = queryBlock.id
+      const mutatingCount = queryClient.isMutating({
+        predicate: (mutation) => (mutation.options.mutationKey as string)?.endsWith(blockId)
+      })
+      if (blockId && !snapshotId && mutatingCount === 0) {
+        if (
+          (queryBlock.type === Editor.BlockType.SQL && (queryBlock as Editor.SQLBlock).content?.sql) ||
+          queryBlock.type === Editor.BlockType.SmartQuery
+        ) {
+          refreshSnapshot.execute(queryBlock)
+        }
+      }
+    }
+  }, [queryClient, refreshSnapshot, resourcesBlocks])
 
   const runAll = useCallback(() => {
     executeableQuestionBlocks.forEach((questionBlock: Editor.DataAssetBlock) => {

@@ -370,21 +370,6 @@ const _VisualizationBlockContent: React.FC<{
   const snapshotId = queryBlock?.content?.snapshotId
   const commit = useCommit()
 
-  const mutateSnapshot = useRefreshSnapshot()
-  const mutatingCount = useSnapshotMutating(queryBlock.id)
-
-  useEffect(() => {
-    if (queryBlock.id && !snapshotId && mutatingCount === 0) {
-      if (
-        (queryBlock.type === Editor.BlockType.SQL && (queryBlock as Editor.SQLBlock).content?.sql) ||
-        queryBlock.type === Editor.BlockType.SmartQuery
-      ) {
-        mutateSnapshot.execute(queryBlock)
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
   const visualization = block.content?.visualization
 
   // TODO: Compact code

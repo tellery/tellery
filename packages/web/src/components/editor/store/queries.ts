@@ -2,7 +2,7 @@ import { translateSmartQuery } from '@app/api'
 import { WorkspaceAtom } from '@app/hooks/useWorkspace'
 import { TelleryBlockAtom } from '@app/store/block'
 import { Editor } from '@app/types'
-import { BLOCK_ID_REGX } from '@app/utils'
+import { VARIABLE_REGEX } from '@app/utils'
 import { selectorFamily } from 'recoil'
 import { VariableAtomFamily } from './variables'
 
@@ -14,7 +14,7 @@ export const QuerySelectorFamily = selectorFamily<string, { storyId: string; que
       const queryBlock = get(TelleryBlockAtom(queryId)) as Editor.QueryBlock
       if (queryBlock.type === Editor.BlockType.SQL || queryBlock.type === Editor.BlockType.QueryBuilder) {
         const sql = (queryBlock as Editor.SQLBlock).content?.sql ?? ''
-        const replacedSql = sql.replace(BLOCK_ID_REGX, (name) => {
+        const replacedSql = sql.replace(VARIABLE_REGEX, (name) => {
           const variable = get(VariableAtomFamily({ storyId, name: name.slice(2, -2) }))
           if (variable !== undefined) {
             if (typeof variable === 'string') return `'${variable}'`
@@ -22,7 +22,6 @@ export const QuerySelectorFamily = selectorFamily<string, { storyId: string; que
           }
           return name
         })
-        console.log('replaced sql', replacedSql)
         return replacedSql
       }
       if (queryBlock.type === Editor.BlockType.SmartQuery) {

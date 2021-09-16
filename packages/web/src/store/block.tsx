@@ -130,6 +130,28 @@ export const TellerySnapshotAtom = atomFamily<Snapshot | null, string | null>({
   })
 })
 
+export const QuerySnapshotAtom = atomFamily<Snapshot | null, string | null>({
+  key: 'QuerySnapshotAtom',
+  default: selectorFamily({
+    key: 'QuerySnapshotAtom/Default',
+    get:
+      (blockId: string | null) =>
+      async ({ get }) => {
+        if (!blockId) return null
+        const queryBlock = get(TelleryBlockAtom(blockId)) as Editor.QueryBlock
+        invariant(queryBlock, 'workspaceId is null')
+        const snapshotId = queryBlock.content?.snapshotId ?? null
+        if (snapshotId) {
+          return get(TellerySnapshotAtom(snapshotId))
+        }
+        return null
+      },
+    cachePolicy_UNSTABLE: {
+      eviction: 'most-recent'
+    }
+  })
+})
+
 export const TelleryStoryBlocks = selectorFamily<Record<string, Editor.BaseBlock>, string>({
   key: 'TelleryStoryBlocks',
   get:

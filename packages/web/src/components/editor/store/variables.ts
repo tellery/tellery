@@ -1,6 +1,6 @@
-import { TelleryBlockAtom, TellerySnapshotAtom, TelleryStoryBlocks } from '@app/store/block'
+import { QuerySnapshotAtom, TelleryStoryBlocks } from '@app/store/block'
 import { Editor } from '@app/types'
-import { BLOCK_ID_REGX, isBlockId } from '@app/utils'
+import { BLOCK_ID_REGX, VARIABLE_REGEX } from '@app/utils'
 import * as math from 'mathjs'
 import { atomFamily, selectorFamily } from 'recoil'
 import invariant from 'tiny-invariant'
@@ -13,28 +13,6 @@ function* varibleNameMaker() {
     index++
     yield `${VARIABLE_PREIFX}${index}`
   }
-}
-
-const replaceIdsWithVariable = (formula: string) => {
-  let result = formula
-  const vriableMap: Record<string, string> = {}
-
-  const variableNameGen = varibleNameMaker()
-
-  while (true) {
-    const match = isBlockId(result)
-    if (match) {
-      const blockId = match[1] as string
-      const variableName = variableNameGen.next().value
-      invariant(variableName, 'variableName is falsy')
-      result = result.replace(BLOCK_ID_REGX, variableName)
-      vriableMap[variableName] = blockId
-    } else {
-      break
-    }
-  }
-
-  return [vriableMap, result] as [Record<string, string>, string]
 }
 
 export const StoryVariables = selectorFamily<Record<string, unknown>, string>({
@@ -81,25 +59,25 @@ export const FormulaSelectorFamily = selectorFamily<any, { storyId: string; form
     ({ storyId, formula }) =>
     async ({ get }) => {
       const scope: Record<string, any> = {}
-      const [variableMap, replacedFormula] = replaceIdsWithVariable(formula)
+      const variableNameGen = varibleNameMaker()
 
-      for (const variableName in variableMap) {
-        const blockId = variableMap[variableName]
-        const block = get(TelleryBlockAtom(blockId)) as Editor.SQLBlock
-
-        if (!block) return NaN
-
-        const snapshotId = block.content?.snapshotId
-        if (!snapshotId) return NaN
-
-        const snapshot = get(TellerySnapshotAtom(snapshotId))
-        if (!snapshot) return NaN
-
-        scope[variableName] = math.evaluate(JSON.stringify(snapshot.data?.records ?? [[]]))
-      }
+      const replacedVariablesFormula = formula
+        .replace(BLOCK_ID_REGX, (matchString) => {
+          const blockId = matchString.slice(2, -2)
+          const variableName = variableNameGen.next().value
+          invariant(variableName, 'variableName is falsy')
+          const snapshot = get(QuerySnapshotAtom(blockId))
+          scope[variableName] = snapshot ? math.evaluate(JSON.stringify(snapshot.data?.records ?? [[]])) : NaN
+          return variableName
+        })
+        .replace(VARIABLE_REGEX, (variableString) => {
+          const variableName = variableString.slice(2, -2)
+          scope[variableName] = get(VariableAtomFamily({ storyId, name: variableName }))
+          return variableName
+        })
 
       try {
-        const node = math.parse(replacedFormula)
+        const node = math.parse(replacedVariablesFormula)
         const code = node.compile()
         const result = code.evaluate(scope)
         return new Promise((resolve) => setTimeout(() => resolve(result), 0))
