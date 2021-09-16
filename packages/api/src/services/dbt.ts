@@ -57,7 +57,7 @@ export class DbtService {
     workspaceId: string,
   ): Promise<number> {
     await canGetWorkspaceData(this.permission, operatorId, workspaceId)
-    return await connectorManager.getDiffs()
+    return connectorManager.getDiffs()
   }
 
   async listCurrentDbtBlocks(workspaceId: string): Promise<BlockEntity[]> {
