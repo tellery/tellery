@@ -1,6 +1,6 @@
 import { IconCommonAdd, IconCommonSub } from '@app/assets/icons'
 import { setBlockTranscation } from '@app/context/editorTranscations'
-import { useBlockSuspense, useGetProfileSpec, useQuestionDownstreams, useSnapshot } from '@app/hooks/api'
+import { useBlockSuspense, useGetProfileSpec, useQuerySnapshot, useQuestionDownstreams } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
 import { ThemingVariables } from '@app/styles'
 import { Editor, Metric } from '@app/types'
@@ -22,7 +22,7 @@ import { ConfigSelect } from './v11n/components/ConfigSelect'
 export default function SideBarModeling(props: { storyId: string; blockId: string }) {
   const block = useBlockSuspense<Editor.VisualizationBlock>(props.blockId)
   const queryBlock = useBlockSuspense<Editor.QueryBlock>(block.content?.queryId!)
-  const snapshot = useSnapshot(queryBlock.content?.snapshotId)
+  const snapshot = useQuerySnapshot(props.storyId, queryBlock.id)
   const commit = useCommit()
   const setBlock = useCallback(
     (update: (block: WritableDraft<Editor.QueryBuilder>) => void) => {

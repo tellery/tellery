@@ -130,17 +130,34 @@ export const TellerySnapshotAtom = atomFamily<Snapshot | null, string | null>({
   })
 })
 
-export const QuerySnapshotAtom = atomFamily<Snapshot | null, string | null>({
-  key: 'QuerySnapshotAtom',
+export const QuerySnapshotIdAtom = atomFamily<string | null, { storyId: string | null; blockId: string | null }>({
+  key: 'QuerySnapshotIdAtom',
   default: selectorFamily({
-    key: 'QuerySnapshotAtom/Default',
+    key: 'QuerySnapshotIdAtom/Default',
     get:
-      (blockId: string | null) =>
+      ({ storyId, blockId }) =>
       ({ get }) => {
         if (!blockId) return null
         const queryBlock = get(TelleryBlockAtom(blockId)) as Editor.QueryBlock
         invariant(queryBlock, 'workspaceId is null')
         const snapshotId = queryBlock.content?.snapshotId ?? null
+        return snapshotId
+      },
+    cachePolicy_UNSTABLE: {
+      eviction: 'most-recent'
+    }
+  })
+})
+
+export const QuerySnapshotAtom = atomFamily<Snapshot | null, { storyId: string | null; blockId: string | null }>({
+  key: 'QuerySnapshotAtom',
+  default: selectorFamily({
+    key: 'QuerySnapshotAtom/Default',
+    get:
+      ({ blockId, storyId }) =>
+      ({ get }) => {
+        if (!blockId) return null
+        const snapshotId = get(QuerySnapshotIdAtom({ blockId, storyId }))
         if (snapshotId) {
           const snapshot = get(TellerySnapshotAtom(snapshotId))
           return snapshot

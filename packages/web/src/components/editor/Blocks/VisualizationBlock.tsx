@@ -22,7 +22,14 @@ import { Diagram } from '@app/components/v11n/Diagram'
 import { Config, Data, Type } from '@app/components/v11n/types'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useOnScreen } from '@app/hooks'
-import { useBlockSuspense, useGetSnapshot, useSnapshot, useUser } from '@app/hooks/api'
+import {
+  useBlockSuspense,
+  useGetSnapshot,
+  useQuerySnapshot,
+  useQuerySnapshotId,
+  useSnapshot,
+  useUser
+} from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useCommit } from '@app/hooks/useCommit'
 import { useFetchBlock } from '@app/hooks/useFetchBlock'
@@ -315,7 +322,7 @@ const _VisualizationBlockBody: React.FC<{
   return (
     <>
       <React.Suspense fallback={<></>}>
-        <QuestionBlockStatus queryId={queryId} />
+        <QuestionBlockStatus queryId={queryId} storyId={block.storyId!} />
       </React.Suspense>
 
       <motion.div
@@ -367,7 +374,7 @@ const _VisualizationBlockContent: React.FC<{
   parentType: Editor.BlockType
 }> = ({ queryId, block }) => {
   const queryBlock = useBlockSuspense<Editor.QueryBlock>(queryId)
-  const snapshotId = queryBlock?.content?.snapshotId
+  const snapshotId = useQuerySnapshotId(block.storyId!, queryId)
   const commit = useCommit()
 
   const visualization = block.content?.visualization
@@ -446,7 +453,7 @@ export const QuestionBlockButtons: React.FC<{
 
 const _QuestionBlockBody: React.ForwardRefRenderFunction<
   HTMLDivElement | null,
-  { snapshotId?: string; visualization?: Config<Type> }
+  { snapshotId?: string | null; visualization?: Config<Type> }
 > = ({ snapshotId, visualization }, ref) => {
   const snapshot = useSnapshot(snapshotId)
 
@@ -600,7 +607,8 @@ const QuestionBlockHeader = memo(_QuestionBlockHeader)
 
 const _QuestionBlockStatus: React.FC<{
   queryId: string
-}> = ({ queryId }) => {
+  storyId: string
+}> = ({ queryId, storyId }) => {
   const queryBlock = useBlockSuspense<Editor.QueryBlock>(queryId)
   const mutatingCount = useSnapshotMutating(queryBlock.id)
 
@@ -695,7 +703,7 @@ const _QuestionBlockStatus: React.FC<{
           `}
         >
           <React.Suspense fallback={<></>}>
-            <SnapshotUpdatedAt loading={loading} queryBlock={queryBlock} />
+            <SnapshotUpdatedAt loading={loading} queryBlock={queryBlock} storyId={storyId} />
           </React.Suspense>
         </div>
       </div>
@@ -707,8 +715,9 @@ const QuestionBlockStatus = memo(_QuestionBlockStatus)
 export const SnapshotUpdatedAt: React.FC<{
   loading: boolean
   queryBlock: Editor.QueryBlock
-}> = ({ loading, queryBlock }) => {
-  const snapshot = useSnapshot(queryBlock.content?.snapshotId)
+  storyId: string
+}> = ({ loading, queryBlock, storyId }) => {
+  const snapshot = useQuerySnapshot(storyId, queryBlock.id)
   const [mutatingStartTimeStamp, setMutatingStartTimeStamp] = useState(0)
   const [nowTimeStamp, setNowTimeStamp] = useState(0)
   useEffect(() => {
@@ -810,7 +819,7 @@ export const MoreDropdownSelect: React.FC<{
   const questionEditor = useQuestionEditor(block.storyId!)
   const sideBarQuestionEditor = useSideBarQuestionEditor(block.storyId!)
   const { t } = useTranslation()
-  const mutateSnapshot = useRefreshSnapshot()
+  const mutateSnapshot = useRefreshSnapshot(block.storyId!)
   const canRefresh = !readonly && isExecuteableBlockType(queryBlock.type)
   const menu = useMenuState({ unstable_fixed: true, modal: true, animated: true })
   const blockTranscations = useBlockTranscations()
@@ -1179,7 +1188,7 @@ const VisBlockRefereshButton: React.FC<{
 }> = ({ block, hoverContent, className }) => {
   const dataAssetBlock = useBlockSuspense(block.content!.queryId!)
   const { readonly } = useBlockBehavior()
-  const mutateSnapshot = useRefreshSnapshot()
+  const mutateSnapshot = useRefreshSnapshot(block.storyId!)
   const mutatingCount = useSnapshotMutating(dataAssetBlock.id)
   const loading = mutatingCount !== 0
   return !readonly && isExecuteableBlockType(dataAssetBlock.type) ? (

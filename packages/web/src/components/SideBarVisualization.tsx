@@ -9,7 +9,7 @@ import {
   IconVisualizationNumber
 } from '@app/assets/icons'
 import { setBlockTranscation } from '@app/context/editorTranscations'
-import { useBlockSuspense, useSnapshot } from '@app/hooks/api'
+import { useBlockSuspense, useQuerySnapshot, useSnapshot } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
@@ -37,7 +37,8 @@ export default function SideBarVisualization<T extends Type = Type>(props: { sto
   const config = block.content?.visualization
   const chart = useChart(config?.type || Type.TABLE)
   const queryBlock = useBlockSuspense<Editor.QueryBlock>(block.content?.queryId!)
-  const snapshot = useSnapshot(queryBlock.content?.snapshotId)
+  const snapshot = useQuerySnapshot(props.storyId, queryBlock.id)
+
   const commit = useCommit()
   const setBlock = useCallback(
     (update: (block: WritableDraft<Editor.VisualizationBlock>) => void) => {

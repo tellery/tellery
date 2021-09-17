@@ -1,7 +1,7 @@
 import { IconCommonError, IconCommonRefresh, IconMiscNoResult } from '@app/assets/icons'
 import { charts } from '@app/components/v11n/charts'
 import { Config, Type } from '@app/components/v11n/types'
-import { useSnapshot } from '@app/hooks/api'
+import { useQuerySnapshotId, useSnapshot } from '@app/hooks/api'
 import { useInterval } from '@app/hooks/useInterval'
 import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
 import { ThemingVariables } from '@app/styles'
@@ -65,8 +65,8 @@ const VisualizationBlockContent: React.FC<{
   blockFormat: BlockFormatInterface
 }> = ({ block, blockFormat }) => {
   const queryBlock = block
-  const snapshotId = queryBlock?.content?.snapshotId
-  const mutateSnapshot = useRefreshSnapshot()
+  const snapshotId = useQuerySnapshotId(block.storyId!, block.id)
+  const mutateSnapshot = useRefreshSnapshot(block.storyId!)
   const mutatingCount = useSnapshotMutating(queryBlock.id)
 
   useEffect(() => {
@@ -81,7 +81,7 @@ const VisualizationBlockContent: React.FC<{
   return (
     <>
       <QuestionBlockHeader setTitleEditing={() => {}} titleEditing={false} block={block} queryBlock={queryBlock} />
-      <QuestionBlockStatus snapshotId={snapshotId} block={block} queryBlock={queryBlock} />
+      {snapshotId && <QuestionBlockStatus snapshotId={snapshotId} block={block} queryBlock={queryBlock} />}
       <motion.div
         style={{
           paddingTop: blockFormat.paddingTop
@@ -94,11 +94,13 @@ const VisualizationBlockContent: React.FC<{
           min-height: 100px;
         `}
       >
-        <QuestionBlockBody
-          ref={contentRef}
-          snapshotId={snapshotId}
-          visualization={(block as Editor.VisualizationBlock).content?.visualization}
-        />
+        {snapshotId && (
+          <QuestionBlockBody
+            ref={contentRef}
+            snapshotId={snapshotId}
+            visualization={(block as Editor.VisualizationBlock).content?.visualization}
+          />
+        )}
       </motion.div>
       <div
         className={css`

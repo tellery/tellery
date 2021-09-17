@@ -1,6 +1,6 @@
 import { IconCommonAdd, IconCommonSub } from '@app/assets/icons'
 import { setBlockTranscation } from '@app/context/editorTranscations'
-import { useBlockSuspense, useGetProfileSpec, useSnapshot } from '@app/hooks/api'
+import { useBlockSuspense, useGetProfileSpec, useQuerySnapshot, useSnapshot } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
 import { useRefreshSnapshot } from '@app/hooks/useStorySnapshotManager'
 import { ThemingVariables } from '@app/styles'
@@ -20,13 +20,13 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
   const block = useBlockSuspense<Editor.VisualizationBlock>(props.blockId)
   const smartQueryBlock = useBlockSuspense<Editor.SmartQueryBlock>(block.content?.queryId!)
   const queryBuilderBlock = useBlockSuspense<Editor.QueryBuilder>(smartQueryBlock.content?.queryBuilderId)
-  const snapshot = useSnapshot(queryBuilderBlock?.content?.snapshotId)
+  const snapshot = useQuerySnapshot(props.storyId, queryBuilderBlock.id)
   const { data: spec } = useGetProfileSpec()
   const [metricVisible, setMetricVisible] = useState(false)
   const [dimensionVisible, setDimensionVisible] = useState(false)
   const { metricIds, dimensions } = smartQueryBlock.content
   const commit = useCommit()
-  const mutateSnapshot = useRefreshSnapshot()
+  const mutateSnapshot = useRefreshSnapshot(props.storyId)
   const setSmartQueryBlock = useCallback(
     (update: (block: WritableDraft<Editor.SmartQueryBlock>) => void) => {
       const oldBlock = smartQueryBlock

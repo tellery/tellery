@@ -2,12 +2,13 @@ import { sqlRequest } from '@app/api'
 import { isExecuteableBlockType } from '@app/components/editor/Blocks/utils'
 import { createTranscation } from '@app/context/editorTranscations'
 import { useWorkspace } from '@app/hooks/useWorkspace'
-import { useCreateSnapshot } from '@app/store/block'
+import { QuerySnapshotIdAtom, useCreateSnapshot } from '@app/store/block'
 import { Editor, Story } from '@app/types'
 import { blockIdGenerator } from '@app/utils'
 import dayjs from 'dayjs'
 import React, { useCallback, useContext, useEffect, useMemo } from 'react'
 import { useIsMutating, useQueryClient } from 'react-query'
+import { useRecoilCallback } from 'recoil'
 import invariant from 'tiny-invariant'
 import { useBlockSuspense, useFetchStoryChunk } from './api'
 import { useCommit } from './useCommit'
@@ -15,108 +16,115 @@ import { useGetCompiledSQL } from './useCompiledQuery'
 import { useStoryPermissions } from './useStoryPermissions'
 import { useStoryResources } from './useStoryResources'
 
-export const useRefreshSnapshot = () => {
+export const useRefreshSnapshot = (storyId: string) => {
   const commit = useCommit()
   const workspace = useWorkspace()
   const queryClient = useQueryClient()
   const createSnapshot = useCreateSnapshot()
   const getCompiledSQL = useGetCompiledSQL()
 
-  const execute = useCallback(
-    async (queryBlock: Editor.QueryBlock) => {
-      const originalBlockId = queryBlock.id
-      const sql = await getCompiledSQL(queryBlock.storyId!, queryBlock.id)
-      const mutations = queryClient
-        .getMutationCache()
-        .getAll()
-        .filter(
-          (mutation) =>
-            (mutation.options.mutationKey as string)?.endsWith(originalBlockId) && mutation.state.status === 'loading'
-        )
-      mutations.forEach((mutation) => {
-        mutation.cancel()
-      })
+  const execute = useRecoilCallback(
+    ({ set, reset }) =>
+      async (queryBlock: Editor.QueryBlock) => {
+        const originalBlockId = queryBlock.id
+        const { sql, isTemp } = await getCompiledSQL(storyId, queryBlock.id)
+        const mutations = queryClient
+          .getMutationCache()
+          .getAll()
+          .filter(
+            (mutation) =>
+              (mutation.options.mutationKey as string)?.endsWith(originalBlockId) && mutation.state.status === 'loading'
+          )
+        mutations.forEach((mutation) => {
+          mutation.cancel()
+        })
 
-      queryClient.executeMutation({
-        mutationFn: sqlRequest,
-        variables: {
-          workspaceId: workspace.id,
-          sql,
-          questionId: originalBlockId,
-          connectorId: workspace.preferences.connectorId!,
-          profile: workspace.preferences.profile!
-        },
-        mutationKey: ['story', queryBlock.storyId, queryBlock.id, originalBlockId].join('/'),
-        onSuccess: async (data) => {
-          if (typeof data !== 'object' || data.errMsg) {
-            // const snapshotId = questionBlock.content!.snapshotId
-            commit({
-              storyId: queryBlock.storyId!,
-              transcation: createTranscation({
-                operations: [
-                  {
-                    cmd: 'update',
-                    id: originalBlockId,
-                    path: ['content', 'lastRunAt'],
-                    table: 'block',
-                    args: Date.now()
-                  },
-                  {
-                    cmd: 'update',
-                    id: originalBlockId,
-                    path: ['content', 'error'],
-                    table: 'block',
-                    args: data.errMsg ?? data
-                  }
-                ]
-              })
-            })
-            return
-          }
-          const snapshotId = blockIdGenerator()
-          await createSnapshot({
-            snapshotId,
+        queryClient.executeMutation({
+          mutationFn: sqlRequest,
+          variables: {
+            workspaceId: workspace.id,
+            sql,
             questionId: originalBlockId,
-            sql: sql,
-            data: data,
-            workspaceId: workspace.id
-          })
-          commit({
-            storyId: queryBlock.storyId!,
-            transcation: createTranscation({
-              operations: [
-                {
-                  cmd: 'update',
-                  id: originalBlockId,
-                  path: ['content', 'lastRunAt'],
-                  table: 'block',
-                  args: Date.now()
-                },
-                {
-                  cmd: 'update',
-                  id: originalBlockId,
-                  path: ['content', 'error'],
-                  table: 'block',
-                  args: ''
-                },
-                {
-                  cmd: 'update',
-                  id: originalBlockId,
-                  path: ['content', 'snapshotId'],
-                  table: 'block',
-                  args: snapshotId
-                }
-              ]
+            connectorId: workspace.preferences.connectorId!,
+            profile: workspace.preferences.profile!
+          },
+          mutationKey: ['story', queryBlock.storyId, queryBlock.id, originalBlockId].join('/'),
+          onSuccess: async (data) => {
+            if (typeof data !== 'object' || data.errMsg) {
+              // const snapshotId = questionBlock.content!.snapshotId
+              commit({
+                storyId: queryBlock.storyId!,
+                transcation: createTranscation({
+                  operations: [
+                    {
+                      cmd: 'update',
+                      id: originalBlockId,
+                      path: ['content', 'lastRunAt'],
+                      table: 'block',
+                      args: Date.now()
+                    },
+                    {
+                      cmd: 'update',
+                      id: originalBlockId,
+                      path: ['content', 'error'],
+                      table: 'block',
+                      args: data.errMsg ?? data
+                    }
+                  ]
+                })
+              })
+              return
+            }
+            const snapshotId = blockIdGenerator()
+            await createSnapshot({
+              snapshotId,
+              questionId: originalBlockId,
+              sql: sql,
+              data: data,
+              workspaceId: workspace.id
             })
-          })
-        }
-      })
-    },
+            if (isTemp) {
+              set(QuerySnapshotIdAtom({ storyId, blockId: queryBlock.id }), snapshotId)
+            } else {
+              reset(QuerySnapshotIdAtom({ storyId, blockId: queryBlock.id }))
+              commit({
+                storyId: storyId!,
+                transcation: createTranscation({
+                  operations: [
+                    {
+                      cmd: 'update',
+                      id: originalBlockId,
+                      path: ['content', 'lastRunAt'],
+                      table: 'block',
+                      args: Date.now()
+                    },
+                    {
+                      cmd: 'update',
+                      id: originalBlockId,
+                      path: ['content', 'error'],
+                      table: 'block',
+                      args: ''
+                    },
+                    {
+                      cmd: 'update',
+                      id: originalBlockId,
+                      path: ['content', 'snapshotId'],
+                      table: 'block',
+                      args: snapshotId
+                    }
+                  ]
+                })
+              })
+            }
+          }
+        })
+      },
     [
       commit,
       createSnapshot,
       getCompiledSQL,
       queryClient,
+      storyId,
       workspace.id,
       workspace.preferences.connectorId,
       workspace.preferences.profile
@@ -159,7 +167,7 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
 
   const refreshOnInit = storyBlock?.format?.refreshOnOpen
   const permissions = useStoryPermissions(storyId)
-  const refreshSnapshot = useRefreshSnapshot()
+  const refreshSnapshot = useRefreshSnapshot(storyId)
 
   useEffect(() => {
     if (refreshOnInit && permissions.canWrite) {

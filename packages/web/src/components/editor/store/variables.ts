@@ -39,20 +39,22 @@ export const StoryVariables = selectorFamily<Record<string, unknown>, string>({
   }
 })
 
+export const VariableAtomFamilyDefault = selectorFamily<unknown, { storyId: string; name: string }>({
+  key: 'VariableAtomFamily/Default',
+  get:
+    ({ storyId, name }) =>
+    async ({ get }) => {
+      const variables = get(StoryVariables(storyId))
+      return variables[name]
+    },
+  cachePolicy_UNSTABLE: {
+    eviction: 'most-recent'
+  }
+})
+
 export const VariableAtomFamily = atomFamily<unknown, { storyId: string; name: string }>({
   key: 'VariableAtomFamily',
-  default: selectorFamily<unknown, { storyId: string; name: string }>({
-    key: 'VariableAtomFamily/Default',
-    get:
-      ({ storyId, name }) =>
-      async ({ get }) => {
-        const variables = get(StoryVariables(storyId))
-        return variables[name]
-      },
-    cachePolicy_UNSTABLE: {
-      eviction: 'most-recent'
-    }
-  })
+  default: VariableAtomFamilyDefault
 })
 
 export const FormulaSelectorFamily = selectorFamily<any, { storyId: string; formula: string }>({
@@ -68,7 +70,7 @@ export const FormulaSelectorFamily = selectorFamily<any, { storyId: string; form
           const blockId = matchString.slice(2, -2)
           const variableName = variableNameGen.next().value
           invariant(variableName, 'variableName is falsy')
-          const snapshot = get(QuerySnapshotAtom(blockId))
+          const snapshot = get(QuerySnapshotAtom({ storyId, blockId }))
           scope[variableName] = snapshot ? math.evaluate(JSON.stringify(snapshot.data?.records ?? [[]])) : NaN
           return variableName
         })

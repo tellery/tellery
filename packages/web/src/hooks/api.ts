@@ -30,7 +30,14 @@ import {
 } from 'react-query'
 import { useRecoilCallback, useRecoilValue, useRecoilValueLoadable, waitForAll } from 'recoil'
 import invariant from 'tiny-invariant'
-import { blockUpdater, TelleryBlockAtom, TellerySnapshotAtom, TelleryUserAtom } from '../store/block'
+import {
+  blockUpdater,
+  QuerySnapshotAtom,
+  QuerySnapshotIdAtom,
+  TelleryBlockAtom,
+  TellerySnapshotAtom,
+  TelleryUserAtom
+} from '../store/block'
 import { useBatchQueries } from './useBatchQueries'
 
 export type User = {
@@ -445,6 +452,18 @@ export const useSnapshot = (id: string | null = null) => {
   //   enabled: !!id,
   //   keepPreviousData: true
   // })
+}
+
+export const useQuerySnapshotId = (storyId: string, queryId: string) => {
+  const atom = useRecoilValue(QuerySnapshotIdAtom({ storyId, blockId: queryId }))
+
+  return atom
+}
+
+export const useQuerySnapshot = (storyId: string, queryId: string) => {
+  const atom = useRecoilValue(QuerySnapshotAtom({ storyId, blockId: queryId }))
+
+  return atom
 }
 
 export const useGetSnapshot = () => {
