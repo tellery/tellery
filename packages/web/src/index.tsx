@@ -13,7 +13,7 @@ import { env } from './env'
 import './i18n'
 import Stats from 'stats.js'
 
-import Tracker from '@asayerio/tracker'
+import Tracker from '@openreplay/tracker'
 
 env.DEV && debug.enable('tellery:*')
 
@@ -41,7 +41,7 @@ const initStats = () => {
 env.DEV && initStats()
 if (env.ASAYERIO_PROJECTID) {
   const tracker = new Tracker({
-    projectID: env.ASAYERIO_PROJECTID
+    projectKey: env.ASAYERIO_PROJECTID
   })
   tracker.start()
 }
