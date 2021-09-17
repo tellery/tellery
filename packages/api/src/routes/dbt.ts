@@ -31,6 +31,14 @@ class PushRepoRequest {
   connectorId!: string
 }
 
+class GetDiffsRequest {
+  @IsDefined()
+  workspaceId!: string
+
+  @IsDefined()
+  connectorId!: string
+}
+
 async function generateKeyPair(ctx: Context) {
   const payload = plainToClass(GenerateKeyPairRequest, ctx.request.body)
   await validate(ctx, payload)
@@ -63,10 +71,23 @@ async function pushRepo(ctx: Context) {
   ctx.body = {}
 }
 
+async function getDiffs(ctx: Context) {
+  const payload = plainToClass(GetDiffsRequest, ctx.request.body)
+  await validate(ctx, payload)
+  const user = mustGetUser(ctx)
+  const { workspaceId, connectorId } = payload
+  const manager = await getIConnectorManagerFromDB(workspaceId, connectorId)
+  const count = await dbtService.getDiffs(manager, user.id, payload.workspaceId)
+  ctx.body = {
+    count,
+  }
+}
+
 const router = new Router()
 
 router.post('/generateKeyPair', generateKeyPair)
 router.post('/pullRepo', pullRepo)
 router.post('/pushRepo', pushRepo)
+router.post('/getDiffs', getDiffs)
 
 export default router

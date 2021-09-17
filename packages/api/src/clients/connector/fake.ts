@@ -95,4 +95,8 @@ export class FakeManager implements IConnectorManager {
   async pushRepo(_blocks: ExportedBlockMetadata[]): Promise<void> {
     return
   }
+
+  async getDiffs(): Promise<number> {
+    return 0
+  }
 }

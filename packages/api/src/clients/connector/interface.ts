@@ -88,4 +88,9 @@ export interface IConnectorManager {
    * @param blocks blocks that are descendance of dbtBlocks
    */
   pushRepo(blocks: ExportedBlockMetadata[]): Promise<void>
+
+  /**
+   * get count of diffs between the local master branch and the remote master branch.
+   */
+  getDiffs(): Promise<number>
 }
