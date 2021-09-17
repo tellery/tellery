@@ -61,7 +61,19 @@ export const _EditorPopoverContent = (props: PopoverProps) => {
       {
         name: 'preventOverflow',
         enabled: true,
-        options: { boundary: document.getElementsByTagName('main')[0], padding: 10 }
+        options: {
+          boundary: document.getElementsByTagName('main')[0],
+          altAxis: true,
+          altBoundary: true,
+          padding: 10
+        }
+      },
+      {
+        name: 'flip',
+        options: {
+          altBoundary: false,
+          fallbackPlacements: ['left']
+        }
       }
     ]
   })
