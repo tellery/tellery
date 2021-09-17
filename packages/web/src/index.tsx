@@ -13,8 +13,6 @@ import { env } from './env'
 import './i18n'
 import Stats from 'stats.js'
 
-import Tracker from '@openreplay/tracker'
-
 env.DEV && debug.enable('tellery:*')
 
 dayjs.extend(relativeTime)
@@ -39,12 +37,7 @@ const initStats = () => {
 }
 
 env.DEV && initStats()
-if (env.ASAYERIO_PROJECTID) {
-  const tracker = new Tracker({
-    projectKey: env.ASAYERIO_PROJECTID
-  })
-  tracker.start()
-}
+
 // Sentry.init({
 //   dsn: env.SENTRY_DSN,
 //   beforeSend(event) {
