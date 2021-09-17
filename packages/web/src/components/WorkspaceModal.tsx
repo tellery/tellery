@@ -3,6 +3,7 @@ import { WorkspaceMembers } from '@app/components/WorkspaceMembers'
 import { WorkspacePreferences } from '@app/components/WorkspacePreferences'
 import { useOnClickOutside } from '@app/hooks'
 import { ThemingVariables } from '@app/styles'
+import { PopoverMotionVariants } from '@app/styles/animations'
 import { css, cx } from '@emotion/css'
 import { motion } from 'framer-motion'
 import React, { useRef, useState } from 'react'
@@ -27,10 +28,11 @@ export function WorkspaceModal(props: ModalProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.25 }}
-      exit={{ opacity: 0 }}
+      initial={'inactive'}
+      animate={'active'}
+      exit={'inactive'}
+      transition={{ type: 'ease' }}
+      variants={PopoverMotionVariants.fade}
       className={css`
         position: fixed;
         top: 0;

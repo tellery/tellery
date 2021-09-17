@@ -2,6 +2,7 @@ import UserAccount from '@app/components/UserAccount'
 import { useOnClickOutside } from '@app/hooks'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { ThemingVariables } from '@app/styles'
+import { PopoverMotionVariants } from '@app/styles/animations'
 import { css, cx } from '@emotion/css'
 import { motion } from 'framer-motion'
 import { useRef, useState } from 'react'
@@ -20,10 +21,11 @@ export function UserModal(props: { onClose(): void }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.25 }}
-      exit={{ opacity: 0 }}
+      initial={'inactive'}
+      animate={'active'}
+      exit={'inactive'}
+      transition={{ type: 'ease' }}
+      variants={PopoverMotionVariants.fade}
       className={css`
         position: fixed;
         top: 0;

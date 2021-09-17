@@ -136,13 +136,14 @@ export const QuerySnapshotAtom = atomFamily<Snapshot | null, string | null>({
     key: 'QuerySnapshotAtom/Default',
     get:
       (blockId: string | null) =>
-      async ({ get }) => {
+      ({ get }) => {
         if (!blockId) return null
         const queryBlock = get(TelleryBlockAtom(blockId)) as Editor.QueryBlock
         invariant(queryBlock, 'workspaceId is null')
         const snapshotId = queryBlock.content?.snapshotId ?? null
         if (snapshotId) {
-          return get(TellerySnapshotAtom(snapshotId))
+          const snapshot = get(TellerySnapshotAtom(snapshotId))
+          return snapshot
         }
         return null
       },

@@ -13,21 +13,22 @@ import { useSideBarConfig } from '@app/hooks/useSideBarConfig'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { omniboxShowState } from '@app/store'
 import { ThemingVariables } from '@app/styles'
+import { PopoverMotionVariants } from '@app/styles/animations'
 import { css, cx } from '@emotion/css'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useUpdateAtom } from 'jotai/utils'
 import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
-import Avatar from './Avatar'
 import { useClickAway } from 'react-use'
+import Avatar from './Avatar'
 import { MainSideBarTabHeader } from './MainSideBarTabHeader'
 import { SideBarAllStoriesSection } from './SideBarAllStoriesSection'
 import { SideBarPinnedStoriesSection } from './SideBarPinnedStoriesSection'
 import { SideBarThoughtsSection } from './SideBarThoughtsSection'
+import { TippySingletonContextProvider } from './TippySingletonContextProvider'
 import { UserModal } from './UserModal'
 import { WorkspaceModal } from './WorkspaceModal'
-import { TippySingletonContextProvider } from './TippySingletonContextProvider'
 
 const FOLDED_WIDTH = 68
 const SIDEBAR_WIDTH = 274
@@ -179,7 +180,7 @@ const SideBarContent: React.FC = () => {
           </TippySingletonContextProvider>
         </div>
       </div>
-      <FloatingSideBar show={!!activeSideBarTab}>
+      <FloatingSideBar show={!!activeSideBarTab} close={closeSideBar}>
         {activeSideBarTab && SideBarContents[activeSideBarTab].content}
       </FloatingSideBar>
 
@@ -188,25 +189,32 @@ const SideBarContent: React.FC = () => {
   )
 }
 
-const FloatingSideBar: React.FC<{ show: boolean }> = ({ children, show }) => {
+const FloatingSideBar: React.FC<{ show: boolean; close: Function }> = ({ children, show, close }) => {
   const [resizeConfig, setResizeConfig] = useSideBarConfig()
 
   return (
     <>
-      <div
-        className={css`
-          position: absolute;
-          height: 100vh;
-          width: 100vw;
-          background-color: rgba(0, 0, 0, 0.4);
-          pointer-events: none;
-          z-index: -1;
-          transition: opacity 250ms;
-        `}
-        style={{
-          opacity: show ? '1' : '0'
-        }}
-      ></div>
+      <AnimatePresence>
+        {show && (
+          <motion.div
+            className={css`
+              position: absolute;
+              height: 100vh;
+              width: 100vw;
+              background-color: rgba(0, 0, 0, 0.4);
+              z-index: -1;
+            `}
+            initial={'inactive'}
+            animate={'active'}
+            exit={'inactive'}
+            transition={{ type: 'ease' }}
+            variants={PopoverMotionVariants.fade}
+            onClick={() => {
+              close()
+            }}
+          ></motion.div>
+        )}
+      </AnimatePresence>
       <motion.div
         style={{
           width: SIDEBAR_WIDTH,

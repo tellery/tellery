@@ -26,9 +26,11 @@ export const StoryVariables = selectorFamily<Record<string, unknown>, string>({
       Object.values(blocksMap).forEach((block) => {
         if (block.type === Editor.BlockType.Control) {
           const controlBlock = block as Editor.ControlBlock
-          result[controlBlock.content.name] = controlBlock.content.defaultValue
+          result[controlBlock.content.name] = controlBlock.content.defaultValue ?? null
         }
       })
+
+      // console.log('control story variables', result)
 
       return result
     },
