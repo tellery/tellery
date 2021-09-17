@@ -1,10 +1,9 @@
 import { request, updateUser, userConfirm, userGenerate, userLogin, userLogout } from '@app/api'
 import type { User } from '@app/hooks/api'
 import invariant from 'tiny-invariant'
-import { createContext, useCallback, useContext, useState } from 'react'
+import { createContext, useCallback, useContext, useState, useEffect } from 'react'
 import { useQuery } from 'react-query'
 import { useLocation } from 'react-router-dom'
-import { useEffect } from 'react-router/node_modules/@types/react'
 import { tracker } from '@app/utils/openReplay'
 
 export function useProvideAuth() {
