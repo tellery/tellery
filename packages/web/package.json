@@ -123,7 +123,7 @@
     "@types/lodash": "^4.14.172",
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.9.1",
-    "@types/numeral": "^2.0.1",
+    "@types/numeral": "^2.0.2",
     "@types/papaparse": "^5.2.6",
     "@types/react": "^17.0.20",
     "@types/react-calendar": "^3.4.3",
