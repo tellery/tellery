@@ -498,10 +498,10 @@ async function importFromFile(ctx: Context) {
 
   const manager = await getIConnectorManagerFromDB(workspaceId, connectorId)
 
-  const correspondingUrl = (await storageService.objectProxy(user.id, workspaceId, key, {
+  const { body: correspondingUrl } = await storageService.objectProxy(user.id, workspaceId, key, {
     skipPermissionCheck: true,
     acquireUrlOnly: true,
-  })) as string
+  })
   if (!correspondingUrl) {
     throw StorageError.notSupportImport()
   }
@@ -510,7 +510,7 @@ async function importFromFile(ctx: Context) {
     manager,
     user.id,
     workspaceId,
-    correspondingUrl,
+    correspondingUrl as string,
     database,
     collection,
     schema,

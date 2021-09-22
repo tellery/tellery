@@ -37,13 +37,19 @@ export class StorageService {
     workspaceId: string,
     fileKey: string,
     opts: { skipPermissionCheck?: boolean; acquireUrlOnly?: boolean } = {},
-  ): Promise<string | FileBody | null> {
+  ): Promise<{
+    maxAge: number
+    body: string | FileBody | null
+  }> {
     const { skipPermissionCheck = false, acquireUrlOnly = false } = opts
     if (!skipPermissionCheck) {
       await canGetWorkspaceData(this.permission, operatorId, workspaceId)
     }
     if (acquireUrlOnly && this.objectStorage.storageType !== 'REDIRECT') {
-      return null
+      return {
+        maxAge: 0,
+        body: null,
+      }
     }
     return this.objectStorage.proxy(fileKey)
   }

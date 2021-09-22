@@ -68,11 +68,21 @@ function getTemporaryUrl(fileKey: string, opts: { ttl?: number } = {}): string {
   )}`
 }
 
-async function proxy(fileKey: string): Promise<string> {
+async function proxy(fileKey: string): Promise<{
+  maxAge: number
+  body: string
+}> {
   if (ossConfig.cdn) {
-    return `${ossConfig.cdn}/${fileKey}`
+    return {
+      maxAge: 60 * 60 * 24 * 30 * 12,
+      body: `${ossConfig.cdn}/${fileKey}`,
+    }
+  } else {
+    return {
+      maxAge: 60 * 60 * 24 * 7,
+      body: getTemporaryUrl(fileKey),
+    }
   }
-  return getTemporaryUrl(fileKey)
 }
 
 export { provision, getTemporaryUrl, proxy, storageType }

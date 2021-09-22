@@ -61,11 +61,20 @@ function getTemporaryUrl(fileKey: string, opts: { ttl?: number } = {}): string {
   return url
 }
 
-async function proxy(fileKey: string): Promise<string> {
+async function proxy(fileKey: string): Promise<{
+  maxAge: number
+  body: string
+}> {
   if (s3Config.cdn) {
-    return `${s3Config.cdn}/${fileKey}`
+    return {
+      maxAge: 60 * 60 * 24 * 30 * 12,
+      body: `${s3Config.cdn}/${fileKey}`,
+    }
   }
-  return getTemporaryUrl(fileKey)
+  return {
+    maxAge: 60 * 60 * 24 * 7,
+    body: getTemporaryUrl(fileKey),
+  }
 }
 
 export { provision, getTemporaryUrl, proxy, storageType }

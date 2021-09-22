@@ -21,8 +21,14 @@ function provision(provisionRequest: ProvisionRequest): ProvisionBody {
   }
 }
 
-function proxy(fileKey: string): Promise<FileBody | null> {
-  return selfhostedStorage.fetchFile(fileKey)
+async function proxy(fileKey: string): Promise<{
+  maxAge: number
+  body: FileBody | null
+}> {
+  return {
+    maxAge: 60 * 60 * 24 * 30 * 12,
+    body: await selfhostedStorage.fetchFile(fileKey),
+  }
 }
 
 export { provision, proxy, storageType }

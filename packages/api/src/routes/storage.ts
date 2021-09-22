@@ -43,12 +43,16 @@ async function getFile(ctx: Context) {
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
   const { workspaceId, fileKey } = payload
-  const fetchedObject = await storageService.objectProxy(user.id, workspaceId, fileKey)
+  const { maxAge, body: fetchedObject } = await storageService.objectProxy(
+    user.id,
+    workspaceId,
+    fileKey,
+  )
   if (!fetchedObject) {
     ctx.throw(404)
   }
   ctx.set({
-    'Cache-Control': 'public, max-age=31104000',
+    'Cache-Control': `public, max-age=${maxAge}`,
   })
   if (fetchedObject instanceof Object) {
     const { content, contentType } = fetchedObject
