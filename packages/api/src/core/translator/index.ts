@@ -40,10 +40,22 @@ const partialQueryPattern = new RegExp(
   'gi',
 )
 
+function withLimit(sql: string, limit: number): string {
+  const match = sql.toLowerCase().match(/limit \d+/i)
+  if (match) {
+    return sql
+  }
+  return `${sql}\nLIMIT ${limit}`
+}
+
 /**
  * Assist param to an executable statement
  */
-async function translate(sql: string, opts: Record<string, unknown>): Promise<string> {
+async function translate(
+  sql: string,
+  opts: Record<string, unknown>,
+  limit = 1000,
+): Promise<string> {
   const graph = await buildGraph(sql, opts)
 
   // check if the graph is valid
@@ -51,7 +63,7 @@ async function translate(sql: string, opts: Record<string, unknown>): Promise<st
     throw CyclicTransclusionError.new()
   }
 
-  return buildSqlFromGraph(graph)
+  return withLimit(buildSqlFromGraph(graph), limit)
 }
 
 /**

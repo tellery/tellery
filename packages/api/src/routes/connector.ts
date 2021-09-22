@@ -450,7 +450,7 @@ async function execute(ctx: Context) {
     const payload = plainToClass(ExecuteSqlRequest, ctx.request.body)
     await validate(ctx, payload)
     const user = mustGetUser(ctx)
-    const { workspaceId, connectorId, sql, maxRow, questionId } = payload
+    const { workspaceId, connectorId, sql, maxRow = 1000, questionId } = payload
 
     const manager = await getIConnectorManagerFromDB(workspaceId, connectorId)
 
@@ -460,7 +460,7 @@ async function execute(ctx: Context) {
       workspaceId,
     )
 
-    const assembledSql = await translate(sql, { queryBuilderSpec })
+    const assembledSql = await translate(sql, { queryBuilderSpec }, maxRow)
 
     const identifier = nanoid()
 

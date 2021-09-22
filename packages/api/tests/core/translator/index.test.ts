@@ -53,12 +53,12 @@ test('translate', async (t) => {
   })
   const sql = `select * from {{${sqlBlockId} as t1}} left join {{${dbtBlockId} as t2}}`
 
-  const sqlBody = await translate(sql, {})
+  const sqlBody = await translate(sql, {}, 500)
 
   stringCompare(
     t,
     sqlBody,
-    `WITH t1 AS ( select * from order_x ), t2 AS ( SELECT * from table2 ) select * from t1 left join t2`,
+    `WITH t1 AS ( select * from order_x ), t2 AS ( SELECT * from table2 ) select * from t1 left join t2 LIMIT 500`,
   )
   await getRepository(BlockEntity).delete([sqlBlockId, dbtBlockId])
 })
@@ -89,7 +89,7 @@ test('translate duplicate references', async (t) => {
   stringCompare(
     t,
     sqlBody,
-    `WITH t1 AS ( select * from order_x ), t2 AS ( select * from order_x ) select * from t1 left join t2`,
+    `WITH t1 AS ( select * from order_x ), t2 AS ( select * from order_x ) select * from t1 left join t2 LIMIT 1000`,
   )
   await getRepository(BlockEntity).delete([sqlBlockId])
 })
@@ -191,4 +191,18 @@ test('buildSqlFromGraph', async (t) => {
     sqlStack,
     'WITH t1 AS ( WITH t2 AS ( WITH t3 AS ( WITH RECURSIVE result AS ( SELECT id, children FROM blocks WHERE id = a UNION ALL SELECT origin.id, origin.children FROM result JOIN blocks origin ON origin.id = ANY(result.children)) updateSql ) select * from t3 ) select * from t2 ) select * from t1',
   )
+})
+
+test('withLimit', async (t) => {
+  const sql = 'select * from test'
+  stringCompare(t, await translate(sql, {}), 'select * from test LIMIT 1000')
+
+  const sql2 = 'select * from test'
+  stringCompare(t, await translate(sql2, {}, 10), 'select * from test LIMIT 10')
+
+  const sql3 = 'select * from test limit 20'
+  stringCompare(t, await translate(sql3, {}, 10), 'select * from test limit 20')
+
+  const sql4 = 'select * from test LIMIT 20'
+  stringCompare(t, await translate(sql4, {}, 10), 'select * from test LIMIT 20')
 })
