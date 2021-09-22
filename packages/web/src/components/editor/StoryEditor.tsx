@@ -325,27 +325,28 @@ const _StoryEditor: React.FC<{
       if (isQueryBlock(block.type)) {
         questionEditor.open({ blockId, storyId })
       }
-    })
-    // TODO: if block not belong to this story...
-    blockAdminValue.getBlockInstanceById(blockId).then(({ wrapperElement, blockRef }) => {
-      const scrollContainer = editorRef.current?.parentElement
+      const scrollToBlockId = isQueryBlock(block.type) ? block.parentId : block.id
+      // TODO: if block not belong to this story...
+      blockAdminValue.getBlockInstanceById(scrollToBlockId).then(({ wrapperElement, blockRef }) => {
+        const scrollContainer = editorRef.current?.parentElement
 
-      invariant(scrollContainer, 'scrollContainer is falsy')
+        invariant(scrollContainer, 'scrollContainer is falsy')
 
-      setTimeout(() => {
-        scrollIntoView(wrapperElement, {
-          scrollMode: 'if-needed',
-          behavior: 'smooth',
-          block: 'center',
-          inline: 'nearest',
-          boundary: scrollContainer
-        })
-        if (openMenu) {
-          blockRef.current.openMenu()
-        }
-      }, 100)
-      // TODO: use a highlight animation
-      setSelectedBlocks([blockId as string])
+        setTimeout(() => {
+          scrollIntoView(wrapperElement, {
+            scrollMode: 'if-needed',
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'nearest',
+            boundary: scrollContainer
+          })
+          if (openMenu) {
+            blockRef.current.openMenu()
+          }
+        }, 100)
+        // TODO: use a highlight animation
+        setSelectedBlocks([scrollToBlockId as string])
+      })
     })
   }, [
     blockAdminValue,

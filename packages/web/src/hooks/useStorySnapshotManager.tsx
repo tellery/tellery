@@ -187,7 +187,7 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
       const mutatingCount = queryClient.isMutating({
         predicate: (mutation) => (mutation.options.mutationKey as string)?.endsWith(blockId)
       })
-      if (blockId && !snapshotId && mutatingCount === 0) {
+      if (blockId && !snapshotId && mutatingCount === 0 && !queryBlock.content?.error) {
         if (
           (queryBlock.type === Editor.BlockType.SQL && (queryBlock as Editor.SQLBlock).content?.sql) ||
           queryBlock.type === Editor.BlockType.SmartQuery
