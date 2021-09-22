@@ -2,7 +2,6 @@ import type { AxiosError } from 'axios'
 import { debounce } from 'lodash'
 import { MutableRefObject, RefObject, useCallback, useEffect, useRef, useState } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
-import { useKeyPress } from 'react-use'
 import { useHover } from 'react-use-gesture'
 import { ReactEventHandlers } from 'react-use-gesture/dist/types'
 import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect'
@@ -56,7 +55,22 @@ interface OpenStoryOpetions {
 
 export const useOpenStory = () => {
   const history = useHistory()
-  const [openInNewTab] = useKeyPress((e) => e.ctrlKey || e.metaKey)
+  const [openInNewTab, setOpenInNewTab] = useState(false)
+  useEffect(() => {
+    function down(e: KeyboardEvent) {
+      setOpenInNewTab(e.ctrlKey || e.metaKey)
+    }
+    function up() {
+      setOpenInNewTab(false)
+    }
+    window.addEventListener('keydown', down)
+    window.addEventListener('keyup', up)
+    return () => {
+      setOpenInNewTab(false)
+      window.removeEventListener('keydown', down)
+      window.removeEventListener('keyup', up)
+    }
+  }, [])
 
   const handler = useCallback(
     (storyId: string, options?: OpenStoryOpetions) => {
