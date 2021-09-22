@@ -55,15 +55,15 @@ export const SideBar = () => {
 const SideBarContents = {
   ALL_STORIES: {
     icon: IconCommonAllQuestion,
-    content: <SideBarAllStoriesSection />
+    Component: SideBarAllStoriesSection
   },
   PINNED: {
     icon: IconCommonStar,
-    content: <SideBarPinnedStoriesSection />
+    Component: SideBarPinnedStoriesSection
   },
   THOUGHTS: {
     icon: IconCommonThoughts,
-    content: <SideBarThoughtsSection />
+    Component: SideBarThoughtsSection
   }
 }
 
@@ -97,6 +97,8 @@ const SideBarContent: React.FC = () => {
     }
   }, [profile, showSettingsModal])
   const { t } = useTranslation()
+
+  const Component = activeSideBarTab ? SideBarContents[activeSideBarTab].Component : null
 
   return (
     <div
@@ -137,7 +139,7 @@ const SideBarContent: React.FC = () => {
           {Object.keys(SideBarContents).map((id) => {
             const key = id as keyof typeof SideBarContents
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { content: _content, ...rest } = SideBarContents[key]
+            const { Component: _content, ...rest } = SideBarContents[key]
             return (
               <MainSideBarTabHeader
                 key={id}
@@ -180,7 +182,7 @@ const SideBarContent: React.FC = () => {
         </div>
       </div>
       <FloatingSideBar show={!!activeSideBarTab} close={closeSideBar}>
-        {activeSideBarTab && SideBarContents[activeSideBarTab].content}
+        {Component && <Component close={closeSideBar} />}
       </FloatingSideBar>
 
       <AnimatePresence>{modalContent}</AnimatePresence>

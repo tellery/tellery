@@ -1,4 +1,4 @@
-import { IconCommonDataAsset, IconCommonDbt, IconCommonEdit, IconCommonLock } from '@app/assets/icons'
+import { IconCommonClose, IconCommonDataAsset, IconCommonDbt, IconCommonEdit, IconCommonLock } from '@app/assets/icons'
 import { useBlockSuspense } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { ThemingVariables } from '@app/styles'
@@ -8,7 +8,7 @@ import { css } from '@emotion/css'
 import React, { useCallback, useRef, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Tab, TabList, TabPanel, useTabState } from 'reakit/Tab'
-import { useSideBarQuestionEditorState } from '../hooks/useSideBarQuestionEditor'
+import { useSideBarQuestionEditor, useSideBarQuestionEditorState } from '../hooks/useSideBarQuestionEditor'
 import { ContentEditablePureText, EditableSimpleRef } from './editor/BlockBase/ContentEditablePureText'
 import IconButton from './kit/IconButton'
 import { SideBarDataAssets } from './SideBarDataAssets'
@@ -17,6 +17,8 @@ import SideBarModeling from './SideBarModeling'
 import { SideBarTabHeader } from './v11n/components/Tab'
 import SideBarSmartQuery from './SideBarSmartQuery'
 import PerfectScrollbar from 'react-perfect-scrollbar'
+import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
+import { useRightSideBarConfig } from '@app/hooks/useRightSideBarConfig'
 
 export const DefaultSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
   const tab = useTabState()
@@ -72,6 +74,7 @@ export const QuestionTitleEditor: React.FC<{ blockId: string; storyId: string }>
   )
   const [titleEditing, setTitleEditing] = useState(false)
   const contentEditableRef = useRef<EditableSimpleRef | null>(null)
+  const sideBarQuestionEditor = useSideBarQuestionEditor(storyId)
 
   return (
     <div
@@ -82,6 +85,7 @@ export const QuestionTitleEditor: React.FC<{ blockId: string; storyId: string }>
         border-bottom: 1px solid #dedede;
         align-items: center;
         justify-content: flex-start;
+        background-color: ${ThemingVariables.colors.gray[3]};
       `}
     >
       <div
@@ -151,6 +155,17 @@ export const QuestionTitleEditor: React.FC<{ blockId: string; storyId: string }>
           `}
         />
       )}
+      <IconButton
+        icon={IconCommonClose}
+        color={ThemingVariables.colors.gray[0]}
+        onClick={(e) => {
+          sideBarQuestionEditor.close()
+        }}
+        className={css`
+          margin-left: auto;
+          cursor: pointer;
+        `}
+      />
     </div>
   )
 }

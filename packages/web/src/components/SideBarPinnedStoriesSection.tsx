@@ -19,17 +19,17 @@ const SideBarLoader: React.FC = () => {
   )
 }
 
-export const SideBarPinnedStoriesSection = () => {
+export const SideBarPinnedStoriesSection: React.FC<{ close: Function }> = (props) => {
   const { data: workspaceView } = useWorkspaceView()
   const { t } = useTranslation()
   return (
     <SideBarContentLayout title={t`Favorites`}>
-      {workspaceView?.pinnedList && <WorkspaceItems storyIds={workspaceView?.pinnedList} />}
+      {workspaceView?.pinnedList && <WorkspaceItems storyIds={workspaceView?.pinnedList} onClick={props.close} />}
     </SideBarContentLayout>
   )
 }
 
-const WorkspaceItems: React.FC<{ storyIds: string[] }> = ({ storyIds }) => {
+const WorkspaceItems: React.FC<{ storyIds: string[]; onClick: Function }> = ({ storyIds, onClick }) => {
   return (
     <div
       className={css`
@@ -44,24 +44,21 @@ const WorkspaceItems: React.FC<{ storyIds: string[] }> = ({ storyIds }) => {
     >
       {storyIds.map((storyId) => (
         <React.Suspense key={storyId} fallback={<SideBarLoader />}>
-          <StoryCard blockId={storyId} />
+          <StoryCard blockId={storyId} onClick={onClick} />
         </React.Suspense>
       ))}
     </div>
   )
 }
 
-export const StoryCard: React.FC<{ blockId: string }> = ({ blockId }) => {
+export const StoryCard: React.FC<{ blockId: string; onClick: Function }> = ({ blockId, onClick }) => {
   const block = useBlockSuspense(blockId)
   const openStory = useOpenStory()
   const { data: user } = useUser(block.createdById ?? null)
   const getBlockTitle = useGetBlockTitleTextSnapshot()
-  const storyId = useStoryPathParams()
-  const isActive = storyId === blockId
 
   return (
     <div
-      data-active={isActive}
       className={css`
         background: #ffffff;
         border-radius: 10px;
@@ -80,6 +77,7 @@ export const StoryCard: React.FC<{ blockId: string }> = ({ blockId }) => {
       `}
       onClick={() => {
         openStory(block.id)
+        onClick()
       }}
     >
       <div

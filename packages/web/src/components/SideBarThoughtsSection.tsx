@@ -20,7 +20,7 @@ import { FormButton } from './kit/FormButton'
 import { MenuItemDivider } from './MenuItemDivider'
 import { SideBarContentLayout } from './SideBarContentLayout'
 
-export const SideBarThoughtsSection = () => {
+export const SideBarThoughtsSection: React.FC<{ close: Function }> = (props) => {
   const { data: thoughts, refetch: refetchThoughts } = useAllThoughts()
   const workspace = useWorkspace()
   const commit = useCommit()
@@ -154,21 +154,20 @@ export const SideBarThoughtsSection = () => {
             overflow-y: auto;
           `}
         >
-          {currentMonthThoughts && <StoryCards thoughtIds={currentMonthThoughts} />}
+          {currentMonthThoughts && <StoryCards thoughtIds={currentMonthThoughts} onClick={props.close} />}
         </div>
       </div>
     </SideBarContentLayout>
   )
 }
 
-const StoryCard: React.FC<{ thoughtId: string; date: string; isActive: boolean }> = ({ thoughtId, isActive, date }) => {
+const StoryCard: React.FC<{ thoughtId: string; date: string; onClick: Function }> = ({ thoughtId, date, onClick }) => {
   const blocksMap = useStoryBlocksMap(thoughtId)
   const thought = blocksMap?.[thoughtId]
   const openStory = useOpenStory()
 
   return (
     <div
-      data-active={isActive}
       className={css`
         background: #ffffff;
         border-radius: 10px;
@@ -187,6 +186,7 @@ const StoryCard: React.FC<{ thoughtId: string; date: string; isActive: boolean }
       `}
       onClick={() => {
         openStory(thoughtId)
+        onClick()
       }}
     >
       <div
@@ -235,8 +235,10 @@ const StoryCard: React.FC<{ thoughtId: string; date: string; isActive: boolean }
   )
 }
 
-const StoryCards: React.FC<{ thoughtIds: { id: string; date: string }[] }> = ({ thoughtIds }) => {
-  const storyId = useStoryPathParams()
+const StoryCards: React.FC<{ thoughtIds: { id: string; date: string }[]; onClick: Function }> = ({
+  thoughtIds,
+  onClick
+}) => {
   return (
     <div
       className={css`
@@ -249,9 +251,7 @@ const StoryCards: React.FC<{ thoughtIds: { id: string; date: string }[] }> = ({ 
     >
       <React.Suspense fallback={<></>}>
         {thoughtIds.map((thought) => {
-          return (
-            <StoryCard thoughtId={thought.id} key={thought.id} date={thought.date} isActive={storyId === thought.id} />
-          )
+          return <StoryCard thoughtId={thought.id} key={thought.id} date={thought.date} onClick={onClick} />
         })}
       </React.Suspense>
     </div>

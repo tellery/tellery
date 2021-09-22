@@ -1,6 +1,5 @@
 import { useOpenStory } from '@app/hooks'
 import { useStoriesSearch, useWorkspaceView } from '@app/hooks/api'
-import { useStoryPathParams } from '@app/hooks/useStoryPathParams'
 import { ThemingVariables } from '@app/styles'
 import { DEFAULT_TITLE } from '@app/utils'
 import { css } from '@emotion/css'
@@ -15,7 +14,7 @@ import { SearchInput } from './SearchInput'
 import { SideBarContentLayout } from './SideBarContentLayout'
 import type { StoryListItemValue } from './StoryListItem'
 
-export const SideBarAllStoriesSection = () => {
+export const SideBarAllStoriesSection: React.FC<{ close: Function }> = (props) => {
   const { t } = useTranslation()
   const { data: workspaceView } = useWorkspaceView()
   const [keyword, setKeyword] = useState('')
@@ -117,7 +116,14 @@ export const SideBarAllStoriesSection = () => {
             }
           }}
         >
-          {items && <StoryCards items={items} />}
+          {items && (
+            <StoryCards
+              items={items}
+              onClick={() => {
+                props.close()
+              }}
+            />
+          )}
           <div
             className={css`
               padding: 0 8px;
@@ -136,14 +142,11 @@ export const SideBarAllStoriesSection = () => {
   )
 }
 
-export const StoryCard: React.FC<{ data: StoryListItemValue }> = ({ data }) => {
+export const StoryCard: React.FC<{ data: StoryListItemValue; onClick: Function }> = ({ data, onClick }) => {
   const openStory = useOpenStory()
-  const storyId = useStoryPathParams()
-  const isActive = storyId === data.id
 
   return (
     <div
-      data-active={isActive}
       className={css`
         background: #ffffff;
         border-radius: 10px;
@@ -162,6 +165,7 @@ export const StoryCard: React.FC<{ data: StoryListItemValue }> = ({ data }) => {
       `}
       onClick={() => {
         openStory(data.id, { blockId: data.highlight?.id })
+        onClick()
       }}
     >
       <div
@@ -264,7 +268,7 @@ export const StoryCard: React.FC<{ data: StoryListItemValue }> = ({ data }) => {
   )
 }
 
-const StoryCards: React.FC<{ items: StoryListItemValue[] }> = ({ items }) => {
+const StoryCards: React.FC<{ items: StoryListItemValue[]; onClick: Function }> = ({ items, onClick }) => {
   return (
     <div
       className={css`
@@ -276,7 +280,7 @@ const StoryCards: React.FC<{ items: StoryListItemValue[] }> = ({ items }) => {
       `}
     >
       {items.map((item) => (
-        <StoryCard data={item} key={item.id} />
+        <StoryCard data={item} key={item.id} onClick={onClick} />
       ))}
     </div>
   )
