@@ -330,7 +330,6 @@ export class ConnectorManager implements IConnectorManager {
   }
 
   async importFromFile(
-    profile: string,
     url: string,
     database: string,
     collection: string,
