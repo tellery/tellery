@@ -117,7 +117,6 @@ export const pie: Chart<Type.PIE> = {
               onChange={(dimension) => {
                 onConfigChange('dimension', dimension)
               }}
-              placeholder="Please select"
             />
           </ConfigSection>
           <ConfigSection title="Value">
@@ -127,7 +126,6 @@ export const pie: Chart<Type.PIE> = {
               onChange={(measurement) => {
                 onConfigChange('measurement', measurement)
               }}
-              placeholder="Please select"
             />
           </ConfigSection>
         </div>
@@ -175,6 +173,9 @@ export const pie: Chart<Type.PIE> = {
                 onChange={(minPercentage) => {
                   onConfigChange('minPercentage', minPercentage)
                 }}
+                className={css`
+                  text-align: end;
+                `}
               />
             </ConfigItem>
           </ConfigSection>

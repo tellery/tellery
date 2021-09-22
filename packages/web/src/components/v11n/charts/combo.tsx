@@ -101,7 +101,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
       referenceYAxis: 'left',
 
       xLabel: x?.name || '',
-      xType: x ? (isNumeric(x.displayType) ? 'linear' : 'ordinal') : undefined,
+      xType: x ? (isNumeric(x.displayType) ? 'linear' : 'ordinal') : 'ordinal',
       yLabel: y?.name || '',
       yScale: 'auto',
       yRangeMin: 0,
@@ -262,10 +262,15 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                   className={css`
                     display: flex;
                     width: 100%;
+                    > button {
+                      visibility: hidden;
+                    }
+                    :hover > button {
+                      visibility: visible;
+                    }
                   `}
                 >
                   <ConfigSelect
-                    placeholder="Please select"
                     options={props.config.axises}
                     value={item}
                     onChange={(value) => {
@@ -407,7 +412,6 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
               <ConfigSelect
                 disabled={props.config.xAxises.length > 1 || !isNumeric(displayTypes[props.config.xAxises[0]])}
                 options={['linear', 'ordinal']}
-                placeholder="Please select"
                 value={props.config.xType}
                 onChange={(value) => {
                   onConfigChange('xType', value)

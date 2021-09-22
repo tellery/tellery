@@ -1,19 +1,21 @@
 import { css, cx } from '@emotion/css'
-
 import { TelleryThemeLight, ThemingVariables } from '@app/styles'
 import { SVG2DataURI } from '@app/lib/svg'
 import { IconCommonArrowDropDown } from '@app/assets/icons'
 import { upperFirst } from 'lodash'
+import { useTextWidth } from '@tag0/use-text-width'
+import { fontFamily } from '../constants'
 
 export function ConfigSelect(props: {
   className?: string
   options: string[]
   disabled?: boolean
   disables?: string[]
-  value?: string
+  value: string
   onChange(value: string): void
-  placeholder?: string
 }) {
+  const width = useTextWidth({ text: props.value, font: `12px ${fontFamily}` })
+
   return (
     <select
       disabled={props.disabled}
@@ -21,7 +23,7 @@ export function ConfigSelect(props: {
         css`
           width: 100%;
           height: 32px;
-          border: none;
+          border: solid 1px transparent;
           border-radius: 4px;
           outline: none;
           font-style: normal;
@@ -29,21 +31,20 @@ export function ConfigSelect(props: {
           font-size: 12px;
           padding: 0 26px 0 6px;
           appearance: none;
-          background-repeat: no-repeat;
-          background-position: calc(100% - 6px) 50%;
           cursor: pointer;
           text-overflow: ellipsis;
           display: block;
           color: ${props.value ? ThemingVariables.colors.text[0] : ThemingVariables.colors.text[2]};
-          background-image: ${SVG2DataURI(
-            IconCommonArrowDropDown,
-            TelleryThemeLight.colors.text[props.disabled ? 2 : 0]
-          )};
+          background-image: ${SVG2DataURI(IconCommonArrowDropDown, TelleryThemeLight.colors.text[2])};
+          background-repeat: no-repeat;
+          background-position: ${width + 10}px 50%;
           :disabled {
             cursor: not-allowed;
           }
           :not(:disabled):hover {
-            background-color: ${ThemingVariables.colors.primary[5]};
+            border: solid 1px ${ThemingVariables.colors.gray[1]};
+            background-image: ${SVG2DataURI(IconCommonArrowDropDown, TelleryThemeLight.colors.text[0])};
+            background-position: calc(100% - 6px) 50%;
           }
         `,
         props.className
@@ -53,11 +54,6 @@ export function ConfigSelect(props: {
         props.onChange(e.target.value)
       }}
     >
-      {props.placeholder ? (
-        <option value="" disabled={true}>
-          {props.placeholder}
-        </option>
-      ) : null}
       {props.options.map((option) => (
         <option key={option} value={option} disabled={props.disables?.includes(option)}>
           {upperFirst(option)}

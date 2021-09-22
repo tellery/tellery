@@ -27,9 +27,6 @@ export function SortableItem(props: { id: string; children: ReactNode }) {
         border-radius: 4px;
         height: 32px;
         width: 100%;
-        :hover > svg {
-          opacity: 1;
-        }
       `}
       ref={setNodeRef}
       style={style}
@@ -39,9 +36,13 @@ export function SortableItem(props: { id: string; children: ReactNode }) {
         color={ThemingVariables.colors.gray[0]}
         className={css`
           position: absolute;
-          left: -10px;
+          left: -20px;
+          padding: 10px;
           opacity: 0;
           cursor: grab;
+          :hover {
+            opacity: 1;
+          }
           &:active {
             cursor: grabbing;
           }

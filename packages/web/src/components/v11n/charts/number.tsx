@@ -45,7 +45,6 @@ export const number: Chart<Type.NUMBER> = {
             onChange={(field) => {
               onConfigChange('field', field)
             }}
-            placeholder="Please select"
           />
         </ConfigSection>
         <ConfigSection>

@@ -32,7 +32,7 @@ import { ConfigTab } from '../components/ConfigTab'
 import { ConfigSection } from '../components/ConfigSection'
 import { ConfigItem } from '../components/ConfigItem'
 import ConfigIconButton from '../components/ConfigIconButton'
-import { IconCommonSub } from '@app/assets/icons'
+import { IconCommonAdd, IconCommonSub } from '@app/assets/icons'
 
 const opacity = 0.15
 
@@ -76,7 +76,7 @@ export const scatter: Chart<Type.SCATTER> = {
       referenceYValue: undefined,
 
       xLabel: x?.name || '',
-      xType: x ? (isNumeric(x.displayType) ? 'linear' : 'ordinal') : undefined,
+      xType: x ? (isNumeric(x.displayType) ? 'linear' : 'ordinal') : 'ordinal',
       yLabel: y?.name || '',
       yScale: 'auto',
       yRangeMin: 0,
@@ -103,7 +103,6 @@ export const scatter: Chart<Type.SCATTER> = {
                 }
                 onConfigChange('xAxis', xAxis, 'xType', isNumeric(displayTypes[xAxis]) ? 'linear' : 'ordinal')
               }}
-              placeholder="Please select"
             />
           </ConfigSection>
           <ConfigSection title="Y axis">
@@ -113,20 +112,16 @@ export const scatter: Chart<Type.SCATTER> = {
               onChange={(yAxis) => {
                 onConfigChange('yAxis', yAxis, 'yLabel', yAxis)
               }}
-              placeholder="Please select"
             />
           </ConfigSection>
-          <ConfigSection title="Color">
-            <div
-              className={css`
-                display: flex;
-                width: 100%;
-              `}
-            >
-              <ConfigSelect
-                options={props.config.keys}
-                value={props.config.color}
-                onChange={(color) => {
+          <ConfigSection
+            title="Color"
+            right={
+              <ConfigIconButton
+                icon={IconCommonAdd}
+                disabled={!!props.config.color}
+                onClick={() => {
+                  const color = props.config.keys[0]
                   onConfigChange(
                     'color',
                     color,
@@ -139,44 +134,95 @@ export const scatter: Chart<Type.SCATTER> = {
                       : []
                   )
                 }}
-                placeholder="Please select"
               />
-              <ConfigIconButton
-                icon={IconCommonSub}
-                onClick={() => {
-                  onConfigChange('color', undefined, 'colors', [])
-                }}
+            }
+          >
+            {props.config.color ? (
+              <div
                 className={css`
-                  margin-left: 4px;
+                  display: flex;
+                  width: 100%;
+                  > button {
+                    visibility: hidden;
+                  }
+                  :hover > button {
+                    visibility: visible;
+                  }
                 `}
-              />
-            </div>
+              >
+                <ConfigSelect
+                  options={props.config.keys}
+                  value={props.config.color}
+                  onChange={(color) => {
+                    onConfigChange(
+                      'color',
+                      color,
+                      'colors',
+                      color
+                        ? Object.keys(groupBy(records, color)).map((c, index) => ({
+                            key: c,
+                            color: index
+                          }))
+                        : []
+                    )
+                  }}
+                />
+                <ConfigIconButton
+                  icon={IconCommonSub}
+                  onClick={() => {
+                    onConfigChange('color', undefined, 'colors', [])
+                  }}
+                  className={css`
+                    margin-left: 4px;
+                  `}
+                />
+              </div>
+            ) : null}
           </ConfigSection>
-          <ConfigSection title="Size">
-            <div
-              className={css`
-                display: flex;
-                width: 100%;
-              `}
-            >
-              <ConfigSelect
-                options={props.config.keys}
-                value={props.config.size}
-                onChange={(size) => {
+          <ConfigSection
+            title="Size"
+            right={
+              <ConfigIconButton
+                icon={IconCommonAdd}
+                disabled={!!props.config.size}
+                onClick={() => {
+                  const size = props.config.keys[0]
                   onConfigChange('size', size)
                 }}
-                placeholder="Please select"
               />
-              <ConfigIconButton
-                icon={IconCommonSub}
-                onClick={() => {
-                  onConfigChange('size', undefined)
-                }}
+            }
+          >
+            {props.config.size ? (
+              <div
                 className={css`
-                  margin-left: 4px;
+                  display: flex;
+                  width: 100%;
+                  > button {
+                    visibility: hidden;
+                  }
+                  :hover > button {
+                    visibility: visible;
+                  }
                 `}
-              />
-            </div>
+              >
+                <ConfigSelect
+                  options={props.config.keys}
+                  value={props.config.size}
+                  onChange={(size) => {
+                    onConfigChange('size', size)
+                  }}
+                />
+                <ConfigIconButton
+                  icon={IconCommonSub}
+                  onClick={() => {
+                    onConfigChange('size', undefined)
+                  }}
+                  className={css`
+                    margin-left: 4px;
+                  `}
+                />
+              </div>
+            ) : null}
           </ConfigSection>
         </div>
         <div>
@@ -252,7 +298,6 @@ export const scatter: Chart<Type.SCATTER> = {
               <ConfigSelect
                 disabled={!isNumeric(displayTypes[props.config.xAxis])}
                 options={['linear', 'ordinal']}
-                placeholder="Please select"
                 value={props.config.xType}
                 onChange={(value) => {
                   onConfigChange('xType', value)

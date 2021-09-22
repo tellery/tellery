@@ -252,7 +252,6 @@ function MetricConfigCreator(props: {
     <>
       <ConfigItem label="Column">
         <ConfigSelect
-          placeholder="Please select"
           options={props.fields.map(({ name }) => name)}
           disables={props.fields
             .filter((f) => getFuncs(f.type, spec?.queryBuilderSpec.aggregation).length === 0)
