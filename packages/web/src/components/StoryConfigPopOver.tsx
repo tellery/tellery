@@ -112,15 +112,12 @@ export const StoryConfigPopOver: React.FC<{
     [story, commit]
   )
 
-  const duplicateStoryHandler = useCallback(
-    async (e) => {
-      const newStoryId = blockIdGenerator()
-      await blockTranscation.duplicateStory(story.id, newStoryId)
-      openStory(newStoryId, { isAltKeyPressed: e.altKey })
-      toast.success('Story copied')
-    },
-    [blockTranscation, openStory, story.id]
-  )
+  const duplicateStoryHandler = useCallback(async () => {
+    const newStoryId = blockIdGenerator()
+    await blockTranscation.duplicateStory(story.id, newStoryId)
+    openStory(newStoryId)
+    toast.success('Story copied')
+  }, [blockTranscation, openStory, story.id])
 
   const readOnlyStatus = !!story?.permissions?.some((permission) => {
     return permission.type === 'workspace' && permission.role === 'commentator'

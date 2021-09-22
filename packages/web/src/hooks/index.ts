@@ -1,14 +1,11 @@
-import { secondaryStoryIdState } from '@app/components/editor'
 import type { AxiosError } from 'axios'
-import { useAtom } from 'jotai'
 import { debounce } from 'lodash'
 import { MutableRefObject, RefObject, useCallback, useEffect, useRef, useState } from 'react'
-import { useHistory, useLocation, useRouteMatch } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import { useKeyPress } from 'react-use'
 import { useHover } from 'react-use-gesture'
 import { ReactEventHandlers } from 'react-use-gesture/dist/types'
 import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect'
-import { useStoryPathParams } from './useStoryPathParams'
 export { useMediaQueries, useMediaQuery } from '@react-hook/media-query'
 
 export const useMounted = (): RefObject<boolean> => {
@@ -55,77 +52,24 @@ export function useDebounce(cb: Function, delay: number, leading?: boolean) {
 interface OpenStoryOpetions {
   blockId?: string
   _currentStoryId?: string
-  isAltKeyPressed?: boolean
-}
-
-export const useOpenStoryWithSecondaryEditor = () => {
-  const history = useHistory()
-  const pathStoryId = useStoryPathParams()
-
-  const matchThoughtPattern = useRouteMatch<{ id: string }>('/thought')
-  const [secondaryStoryId, setSecondaryStoryId] = useAtom(secondaryStoryIdState)
-  const [isPressed] = useKeyPress('Alt')
-  const handler = useCallback(
-    (storyId: string, options?: OpenStoryOpetions) => {
-      const { blockId, _currentStoryId, isAltKeyPressed = isPressed } = options ?? {}
-      const targetUrl = `/story/${storyId}${blockId ? `#${blockId}` : ''}`
-
-      const mainEditorStoryId = pathStoryId
-      const currentStoryId = _currentStoryId ?? mainEditorStoryId
-
-      history.push(targetUrl)
-      const isInSecondaryEditor = secondaryStoryId !== null && secondaryStoryId === currentStoryId
-
-      if (matchThoughtPattern) {
-        if ((isInSecondaryEditor && !isAltKeyPressed) || (!isInSecondaryEditor && isAltKeyPressed)) {
-          if (mainEditorStoryId !== storyId) {
-            setSecondaryStoryId(storyId)
-            return
-          }
-        } else {
-          if (secondaryStoryId !== mainEditorStoryId) {
-            history.push(targetUrl)
-            return
-          }
-        }
-      }
-
-      if (
-        mainEditorStoryId &&
-        ((isInSecondaryEditor && !isAltKeyPressed) || (!isInSecondaryEditor && isAltKeyPressed))
-      ) {
-        if (mainEditorStoryId !== storyId) {
-          setSecondaryStoryId(storyId)
-        }
-      } else {
-        if (secondaryStoryId === mainEditorStoryId && secondaryStoryId === null) {
-          history.push(targetUrl)
-        }
-        if (secondaryStoryId !== mainEditorStoryId) {
-          history.push(targetUrl)
-        }
-      }
-    },
-    [history, isPressed, matchThoughtPattern, pathStoryId, secondaryStoryId, setSecondaryStoryId]
-  )
-  return handler
 }
 
 export const useOpenStory = () => {
   const history = useHistory()
-  // const pathStoryId = useStoryPathParams()
+  const [openInNewTab] = useKeyPress((e) => e.ctrlKey || e.metaKey)
 
   const handler = useCallback(
     (storyId: string, options?: OpenStoryOpetions) => {
-      const { blockId, _currentStoryId, isAltKeyPressed } = options ?? {}
+      const { blockId } = options ?? {}
       const targetUrl = `/story/${storyId}${blockId ? `#${blockId}` : ''}`
 
-      // const mainEditorStoryId = pathStoryId
-      // const currentStoryId = _currentStoryId ?? mainEditorStoryId
-
-      history.push(targetUrl)
+      if (openInNewTab) {
+        window.open(targetUrl)
+      } else {
+        history.push(targetUrl)
+      }
     },
-    [history]
+    [history, openInNewTab]
   )
   return handler
 }

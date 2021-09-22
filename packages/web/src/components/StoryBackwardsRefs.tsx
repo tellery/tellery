@@ -12,7 +12,6 @@ import { CircularLoading } from './CircularLoading'
 import { BlockContentOverview } from './editor/BlockContentOverview'
 import { SmallStory } from './SmallStory'
 import { ToggleControl } from './ToggleControl'
-import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
 
 export const StoryBackwardsRefs = (props: { refs: Ref[]; storyId: string }) => {
   const refByStory = useMemo(() => {
@@ -114,7 +113,6 @@ export const StoryRefs = (props: {
     ]
   })
   const openStory = useOpenStory()
-  const { open: openQuestion } = useQuestionEditor(storyId)
 
   return (
     <div key={storyId} ref={setReferenceElement}>

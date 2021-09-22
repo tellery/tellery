@@ -31,12 +31,8 @@ export function OmniBox() {
   const blockTranscations = useBlockTranscations()
 
   const handleOpenStory = useCallback(
-    (storyId: string, blockId: string | undefined, alt: boolean, meta: boolean) => {
-      if (meta) {
-        window.open(`/story/${storyId}${blockId ? `#${blockId}` : ''}`, '_blank')
-      } else {
-        openStoryHandler(storyId, { blockId, isAltKeyPressed: alt })
-      }
+    (storyId: string, blockId: string | undefined) => {
+      openStoryHandler(storyId, { blockId })
     },
     [openStoryHandler]
   )
@@ -133,12 +129,12 @@ export function OmniBox() {
           router.push(`/stories?s=${keyword}`)
         } else if (item?.storyId) {
           if (item.type === ResultType.STORY) {
-            handleOpenStory(item.storyId, undefined, e.altKey, e.metaKey)
+            handleOpenStory(item.storyId, undefined)
           } else {
-            handleOpenStory(item.storyId, item.id, e.altKey, e.metaKey)
+            handleOpenStory(item.storyId, item.id)
           }
         } else if (activeIndex === activeIndexMod - 1) {
-          handleOpenStory(await handleCreateNewSotry(), undefined, e.altKey, e.metaKey)
+          handleOpenStory(await handleCreateNewSotry(), undefined)
         }
         setShow(false)
       }
@@ -297,12 +293,12 @@ export function OmniBox() {
                       setActive={() => {
                         setActiveIndex(index)
                       }}
-                      onClick={(e) => {
+                      onClick={() => {
                         if (item.storyId) {
                           if (item.type === ResultType.STORY) {
-                            handleOpenStory(item.storyId, undefined, e.altKey, e.metaKey)
+                            handleOpenStory(item.storyId, undefined)
                           } else {
-                            handleOpenStory(item.storyId, item.id, e.altKey, e.metaKey)
+                            handleOpenStory(item.storyId, item.id)
                           }
                         }
                         setShow(false)
@@ -370,8 +366,8 @@ export function OmniBox() {
             style={
               activeIndex === activeIndexMod - 1 ? { backgroundColor: ThemingVariables.colors.primary[4] } : undefined
             }
-            onClick={async (e) => {
-              handleOpenStory(await handleCreateNewSotry(), undefined, e.altKey, e.metaKey)
+            onClick={async () => {
+              handleOpenStory(await handleCreateNewSotry(), undefined)
               setShow(false)
             }}
             onMouseMove={() => {

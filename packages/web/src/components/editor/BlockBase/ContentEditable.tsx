@@ -489,8 +489,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
                 e.preventDefault()
                 if (reference[1] === 's') {
                   openStoryHandler(reference[2] as string, {
-                    _currentStoryId: block.storyId,
-                    isAltKeyPressed: e.altKey
+                    _currentStoryId: block.storyId
                   })
                 }
               }

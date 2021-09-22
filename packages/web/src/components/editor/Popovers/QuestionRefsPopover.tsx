@@ -57,8 +57,8 @@ export const _QuestionRefsPopover = (props: {
     }
   }, [open])
   const openRef = useCallback(
-    (ref: Ref, altKeyPressed: boolean) => {
-      openStoryHandler(ref.storyId, { blockId: ref.blockId, _currentStoryId: storyId, isAltKeyPressed: !altKeyPressed })
+    (ref: Ref) => {
+      openStoryHandler(ref.storyId, { blockId: ref.blockId, _currentStoryId: storyId })
       setOpen(false)
     },
     [openStoryHandler, setOpen, storyId]
@@ -88,7 +88,7 @@ export const _QuestionRefsPopover = (props: {
             })
           } else if (e.key === 'Enter') {
             if (currentStoryRef) {
-              openRef(currentStoryRef, e.altKey)
+              openRef(currentStoryRef)
             }
           }
         }}
@@ -120,9 +120,9 @@ export const _QuestionRefsPopover = (props: {
                 selected={hoveringIndex === index}
                 index={index}
                 setIndex={setHoveringIndex}
-                onClick={(e) => {
+                onClick={() => {
                   if (currentStoryRef) {
-                    openRef(refByStory[currentStoryRef.storyId][0], e.altKey)
+                    openRef(refByStory[currentStoryRef.storyId][0])
                   }
                 }}
               />

@@ -390,7 +390,7 @@ function TransclusionContentWidget(props: {
                 setVisible((old) => !old)
                 return
               }
-              openStoryHandler(block.storyId, { blockId: block.id, isAltKeyPressed: true })
+              openStoryHandler(block.storyId, { blockId: block.id })
               open({ storyId: block.storyId, blockId: block.id })
             }}
           >
