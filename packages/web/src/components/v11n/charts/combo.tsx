@@ -22,7 +22,7 @@ import {
 } from '@tellery/recharts'
 import type { Path } from 'd3-path'
 import type { CurveGenerator } from 'd3-shape'
-import { compact, head, keyBy, mapValues, sortBy, sum, tail, upperFirst } from 'lodash'
+import { compact, keyBy, mapValues, sortBy, sum, upperFirst } from 'lodash'
 import React, { MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ConfigIconButton from '../components/ConfigIconButton'
 import { ConfigInput } from '../components/ConfigInput'
@@ -114,10 +114,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
   },
 
   Configuration(props) {
-    const { yAxises, y2Axises } = props.config
-    const dimensions = props.config.dimensions || tail(props.config.xAxises)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const xAxises = props.config.dimensions ? props.config.xAxises : [head(props.config.xAxises)!]
+    const { xAxises, dimensions, yAxises, y2Axises } = props.config
     const { onConfigChange } = props
     const axises = useMemo(
       () => ({
@@ -320,8 +317,12 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
     return (
       <ConfigTab tabs={['Data', 'Display', 'Axis']}>
         <div>
-          {renderAxisSelect('X axis', 'xAxises', false)}
-          {renderAxisSelect('Dimension', 'dimensions', yAxises.length > 0 && y2Axises.length > 0)}
+          {renderAxisSelect('X axis', 'xAxises', xAxises.length > 0)}
+          {renderAxisSelect(
+            'Dimension',
+            'dimensions',
+            dimensions.length > 0 || (yAxises.length > 0 && y2Axises.length > 0)
+          )}
           {renderAxisSelect(
             'Y axis (Left)',
             'yAxises',

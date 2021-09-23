@@ -9,7 +9,8 @@ import {
   IconVisualizationNumber
 } from '@app/assets/icons'
 import { setBlockTranscation } from '@app/context/editorTranscations'
-import { useBlockSuspense, useQuerySnapshot, useSnapshot } from '@app/hooks/api'
+import { usePrevious } from '@app/hooks'
+import { useBlockSuspense, useQuerySnapshot } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
@@ -32,12 +33,42 @@ const icons = {
   [Type.NUMBER]: IconVisualizationNumber
 }
 
+const dimentionRange = {
+  [Type.TABLE]: [0, Infinity],
+  [Type.COMBO]: [1, 2],
+  [Type.LINE]: [1, 2],
+  [Type.BAR]: [1, 2],
+  [Type.AREA]: [1, 2],
+  [Type.PIE]: [1, 1],
+  [Type.SCATTER]: [1, 3],
+  [Type.NUMBER]: [1, 1]
+}
+
+const measureRange = {
+  [Type.TABLE]: [0, Infinity],
+  [Type.COMBO]: [1, Infinity],
+  [Type.LINE]: [1, Infinity],
+  [Type.BAR]: [1, Infinity],
+  [Type.AREA]: [1, Infinity],
+  [Type.PIE]: [1, Infinity],
+  [Type.SCATTER]: [2, Infinity],
+  [Type.NUMBER]: [1, Infinity]
+}
+
 export default function SideBarVisualization<T extends Type = Type>(props: { storyId: string; blockId: string }) {
   const block = useBlockSuspense<Editor.VisualizationBlock>(props.blockId)
   const config = block.content?.visualization
   const chart = useChart(config?.type || Type.TABLE)
-  const queryBlock = useBlockSuspense<Editor.QueryBlock>(block.content?.queryId!)
+  const queryBlock = useBlockSuspense<Editor.QueryBlock | Editor.SmartQueryBlock>(block.content?.queryId!)
   const snapshot = useQuerySnapshot(props.storyId, queryBlock.id)
+  const dimentions =
+    queryBlock.type === Editor.BlockType.SmartQuery
+      ? (queryBlock as Editor.SmartQueryBlock).content.dimensions
+      : undefined
+  const metrics =
+    queryBlock.type === Editor.BlockType.SmartQuery
+      ? (queryBlock as Editor.SmartQueryBlock).content.metricIds
+      : undefined
 
   const commit = useCommit()
   const setBlock = useCallback(
@@ -80,6 +111,16 @@ export default function SideBarVisualization<T extends Type = Type>(props: { sto
     },
     [setBlock]
   )
+  const previousSnapshot = usePrevious(snapshot)
+  useEffect(() => {
+    if (snapshot && !previousSnapshot) {
+      setBlock((draft) => {
+        if (draft.content) {
+          draft.content.visualization = charts[Type.TABLE].initializeConfig(snapshot.data, {})
+        }
+      })
+    }
+  }, [previousSnapshot, setBlock, snapshot])
 
   return (
     <>
@@ -92,7 +133,15 @@ export default function SideBarVisualization<T extends Type = Type>(props: { sto
           <IconButton
             key={t}
             icon={icons[t]}
-            color={t === config?.type ? ThemingVariables.colors.primary[1] : ThemingVariables.colors.gray[0]}
+            color={
+              t === config?.type
+                ? ThemingVariables.colors.primary[1]
+                : (!dimentions ||
+                    (dimentionRange[t][0] <= dimentions.length && dimentions.length <= dimentionRange[t][1])) &&
+                  (!metrics || (measureRange[t][0] <= metrics.length && metrics.length <= measureRange[t][1]))
+                ? ThemingVariables.colors.gray[0]
+                : ThemingVariables.colors.gray[2]
+            }
             className={css`
               margin: 2px;
               border-radius: 8px;
@@ -108,7 +157,7 @@ export default function SideBarVisualization<T extends Type = Type>(props: { sto
                 return
               }
               setBlock((draft) => {
-                if (draft?.content) {
+                if (draft.content) {
                   draft.content.visualization = snapshot?.data
                     ? (charts[t].initializeConfig(snapshot.data, cache) as Config<T>)
                     : undefined
