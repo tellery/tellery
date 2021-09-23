@@ -44,6 +44,17 @@ const dimentionRange = {
   [Type.NUMBER]: [1, 1]
 }
 
+const measureRange = {
+  [Type.TABLE]: [0, Infinity],
+  [Type.COMBO]: [1, Infinity],
+  [Type.LINE]: [1, Infinity],
+  [Type.BAR]: [1, Infinity],
+  [Type.AREA]: [1, Infinity],
+  [Type.PIE]: [1, Infinity],
+  [Type.SCATTER]: [2, Infinity],
+  [Type.NUMBER]: [1, Infinity]
+}
+
 export default function SideBarVisualization<T extends Type = Type>(props: { storyId: string; blockId: string }) {
   const block = useBlockSuspense<Editor.VisualizationBlock>(props.blockId)
   const config = block.content?.visualization
@@ -53,6 +64,10 @@ export default function SideBarVisualization<T extends Type = Type>(props: { sto
   const dimentions =
     queryBlock.type === Editor.BlockType.SmartQuery
       ? (queryBlock as Editor.SmartQueryBlock).content.dimensions
+      : undefined
+  const metrics =
+    queryBlock.type === Editor.BlockType.SmartQuery
+      ? (queryBlock as Editor.SmartQueryBlock).content.metricIds
       : undefined
 
   const commit = useCommit()
@@ -121,8 +136,9 @@ export default function SideBarVisualization<T extends Type = Type>(props: { sto
             color={
               t === config?.type
                 ? ThemingVariables.colors.primary[1]
-                : !dimentions ||
-                  (dimentionRange[t][0] <= dimentions.length && dimentions.length <= dimentionRange[t][1])
+                : (!dimentions ||
+                    (dimentionRange[t][0] <= dimentions.length && dimentions.length <= dimentionRange[t][1])) &&
+                  (!metrics || (measureRange[t][0] <= metrics.length && metrics.length <= measureRange[t][1]))
                 ? ThemingVariables.colors.gray[0]
                 : ThemingVariables.colors.gray[2]
             }
