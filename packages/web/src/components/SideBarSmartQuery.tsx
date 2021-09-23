@@ -1,6 +1,6 @@
 import { IconCommonAdd, IconCommonSub } from '@app/assets/icons'
 import { setBlockTranscation } from '@app/context/editorTranscations'
-import { useBlockSuspense, useGetProfileSpec, useQuerySnapshot, useSnapshot } from '@app/hooks/api'
+import { useBlockSuspense, useGetProfileSpec, useQuerySnapshot } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
 import { useRefreshSnapshot } from '@app/hooks/useStorySnapshotManager'
 import { ThemingVariables } from '@app/styles'
@@ -47,194 +47,214 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
       <ConfigSection
         title="Measures"
         right={
-          <Tippy
-            visible={metricVisible}
-            onClickOutside={() => {
-              setMetricVisible(false)
-            }}
-            interactive={true}
-            placement="left-start"
-            theme="tellery"
-            arrow={false}
-            offset={[0, 0]}
-            appendTo={document.body}
-            content={
-              <MenuWrapper>
-                {Object.entries(queryBuilderBlock.content?.metrics || {}).map(([metricId, metric]) => (
-                  <MenuItem
-                    key={metricId}
-                    title={metric.name}
-                    disabled={metric.deprecated || metricIds.includes(metricId)}
-                    onClick={() => {
-                      setSmartQueryBlock((draft) => {
-                        draft.content.metricIds = uniq([...metricIds, metricId])
-                      })
-                      setMetricVisible(false)
-                    }}
-                  />
-                ))}
-              </MenuWrapper>
-            }
-            className={css`
-              width: 100%;
-              text-align: start;
-              margin-top: 8px;
-            `}
-          >
-            <ConfigIconButton
-              icon={IconCommonAdd}
-              disabled={Object.keys(queryBuilderBlock.content?.metrics || {}).length === 0}
-              onClick={() => {
-                setMetricVisible((old) => !old)
+          Object.keys(queryBuilderBlock.content?.metrics || {}).length === 0 ? null : (
+            <Tippy
+              visible={metricVisible}
+              onClickOutside={() => {
+                setMetricVisible(false)
               }}
-            />
-          </Tippy>
-        }
-      >
-        {metricIds.map((metricId, index) =>
-          queryBuilderBlock.content?.metrics?.[metricId] ? (
-            <ConfigItem
-              key={metricId}
-              onClick={() => {
-                setSmartQueryBlock((draft) => {
-                  draft.content.metricIds = metricIds.filter((_m, i) => i !== index)
-                })
-              }}
+              interactive={true}
+              placement="left-start"
+              theme="tellery"
+              arrow={false}
+              offset={[0, 0]}
+              appendTo={document.body}
+              content={
+                <MenuWrapper>
+                  {Object.entries(queryBuilderBlock.content?.metrics || {}).map(([metricId, metric]) => (
+                    <MenuItem
+                      key={metricId}
+                      title={metric.name}
+                      disabled={metric.deprecated || metricIds.includes(metricId)}
+                      onClick={() => {
+                        setSmartQueryBlock((draft) => {
+                          draft.content.metricIds = uniq([...metricIds, metricId])
+                        })
+                        setMetricVisible(false)
+                      }}
+                    />
+                  ))}
+                </MenuWrapper>
+              }
               className={css`
+                width: 100%;
+                text-align: start;
                 margin-top: 8px;
               `}
             >
-              {queryBuilderBlock.content.metrics[metricId].name}
-            </ConfigItem>
-          ) : null
-        )}
+              <ConfigIconButton
+                icon={IconCommonAdd}
+                onClick={() => {
+                  setMetricVisible((old) => !old)
+                }}
+              />
+            </Tippy>
+          )
+        }
+      >
+        {metricIds.length
+          ? metricIds.map((metricId, index) =>
+              queryBuilderBlock.content?.metrics?.[metricId] ? (
+                <ConfigItem
+                  key={metricId}
+                  onClick={() => {
+                    setSmartQueryBlock((draft) => {
+                      draft.content.metricIds = metricIds.filter((_m, i) => i !== index)
+                    })
+                  }}
+                  className={css`
+                    margin-top: 8px;
+                  `}
+                >
+                  {queryBuilderBlock.content.metrics[metricId].name}
+                </ConfigItem>
+              ) : (
+                <ConfigItem
+                  key={metricId}
+                  onClick={() => {
+                    setSmartQueryBlock((draft) => {
+                      draft.content.metricIds = metricIds.filter((_m, i) => i !== index)
+                    })
+                  }}
+                  className={css`
+                    margin-top: 8px;
+                  `}
+                >
+                  {metricId}
+                </ConfigItem>
+              )
+            )
+          : null}
       </ConfigSection>
       <ConfigSection
         title="Dimensions"
         right={
-          <Tippy
-            visible={dimensionVisible}
-            onClickOutside={() => {
-              setDimensionVisible(false)
-            }}
-            interactive={true}
-            placement="left-start"
-            theme="tellery"
-            arrow={false}
-            offset={[0, 0]}
-            appendTo={document.body}
-            content={
-              <MenuWrapper>
-                {snapshot.data.fields.map((field, index) =>
-                  field.sqlType &&
-                  spec?.queryBuilderSpec.bucketization[field.sqlType] &&
-                  Object.keys(spec.queryBuilderSpec.bucketization[field.sqlType]).length ? (
-                    <Tippy
-                      theme="tellery"
-                      placement="left-start"
-                      arrow={false}
-                      interactive={true}
-                      offset={[-12, 10]}
-                      content={
-                        <MenuWrapper>
-                          {Object.keys(spec.queryBuilderSpec.bucketization[field.sqlType]).map((func) => (
-                            <MenuItem
-                              key={func}
-                              title={lowerCase(func)}
-                              disabled={
-                                !!dimensions.find(
-                                  (dimension) =>
-                                    dimension.fieldName === field.name &&
-                                    dimension.fieldType === field.sqlType &&
-                                    dimension.func === func
-                                )
-                              }
-                              onClick={() => {
-                                setSmartQueryBlock((draft) => {
-                                  draft.content.dimensions = uniqBy(
-                                    [
-                                      ...dimensions,
-                                      {
-                                        name: `${field.name} ${lowerCase(func)}`,
-                                        fieldName: field.name,
-                                        fieldType: field.sqlType!,
-                                        func
-                                      }
-                                    ],
-                                    (dimension) => `${dimension.name}${dimension.fieldType}${dimension.func}`
-                                  )
-                                })
-                                setDimensionVisible(false)
-                              }}
-                            />
-                          ))}
-                        </MenuWrapper>
-                      }
-                    >
-                      <MenuItem key={field.name + index} title={field.name} side={`${field.sqlType} >`} />
-                    </Tippy>
-                  ) : field.sqlType && spec?.queryBuilderSpec.bucketization[field.sqlType] ? (
-                    <MenuItem
-                      key={field.name + index}
-                      title={field.name}
-                      side={field.sqlType}
-                      disabled={
-                        !!dimensions.find(
-                          (dimension) => dimension.fieldName === field.name && dimension.fieldType === field.sqlType
-                        )
-                      }
-                      onClick={() => {
-                        setSmartQueryBlock((draft) => {
-                          draft.content.dimensions = uniqBy(
-                            [
-                              ...dimensions,
-                              {
-                                name: field.name,
-                                fieldName: field.name,
-                                fieldType: field.sqlType!
-                              }
-                            ],
-                            (dimension) => `${dimension.name}${dimension.fieldType}${dimension.func}`
-                          )
-                        })
-                        setDimensionVisible(false)
-                      }}
-                    />
-                  ) : null
-                )}
-              </MenuWrapper>
-            }
-            className={css`
-              width: 100%;
-              text-align: start;
-              margin-top: 8px;
-            `}
-          >
-            <ConfigIconButton
-              icon={IconCommonAdd}
-              disabled={snapshot.data.fields.length === 0}
-              onClick={() => {
-                setDimensionVisible((old) => !old)
+          snapshot.data.fields.length === 0 ? null : (
+            <Tippy
+              visible={dimensionVisible}
+              onClickOutside={() => {
+                setDimensionVisible(false)
               }}
-            />
-          </Tippy>
+              interactive={true}
+              placement="left-start"
+              theme="tellery"
+              arrow={false}
+              offset={[0, 0]}
+              appendTo={document.body}
+              content={
+                <MenuWrapper>
+                  {snapshot.data.fields.map((field, index) =>
+                    field.sqlType &&
+                    spec?.queryBuilderSpec.bucketization[field.sqlType] &&
+                    Object.keys(spec.queryBuilderSpec.bucketization[field.sqlType]).length ? (
+                      <Tippy
+                        theme="tellery"
+                        placement="left-start"
+                        arrow={false}
+                        interactive={true}
+                        offset={[-12, 10]}
+                        content={
+                          <MenuWrapper>
+                            {Object.keys(spec.queryBuilderSpec.bucketization[field.sqlType]).map((func) => (
+                              <MenuItem
+                                key={func}
+                                title={lowerCase(func)}
+                                disabled={
+                                  !!dimensions.find(
+                                    (dimension) =>
+                                      dimension.fieldName === field.name &&
+                                      dimension.fieldType === field.sqlType &&
+                                      dimension.func === func
+                                  )
+                                }
+                                onClick={() => {
+                                  setSmartQueryBlock((draft) => {
+                                    draft.content.dimensions = uniqBy(
+                                      [
+                                        ...dimensions,
+                                        {
+                                          name: `${field.name} ${lowerCase(func)}`,
+                                          fieldName: field.name,
+                                          fieldType: field.sqlType!,
+                                          func
+                                        }
+                                      ],
+                                      (dimension) => `${dimension.name}${dimension.fieldType}${dimension.func}`
+                                    )
+                                  })
+                                  setDimensionVisible(false)
+                                }}
+                              />
+                            ))}
+                          </MenuWrapper>
+                        }
+                      >
+                        <MenuItem key={field.name + index} title={field.name} side={`${field.sqlType} >`} />
+                      </Tippy>
+                    ) : field.sqlType && spec?.queryBuilderSpec.bucketization[field.sqlType] ? (
+                      <MenuItem
+                        key={field.name + index}
+                        title={field.name}
+                        side={field.sqlType}
+                        disabled={
+                          !!dimensions.find(
+                            (dimension) => dimension.fieldName === field.name && dimension.fieldType === field.sqlType
+                          )
+                        }
+                        onClick={() => {
+                          setSmartQueryBlock((draft) => {
+                            draft.content.dimensions = uniqBy(
+                              [
+                                ...dimensions,
+                                {
+                                  name: field.name,
+                                  fieldName: field.name,
+                                  fieldType: field.sqlType!
+                                }
+                              ],
+                              (dimension) => `${dimension.name}${dimension.fieldType}${dimension.func}`
+                            )
+                          })
+                          setDimensionVisible(false)
+                        }}
+                      />
+                    ) : null
+                  )}
+                </MenuWrapper>
+              }
+              className={css`
+                width: 100%;
+                text-align: start;
+                margin-top: 8px;
+              `}
+            >
+              <ConfigIconButton
+                icon={IconCommonAdd}
+                onClick={() => {
+                  setDimensionVisible((old) => !old)
+                }}
+              />
+            </Tippy>
+          )
         }
       >
-        {dimensions.map((dimension, index) => (
-          <ConfigItem
-            key={dimension.name + index}
-            onClick={() => {
-              setSmartQueryBlock((draft) => {
-                draft.content.dimensions = dimensions.filter((_d, i) => i !== index)
-              })
-            }}
-            className={css`
-              margin-top: 8px;
-            `}
-          >
-            {dimension.name}
-          </ConfigItem>
-        ))}
+        {dimensions.length
+          ? dimensions.map((dimension, index) => (
+              <ConfigItem
+                key={dimension.name + index}
+                onClick={() => {
+                  setSmartQueryBlock((draft) => {
+                    draft.content.dimensions = dimensions.filter((_d, i) => i !== index)
+                  })
+                }}
+                className={css`
+                  margin-top: 8px;
+                `}
+              >
+                {dimension.name}
+              </ConfigItem>
+            ))
+          : null}
       </ConfigSection>
     </>
   )

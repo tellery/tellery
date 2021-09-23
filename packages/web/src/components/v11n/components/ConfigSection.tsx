@@ -2,7 +2,7 @@ import { ThemingVariables } from '@app/styles'
 import { css, cx } from '@emotion/css'
 import { ReactNode } from 'react-router/node_modules/@types/react'
 
-export function ConfigSection(props: { title?: string; right?: ReactNode; children: ReactNode }) {
+export function ConfigSection(props: { title?: string; right?: ReactNode; children?: ReactNode }) {
   return (
     <section
       className={cx(
@@ -25,6 +25,7 @@ export function ConfigSection(props: { title?: string; right?: ReactNode; childr
             display: flex;
             align-items: center;
             justify-content: space-between;
+            filter: ${props.children ? 'none' : 'opacity(0.25)'};
           `}
         >
           <h3
