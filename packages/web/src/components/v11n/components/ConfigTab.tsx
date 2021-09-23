@@ -2,6 +2,7 @@ import { css } from '@emotion/css'
 import { Tab, TabList, TabPanel, useTabState } from 'reakit/Tab'
 import React, { ReactNode, useEffect } from 'react'
 import { SideBarTabHeader } from './Tab'
+import { ThemingVariables } from '@app/styles'
 
 export function ConfigTab(props: { tabs: string[]; tab?: string; children: ReactNode[] | ReactNode }) {
   const tabState = useTabState()
@@ -27,6 +28,7 @@ export function ConfigTab(props: { tabs: string[]; tab?: string; children: React
           overflow-x: auto;
           white-space: nowrap;
           padding-right: 16px;
+          border-bottom: 1px solid ${ThemingVariables.colors.gray[1]};
         `}
       >
         {props.tabs.map((tab) => (

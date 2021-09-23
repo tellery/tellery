@@ -46,7 +46,6 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
     <>
       <ConfigSection
         title="Measures"
-        border={false}
         right={
           <Tippy
             visible={metricVisible}

@@ -48,7 +48,6 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
       {queryBlock.type === Editor.BlockType.QueryBuilder ? (
         <ConfigSection
           title="Metrics"
-          border={false}
           right={
             <ConfigPopoverWithTabs
               tabs={['Aggregated metric', 'Custom SQL metric']}
@@ -129,7 +128,7 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
           ))}
         </ConfigSection>
       ) : (
-        <ConfigSection border={false}>
+        <ConfigSection>
           <div
             className={css`
               padding: 0 6px;
