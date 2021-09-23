@@ -9,6 +9,7 @@ import {
   IconVisualizationNumber
 } from '@app/assets/icons'
 import { setBlockTranscation } from '@app/context/editorTranscations'
+import { usePrevious } from '@app/hooks'
 import { useBlockSuspense, useQuerySnapshot } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
 import { ThemingVariables } from '@app/styles'
@@ -95,6 +96,16 @@ export default function SideBarVisualization<T extends Type = Type>(props: { sto
     },
     [setBlock]
   )
+  const previousSnapshot = usePrevious(snapshot)
+  useEffect(() => {
+    if (snapshot && !previousSnapshot) {
+      setBlock((draft) => {
+        if (draft.content) {
+          draft.content.visualization = charts[Type.TABLE].initializeConfig(snapshot.data, {})
+        }
+      })
+    }
+  }, [previousSnapshot, setBlock, snapshot])
 
   return (
     <>
@@ -130,7 +141,7 @@ export default function SideBarVisualization<T extends Type = Type>(props: { sto
                 return
               }
               setBlock((draft) => {
-                if (draft?.content) {
+                if (draft.content) {
                   draft.content.visualization = snapshot?.data
                     ? (charts[t].initializeConfig(snapshot.data, cache) as Config<T>)
                     : undefined
