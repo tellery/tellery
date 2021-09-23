@@ -247,6 +247,9 @@ function MetricConfigCreator(props: {
       }, {})
     )
   }, [field, props.metrics])
+  useEffect(() => {
+    setField(props.fields[0])
+  }, [props.fields])
 
   return (
     <>
@@ -301,7 +304,7 @@ function MetricConfigCreator(props: {
               .map(([func, name]) => ({ name, fieldName: field.name, fieldType: field.type!, func }))
               .filter(({ fieldName, fieldType, func }) => !metrics[`${fieldName}/${fieldType}/${func}`])
           )
-          setField(undefined)
+          setField(props.fields[0])
           setMap({})
         }}
         className={css`
