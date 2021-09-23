@@ -3,6 +3,7 @@ import { ThemingVariables } from '@app/styles'
 import { css } from '@emotion/css'
 import Tippy from '@tippyjs/react'
 import { ReactNode, useState } from 'react'
+import ConfigIconButton from './ConfigIconButton'
 
 export function ConfigPopover(props: { title: string; content: ReactNode; children: ReactNode }) {
   const [visible, setVisible] = useState(false)
@@ -28,7 +29,7 @@ export function ConfigPopover(props: { title: string; content: ReactNode; childr
           <div
             className={css`
               height: 48px;
-              padding: 0 16px;
+              padding: 0 10px 0 16px;
               display: flex;
               align-items: center;
               justify-content: space-between;
@@ -45,15 +46,23 @@ export function ConfigPopover(props: { title: string; content: ReactNode; childr
             >
               {props.title}
             </h3>
-            <IconCommonClose
-              onClick={() => setVisible(false)}
+            <ConfigIconButton
+              icon={IconCommonClose}
               color={ThemingVariables.colors.text[0]}
-              className={css`
-                cursor: pointer;
-              `}
+              onClick={() => setVisible(false)}
             />
           </div>
-          {props.content}
+          <div
+            className={css`
+              padding: 8px 10px;
+              > * + * {
+                margin-top: 4px;
+              }
+              border-top: 1px solid ${ThemingVariables.colors.gray[1]};
+            `}
+          >
+            {props.content}
+          </div>
         </div>
       }
     >

@@ -117,24 +117,25 @@ export const scatter: Chart<Type.SCATTER> = {
           <ConfigSection
             title="Color"
             right={
-              <ConfigIconButton
-                icon={IconCommonAdd}
-                disabled={!!props.config.color}
-                onClick={() => {
-                  const color = props.config.keys[0]
-                  onConfigChange(
-                    'color',
-                    color,
-                    'colors',
-                    color
-                      ? Object.keys(groupBy(records, color)).map((c, index) => ({
-                          key: c,
-                          color: index
-                        }))
-                      : []
-                  )
-                }}
-              />
+              props.config.color ? null : (
+                <ConfigIconButton
+                  icon={IconCommonAdd}
+                  onClick={() => {
+                    const color = props.config.keys[0]
+                    onConfigChange(
+                      'color',
+                      color,
+                      'colors',
+                      color
+                        ? Object.keys(groupBy(records, color)).map((c, index) => ({
+                            key: c,
+                            color: index
+                          }))
+                        : []
+                    )
+                  }}
+                />
+              )
             }
           >
             {props.config.color ? (
@@ -182,14 +183,15 @@ export const scatter: Chart<Type.SCATTER> = {
           <ConfigSection
             title="Size"
             right={
-              <ConfigIconButton
-                icon={IconCommonAdd}
-                disabled={!!props.config.size}
-                onClick={() => {
-                  const size = props.config.keys[0]
-                  onConfigChange('size', size)
-                }}
-              />
+              props.config.size ? null : (
+                <ConfigIconButton
+                  icon={IconCommonAdd}
+                  onClick={() => {
+                    const size = props.config.keys[0]
+                    onConfigChange('size', size)
+                  }}
+                />
+              )
             }
           >
             {props.config.size ? (

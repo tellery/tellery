@@ -31,19 +31,17 @@ export function SliceSelector(props: {
       <ConfigPopover
         title="Slice detail"
         content={
-          <ConfigSection>
-            <ConfigItem label="Color" multiline={true}>
-              <ConfigColorPicker
-                value={props.value.color}
-                onChange={(color) => {
-                  props.onChange({
-                    ...props.value,
-                    color
-                  })
-                }}
-              />
-            </ConfigItem>
-          </ConfigSection>
+          <ConfigItem label="Color" multiline={true}>
+            <ConfigColorPicker
+              value={props.value.color}
+              onChange={(color) => {
+                props.onChange({
+                  ...props.value,
+                  color
+                })
+              }}
+            />
+          </ConfigItem>
         }
       >
         <div

@@ -13,11 +13,9 @@ import {
 import { ThemingVariables } from '@app/styles'
 import { ComboShape, ComboStack, Config, Type } from '../types'
 import { ConfigSelect } from './ConfigSelect'
-import FormSwitch from '@app/components/kit/FormSwitch'
 import ConfigIconButton from './ConfigIconButton'
 import { ConfigItem } from './ConfigItem'
 import { ConfigPopover } from './ConfigPopover'
-import { ConfigSection } from './ConfigSection'
 
 const lineTypes: Config<Type.COMBO>['groups'][0]['type'][] = ['linear', 'monotone', 'step']
 
@@ -32,8 +30,6 @@ export function MoreSettingPopover(props: {
       <ConfigItem label="Line style">
         <div
           className={css`
-            margin: -2.5px;
-            padding-right: 6px;
             display: flex;
             justify-content: flex-end;
           `}
@@ -70,7 +66,7 @@ export function MoreSettingPopover(props: {
       <ConfigItem label="Stack mode">
         <ConfigSelect
           className={css`
-            width: 100%;
+            width: 96px;
           `}
           options={Object.values(ComboStack)}
           value={props.value.stackType}
@@ -87,24 +83,19 @@ export function MoreSettingPopover(props: {
   const renderConnectNulls = useCallback(() => {
     return (
       <ConfigItem label="Connect nulls">
-        <div
+        <ConfigSelect
           className={css`
-            display: flex;
-            justify-content: flex-end;
-            line-height: 0;
-            padding-right: 6px;
+            width: 96px;
           `}
-        >
-          <FormSwitch
-            checked={props.value.connectNulls}
-            onChange={(e) => {
-              onChange({
-                ...props.value,
-                connectNulls: e.target.checked
-              })
-            }}
-          />
-        </div>
+          options={['Connected', 'None']}
+          value={props.value.connectNulls ? 'Connected' : 'None'}
+          onChange={(value) => {
+            onChange({
+              ...props.value,
+              connectNulls: value === 'Connected'
+            })
+          }}
+        />
       </ConfigItem>
     )
   }, [onChange, props.value])
@@ -113,12 +104,10 @@ export function MoreSettingPopover(props: {
     <ConfigPopover
       title="Shape details"
       content={
-        <ConfigSection>
+        <>
           <ConfigItem label="Type">
             <div
               className={css`
-                margin: -2.5px;
-                padding-right: 6px;
                 display: flex;
                 justify-content: flex-end;
               `}
@@ -164,7 +153,7 @@ export function MoreSettingPopover(props: {
               {renderConnectNulls()}
             </>
           ) : null}
-        </ConfigSection>
+        </>
       }
     >
       <ConfigIconButton icon={IconCommonMore} />

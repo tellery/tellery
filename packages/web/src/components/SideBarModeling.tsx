@@ -48,88 +48,83 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
       {queryBlock.type === Editor.BlockType.QueryBuilder ? (
         <ConfigSection
           title="Metrics"
-          border={false}
           right={
             <ConfigPopoverWithTabs
               tabs={['Aggregated metric', 'Custom SQL metric']}
               content={[
-                ({ onClose }) => (
-                  <ConfigSection>
-                    {fields ? (
-                      <MetricConfigCreator
-                        fields={fields}
-                        metrics={metrics}
-                        onCreate={(ms) => {
-                          setBlock((draft) => {
-                            if (draft.content) {
-                              draft.content.metrics = {
-                                ...metrics,
-                                ...ms.reduce<{ [id: string]: Metric }>((obj, m) => {
-                                  const id = blockIdGenerator()
-                                  obj[id] = m
-                                  return obj
-                                }, {})
-                              }
+                ({ onClose }) =>
+                  fields ? (
+                    <MetricConfigCreator
+                      fields={fields}
+                      metrics={metrics}
+                      onCreate={(ms) => {
+                        setBlock((draft) => {
+                          if (draft.content) {
+                            draft.content.metrics = {
+                              ...metrics,
+                              ...ms.reduce<{ [id: string]: Metric }>((obj, m) => {
+                                const id = blockIdGenerator()
+                                obj[id] = m
+                                return obj
+                              }, {})
                             }
-                          })
-                          onClose()
-                        }}
-                      />
-                    ) : null}
-                  </ConfigSection>
-                ),
-                ({ onClose }) => (
-                  <ConfigSection>
-                    {fields ? (
-                      <MetricSQLCreator
-                        onCreate={(ms) => {
-                          setBlock((draft) => {
-                            if (draft.content) {
-                              draft.content.metrics = {
-                                ...metrics,
-                                ...ms.reduce<{ [id: string]: Metric }>((obj, m) => {
-                                  const id = blockIdGenerator()
-                                  obj[id] = m
-                                  return obj
-                                }, {})
-                              }
+                          }
+                        })
+                        onClose()
+                      }}
+                    />
+                  ) : null,
+                ({ onClose }) =>
+                  fields ? (
+                    <MetricSQLCreator
+                      onCreate={(ms) => {
+                        setBlock((draft) => {
+                          if (draft.content) {
+                            draft.content.metrics = {
+                              ...metrics,
+                              ...ms.reduce<{ [id: string]: Metric }>((obj, m) => {
+                                const id = blockIdGenerator()
+                                obj[id] = m
+                                return obj
+                              }, {})
                             }
-                          })
-                          onClose()
-                        }}
-                      />
-                    ) : null}
-                  </ConfigSection>
-                )
+                          }
+                        })
+                        onClose()
+                      }}
+                    />
+                  ) : null
               ]}
             >
               <ConfigIconButton icon={IconCommonAdd} />
             </ConfigPopoverWithTabs>
           }
         >
-          {Object.entries(metrics).map(([metricId, metric]) => (
-            <MetricItem
-              key={metricId}
-              name={metric.name}
-              onChangeName={(name) => {
-                setBlock((draft) => {
-                  if (draft.content?.metrics?.[metricId]) {
-                    draft.content.metrics[metricId].name = name
-                  }
-                })
-              }}
-              onRemove={() => {
-                setBlock((draft) => {
-                  if (draft.content?.metrics) {
-                    delete draft.content.metrics[metricId]
-                  }
-                })
-              }}
-            />
-          ))}
+          {Object.entries(metrics).length
+            ? Object.entries(metrics).map(([metricId, metric]) => (
+                <MetricItem
+                  key={metricId}
+                  name={metric.name}
+                  onChangeName={(name) => {
+                    setBlock((draft) => {
+                      if (draft.content?.metrics?.[metricId]) {
+                        draft.content.metrics[metricId].name = name
+                      }
+                    })
+                  }}
+                  onRemove={() => {
+                    setBlock((draft) => {
+                      if (draft.content?.metrics) {
+                        delete draft.content.metrics[metricId]
+                      }
+                    })
+                  }}
+                />
+              ))
+            : null}
         </ConfigSection>
       ) : (
-        <ConfigSection border={false}>
+        <ConfigSection>
           <div
             className={css`
               padding: 0 6px;

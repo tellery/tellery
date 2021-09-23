@@ -2,7 +2,6 @@ import { cx, css } from '@emotion/css'
 import type { Config, Type } from '../types'
 import { ThemingVariables } from '@app/styles'
 import { ConfigPopover } from './ConfigPopover'
-import { ConfigSection } from './ConfigSection'
 import { ConfigItem } from './ConfigItem'
 import { ConfigColorPicker } from './ConfigColorPicker'
 
@@ -34,19 +33,17 @@ export function ColorSelector(props: {
       <ConfigPopover
         title="Color detail"
         content={
-          <ConfigSection>
-            <ConfigItem label="Color" multiline={true}>
-              <ConfigColorPicker
-                value={props.value.color}
-                onChange={(color) => {
-                  onChange({
-                    ...props.value,
-                    color
-                  })
-                }}
-              />
-            </ConfigItem>
-          </ConfigSection>
+          <ConfigItem label="Color" multiline={true}>
+            <ConfigColorPicker
+              value={props.value.color}
+              onChange={(color) => {
+                onChange({
+                  ...props.value,
+                  color
+                })
+              }}
+            />
+          </ConfigItem>
         }
       >
         <div

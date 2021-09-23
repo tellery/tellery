@@ -225,89 +225,92 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
           <ConfigSection
             title={title}
             right={
-              <AxisSelect
-                options={props.config.axises}
-                disabled={disabled}
-                onSelect={(value) => {
-                  const array = [...axises[axise], value]
-                  if (axise === 'dimensions') {
-                    onConfigChange(axise, array)
-                  } else {
-                    onConfigChange(axise, array, mapAxis2Label(axise), calcLabel(array, axise))
-                  }
-                }}
-              />
+              disabled ? null : (
+                <AxisSelect
+                  options={props.config.axises}
+                  onSelect={(value) => {
+                    const array = [...axises[axise], value]
+                    if (axise === 'dimensions') {
+                      onConfigChange(axise, array)
+                    } else {
+                      onConfigChange(axise, array, mapAxis2Label(axise), calcLabel(array, axise))
+                    }
+                  }}
+                />
+              )
             }
           >
-            <SortableList
-              value={axises[axise]}
-              onChange={(value) => {
-                if (axise === 'dimensions') {
-                  onConfigChange(axise, value)
-                } else if (axise === 'xAxises') {
-                  onConfigChange(
-                    axise,
-                    value,
-                    mapAxis2Label(axise),
-                    calcLabel(value, axise),
-                    'xType',
-                    value.length > 1 ? 'ordinal' : isNumeric(displayTypes[value[0]]) ? 'linear' : 'ordinal'
-                  )
-                } else {
-                  onConfigChange(axise, value, mapAxis2Label(axise), calcLabel(value, axise))
-                }
-              }}
-              renderItem={(item) => (
-                <div
-                  className={css`
-                    display: flex;
-                    width: 100%;
-                    > button {
-                      visibility: hidden;
-                    }
-                    :hover > button {
-                      visibility: visible;
-                    }
-                  `}
-                >
-                  <ConfigSelect
-                    options={props.config.axises}
-                    value={item}
-                    onChange={(value) => {
-                      const array = axises[axise].map((axis) => (axis === item ? value : axis))
-                      if (axise === 'dimensions') {
-                        onConfigChange(axise, array)
-                      } else if (axise === 'xAxises') {
-                        onConfigChange(
-                          axise,
-                          array,
-                          mapAxis2Label(axise),
-                          calcLabel(array, axise),
-                          'xType',
-                          array.length > 1 ? 'ordinal' : isNumeric(displayTypes[array[0]]) ? 'linear' : 'ordinal'
-                        )
-                      } else {
-                        onConfigChange(axise, array, mapAxis2Label(axise), calcLabel(array, axise))
-                      }
-                    }}
-                  />
-                  <ConfigIconButton
-                    icon={IconCommonSub}
-                    onClick={() => {
-                      const array = axises[axise].filter((axis) => axis !== item)
-                      if (axise === 'dimensions') {
-                        onConfigChange(axise, array)
-                      } else {
-                        onConfigChange(axise, array, mapAxis2Label(axise), calcLabel(array, axise))
-                      }
-                    }}
+            {axises[axise].length ? (
+              <SortableList
+                value={axises[axise]}
+                onChange={(value) => {
+                  if (axise === 'dimensions') {
+                    onConfigChange(axise, value)
+                  } else if (axise === 'xAxises') {
+                    onConfigChange(
+                      axise,
+                      value,
+                      mapAxis2Label(axise),
+                      calcLabel(value, axise),
+                      'xType',
+                      value.length > 1 ? 'ordinal' : isNumeric(displayTypes[value[0]]) ? 'linear' : 'ordinal'
+                    )
+                  } else {
+                    onConfigChange(axise, value, mapAxis2Label(axise), calcLabel(value, axise))
+                  }
+                }}
+                renderItem={(item) => (
+                  <div
                     className={css`
-                      margin-left: 4px;
+                      display: flex;
+                      width: 100%;
+                      > button {
+                        visibility: hidden;
+                      }
+                      :hover > button {
+                        visibility: visible;
+                      }
                     `}
-                  />
-                </div>
-              )}
-            />
+                  >
+                    <ConfigSelect
+                      options={props.config.axises}
+                      value={item}
+                      onChange={(value) => {
+                        const array = axises[axise].map((axis) => (axis === item ? value : axis))
+                        if (axise === 'dimensions') {
+                          onConfigChange(axise, array)
+                        } else if (axise === 'xAxises') {
+                          onConfigChange(
+                            axise,
+                            array,
+                            mapAxis2Label(axise),
+                            calcLabel(array, axise),
+                            'xType',
+                            array.length > 1 ? 'ordinal' : isNumeric(displayTypes[array[0]]) ? 'linear' : 'ordinal'
+                          )
+                        } else {
+                          onConfigChange(axise, array, mapAxis2Label(axise), calcLabel(array, axise))
+                        }
+                      }}
+                    />
+                    <ConfigIconButton
+                      icon={IconCommonSub}
+                      onClick={() => {
+                        const array = axises[axise].filter((axis) => axis !== item)
+                        if (axise === 'dimensions') {
+                          onConfigChange(axise, array)
+                        } else {
+                          onConfigChange(axise, array, mapAxis2Label(axise), calcLabel(array, axise))
+                        }
+                      }}
+                      className={css`
+                        margin-left: 4px;
+                      `}
+                    />
+                  </div>
+                )}
+              />
+            ) : null}
           </ConfigSection>
         )
       },
@@ -331,43 +334,48 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
           )}
         </div>
         <div>
-          {props.config.groups.map((item) => (
-            <ConfigSection
-              key={item.key}
-              title={`Y axis (${upperFirst(item.key)})`}
-              right={
-                <MoreSettingPopover
-                  shapes={props.config.shapes.filter(({ groupId }) => groupId === item.key).length}
-                  value={item}
-                  onChange={(value) => {
-                    onConfigChange(
-                      'groups',
-                      props.config.groups.map((group) => (group.key === item.key ? { ...item, ...value } : group))
-                    )
-                  }}
-                />
-              }
-            >
-              <SortableList
-                value={props.config.shapes.filter(({ groupId }) => groupId === item.key)}
-                onChange={(value) => {
-                  onConfigChange('shapes', value)
-                }}
-                renderItem={(item) => (
-                  <ShapeSelector
-                    key={item.key}
+          {props.config.groups.map((item) => {
+            const shapes = props.config.shapes.filter(({ groupId }) => groupId === item.key)
+            return (
+              <ConfigSection
+                key={item.key}
+                title={`Y axis (${upperFirst(item.key)})`}
+                right={
+                  <MoreSettingPopover
+                    shapes={shapes.length}
                     value={item}
                     onChange={(value) => {
                       onConfigChange(
-                        'shapes',
-                        props.config.shapes.map((shape) => (shape.key === item.key ? { ...item, ...value } : shape))
+                        'groups',
+                        props.config.groups.map((group) => (group.key === item.key ? { ...item, ...value } : group))
                       )
                     }}
                   />
-                )}
-              />
-            </ConfigSection>
-          ))}
+                }
+              >
+                {shapes.length ? (
+                  <SortableList
+                    value={shapes}
+                    onChange={(value) => {
+                      onConfigChange('shapes', value)
+                    }}
+                    renderItem={(item) => (
+                      <ShapeSelector
+                        key={item.key}
+                        value={item}
+                        onChange={(value) => {
+                          onConfigChange(
+                            'shapes',
+                            props.config.shapes.map((shape) => (shape.key === item.key ? { ...item, ...value } : shape))
+                          )
+                        }}
+                      />
+                    )}
+                  />
+                ) : null}
+              </ConfigSection>
+            )
+          })}
           <ConfigSection title="Y reference line">
             <ConfigItem label="Label">
               <ConfigInput
