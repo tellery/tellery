@@ -30,7 +30,19 @@ export function ConfigPopoverWithTabs(props: {
           `}
         >
           <ConfigTab tabs={props.tabs}>
-            {props.content.map((content) => content({ onClose: () => setVisible(false) }))}
+            {props.content.map((content, index) => (
+              <div
+                key={index}
+                className={css`
+                  padding: 8px 10px;
+                  > * + * {
+                    margin-top: 4px;
+                  }
+                `}
+              >
+                {content({ onClose: () => setVisible(false) })}
+              </div>
+            ))}
           </ConfigTab>
         </div>
       }

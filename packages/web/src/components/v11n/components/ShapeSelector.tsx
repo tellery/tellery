@@ -3,7 +3,6 @@ import type { Config, Type } from '../types'
 import { ThemingVariables } from '@app/styles'
 import FormSwitch from '@app/components/kit/FormSwitch'
 import { ConfigPopover } from './ConfigPopover'
-import { ConfigSection } from './ConfigSection'
 import { ConfigItem } from './ConfigItem'
 import { ConfigColorPicker } from './ConfigColorPicker'
 
@@ -36,7 +35,7 @@ export function ShapeSelector(props: {
       <ConfigPopover
         title="Shape details"
         content={
-          <ConfigSection>
+          <>
             <ConfigItem label="Color" multiline={true}>
               <ConfigColorPicker
                 value={props.value.color}
@@ -68,7 +67,7 @@ export function ShapeSelector(props: {
                 />
               </div>
             </ConfigItem>
-          </ConfigSection>
+          </>
         }
       >
         <div

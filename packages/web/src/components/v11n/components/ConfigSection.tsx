@@ -8,11 +8,9 @@ export function ConfigSection(props: { title?: string; right?: ReactNode; childr
       className={cx(
         css`
           padding: 8px 10px;
-
           > * + * {
             margin-top: 4px;
           }
-
           border-bottom: 1px solid ${ThemingVariables.colors.gray[1]};
         `
       )}

@@ -16,7 +16,6 @@ import { ConfigSelect } from './ConfigSelect'
 import ConfigIconButton from './ConfigIconButton'
 import { ConfigItem } from './ConfigItem'
 import { ConfigPopover } from './ConfigPopover'
-import { ConfigSection } from './ConfigSection'
 
 const lineTypes: Config<Type.COMBO>['groups'][0]['type'][] = ['linear', 'monotone', 'step']
 
@@ -105,7 +104,7 @@ export function MoreSettingPopover(props: {
     <ConfigPopover
       title="Shape details"
       content={
-        <ConfigSection>
+        <>
           <ConfigItem label="Type">
             <div
               className={css`
@@ -154,7 +153,7 @@ export function MoreSettingPopover(props: {
               {renderConnectNulls()}
             </>
           ) : null}
-        </ConfigSection>
+        </>
       }
     >
       <ConfigIconButton icon={IconCommonMore} />
