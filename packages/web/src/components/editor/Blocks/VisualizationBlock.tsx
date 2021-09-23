@@ -212,8 +212,8 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
 
     if (!queryId) {
       if (fromDataAssetId) {
-        createSmartQuery(fromDataAssetId).then((res) => {
-          sidebarEditor.open({ blockId: block.id, activeTab: 'Data' })
+        createSmartQuery(fromDataAssetId).then(() => {
+          sidebarEditor.open({ blockId: block.id, activeTab: 'Query' })
         })
       } else {
         const newQueryBlock = createEmptyBlock({
