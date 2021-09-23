@@ -82,7 +82,6 @@ export const QuestionTitleEditor: React.FC<{ blockId: string; storyId: string }>
         display: flex;
         min-height: 40px;
         padding: 0 10px;
-        border-bottom: 1px solid #dedede;
         align-items: center;
         justify-content: flex-start;
         background-color: ${ThemingVariables.colors.gray[3]};
@@ -126,7 +125,6 @@ export const QuestionTitleEditor: React.FC<{ blockId: string; storyId: string }>
         }}
         className={css`
           background: transparent;
-          min-width: 100px;
           cursor: text;
           background: transparent;
           font-size: 20px;
@@ -143,6 +141,7 @@ export const QuestionTitleEditor: React.FC<{ blockId: string; storyId: string }>
       {!titleEditing && (
         <IconButton
           icon={IconCommonEdit}
+          size={14}
           color={ThemingVariables.colors.gray[0]}
           onClick={(e) => {
             setTitleEditing(true)
@@ -151,7 +150,7 @@ export const QuestionTitleEditor: React.FC<{ blockId: string; storyId: string }>
             }, 0)
           }}
           className={css`
-            margin-left: 5px;
+            margin-left: 4px;
           `}
         />
       )}
