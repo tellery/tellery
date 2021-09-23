@@ -17,8 +17,6 @@ import SideBarModeling from './SideBarModeling'
 import { SideBarTabHeader } from './v11n/components/Tab'
 import SideBarSmartQuery from './SideBarSmartQuery'
 import PerfectScrollbar from 'react-perfect-scrollbar'
-import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
-import { useRightSideBarConfig } from '@app/hooks/useRightSideBarConfig'
 
 export const DefaultSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
   const tab = useTabState()
@@ -143,7 +141,7 @@ export const QuestionTitleEditor: React.FC<{ blockId: string; storyId: string }>
           icon={IconCommonEdit}
           size={14}
           color={ThemingVariables.colors.gray[0]}
-          onClick={(e) => {
+          onClick={() => {
             setTitleEditing(true)
             setTimeout(() => {
               contentEditableRef.current?.focus()
@@ -157,7 +155,7 @@ export const QuestionTitleEditor: React.FC<{ blockId: string; storyId: string }>
       <IconButton
         icon={IconCommonClose}
         color={ThemingVariables.colors.gray[0]}
-        onClick={(e) => {
+        onClick={() => {
           sideBarQuestionEditor.close()
         }}
         className={css`
@@ -183,7 +181,7 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
   }, [sideBarEditorState, tab])
 
   const changeTab = useCallback(
-    (tab: 'Visualization' | 'Modeling' | 'Data') => {
+    (tab: 'Visualization' | 'Modeling' | 'Query') => {
       setSideBarEditorState((value) => {
         if (value) {
           return { ...value, activeTab: tab }
@@ -217,15 +215,15 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
         <Tab
           as={SideBarTabHeader}
           {...tab}
-          id="Data"
-          selected={tab.selectedId === 'Data'}
+          id="Query"
+          selected={tab.selectedId === 'Query'}
           disabled={queryBlock.type !== Editor.BlockType.SmartQuery}
           focusable={queryBlock.type === Editor.BlockType.SmartQuery}
           onClick={() => {
-            changeTab('Data')
+            changeTab('Query')
           }}
         >
-          {t`Data`}
+          {t`Query`}
         </Tab>
         <Tab
           as={SideBarTabHeader}

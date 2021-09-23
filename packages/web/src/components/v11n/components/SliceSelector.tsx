@@ -2,7 +2,6 @@ import { cx, css } from '@emotion/css'
 import { ThemingVariables } from '@app/styles'
 import { ConfigColorPicker } from './ConfigColorPicker'
 import { ConfigPopover } from './ConfigPopover'
-import { ConfigSection } from './ConfigSection'
 import { ConfigItem } from './ConfigItem'
 
 export function SliceSelector(props: {
