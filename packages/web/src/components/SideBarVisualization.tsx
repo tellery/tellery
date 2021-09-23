@@ -41,7 +41,7 @@ const dimentionRange = {
   [Type.AREA]: [1, 2],
   [Type.PIE]: [1, 1],
   [Type.SCATTER]: [1, 3],
-  [Type.NUMBER]: [1, 1]
+  [Type.NUMBER]: [0, Infinity]
 }
 
 const measureRange = {
@@ -135,12 +135,12 @@ export default function SideBarVisualization<T extends Type = Type>(props: { sto
             icon={icons[t]}
             color={
               t === config?.type
-                ? ThemingVariables.colors.primary[1]
+                ? ThemingVariables.colors.text[0]
                 : (!dimentions ||
                     (dimentionRange[t][0] <= dimentions.length && dimentions.length <= dimentionRange[t][1])) &&
                   (!metrics || (measureRange[t][0] <= metrics.length && metrics.length <= measureRange[t][1]))
-                ? ThemingVariables.colors.gray[0]
-                : ThemingVariables.colors.gray[2]
+                ? ThemingVariables.colors.text[0]
+                : ThemingVariables.colors.gray[0]
             }
             className={css`
               margin: 2px;
