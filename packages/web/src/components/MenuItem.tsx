@@ -57,6 +57,7 @@ const _MenuItem: React.ForwardRefRenderFunction<
           `,
         props.disabled &&
           css`
+            color: ${ThemingVariables.colors.text[2]};
             cursor: not-allowed;
           `
       )}

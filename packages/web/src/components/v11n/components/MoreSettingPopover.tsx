@@ -86,6 +86,7 @@ export function MoreSettingPopover(props: {
         <ConfigSelect
           className={css`
             width: 96px;
+            margin-left: calc(160px - 96px);
           `}
           options={['Connected', 'None']}
           value={props.value.connectNulls ? 'Connected' : 'None'}

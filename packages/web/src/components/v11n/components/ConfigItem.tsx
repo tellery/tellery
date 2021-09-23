@@ -32,7 +32,7 @@ export function ConfigItem(props: { label: ReactNode; children: ReactNode; multi
       )}
       <div
         className={css`
-          max-width: ${props.multiline ? 'unset' : '160px'};
+          width: ${props.multiline ? 'unset' : '160px'};
           line-height: 0;
         `}
       >

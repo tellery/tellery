@@ -451,6 +451,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                 className={css`
                   display: flex;
                   align-items: center;
+                  width: 160px;
                 `}
               >
                 <ConfigNumericInput

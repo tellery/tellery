@@ -41,7 +41,7 @@ const dimentionRange = {
   [Type.AREA]: [1, 2],
   [Type.PIE]: [1, 1],
   [Type.SCATTER]: [1, 3],
-  [Type.NUMBER]: [0, Infinity]
+  [Type.NUMBER]: [0, 1]
 }
 
 const measureRange = {
@@ -50,9 +50,9 @@ const measureRange = {
   [Type.LINE]: [1, Infinity],
   [Type.BAR]: [1, Infinity],
   [Type.AREA]: [1, Infinity],
-  [Type.PIE]: [1, Infinity],
+  [Type.PIE]: [1, 1],
   [Type.SCATTER]: [2, Infinity],
-  [Type.NUMBER]: [1, Infinity]
+  [Type.NUMBER]: [1, 1]
 }
 
 export default function SideBarVisualization<T extends Type = Type>(props: { storyId: string; blockId: string }) {
