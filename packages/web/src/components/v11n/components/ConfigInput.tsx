@@ -14,7 +14,7 @@ export function ConfigInput(props: {
       onChange={(e) => {
         props.onChange(e.target.value)
       }}
-      placeholder={props.placeholder}
+      placeholder={props.placeholder || 'placeholder'}
       onBlur={props.onBlur}
       className={cx(
         props.className,
