@@ -78,7 +78,10 @@ export const BlockTypeAtom = selectorFamily({
     ({ get }) => {
       const atom = get(TelleryBlockAtom(blockId))
       return atom.type
-    }
+    },
+  cachePolicy_UNSTABLE: {
+    eviction: 'most-recent'
+  }
 })
 
 export const BlockTitleAtom = selectorFamily({
@@ -88,7 +91,10 @@ export const BlockTitleAtom = selectorFamily({
     ({ get }) => {
       const atom = get(TelleryBlockAtom(blockId))
       return atom.content?.title
-    }
+    },
+  cachePolicy_UNSTABLE: {
+    eviction: 'most-recent'
+  }
 })
 
 export const BlockFormatAtom = selectorFamily({
@@ -98,7 +104,10 @@ export const BlockFormatAtom = selectorFamily({
     ({ get }) => {
       const atom = get(TelleryBlockAtom(blockId))
       return atom.format
-    }
+    },
+  cachePolicy_UNSTABLE: {
+    eviction: 'most-recent'
+  }
 })
 
 export const BlockPermissionsAtom = selectorFamily({
@@ -108,7 +117,10 @@ export const BlockPermissionsAtom = selectorFamily({
     ({ get }) => {
       const atom = get(TelleryBlockAtom(blockId))
       return atom.permissions
-    }
+    },
+  cachePolicy_UNSTABLE: {
+    eviction: 'most-recent'
+  }
 })
 
 export const TellerySnapshotAtom = atomFamily<Snapshot | null, string | null>({
