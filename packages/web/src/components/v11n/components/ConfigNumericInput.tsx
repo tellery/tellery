@@ -52,7 +52,7 @@ export function ConfigNumericInput(props: {
         `,
         props.className
       )}
-      placeholder={props.placeholder}
+      placeholder={props.placeholder || 'placeholder'}
     />
   )
 }
