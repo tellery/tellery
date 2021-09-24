@@ -14,7 +14,8 @@ service ConnectorService {
   rpc GetCollections (GetCollectionRequest) returns (Collections);
   rpc GetCollectionSchema (GetCollectionSchemaRequest) returns (Schema);
   rpc Query (SubmitQueryRequest) returns (stream QueryResult);
-  rpc ImportFromFile (ImportRequest) returns (ImportResult);
+  rpc ImportFromUrl (ImportUrlRequest) returns (ImportResult);
+  rpc ImportFromFile (ImportFileRequest) returns (ImportResult);
 }
 
 message GetCollectionRequest {
@@ -33,11 +34,19 @@ message SubmitQueryRequest {
   int32 maxRow = 3;
 }
 
-message ImportRequest {
+message ImportUrlRequest {
   string database = 1;
   string collection = 2;
   string schema = 3;
   string url = 4;
+}
+
+message ImportFileRequest {
+  string database = 1;
+  string collection = 2;
+  string schema = 3;
+  string contentType = 4;
+  string fileBody = 5;
 }
 
 message SchemaField {

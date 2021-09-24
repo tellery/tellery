@@ -13,7 +13,8 @@ import {
   GetCollectionSchemaRequest,
   SubmitQueryRequest,
   QueryResult,
-  ImportRequest,
+  ImportUrlRequest,
+  ImportFileRequest,
 } from '../../protobufs/connector_pb'
 import { DbtBlock, PushRepoRequest, QuestionBlockContent } from '../../protobufs/dbt_pb'
 import {
@@ -329,13 +330,42 @@ export class ConnectorManager implements IConnectorManager {
     if (cancelCallback) cancelCallback()
   }
 
-  async importFromFile(
+  async importFromUrl(
     url: string,
     database: string,
     collection: string,
     schema?: string,
   ): Promise<{ database: string; collection: string }> {
-    let request = new ImportRequest().setUrl(url).setDatabase(database).setCollection(collection)
+    let request = new ImportUrlRequest().setUrl(url).setDatabase(database).setCollection(collection)
+    if (schema) {
+      request = request.setSchema(schema)
+    }
+    const importResult = await beautyCall(
+      this.connectorClient.importFromUrl,
+      this.connectorClient,
+      request,
+      this.createMetadata(),
+    )
+    return {
+      database: importResult.getDatabase(),
+      collection: `${
+        importResult.hasSchema() ? `${importResult.getSchema()}.` : ''
+      }${importResult.getCollection()}`,
+    }
+  }
+
+  async importFromFile(
+    fileBody: Buffer,
+    contentType: string,
+    database: string,
+    collection: string,
+    schema?: string,
+  ): Promise<{ database: string; collection: string }> {
+    let request = new ImportFileRequest()
+      .setFilebody(fileBody.toString())
+      .setContenttype(contentType)
+      .setDatabase(database)
+      .setCollection(collection)
     if (schema) {
       request = request.setSchema(schema)
     }

@@ -72,8 +72,21 @@ export class FakeManager implements IConnectorManager {
     throw new Error('Method not implemented.')
   }
 
-  async importFromFile(
+  async importFromUrl(
     _url: string,
+    _database: string,
+    _collection: string,
+    _schema?: string,
+  ): Promise<{ database: string; collection: string }> {
+    return {
+      database: '',
+      collection: '',
+    }
+  }
+
+  async importFromFile(
+    _fileBody: Buffer,
+    _contentType: string,
     _database: string,
     _collection: string,
     _schema?: string,

@@ -1,7 +1,5 @@
 package io.tellery.interfaces
 
-import com.github.kittinunf.fuel.Fuel
-import com.github.kittinunf.fuel.coroutines.awaitByteArrayResponseResult
 import io.tellery.entities.*
 import mu.KLogger
 
@@ -32,19 +30,9 @@ interface IConnector {
         database: String,
         collection: String,
         schema: String?,
-        url: String,
-    ) {
-        importSanityCheck(database, collection, schema)
-        val (_, response, result) = Fuel.get(url).awaitByteArrayResponseResult()
-        result.fold(success = { content ->
-            val contentType = response.header("Content-Type").single()
-            val handler =
-                importDispatcher[contentType] ?: throw ImportNotSupportedException(contentType)
-            handler(database, collection, schema, content)
-        }, failure = { error ->
-            logger.error { error }
-            throw DownloadFailedException()
-        })
-    }
+        contentType: String,
+        body: ByteArray
+    )
+
 }
 

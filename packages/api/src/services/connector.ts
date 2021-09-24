@@ -5,6 +5,7 @@ import { getRepository } from 'typeorm'
 import { IConnectorManager } from '../clients/connector/interface'
 import { getIPermission, IPermission } from '../core/permission'
 import { ConnectorEntity } from '../entities/connector'
+import { NotFoundError } from '../error/error'
 import {
   AddConnectorDTO,
   AvailableConfig,
@@ -17,6 +18,7 @@ import {
   TypeField,
 } from '../types/connector'
 import { canGetWorkspaceData, canUpdateWorkspaceData } from '../utils/permission'
+import storageService from './storage'
 
 export class ConnectorService {
   private permission: IPermission
@@ -213,14 +215,27 @@ export class ConnectorService {
     connectorManager: IConnectorManager,
     operatorId: string,
     workspaceId: string,
-    url: string,
+    fileKey: string,
     database: string,
     collection: string,
     schema?: string,
   ): Promise<{ database: string; collection: string }> {
     await canGetWorkspaceData(this.permission, operatorId, workspaceId)
 
-    return connectorManager.importFromFile(url, database, collection, schema)
+    const { body } = await storageService.objectProxy(operatorId, workspaceId, fileKey, {
+      skipPermissionCheck: true,
+    })
+
+    if (!body) {
+      throw NotFoundError.resourceNotFound(`file ${fileKey}`)
+    }
+
+    if (body instanceof Object) {
+      const { contentType, content } = body
+      return connectorManager.importFromFile(content, contentType, database, collection, schema)
+    }
+
+    return connectorManager.importFromUrl(body, database, collection, schema)
   }
 }
 

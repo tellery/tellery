@@ -132,7 +132,7 @@ class ConnectorService(private val connectorManager: ConnectorManager) :
         }
     }
 
-    override suspend fun importFromFile(request: ImportRequest): ImportResult {
+    override suspend fun importFromUrl(request: ImportUrlRequest): ImportResult {
         return withErrorWrapper {
             val connector = connectorManager.getConnector()
 
@@ -141,6 +141,26 @@ class ConnectorService(private val connectorManager: ConnectorManager) :
                 request.collection,
                 request.schema.ifBlank { null },
                 request.url
+            )
+
+            ImportResult {
+                database = request.database
+                collection = request.collection
+                if (request.schema.isNotBlank()) schema = request.schema
+            }
+        }
+    }
+
+    override suspend fun importFromFile(request: ImportFileRequest): ImportResult {
+        return withErrorWrapper {
+            val connector = connectorManager.getConnector()
+
+            connector.import(
+                request.database,
+                request.collection,
+                request.schema.ifBlank { null },
+                request.contentType,
+                request.fileBodyBytes.toByteArray()
             )
 
             ImportResult {
