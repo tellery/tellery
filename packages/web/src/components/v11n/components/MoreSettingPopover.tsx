@@ -67,6 +67,7 @@ export function MoreSettingPopover(props: {
         <ConfigSelect
           className={css`
             width: 96px;
+            margin-left: calc(160px - 96px);
           `}
           options={Object.values(ComboStack)}
           value={props.value.stackType}
