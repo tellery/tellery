@@ -17,6 +17,7 @@ import { Editor } from '@app/types'
 import { css } from '@emotion/css'
 import produce from 'immer'
 import { WritableDraft } from 'immer/dist/internal'
+import { isEqual } from 'lodash'
 import { useCallback, useEffect, useState } from 'react'
 import IconButton from './kit/IconButton'
 import { charts, useChart } from './v11n/charts'
@@ -113,14 +114,14 @@ export default function SideBarVisualization<T extends Type = Type>(props: { sto
   )
   const previousSnapshot = usePrevious(snapshot)
   useEffect(() => {
-    if (snapshot && !previousSnapshot) {
+    if (snapshot && !isEqual(snapshot.data.fields, previousSnapshot?.data.fields)) {
       setBlock((draft) => {
         if (draft.content) {
-          draft.content.visualization = charts[Type.TABLE].initializeConfig(snapshot.data, {})
+          draft.content.visualization = chart.initializeConfig(snapshot.data, {})
         }
       })
     }
-  }, [previousSnapshot, setBlock, snapshot])
+  }, [chart, previousSnapshot, setBlock, snapshot])
 
   return (
     <>
