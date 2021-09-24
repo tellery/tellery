@@ -26,7 +26,7 @@ import Tippy from '@tippyjs/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import React, { memo, ReactNode, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ReactEventHandlers } from 'react-use-gesture/dist/types'
+import { ReactDOMAttributes } from '@use-gesture/react'
 import { Popover, PopoverDisclosure, usePopoverState } from 'reakit'
 import { BlockTitle, useGetBlockTitleTextSnapshot } from './editor'
 import { isDataAssetBlock } from './editor/Blocks/utils'
@@ -266,7 +266,7 @@ const ImportOperation: React.FC<{ storyId: string }> = ({ storyId }) => {
 const _StoryDataAssetItemContentDraggable: React.FC<{
   storyId: string
   blockId: string
-  hoveringHandlers: (...args: any[]) => ReactEventHandlers
+  hoveringHandlers: (...args: any[]) => ReactDOMAttributes
   children: ReactNode
   isDataAssest?: boolean
 }> = ({ hoveringHandlers, children, storyId, blockId, isDataAssest }) => {

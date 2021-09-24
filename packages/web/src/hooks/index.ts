@@ -2,8 +2,7 @@ import type { AxiosError } from 'axios'
 import { debounce } from 'lodash'
 import { MutableRefObject, RefObject, useCallback, useEffect, useRef, useState } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
-import { useHover } from 'react-use-gesture'
-import { ReactEventHandlers } from 'react-use-gesture/dist/types'
+import { useHover, ReactDOMAttributes } from '@use-gesture/react'
 import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect'
 export { useMediaQueries, useMediaQuery } from '@react-hook/media-query'
 
@@ -207,14 +206,14 @@ export function useOnClickOutside<T extends HTMLElement | null>(
 // }
 
 export const useBindHovering = () => {
-  const [hovering, setHovering] = useState(false)
+  const [hovering, setHovering] = useState<boolean>()
   const bind = useHover(
     (event) => {
       setHovering(event.hovering)
     },
     { eventOptions: { passive: true } }
   )
-  return [bind, hovering] as [(...args: any[]) => ReactEventHandlers, boolean]
+  return [bind, hovering] as [(...args: any[]) => ReactDOMAttributes, boolean]
 }
 
 export const useViewHeightVarible = () => {

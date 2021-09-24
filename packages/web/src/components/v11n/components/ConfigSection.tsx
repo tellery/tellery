@@ -1,6 +1,6 @@
 import { ThemingVariables } from '@app/styles'
 import { css, cx } from '@emotion/css'
-import { ReactNode } from 'react-router/node_modules/@types/react'
+import { ReactNode } from 'react'
 
 export function ConfigSection(props: { title?: string; right?: ReactNode; children?: ReactNode }) {
   return (
