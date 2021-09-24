@@ -99,7 +99,7 @@ export const QuestionTitleEditor: React.FC<{ blockId: string; storyId: string }>
         {queryBlock.type === Editor.BlockType.DBT ? <IconCommonDbt color={ThemingVariables.colors.text[0]} /> : null}
       </div>
       <ContentEditablePureText
-        tokens={queryBlock?.content?.title}
+        tokens={queryBlock?.content?.title?.length ? queryBlock?.content?.title : [[DEFAULT_TITLE]]}
         onChange={(tokens) => {
           setTitle(tokens)
         }}
