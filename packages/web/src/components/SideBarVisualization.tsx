@@ -114,7 +114,7 @@ export default function SideBarVisualization<T extends Type = Type>(props: { sto
   )
   const previousSnapshot = usePrevious(snapshot)
   useEffect(() => {
-    if (snapshot && !isEqual(snapshot.data.fields, previousSnapshot?.data.fields)) {
+    if (snapshot && previousSnapshot && !isEqual(snapshot.data.fields, previousSnapshot?.data.fields)) {
       setBlock((draft) => {
         if (draft.content) {
           draft.content.visualization = chart.initializeConfig(snapshot.data, {})
