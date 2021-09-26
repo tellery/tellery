@@ -1,5 +1,7 @@
 package io.tellery.connectors
 
+import com.github.kittinunf.fuel.Fuel
+import com.github.kittinunf.fuel.coroutines.awaitByteArrayResponseResult
 import io.tellery.entities.*
 import io.tellery.interfaces.IConnector
 import io.tellery.utils.Cache
@@ -78,5 +80,35 @@ abstract class BaseConnector : IConnector {
         if (CollectionField(collection, schema) in getCachedCollections(database)) {
             throw CollectionExistsException()
         }
+    }
+
+    suspend fun import(
+        database: String,
+        collection: String,
+        schema: String?,
+        url: String,
+    ) {
+        importSanityCheck(database, collection, schema)
+        val (_, response, result) = Fuel.get(url).awaitByteArrayResponseResult()
+        result.fold(success = { content ->
+            val contentType = response.header("Content-Type").single()
+            import(database, collection, schema, contentType, content)
+        }, failure = { error ->
+            logger.error { error }
+            throw DownloadFailedException()
+        })
+    }
+
+    override suspend fun import(
+        database: String,
+        collection: String,
+        schema: String?,
+        contentType: String,
+        body: ByteArray
+    ) {
+        importSanityCheck(database, collection, schema)
+        val handler =
+            importDispatcher[contentType] ?: throw ImportNotSupportedException(contentType)
+        handler(database, collection, schema, body)
     }
 }

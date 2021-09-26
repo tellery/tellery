@@ -68,8 +68,23 @@ export interface IConnectorManager {
    * @param database
    * @param schema
    */
-  importFromFile(
+  importFromUrl(
     url: string,
+    database: string,
+    collection: string,
+    schema?: string,
+  ): Promise<{ database: string; collection: string }>
+
+  /**
+   * import a file from its body to the data warehouse by connector
+   * use when importFromUrl fails
+   * @param url
+   * @param database
+   * @param schema
+   */
+  importFromFile(
+    fileBody: Buffer,
+    contentType: string,
     database: string,
     collection: string,
     schema?: string,
