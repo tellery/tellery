@@ -162,6 +162,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
           word-break: break-word;
           align-items: flex-start;
           position: relative;
+          min-width: 100px;
         `,
         readonly &&
           maxLines !== 0 &&
