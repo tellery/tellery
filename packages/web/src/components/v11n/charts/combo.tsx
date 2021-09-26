@@ -1088,57 +1088,59 @@ function AxisSelect(props: {
   const ref = useRef<HTMLSelectElement>(null)
 
   return (
-    <select
-      ref={ref}
-      className={cx(
-        css`
-          vertical-align: top;
-          display: inline;
-          appearance: none;
-          border: none;
-          outline: none;
-          border-radius: 4px;
-          font-size: 14px;
-          font-weight: 400;
-          cursor: pointer;
-          height: 32px;
-          width: 32px;
-          background-repeat: no-repeat;
-          background-position: 50% 50%;
-          color: transparent;
-          background-image: ${SVG2DataURI(IconCommonAdd, TelleryThemeLight.colors.text[props.disabled ? 2 : 0])};
-          :disabled {
-            cursor: not-allowed;
-            background-color: transparent;
-          }
-          :not(:disabled):hover {
+    <>
+      <select
+        ref={ref}
+        className={cx(
+          css`
+            vertical-align: top;
+            display: inline;
+            appearance: none;
+            border: none;
+            outline: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 400;
             cursor: pointer;
-            background-color: ${ThemingVariables.colors.primary[5]};
-          }
-        `,
-        props.className
-      )}
-      disabled={props.disabled}
-      value={''}
-      onChange={
-        props.disabled
-          ? undefined
-          : (e) => {
-              props.onSelect(e.target.value)
-              if (ref.current) {
-                ref.current.selectedIndex = 0
-              }
+            height: 32px;
+            width: 32px;
+            background-repeat: no-repeat;
+            background-position: 50% 50%;
+            color: transparent;
+            background-image: ${SVG2DataURI(IconCommonAdd, TelleryThemeLight.colors.text[0])};
+            :disabled {
+              cursor: not-allowed;
+              background-color: transparent;
             }
-      }
-    >
-      <option value={''} disabled={true}>
-        Select axis
-      </option>
-      {props.options.map((option) => (
-        <option key={option} value={option}>
-          {option}
+            :not(:disabled):hover {
+              cursor: pointer;
+              background-color: ${ThemingVariables.colors.primary[5]};
+            }
+          `,
+          props.className
+        )}
+        disabled={props.disabled}
+        value={''}
+        onChange={
+          props.disabled
+            ? undefined
+            : (e) => {
+                props.onSelect(e.target.value)
+                if (ref.current) {
+                  ref.current.selectedIndex = 0
+                }
+              }
+        }
+      >
+        <option value={''} disabled={true}>
+          Select axis
         </option>
-      ))}
-    </select>
+        {props.options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    </>
   )
 }

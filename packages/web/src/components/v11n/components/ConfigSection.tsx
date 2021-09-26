@@ -23,7 +23,7 @@ export function ConfigSection(props: { title?: string; right?: ReactNode; childr
             display: flex;
             align-items: center;
             justify-content: space-between;
-            filter: ${props.children ? 'none' : 'opacity(0.25)'};
+            color: ${props.children ? ThemingVariables.colors.text[0] : ThemingVariables.colors.text[2]};
           `}
         >
           <h3
@@ -32,7 +32,6 @@ export function ConfigSection(props: { title?: string; right?: ReactNode; childr
               font-weight: 500;
               font-size: 12px;
               line-height: 15px;
-              color: ${ThemingVariables.colors.text[0]};
             `}
           >
             {props.title}
