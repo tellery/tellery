@@ -1,14 +1,20 @@
-import { IconCommonDataAsset, IconCommonDbt, IconCommonDrag, IconCommonHandler, IconCommonSql } from '@app/assets/icons'
+import { IconCommonBackLink, IconCommonHandler, IconCommonMore } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
+import { useOpenStory } from '@app/hooks'
 import { useSearchDBTBlocks, useSearchMetrics } from '@app/hooks/api'
+import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { DndItemDataBlockType, DnDItemTypes } from '@app/utils/dnd'
 import { useDraggable } from '@dnd-kit/core'
-import { css } from '@emotion/css'
-import React, { useMemo } from 'react'
+import { css, cx } from '@emotion/css'
+import Tippy from '@tippyjs/react'
+import { AnimationControls, motion, MotionStyle } from 'framer-motion'
+import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGetBlockTitleTextSnapshot } from './editor'
+import IconButton from './kit/IconButton'
+import { MenuItem } from './MenuItem'
 import { SideBarLoader } from './SideBarLoader'
 import { SideBarSection } from './SideBarSection'
 import { SideBarSectionHeader } from './SideBarSectionHeader'
@@ -35,76 +41,144 @@ export const DataAssetItem: React.FC<{ block: Editor.BaseBlock; currentStoryId: 
     } as DndItemDataBlockType
   })
 
-  const IconType = useMemo(() => {
-    if (block.type === Editor.BlockType.SQL || block.type === Editor.BlockType.SnapshotBlock) {
-      return IconCommonSql
-    } else if (block.type === Editor.BlockType.QueryBuilder) {
-      return IconCommonDataAsset
-    } else if (block.type === Editor.BlockType.DBT) {
-      return IconCommonDbt
-    }
-    return IconCommonSql
-  }, [block.type])
-
   return (
     <div
       className={css`
         display: flex;
-        align-items: center;
-        cursor: grab;
-        padding: 6px;
-        margin: 0 10px 5px 10px;
-        user-select: none;
-        height: 32px;
-        position: relative;
-        border-radius: 4px;
         :hover {
-          background: ${ThemingVariables.colors.gray[5]};
-          box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.12);
-        }
-        :hover {
-          > svg {
+          .button {
             opacity: 1;
           }
         }
       `}
-      {...listeners}
-      {...attributes}
-      ref={setNodeRef}
     >
-      <IconCommonHandler
+      <div
         className={css`
-          opacity: 0;
-          position: absolute;
-          left: -10px;
-          top: 0;
-          bottom: 0;
-          margin: auto;
-          transition: all 250ms;
+          display: flex;
+          align-items: center;
+          cursor: grab;
+          padding: 6px;
+          margin: 0 10px 5px 10px;
+          user-select: none;
+          height: 32px;
+          position: relative;
+          border-radius: 4px;
+          flex: 1;
+          :hover {
+            background: ${ThemingVariables.colors.gray[5]};
+            box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.12);
+          }
+          :hover {
+            > svg {
+              opacity: 1;
+            }
+          }
         `}
-        color={ThemingVariables.colors.gray[0]}
-      />
-      {/* <IconType
-        color={ThemingVariables.colors.gray[0]}
-        className={css`
-          flex-shrink: 0;
-          margin-right: 8px;
-        `}
-      /> */}
-
-      <span
-        className={css`
-          font-size: 12px;
-          line-height: 14px;
-          color: ${ThemingVariables.colors.text[0]};
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        `}
+        {...listeners}
+        {...attributes}
+        ref={setNodeRef}
       >
-        {getBlockTitle(block)}
-      </span>
+        <IconCommonHandler
+          className={css`
+            opacity: 0;
+            position: absolute;
+            left: -10px;
+            top: 0;
+            bottom: 0;
+            margin: auto;
+            transition: all 250ms;
+          `}
+          color={ThemingVariables.colors.gray[0]}
+        />
+        <span
+          className={css`
+            font-size: 12px;
+            line-height: 14px;
+            color: ${ThemingVariables.colors.text[0]};
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          `}
+        >
+          {getBlockTitle(block)}
+        </span>
+      </div>
+      <DataAssestMenu storyId={currentStoryId} block={block} />
     </div>
+  )
+}
+
+const DataAssestMenu: React.FC<{ storyId: string; block: Editor.DataAssetBlock }> = ({ storyId, block }) => {
+  const animation = useTippyMenuAnimation('scale')
+  const [visible, setVisible] = useState(false)
+  const show = () => setVisible(true)
+  const hide = () => setVisible(false)
+
+  return (
+    <Tippy
+      render={(attrs) => <DataAssestMenuContent block={block} animate={animation.controls} close={hide} {...attrs} />}
+      theme="tellery"
+      animation={true}
+      visible={visible}
+      onClickOutside={hide}
+      onMount={animation.onMount}
+      onHide={(instance) => {
+        animation.onHide(instance)
+      }}
+      duration={150}
+      arrow={false}
+      interactive
+      placement="bottom"
+    >
+      <IconButton
+        icon={IconCommonMore}
+        onClick={show}
+        className={cx(
+          'button',
+          css`
+            margin-right: 15px;
+            opacity: 0;
+            transition: opacity 150ms;
+          `
+        )}
+      />
+    </Tippy>
+  )
+}
+
+export const DataAssestMenuContent: React.FC<{
+  style?: MotionStyle
+  animate?: AnimationControls
+  block: Editor.DataAssetBlock
+  close: Function
+}> = (props) => {
+  const openStory = useOpenStory()
+  return (
+    <motion.div
+      style={props.style}
+      animate={props.animate}
+      transition={{ duration: 0.15 }}
+      className={cx(
+        css`
+          background: ${ThemingVariables.colors.gray[5]};
+          box-shadow: ${ThemingVariables.boxShadows[0]};
+          border-radius: 8px;
+          padding: 4px;
+          width: 130px;
+          display: block;
+          cursor: pointer;
+        `
+      )}
+    >
+      <MenuItem
+        icon={<IconCommonBackLink color={ThemingVariables.colors.text[0]} />}
+        title="Open in story"
+        onClick={() => {
+          props.close()
+          openStory(props.block.storyId!, { blockId: props.block.id })
+        }}
+      />
+    </motion.div>
   )
 }
 
