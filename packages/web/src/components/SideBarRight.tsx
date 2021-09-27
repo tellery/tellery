@@ -263,7 +263,7 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
         </TabPanel>
         <TabPanel {...tab}>
           <React.Suspense fallback={<></>}>
-            <SideBarVisualization storyId={storyId} blockId={blockId} />
+            <SideBarVisualization storyId={storyId} blockId={blockId} key={blockId} />
           </React.Suspense>
         </TabPanel>
         <TabPanel {...tab}>
