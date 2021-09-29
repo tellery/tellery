@@ -1,6 +1,6 @@
 import {
   IconCommonLink,
-  IconCommonQuestion,
+  IconCommonSqlQuery,
   IconMenuBulletedList,
   IconMenuCode,
   IconMenuDivider,
@@ -159,9 +159,9 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
       //   icon: <IconMenuText color={ThemingVariables.colors.text[0]} />
       // },
       {
-        title: 'Question',
+        title: 'SQL Query',
         action: createOrToggleBlock({ type: Editor.BlockType.Visualization }),
-        icon: <IconCommonQuestion color={ThemingVariables.colors.text[0]} />
+        icon: <IconCommonSqlQuery color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Heading 1',

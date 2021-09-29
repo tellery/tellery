@@ -1,5 +1,6 @@
 import { IconMiscNoResult } from '@app/assets/icons'
 import { BlockingUI } from '@app/components/BlockingUI'
+import { BlockTitle } from '@app/components/editor'
 import { charts } from '@app/components/v11n/charts'
 import { Diagram } from '@app/components/v11n/Diagram'
 import { Config, Type } from '@app/components/v11n/types'
@@ -26,7 +27,38 @@ const Page = () => {
 const VisulizationBlockEmbed: React.FC<{ blockId: string }> = ({ blockId }) => {
   const block = useBlockSuspense<Editor.VisualizationBlock>(blockId)
   const queryBlock = useBlockSuspense<Editor.QueryBlock>(block.content?.queryId!)
-  return <QuestionBlockBody snapshotId={queryBlock.content?.snapshotId} visualization={block.content?.visualization} />
+  return (
+    <>
+      <div
+        className={css`
+          display: flex;
+          height: 100vh;
+          flex-direction: column;
+          padding: 20px;
+        `}
+      >
+        <div
+          className={css`
+            color: ${ThemingVariables.colors.text[0]};
+            font-size: 24px;
+            flex: 0;
+          `}
+        >
+          <BlockTitle block={queryBlock} />
+        </div>
+        <div
+          className={css`
+            height: 1px;
+            width: 100%;
+            background: ${ThemingVariables.colors.gray[1]};
+            margin-top: 5px;
+            margin-bottom: 20px;
+          `}
+        ></div>
+        <QuestionBlockBody snapshotId={queryBlock.content?.snapshotId} visualization={block.content?.visualization} />
+      </div>
+    </>
+  )
 }
 
 const _QuestionBlockBody: React.ForwardRefRenderFunction<
@@ -51,15 +83,11 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
         e.stopPropagation()
       }}
       className={css`
-        height: 100%;
         width: 100%;
         min-height: 100px;
         min-width: 100px;
         user-select: text;
-        position: absolute;
-        padding: 0;
-        left: 0;
-        top: 0;
+        flex: 1;
       `}
     >
       {visualizationConfig && snapshot?.data && snapshot.data.fields ? (
