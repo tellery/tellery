@@ -22,9 +22,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: actions/setup-node@v2.4.0
+      - uses: actions/setup-node@v2.4.1
         with:
-          node-version: "14"
+          node-version: "16"
 
       - uses: domechn/postgresql-action@master
         with:
@@ -55,9 +55,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: actions/setup-node@v2.4.0
+      - uses: actions/setup-node@v2.4.1
         with:
-          node-version: "14"
+          node-version: "16"
 
       - uses: domechn/postgresql-action@master
         with:
