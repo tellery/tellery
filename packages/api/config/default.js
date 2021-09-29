@@ -42,6 +42,6 @@ module.exports = {
   frontendConfig: {
     SENTRY_DSN: process.env.FRONTEND_SENTRY_DSN || '',
     GA4_ID: process.env.FRONTEND_GA4_ID || '',
-    VERSION: '0.8.1',
+    VERSION: '0.8.2',
   },
 }
