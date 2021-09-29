@@ -44,10 +44,11 @@ function ip() {
 }
 
 function host() {
-  const protocol = config.get('server.protocol') as string
-  const h = (config.get('server.host') ?? ip()) as string
-  const webPort = config.get('server.webPort') as number
-  return webPort === 80 ? `${protocol}://${h}` : `${protocol}://${h}:${webPort}`
+  const protocol = config.get<string>('server.protocol')
+  const h = config.get<string>('server.host') ?? ip()
+  const webPort = config.get<number>('server.webPort')
+  const defaultPort = protocol === 'https' ? 443 : 80
+  return webPort === defaultPort ? `${protocol}://${h}` : `${protocol}://${h}:${webPort}`
 }
 
 // generate url for external usage

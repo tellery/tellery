@@ -1,4 +1,5 @@
 import { Context } from 'koa'
+import { IOptions } from 'cookies'
 import { getRepository } from 'typeorm'
 import { User } from '../core/user'
 import { UserEntity } from '../entities/user'
@@ -53,13 +54,22 @@ export async function getSuperUser(): Promise<User> {
  */
 export function setUserToken(ctx: Context, token: string | null): void {
   ctx.set(USER_TOKEN_HEADER_KEY, token ?? '')
-  // if token is not valid, set expireAt to 1970-01-01
-  const opts = token
+
+  const sameSiteOpts: IOptions = ctx.request.secure
     ? {
+        secure: true,
+        sameSite: 'none',
+      }
+    : {}
+
+  // if token is not valid, set expireAt to 1970-01-01
+  const opts: IOptions = token
+    ? {
+        ...sameSiteOpts,
         maxAge: 60 * 60 * 24 * 365 * 1000,
       }
     : {
-        expiresAt: new Date(0),
+        expires: new Date(0),
       }
   ctx.cookies.set(USER_TOKEN_HEADER_KEY, token, opts)
 }

@@ -48,6 +48,8 @@ const app = new Koa()
   .use(historyApiFallback({ index: '/index.html', whiteList: ['/api'] }))
   .use(mount('/', serve(path.join(staticDirPath, 'web'))))
 
+app.proxy = true
+
 const server = createServer(app.callback())
 
 if (!config.has('socket.url')) {
