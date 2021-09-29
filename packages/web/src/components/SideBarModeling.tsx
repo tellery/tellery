@@ -1,14 +1,14 @@
-import { IconCommonAdd, IconCommonSub } from '@app/assets/icons'
+import { IconCommonAdd, IconCommonAggregatedMetric, IconCommonCustomSqlMetric, IconCommonSub } from '@app/assets/icons'
 import { setBlockTranscation } from '@app/context/editorTranscations'
 import { useBlockSuspense, useGetProfileSpec, useQuerySnapshot, useQuestionDownstreams } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
 import { ThemingVariables } from '@app/styles'
-import { Editor, Metric } from '@app/types'
+import { CustomSQLMetric, Editor, Metric } from '@app/types'
 import { blockIdGenerator } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import produce from 'immer'
 import { WritableDraft } from 'immer/dist/internal'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { CheckBox } from './CheckBox'
 import { FormButton } from './kit/FormButton'
 import QuestionDownstreams from './QuestionDownstreams'
@@ -105,6 +105,7 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
                 <MetricItem
                   key={metricId}
                   name={metric.name}
+                  Icon={(metric as CustomSQLMetric).rawSql ? IconCommonCustomSqlMetric : IconCommonAggregatedMetric}
                   onChangeName={(name) => {
                     setBlock((draft) => {
                       if (draft.content?.metrics?.[metricId]) {
@@ -173,11 +174,17 @@ function getFuncs(type: string, aggregation?: Record<string, Record<string, stri
   return aggregation ? Object.keys(aggregation[type] || {}) : []
 }
 
-function MetricItem(props: { name: string; onChangeName(name: string): void; onRemove(): void }) {
+function MetricItem(props: {
+  name: string
+  Icon: React.ForwardRefExoticComponent<React.SVGAttributes<SVGElement>>
+  onChangeName(name: string): void
+  onRemove(): void
+}) {
   const [value, setValue] = useState('')
   useEffect(() => {
     setValue(props.name)
   }, [props.name])
+  const { Icon } = props
 
   return (
     <div
@@ -187,6 +194,7 @@ function MetricItem(props: { name: string; onChangeName(name: string): void; onR
         align-items: center;
       `}
     >
+      <Icon />
       <ConfigInput
         value={value}
         onChange={setValue}

@@ -74,19 +74,21 @@ export type Snapshot = {
   createdAt?: string
 }
 
-export type Metric = {
+export type AggregatedMetric = {
   name: string
   deprecated?: boolean
-} & (
-  | {
-      fieldName: string
-      fieldType: string
-      func: string
-    }
-  | {
-      rawSql: string
-    }
-)
+  fieldName: string
+  fieldType: string
+  func: string
+}
+
+export type CustomSQLMetric = {
+  name: string
+  deprecated?: boolean
+  rawSql: string
+}
+
+export type Metric = AggregatedMetric | CustomSQLMetric
 
 export type Dimension = {
   name: string

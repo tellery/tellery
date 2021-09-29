@@ -1,22 +1,30 @@
-import { IconCommonClose, IconCommonDataAsset, IconCommonDbt, IconCommonEdit, IconCommonLock } from '@app/assets/icons'
+import {
+  IconCommonClose,
+  IconCommonDataAsset,
+  IconCommonDbt,
+  IconCommonEdit,
+  IconCommonLock,
+  IconCommonSmartQuery,
+  IconCommonSqlQuery
+} from '@app/assets/icons'
 import { useBlockSuspense } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { DEFAULT_TITLE } from '@app/utils'
 import { css } from '@emotion/css'
-import React, { useCallback, useRef, useState, useEffect } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import PerfectScrollbar from 'react-perfect-scrollbar'
 import { Tab, TabList, TabPanel, useTabState } from 'reakit/Tab'
 import { useSideBarQuestionEditor, useSideBarQuestionEditorState } from '../hooks/useSideBarQuestionEditor'
 import { ContentEditablePureText, EditableSimpleRef } from './editor/BlockBase/ContentEditablePureText'
 import IconButton from './kit/IconButton'
 import { SideBarDataAssets } from './SideBarDataAssets'
-import SideBarVisualization from './SideBarVisualization'
 import SideBarModeling from './SideBarModeling'
-import { SideBarTabHeader } from './v11n/components/Tab'
 import SideBarSmartQuery from './SideBarSmartQuery'
-import PerfectScrollbar from 'react-perfect-scrollbar'
+import SideBarVisualization from './SideBarVisualization'
+import { SideBarTabHeader } from './v11n/components/Tab'
 
 export const DefaultSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
   const tab = useTabState()
@@ -61,6 +69,14 @@ export const DefaultSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
   )
 }
 
+const BLOCKTYPE_ICON = {
+  [Editor.BlockType.QueryBuilder]: IconCommonDataAsset,
+  [Editor.BlockType.SnapshotBlock]: IconCommonLock,
+  [Editor.BlockType.SmartQuery]: IconCommonSmartQuery,
+  [Editor.BlockType.DBT]: IconCommonDbt,
+  [Editor.BlockType.SQL]: IconCommonSqlQuery
+}
+
 export const QuestionTitleEditor: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
   const queryBlock = useBlockSuspense(blockId)
   const blockTranscation = useBlockTranscations()
@@ -73,6 +89,7 @@ export const QuestionTitleEditor: React.FC<{ blockId: string; storyId: string }>
   const [titleEditing, setTitleEditing] = useState(false)
   const contentEditableRef = useRef<EditableSimpleRef | null>(null)
   const sideBarQuestionEditor = useSideBarQuestionEditor(storyId)
+  const Icon = BLOCKTYPE_ICON[queryBlock.type as keyof typeof BLOCKTYPE_ICON]
 
   return (
     <div
@@ -90,13 +107,7 @@ export const QuestionTitleEditor: React.FC<{ blockId: string; storyId: string }>
           margin-right: 10px;
         `}
       >
-        {queryBlock.type === Editor.BlockType.QueryBuilder ? (
-          <IconCommonDataAsset color={ThemingVariables.colors.text[0]} />
-        ) : null}
-        {queryBlock.type === Editor.BlockType.SnapshotBlock ? (
-          <IconCommonLock color={ThemingVariables.colors.text[0]} />
-        ) : null}
-        {queryBlock.type === Editor.BlockType.DBT ? <IconCommonDbt color={ThemingVariables.colors.text[0]} /> : null}
+        {Icon ? <Icon color={ThemingVariables.colors.text[0]} /> : null}
       </div>
       <ContentEditablePureText
         tokens={queryBlock?.content?.title}
