@@ -61,8 +61,5 @@ export function setUserToken(ctx: Context, token: string | null): void {
     : {
         expiresAt: new Date(0),
       }
-  ctx.cookies.set(USER_TOKEN_HEADER_KEY, token, {
-    sameSite: 'none',
-    ...opts,
-  })
+  ctx.cookies.set(USER_TOKEN_HEADER_KEY, token, opts)
 }
