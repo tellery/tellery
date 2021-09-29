@@ -1,14 +1,11 @@
 import { request, updateUser, userConfirm, userGenerate, userLogin, userLogout } from '@app/api'
 import type { User } from '@app/hooks/api'
-import invariant from 'tiny-invariant'
-import { createContext, useCallback, useContext, useState, useEffect } from 'react'
-import { useQuery } from 'react-query'
-import { useLocation } from 'react-router-dom'
 import { tracker } from '@app/utils/openReplay'
+import { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
+import invariant from 'tiny-invariant'
 
 export function useProvideAuth() {
-  const location = useLocation()
-
   const [user, setUser] = useState<User>()
 
   const login = useCallback(async (args: { email: string; password: string }) => {
@@ -45,15 +42,10 @@ export function useProvideAuth() {
     []
   )
 
-  useQuery(
-    ['user', 'me'],
-    async () => {
-      const { data } = await request.post<User>('/api/users/me')
-      setUser(data)
-      return data
-    },
-    { suspense: false, retry: false, enabled: location.pathname !== '/confirm' }
-  )
+  const autoLogin = useCallback(async () => {
+    const { data } = await request.post<User>('/api/users/me')
+    setUser(data)
+  }, [])
 
   useEffect(() => {
     user?.name && tracker?.setUserID(user?.name)
@@ -65,6 +57,7 @@ export function useProvideAuth() {
     logout,
     confirm,
     // generate,
+    autoLogin,
     update,
     setUser
   }

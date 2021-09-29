@@ -5,8 +5,8 @@ import viteSentry from 'vite-plugin-sentry'
 import reactJsx from 'vite-react-jsx'
 import { visualizer } from 'rollup-plugin-visualizer'
 import optimizeLodashImports from 'rollup-plugin-optimize-lodash-imports'
+const { resolve } = require('path')
 const reactSvgPlugin = require('vite-plugin-react-svg')
-
 /*
 	Configure sentry plugin
 */
@@ -42,6 +42,14 @@ export default defineConfig(({ command, mode }: { command: string; mode: string 
     server: {
       proxy: {
         '/api': process.env.DEV_PROXY_API || 'http://localhost:8000'
+      }
+    },
+    build: {
+      rollupOptions: {
+        input: {
+          main: resolve(__dirname, 'index.html'),
+          embed: resolve(__dirname, 'embed.html')
+        }
       }
     },
     plugins: [

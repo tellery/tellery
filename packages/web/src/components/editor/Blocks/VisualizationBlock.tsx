@@ -920,6 +920,27 @@ export const MoreDropdownSelect: React.FC<{
               />
               <StyledMenuItem
                 {...menu}
+                title={t`Copy Embed Link`}
+                icon={<IconCommonLink color={ThemingVariables.colors.text[0]} />}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  copy('placeholder', {
+                    onCopy: (clipboardData) => {
+                      invariant(block, 'block is null')
+                      const dataTranser = clipboardData as DataTransfer
+                      dataTranser.setData(
+                        'text/plain',
+                        `${window.location.protocol}//${window.location.host}/embed/${block?.id}`
+                      )
+                    }
+                  })
+                  toast('Link Copied')
+                  closeMenu()
+                }}
+              />
+              <StyledMenuItem
+                {...menu}
                 title={t`Duplicate`}
                 icon={<IconMenuDuplicate color={ThemingVariables.colors.text[0]} />}
                 onClick={(e) => {
