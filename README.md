@@ -25,23 +25,16 @@
 </p>
 
 
-
-Tellery comes with a bucket of lego-ish building blocks. From [dashboards](https://demo.tellery.io/story/L7LxDbPpXCL4BQ9QHx6T4) to reports, you can customize it to your needs. Tellery users can ask questions against [Data assets](https://demo.tellery.io/story/vtkequmHGz5QBD9WjVflU) instead of communicating in only tables and columns. Data assets provide a central business abstraction over your data.
-
-
-- [x] 💎 Let business users get answers in just a few clicks. Tellery will automatically rollup the metrics on the fly.
-- [x] 📏 Delivering insights through data assets makes your metrics consistent and easy to maintain.
-- [x] 💪 Data assets can also be incorporated into deep analyses with SQL.
-
+Tellery lets you build metrics using SQL and bring them to your team. Metrics are defined consistently and constantly updated, no longer scattered across tools, and recreated with no oversight.
 
 
 ## Features
 
-- Familiar notebook interface where you can create charts and texts with drag-and-drop ease
-- Rich text styling and markdown syntax for telling a story
+- Let business users get answers in just a few clicks. No longer communicate in tables and columns.
+- Build beautiful documents & dashboards visually with drag-and-drop ease
+- An editor with rich text styling features, slash commands, and markdown support
 - A modern SQL editor with multi-tabs and auto-complete
-- Reference data assets or another question like CTEs
-- Capture ad-hoc analyses like taking notes
+- Model your data with just SQL and reference like CTEs
 - Review work and collaborate in real-time with multiplayer
 - Import dbt models and sources and inspect their metadata while editing SQL
 
