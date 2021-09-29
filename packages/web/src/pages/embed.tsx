@@ -35,6 +35,7 @@ const VisulizationBlockEmbed: React.FC<{ blockId: string }> = ({ blockId }) => {
           height: 100vh;
           flex-direction: column;
           padding: 20px;
+          background: #fff;
         `}
       >
         <div
