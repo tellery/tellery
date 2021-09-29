@@ -960,7 +960,7 @@ export const MoreDropdownSelect: React.FC<{
               {canRefresh && (
                 <StyledMenuItem
                   {...menu}
-                  title={t`Refresh question`}
+                  title={t`Refresh`}
                   icon={<IconCommonRefresh color={ThemingVariables.colors.text[0]} />}
                   onClick={() => {
                     mutateSnapshot.execute(queryBlock)
@@ -970,7 +970,7 @@ export const MoreDropdownSelect: React.FC<{
               )}
               <StyledMenuItem
                 {...menu}
-                title={t`Question settings`}
+                title={t`settings`}
                 icon={<IconCommonSetting color={ThemingVariables.colors.text[0]} />}
                 onClick={() => {
                   sideBarQuestionEditor.open({ blockId: block.id, activeTab: 'Visualization' })
