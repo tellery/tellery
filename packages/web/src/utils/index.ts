@@ -18,9 +18,9 @@ export enum TELLERY_MIME_TYPES {
   TOKEN = 'text/tellery-tokens-v1',
   MONACO = 'vscode-editor-data'
 }
-export const VARIABLE_REGEX = /\{\{([a-z|A-Z|0-9|_|-]{0,20})\}\}/
+export const VARIABLE_REGEX = /\{\{([a-z|A-Z|0-9|_|-]{0,20})\}\}/g
 
-export const BLOCK_ID_REGX = /\{\{([a-z|A-Z|0-9|_|-]{21})\}\}/
+export const BLOCK_ID_REGX = /\{\{([a-z|A-Z|0-9|_|-]{21})\}\}/g
 
 const STORY_BLOCK_REGEX = new RegExp(
   `${window.location.protocol}//${window.location.host}/story/([a-z|A-Z|0-9|_|-]+)(?:#([a-z|A-Z|0-9|_|-]+))?`
