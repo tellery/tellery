@@ -106,9 +106,7 @@ class PostgreSQLConnector : JDBCConnector() {
             val createTableSQL = """
                 |CREATE TABLE $tableName
                 |(
-                |    ID serial,
                 |    $injection
-                |    PRIMARY KEY (ID)
                 |)
                 |""".trimMargin()
 

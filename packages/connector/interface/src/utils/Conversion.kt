@@ -3,9 +3,9 @@ package io.tellery.utils
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.math.BigDecimal
+import java.sql.Date
 import java.sql.PreparedStatement
 import java.sql.Timestamp
-import java.sql.Date
 import java.sql.Types
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -21,20 +21,25 @@ fun toSQLType(type: Int): String {
     return SQLTypeValueMap[type] ?: "Unknown"
 }
 
-fun PreparedStatement.setByType(index: Int, sqlType: Int, value: String) {
-    when (sqlType) {
-        Types.INTEGER -> this.setInt(index, castToInt(value))
-        Types.BIGINT -> this.setBigDecimal(index, castToBigDecimal(value))
-        Types.BOOLEAN -> this.setBoolean(index, castToBoolean(value))
-        Types.BLOB -> this.setBlob(index, decodeFromBase64(value))
-        Types.VARBINARY -> this.setBinaryStream(index, decodeFromBase64(value))
-        Types.DECIMAL -> this.setDouble(index, castToDouble(value))
-        Types.FLOAT -> this.setFloat(index, castToFloat(value))
-        Types.VARCHAR -> this.setString(index, value)
-        Types.DATE -> this.setDate(index, castToDate(value))
-        Types.TIMESTAMP -> this.setTimestamp(index, castToTimestamp(value))
-        else -> this.setString(index, value)
-    }
+fun PreparedStatement.setByType(index: Int, sqlType: Int, value: String?) {
+    // the case that value itself is null corresponds to empty entry in csv
+    value?.let {
+        fun <T> setHelper(caster: (String) -> T, setter: PreparedStatement.(Int, T) -> Unit) {
+            return this.setter(index, caster(value))
+        }
+        when (sqlType) {
+            Types.INTEGER -> setHelper(::castToInt, PreparedStatement::setInt)
+            Types.BIGINT -> setHelper(::castToBigDecimal, PreparedStatement::setBigDecimal)
+            Types.BOOLEAN -> setHelper(::castToBoolean, PreparedStatement::setBoolean)
+            Types.BLOB -> setHelper(::decodeFromBase64, PreparedStatement::setBlob)
+            Types.VARBINARY -> setHelper(::decodeFromBase64, PreparedStatement::setBinaryStream)
+            Types.DECIMAL -> setHelper(::castToDouble, PreparedStatement::setDouble)
+            Types.FLOAT -> setHelper(::castToFloat, PreparedStatement::setFloat)
+            Types.DATE -> setHelper(::castToDate, PreparedStatement::setDate)
+            Types.TIMESTAMP -> setHelper(::castToTimestamp, PreparedStatement::setTimestamp)
+            else -> this.setString(index, value)
+        }
+    } ?: this.setNull(index, sqlType)
 }
 
 fun castToInt(s: String): Int {
@@ -76,6 +81,7 @@ fun castToTimestamp(s: String): Timestamp {
         Timestamp(castToLong(s))
     }
 }
+
 val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd[ HH:mm:ss[.SSS]][ zzz]")
 fun castToDate(s: String): Date {
     val localDate = LocalDate.parse(s, formatter)
