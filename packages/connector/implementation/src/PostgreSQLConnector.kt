@@ -103,10 +103,15 @@ class PostgreSQLConnector : JDBCConnector() {
             }
             val tableName = if (schema != null) "$schema.$collection" else collection
 
+            val nameSet = fields.map { it.name.uppercase() }.toSet()
+            val idName = if ("ID" in nameSet) "TELLERY_GENERATED_ID" else "ID"
+
             val createTableSQL = """
                 |CREATE TABLE $tableName
                 |(
+                |    $idName serial,
                 |    $injection
+                |    PRIMARY KEY ($idName)
                 |)
                 |""".trimMargin()
 
