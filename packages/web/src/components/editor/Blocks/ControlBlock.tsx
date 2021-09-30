@@ -21,11 +21,17 @@ const ControlBlock: BlockComponent<
   const contentRef = useRef<HTMLDivElement | null>(null)
   const { readonly } = useBlockBehavior()
   const workspace = useWorkspace()
+  const inputRef = useRef<HTMLInputElement | null>(null)
   const blockTranscation = useBlockTranscations()
   const variableName = block.content.name ?? block.id
   const [variableValue, setVariableValue] = useVariable(block.storyId!, variableName)
   const defaultValue = block.content.defaultValue
   const isDefaultValue = defaultValue === variableValue
+
+  useEffect(() => {
+    if (!inputRef.current) return
+    inputRef.current.value = defaultValue
+  }, [defaultValue])
 
   useEffect(() => {
     if (variableValue === undefined && block.content.defaultValue) {
@@ -84,6 +90,7 @@ const ControlBlock: BlockComponent<
                 onBlur={(e) => {
                   submitChange(e.currentTarget.value)
                 }}
+                ref={inputRef}
                 style={{
                   border: `1px ${isDefaultValue ? 'solid' : 'dashed'} ${ThemingVariables.colors.gray[1]}`
                 }}
