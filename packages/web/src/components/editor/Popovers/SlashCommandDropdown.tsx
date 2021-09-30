@@ -13,6 +13,7 @@ import {
   IconMenuToggleList,
   IconMenuUpload
 } from '@app/assets/icons'
+import { createEmptyBlock, DEFAULT_VISULIZATION_FORMAT } from '@app/helpers/blockFactory'
 import { useBindHovering } from '@app/hooks'
 import { useBlockSuspense } from '@app/hooks/api'
 import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
@@ -130,7 +131,14 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
       let blockId = ''
       if (isEmptyTitleBlock(block)) {
         blockId = block.id
-        editor.toggleBlockType(id, options.type!, 0)
+        const type = options.type!
+        editor?.updateBlockProps(id, ['type'], type)
+        if (options.content) {
+          editor?.updateBlockProps(id, ['content'], options.content!)
+        }
+        if (options.format) {
+          editor?.updateBlockProps(id, ['format'], options.format!)
+        }
       } else {
         const newBlock = editor.insertNewEmptyBlock(options, id, 'bottom')
         blockId = newBlock.id
@@ -160,7 +168,7 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
       // },
       {
         title: 'SQL Query',
-        action: createOrToggleBlock({ type: Editor.BlockType.Visualization }),
+        action: createOrToggleBlock({ type: Editor.BlockType.Visualization, format: DEFAULT_VISULIZATION_FORMAT }),
         icon: <IconCommonSqlQuery color={ThemingVariables.colors.text[0]} />
       },
       {

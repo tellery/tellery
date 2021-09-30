@@ -449,13 +449,7 @@ const _StoryEditor: React.FC<{
         const splitedTokens = splitToken(blockTitle)
         updateBlockTitle(id, mergeTokens(splitedTokens.slice(removePrefixCount)))
       }
-      if (isVisualizationBlock(type)) {
-        const newBlock = createEmptyBlock({ type: Editor.BlockType.Visualization })
-        updateBlockProps(id, ['format'], newBlock.format)
-        updateBlockProps(id, ['type'], type)
-      } else {
-        updateBlockProps(id, ['type'], type)
-      }
+      updateBlockProps(id, ['type'], type)
     },
     [snapshot, updateBlockProps, updateBlockTitle]
   )

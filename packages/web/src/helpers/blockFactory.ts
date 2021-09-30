@@ -12,6 +12,11 @@ export const useCreateEmptyBlock = () => {
   }
 }
 
+export const DEFAULT_VISULIZATION_FORMAT = {
+  width: DEFAULT_QUESTION_BLOCK_WIDTH,
+  aspectRatio: DEFAULT_QUESTION_BLOCK_ASPECT_RATIO
+}
+
 export const createEmptyBlock = <T extends Editor.BaseBlock = Editor.BaseBlock>(args: Partial<T>) => {
   const id = args?.id ?? blockIdGenerator()
   const now = new Date().valueOf()
@@ -64,8 +69,7 @@ export const createEmptyBlock = <T extends Editor.BaseBlock = Editor.BaseBlock>(
             defaultValue: getDefaultValue(controlBlock.content.type)
           },
           format: {
-            width: DEFAULT_QUESTION_BLOCK_WIDTH,
-            aspectRatio: DEFAULT_QUESTION_BLOCK_ASPECT_RATIO,
+            ...DEFAULT_VISULIZATION_FORMAT,
             ...args.format
           }
         }

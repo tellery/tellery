@@ -1,15 +1,18 @@
 import { sqlRequest } from '@app/api'
 import { isExecuteableBlockType } from '@app/components/editor/Blocks/utils'
+import { QuerySelectorFamily } from '@app/components/editor/store/queries'
 import { createTranscation } from '@app/context/editorTranscations'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { QuerySnapshotIdAtom, useCreateSnapshot } from '@app/store/block'
 import { Editor, Story } from '@app/types'
 import { blockIdGenerator } from '@app/utils'
 import dayjs from 'dayjs'
+import { dequal } from 'dequal'
 import React, { useCallback, useContext, useEffect, useMemo } from 'react'
 import { useIsMutating, useQueryClient } from 'react-query'
-import { useRecoilCallback } from 'recoil'
+import { useRecoilCallback, useRecoilValue, waitForAll } from 'recoil'
 import invariant from 'tiny-invariant'
+import { usePrevious } from '.'
 import { useBlockSuspense, useFetchStoryChunk } from './api'
 import { useCommit } from './useCommit'
 import { useGetCompiledSQL } from './useCompiledQuery'
@@ -39,7 +42,7 @@ export const useRefreshSnapshot = (storyId: string) => {
           mutation.cancel()
         })
 
-        queryClient.executeMutation({
+        return queryClient.executeMutation({
           mutationFn: sqlRequest,
           variables: {
             workspaceId: workspace.id,
@@ -144,7 +147,7 @@ export const useRefreshSnapshot = (storyId: string) => {
     [queryClient]
   )
 
-  const snapshotMutation = useMemo<SnapshotMutation>(
+  const snapshotMutation = useMemo(
     () => ({
       execute,
       cancel
@@ -160,6 +163,10 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
   const storyBlock = useBlockSuspense<Story>(storyId)
   const resourcesBlocks = useStoryResources(storyId)
   const queryClient = useQueryClient()
+  const compiledQueries = useRecoilValue(
+    waitForAll(resourcesBlocks.map((block) => QuerySelectorFamily({ storyId, queryId: block.id })))
+  )
+  const previouseCompiledQueries = usePrevious(compiledQueries)
 
   const executeableQuestionBlocks = useMemo(() => {
     return resourcesBlocks.filter((block) => isExecuteableBlockType(block.type))
@@ -197,6 +204,22 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
       }
     }
   }, [queryClient, refreshSnapshot, resourcesBlocks])
+
+  useEffect(() => {
+    if (!previouseCompiledQueries) return
+    for (let i = 0; i < resourcesBlocks.length; i++) {
+      const previousQuery = previouseCompiledQueries[i]
+      const currentQuery = compiledQueries[i]
+      if (!previousQuery || !currentQuery) continue
+      if (
+        (previousQuery.sql !== currentQuery.sql && currentQuery.isTemp) ||
+        currentQuery.isTemp !== previousQuery.isTemp
+      ) {
+        const queryBlock = resourcesBlocks[i]
+        refreshSnapshot.execute(queryBlock)
+      }
+    }
+  }, [previouseCompiledQueries, compiledQueries, resourcesBlocks, refreshSnapshot])
 
   const runAll = useCallback(() => {
     executeableQuestionBlocks.forEach((questionBlock: Editor.DataAssetBlock) => {
@@ -244,6 +267,6 @@ export const useSnapshotMutating = (blockId: string) => {
 }
 
 export interface SnapshotMutation {
-  execute: (questionBlock: Editor.DataAssetBlock) => void
+  execute: (questionBlock: Editor.DataAssetBlock) => Promise<void>
   cancel: (blockId: string) => void
 }

@@ -20,6 +20,7 @@ import {
 import { useSideBarQuestionEditor } from '@app/hooks/useSideBarQuestionEditor'
 import { useSqlEditor } from '@app/hooks/useSqlEditor'
 import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
+import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { useCreateSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
@@ -536,7 +537,7 @@ export const StoryQuestionEditor: React.FC<{
   const executeSQL = useExecuteSQL(`draft/${block.id}`)
 
   const save = useCallback(
-    async (snapshotId?: string) => {
+    (snapshotId?: string) => {
       if (!block) {
         toast.error('block is undefined')
         return
@@ -570,6 +571,8 @@ export const StoryQuestionEditor: React.FC<{
   const profileType = profile?.type
   const createSnapshot = useCreateSnapshot()
   const sidebarEditor = useSideBarQuestionEditor(storyId)
+  const refreshSnapshot = useRefreshSnapshot(storyId)
+  const mutatingCount = useSnapshotMutating(queryBlock.id)
 
   const run = useCallback(async () => {
     if (!queryBlock) return
@@ -577,58 +580,59 @@ export const StoryQuestionEditor: React.FC<{
     if (!isExecuteableBlockType(queryBlock.type)) {
       return
     }
-    const data = await executeSQL.mutateAsync({
-      workspaceId: workspace.id,
-      sql,
-      questionId: queryBlock.id,
-      connectorId: workspace.preferences.connectorId!,
-      profile: workspace.preferences.profile!
-    })
-    if (typeof data !== 'object' || data.errMsg) {
-      setSQLError(data.errMsg ?? 'unknown error')
-      setSqlSidePanel(true)
-      return
-    }
-    setSQLError(null)
-    setSqlSidePanel(false)
-    const snapshotId = blockIdGenerator()
-    const originalBlockId = queryBlock.id
-    invariant(queryBlock, 'originalBlock is undefined')
-    // TODO: fix snap shot question id
-    await createSnapshot({
-      snapshotId,
-      questionId: originalBlockId,
-      sql: sql,
-      data: data,
-      workspaceId: workspace.id
-    })
+    save()
 
-    save(snapshotId)
+    // TODO: wait for save
+    setTimeout(() => {
+      refreshSnapshot.execute(queryBlock).then((res) => {
+        if (res.errMsg) {
+          setSQLError(res.errMsg)
+        }
+      })
+    }, 0)
+
+    // const data = await executeSQL.mutateAsync({
+    //   workspaceId: workspace.id,
+    //   sql,
+    //   questionId: queryBlock.id,
+    //   connectorId: workspace.preferences.connectorId!,
+    //   profile: workspace.preferences.profile!
+    // })
+    // if (typeof data !== 'object' || data.errMsg) {
+    //   setSQLError(data.errMsg ?? 'unknown error')
+    //   setSqlSidePanel(true)
+    //   return
+    // }
+    // setSQLError(null)
+    // setSqlSidePanel(false)
+    // const snapshotId = blockIdGenerator()
+    // const originalBlockId = queryBlock.id
+    // invariant(queryBlock, 'originalBlock is undefined')
+    // // TODO: fix snap shot question id
+    // await createSnapshot({
+    //   snapshotId,
+    //   questionId: originalBlockId,
+    //   sql: sql,
+    //   data: data,
+    //   workspaceId: workspace.id
+    // })
+
+    // save(snapshotId)
     sidebarEditor.open({ blockId: block.id, activeTab: 'Visualization' })
-  }, [
-    queryBlock,
-    sql,
-    executeSQL,
-    workspace.id,
-    workspace.preferences.connectorId,
-    workspace.preferences.profile,
-    createSnapshot,
-    save,
-    sidebarEditor,
-    block.id
-  ])
+  }, [queryBlock, sql, save, refreshSnapshot, sidebarEditor, block.id])
 
   const cancelExecuteSql = useCallback(() => {
     if (block?.id) {
-      const mutations = queryClient.getMutationCache().getAll()
-      mutations
-        .filter((mutation) => mutation.options.mutationKey === `draft/${block.id}`)
-        .forEach((mutation) => {
-          queryClient.getMutationCache().remove(mutation)
-        })
-      executeSQL.reset()
+      refreshSnapshot.cancel(queryBlock?.id)
+      // const mutations = queryClient.getMutationCache().getAll()
+      // mutations
+      //   .filter((mutation) => mutation.options.mutationKey === `draft/${block.id}`)
+      //   .forEach((mutation) => {
+      //     queryClient.getMutationCache().remove(mutation)
+      //   })
+      // executeSQL.reset()
     }
-  }, [executeSQL, block?.id])
+  }, [block?.id, queryBlock?.id, refreshSnapshot])
 
   const keyDownHandler = useCallback(
     (e: React.KeyboardEvent) => {
@@ -658,7 +662,7 @@ export const StoryQuestionEditor: React.FC<{
     [run, save]
   )
 
-  const mutatingCount = useDraftBlockMutating(block.id)
+  // const mutatingCount = useDraftBlockMutating(block.id)
 
   const isDBT = block.type === Editor.BlockType.DBT
 
