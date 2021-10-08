@@ -2,8 +2,8 @@ version: "3.6"
 
 x-connector-volume: &connector_volume
   type: bind
-  source: ./tellery-connector/profiles.json
-  target: /usr/app/profiles.json
+  source: ./tellery-connector/profile.json
+  target: /usr/app/profile.json
 
 x-restart-policy: &restart_policy
   restart: unless-stopped
@@ -99,6 +99,9 @@ services:
 
   tellery-connector:
     <<: *restart_policy
+    environment:
+      connector.deployMode: "LOCAL"
+      connector.workspaceId: "0"
     image: ${TELLERY_CONNECTOR_IMAGE}
     ports:
       - 50051:50051
@@ -113,10 +116,10 @@ services:
     command:
       - /bin/sh
       - -c
-      - /usr/app/echo-profiles.sh
+      - /usr/app/echo-profile.sh
     volumes:
       - <<: *connector_volume
-      - ./echo-profiles.sh:/usr/app/echo-profiles.sh
+      - ./echo-profile.sh:/usr/app/echo-profile.sh
 
 volumes:
   pg_data: {}
