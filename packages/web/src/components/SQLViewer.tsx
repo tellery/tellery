@@ -136,7 +136,9 @@ export function SQLViewer(props: {
             }
           `
         )}
-        wrapperClassName={props.className}
+        wrapperProps={{
+          className: props.className
+        }}
         theme="tellery"
         value={props.value}
         height="100%"

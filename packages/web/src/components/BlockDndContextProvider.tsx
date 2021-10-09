@@ -12,11 +12,14 @@ import {
   DragMoveEvent,
   DragOverlay,
   DragStartEvent,
-  LayoutMeasuringStrategy,
+  MeasuringConfiguration,
+  MeasuringStrategy,
   MouseSensor,
   useDraggable,
   useSensor,
-  useSensors
+  useSensors,
+  getBoundingClientRect,
+  MeasuringFrequency
 } from '@dnd-kit/core'
 import { css, cx } from '@emotion/css'
 import { Global } from '@emotion/react'
@@ -35,7 +38,13 @@ import { DndSensor } from '../lib/dnd-kit/dndSensor'
 import { useSetUploadResource } from './editor/hooks/useUploadResource'
 import { getSubsetOfBlocksSnapshot } from './editor/utils'
 
-const DEFAULT_LAYOUT_MEASURING = { strategy: LayoutMeasuringStrategy.BeforeDragging }
+const DEFAULT_LAYOUT_MEASURING: MeasuringConfiguration = {
+  droppable: {
+    measure: getBoundingClientRect,
+    strategy: MeasuringStrategy.BeforeDragging,
+    frequency: MeasuringFrequency.Optimized
+  }
+}
 
 const _TelleryDNDContext: React.FC<{
   dataTransferRef: React.MutableRefObject<DataTransfer | null>
@@ -252,7 +261,7 @@ const _TelleryDNDContext: React.FC<{
       onDragCancel={handleDragCancel}
       sensors={sensors}
       onDragStart={handleDragStart}
-      layoutMeasuring={DEFAULT_LAYOUT_MEASURING}
+      measuring={DEFAULT_LAYOUT_MEASURING}
     >
       {children}
     </DndContext>

@@ -213,7 +213,9 @@ export function SQLEditor(props: {
             }
           `
         )}
-        wrapperClassName={props.className}
+        wrapperProps={{
+          className: props.className
+        }}
         theme="tellery"
         value={props.value}
         onChange={handleChange}
@@ -316,9 +318,11 @@ function TransclusionContentWidget(props: {
                     }}
                     theme="tellery"
                     loading={<CircularLoading size={50} color={ThemingVariables.colors.gray[0]} />}
-                    wrapperClassName={css`
-                      padding: 0 15px;
-                    `}
+                    wrapperProps={{
+                      className: css`
+                        padding: 0 15px;
+                      `
+                    }}
                   />
                 ) : null}
               </div>

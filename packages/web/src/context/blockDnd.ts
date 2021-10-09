@@ -41,22 +41,25 @@ const getMinvalueEntry = (entries: [string, number][]) => {
   return null
 }
 
-export const closetBorder: CollisionDetection = (rects, centerRect) => {
-  const hitedRects = rects
-    .filter((rectEntry) => {
-      const [, rect] = rectEntry
+export const closetBorder: CollisionDetection = ({ active, collisionRect, droppableContainers }) => {
+  const hitedRects = droppableContainers
+    .filter((container) => {
+      const { rect } = container
+      const currentRect = rect.current
+      if (!currentRect) return false
       if (
-        centerRect.left >= rect.offsetLeft &&
-        centerRect.top >= rect.offsetTop &&
-        centerRect.left <= rect.offsetLeft + rect.width &&
-        centerRect.top <= rect.offsetTop + rect.height
+        collisionRect.left >= currentRect.offsetLeft &&
+        collisionRect.top >= currentRect.offsetTop &&
+        collisionRect.left <= currentRect.offsetLeft + currentRect.width &&
+        collisionRect.top <= currentRect.offsetTop + currentRect.height
       ) {
         return true
       }
       return false
     })
-    .map(([_, rect]) => {
-      return [_, rect.width * rect.height]
+    .map(({ id, rect }) => {
+      invariant(rect.current)
+      return [id, rect.current.width * rect.current.height]
     }) as [string, number][]
 
   if (hitedRects.length) {
@@ -64,62 +67,77 @@ export const closetBorder: CollisionDetection = (rects, centerRect) => {
     return result[0] as string
   }
 
-  const closestLeftDistances = rects
-    .filter(([id]) => {
+  const closestLeftDistances = droppableContainers
+    .filter(({ id }) => {
       return id.indexOf('row') === -1
     })
-    .filter(([_, rect]) => {
+    .filter(({ rect }) => {
+      const currentRect = rect.current
+      if (!currentRect) return false
       return (
-        centerRect.left <= rect.offsetLeft &&
-        centerRect.top >= rect.offsetTop &&
-        centerRect.top <= rect.offsetTop + rect.height
+        collisionRect.left <= currentRect.offsetLeft &&
+        collisionRect.top >= currentRect.offsetTop &&
+        collisionRect.top <= currentRect.offsetTop + currentRect.height
       )
     })
-    .map(([id, rect]) => {
-      return [id, rect.offsetLeft - centerRect.offsetTop]
+    .map(({ id, rect }) => {
+      invariant(rect.current)
+      return [id, rect.current.offsetLeft - collisionRect.offsetTop]
     }) as [string, number][]
 
   const closetLeft = getMinvalueEntry(closestLeftDistances)
 
-  const closestRightDistances = rects
-    .filter(([id]) => {
+  const closestRightDistances = droppableContainers
+    .filter(({ id }) => {
       return id.indexOf('row') === -1
     })
-    .filter(([_, rect]) => {
+    .filter(({ rect }) => {
+      const currentRect = rect.current
+      if (!currentRect) return false
       return (
-        centerRect.left >= rect.offsetLeft + rect.width &&
-        centerRect.top >= rect.offsetTop &&
-        centerRect.top <= rect.offsetTop + rect.height
+        collisionRect.left >= currentRect.offsetLeft + currentRect.width &&
+        collisionRect.top >= currentRect.offsetTop &&
+        collisionRect.top <= currentRect.offsetTop + currentRect.height
       )
     })
-    .map(([id, rect]) => {
-      return [id, centerRect.left - (rect.offsetLeft + rect.width)]
+    .map(({ id, rect }) => {
+      const currentRect = rect.current
+      if (!currentRect) return false
+      return [id, collisionRect.left - (currentRect.offsetLeft + currentRect.width)]
     }) as [string, number][]
   const closetRight = getMinvalueEntry(closestRightDistances)
 
-  const closestTopDistances = rects
-    .filter(([_, rect]) => {
+  const closestTopDistances = droppableContainers
+    .filter(({ rect }) => {
+      const currentRect = rect.current
+      if (!currentRect) return false
       return (
-        centerRect.top <= rect.offsetTop &&
-        centerRect.left >= rect.offsetLeft &&
-        centerRect.left <= rect.offsetLeft + rect.width
+        collisionRect.top <= currentRect.offsetTop &&
+        collisionRect.left >= currentRect.offsetLeft &&
+        collisionRect.left <= currentRect.offsetLeft + currentRect.width
       )
     })
-    .map(([id, rect]) => {
-      return [id, rect.offsetTop - centerRect.top]
+    .map(({ id, rect }) => {
+      const currentRect = rect.current
+      if (!currentRect) return false
+      return [id, currentRect.offsetTop - collisionRect.top]
     }) as [string, number][]
   const closetTop = getMinvalueEntry(closestTopDistances)
 
-  const closestBottomDistances = rects
-    .filter(([_, rect]) => {
+  const closestBottomDistances = droppableContainers
+    .filter(({ rect }) => {
+      const currentRect = rect.current
+      if (!currentRect) return false
       return (
-        centerRect.top >= rect.offsetTop + rect.height &&
-        centerRect.left >= rect.offsetLeft &&
-        centerRect.left <= rect.offsetLeft + rect.width
+        collisionRect.top >= currentRect.offsetTop + currentRect.height &&
+        collisionRect.left >= currentRect.offsetLeft &&
+        collisionRect.left <= currentRect.offsetLeft + currentRect.width
       )
     })
-    .map(([id, rect]) => {
-      return [id, centerRect.top - (rect.offsetTop + rect.height)]
+    .map(({ id, rect }) => {
+      const currentRect = rect.current
+      if (!currentRect) return false
+      return [id, collisionRect.top - (currentRect.offsetTop + currentRect.height)]
     }) as [string, number][]
 
   const closetBottom = getMinvalueEntry(closestBottomDistances)

@@ -1009,35 +1009,35 @@
   dependencies:
     tslib "^2.0.0"
 
-"@dnd-kit/core@^3.1.1":
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/@dnd-kit/core/-/core-3.1.1.tgz#c5ad6665931f5a51e74226220e58ac7514f3faf0"
-  integrity sha512-18YY5+1lTqJbGSg6JBSa/fjAOTUYAysFrQ5Ti8oppEPHFacQbC+owM51y2z2KN0LkDHBfGZKw2sFT7++ttwfpA==
+"@dnd-kit/core@^4.0.0":
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/@dnd-kit/core/-/core-4.0.0.tgz#14e530f859d95ca49aea57878c95bc5f15cf5aac"
+  integrity sha512-ZbQxOoZs/eH8FJlQAipw+FVF6AvjoTR6aAF6JrweJ4Ic45WhuxHHRN/7u50MYhaMuvG6HF24qks0hZKQUe1EDg==
   dependencies:
     "@dnd-kit/accessibility" "^3.0.0"
-    "@dnd-kit/utilities" "^2.0.0"
+    "@dnd-kit/utilities" "^3.0.0"
     tslib "^2.0.0"
 
-"@dnd-kit/modifiers@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@dnd-kit/modifiers/-/modifiers-3.0.0.tgz#d6fc85f31d634d856edbc23f623d63890f5a8616"
-  integrity sha512-CmskqOcW4Bw61JP1Lqkx7cRzv9xQS/5seI+Q5eKhx+mS/MA5IrX2jgtMxvQ6PKYDnx2v/uHxqLNVhlvumtBTSQ==
-  dependencies:
-    "@dnd-kit/utilities" "^2.0.0"
-    tslib "^2.0.0"
-
-"@dnd-kit/sortable@^4.0.0":
+"@dnd-kit/modifiers@^4.0.0":
   version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@dnd-kit/sortable/-/sortable-4.0.0.tgz#81dd2b014a16527cf89602dc40060d9ee4dad352"
-  integrity sha512-teYVFy6mQG/u6F6CaGxAkzPfiNJvguFzWfJ/zonYQRxfANHX6QJ6GziMG9KON/Ae9Q2ODJP8vib+guWJrDXeGg==
+  resolved "https://registry.yarnpkg.com/@dnd-kit/modifiers/-/modifiers-4.0.0.tgz#d1577b806b2319f14a1a0a155f270e672cfca636"
+  integrity sha512-4OkNTamneH9u3YMJqG6yJ6cwFoEd/4yY9BF39TgmDh9vyMK2MoPZFVAV0vOEm193ZYsPczq3Af5tJFtJhR9jJQ==
   dependencies:
-    "@dnd-kit/utilities" "^2.0.0"
+    "@dnd-kit/utilities" "^3.0.0"
     tslib "^2.0.0"
 
-"@dnd-kit/utilities@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@dnd-kit/utilities/-/utilities-2.0.0.tgz#a8462dff65c6f606ecbe95273c7e263b14a1ab97"
-  integrity sha512-bjs49yMNzMM+BYRsBUhTqhTk6HEvhuY3leFt6Em6NaYGgygaMbtGbbXof/UXBv7rqyyi0OkmBBnrCCcxqS2t/g==
+"@dnd-kit/sortable@^5.0.0":
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/@dnd-kit/sortable/-/sortable-5.0.0.tgz#33841fcbc2f2490aaae42906b7497a2033242faa"
+  integrity sha512-CvTuaTIqzvZe8r1Lt+2tPK7VZKfE0SQkFTcAMayf8jS6MFgX6TV5GAIb1tKvbqrGXkqqTZeA2EaeMzjFyyfqkQ==
+  dependencies:
+    "@dnd-kit/utilities" "^3.0.0"
+    tslib "^2.0.0"
+
+"@dnd-kit/utilities@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@dnd-kit/utilities/-/utilities-3.0.0.tgz#43b86e9d911b625ee54786e9daae5a521949b8a6"
+  integrity sha512-E2UG8guqa532xB8kEe2rFEI/U2W7zuxv0zYorL3knnGJxMGBoI7132i4ULmQs/aunQvNy8kj6Ts39n+APeU7BQ==
   dependencies:
     tslib "^2.0.0"
 
@@ -2031,10 +2031,10 @@
   resolved "https://registry.yarnpkg.com/@types/validator/-/validator-13.6.3.tgz#31ca2e997bf13a0fffca30a25747d5b9f7dbb7de"
   integrity sha512-fWG42pMJOL4jKsDDZZREnXLjc3UE0R8LOJfARWYg6U966rxDT7TYejYzLnUF5cvSObGg34nd0+H2wHHU5Omdfw==
 
-"@types/web@^0.0.37":
-  version "0.0.37"
-  resolved "https://registry.yarnpkg.com/@types/web/-/web-0.0.37.tgz#bfff21777b0f4b89259d4b42b461d4fe99dd62b2"
-  integrity sha512-bP/e97k6kIjbZavVYKFcQstYK/bPoHY9vD4g3cV0IAKT0jqZSA1UTHJI9pMdEVWx0eCPlnWyQxY5G7G8P7pRSQ==
+"@types/web@^0.0.40":
+  version "0.0.40"
+  resolved "https://registry.yarnpkg.com/@types/web/-/web-0.0.40.tgz#e1b00ecfd9d3e95646b966a7ae7e789ca9bb2ae7"
+  integrity sha512-5BL75cSTPvt3uof4542C+YuMmMuB7LsBQ9/m9uws39FvOO/YbBkdN7HAUeuNXiVW8B/LQ1Kqbmz2a8Dau90uew==
 
 "@types/ws@^7.4.0":
   version "7.4.7"
@@ -2592,7 +2592,7 @@ async@^3.2.0:
   resolved "https://registry.yarnpkg.com/async/-/async-3.2.1.tgz#d3274ec66d107a47476a4c49136aacdb00665fc8"
   integrity sha512-XdD5lRO/87udXCMC9meWdYiR+Nq6ZjUfXidViUZGu2F1MO4T3XwZ1et0hb2++BgLfhyJwy44BGB/yx80ABx8hg==
 
-axios@^0.21.4:
+axios@0.21.4:
   version "0.21.4"
   resolved "https://registry.yarnpkg.com/axios/-/axios-0.21.4.tgz#c67b90dc0568e5c1cf2b0b858c43ba28e2eda575"
   integrity sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==
@@ -5674,10 +5674,10 @@ mocha@^9.1.1:
     yargs-parser "20.2.4"
     yargs-unparser "2.0.0"
 
-monaco-editor@^0.28.1:
-  version "0.28.1"
-  resolved "https://registry.yarnpkg.com/monaco-editor/-/monaco-editor-0.28.1.tgz#732788ff2172d59e6d436b206da8cac715413940"
-  integrity sha512-P1vPqxB4B1ZFzTeR1ScggSp9/5NoQrLCq88fnlNUsuRAP1usEBN4TIpI2lw0AYIZNVIanHk0qwjze2uJwGOHUw==
+monaco-editor@^0.29.0:
+  version "0.29.0"
+  resolved "https://registry.yarnpkg.com/monaco-editor/-/monaco-editor-0.29.0.tgz#916b7be58e882c3b2a4a2f444688b583919e085e"
+  integrity sha512-7bOTapOZG8gNfzk9HJstNClnRjD9TEkVqo7qB3W6y+4cypS31A55MBQ7dpnEdnQBU+Hz3isyx61mi3/e05S7Xg==
 
 ms@2.0.0:
   version "2.0.0"
