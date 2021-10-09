@@ -37,7 +37,7 @@ abstract class JDBCConnector : BaseConnector() {
 
     override fun initByProfile(profile: ProfileEntity) {
 
-        // Check driverClassName first, since the driver might be loaded from external
+        // check if the driver can be loaded correctly to prevent third-party connectors without correct db driver
         try {
             Class.forName(driverClassName)
         } catch (e: ClassNotFoundException) {

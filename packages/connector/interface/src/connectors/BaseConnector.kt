@@ -54,10 +54,10 @@ abstract class BaseConnector : IConnector {
         return _schema.get(Triple(dbName, collectionName, schemaName))
     }
 
-    // Here the channel is Either because the query runs in a different scope from grpc calling handler, which causes
-    // the exception thrown there won't be handled correctly (in this scenario, wrapping to StatusRuntimeException and
-    // returning back to the client.
-    // SupervisorJob right here stands for properly propagating the cancellation made by an exception upward.
+    // QueryResultSet wraps error, because the query runs in a different scope from grpc calling handler, which causes
+    // the exception thrown there won't be handled correctly (in this scenario, it should be wrapped as StatusRuntimeException
+    // and returning back to the client.
+    // SupervisorJob right here stands for properly propagating the cancellation made by the exception upward.
     // See https://kotlinlang.org/docs/reference/coroutines/exception-handling.html#supervision-job
     suspend fun queryWithLimit(ctx: QueryContext, channel: Channel<QueryResultSet>): Job {
         return scope.launch(SupervisorJob()) {
