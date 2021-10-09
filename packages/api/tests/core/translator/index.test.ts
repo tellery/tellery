@@ -201,8 +201,11 @@ test('withLimit', async (t) => {
   stringCompare(t, await translate(sql2, {}, 10), 'select * from test LIMIT 10')
 
   const sql3 = 'select * from test limit 20'
-  stringCompare(t, await translate(sql3, {}, 10), 'select * from test limit 20')
+  stringCompare(t, await translate(sql3, {}), sql3)
 
   const sql4 = 'select * from test LIMIT 20'
-  stringCompare(t, await translate(sql4, {}, 10), 'select * from test LIMIT 20')
+  stringCompare(t, await translate(sql4, {}), sql4)
+
+  const sql5 = 'desc table1'
+  stringCompare(t, await translate(sql5, {}), sql5)
 })

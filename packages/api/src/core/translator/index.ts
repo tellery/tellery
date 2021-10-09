@@ -34,15 +34,19 @@ type SQLPieces = {
   mainBody: string
 }
 
-// Matching the form of {{ $blockId as $alias }} or {{ $blockId }}
-const partialQueryPattern = new RegExp(
-  `{{\\s*([a-zA-Z0-9-_]+)\\s*(?:as\\s+(\\w[\\w\\d]*))?\\s*}}`,
-  'gi',
-)
+// Matcher of the form {{ $blockId as $alias }} or {{ $blockId }}
+const partialQueryPattern = /{{\s*([a-zA-Z0-9-_]+)\s*(?:as\s+(\w[\w\d]*))?\s*}}/gi
 
 function withLimit(sql: string, limit: number): string {
-  const match = sql.toLowerCase().match(/limit \d+/i)
-  if (match) {
+  const singleLinedSql = sql.replace(/\n/g, ' ')
+  // TODO: replace this regex by a proper parser
+  const sqlType =
+    singleLinedSql.match(
+      /^(?:with.+\)\s+)?(select|update|delete|insert|desc|create|alter|drop|grant)/i,
+    )?.[1] ?? 'unknown'
+
+  // if sql is not a select clause or it has been limited already, return
+  if (sqlType !== 'select' || singleLinedSql.match(/limit \d+\s*$/i) !== null) {
     return sql
   }
   return `${sql}\nLIMIT ${limit}`
