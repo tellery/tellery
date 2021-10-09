@@ -46,7 +46,7 @@ dependencies {
 
     api("com.aventrix.jnanoid:jnanoid:2.0.0")
     api("com.amazonaws:aws-java-sdk-s3:1.12.74")
-    api("com.github.doyaaaaaken:kotlin-csv-jvm:1.1.0")
+    api("com.opencsv:opencsv:5.5.2")
 
     api("com.github.kittinunf.fuel:fuel:2.3.1")
     api("com.github.kittinunf.fuel:fuel-coroutines:2.3.1")
