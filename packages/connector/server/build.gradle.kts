@@ -48,7 +48,7 @@ dependencies {
     implementation(project(":interface"))
     implementation(project(":implementation"))
 
-    implementation("org.reflections:reflections:0.9.12")
+    implementation("org.reflections:reflections:0.10.1")
     implementation("com.typesafe:config:1.4.1")
 
     implementation("com.google.code.gson:gson:2.8.8")
