@@ -137,7 +137,7 @@
     "@types/resize-observer-browser": "^0.1.6",
     "@types/socket.io-client": "^3.0.0",
     "@types/validator": "^13.6.3",
-    "@types/web": "^0.0.37",
+    "@types/web": "^0.0.40",
     "@types/yaml": "^1.9.7",
     "@typescript-eslint/eslint-plugin": "^4.31.2",
     "@typescript-eslint/parser": "^4.31.2",
