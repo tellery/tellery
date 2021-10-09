@@ -970,7 +970,7 @@ export const MoreDropdownSelect: React.FC<{
               )}
               <StyledMenuItem
                 {...menu}
-                title={t`settings`}
+                title={t`Settings`}
                 icon={<IconCommonSetting color={ThemingVariables.colors.text[0]} />}
                 onClick={() => {
                   sideBarQuestionEditor.open({ blockId: block.id, activeTab: 'Visualization' })
