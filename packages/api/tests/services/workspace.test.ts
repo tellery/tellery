@@ -113,10 +113,9 @@ test('sort user members', async (t) => {
   const uid2 = uuid()
   const uid3 = uuid()
   const workspace = await workspaceService.create(uid1, 'sorttest')
-  await bluebird.delay(100)
   await workspaceService.join(workspace.id, uid2, await getInviteCode(workspace.id))
-  await bluebird.delay(100)
   await workspaceService.join(workspace.id, uid3, await getInviteCode(workspace.id))
+  await bluebird.delay(200)
 
   const w = await workspaceService.get(uid1, workspace.id)
   // desc order by joinAt
@@ -140,6 +139,7 @@ test('leaveWorkspace', async (t) => {
   await workspaceService.leave(workspace.id, uid1)
   // workspace should be deleted
   const model2 = await getRepository(WorkspaceEntity).findOne(workspace.id)
+  await bluebird.delay(200)
   t.is(model2, undefined)
 })
 
@@ -153,6 +153,7 @@ test('kickout members', async (t) => {
   await workspaceService.join(workspace.id, uid3, await getInviteCode(workspace.id))
 
   await workspaceService.kickoutMembers(uid1, workspace.id, [uid2, uid3])
+  await bluebird.delay(200)
   const model = await workspaceService.mustFindOneWithMembers(workspace.id)
   t.is(model?.members.length, 1)
 })

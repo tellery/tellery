@@ -1,6 +1,6 @@
 import bluebird from 'bluebird'
 import _ from 'lodash'
-import { getConnection } from 'typeorm'
+import { getManager } from 'typeorm'
 
 import { NotificationOpt, SocketManager } from '../clients/socket/interface'
 import { OperationManager } from '../core/operation'
@@ -28,7 +28,7 @@ export class OperationService {
     workspaceId: string,
     data: SingleOperation[],
   ): Promise<void> {
-    return getConnection().transaction(async (t) => {
+    return getManager().transaction(async (t) => {
       const cache: { [k: string]: OperationManager } = {}
       await bluebird.each(data, async (val) => {
         const manger =

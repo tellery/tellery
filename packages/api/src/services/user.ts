@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { nanoid } from 'nanoid'
-import { EntityManager, getConnection, getRepository, In } from 'typeorm'
+import { EntityManager, getManager, getRepository, In } from 'typeorm'
 
 import { User } from '../core/user'
 import { UserEntity } from '../entities/user'
@@ -46,7 +46,7 @@ export class UserService {
    * @returns code
    */
   async generateUserVerification(email: string): Promise<{ user: User; code?: string }> {
-    return getConnection().transaction(async (t) => {
+    return getManager().transaction(async (t) => {
       const user = (await this.createUserByEmailsIfNotExist([email], t))[email]
       if (user.status === AccountStatus.VERIFYING) {
         return emailService.sendConfirmationEmail(user.id, email).then((code) => ({ user, code }))

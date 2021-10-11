@@ -1,9 +1,9 @@
-import { getRepository, getConnection } from 'typeorm'
+import { getRepository } from 'typeorm'
 import { FileEntity } from '../entities/file'
 import { FileBody } from '../types/file'
 
 export class SelfHostedStorage {
-  async putFile(file: FileBody) {
+  async putFile(file: FileBody): Promise<void> {
     const { key, workspaceId, content, contentType, size, metadata } = file
     await getRepository(FileEntity).insert({
       id: key,
@@ -16,7 +16,7 @@ export class SelfHostedStorage {
   }
 
   async fetchFile(key: string): Promise<FileBody | null> {
-    const entity = await getConnection().getRepository(FileEntity).findOne(key)
+    const entity = await getRepository(FileEntity).findOne(key)
     if (!entity) {
       return null
     }
