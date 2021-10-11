@@ -49,9 +49,9 @@ async function getInviteCode(workspaceId: string): Promise<string> {
 
 test('createWorkspace', async (t) => {
   const uid = uuid()
-  const workspace = await workspaceService.create(uid, 'test')
+  const workspace = await workspaceService.create(uid, 'test-create')
   t.is(workspace.memberNum, 1)
-  t.is(workspace.name, 'test')
+  t.is(workspace.name, 'test-create')
   t.not(workspace.id, null)
   t.not(workspace.avatar, undefined)
 
@@ -64,7 +64,7 @@ test('createWorkspace', async (t) => {
 
 test('listWorkspaces', async (t) => {
   const uid = uuid()
-  const workspace = await workspaceService.create(uid, 'test')
+  const workspace = await workspaceService.create(uid, 'test-list')
   const res1 = await workspaceService.list(uid)
   t.is(res1.workspaces.length > 0, true)
   await getRepository(WorkspaceEntity).delete(workspace.id)
@@ -72,7 +72,7 @@ test('listWorkspaces', async (t) => {
 
 test('getWorkspace', async (t) => {
   const uid = uuid()
-  const workspace = await workspaceService.create(uid, 'test')
+  const workspace = await workspaceService.create(uid, 'test-get')
 
   const res = await workspaceService.get(uid, workspace.id)
 
@@ -84,7 +84,7 @@ test('getWorkspace', async (t) => {
 
 test('updateWorkspace', async (t) => {
   const uid = uuid()
-  const workspace = await workspaceService.create(uid, 'test')
+  const workspace = await workspaceService.create(uid, 'test-update')
   const model = await getRepository(WorkspaceEntity).findOneOrFail(workspace.id)
   const newWorkspace = await workspaceService.update(uid, workspace.id, {
     name: 'newName',
@@ -99,7 +99,7 @@ test('updateWorkspace', async (t) => {
 test('joinWorkspace', async (t) => {
   const uid1 = uuid()
   const uid2 = uuid()
-  const workspace = await workspaceService.create(uid1, 'test')
+  const workspace = await workspaceService.create(uid1, 'test-join')
   const res = await workspaceService.join(workspace.id, uid2, await getInviteCode(workspace.id))
   t.is(res.memberNum, 2)
   const res2 = await workspaceService.join(workspace.id, uid2, await getInviteCode(workspace.id))
@@ -112,7 +112,7 @@ test('sort user members', async (t) => {
   const uid1 = uuid()
   const uid2 = uuid()
   const uid3 = uuid()
-  const workspace = await workspaceService.create(uid1, 'sorttest')
+  const workspace = await workspaceService.create(uid1, 'test-sort')
   await workspaceService.join(workspace.id, uid2, await getInviteCode(workspace.id))
   await workspaceService.join(workspace.id, uid3, await getInviteCode(workspace.id))
   await bluebird.delay(200)
@@ -129,7 +129,7 @@ test('leaveWorkspace', async (t) => {
   const uid1 = uuid()
   const uid2 = uuid()
 
-  const workspace = await workspaceService.create(uid1, 'test')
+  const workspace = await workspaceService.create(uid1, 'test-leave')
   await workspaceService.join(workspace.id, uid2, await getInviteCode(workspace.id))
 
   await workspaceService.leave(workspace.id, uid2)
@@ -148,7 +148,7 @@ test('kickout members', async (t) => {
   const uid2 = uuid()
   const uid3 = uuid()
 
-  const workspace = await workspaceService.create(uid1, 'test')
+  const workspace = await workspaceService.create(uid1, 'test-kickout')
   await workspaceService.join(workspace.id, uid2, await getInviteCode(workspace.id))
   await workspaceService.join(workspace.id, uid3, await getInviteCode(workspace.id))
 
@@ -161,7 +161,7 @@ test('kickout members', async (t) => {
 test('updateRoleWorkspace', async (t) => {
   const uid1 = uuid()
   const uid2 = uuid()
-  const workspace = await workspaceService.create(uid1, 'test')
+  const workspace = await workspaceService.create(uid1, 'test-update-role')
   await workspaceService.join(workspace.id, uid2, await getInviteCode(workspace.id))
 
   const model1 = await workspaceService.mustFindOneWithMembers(workspace.id)
@@ -178,7 +178,7 @@ test('updateRoleWorkspace', async (t) => {
 
 test('inviteMembersWorkspace', async (t) => {
   const [inviter] = await mockUsers(1)
-  const workspace = await workspaceService.create(inviter.id, 'test')
+  const workspace = await workspaceService.create(inviter.id, 'test-invite-members')
   const email = `${nanoid()}@test.com`
   // init user
   const { workspace: res0, linkPairs } = await workspaceService.inviteMembers(
@@ -213,7 +213,7 @@ test('inviteMembersWorkspace', async (t) => {
 
 test('invite duplicate members', async (t) => {
   const [inviter] = await mockUsers(1)
-  const workspace = await workspaceService.create(inviter.id, 'test')
+  const workspace = await workspaceService.create(inviter.id, 'test-invite-duplicate')
 
   const email = `${nanoid()}@test.com`
   await workspaceService.inviteMembers(inviter.id, workspace.id, [
@@ -228,7 +228,7 @@ test('invite duplicate members', async (t) => {
 })
 
 test('getWorkspaceView', async (t) => {
-  const workspace = await workspaceService.create('test', 'test')
+  const workspace = await workspaceService.create('test', 'test-getView')
   const view = await workspaceService.syncWorkspaceView('testUser', workspace.id)
   const model = await getRepository(WorkspaceViewEntity).findOne(view.id)
 
@@ -238,7 +238,7 @@ test('getWorkspaceView', async (t) => {
 })
 
 test('getWorkspaceViewByViewId', async (t) => {
-  const workspace = await workspaceService.create('test', 'test')
+  const workspace = await workspaceService.create('test', 'test-getViewById')
   const view = await workspaceService.syncWorkspaceView('testUser', workspace.id)
 
   const getViewRes = await workspaceService.getWorkspaceViewByViewId('testUser', view.id)
@@ -252,7 +252,7 @@ test('getWorkspaceViewByViewId', async (t) => {
 test('anonymous inviteMembersWorkspace', async (t) => {
   const admin = uuid()
   const [user] = await mockUsers(1)
-  await workspaceService.create(admin, 'test')
+  await workspaceService.create(admin, 'test-anonymous')
 
   const { id } = await getRepository(WorkspaceEntity).findOneOrFail()
   const ws = new AnonymousWorkspaceService(new FakePermission())
