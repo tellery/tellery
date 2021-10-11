@@ -9,7 +9,6 @@ import {
   IconVisualizationNumber
 } from '@app/assets/icons'
 import { setBlockTranscation } from '@app/context/editorTranscations'
-import { usePrevious } from '@app/hooks'
 import { useBlockSuspense, useQuerySnapshot } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
 import { ThemingVariables } from '@app/styles'
@@ -17,7 +16,6 @@ import { Editor } from '@app/types'
 import { css } from '@emotion/css'
 import produce from 'immer'
 import { WritableDraft } from 'immer/dist/internal'
-import { isEqual } from 'lodash'
 import { useCallback, useEffect, useState } from 'react'
 import IconButton from './kit/IconButton'
 import { charts, useChart } from './v11n/charts'
@@ -112,16 +110,6 @@ export default function SideBarVisualization<T extends Type = Type>(props: { sto
     },
     [setBlock]
   )
-  const previousSnapshot = usePrevious(snapshot)
-  useEffect(() => {
-    if (snapshot && previousSnapshot && !isEqual(snapshot.data.fields, previousSnapshot?.data.fields)) {
-      setBlock((draft) => {
-        if (draft.content) {
-          draft.content.visualization = chart.initializeConfig(snapshot.data, {})
-        }
-      })
-    }
-  }, [chart, previousSnapshot, setBlock, snapshot])
 
   return (
     <>

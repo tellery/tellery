@@ -7,7 +7,7 @@ import {
 } from '@app/assets/icons'
 import { SQLEditor } from '@app/components/SQLEditor'
 import { useBindHovering } from '@app/hooks'
-import { useBlockSuspense, useConnectorsGetProfile, useExecuteSQL, useTranslateSmartQuery } from '@app/hooks/api'
+import { useBlockSuspense, useConnectorsGetProfile, useTranslateSmartQuery } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
 import { useLocalStorage } from '@app/hooks/useLocalStorage'
 import {
@@ -534,7 +534,7 @@ export const StoryQuestionEditor: React.FC<{
     [id, originalSQL, setQuestionBlocksMap]
   )
 
-  const executeSQL = useExecuteSQL(`draft/${block.id}`)
+  // const executeSQL = useExecuteSQL(`draft/${block.id}`)
 
   const save = useCallback(
     (snapshotId?: string) => {

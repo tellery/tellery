@@ -1,19 +1,21 @@
 import { sqlRequest } from '@app/api'
 import { isExecuteableBlockType } from '@app/components/editor/Blocks/utils'
 import { QuerySelectorFamily } from '@app/components/editor/store/queries'
+import { charts } from '@app/components/v11n/charts'
+import { Type } from '@app/components/v11n/types'
 import { createTranscation } from '@app/context/editorTranscations'
 import { useWorkspace } from '@app/hooks/useWorkspace'
-import { QuerySnapshotIdAtom, useCreateSnapshot } from '@app/store/block'
+import { QuerySnapshotIdAtom, useCreateSnapshot, useGetBlockContent } from '@app/store/block'
 import { Editor, Story } from '@app/types'
 import { blockIdGenerator } from '@app/utils'
 import dayjs from 'dayjs'
-import { dequal } from 'dequal'
+import { isEqual } from 'lodash'
 import React, { useCallback, useContext, useEffect, useMemo } from 'react'
 import { useIsMutating, useQueryClient } from 'react-query'
 import { useRecoilCallback, useRecoilValue, waitForAll } from 'recoil'
 import invariant from 'tiny-invariant'
 import { usePrevious } from '.'
-import { useBlockSuspense, useFetchStoryChunk } from './api'
+import { useBlockSuspense, useFetchStoryChunk, useGetSnapshot } from './api'
 import { useCommit } from './useCommit'
 import { useGetCompiledSQL } from './useCompiledQuery'
 import { useStoryPermissions } from './useStoryPermissions'
@@ -24,6 +26,8 @@ export const useRefreshSnapshot = (storyId: string) => {
   const workspace = useWorkspace()
   const queryClient = useQueryClient()
   const createSnapshot = useCreateSnapshot()
+  const getSnapshot = useGetSnapshot()
+  const getBlockContent = useGetBlockContent()
   const getCompiledSQL = useGetCompiledSQL()
 
   const execute = useRecoilCallback(
@@ -86,6 +90,27 @@ export const useRefreshSnapshot = (storyId: string) => {
               data: data,
               workspaceId: workspace.id
             })
+            const prevSnapshot = await getSnapshot({ snapshotId: queryBlock?.content?.snapshotId })
+            if (!isEqual(prevSnapshot?.data.fields, data.fields)) {
+              const visualizationBlock = getBlockContent(queryBlock.parentId) as Editor.VisualizationBlock
+              commit({
+                storyId: storyId!,
+                transcation: createTranscation({
+                  operations: [
+                    {
+                      cmd: 'update',
+                      id: queryBlock.parentId,
+                      path: ['content', 'visualization'],
+                      table: 'block',
+                      args: charts[visualizationBlock.content?.visualization?.type || Type.TABLE].initializeConfig(
+                        data,
+                        {}
+                      )
+                    }
+                  ]
+                })
+              })
+            }
             if (isTemp) {
               set(QuerySnapshotIdAtom({ storyId, blockId: queryBlock.id }), snapshotId)
             } else {
@@ -125,6 +150,8 @@ export const useRefreshSnapshot = (storyId: string) => {
     [
       commit,
       createSnapshot,
+      getSnapshot,
+      getBlockContent,
       getCompiledSQL,
       queryClient,
       storyId,

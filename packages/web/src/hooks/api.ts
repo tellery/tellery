@@ -624,10 +624,10 @@ export const useRecordStoryVisits = () => {
   return mutation
 }
 
-export const useExecuteSQL = (id: string) => {
-  const executeSQL = useMutation(sqlRequest, { mutationKey: id })
-  return executeSQL
-}
+// export const useExecuteSQL = (id: string) => {
+//   const executeSQL = useMutation(sqlRequest, { mutationKey: id })
+//   return executeSQL
+// }
 
 export const useConnectorsList = () => {
   const workspace = useWorkspace()
