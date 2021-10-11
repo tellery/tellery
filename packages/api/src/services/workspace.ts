@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import { nanoid } from 'nanoid'
 import { EntityManager, getManager, getRepository, In, LessThan } from 'typeorm'
+import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel'
 
 import { getIPermission, IPermission } from '../core/permission'
 import { User } from '../core/user'
@@ -27,6 +28,7 @@ import userService from './user'
 // TODO: record activities
 export class WorkspaceService {
   protected permission: IPermission
+  protected isolationLevel: IsolationLevel = 'SERIALIZABLE'
 
   constructor(p: IPermission) {
     this.permission = p
@@ -117,7 +119,7 @@ export class WorkspaceService {
   }
 
   async create(operatorId: string, name: string, avatar?: string): Promise<WorkspaceDTO> {
-    return getManager().transaction(async (t) => {
+    return getManager().transaction(this.isolationLevel, async (t) => {
       const model = await t.getRepository(WorkspaceEntity).save({
         name,
         avatar: avatar || '/api/static/avatars/workspace-default.png',
@@ -149,7 +151,7 @@ export class WorkspaceService {
       throw InvalidArgumentError.new('invalid invite code')
     }
 
-    return getManager().transaction(async (t) => {
+    return getManager().transaction(this.isolationLevel, async (t) => {
       const now = new Date()
       // update user status from creating to confirmed
       // TODO: add test cases
@@ -186,7 +188,7 @@ export class WorkspaceService {
    * if there is no user left in this workspace, delete this workspace
    */
   async leave(workspaceId: string, userId: string): Promise<void> {
-    await getManager().transaction(async (t) => {
+    await getManager().transaction(this.isolationLevel, async (t) => {
       await t.getRepository(WorkspaceMemberEntity).delete({ workspaceId, userId })
       const workspace = await this.mustFindOneWithMembers(workspaceId, t)
       if (_.isEmpty(workspace.members)) {
@@ -208,7 +210,7 @@ export class WorkspaceService {
     const inviter = await userService.getById(operatorId)
     const emails = _(users).map('email').value()
 
-    return getManager().transaction(async (t) => {
+    return getManager().transaction(this.isolationLevel, async (t) => {
       const userMap = await userService.createUserByEmailsIfNotExist(
         emails,
         t,
@@ -357,7 +359,7 @@ export class AnonymousWorkspaceService extends WorkspaceService {
     const emails = _(users).map('email').value()
 
     const userMap = await userService.getByEmails(emails)
-    return getManager().transaction(async (t) => {
+    return getManager().transaction(this.isolationLevel, async (t) => {
       const entities = _(users)
         .map((user) =>
           getRepository(WorkspaceMemberEntity).create({
