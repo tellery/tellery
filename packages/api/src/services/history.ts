@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { getConnection, In } from 'typeorm'
+import { getManager, In } from 'typeorm'
 
 import { Block } from '../core/block'
 import { IHistoryStore } from '../core/history'
@@ -91,7 +91,7 @@ export class HistoryService {
     const { storyId } = first
     await canUpdateBlockData(this.permission, operatorId, first.workspaceId!, storyId)
 
-    return getConnection().transaction(async (t) => {
+    return getManager().transaction(async (t) => {
       const bs = t.getRepository(BlockEntity)
       const ls = t.getRepository(LinkEntity)
       // hard delete all links of the story

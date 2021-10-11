@@ -1,7 +1,7 @@
 import bluebird from 'bluebird'
 import _ from 'lodash'
 import { nanoid } from 'nanoid'
-import { getConnection, getRepository, In } from 'typeorm'
+import { getManager, getRepository, In } from 'typeorm'
 import { IConnectorManager } from '../clients/connector/interface'
 import { Block, cascadeLoadBlocksByLink } from '../core/block'
 import { DbtBlock } from '../core/block/dbt'
@@ -215,7 +215,7 @@ export class DbtService {
       .compact()
       .value()
 
-    await getConnection().transaction(async (t) => {
+    await getManager().transaction(async (t) => {
       if (deletedBlockIds.length > 0) {
         await Promise.all([
           t.getRepository(BlockEntity).update(deletedBlockIds, { alive: false }),
