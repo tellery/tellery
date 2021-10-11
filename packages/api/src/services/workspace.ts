@@ -28,7 +28,7 @@ import userService from './user'
 // TODO: record activities
 export class WorkspaceService {
   protected permission: IPermission
-  protected isolationLevel: IsolationLevel = 'SERIALIZABLE'
+  protected isolationLevel: IsolationLevel = 'REPEATABLE READ'
 
   constructor(p: IPermission) {
     this.permission = p
@@ -236,7 +236,7 @@ export class WorkspaceService {
         .insert()
         .into(WorkspaceMemberEntity)
         .values(entities)
-        .onConflict('DO NOTHING')
+        .orIgnore()
         .execute()
 
       const workspace = await this.mustFindOneWithMembers(workspaceId, t)
