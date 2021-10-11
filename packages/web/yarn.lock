@@ -5053,10 +5053,10 @@ javascript-natural-sort@^0.7.1:
   resolved "https://registry.yarnpkg.com/javascript-natural-sort/-/javascript-natural-sort-0.7.1.tgz#f9e2303d4507f6d74355a73664d1440fb5a0ef59"
   integrity sha1-+eIwPUUH9tdDVac2ZNFED7Wg71k=
 
-jotai@^1.3.5:
-  version "1.3.8"
-  resolved "https://registry.yarnpkg.com/jotai/-/jotai-1.3.8.tgz#e227bc62fa81eed23cc7e362df4f4359c7285902"
-  integrity sha512-gXSPlrpt/9TljK1sduK/ms2/q1iW6O4WS3/Ds1Aqbffs9UOFwIR6IUPHxXLRzVr5HXy8gbimeKmaYmYHMy212Q==
+jotai@^1.3.9:
+  version "1.3.9"
+  resolved "https://registry.yarnpkg.com/jotai/-/jotai-1.3.9.tgz#d65a7069b949a3a74f9e069d3e3f06f99be02817"
+  integrity sha512-b6DvH9gf+7TfjaboCO54g+C0yhaakIaUBtjLf0dk1p15FWCzNw/93sezdXy9cCaZ8qcEdMLJcjBwQlORmIq29g==
 
 js-cookie@^2.2.1:
   version "2.2.1"
