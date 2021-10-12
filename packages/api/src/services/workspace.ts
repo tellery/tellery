@@ -119,7 +119,7 @@ export class WorkspaceService {
   }
 
   async create(operatorId: string, name: string, avatar?: string): Promise<WorkspaceDTO> {
-    return withSerializableTransaction(getManager(), async (t) => {
+    const newWorkspace = await withSerializableTransaction(getManager(), async (t) => {
       const model = await t.getRepository(WorkspaceEntity).save({
         name,
         avatar: avatar || '/api/static/avatars/workspace-default.png',
@@ -138,6 +138,7 @@ export class WorkspaceService {
       model.members = [member]
       return Workspace.fromEntity(model).toDTO(operatorId)
     })
+    return newWorkspace
   }
 
   async join(
