@@ -52,61 +52,7 @@ export const pie: Chart<Type.PIE> = {
   },
 
   Configuration(props) {
-    const { dimension, measurement } = props.config
     const { onConfigChange } = props
-    const filter = useCrossFilter(props.data)
-    const total = useMemo(
-      () =>
-        filter
-          .groupAll<number>()
-          .reduceSum((v) => v[measurement] as number)
-          .value(),
-      [filter, measurement]
-    )
-    const data = useMemo(() => {
-      const array = filter
-        .dimension((v) => v[dimension] as number)
-        .group<string, number>()
-        .reduce(
-          (p, v) => {
-            return p + (v[measurement] as number)
-          },
-          (p, v) => {
-            return p - (v[measurement] as number)
-          },
-          () => 0
-        )
-        .all()
-      const filtered = orderBy(
-        array.filter(
-          (item) => props.config.minPercentage === undefined || item.value / total >= props.config.minPercentage / 100
-        ),
-        'value',
-        'desc'
-      )
-      const others = total - sumBy(filtered, 'value')
-      return filtered.length < array.length ? [...filtered, { key: OTHERS_KEY, value: others }] : filtered
-    }, [filter, dimension, measurement, props.config, total])
-    useEffect(() => {
-      if (
-        orderBy(props.config.slices, ['key'])
-          .map(({ key }) => key)
-          .join() ===
-        orderBy(data, ['key'])
-          .map(({ key }) => key)
-          .join()
-      ) {
-        return
-      }
-      onConfigChange(
-        'slices',
-        data.map((item, index) => ({
-          key: item.key,
-          title: item.key,
-          color: index % ThemingVariables.colors.visualization.length
-        }))
-      )
-    }, [data, onConfigChange, props.config.slices])
 
     return (
       <ConfigTab tabs={['Data', 'Display']}>
@@ -253,6 +199,27 @@ export const pie: Chart<Type.PIE> = {
     const showTotal =
       props.config.showTotal && totalWidth < Math.min(props.dimensions.width, props.dimensions.height) / 2 - 10
     const showLegend = props.config.showLegend && props.dimensions.width - props.dimensions.height >= 100
+    const { onConfigChange } = props
+    useEffect(() => {
+      if (
+        orderBy(props.config.slices, ['key'])
+          .map(({ key }) => key)
+          .join() ===
+        orderBy(data, ['key'])
+          .map(({ key }) => key)
+          .join()
+      ) {
+        return
+      }
+      onConfigChange(
+        'slices',
+        data.map((item, index) => ({
+          key: item.key,
+          title: item.key,
+          color: index % ThemingVariables.colors.visualization.length
+        }))
+      )
+    }, [data, onConfigChange, props.config.slices])
 
     return (
       <PieChart

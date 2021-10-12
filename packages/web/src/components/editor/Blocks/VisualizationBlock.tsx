@@ -395,7 +395,12 @@ const _VisualizationBlockContent: React.FC<{
   return (
     <>
       <React.Suspense fallback={<BlockingUI blocking />}>
-        <QuestionBlockBody snapshotId={snapshotId} visualization={visualization} />
+        <QuestionBlockBody
+          storyId={block.storyId!}
+          blockId={block.id}
+          snapshotId={snapshotId}
+          visualization={visualization}
+        />
       </React.Suspense>
     </>
   )
@@ -454,8 +459,8 @@ export const QuestionBlockButtons: React.FC<{
 
 const _QuestionBlockBody: React.ForwardRefRenderFunction<
   HTMLDivElement | null,
-  { snapshotId?: string | null; visualization?: Config<Type> }
-> = ({ snapshotId, visualization }, ref) => {
+  { storyId: string; blockId: string; snapshotId?: string | null; visualization?: Config<Type> }
+> = ({ storyId, blockId, snapshotId, visualization }, ref) => {
   const snapshot = useSnapshot(snapshotId)
 
   const visualizationConfig = useMemo(() => {
@@ -486,7 +491,7 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
       `}
     >
       {visualizationConfig && snapshot?.data && snapshot.data.fields ? (
-        <LazyRenderDiagram data={snapshot?.data} config={visualizationConfig} />
+        <LazyRenderDiagram storyId={storyId} blockId={blockId} data={snapshot?.data} config={visualizationConfig} />
       ) : (
         <div
           className={css`
@@ -743,7 +748,12 @@ export const SnapshotUpdatedAt: React.FC<{
   )
 }
 
-export const LazyRenderDiagram: React.FC<{ data?: Data; config: Config<Type> }> = ({ data, config }) => {
+export const LazyRenderDiagram: React.FC<{ storyId: string; blockId: string; data?: Data; config: Config<Type> }> = ({
+  storyId,
+  blockId,
+  data,
+  config
+}) => {
   const ref = useRef<HTMLDivElement>(null)
   const [rendered, setRendered] = useState(false)
   const isOnSCreen = useOnScreen(ref)
@@ -762,6 +772,8 @@ export const LazyRenderDiagram: React.FC<{ data?: Data; config: Config<Type> }> 
   const diagram = useMemo(() => {
     return dimensions && data ? (
       <Diagram
+        storyId={storyId}
+        blockId={blockId}
         dimensions={dimensions}
         data={data}
         config={config as never}
@@ -770,9 +782,8 @@ export const LazyRenderDiagram: React.FC<{ data?: Data; config: Config<Type> }> 
           height: 100%;
         `}
       ></Diagram>
-    ) : // <chart.Diagram dimensions={dimensions} data={data} config={config as never} />
-    null
-  }, [config, data, dimensions])
+    ) : null
+  }, [blockId, config, data, dimensions, storyId])
 
   return (
     <DebouncedResizeBlock
