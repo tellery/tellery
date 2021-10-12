@@ -97,6 +97,8 @@ const VisualizationBlockContent: React.FC<{
         {snapshotId && (
           <QuestionBlockBody
             ref={contentRef}
+            storyId={block.storyId!}
+            blockId={block.id}
             snapshotId={snapshotId}
             visualization={(block as Editor.VisualizationBlock).content?.visualization}
           />
@@ -184,8 +186,8 @@ registerBlock(Editor.BlockType.DBT, DataAssetBlockTablePreview)
 
 const _QuestionBlockBody: React.ForwardRefRenderFunction<
   HTMLDivElement | null,
-  { snapshotId?: string; visualization?: Config<Type> }
-> = ({ snapshotId, visualization }, ref) => {
+  { storyId: string; blockId: string; snapshotId?: string; visualization?: Config<Type> }
+> = ({ storyId, blockId, snapshotId, visualization }, ref) => {
   const snapshot = useSnapshot(snapshotId)
 
   const visualizationConfig = useMemo(() => {
@@ -219,7 +221,7 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
       `}
     >
       {visualizationConfig && snapshot?.data && snapshot.data.fields ? (
-        <LazyRenderDiagram data={snapshot?.data} config={visualizationConfig} />
+        <LazyRenderDiagram storyId={storyId} blockId={blockId} data={snapshot?.data} config={visualizationConfig} />
       ) : (
         <div
           className={css`
