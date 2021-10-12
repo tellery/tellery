@@ -15,7 +15,7 @@ import { useIsMutating, useQueryClient } from 'react-query'
 import { useRecoilCallback, useRecoilValue, waitForAll } from 'recoil'
 import invariant from 'tiny-invariant'
 import { usePrevious } from '.'
-import { useBlockSuspense, useFetchStoryChunk, useGetSnapshot } from './api'
+import { useBlockSuspense, useFetchStoryChunk, useGetBlock, useGetSnapshot } from './api'
 import { useCommit } from './useCommit'
 import { useGetCompiledSQL } from './useCompiledQuery'
 import { useStoryPermissions } from './useStoryPermissions'
@@ -27,7 +27,7 @@ export const useRefreshSnapshot = (storyId: string) => {
   const queryClient = useQueryClient()
   const createSnapshot = useCreateSnapshot()
   const getSnapshot = useGetSnapshot()
-  const getBlockContent = useGetBlockContent()
+  const getBlock = useGetBlock()
   const getCompiledSQL = useGetCompiledSQL()
 
   const execute = useRecoilCallback(
@@ -92,7 +92,7 @@ export const useRefreshSnapshot = (storyId: string) => {
             })
             const prevSnapshot = await getSnapshot({ snapshotId: queryBlock?.content?.snapshotId })
             if (!isEqual(prevSnapshot?.data.fields, data.fields)) {
-              const visualizationBlock = getBlockContent(queryBlock.parentId) as Editor.VisualizationBlock
+              const visualizationBlock = (await getBlock(queryBlock.parentId)) as Editor.VisualizationBlock
               commit({
                 storyId: storyId!,
                 transcation: createTranscation({
@@ -151,7 +151,7 @@ export const useRefreshSnapshot = (storyId: string) => {
       commit,
       createSnapshot,
       getSnapshot,
-      getBlockContent,
+      getBlock,
       getCompiledSQL,
       queryClient,
       storyId,
@@ -212,7 +212,7 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refreshOnInit])
+  }, [refreshOnInit, refreshSnapshot])
 
   useEffect(() => {
     for (const queryBlock of resourcesBlocks) {

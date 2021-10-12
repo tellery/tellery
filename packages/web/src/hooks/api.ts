@@ -479,6 +479,18 @@ export const useGetSnapshot = () => {
   return getSnapshot
 }
 
+export const useGetBlock = () => {
+  // const snapshot = useSnapshot(block?.content?.snapshotId)
+  const getBlock = useRecoilCallback(
+    (recoilCallback) => async (blockId: string) => {
+      const snapshot = await recoilCallback.snapshot.getPromise(TelleryBlockAtom(blockId))
+      return snapshot
+    },
+    []
+  )
+  return getBlock
+}
+
 export const useQuestionBackLinks = (id: string = '') => {
   const workspace = useWorkspace()
 

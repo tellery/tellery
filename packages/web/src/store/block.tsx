@@ -308,10 +308,6 @@ export const getBlockFromSnapshotAsync = async (blockId: string, snapshot: Recoi
   return targetBlock ? cloneDeep(targetBlock) : undefined
 }
 
-export const useGetBlockContent = () => {
-  return (blockId: string) => TelleryBlockMap.get(blockId)
-}
-
 export const useBlockSnapshot = () => {
   return TelleryBlockMap
 }
