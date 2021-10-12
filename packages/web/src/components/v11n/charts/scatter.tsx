@@ -13,7 +13,7 @@ import {
   YAxis,
   ZAxis
 } from '@tellery/recharts'
-import { groupBy, orderBy } from 'lodash'
+import { differenceBy, groupBy, orderBy } from 'lodash'
 import { useTextWidth } from '@tag0/use-text-width'
 import { DisplayType, Type } from '../types'
 import type { Chart } from './base'
@@ -41,7 +41,7 @@ const scaleTypes = ['auto', 'linear', 'pow', 'sqrt', 'log']
 export const scatter: Chart<Type.SCATTER> = {
   type: Type.SCATTER,
 
-  initializeConfig(data, cache) {
+  initializeConfig(data, { cache, dimensions }) {
     if (cache[Type.SCATTER]) {
       return cache[Type.SCATTER]!
     }
@@ -52,7 +52,8 @@ export const scatter: Chart<Type.SCATTER> = {
       data.fields.find(
         ({ name, displayType }) =>
           // X and Y axis can't be the same
-          name !== y?.name && (isTimeSeries(displayType) || name === 'dt' || name === 'date' || name === 'ts')
+          name === dimensions?.[0].name ||
+          (name !== y?.name && (isTimeSeries(displayType) || name === 'dt' || name === 'date' || name === 'ts'))
       ) ||
       // then, pick numeric data as the X axis
       data.fields.find(({ name, displayType }) => name !== y?.name && isNumeric(displayType)) ||
@@ -65,9 +66,9 @@ export const scatter: Chart<Type.SCATTER> = {
       keys: data.fields.map(({ name }) => name),
 
       xAxis: x?.name || '',
-      yAxis: y?.name || '',
-      color: '',
-      size: '',
+      yAxis: (dimensions ? differenceBy(data.fields, dimensions, 'name')[0]?.name : y?.name) || '',
+      color: dimensions?.[1]?.name,
+      size: dimensions?.[2]?.name,
 
       colors: [],
       referenceXLabel: '',

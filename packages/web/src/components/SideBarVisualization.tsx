@@ -32,7 +32,7 @@ const icons = {
   [Type.NUMBER]: IconVisualizationNumber
 }
 
-const dimentionRange = {
+const dimensionRange = {
   [Type.TABLE]: [0, Infinity],
   [Type.COMBO]: [1, 2],
   [Type.LINE]: [1, 2],
@@ -60,11 +60,11 @@ export default function SideBarVisualization<T extends Type = Type>(props: { sto
   const chart = useChart(config?.type || Type.TABLE)
   const queryBlock = useBlockSuspense<Editor.QueryBlock | Editor.SmartQueryBlock>(block.content?.queryId!)
   const snapshot = useQuerySnapshot(props.storyId, queryBlock.id)
-  const dimentions =
+  const dimensions =
     queryBlock.type === Editor.BlockType.SmartQuery
       ? (queryBlock as Editor.SmartQueryBlock).content.dimensions
       : undefined
-  const metrics =
+  const metricIds =
     queryBlock.type === Editor.BlockType.SmartQuery
       ? (queryBlock as Editor.SmartQueryBlock).content.metricIds
       : undefined
@@ -125,9 +125,9 @@ export default function SideBarVisualization<T extends Type = Type>(props: { sto
             color={
               t === config?.type
                 ? ThemingVariables.colors.text[0]
-                : (!dimentions ||
-                    (dimentionRange[t][0] <= dimentions.length && dimentions.length <= dimentionRange[t][1])) &&
-                  (!metrics || (measureRange[t][0] <= metrics.length && metrics.length <= measureRange[t][1]))
+                : (!dimensions ||
+                    (dimensionRange[t][0] <= dimensions.length && dimensions.length <= dimensionRange[t][1])) &&
+                  (!metricIds || (measureRange[t][0] <= metricIds.length && metricIds.length <= measureRange[t][1]))
                 ? ThemingVariables.colors.text[0]
                 : ThemingVariables.colors.gray[0]
             }
@@ -148,7 +148,7 @@ export default function SideBarVisualization<T extends Type = Type>(props: { sto
               setBlock((draft) => {
                 if (draft.content) {
                   draft.content.visualization = snapshot?.data
-                    ? (charts[t].initializeConfig(snapshot.data, cache) as Config<T>)
+                    ? (charts[t].initializeConfig(snapshot.data, { cache, dimensions }) as Config<T>)
                     : undefined
                 }
               })

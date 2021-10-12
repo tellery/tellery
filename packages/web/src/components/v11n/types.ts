@@ -150,9 +150,6 @@ interface ScatterConfig {
 interface NumberConfig {
   type: Type.NUMBER
 
-  // Other
-  columns: string[]
-
   field: string
 
   compare?: boolean

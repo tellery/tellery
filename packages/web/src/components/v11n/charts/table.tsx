@@ -21,7 +21,7 @@ const VERTICAL_BORDER_WITDH = 0
 export const table: Chart<Type.TABLE> = {
   type: Type.TABLE,
 
-  initializeConfig(data, cache) {
+  initializeConfig(data, { cache }) {
     if (cache[Type.TABLE]) {
       return cache[Type.TABLE]!
     }

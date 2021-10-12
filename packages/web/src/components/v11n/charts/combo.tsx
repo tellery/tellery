@@ -22,7 +22,7 @@ import {
 } from '@tellery/recharts'
 import type { Path } from 'd3-path'
 import type { CurveGenerator } from 'd3-shape'
-import { compact, keyBy, mapValues, sortBy, sum, upperFirst } from 'lodash'
+import { compact, differenceBy, keyBy, mapValues, sortBy, sum, tail, upperFirst } from 'lodash'
 import React, { MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ConfigIconButton from '../components/ConfigIconButton'
 import { ConfigInput } from '../components/ConfigInput'
@@ -68,7 +68,7 @@ function valueKey(key?: string) {
 export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
   type: Type.COMBO,
 
-  initializeConfig(data, cache) {
+  initializeConfig(data, { cache, dimensions }) {
     if (cache[Type.COMBO]) {
       return cache[Type.COMBO]!
     }
@@ -79,7 +79,8 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
       data.fields.find(
         ({ name, displayType }) =>
           // X and Y axis can't be the same
-          name !== y?.name && (isTimeSeries(displayType) || name === 'dt' || name === 'date' || name === 'ts')
+          name === dimensions?.[0].name ||
+          (name !== y?.name && (isTimeSeries(displayType) || name === 'dt' || name === 'date' || name === 'ts'))
       ) ||
       // then, select numeric data as the X axis
       data.fields.find(({ name, displayType }) => name !== y?.name && isNumeric(displayType)) ||
@@ -90,8 +91,8 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
       axises: data.fields.map(({ name }) => name),
 
       xAxises: x ? [x.name] : [],
-      dimensions: [],
-      yAxises: y ? [y.name] : [],
+      dimensions: tail(dimensions?.map(({ name }) => name)) || [],
+      yAxises: dimensions ? [differenceBy(data.fields, dimensions, 'name')[0]?.name] : y ? [y.name] : [],
       y2Axises: [],
 
       groups: [],
@@ -645,7 +646,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
       const combinedYAxises = [...yAxises, ...y2Axises]
       return dimensions.length
         ? filter
-            .dimension((v) => dimensions.map((dimention) => v[dimention] as string | number))
+            .dimension((v) => dimensions.map((dimension) => v[dimension] as string | number))
             .group()
             .all()
             .reduce<{ key: string; groupId: 'left' | 'right' }[]>((array, { key }) => {

@@ -1,9 +1,16 @@
+import { Dimension } from '@app/types'
 import type { Type, Data, Config } from '../types'
 
 export interface Chart<T extends Type> {
   type: T
 
-  initializeConfig(data: Data, cache: { [TT in Type]?: Config<TT> }): Config<T>
+  initializeConfig(
+    data: Data,
+    opts: {
+      cache: { [TT in Type]?: Config<TT> }
+      dimensions?: Dimension[]
+    }
+  ): Config<T>
 
   Configuration(props: {
     data: Data

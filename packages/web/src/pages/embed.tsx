@@ -6,7 +6,7 @@ import { Diagram } from '@app/components/v11n/Diagram'
 import { Config, Type } from '@app/components/v11n/types'
 import { useBlockSuspense, useSnapshot } from '@app/hooks/api'
 import { ThemingVariables } from '@app/styles'
-import { Editor } from '@app/types'
+import { Dimension, Editor } from '@app/types'
 import { css } from '@emotion/css'
 import React, { forwardRef, useMemo } from 'react'
 import { useParams } from 'react-router'
@@ -59,6 +59,11 @@ const VisulizationBlockEmbed: React.FC<{ blockId: string }> = ({ blockId }) => {
         <QuestionBlockBody
           storyId={block.storyId!}
           blockId={block.id}
+          dimensions={
+            queryBlock.type === Editor.BlockType.SmartQuery
+              ? (queryBlock as Editor.SmartQueryBlock).content.dimensions
+              : undefined
+          }
           snapshotId={queryBlock.content?.snapshotId}
           visualization={block.content?.visualization}
         />
@@ -69,18 +74,24 @@ const VisulizationBlockEmbed: React.FC<{ blockId: string }> = ({ blockId }) => {
 
 const _QuestionBlockBody: React.ForwardRefRenderFunction<
   HTMLDivElement | null,
-  { storyId: string; blockId: string; snapshotId?: string | null; visualization?: Config<Type> }
-> = ({ storyId, blockId, snapshotId, visualization }, ref) => {
+  {
+    storyId: string
+    blockId: string
+    dimensions?: Dimension[]
+    snapshotId?: string | null
+    visualization?: Config<Type>
+  }
+> = ({ storyId, blockId, dimensions, snapshotId, visualization }, ref) => {
   const snapshot = useSnapshot(snapshotId)
 
   const visualizationConfig = useMemo(() => {
     // ensure snapshot data is valid
     if (snapshot?.data && typeof snapshot?.data === 'object' && !snapshot.data.errMsg) {
-      return visualization ?? charts[Type.TABLE].initializeConfig(snapshot.data, {})
+      return visualization ?? charts[Type.TABLE].initializeConfig(snapshot.data, { cache: {}, dimensions })
     } else {
       return undefined
     }
-  }, [snapshot, visualization])
+  }, [snapshot, visualization, dimensions])
 
   return (
     <div
