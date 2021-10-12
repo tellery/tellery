@@ -212,7 +212,7 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refreshOnInit, refreshSnapshot])
+  }, [refreshOnInit])
 
   useEffect(() => {
     for (const queryBlock of resourcesBlocks) {
