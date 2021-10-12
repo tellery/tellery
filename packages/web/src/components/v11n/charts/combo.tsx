@@ -22,7 +22,7 @@ import {
 } from '@tellery/recharts'
 import type { Path } from 'd3-path'
 import type { CurveGenerator } from 'd3-shape'
-import { compact, difference, keyBy, mapValues, sortBy, sum, tail, upperFirst } from 'lodash'
+import { compact, differenceBy, keyBy, mapValues, sortBy, sum, tail, upperFirst } from 'lodash'
 import React, { MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ConfigIconButton from '../components/ConfigIconButton'
 import { ConfigInput } from '../components/ConfigInput'
@@ -92,14 +92,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
 
       xAxises: x ? [x.name] : [],
       dimensions: tail(dimensions?.map(({ name }) => name)) || [],
-      yAxises: dimensions
-        ? difference(
-            data.fields.map(({ name }) => name),
-            dimensions.map(({ name }) => name)
-          )
-        : y
-        ? [y.name]
-        : [],
+      yAxises: dimensions ? [differenceBy(data.fields, dimensions, 'name')[0]?.name] : y ? [y.name] : [],
       y2Axises: [],
 
       groups: [],

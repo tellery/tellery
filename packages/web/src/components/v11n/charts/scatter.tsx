@@ -13,7 +13,7 @@ import {
   YAxis,
   ZAxis
 } from '@tellery/recharts'
-import { difference, groupBy, orderBy } from 'lodash'
+import { differenceBy, groupBy, orderBy } from 'lodash'
 import { useTextWidth } from '@tag0/use-text-width'
 import { DisplayType, Type } from '../types'
 import type { Chart } from './base'
@@ -66,13 +66,7 @@ export const scatter: Chart<Type.SCATTER> = {
       keys: data.fields.map(({ name }) => name),
 
       xAxis: x?.name || '',
-      yAxis:
-        (dimensions
-          ? difference(
-              data.fields.map(({ name }) => name),
-              dimensions.map(({ name }) => name)
-            )[0]
-          : y?.name) || '',
+      yAxis: (dimensions ? differenceBy(data.fields, dimensions, 'name')[0]?.name : y?.name) || '',
       color: dimensions?.[1]?.name,
       size: dimensions?.[2]?.name,
 

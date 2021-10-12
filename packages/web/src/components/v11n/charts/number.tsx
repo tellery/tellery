@@ -14,11 +14,12 @@ import FormSwitch from '@app/components/kit/FormSwitch'
 import { ConfigSection } from '../components/ConfigSection'
 import { ConfigItem } from '../components/ConfigItem'
 import { ConfigTab } from '../components/ConfigTab'
+import { differenceBy } from 'lodash'
 
 export const number: Chart<Type.NUMBER> = {
   type: Type.NUMBER,
 
-  initializeConfig(data, { cache }) {
+  initializeConfig(data, { cache, dimensions }) {
     if (cache[Type.NUMBER]) {
       return cache[Type.NUMBER]!
     }
@@ -26,9 +27,7 @@ export const number: Chart<Type.NUMBER> = {
     return {
       type: Type.NUMBER,
 
-      columns: data.fields.map(({ name }) => name),
-
-      field: field?.name || '',
+      field: dimensions ? differenceBy(data.fields, dimensions, 'name')[0]?.name : field?.name || '',
       compare: false
     }
   },
@@ -40,7 +39,7 @@ export const number: Chart<Type.NUMBER> = {
       <ConfigTab tabs={['Data', 'Display']}>
         <ConfigSection title="Value">
           <ConfigSelect
-            options={props.config.columns}
+            options={props.data.fields.map(({ name }) => name)}
             value={props.config.field}
             onChange={(field) => {
               onConfigChange('field', field)
