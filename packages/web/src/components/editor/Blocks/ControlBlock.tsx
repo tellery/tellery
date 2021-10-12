@@ -117,6 +117,40 @@ const ControlBlock: BlockComponent<
                 }}
               />
             )}
+            {block.content.type === 'number' && (
+              <input
+                onBlur={(e) => {
+                  const value = parseInt(e.currentTarget.value, 10)
+                  submitChange(value)
+                }}
+                type="number"
+                ref={inputRef}
+                style={{
+                  border: `1px ${isDefaultValue ? 'solid' : 'dashed'} ${ThemingVariables.colors.gray[1]}`
+                }}
+                className={css`
+                  outline: none;
+                  background-color: ${ThemingVariables.colors.gray[5]};
+                  border-radius: 5px;
+                `}
+                onKeyDown={(e) => {
+                  const value = parseInt(e.currentTarget.value, 10)
+                  if (e.key === 'Enter' && e.shiftKey === false) {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    e.currentTarget.blur()
+                    submitChange(value)
+                  } else if (e.key === 'Enter' && e.shiftKey === true) {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    e.currentTarget.blur()
+                    setDefaultValue(value)
+                  } else {
+                    e.stopPropagation()
+                  }
+                }}
+              />
+            )}
           </div>
         </Tippy>
       </div>
