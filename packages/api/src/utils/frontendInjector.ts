@@ -22,6 +22,6 @@ export function injectFrontendEnv(frontendAssetPath: string): void {
   const indexFileContent = fs.readFileSync(indexPath)
   const html = parse(indexFileContent.toString())
   const script = html.querySelector('#telleryBootstrap')
-  script.set_content(JSON.stringify(loadFrontendEnvConfig()))
+  script?.set_content(JSON.stringify(loadFrontendEnvConfig()))
   fs.writeFileSync(indexPath, html.toString())
 }
