@@ -30,7 +30,7 @@ const numberformat = new Intl.NumberFormat(i18n.language, { maximumFractionDigit
 export const pie: Chart<Type.PIE> = {
   type: Type.PIE,
 
-  initializeConfig(data, { cache }) {
+  initializeConfig(data, { cache, dimensions }) {
     if (cache[Type.PIE]) {
       return cache[Type.PIE]!
     }
@@ -39,7 +39,9 @@ export const pie: Chart<Type.PIE> = {
 
       keys: data.fields.map(({ name }) => name),
 
-      dimension: data.fields.find(({ displayType }) => displayType === DisplayType.STRING)?.name || data.fields[0].name,
+      dimension: dimensions
+        ? dimensions[0].name
+        : data.fields.find(({ displayType }) => displayType === DisplayType.STRING)?.name || data.fields[0].name,
       measurement:
         data.fields.find(({ displayType }) => isNumeric(displayType) && !isTimeSeries(displayType))?.name ||
         data.fields[0].name,
