@@ -5,16 +5,16 @@ import { combo } from './combo'
 export const area: Chart<Type.AREA> = {
   type: Type.AREA,
 
-  initializeConfig(data, cache) {
-    if (cache[Type.COMBO]) {
+  initializeConfig(data, opts) {
+    if (opts.cache[Type.COMBO]) {
       return {
-        ...cache[Type.COMBO]!,
-        groups: cache[Type.COMBO]!.groups.map((group) => ({ ...group, shape: ComboShape.AREA })),
+        ...opts.cache[Type.COMBO]!,
+        groups: opts.cache[Type.COMBO]!.groups.map((group) => ({ ...group, shape: ComboShape.AREA })),
         type: Type.AREA
       }
     }
     return {
-      ...combo.initializeConfig(data, cache),
+      ...combo.initializeConfig(data, opts),
       type: Type.AREA
     }
   },

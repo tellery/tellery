@@ -41,7 +41,7 @@ import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnap
 import { useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { PopoverMotionVariants } from '@app/styles/animations'
-import { Editor } from '@app/types'
+import { Dimension, Editor } from '@app/types'
 import { addPrefixToBlockTitle, DEFAULT_TIPPY_DELAY, snapshotToCSV, TELLERY_MIME_TYPES } from '@app/utils'
 import { css, cx, keyframes } from '@emotion/css'
 import Tippy from '@tippyjs/react'
@@ -398,6 +398,11 @@ const _VisualizationBlockContent: React.FC<{
         <QuestionBlockBody
           storyId={block.storyId!}
           blockId={block.id}
+          dimensions={
+            queryBlock.type === Editor.BlockType.SmartQuery
+              ? (queryBlock as Editor.SmartQueryBlock).content.dimensions
+              : undefined
+          }
           snapshotId={snapshotId}
           visualization={visualization}
         />
@@ -459,18 +464,24 @@ export const QuestionBlockButtons: React.FC<{
 
 const _QuestionBlockBody: React.ForwardRefRenderFunction<
   HTMLDivElement | null,
-  { storyId: string; blockId: string; snapshotId?: string | null; visualization?: Config<Type> }
-> = ({ storyId, blockId, snapshotId, visualization }, ref) => {
+  {
+    storyId: string
+    blockId: string
+    dimensions?: Dimension[]
+    snapshotId?: string | null
+    visualization?: Config<Type>
+  }
+> = ({ storyId, blockId, dimensions, snapshotId, visualization }, ref) => {
   const snapshot = useSnapshot(snapshotId)
 
   const visualizationConfig = useMemo(() => {
     // ensure snapshot data is valid
     if (snapshot?.data && typeof snapshot?.data === 'object' && !snapshot.data.errMsg) {
-      return visualization ?? charts[Type.TABLE].initializeConfig(snapshot.data, {})
+      return visualization ?? charts[Type.TABLE].initializeConfig(snapshot.data, { cache: {}, dimensions })
     } else {
       return undefined
     }
-  }, [snapshot, visualization])
+  }, [snapshot, visualization, dimensions])
 
   return (
     <div

@@ -41,7 +41,7 @@ const scaleTypes = ['auto', 'linear', 'pow', 'sqrt', 'log']
 export const scatter: Chart<Type.SCATTER> = {
   type: Type.SCATTER,
 
-  initializeConfig(data, cache) {
+  initializeConfig(data, { cache }) {
     if (cache[Type.SCATTER]) {
       return cache[Type.SCATTER]!
     }

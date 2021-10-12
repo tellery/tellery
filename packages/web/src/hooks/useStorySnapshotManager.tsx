@@ -93,6 +93,10 @@ export const useRefreshSnapshot = (storyId: string) => {
             const prevSnapshot = await getSnapshot({ snapshotId: queryBlock?.content?.snapshotId })
             if (!isEqual(prevSnapshot?.data.fields, data.fields)) {
               const visualizationBlock = (await getBlock(queryBlock.parentId)) as Editor.VisualizationBlock
+              const dimensions =
+                queryBlock.type === Editor.BlockType.SmartQuery
+                  ? (queryBlock as Editor.SmartQueryBlock).content.dimensions
+                  : undefined
               commit({
                 storyId: storyId!,
                 transcation: createTranscation({
@@ -104,7 +108,7 @@ export const useRefreshSnapshot = (storyId: string) => {
                       table: 'block',
                       args: charts[visualizationBlock.content?.visualization?.type || Type.TABLE].initializeConfig(
                         data,
-                        {}
+                        { cache: {}, dimensions }
                       )
                     }
                   ]

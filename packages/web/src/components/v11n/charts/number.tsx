@@ -18,7 +18,7 @@ import { ConfigTab } from '../components/ConfigTab'
 export const number: Chart<Type.NUMBER> = {
   type: Type.NUMBER,
 
-  initializeConfig(data, cache) {
+  initializeConfig(data, { cache }) {
     if (cache[Type.NUMBER]) {
       return cache[Type.NUMBER]!
     }

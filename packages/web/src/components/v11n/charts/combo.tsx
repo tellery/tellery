@@ -68,7 +68,7 @@ function valueKey(key?: string) {
 export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
   type: Type.COMBO,
 
-  initializeConfig(data, cache) {
+  initializeConfig(data, { cache }) {
     if (cache[Type.COMBO]) {
       return cache[Type.COMBO]!
     }
@@ -645,7 +645,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
       const combinedYAxises = [...yAxises, ...y2Axises]
       return dimensions.length
         ? filter
-            .dimension((v) => dimensions.map((dimention) => v[dimention] as string | number))
+            .dimension((v) => dimensions.map((dimension) => v[dimension] as string | number))
             .group()
             .all()
             .reduce<{ key: string; groupId: 'left' | 'right' }[]>((array, { key }) => {
