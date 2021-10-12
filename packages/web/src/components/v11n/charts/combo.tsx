@@ -125,96 +125,6 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
       }),
       [xAxises, dimensions, y2Axises, yAxises]
     )
-    const filter = useCrossFilter(props.data)
-    const shapes = useMemo<{ key: string; groupId: 'left' | 'right' }[]>(() => {
-      const combinedYAxises = [...yAxises, ...y2Axises]
-      return dimensions.length
-        ? filter
-            .dimension((v) => dimensions.map((dimention) => v[dimention] as string | number))
-            .group()
-            .all()
-            .reduce<{ key: string; groupId: 'left' | 'right' }[]>((array, { key }) => {
-              yAxises.forEach((y) => {
-                array.push({
-                  key:
-                    combinedYAxises.length > 1
-                      ? `${Array.isArray(key) ? key.join(splitter) : key}${splitter}${y}`
-                      : String(Array.isArray(key) ? key.join(splitter) : key),
-                  groupId: 'left' as 'left'
-                })
-              })
-              y2Axises.forEach((y) => {
-                array.push({
-                  key:
-                    combinedYAxises.length > 1
-                      ? `${Array.isArray(key) ? key.join(splitter) : key}${splitter}${y}`
-                      : String(Array.isArray(key) ? key.join(splitter) : key),
-                  groupId: 'right' as 'right'
-                })
-              })
-              return array
-            }, [])
-        : [
-            ...yAxises.map((key) => ({ key, groupId: 'left' as 'left' })),
-            ...y2Axises.map((key) => ({ key, groupId: 'right' as 'right' }))
-          ]
-    }, [filter, dimensions, yAxises, y2Axises])
-    useEffect(() => {
-      const groups = compact([
-        yAxises.length ? { key: 'left' } : undefined,
-        y2Axises.length ? { key: 'right' } : undefined
-      ])
-      if (props.config.groups.map(({ key }) => key).join() === groups.map(({ key }) => key).join()) {
-        return
-      }
-      onConfigChange(
-        'groups',
-        groups.map(
-          (group) =>
-            props.config.groups.find((g) => g.key === group.key) || {
-              key: group.key,
-              type: 'linear',
-              shape: {
-                [Type.COMBO]: ComboShape.LINE,
-                [Type.AREA]: ComboShape.AREA,
-                [Type.BAR]: ComboShape.BAR,
-                [Type.LINE]: ComboShape.LINE
-              }[props.config.type],
-              stackType: ComboStack.NONE,
-              connectNulls: true
-            }
-        ) as Config<Type.COMBO>['groups']
-      )
-    }, [yAxises, y2Axises, props.config.type, onConfigChange, props.config.groups])
-    useEffect(() => {
-      if (
-        sortBy(props.config.shapes, 'key')
-          .map(({ key, groupId }) => key + groupId)
-          .join() ===
-        sortBy(shapes, 'key')
-          .map(({ key, groupId }) => key + groupId)
-          .join()
-      ) {
-        return
-      }
-      onConfigChange(
-        'shapes',
-        shapes
-          .map(
-            (shape) =>
-              props.config.shapes.find((s) => s.key === shape.key && s.groupId === shape.groupId) || {
-                key: shape.key,
-                groupId: shape.groupId,
-                title: shape.key,
-                hasTrendline: false
-              }
-          )
-          .map((shape, index) => ({
-            ...shape,
-            color: index
-          })) as Config<Type.COMBO>['shapes']
-      )
-    }, [onConfigChange, shapes, props.config.shapes])
     const displayTypes = useDataFieldsDisplayType(props.data.fields)
     const renderAxisSelect = useCallback(
       (title: string, axise: 'xAxises' | 'dimensions' | 'yAxises' | 'y2Axises', disabled: boolean) => {
@@ -559,6 +469,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
 
   Diagram(props) {
     const { yAxises, y2Axises } = props.config
+    const { onConfigChange } = props
     const dimensions = props.config.dimensions
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const xAxises = props.config.xAxises
@@ -730,6 +641,95 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
       }
       return undefined
     }, [groups.left, groups.right, props.config.shapes, props.dimensions.width, result100.length])
+    const shapes = useMemo<{ key: string; groupId: 'left' | 'right' }[]>(() => {
+      const combinedYAxises = [...yAxises, ...y2Axises]
+      return dimensions.length
+        ? filter
+            .dimension((v) => dimensions.map((dimention) => v[dimention] as string | number))
+            .group()
+            .all()
+            .reduce<{ key: string; groupId: 'left' | 'right' }[]>((array, { key }) => {
+              yAxises.forEach((y) => {
+                array.push({
+                  key:
+                    combinedYAxises.length > 1
+                      ? `${Array.isArray(key) ? key.join(splitter) : key}${splitter}${y}`
+                      : String(Array.isArray(key) ? key.join(splitter) : key),
+                  groupId: 'left' as 'left'
+                })
+              })
+              y2Axises.forEach((y) => {
+                array.push({
+                  key:
+                    combinedYAxises.length > 1
+                      ? `${Array.isArray(key) ? key.join(splitter) : key}${splitter}${y}`
+                      : String(Array.isArray(key) ? key.join(splitter) : key),
+                  groupId: 'right' as 'right'
+                })
+              })
+              return array
+            }, [])
+        : [
+            ...yAxises.map((key) => ({ key, groupId: 'left' as 'left' })),
+            ...y2Axises.map((key) => ({ key, groupId: 'right' as 'right' }))
+          ]
+    }, [filter, dimensions, yAxises, y2Axises])
+    useEffect(() => {
+      const groups = compact([
+        yAxises.length ? { key: 'left' } : undefined,
+        y2Axises.length ? { key: 'right' } : undefined
+      ])
+      if (props.config.groups.map(({ key }) => key).join() === groups.map(({ key }) => key).join()) {
+        return
+      }
+      onConfigChange(
+        'groups',
+        groups.map(
+          (group) =>
+            props.config.groups.find((g) => g.key === group.key) || {
+              key: group.key,
+              type: 'linear',
+              shape: {
+                [Type.COMBO]: ComboShape.LINE,
+                [Type.AREA]: ComboShape.AREA,
+                [Type.BAR]: ComboShape.BAR,
+                [Type.LINE]: ComboShape.LINE
+              }[props.config.type],
+              stackType: ComboStack.NONE,
+              connectNulls: true
+            }
+        ) as Config<Type.COMBO>['groups']
+      )
+    }, [yAxises, y2Axises, props.config.type, onConfigChange, props.config.groups])
+    useEffect(() => {
+      if (
+        sortBy(props.config.shapes, 'key')
+          .map(({ key, groupId }) => key + groupId)
+          .join() ===
+        sortBy(shapes, 'key')
+          .map(({ key, groupId }) => key + groupId)
+          .join()
+      ) {
+        return
+      }
+      onConfigChange(
+        'shapes',
+        shapes
+          .map(
+            (shape) =>
+              props.config.shapes.find((s) => s.key === shape.key && s.groupId === shape.groupId) || {
+                key: shape.key,
+                groupId: shape.groupId,
+                title: shape.key,
+                hasTrendline: false
+              }
+          )
+          .map((shape, index) => ({
+            ...shape,
+            color: index
+          })) as Config<Type.COMBO>['shapes']
+      )
+    }, [onConfigChange, shapes, props.config.shapes])
 
     return (
       <ResponsiveContainer>

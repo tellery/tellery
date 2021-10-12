@@ -56,7 +56,12 @@ const VisulizationBlockEmbed: React.FC<{ blockId: string }> = ({ blockId }) => {
             margin-bottom: 20px;
           `}
         ></div>
-        <QuestionBlockBody snapshotId={queryBlock.content?.snapshotId} visualization={block.content?.visualization} />
+        <QuestionBlockBody
+          storyId={block.storyId!}
+          blockId={block.id}
+          snapshotId={queryBlock.content?.snapshotId}
+          visualization={block.content?.visualization}
+        />
       </div>
     </>
   )
@@ -64,8 +69,8 @@ const VisulizationBlockEmbed: React.FC<{ blockId: string }> = ({ blockId }) => {
 
 const _QuestionBlockBody: React.ForwardRefRenderFunction<
   HTMLDivElement | null,
-  { snapshotId?: string | null; visualization?: Config<Type> }
-> = ({ snapshotId, visualization }, ref) => {
+  { storyId: string; blockId: string; snapshotId?: string | null; visualization?: Config<Type> }
+> = ({ storyId, blockId, snapshotId, visualization }, ref) => {
   const snapshot = useSnapshot(snapshotId)
 
   const visualizationConfig = useMemo(() => {
@@ -93,6 +98,8 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
     >
       {visualizationConfig && snapshot?.data && snapshot.data.fields ? (
         <Diagram
+          storyId={storyId}
+          blockId={blockId}
           data={snapshot.data}
           config={visualizationConfig as never}
           className={css`
