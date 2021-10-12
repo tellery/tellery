@@ -47,7 +47,7 @@ async function getInviteCode(workspaceId: string): Promise<string> {
     .then((w) => w.inviteCode)
 }
 
-test('createWorkspace', async (t) => {
+test.serial('createWorkspace', async (t) => {
   const uid = uuid()
   const workspace = await workspaceService.create(uid, 'test-create')
   t.is(workspace.memberNum, 1)
@@ -62,7 +62,7 @@ test('createWorkspace', async (t) => {
   await getRepository(WorkspaceEntity).delete(workspace.id)
 })
 
-test('listWorkspaces', async (t) => {
+test.serial('listWorkspaces', async (t) => {
   const uid = uuid()
   const workspace = await workspaceService.create(uid, 'test-list')
   const res1 = await workspaceService.list(uid)
@@ -70,7 +70,7 @@ test('listWorkspaces', async (t) => {
   await getRepository(WorkspaceEntity).delete(workspace.id)
 })
 
-test('getWorkspace', async (t) => {
+test.serial('getWorkspace', async (t) => {
   const uid = uuid()
   const workspace = await workspaceService.create(uid, 'test-get')
 
@@ -82,7 +82,7 @@ test('getWorkspace', async (t) => {
   await getRepository(WorkspaceEntity).delete(workspace.id)
 })
 
-test('updateWorkspace', async (t) => {
+test.serial('updateWorkspace', async (t) => {
   const uid = uuid()
   const workspace = await workspaceService.create(uid, 'test-update')
   const model = await getRepository(WorkspaceEntity).findOneOrFail(workspace.id)
@@ -96,7 +96,7 @@ test('updateWorkspace', async (t) => {
   t.is(model.inviteCode !== newModel.inviteCode, true)
 })
 
-test('joinWorkspace', async (t) => {
+test.serial('joinWorkspace', async (t) => {
   const uid1 = uuid()
   const uid2 = uuid()
   const workspace = await workspaceService.create(uid1, 'test-join')
@@ -108,7 +108,7 @@ test('joinWorkspace', async (t) => {
   await getRepository(WorkspaceEntity).delete(res.id)
 })
 
-test('sort user members', async (t) => {
+test.serial('sort user members', async (t) => {
   const uid1 = uuid()
   const uid2 = uuid()
   const uid3 = uuid()
@@ -125,7 +125,7 @@ test('sort user members', async (t) => {
   await getRepository(WorkspaceEntity).delete(w.id)
 })
 
-test('leaveWorkspace', async (t) => {
+test.serial('leaveWorkspace', async (t) => {
   const uid1 = uuid()
   const uid2 = uuid()
 
@@ -143,7 +143,7 @@ test('leaveWorkspace', async (t) => {
   t.is(model2, undefined)
 })
 
-test('kickout members', async (t) => {
+test.serial('kickout members', async (t) => {
   const uid1 = uuid()
   const uid2 = uuid()
   const uid3 = uuid()
@@ -153,12 +153,11 @@ test('kickout members', async (t) => {
   await workspaceService.join(workspace.id, uid3, await getInviteCode(workspace.id))
 
   await workspaceService.kickoutMembers(uid1, workspace.id, [uid2, uid3])
-  await bluebird.delay(200)
   const model = await workspaceService.mustFindOneWithMembers(workspace.id)
   t.is(model?.members.length, 1)
 })
 
-test('updateRoleWorkspace', async (t) => {
+test.serial('updateRoleWorkspace', async (t) => {
   const uid1 = uuid()
   const uid2 = uuid()
   const workspace = await workspaceService.create(uid1, 'test-update-role')
@@ -176,7 +175,7 @@ test('updateRoleWorkspace', async (t) => {
   t.deepEqual(after.role, PermissionWorkspaceRole.ADMIN)
 })
 
-test('inviteMembersWorkspace', async (t) => {
+test.serial('inviteMembersWorkspace', async (t) => {
   const [inviter] = await mockUsers(1)
   const workspace = await workspaceService.create(inviter.id, 'test-invite-members')
   const email = `${nanoid()}@test.com`
@@ -211,7 +210,7 @@ test('inviteMembersWorkspace', async (t) => {
   t.deepEqual(findMember(res1, invitee.id)?.status, WorkspaceMemberStatus.ACTIVE)
 })
 
-test('invite duplicate members', async (t) => {
+test.serial('invite duplicate members', async (t) => {
   const [inviter] = await mockUsers(1)
   const workspace = await workspaceService.create(inviter.id, 'test-invite-duplicate')
 
@@ -227,7 +226,7 @@ test('invite duplicate members', async (t) => {
   t.pass()
 })
 
-test('getWorkspaceView', async (t) => {
+test.serial('getWorkspaceView', async (t) => {
   const workspace = await workspaceService.create('test', 'test-getView')
   const view = await workspaceService.syncWorkspaceView('testUser', workspace.id)
   const model = await getRepository(WorkspaceViewEntity).findOne(view.id)
@@ -237,7 +236,7 @@ test('getWorkspaceView', async (t) => {
   t.not(model, undefined)
 })
 
-test('getWorkspaceViewByViewId', async (t) => {
+test.serial('getWorkspaceViewByViewId', async (t) => {
   const workspace = await workspaceService.create('test', 'test-getViewById')
   const view = await workspaceService.syncWorkspaceView('testUser', workspace.id)
 
@@ -249,7 +248,7 @@ test('getWorkspaceViewByViewId', async (t) => {
   t.deepEqual(getViewRes.id, view.id)
 })
 
-test('anonymous inviteMembersWorkspace', async (t) => {
+test.serial('anonymous inviteMembersWorkspace', async (t) => {
   const admin = uuid()
   const [user] = await mockUsers(1)
   await workspaceService.create(admin, 'test-anonymous')
