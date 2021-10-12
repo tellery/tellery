@@ -34,7 +34,7 @@
     "@types/stats.js": "^0.17.0",
     "@use-gesture/react": "^10.0.3",
     "@welldone-software/why-did-you-render": "^6.2.1",
-    "axios": "0.22.0",
+    "axios": "0.21.4",
     "boring-avatars": "^1.5.8",
     "compute-scroll-into-view": "^1.0.17",
     "copy-to-clipboard": "^3.3.1",
