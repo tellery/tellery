@@ -587,6 +587,8 @@ export const StoryQuestionEditor: React.FC<{
       refreshSnapshot.execute(queryBlock).then((res) => {
         if (res.errMsg) {
           setSQLError(res.errMsg)
+        } else {
+          setSQLError(null)
         }
       })
     }, 0)
