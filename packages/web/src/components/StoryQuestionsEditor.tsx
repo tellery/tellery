@@ -9,6 +9,7 @@ import { SQLEditor } from '@app/components/SQLEditor'
 import { useBindHovering } from '@app/hooks'
 import { useBlockSuspense, useConnectorsGetProfile, useTranslateSmartQuery } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
+import { useDimensions } from '@app/hooks/useDimensions'
 import { useLocalStorage } from '@app/hooks/useLocalStorage'
 import {
   EditorDraft,
@@ -36,6 +37,7 @@ import isHotkey from 'is-hotkey'
 import { omit } from 'lodash'
 import React, { SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'react-toastify'
+import { useWindowSize } from 'react-use'
 import { Tab, TabList, TabPanel, TabStateReturn, useTabState } from 'reakit/Tab'
 import invariant from 'tiny-invariant'
 import YAML from 'yaml'
@@ -120,10 +122,17 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
   const [resizeConfig] = useLocalStorage('MainSQLEditorConfig_v2', {
     y: -300
   })
+  const { height: windowHeight } = useWindowSize()
   const y = useMotionValue(resizeConfig.y)
   const height = useTransform(y, (y) => Math.abs(y - 0.5 * DRAG_HANDLE_WIDTH))
   const placeholderHeight = useTransform(height, (height) => (open ? height : 0))
   const translateY = useMotionValue(height.get())
+
+  useEffect(() => {
+    if (height.get() > windowHeight * 0.7) {
+      y.set(-windowHeight * 0.7)
+    }
+  }, [height, windowHeight, y])
 
   const workspace = useWorkspace()
   const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)
