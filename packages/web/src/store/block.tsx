@@ -206,6 +206,28 @@ export const TelleryStoryBlocks = selectorFamily<Record<string, Editor.BaseBlock
   }
 })
 
+export const StoryVisualizationBlocksAtom = selectorFamily<Editor.VisualizationBlock[], { storyId: string }>({
+  key: 'StoryVisualizationBlocksAtom',
+  get:
+    ({ storyId }) =>
+    ({ get }) => {
+      const result: Editor.VisualizationBlock[] = []
+      const blocksMap = get(TelleryStoryBlocks(storyId))
+
+      Object.values(blocksMap).forEach((block) => {
+        const currentNode = block
+        if (currentNode.type === Editor.BlockType.Visualization) {
+          result.push(currentNode as Editor.VisualizationBlock)
+        }
+      })
+
+      return result
+    },
+  cachePolicy_UNSTABLE: {
+    eviction: 'most-recent'
+  }
+})
+
 export const StoryQueryVisualizationBlocksAtom = selectorFamily<
   Editor.VisualizationBlock[],
   { storyId: string; queryId: string }
