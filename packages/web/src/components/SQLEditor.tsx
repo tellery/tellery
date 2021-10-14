@@ -1,5 +1,6 @@
 import { useFetchBlock } from '@app/hooks/useFetchBlock'
 import useSqlEditorTransclusion from '@app/hooks/useSqlEditorTransclusion'
+import useSqlEditorVariable from '@app/hooks/useSqlEditorVariable'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { parseTelleryUrl } from '@app/utils'
@@ -87,10 +88,12 @@ export function SQLEditor(props: {
     [props.padding, props.readOnly]
   )
   const transclusionWidgets = useSqlEditorTransclusion({ ...props, editor })
+  const variableWidgets = useSqlEditorVariable({ ...props, editor })
 
   return (
     <>
       {transclusionWidgets}
+      {variableWidgets}
       <MonacoEditor
         className={cx(
           css`
