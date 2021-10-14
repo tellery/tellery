@@ -3,13 +3,14 @@ import type { editor } from 'monaco-editor'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useWorkspace } from './useWorkspace'
 import { createPortal } from 'react-dom'
-import Tippy from '@tippyjs/react'
 import { css } from '@emotion/css'
 import { ThemingVariables } from '@app/styles'
 import { VARIABLE_REGEX } from '@app/utils'
 import { useRecoilValue } from 'recoil'
 import { StoryVariables } from '@app/components/editor/store/variables'
 import { useOpenStory } from './index'
+import { SVG2DataURI } from '@app/lib/svg'
+import { IconMenuCode } from '@app/assets/icons'
 
 export default function useSqlEditorVariable(props: {
   storyId: string
@@ -131,109 +132,38 @@ function VariableContentWidget(props: {
 }) {
   const { name, value } = props
   const openStoryHandler = useOpenStory()
-  const el = document.querySelector(`[widgetid="content.widget.variable.${props.blockId}.${name}.${props.index}"]`)
-  const [visible, setVisible] = useState(false)
+  const [el, setEl] = useState<Element | null>()
+  useEffect(() => {
+    setEl(document.querySelector(`[widgetid="content.widget.variable.${props.blockId}.${name}.${props.index}"]`))
+  }, [name, props.blockId, props.index])
 
   return el
     ? createPortal(
-        <Tippy
-          visible={visible}
-          theme="tellery"
-          duration={150}
-          content={
-            <div
-              className={css`
-                pointer-events: all;
-                width: 600px;
-                box-shadow: ${ThemingVariables.boxShadows[0]};
-                border-radius: 8px;
-                display: flex;
-                flex-direction: column;
-                background: ${ThemingVariables.colors.gray[5]};
-              `}
-            >
-              <h4
-                className={css`
-                  flex-shrink: 0;
-                  font-weight: 600;
-                  font-size: 16px;
-                  line-height: 22px;
-                  margin: 20px 15px 0 15px;
-                  color: ${ThemingVariables.colors.text[0]};
-                `}
-              >
-                {props.name}
-              </h4>
-              <div
-                className={css`
-                  height: 300px;
-                `}
-              ></div>
-              <div
-                className={css`
-                  border-top: 1px solid ${ThemingVariables.colors.gray[1]};
-                  height: 44px;
-                  flex-shrink: 0;
-                  display: flex;
-                  align-items: center;
-                  justify-content: space-between;
-                  padding: 14px 0;
-                  margin: 0 15px;
-                  span {
-                    font-size: 14px;
-                    line-height: 16px;
-                    color: ${ThemingVariables.colors.text[1]};
-                  }
-                `}
-              >
-                <span
-                  className={css`
-                    cursor: pointer;
-                  `}
-                  onClick={() => {
-                    openStoryHandler(props.storyId, { blockId: value.blockId })
-                  }}
-                >
-                  Go to block
-                </span>
-                <span>⌘+click</span>
-              </div>
-            </div>
-          }
-          onClickOutside={() => {
-            setVisible(false)
+        <div
+          className={css`
+            font-size: 12px;
+            line-height: 18px;
+            vertical-align: middle;
+            border-radius: 6px;
+            padding: 0 5px 0 23px;
+            color: ${ThemingVariables.colors.text[0]};
+            background-color: ${ThemingVariables.colors.primary[4]};
+            background-image: ${SVG2DataURI(IconMenuCode)};
+            background-size: 16px;
+            background-repeat: no-repeat;
+            background-position: 5px 50%;
+            white-space: nowrap;
+            cursor: pointer;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: ${props.length * 0.955}ch;
+          `}
+          onClick={() => {
+            openStoryHandler(props.storyId, { blockId: value.blockId })
           }}
-          arrow={false}
         >
-          <div
-            className={css`
-              font-size: 12px;
-              line-height: 18px;
-              vertical-align: middle;
-              border-radius: 6px;
-              padding: 0 5px;
-              color: ${ThemingVariables.colors.text[0]};
-              background-color: ${ThemingVariables.colors.primary[4]};
-              background-size: 16px;
-              background-repeat: no-repeat;
-              background-position: 5px 50%;
-              white-space: nowrap;
-              cursor: pointer;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              width: ${props.length * 0.955}ch;
-            `}
-            onClick={(e) => {
-              if (!e.metaKey) {
-                setVisible((old) => !old)
-                return
-              }
-              openStoryHandler(props.storyId, { blockId: value.blockId })
-            }}
-          >
-            {props.name}
-          </div>
-        </Tippy>,
+          {props.name}
+        </div>,
         el
       )
     : null
