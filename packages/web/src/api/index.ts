@@ -58,6 +58,20 @@ export const userGenerate = async ({ email }: { email: string }) => {
   return data
 }
 
+export async function userInviteMembersToWorkspace(
+  workspaceId: string,
+  members: { email: string; role: Workspace['members'][0]['role'] }[]
+) {
+  const { data } = await request.post<{ linkPairs: { [email: string]: string } }>(
+    '/api/users/inviteMembersToWorkspace',
+    {
+      workspaceId: workspaceId,
+      users: members
+    }
+  )
+  return data
+}
+
 export const updateUser = async ({
   avatar,
   name,

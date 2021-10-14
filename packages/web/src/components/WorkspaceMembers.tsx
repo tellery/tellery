@@ -3,19 +3,18 @@ import {
   useMgetUsers,
   User,
   useWorkspaceDetail,
-  useWorkspaceInviteMembers,
   useWorkspaceKickout,
   useWorkspaceLeave,
   useWorkspaceUpdateRole
 } from '@app/hooks/api'
-import { useLoggedUser } from '@app/hooks/useAuth'
+import { useAuth, useLoggedUser } from '@app/hooks/useAuth'
 import { ThemingVariables } from '@app/styles'
 import type { Workspace } from '@app/types'
 import { css, cx } from '@emotion/css'
 import Tippy from '@tippyjs/react'
 import copy from 'copy-to-clipboard'
 import { compact, map } from 'lodash'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import { FormButton } from './kit/FormButton'
 import FormInput from './kit/FormInput'
@@ -25,38 +24,45 @@ import { MenuItem } from './MenuItem'
 import { MenuItemDivider } from './MenuItemDivider'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import Avatar from './Avatar'
+import { useAsync } from '@app/hooks'
 
 type Role = Workspace['members'][0]['role']
 
 export function WorkspaceMembers(props: { onClose(): void }) {
   const user = useLoggedUser()
+  const { inviteMembersToWorkspace } = useAuth()
   const { data: workspace, refetch } = useWorkspaceDetail()
   const { data: users } = useMgetUsers(workspace?.members.map(({ userId }) => userId))
-  const [invite, setInvite] = useState(false)
+  const [isInvite, setIsInvite] = useState(false)
   const [visible, setVisible] = useState(false)
   const [role, setRole] = useState<Role>('member')
   const [email, setEmail] = useState('')
   const members = useMemo(() => compact(email.split(',')).map((email) => ({ email, role })), [email, role])
-  const handleInviteMembers = useWorkspaceInviteMembers(members)
+  const handleinviteMembersToWorkspace = useAsync(
+    useCallback(
+      async () => (workspace ? inviteMembersToWorkspace(workspace.id, members) : { linkPairs: {} }),
+      [inviteMembersToWorkspace, members, workspace]
+    )
+  )
   const me = useMemo(() => workspace?.members.find(({ userId }) => userId === user.id), [user.id, workspace?.members])
   const { onClose } = props
   useEffect(() => {
-    if (handleInviteMembers.status === 'success') {
+    if (handleinviteMembersToWorkspace.status === 'success') {
       onClose()
       toast.success(workspace?.preferences.emailConfig ? 'Invitation links sent' : 'Invitation links copied')
     }
-  }, [handleInviteMembers.status, onClose, workspace?.preferences.emailConfig])
+  }, [handleinviteMembersToWorkspace.status, onClose, workspace?.preferences.emailConfig])
   useEffect(() => {
-    if (handleInviteMembers.value && !workspace?.preferences.emailConfig) {
-      const str = map(handleInviteMembers.value?.linkPairs, (link, email) => `${email} ${link}`).join('\n')
+    if (handleinviteMembersToWorkspace.value && !workspace?.preferences.emailConfig) {
+      const str = map(handleinviteMembersToWorkspace.value?.linkPairs, (link, email) => `${email} ${link}`).join('\n')
       if (str) {
         copy(str)
       }
     }
-  }, [handleInviteMembers.value, workspace?.preferences.emailConfig])
+  }, [handleinviteMembersToWorkspace.value, workspace?.preferences.emailConfig])
   const disabled = me?.role !== 'admin'
 
-  if (invite) {
+  if (isInvite) {
     return (
       <div
         className={css`
@@ -79,7 +85,7 @@ export function WorkspaceMembers(props: { onClose(): void }) {
               margin-right: 10px;
             `}
             onClick={() => {
-              setInvite(false)
+              setIsInvite(false)
             }}
           />
           <h2
@@ -192,8 +198,8 @@ export function WorkspaceMembers(props: { onClose(): void }) {
               flex-shrink: 0;
             `}
             disabled={members.length === 0}
-            loading={handleInviteMembers.status === 'pending'}
-            onClick={handleInviteMembers.execute}
+            loading={handleinviteMembersToWorkspace.status === 'pending'}
+            onClick={handleinviteMembersToWorkspace.execute}
           >
             {workspace?.preferences.emailConfig ? 'Send invitations' : 'Copy invitation links'}
           </FormButton>
@@ -227,7 +233,7 @@ export function WorkspaceMembers(props: { onClose(): void }) {
               cursor: pointer;
             `}
             onClick={() => {
-              setInvite(true)
+              setIsInvite(true)
             }}
           >
             Invite

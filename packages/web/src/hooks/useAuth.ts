@@ -1,8 +1,16 @@
-import { request, updateUser, userConfirm, userGenerate, userLogin, userLogout } from '@app/api'
+import {
+  request,
+  updateUser,
+  userConfirm,
+  userGenerate,
+  userInviteMembersToWorkspace,
+  userLogin,
+  userLogout
+} from '@app/api'
 import type { User } from '@app/hooks/api'
+import { Workspace } from '@app/types'
 import { tracker } from '@app/utils/openReplay'
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
 export function useProvideAuth() {
@@ -28,8 +36,15 @@ export function useProvideAuth() {
     return userGenerate(args)
   }, [])
 
+  const inviteMembersToWorkspace = useCallback(
+    (workspaceId: string, members: { email: string; role: Workspace['members'][0]['role'] }[]) => {
+      return userInviteMembersToWorkspace(workspaceId, members)
+    },
+    []
+  )
+
   const update = useCallback(
-    (args: {
+    async (args: {
       avatar?: string | undefined
       name?: string | undefined
       newPassword?: string | undefined
@@ -57,6 +72,7 @@ export function useProvideAuth() {
     logout,
     confirm,
     // generate,
+    inviteMembersToWorkspace,
     autoLogin,
     update,
     setUser
