@@ -27,7 +27,7 @@ export const StoryVariables = selectorFamily<Record<string, { defaultValue: unkn
         if (block.type === Editor.BlockType.Control) {
           const controlBlock = block as Editor.ControlBlock
           result[controlBlock.content.name] = {
-            defaultValue: controlBlock.content.defaultValue ?? null,
+            defaultValue: controlBlock?.content?.defaultValue ?? null,
             blockId: block.id
           }
         }
@@ -48,7 +48,7 @@ export const VariableAtomFamilyDefault = selectorFamily<unknown, { storyId: stri
     ({ storyId, name }) =>
     async ({ get }) => {
       const variables = get(StoryVariables(storyId))
-      return variables[name].defaultValue
+      return variables[name]?.defaultValue
     },
   cachePolicy_UNSTABLE: {
     eviction: 'most-recent'
