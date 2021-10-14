@@ -27,7 +27,7 @@ export default function useSqlEditorVariable(props: {
   const mapMatchToContentWidget = useCallback(
     (match: editor.FindMatch, index: number) => {
       const variableName = match.matches?.[1]
-      if (!variableName) {
+      if (!variableName || !variables[variableName]) {
         return null
       }
       return {
@@ -46,7 +46,7 @@ export default function useSqlEditorVariable(props: {
         }
       }
     },
-    [props.blockId]
+    [props.blockId, variables]
   )
   const contentWidgets = useMemo<editor.IContentWidget[]>(
     () => compact(matches.map(mapMatchToContentWidget)),
@@ -85,7 +85,8 @@ export default function useSqlEditorVariable(props: {
     }
     const { dispose } = editor.onDidChangeCursorPosition((e) => {
       const match = matches.find(({ range }) => range.containsPosition(e.position))
-      if (!match?.matches?.[0]) {
+      const variableName = match?.matches?.[1]
+      if (!variableName || !variables[variableName]) {
         return
       }
       if (
@@ -97,14 +98,14 @@ export default function useSqlEditorVariable(props: {
       }
     })
     return dispose
-  }, [editor, contentWidgets, matches])
+  }, [editor, contentWidgets, matches, variables])
   const widgets = useMemo(
     () =>
       matches.map((match, index) => {
-        if (!match.matches) {
+        const variableName = match?.matches?.[1]
+        if (!variableName || !variables[variableName]) {
           return null
         }
-        const variableName = match.matches[1]
         return (
           <VariableContentWidget
             storyId={props.storyId}
