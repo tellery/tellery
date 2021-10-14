@@ -86,11 +86,11 @@ export function SQLEditor(props: {
     }),
     [props.padding, props.readOnly]
   )
-  const widgets = useSqlEditorTransclusion({ ...props, editor })
+  const transclusionWidgets = useSqlEditorTransclusion({ ...props, editor })
 
   return (
     <>
-      {widgets}
+      {transclusionWidgets}
       <MonacoEditor
         className={cx(
           css`
