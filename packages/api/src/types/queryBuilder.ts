@@ -1,5 +1,3 @@
-import _ from 'lodash'
-
 type DataType = string
 type FunctionName = string
 type QueryBuilderTranslation = Map<DataType, Map<FunctionName, string>>

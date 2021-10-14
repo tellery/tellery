@@ -37,8 +37,11 @@ export default async function user(ctx: Context, next: Next): Promise<unknown> {
         if (!admin) {
           throw new Error('missing super user')
         }
-        await workspaceService.inviteMembers(admin.userId, workspace.id, [
-          { email: _(payload).get('email'), role: PermissionWorkspaceRole.MEMBER },
+        await workspaceService.addMembers(admin.userId, workspace.id, [
+          {
+            userId: payload.userId,
+            role: PermissionWorkspaceRole.MEMBER,
+          },
         ])
       }
     }
@@ -51,8 +54,8 @@ export default async function user(ctx: Context, next: Next): Promise<unknown> {
   const resp = await next()
 
   // refresh token
-  if (payload && payload.expiresAt - d15 < _.now()) {
-    ctx.auth_token = await userService.generateToken(payload.userId)
+  if (token && _.isString(token) && payload && payload.expiresAt - d15 < _.now()) {
+    ctx.auth_token = await userService.refreshToken(token)
   }
 
   const { auth_token: at } = ctx

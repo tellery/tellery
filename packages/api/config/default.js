@@ -39,6 +39,11 @@ module.exports = {
     webPort: process.env.SERVER_WEB_PORT || 80,
     port: process.env.SERVER_PORT || 8000,
   },
+  // for SaaS usage
+  deploy: {
+    mode: process.env.DEPLOY_MODE || 'local',
+    userServiceEndpoint: process.env.UserServiceEndpoint || '',
+  },
   frontendConfig: {
     SENTRY_DSN: process.env.FRONTEND_SENTRY_DSN || '',
     GA4_ID: process.env.FRONTEND_GA4_ID || '',

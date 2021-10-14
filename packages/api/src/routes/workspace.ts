@@ -67,17 +67,6 @@ class UserRole {
   role!: PermissionWorkspaceRole
 }
 
-class InviteMembersRequest {
-  @IsDefined()
-  workspaceId!: string
-
-  @IsDefined()
-  @IsArray()
-  @Type(() => UserRole)
-  @ValidateNested()
-  users!: UserRole[]
-}
-
 class KickOutMembersRequest {
   @IsDefined()
   workspaceId!: string
@@ -206,16 +195,6 @@ async function leaveWorkspace(ctx: Context) {
   ctx.body = { success: true }
 }
 
-async function inviteMembers(ctx: Context) {
-  const payload = plainToClass(InviteMembersRequest, ctx.request.body)
-  await validate(ctx, payload)
-
-  const user = mustGetUser(ctx)
-
-  const res = await workspaceService.inviteMembers(user.id, payload.workspaceId, payload.users)
-  ctx.body = res
-}
-
 async function kickoutMembers(ctx: Context) {
   const payload = plainToClass(KickOutMembersRequest, ctx.request.body)
   await validate(ctx, payload)
@@ -284,7 +263,6 @@ router.post('/getDetail', getWorkspaceDetail)
 router.post('/update', updateWorkspace)
 router.post('/create', createWorkspace)
 router.post('/join', joinWorkspace)
-router.post('/inviteMembers', inviteMembers)
 router.post('/leave', leaveWorkspace)
 router.post('/kickout', kickoutMembers)
 router.post('/updateRole', updatePermissionWorkspaceRole)

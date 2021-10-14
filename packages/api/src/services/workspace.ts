@@ -19,15 +19,14 @@ import { AccountStatus } from '../types/user'
 import { WorkspaceDTO, WorkspaceMemberStatus } from '../types/workspace'
 import { WorkspaceViewDTO } from '../types/workspaceView'
 import { string2Hex } from '../utils/common'
-import { isAnonymous } from '../utils/env'
+import { isAnonymous, isSaaS } from '../utils/env'
 import { loadMore } from '../utils/loadMore'
 import { canGetWorkspaceData, canUpdateWorkspaceData } from '../utils/permission'
-import emailService from './email'
-import userService from './user'
 
 // TODO: record activities
 export class WorkspaceService {
   protected permission: IPermission
+
   protected isolationLevel: IsolationLevel = 'REPEATABLE READ'
 
   constructor(p: IPermission) {
@@ -35,12 +34,11 @@ export class WorkspaceService {
   }
 
   async mustFindOneWithMembers(workspaceId: string, manager?: EntityManager): Promise<Workspace> {
-    const model = await (manager
-      ? manager.getRepository(WorkspaceEntity)
-      : getRepository(WorkspaceEntity)
-    ).findOne(workspaceId, {
-      relations: ['members'],
-    })
+    const model = await (manager ?? getManager())
+      .getRepository(WorkspaceEntity)
+      .findOne(workspaceId, {
+        relations: ['members'],
+      })
 
     if (!model) {
       throw NotFoundError.resourceNotFound(workspaceId)
@@ -197,64 +195,35 @@ export class WorkspaceService {
     })
   }
 
-  /**
-   *
-   * @returns linkPairs: key=> email, value=> inviteLink
-   */
-  async inviteMembers(
+  async addMembers(
     operatorId: string,
     workspaceId: string,
-    users: { email: string; role: PermissionWorkspaceRole }[],
-  ): Promise<{ workspace: WorkspaceDTO; linkPairs: { [k: string]: string } }> {
-    await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
-    const inviter = await userService.getById(operatorId)
-    const emails = _(users).map('email').value()
-
-    return getManager().transaction(this.isolationLevel, async (t) => {
-      const userMap = await userService.createUserByEmailsIfNotExist(
-        emails,
-        t,
-        AccountStatus.CREATING,
+    usersWithRole: {
+      userId: string
+      role: PermissionWorkspaceRole
+    }[],
+    manager?: EntityManager,
+  ): Promise<void> {
+    const entities = _(usersWithRole)
+      .map(({ userId, role }) =>
+        getRepository(WorkspaceMemberEntity).create({
+          workspaceId,
+          userId,
+          role,
+          status: WorkspaceMemberStatus.ACTIVE,
+          invitedAt: new Date(),
+          invitedById: operatorId,
+        }),
       )
+      .value()
 
-      const entities = _(users)
-        .map((user) =>
-          getRepository(WorkspaceMemberEntity).create({
-            workspaceId,
-            userId: userMap[user.email].id,
-            role: user.role,
-            // NOTE: invited members join workspace automatically
-            status: WorkspaceMemberStatus.ACTIVE,
-            invitedAt: new Date(),
-            invitedById: operatorId,
-          }),
-        )
-        .value()
-
-      await t
-        .createQueryBuilder()
-        .insert()
-        .into(WorkspaceMemberEntity)
-        .values(entities)
-        .orIgnore()
-        .execute()
-
-      const workspace = await this.mustFindOneWithMembers(workspaceId, t)
-
-      const emailRes = await emailService.sendInvitationEmails(
-        inviter.username,
-        // FIXME: only send email to invited users
-        _(_(userMap).values().value())
-          .map((u) => ({ userId: u.id, email: u.email }))
-          .value(),
-        workspace.name,
-      )
-
-      return {
-        workspace: workspace.toDTO(operatorId),
-        linkPairs: _(emailRes).keyBy('email').mapValues('link').value(),
-      }
-    })
+    await (manager ?? getManager())
+      .createQueryBuilder()
+      .insert()
+      .into(WorkspaceMemberEntity)
+      .values(entities)
+      .orIgnore()
+      .execute()
   }
 
   async kickoutMembers(
@@ -349,49 +318,11 @@ export class AnonymousWorkspaceService extends WorkspaceService {
   async create(): Promise<WorkspaceDTO> {
     throw InvalidArgumentError.notSupport('creating workspace')
   }
-
-  async inviteMembers(
-    operatorId: string, // only for permission validation
-    workspaceId: string,
-    users: { email: string; role: PermissionWorkspaceRole }[],
-  ): Promise<{ workspace: WorkspaceDTO; linkPairs: { [k: string]: string } }> {
-    await canUpdateWorkspaceData(this.permission, operatorId, workspaceId)
-    const emails = _(users).map('email').value()
-
-    const userMap = await userService.getByEmails(emails)
-    return getManager().transaction(this.isolationLevel, async (t) => {
-      const entities = _(users)
-        .map((user) =>
-          getRepository(WorkspaceMemberEntity).create({
-            workspaceId,
-            userId: userMap[user.email].id,
-            role: user.role,
-            // NOTE: invited members join workspace automatically
-            status: WorkspaceMemberStatus.ACTIVE,
-          }),
-        )
-        .value()
-
-      await t
-        .createQueryBuilder()
-        .insert()
-        .into(WorkspaceMemberEntity)
-        .values(entities)
-        .orIgnore()
-        .execute()
-
-      const workspace = await this.mustFindOneWithMembers(workspaceId, t)
-
-      return {
-        workspace: workspace.toDTO(),
-        linkPairs: {},
-      }
-    })
-  }
 }
 
-const service = isAnonymous()
-  ? new AnonymousWorkspaceService(getIPermission())
-  : new WorkspaceService(getIPermission())
+const service =
+  !isSaaS() && isAnonymous()
+    ? new AnonymousWorkspaceService(getIPermission())
+    : new WorkspaceService(getIPermission())
 
 export default service

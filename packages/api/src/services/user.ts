@@ -1,16 +1,21 @@
 import _ from 'lodash'
+import config from 'config'
+import got, { Got } from 'got'
 import { nanoid } from 'nanoid'
 import { EntityManager, getManager, getRepository, In } from 'typeorm'
 
 import { User } from '../core/user'
 import { UserEntity } from '../entities/user'
 import { InvalidArgumentError, UnauthorizedError } from '../error/error'
+import { PermissionWorkspaceRole } from '../types/permission'
 import { AccountStatus, UserInfoDTO } from '../types/user'
 import { getSecretKey } from '../utils/common'
 import { decrypt, encrypt } from '../utils/crypto'
-import { isAnonymous } from '../utils/env'
+import { isSaaS, isAnonymous } from '../utils/env'
 import { md5 } from '../utils/helper'
+import { beauty, getUpstreamHook } from '../utils/http'
 import emailService from './email'
+import workspaceService from './workspace'
 
 type TokenPayload = {
   userId: string
@@ -18,7 +23,30 @@ type TokenPayload = {
   expiresAt: number
 }
 
-export class UserService {
+interface IUserService {
+  /**
+   * in the scene of SaaS deployment, following methods are delegated to its own user service
+   *   - login
+   *   - generateUserVerification
+   *   - inviteMembersToWorkspace
+   *   - createUserByEmails
+   *   - confirmUser
+   *   - updateUser
+   *   - generateToken
+   *   Thus those routes will be hidden and workspaceService.addMembers will be exposed
+   */
+
+  refreshToken(currentToken: string): Promise<string>
+
+  verifyToken(token: string): Promise<{
+    userId: string
+    expiresAt: number
+  }>
+
+  getInfos(ids: string[]): Promise<UserInfoDTO[]>
+}
+
+export class UserService implements IUserService {
   private secretKey: string
 
   private compatible: boolean
@@ -55,6 +83,30 @@ export class UserService {
     })
   }
 
+  async inviteMembersToWorkspace(
+    operatorId: string,
+    workspaceId: string,
+    users: { email: string; role: PermissionWorkspaceRole }[],
+  ): Promise<{ email: string; inviteLink: string }[]> {
+    const emails = _(users).map('email').value()
+    const { name } = await workspaceService.mustFindOneWithMembers(workspaceId)
+    return getManager().transaction(async (t) => {
+      const userMap = await this.createUserByEmailsIfNotExist(emails, t, AccountStatus.CREATING)
+      const userWithRole = _(users)
+        .map(({ email, role }) => ({ userId: userMap[email].id, role }))
+        .value()
+      await workspaceService.addMembers(operatorId, workspaceId, userWithRole, t)
+      return emailService.sendInvitationEmails(
+        operatorId,
+        _(userMap)
+          .values()
+          .map((u) => ({ userId: u.id, email: u.email }))
+          .value(),
+        name,
+      )
+    })
+  }
+
   /**
    *
    * @returns key: email
@@ -64,8 +116,8 @@ export class UserService {
     t?: EntityManager,
     // user init status
     status?: AccountStatus,
-  ): Promise<{ [k: string]: User }> {
-    const r = t ? t.getRepository(UserEntity) : getRepository(UserEntity)
+  ): Promise<{ [email: string]: User }> {
+    const r = (t ?? getManager()).getRepository(UserEntity)
     const users = await r.find({
       email: In(emails),
     })
@@ -91,19 +143,6 @@ export class UserService {
     return _([...users, ...insertedUsers])
       .map((u) => User.fromEntity(u))
       .keyBy('email')
-      .value()
-  }
-
-  async getById(userId: string): Promise<User> {
-    const user = await getRepository(UserEntity).findOneOrFail(userId)
-    return User.fromEntity(user)
-  }
-
-  async getByEmails(emails: string[]): Promise<{ [k: string]: User }> {
-    const users = await getRepository(UserEntity).find({ where: { email: In(emails) } })
-    return _(users)
-      .keyBy('email')
-      .mapValues((u) => User.fromEntity(u))
       .value()
   }
 
@@ -157,7 +196,7 @@ export class UserService {
   /**
    * visible for testing
    */
-  getConvertedPassword(password: string, userId: string) {
+  getConvertedPassword(password: string, userId: string): string {
     return md5(this.secretKey + password + (this.compatible ? '' : userId.substring(0, 8)))
   }
 
@@ -173,11 +212,15 @@ export class UserService {
     )
   }
 
+  private decryptToken(token: string): TokenPayload {
+    return JSON.parse(decrypt(token, this.secretKey))
+  }
+
   /**
    * @return { userId: string, expiresAt: number}
    */
   async verifyToken(token: string): Promise<{ userId: string; expiresAt: number }> {
-    const payload = JSON.parse(decrypt(token, this.secretKey)) as TokenPayload
+    const payload = this.decryptToken(token)
     if (payload.expiresAt < _.now()) {
       throw UnauthorizedError.notLogin()
     }
@@ -193,6 +236,16 @@ export class UserService {
     }
 
     return payload
+  }
+
+  async refreshToken(token: string): Promise<string> {
+    const { userId } = this.decryptToken(token)
+    return this.generateToken(userId)
+  }
+
+  async getInfos(ids: string[]): Promise<UserInfoDTO[]> {
+    const models = await getRepository(UserEntity).find({ id: In(ids) })
+    return _.map(models, (u) => User.fromEntity(u).toDTO())
   }
 }
 
@@ -231,15 +284,57 @@ export class AnonymousUserService extends UserService {
   }
 }
 
-const service = isAnonymous() ? new AnonymousUserService() : new UserService()
-export default service
+export class SaaSExternalUserService implements IUserService {
+  private got: Got = got.extend({
+    hooks: {
+      beforeError: [getUpstreamHook('CloudUserService')],
+    },
+    prefixUrl: config.get<string>('deploy.userServiceEndpoint'),
+    timeout: 5000,
+    responseType: 'json',
+  })
 
-/**
- * batch get user info
- */
-async function getInfos(ids: string[]): Promise<UserInfoDTO[]> {
-  const models = await getRepository(UserEntity).find({ id: In(ids) })
-  return _.map(models, (u) => User.fromEntity(u).toDTO())
+  async verifyToken(token: string): Promise<{ userId: string; expiresAt: number }> {
+    return beauty(() =>
+      this.got
+        .post<{ userId: string; expireAt: number }>('/v1/internal/user/jwt/verify', {
+          json: {
+            token,
+          },
+        })
+        .json(),
+    )
+  }
+
+  async refreshToken(currentToken: string): Promise<string> {
+    const { data } = await beauty<{ data: string }>(() =>
+      this.got
+        .post('/v1/internal/user/jwt/refresh', {
+          json: {
+            token: currentToken,
+          },
+        })
+        .json(),
+    )
+    return data
+  }
+
+  async getInfos(ids: string[]): Promise<UserInfoDTO[]> {
+    const { data } = await beauty<{ data: UserInfoDTO[] }>(() =>
+      this.got
+        .get('/v1/internal/user/batchGet', {
+          json: ids,
+        })
+        .json(),
+    )
+    return data
+  }
 }
 
-export { getInfos }
+const service: IUserService = isSaaS()
+  ? new SaaSExternalUserService()
+  : isAnonymous()
+  ? new AnonymousUserService()
+  : new UserService()
+export default service
+export const defaultUserService = service as UserService

@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import { UserEntity } from '../../entities/user'
 import { AccountStatus, UserInfoDTO } from '../../types/user'
 import { Common } from '../common'
@@ -46,6 +47,20 @@ export class User extends Common {
       model.avatar,
       model.createdAt,
       model.updatedAt,
+    )
+  }
+
+  static fromArgs(body: unknown): User {
+    return new User(
+      _.get(body, 'id'),
+      _.get(body, 'username'),
+      _.get(body, 'email'),
+      _.get(body, 'password'),
+      _.get(body, 'status'),
+      _.get(body, 'version'),
+      _.get(body, 'avatar'),
+      _.get(body, 'createdAt'),
+      _.get(body, 'updatedAt'),
     )
   }
 

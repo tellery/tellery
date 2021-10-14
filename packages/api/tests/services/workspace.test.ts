@@ -1,20 +1,17 @@
 import test from 'ava'
 import bluebird from 'bluebird'
 import _, { filter } from 'lodash'
-import { nanoid } from 'nanoid'
 import { getRepository, In } from 'typeorm'
 
 import { createDatabaseCon } from '../../src/clients/db/orm'
 import { FakePermission } from '../../src/core/permission'
-import { Workspace } from '../../src/core/workspace'
 import { UserEntity } from '../../src/entities/user'
 import { WorkspaceEntity } from '../../src/entities/workspace'
 import { WorkspaceMemberEntity } from '../../src/entities/workspaceMember'
 import { WorkspaceViewEntity } from '../../src/entities/workspaceView'
-import { WorkspaceService, AnonymousWorkspaceService } from '../../src/services/workspace'
+import { WorkspaceService } from '../../src/services/workspace'
 import { PermissionWorkspaceRole } from '../../src/types/permission'
-import { AccountStatus } from '../../src/types/user'
-import { WorkspaceDTO, WorkspaceMemberStatus } from '../../src/types/workspace'
+import { WorkspaceMemberStatus } from '../../src/types/workspace'
 import { mockUsers, uuid } from '../testutils'
 
 class TestPermission extends FakePermission {
@@ -105,6 +102,7 @@ test('joinWorkspace', async (t) => {
   const res2 = await workspaceService.join(workspace.id, uid2, await getInviteCode(workspace.id))
   t.is(res2.memberNum, 2)
 
+  await getRepository(WorkspaceMemberEntity).delete({ workspaceId: res.id })
   await getRepository(WorkspaceEntity).delete(res.id)
 })
 
@@ -122,6 +120,7 @@ test('sort user members', async (t) => {
   // uid1 in the very beginning
   t.deepEqual(_(w.members).map('userId').value(), [uid1, uid3, uid2])
 
+  await getRepository(WorkspaceMemberEntity).delete({ workspaceId: w.id })
   await getRepository(WorkspaceEntity).delete(w.id)
 })
 
@@ -141,6 +140,42 @@ test('leaveWorkspace', async (t) => {
   const model2 = await getRepository(WorkspaceEntity).findOne(workspace.id)
   await bluebird.delay(200)
   t.is(model2, undefined)
+  await getRepository(WorkspaceMemberEntity).delete({ workspaceId: workspace.id })
+  await getRepository(WorkspaceEntity).delete(workspace.id)
+})
+
+test('add members', async (t) => {
+  const [inviter, invitee] = await mockUsers(2)
+  const newWorkspace = await workspaceService.create(inviter.id, 'test-add-members')
+  await workspaceService.addMembers(inviter.id, newWorkspace.id, [
+    { userId: invitee.id, role: PermissionWorkspaceRole.MEMBER },
+  ])
+  const res0 = (await workspaceService.mustFindOneWithMembers(newWorkspace.id)).toDTO()
+  const first = _(res0.members).find((m) => m.userId !== inviter.id)
+  t.is(res0.memberNum, 2)
+  t.is(first?.userId, invitee.id)
+  t.is(first?.role, PermissionWorkspaceRole.MEMBER)
+  t.is(first?.status, WorkspaceMemberStatus.ACTIVE)
+  await getRepository(UserEntity).delete([inviter.id, invitee.id])
+  await getRepository(WorkspaceEntity).delete(newWorkspace.id)
+  await getRepository(WorkspaceMemberEntity).delete({ workspaceId: newWorkspace.id })
+})
+
+test('add duplicate members', async (t) => {
+  const [inviter, invitee] = await mockUsers(2)
+  const newWorkspace = await workspaceService.create(inviter.id, 'test-add-members')
+  await workspaceService.addMembers(inviter.id, newWorkspace.id, [
+    { userId: invitee.id, role: PermissionWorkspaceRole.MEMBER },
+  ])
+  await bluebird.delay(100)
+  await workspaceService.addMembers(inviter.id, newWorkspace.id, [
+    { userId: invitee.id, role: PermissionWorkspaceRole.MEMBER },
+  ])
+  const res0 = (await workspaceService.mustFindOneWithMembers(newWorkspace.id)).toDTO()
+  t.is(res0.memberNum, 2)
+  await getRepository(UserEntity).delete([inviter.id, invitee.id])
+  await getRepository(WorkspaceEntity).delete(newWorkspace.id)
+  await getRepository(WorkspaceMemberEntity).delete({ workspaceId: newWorkspace.id })
 })
 
 test('kickout members', async (t) => {
@@ -156,6 +191,8 @@ test('kickout members', async (t) => {
   await bluebird.delay(200)
   const model = await workspaceService.mustFindOneWithMembers(workspace.id)
   t.is(model?.members.length, 1)
+  await getRepository(WorkspaceMemberEntity).delete({ workspaceId: workspace.id })
+  await getRepository(WorkspaceEntity).delete(workspace.id)
 })
 
 test('updateRoleWorkspace', async (t) => {
@@ -174,57 +211,8 @@ test('updateRoleWorkspace', async (t) => {
   const model2 = await workspaceService.mustFindOneWithMembers(workspace.id)
   const after = filter(model2?.members, (val) => val.userId === uid2)[0]
   t.deepEqual(after.role, PermissionWorkspaceRole.ADMIN)
-})
-
-test('inviteMembersWorkspace', async (t) => {
-  const [inviter] = await mockUsers(1)
-  const workspace = await workspaceService.create(inviter.id, 'test-invite-members')
-  const email = `${nanoid()}@test.com`
-  // init user
-  const { workspace: res0, linkPairs } = await workspaceService.inviteMembers(
-    inviter.id,
-    workspace.id,
-    [{ email, role: PermissionWorkspaceRole.ADMIN }],
-  )
-
-  const first = _(res0.members).find((m) => m.userId !== inviter.id)
-  t.is(res0.memberNum, 2)
-  t.is(first?.role, PermissionWorkspaceRole.ADMIN)
-  // NOTE user status
-  t.is(first?.status, WorkspaceMemberStatus.ACTIVE)
-
-  t.not(linkPairs[email], undefined)
-  const firstUser = await getRepository(UserEntity).findOne(first?.userId)
-  // invited user status is confirmed
-  t.is(firstUser?.status, AccountStatus.CREATING)
-
-  const [invitee] = await mockUsers(1)
-  // invite exist user
-  const { workspace: res1 } = await workspaceService.inviteMembers(inviter.id, workspace.id, [
-    { email: invitee.email, role: PermissionWorkspaceRole.ADMIN },
-  ])
+  await getRepository(WorkspaceMemberEntity).delete({ workspaceId: workspace.id })
   await getRepository(WorkspaceEntity).delete(workspace.id)
-
-  t.deepEqual(res1.memberNum, 3)
-  t.deepEqual(findMember(res1, invitee.id)?.role, PermissionWorkspaceRole.ADMIN)
-  // NOTE user status
-  t.deepEqual(findMember(res1, invitee.id)?.status, WorkspaceMemberStatus.ACTIVE)
-})
-
-test('invite duplicate members', async (t) => {
-  const [inviter] = await mockUsers(1)
-  const workspace = await workspaceService.create(inviter.id, 'test-invite-duplicate')
-
-  const email = `${nanoid()}@test.com`
-  await workspaceService.inviteMembers(inviter.id, workspace.id, [
-    { email, role: PermissionWorkspaceRole.ADMIN },
-  ])
-
-  await workspaceService.inviteMembers(inviter.id, workspace.id, [
-    { email, role: PermissionWorkspaceRole.ADMIN },
-  ])
-
-  t.pass()
 })
 
 test('getWorkspaceView', async (t) => {
@@ -248,22 +236,3 @@ test('getWorkspaceViewByViewId', async (t) => {
 
   t.deepEqual(getViewRes.id, view.id)
 })
-
-test('anonymous inviteMembersWorkspace', async (t) => {
-  const admin = uuid()
-  const [user] = await mockUsers(1)
-  await workspaceService.create(admin, 'test-anonymous')
-
-  const { id } = await getRepository(WorkspaceEntity).findOneOrFail()
-  const ws = new AnonymousWorkspaceService(new FakePermission())
-  await ws.inviteMembers(admin, id, [{ email: user.email, role: PermissionWorkspaceRole.MEMBER }])
-  await workspaceService.get(user.id, id)
-  t.pass()
-})
-
-function findMember(
-  workspace: Workspace | WorkspaceDTO,
-  userId: string,
-): { role: PermissionWorkspaceRole; status: WorkspaceMemberStatus } | undefined {
-  return _(workspace.members).find((m) => m.userId === userId)
-}
