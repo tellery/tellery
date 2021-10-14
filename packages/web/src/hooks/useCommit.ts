@@ -456,7 +456,10 @@ const applyOperations = (
 
     if (updatedVersionsSet.has(operation.id) === false) {
       const storyId = updatedBlock.storyId
-
+      // TODO: fix unloaded block logic
+      if (!storyId) {
+        break
+      }
       invariant(storyId, 'storyId is undefined')
 
       if (isNewCreated) {
