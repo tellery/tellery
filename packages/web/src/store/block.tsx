@@ -142,12 +142,12 @@ export const TellerySnapshotAtom = atomFamily<Snapshot | null, string | null>({
   })
 })
 
-export const QuerySnapshotIdAtom = atomFamily<string | null, { storyId: string | null; blockId: string | null }>({
+export const QuerySnapshotIdAtom = atomFamily<string | null, { blockId: string | null }>({
   key: 'QuerySnapshotIdAtom',
   default: selectorFamily({
     key: 'QuerySnapshotIdAtom/Default',
     get:
-      ({ storyId, blockId }) =>
+      ({ blockId }) =>
       ({ get }) => {
         if (!blockId) return null
         const queryBlock = get(TelleryBlockAtom(blockId)) as Editor.QueryBlock
@@ -161,15 +161,15 @@ export const QuerySnapshotIdAtom = atomFamily<string | null, { storyId: string |
   })
 })
 
-export const QuerySnapshotAtom = atomFamily<Snapshot | null, { storyId: string | null; blockId: string | null }>({
+export const QuerySnapshotAtom = atomFamily<Snapshot | null, { blockId: string | null }>({
   key: 'QuerySnapshotAtom',
   default: selectorFamily({
     key: 'QuerySnapshotAtom/Default',
     get:
-      ({ blockId, storyId }) =>
+      ({ blockId }) =>
       ({ get }) => {
         if (!blockId) return null
-        const snapshotId = get(QuerySnapshotIdAtom({ blockId, storyId }))
+        const snapshotId = get(QuerySnapshotIdAtom({ blockId }))
         if (snapshotId) {
           const snapshot = get(TellerySnapshotAtom(snapshotId))
           return snapshot

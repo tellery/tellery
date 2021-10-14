@@ -22,7 +22,7 @@ import { ConfigSelect } from './v11n/components/ConfigSelect'
 export default function SideBarModeling(props: { storyId: string; blockId: string }) {
   const block = useBlockSuspense<Editor.VisualizationBlock>(props.blockId)
   const queryBlock = useBlockSuspense<Editor.QueryBlock>(block.content?.queryId!)
-  const snapshot = useQuerySnapshot(props.storyId, queryBlock.id)
+  const snapshot = useQuerySnapshot(queryBlock.id)
   const commit = useCommit()
   const setBlock = useCallback(
     (update: (block: WritableDraft<Editor.QueryBuilder>) => void) => {

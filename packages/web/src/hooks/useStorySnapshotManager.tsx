@@ -116,9 +116,9 @@ export const useRefreshSnapshot = (storyId: string) => {
               })
             }
             if (isTemp) {
-              set(QuerySnapshotIdAtom({ storyId, blockId: queryBlock.id }), snapshotId)
+              set(QuerySnapshotIdAtom({ blockId: queryBlock.id }), snapshotId)
             } else {
-              reset(QuerySnapshotIdAtom({ storyId, blockId: queryBlock.id }))
+              reset(QuerySnapshotIdAtom({ blockId: queryBlock.id }))
               commit({
                 storyId: storyId!,
                 transcation: createTranscation({

@@ -9,6 +9,7 @@ import Embed from '@app/pages/embed'
 import Index from '@app/pages/index'
 import Login from '@app/pages/login'
 import Stories from '@app/pages/stories'
+import Explore from '@app/pages/explore'
 import Story from '@app/pages/story'
 import React, { useEffect } from 'react'
 import ReactGA from 'react-ga4'
@@ -38,6 +39,9 @@ const PrivateRoutes = () => {
               </Route>
               <Route path="/stories">
                 <Stories />
+              </Route>
+              <Route path="/explore">
+                <Explore />
               </Route>
               <Route path="/">
                 <Index />

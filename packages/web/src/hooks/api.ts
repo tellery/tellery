@@ -454,14 +454,14 @@ export const useSnapshot = (id: string | null = null) => {
   // })
 }
 
-export const useQuerySnapshotId = (storyId: string, queryId: string) => {
-  const atom = useRecoilValue(QuerySnapshotIdAtom({ storyId, blockId: queryId }))
+export const useQuerySnapshotId = (queryId: string) => {
+  const atom = useRecoilValue(QuerySnapshotIdAtom({ blockId: queryId }))
 
   return atom
 }
 
-export const useQuerySnapshot = (storyId: string, queryId: string) => {
-  const atom = useRecoilValue(QuerySnapshotAtom({ storyId, blockId: queryId }))
+export const useQuerySnapshot = (queryId: string) => {
+  const atom = useRecoilValue(QuerySnapshotAtom({ blockId: queryId }))
 
   return atom
 }

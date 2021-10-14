@@ -73,7 +73,7 @@ export const FormulaSelectorFamily = selectorFamily<any, { storyId: string; form
           const blockId = matchString.slice(2, -2)
           const variableName = variableNameGen.next().value
           invariant(variableName, 'variableName is falsy')
-          const snapshot = get(QuerySnapshotAtom({ storyId, blockId }))
+          const snapshot = get(QuerySnapshotAtom({ blockId }))
           scope[variableName] = snapshot ? math.evaluate(JSON.stringify(snapshot.data?.records ?? [[]])) : NaN
           return variableName
         })

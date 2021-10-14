@@ -4,13 +4,13 @@ import { useBlockSuspense, useGetProfileSpec, useQuerySnapshot } from '@app/hook
 import { useCommit } from '@app/hooks/useCommit'
 import { useRefreshSnapshot } from '@app/hooks/useStorySnapshotManager'
 import { ThemingVariables } from '@app/styles'
-import { Editor } from '@app/types'
+import { Dimension, Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
 import Tippy from '@tippyjs/react'
 import produce from 'immer'
 import { WritableDraft } from 'immer/dist/internal'
 import { lowerCase, uniq, uniqBy } from 'lodash'
-import { ReactNode, useCallback, useState } from 'react'
+import React, { ReactNode, useCallback, useState } from 'react'
 import { MenuItem } from './MenuItem'
 import { MenuWrapper } from './MenuWrapper'
 import ConfigIconButton from './v11n/components/ConfigIconButton'
@@ -20,11 +20,7 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
   const block = useBlockSuspense<Editor.VisualizationBlock>(props.blockId)
   const smartQueryBlock = useBlockSuspense<Editor.SmartQueryBlock>(block.content?.queryId!)
   const queryBuilderBlock = useBlockSuspense<Editor.QueryBuilder>(smartQueryBlock.content?.queryBuilderId)
-  const snapshot = useQuerySnapshot(props.storyId, queryBuilderBlock.id)
-  const { data: spec } = useGetProfileSpec()
-  const [metricVisible, setMetricVisible] = useState(false)
-  const [dimensionVisible, setDimensionVisible] = useState(false)
-  const { metricIds, dimensions } = smartQueryBlock.content
+
   const commit = useCommit()
   const mutateSnapshot = useRefreshSnapshot(props.storyId)
   const setSmartQueryBlock = useCallback(
@@ -38,10 +34,36 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
     [smartQueryBlock, mutateSnapshot, commit, props.storyId]
   )
 
-  if (!queryBuilderBlock || !snapshot) {
+  if (!queryBuilderBlock) {
     return null
   }
 
+  const { metricIds, dimensions } = smartQueryBlock.content
+
+  return (
+    <SmartQueryConfig
+      queryBuilderBlock={queryBuilderBlock}
+      metricIds={metricIds}
+      dimensions={dimensions}
+      onChange={setSmartQueryBlock}
+    />
+  )
+}
+
+export const SmartQueryConfig: React.FC<{
+  queryBuilderBlock: Editor.QueryBuilder
+  metricIds: string[]
+  dimensions: Dimension[]
+  onChange: (update: (block: WritableDraft<Editor.SmartQueryBlock>) => void) => void
+}> = ({ queryBuilderBlock, metricIds, dimensions, onChange }) => {
+  const { data: spec } = useGetProfileSpec()
+  const [metricVisible, setMetricVisible] = useState(false)
+  const [dimensionVisible, setDimensionVisible] = useState(false)
+  const snapshot = useQuerySnapshot(queryBuilderBlock.id)
+
+  if (!snapshot) {
+    return null
+  }
   return (
     <>
       <ConfigSection
@@ -67,7 +89,7 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
                       title={metric.name}
                       disabled={metric.deprecated || metricIds.includes(metricId)}
                       onClick={() => {
-                        setSmartQueryBlock((draft) => {
+                        onChange((draft) => {
                           draft.content.metricIds = uniq([...metricIds, metricId])
                         })
                         setMetricVisible(false)
@@ -98,7 +120,7 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
                 <ConfigItem
                   key={metricId}
                   onClick={() => {
-                    setSmartQueryBlock((draft) => {
+                    onChange((draft) => {
                       draft.content.metricIds = metricIds.filter((_m, i) => i !== index)
                     })
                   }}
@@ -112,7 +134,7 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
                 <ConfigItem
                   key={metricId}
                   onClick={() => {
-                    setSmartQueryBlock((draft) => {
+                    onChange((draft) => {
                       draft.content.metricIds = metricIds.filter((_m, i) => i !== index)
                     })
                   }}
@@ -168,7 +190,7 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
                                   )
                                 }
                                 onClick={() => {
-                                  setSmartQueryBlock((draft) => {
+                                  onChange((draft) => {
                                     draft.content.dimensions = uniqBy(
                                       [
                                         ...dimensions,
@@ -202,7 +224,7 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
                           )
                         }
                         onClick={() => {
-                          setSmartQueryBlock((draft) => {
+                          onChange((draft) => {
                             draft.content.dimensions = uniqBy(
                               [
                                 ...dimensions,
@@ -243,7 +265,7 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
               <ConfigItem
                 key={dimension.name + index}
                 onClick={() => {
-                  setSmartQueryBlock((draft) => {
+                  onChange((draft) => {
                     draft.content.dimensions = dimensions.filter((_d, i) => i !== index)
                   })
                 }}
