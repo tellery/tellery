@@ -1,18 +1,15 @@
-import { useGetBlockTitleTextSnapshot } from '@app/components/editor'
-import { Editor } from '@app/types'
-import { compact, uniq } from 'lodash'
+import { compact } from 'lodash'
 import type { editor } from 'monaco-editor'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useOpenStory } from './index'
-import { useMgetBlocks } from './api'
-import { useQuestionEditor } from './useQuestionEditor'
 import { useWorkspace } from './useWorkspace'
 import { createPortal } from 'react-dom'
 import Tippy from '@tippyjs/react'
 import { css } from '@emotion/css'
 import { ThemingVariables } from '@app/styles'
-import { SQLViewer } from '@app/components/SQLViewer'
 import { VARIABLE_REGEX } from '@app/utils'
+import { useRecoilValue } from 'recoil'
+import { StoryVariables } from '@app/components/editor/store/variables'
+import { useOpenStory } from './index'
 
 export default function useSqlEditorVariable(props: {
   storyId: string
@@ -23,17 +20,16 @@ export default function useSqlEditorVariable(props: {
   const { editor } = props
   const workspace = useWorkspace()
   const [matches, setMatches] = useState<editor.FindMatch[]>([])
-  const questionIds = useMemo(() => uniq(compact(matches.map((match) => match.matches?.[1]))), [matches])
-  const { data: questions } = useMgetBlocks(questionIds)
+  const variables = useRecoilValue(StoryVariables(props.storyId))
   const mapMatchToContentWidget = useCallback(
     (match: editor.FindMatch, index: number) => {
-      const questionId = match.matches?.[1]
-      if (!questionId) {
+      const variableName = match.matches?.[1]
+      if (!variableName) {
         return null
       }
       return {
         getId: () => {
-          return `content.widget.variable.${props.blockId}.${questionId}.${index}`
+          return `content.widget.variable.${props.blockId}.${variableName}.${index}`
         },
         getDomNode: () => {
           return document.createElement('div')
@@ -105,20 +101,21 @@ export default function useSqlEditorVariable(props: {
         if (!match.matches) {
           return null
         }
-        const questionId = match.matches[1]
-        return questions?.[questionId] ? (
+        const variableName = match.matches[1]
+        return (
           <VariableContentWidget
             storyId={props.storyId}
-            key={questionId}
+            key={variableName}
             blockId={props.blockId}
-            value={questions[questionId]}
+            name={variableName}
+            value={variables[variableName]}
             languageId={props.languageId}
             length={match.matches[0].length}
             index={index}
           />
-        ) : null
+        )
       }),
-    [matches, props.blockId, props.languageId, props.storyId, questions]
+    [matches, props.blockId, props.languageId, props.storyId, variables]
   )
   return widgets
 }
@@ -126,17 +123,15 @@ export default function useSqlEditorVariable(props: {
 function VariableContentWidget(props: {
   blockId: string
   languageId?: string
-  value: Editor.SQLBlock
+  name: string
+  value: { blockId: string }
   length: number
   index: number
   storyId: string
 }) {
-  const { value: block } = props
-  const getBlockTitle = useGetBlockTitleTextSnapshot()
+  const { name, value } = props
   const openStoryHandler = useOpenStory()
-  const { open } = useQuestionEditor(props.storyId)
-  const el = document.querySelector(`[widgetid="content.widget.variable.${props.blockId}.${block.id}.${props.index}"]`)
-  const title = getBlockTitle(block)
+  const el = document.querySelector(`[widgetid="content.widget.variable.${props.blockId}.${name}.${props.index}"]`)
   const [visible, setVisible] = useState(false)
 
   return el
@@ -167,25 +162,13 @@ function VariableContentWidget(props: {
                   color: ${ThemingVariables.colors.text[0]};
                 `}
               >
-                {title}
+                {props.name}
               </h4>
               <div
                 className={css`
                   height: 300px;
                 `}
-              >
-                {block.content?.sql && props.languageId && visible ? (
-                  <SQLViewer
-                    blockId={block.id}
-                    languageId={props.languageId}
-                    value={block.content?.sql}
-                    padding={{ top: 10, bottom: 10 }}
-                    className={css`
-                      padding: 0 15px;
-                    `}
-                  />
-                ) : null}
-              </div>
+              ></div>
               <div
                 className={css`
                   border-top: 1px solid ${ThemingVariables.colors.gray[1]};
@@ -208,15 +191,7 @@ function VariableContentWidget(props: {
                     cursor: pointer;
                   `}
                   onClick={() => {
-                    if (!block.storyId) {
-                      return
-                    }
-
-                    if (block.storyId === props.storyId) {
-                      open({ storyId: block.storyId, blockId: block.id })
-                    } else {
-                      openStoryHandler(block.storyId, { blockId: block.id })
-                    }
+                    openStoryHandler(props.storyId, { blockId: value.blockId })
                   }}
                 >
                   Go to block
@@ -249,15 +224,14 @@ function VariableContentWidget(props: {
               width: ${props.length * 0.955}ch;
             `}
             onClick={(e) => {
-              if (!block.storyId || !e.metaKey) {
+              if (!e.metaKey) {
                 setVisible((old) => !old)
                 return
               }
-              openStoryHandler(block.storyId, { blockId: block.id })
-              open({ storyId: block.storyId, blockId: block.id })
+              openStoryHandler(props.storyId, { blockId: value.blockId })
             }}
           >
-            {title}
+            {props.name}
           </div>
         </Tippy>,
         el
