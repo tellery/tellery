@@ -15,18 +15,21 @@ function* varibleNameMaker() {
   }
 }
 
-export const StoryVariables = selectorFamily<Record<string, unknown>, string>({
-  key: 'StoryQueryVisualizationBlocksAtom',
+export const StoryVariables = selectorFamily<Record<string, { defaultValue: unknown; blockId: string }>, string>({
+  key: 'StoryVariables',
   get:
     (storyId) =>
     ({ get }) => {
-      const result: Record<string, unknown> = {}
+      const result: Record<string, { defaultValue: unknown; blockId: string }> = {}
       const blocksMap = get(TelleryStoryBlocks(storyId))
 
       Object.values(blocksMap).forEach((block) => {
         if (block.type === Editor.BlockType.Control) {
           const controlBlock = block as Editor.ControlBlock
-          result[controlBlock.content.name] = controlBlock.content.defaultValue ?? null
+          result[controlBlock.content.name] = {
+            defaultValue: controlBlock.content.defaultValue ?? null,
+            blockId: block.id
+          }
         }
       })
 
@@ -45,7 +48,7 @@ export const VariableAtomFamilyDefault = selectorFamily<unknown, { storyId: stri
     ({ storyId, name }) =>
     async ({ get }) => {
       const variables = get(StoryVariables(storyId))
-      return variables[name]
+      return variables[name].defaultValue
     },
   cachePolicy_UNSTABLE: {
     eviction: 'most-recent'
