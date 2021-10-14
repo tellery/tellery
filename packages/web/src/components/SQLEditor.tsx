@@ -87,8 +87,13 @@ export function SQLEditor(props: {
     }),
     [props.padding, props.readOnly]
   )
-  const transclusionWidgets = useSqlEditorTransclusion({ ...props, editor })
-  const variableWidgets = useSqlEditorVariable({ ...props, editor })
+  const transclusionWidgets = useSqlEditorTransclusion({
+    storyId: props.storyId,
+    blockId: props.blockId,
+    languageId: props.languageId,
+    editor
+  })
+  const variableWidgets = useSqlEditorVariable({ storyId: props.storyId, blockId: props.blockId, editor })
 
   return (
     <>

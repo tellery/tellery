@@ -129,12 +129,12 @@ export default function useSqlEditorTransclusion(props: {
 }
 
 function TransclusionContentWidget(props: {
+  storyId: string
   blockId: string
   languageId?: string
   value: Editor.SQLBlock
   length: number
   index: number
-  storyId: string
 }) {
   const { value: block } = props
   const getBlockTitle = useGetBlockTitleTextSnapshot()

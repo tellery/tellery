@@ -15,7 +15,6 @@ import { IconMenuCode } from '@app/assets/icons'
 export default function useSqlEditorVariable(props: {
   storyId: string
   blockId: string
-  languageId?: string
   editor?: editor.IStandaloneCodeEditor
 }) {
   const { editor } = props
@@ -110,31 +109,38 @@ export default function useSqlEditorVariable(props: {
             blockId={props.blockId}
             name={variableName}
             value={variables[variableName]}
-            languageId={props.languageId}
             length={match.matches[0].length}
             index={index}
           />
         )
       }),
-    [matches, props.blockId, props.languageId, props.storyId, variables]
+    [matches, props.blockId, props.storyId, variables]
   )
   return widgets
 }
 
 function VariableContentWidget(props: {
+  storyId: string
   blockId: string
-  languageId?: string
   name: string
   value: { blockId: string }
   length: number
   index: number
-  storyId: string
 }) {
   const { name, value } = props
   const openStoryHandler = useOpenStory()
   const [el, setEl] = useState<Element | null>()
   useEffect(() => {
-    setEl(document.querySelector(`[widgetid="content.widget.variable.${props.blockId}.${name}.${props.index}"]`))
+    const timer = setInterval(() => {
+      const e = document.querySelector(`[widgetid="content.widget.variable.${props.blockId}.${name}.${props.index}"]`)
+      if (e) {
+        setEl(e)
+        clearInterval(timer)
+      }
+    }, 100)
+    return () => {
+      clearInterval(timer)
+    }
   }, [name, props.blockId, props.index])
 
   return el
