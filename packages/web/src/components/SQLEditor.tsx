@@ -93,7 +93,12 @@ export function SQLEditor(props: {
     languageId: props.languageId,
     editor
   })
-  const variableWidgets = useSqlEditorVariable({ storyId: props.storyId, blockId: props.blockId, editor })
+  const variableWidgets = useSqlEditorVariable({
+    storyId: props.storyId,
+    blockId: props.blockId,
+    languageId: props.languageId,
+    editor
+  })
 
   return (
     <>

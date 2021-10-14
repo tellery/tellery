@@ -11,12 +11,15 @@ import { StoryVariables } from '@app/components/editor/store/variables'
 import { useOpenStory } from './index'
 import { SVG2DataURI } from '@app/lib/svg'
 import { IconMenuCode } from '@app/assets/icons'
+import { useMonaco } from '@monaco-editor/react'
 
 export default function useSqlEditorVariable(props: {
   storyId: string
   blockId: string
+  languageId?: string
   editor?: editor.IStandaloneCodeEditor
 }) {
+  useSqlEditorVariableAutoCompletion(props.storyId, props.languageId)
   const { editor } = props
   const workspace = useWorkspace()
   const [matches, setMatches] = useState<editor.FindMatch[]>([])
@@ -173,4 +176,40 @@ function VariableContentWidget(props: {
         el
       )
     : null
+}
+
+function useSqlEditorVariableAutoCompletion(storyId: string, languageId?: string) {
+  const monaco = useMonaco()
+  const variables = useRecoilValue(StoryVariables(storyId))
+  const workspace = useWorkspace()
+
+  useEffect(() => {
+    if (!monaco || !languageId) {
+      return
+    }
+    const { dispose } = monaco.languages.registerCompletionItemProvider(languageId, {
+      triggerCharacters: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ' ', '-'],
+      provideCompletionItems(model, position) {
+        const matches = model.findMatches(VARIABLE_REGEX.source, true, true, true, null, true)
+        const current = matches.find((match) => match.range.containsPosition(position))
+        if (current) {
+          const keyword = current.matches?.[1] || ''
+          return {
+            suggestions: Object.keys(variables).map((name, index) => ({
+              range: current.range,
+              label: name,
+              detail: String(variables[name]?.defaultValue || ''),
+              kind: monaco.languages.CompletionItemKind.Variable,
+              insertText: `{{${name}}}`,
+              filterText: `{{${keyword}}}`,
+              sortText: index.toString().padStart(4, '0')
+            })),
+            incomplete: true
+          }
+        }
+        return { suggestions: [], incomplete: true }
+      }
+    })
+    return dispose
+  }, [monaco, languageId, workspace.id, variables])
 }

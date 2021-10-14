@@ -17,7 +17,7 @@ export function useSqlEditor(languageId?: string) {
   }, [languageId, monaco])
   useSqlEditorColor(monaco)
   useSqlEditorLanguage(languageId, monaco)
-  useSqlEditorTransclusion(languageId, monaco)
+  useSqlEditorTransclusionAutoCompletion(languageId, monaco)
 }
 
 function useSqlEditorColor(monaco?: Monaco) {
@@ -286,7 +286,7 @@ const incompleteTransclusionRegex = /\{\{([^{}]+)\}\}/
  * @see https://github.com/microsoft/monaco-editor/issues/1857
  * @see https://github.com/microsoft/monaco-editor/issues/1704
  */
-function useSqlEditorTransclusion(languageId?: string, monaco?: Monaco) {
+function useSqlEditorTransclusionAutoCompletion(languageId?: string, monaco?: Monaco) {
   const getBlockTitle = useGetBlockTitleTextSnapshot()
   const workspace = useWorkspace()
 
