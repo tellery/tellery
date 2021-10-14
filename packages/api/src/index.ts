@@ -28,7 +28,7 @@ if (!host) {
   console.error('must set SERVER_HOST')
   process.exit(1)
 }
-if (config.get('deployMode') !== 'local' && !config.has('redis.url')) {
+if (config.get('deploy.mode') !== 'local' && !config.has('redis.url')) {
   console.error('non-local deployment requires Redis as cache')
   process.exit(1)
 }
