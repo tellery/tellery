@@ -578,7 +578,6 @@ export const StoryQuestionEditor: React.FC<{
   const workspace = useWorkspace()
   const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)
   const profileType = profile?.type
-  const createSnapshot = useCreateSnapshot()
   const sidebarEditor = useSideBarQuestionEditor(storyId)
   const refreshSnapshot = useRefreshSnapshot(storyId)
   const mutatingCount = useSnapshotMutating(queryBlock.id)
@@ -596,6 +595,7 @@ export const StoryQuestionEditor: React.FC<{
       refreshSnapshot.execute(queryBlock).then((res) => {
         if (res.errMsg) {
           setSQLError(res.errMsg)
+          setSqlSidePanel(true)
         } else {
           setSQLError(null)
         }
