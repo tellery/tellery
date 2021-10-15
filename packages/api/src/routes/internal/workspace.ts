@@ -33,6 +33,7 @@ async function addMembers(ctx: Context) {
   await validate(ctx, payload)
   const { operatorId, workspaceId, users } = payload
   await workspaceService.addMembers(operatorId, workspaceId, users)
+  ctx.body = {}
 }
 const router = new Router()
 
