@@ -9,7 +9,7 @@ import { PermissionWorkspaceRole } from '../types/permission'
 import { isAnonymous } from '../utils/env'
 import { setUserToken, USER_TOKEN_HEADER_KEY } from '../utils/user'
 
-const ignorePaths = ['/api/users/login']
+const ignorePaths = ['/api/users/login', '/api/internal']
 
 // 15 days
 const d15 = 1000 * 3600 * 24 * 15
@@ -17,9 +17,9 @@ const d15 = 1000 * 3600 * 24 * 15
 export default async function user(ctx: Context, next: Next): Promise<unknown> {
   const token = ctx.headers[USER_TOKEN_HEADER_KEY] || ctx.cookies.get(USER_TOKEN_HEADER_KEY)
   let payload: { userId: string; expiresAt: number } | undefined
-  const pathIncluded = !ignorePaths.includes(ctx.path)
+  const skip = ignorePaths.some((p) => ctx.path.startsWith(p))
 
-  if (pathIncluded) {
+  if (skip) {
     if (token && _.isString(token)) {
       payload = await userService.verifyToken(token)
     } else if (isAnonymous() && ctx.path === '/api/users/me') {
