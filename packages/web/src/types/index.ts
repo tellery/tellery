@@ -252,12 +252,39 @@ export namespace Editor {
 
   export type DataAssetBlock = QueryBuilder
 
+  enum Filter {
+    EQ = 'eq',
+    NE = 'ne',
+    LT = 'lt',
+    LTE = 'lte',
+    GT = 'gt',
+    GTE = 'gte',
+    CONTAINS = 'contains',
+    IS_NULL = 'isNull',
+    IS_NOT_NULL = 'isNotNull',
+    IS_TRUE = 'isTrue',
+    IS_NOT_TRUE = 'isNotTrue',
+    IS_BETWEEN = 'isBetween'
+  }
+
+  type FilterBuilder =
+    | {
+        operator: 'and' | 'or'
+        operands: FilterBuilder[]
+      }
+    | {
+        fieldName: string
+        fieldType: string
+        func: Filter
+        args: string[]
+      }
+
   export interface SmartQueryBlock extends ContentBlock {
     content: ContentBlock['content'] & {
       queryBuilderId: string
       metricIds: string[]
       dimensions: Dimension[]
-      // filters: Filter[]
+      filters: FilterBuilder[]
       title: Token[]
       snapshotId?: string
     }
