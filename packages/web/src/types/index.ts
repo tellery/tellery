@@ -267,17 +267,15 @@ export namespace Editor {
     IS_BETWEEN = 'isBetween'
   }
 
-  type FilterBuilder =
-    | {
-        operator: 'and' | 'or'
-        operands: FilterBuilder[]
-      }
-    | {
-        fieldName: string
-        fieldType: string
-        func: Filter
-        args: string[]
-      }
+  type FilterBuilder = {
+    operator: 'and' | 'or'
+    operands: {
+      fieldName: string
+      fieldType: string
+      func: Filter
+      args: string[]
+    }[]
+  }
 
   export interface SmartQueryBlock extends ContentBlock {
     content: ContentBlock['content'] & {
