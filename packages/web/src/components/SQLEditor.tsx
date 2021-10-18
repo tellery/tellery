@@ -52,7 +52,7 @@ export function SQLEditor(props: {
     if (!editor || !monaco) {
       return
     }
-    editor.onDidPaste((e) => {
+    const unsubscribe = editor.onDidPaste((e) => {
       const pastedString = editor.getModel()?.getValueInRange(e.range)
       if (!pastedString) return
 
@@ -69,7 +69,11 @@ export function SQLEditor(props: {
 
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, () => onSave?.())
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => onRun?.())
+    return () => {
+      unsubscribe.dispose()
+    }
   }, [editor, fetchBlock, monaco, onRun, onSave])
+
   const { onChange } = props
   const handleChange = useCallback(
     (value: string | undefined) => {
