@@ -286,10 +286,10 @@ export const SmartQueryConfig: React.FC<{
                 setFiltersVisible(false)
               }}
               interactive={true}
-              placement="left-start"
+              placement="left"
               theme="tellery"
               arrow={false}
-              offset={[0, 0]}
+              offset={[0, 160]}
               appendTo={document.body}
               content={
                 <FilterPopover
@@ -299,6 +299,9 @@ export const SmartQueryConfig: React.FC<{
                       draft.content.filters = value
                     })
                   }
+                  onClose={() => {
+                    setFiltersVisible(false)
+                  }}
                 />
               }
               className={css`
