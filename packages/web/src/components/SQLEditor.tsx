@@ -43,6 +43,11 @@ export function SQLEditor(props: {
   const monaco = useMonaco()
 
   const fetchBlock = useFetchBlock()
+
+  useEffect(() => {
+    editor?.focus()
+  }, [editor])
+
   useEffect(() => {
     if (!editor || !monaco) {
       return
