@@ -11,6 +11,7 @@ import produce from 'immer'
 import { WritableDraft } from 'immer/dist/internal'
 import { lowerCase, uniq, uniqBy } from 'lodash'
 import React, { ReactNode, useCallback, useState } from 'react'
+import FilterPopover from './FilterPopover'
 import { MenuItem } from './MenuItem'
 import { MenuWrapper } from './MenuWrapper'
 import ConfigIconButton from './v11n/components/ConfigIconButton'
@@ -291,16 +292,14 @@ export const SmartQueryConfig: React.FC<{
               offset={[0, 0]}
               appendTo={document.body}
               content={
-                <div
-                  className={css`
-                    width: 488px;
-                    border-radius: 10px;
-                    background-color: ${ThemingVariables.colors.gray[5]};
-                    box-shadow: ${ThemingVariables.boxShadows[0]};
-                  `}
-                >
-                  123
-                </div>
+                <FilterPopover
+                  value={filters}
+                  onChange={(value) =>
+                    onChange((draft) => {
+                      draft.content.filters = value
+                    })
+                  }
+                />
               }
               className={css`
                 width: 100%;
