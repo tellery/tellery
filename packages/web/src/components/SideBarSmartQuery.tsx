@@ -4,7 +4,7 @@ import { useBlockSuspense, useGetProfileSpec, useQuerySnapshot } from '@app/hook
 import { useCommit } from '@app/hooks/useCommit'
 import { useRefreshSnapshot } from '@app/hooks/useStorySnapshotManager'
 import { ThemingVariables } from '@app/styles'
-import { Dimension, Editor } from '@app/types'
+import { Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
 import Tippy from '@tippyjs/react'
 import produce from 'immer'
@@ -38,13 +38,10 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
     return null
   }
 
-  const { metricIds, dimensions } = smartQueryBlock.content
-
   return (
     <SmartQueryConfig
       queryBuilderBlock={queryBuilderBlock}
-      metricIds={metricIds}
-      dimensions={dimensions}
+      content={smartQueryBlock.content}
       onChange={setSmartQueryBlock}
     />
   )
@@ -52,13 +49,13 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
 
 export const SmartQueryConfig: React.FC<{
   queryBuilderBlock: Editor.QueryBuilder
-  metricIds: string[]
-  dimensions: Dimension[]
+  content: Editor.SmartQueryBlock['content']
   onChange: (update: (block: WritableDraft<Editor.SmartQueryBlock>) => void) => void
-}> = ({ queryBuilderBlock, metricIds, dimensions, onChange }) => {
+}> = ({ queryBuilderBlock, content: { metricIds, dimensions, filters }, onChange }) => {
   const { data: spec } = useGetProfileSpec()
   const [metricVisible, setMetricVisible] = useState(false)
   const [dimensionVisible, setDimensionVisible] = useState(false)
+  const [filtersVisible, setFiltersVisible] = useState(false)
   const snapshot = useQuerySnapshot(queryBuilderBlock.id)
 
   if (!snapshot) {
@@ -277,6 +274,51 @@ export const SmartQueryConfig: React.FC<{
               </ConfigItem>
             ))
           : null}
+      </ConfigSection>
+      <ConfigSection
+        title="Filters"
+        right={
+          snapshot.data.fields.length === 0 ? null : (
+            <Tippy
+              visible={filtersVisible}
+              onClickOutside={() => {
+                setFiltersVisible(false)
+              }}
+              interactive={true}
+              placement="left-start"
+              theme="tellery"
+              arrow={false}
+              offset={[0, 0]}
+              appendTo={document.body}
+              content={
+                <div
+                  className={css`
+                    width: 488px;
+                    border-radius: 10px;
+                    background-color: ${ThemingVariables.colors.gray[5]};
+                    box-shadow: ${ThemingVariables.boxShadows[0]};
+                  `}
+                >
+                  123
+                </div>
+              }
+              className={css`
+                width: 100%;
+                text-align: start;
+                margin-top: 8px;
+              `}
+            >
+              <ConfigIconButton
+                icon={IconCommonAdd}
+                onClick={() => {
+                  setFiltersVisible((old) => !old)
+                }}
+              />
+            </Tippy>
+          )
+        }
+      >
+        {JSON.stringify(filters)}
       </ConfigSection>
     </>
   )
