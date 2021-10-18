@@ -128,6 +128,7 @@ export function MoreSettingPopover(props: {
                   onClick={() => {
                     props.onChange({
                       ...props.value,
+                      stackType: ComboStack.NONE,
                       shape
                     })
                   }}
