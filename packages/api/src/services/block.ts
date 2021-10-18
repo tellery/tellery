@@ -1,7 +1,6 @@
 import bluebird from 'bluebird'
 import _ from 'lodash'
 import { createQueryBuilder, getManager, getRepository, In } from 'typeorm'
-import { getIConnectorManagerFromDB } from '../clients/connector'
 
 import { Block } from '../core/block'
 import { SmartQueryBlock } from '../core/block/smartQuery'
@@ -10,8 +9,8 @@ import { getIPermission, IPermission } from '../core/permission'
 import { translateSmartQuery } from '../core/translator/smartQuery'
 import BlockEntity from '../entities/block'
 import { BlockDTO, BlockParentType, BlockType } from '../types/block'
+import { QueryBuilderSpec } from '../types/queryBuilder'
 import { canGetBlockData, canGetWorkspaceData } from '../utils/permission'
-import connectorService from './connector'
 
 export class BlockService {
   private permission: IPermission
@@ -169,18 +168,10 @@ export class BlockService {
   async downgradeQueryBuilder(
     operatorId: string,
     workspaceId: string,
-    connectorId: string,
     queryBuilderId: string,
+    queryBuilderSpec: QueryBuilderSpec,
   ): Promise<any> {
     await canGetWorkspaceData(this.permission, operatorId, workspaceId)
-
-    // load sql builder
-    const manager = await getIConnectorManagerFromDB(workspaceId, connectorId)
-    const { queryBuilderSpec } = await connectorService.getProfileSpec(
-      manager,
-      operatorId,
-      workspaceId,
-    )
 
     const downstreamSmartQueries = _(
       await createQueryBuilder(BlockEntity, 'blocks')
@@ -191,11 +182,15 @@ export class BlockService {
       .map((b) => Block.fromEntity(b) as SmartQueryBlock)
       .value()
 
-    const translatedSmartQueries = downstreamSmartQueries.map((b) => {
-      const content = b.getContent()
-      const sql = translateSmartQuery(content, queryBuilderSpec)
-      return [b.id, { ...content, sql }] as [string, Record<string, unknown>]
-    })
+    const translatedSmartQueries = await bluebird.map(
+      downstreamSmartQueries,
+      async (b) => {
+        const content = b.getContent()
+        const sql = await translateSmartQuery(content, queryBuilderSpec)
+        return [b.id, { ...content, sql }] as [string, Record<string, unknown>]
+      },
+      { concurrency: 10 },
+    )
 
     await getManager().transaction(async (t) => {
       await t.getRepository(BlockEntity).update(queryBuilderId, { type: BlockType.SQL })
