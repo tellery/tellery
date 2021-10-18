@@ -230,6 +230,7 @@ export namespace Editor {
 
   export interface QueryBuilder extends BaseQueryBlock {
     content?: BaseQueryBlock['content'] & {
+      description?: string
       fields?: {
         name: string
         type: string

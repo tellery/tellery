@@ -13,7 +13,7 @@ import {
   IconMenuToggleList,
   IconMenuUpload
 } from '@app/assets/icons'
-import { createEmptyBlock, DEFAULT_VISULIZATION_FORMAT } from '@app/helpers/blockFactory'
+import { DEFAULT_VISULIZATION_FORMAT } from '@app/helpers/blockFactory'
 import { useBindHovering } from '@app/hooks'
 import { useBlockSuspense } from '@app/hooks/api'
 import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
