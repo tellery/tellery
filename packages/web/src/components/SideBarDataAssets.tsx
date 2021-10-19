@@ -58,6 +58,9 @@ const DataAssestCardTag = styled.div`
   padding: 5px;
   margin-left: 4px;
   margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `
 
 const DataAssestCardTagInlineWrapper = styled.div`
