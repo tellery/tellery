@@ -282,7 +282,7 @@ export namespace Editor {
       queryBuilderId: string
       metricIds: string[]
       dimensions: Dimension[]
-      filters: FilterBuilder[]
+      filters?: FilterBuilder[]
       title: Token[]
       snapshotId?: string
     }

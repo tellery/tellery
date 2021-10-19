@@ -293,10 +293,10 @@ export const SmartQueryConfig: React.FC<{
               appendTo={document.body}
               content={
                 <FilterPopover
-                  value={filters}
+                  value={filters ? filters[0] : { operands: [], operator: 'and' }}
                   onChange={(value) =>
                     onChange((draft) => {
-                      draft.content.filters = value
+                      draft.content.filters = [value]
                     })
                   }
                   onClose={() => {

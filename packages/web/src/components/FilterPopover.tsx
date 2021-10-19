@@ -5,11 +5,9 @@ import { css } from '@emotion/css'
 import produce from 'immer'
 import IconButton from './kit/IconButton'
 
-export default function FilterPopover(props: {
-  value: Editor.SmartQueryBlock['content']['filters'][0]['operands']
-  onChange(value: Editor.SmartQueryBlock['content']['filters'][0]['operands']): void
-  onClose(): void
-}) {
+type Value = NonNullable<Editor.SmartQueryBlock['content']['filters']>[0]
+
+export default function FilterPopover(props: { value: Value; onChange(value: Value): void; onClose(): void }) {
   return (
     <div
       className={css`
@@ -41,7 +39,7 @@ export default function FilterPopover(props: {
         <IconButton icon={IconCommonClose} color={ThemingVariables.colors.text[0]} onClick={props.onClose} />
       </div>
       <div>
-        {props.value.map((operand, index) => (
+        {props.value.operands.map((operand, index) => (
           <FilterItem
             key={index}
             index={index}
@@ -49,21 +47,21 @@ export default function FilterPopover(props: {
             onChange={(v) => {
               props.onChange(
                 produce(props.value, (draft) => {
-                  draft[index] = v
+                  draft.operands[index] = v
                 })
               )
             }}
             onAdd={() => {
               props.onChange(
                 produce(props.value, (draft) => {
-                  draft.push()
+                  draft.operands.push()
                 })
               )
             }}
             onDelete={() => {
               props.onChange(
                 produce(props.value, (draft) => {
-                  draft.splice(index, 1)
+                  draft.operands.splice(index, 1)
                 })
               )
             }}
@@ -76,8 +74,8 @@ export default function FilterPopover(props: {
 
 function FilterItem(props: {
   index: number
-  value: Editor.SmartQueryBlock['content']['filters'][0]['operands'][0]
-  onChange(value: Editor.SmartQueryBlock['content']['filters'][0]['operands'][0]): void
+  value: Value['operands'][0]
+  onChange(value: Value['operands'][0]): void
   onAdd(): void
   onDelete(): void
 }) {
