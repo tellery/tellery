@@ -16,9 +16,93 @@ export enum DisplayType {
   ARRAY = 'ARRAY'
 }
 
+export enum SQLType {
+  NULL = 'NULL',
+  BIT = 'BIT',
+  TINYINT = 'TINYINT',
+  SMALLINT = 'SMALLINT',
+  INTEGER = 'INTEGER',
+  BIGINT = 'BIGINT',
+  FLOAT = 'FLOAT',
+  REAL = 'REAL',
+  DOUBLE = 'DOUBLE',
+  NUMERIC = 'NUMERIC',
+  DECIMAL = 'DECIMAL',
+  CHAR = 'CHAR',
+  VARCHAR = 'VARCHAR',
+  LONGVARCHAR = 'LONGVARCHAR',
+  DATE = 'DATE',
+  TIME = 'TIME',
+  TIMESTAMP = 'TIMESTAMP',
+  BINARY = 'BINARY',
+  VARBINARY = 'VARBINARY',
+  LONGVARBINARY = 'LONGVARBINARY',
+  OTHER = 'OTHER',
+  JAVA_OBJECT = 'JAVA_OBJECT',
+  DISTINCT = 'DISTINCT',
+  STRUCT = 'STRUCT',
+  ARRAY = 'ARRAY',
+  BLOB = 'BLOB',
+  CLOB = 'CLOB',
+  REF = 'REF',
+  DATALINK = 'DATALINK',
+  BOOLEAN = 'BOOLEAN',
+  ROWID = 'ROWID',
+  NCHAR = 'NCHAR',
+  NVARCHAR = 'NVARCHAR',
+  LONGNVARCHAR = 'LONGNVARCHAR',
+  NCLOB = 'NCLOB',
+  SQLXML = 'SQLXML',
+  REF_CURSOR = 'REF_CURSOR',
+  TIME_WITH_TIMEZONE = 'TIME_WITH_TIMEZONE',
+  TIMESTAMP_WITH_TIMEZONE = 'TIMESTAMP_WITH_TIMEZONE'
+}
+
+export const SQLTypeReduced: { [key in keyof typeof SQLType]: 'OTHER' | 'BOOL' | 'NUMBER' | 'DATE' | 'STRING' } = {
+  NULL: 'OTHER',
+  BIT: 'BOOL',
+  TINYINT: 'NUMBER',
+  SMALLINT: 'NUMBER',
+  INTEGER: 'NUMBER',
+  BIGINT: 'NUMBER',
+  FLOAT: 'NUMBER',
+  REAL: 'NUMBER',
+  DOUBLE: 'NUMBER',
+  NUMERIC: 'NUMBER',
+  DECIMAL: 'NUMBER',
+  CHAR: 'STRING',
+  VARCHAR: 'STRING',
+  LONGVARCHAR: 'STRING',
+  DATE: 'DATE',
+  TIME: 'DATE',
+  TIMESTAMP: 'DATE',
+  BINARY: 'OTHER',
+  VARBINARY: 'OTHER',
+  LONGVARBINARY: 'OTHER',
+  OTHER: 'OTHER',
+  JAVA_OBJECT: 'OTHER',
+  DISTINCT: 'OTHER',
+  STRUCT: 'OTHER',
+  ARRAY: 'OTHER',
+  BLOB: 'OTHER',
+  CLOB: 'OTHER',
+  REF: 'OTHER',
+  DATALINK: 'OTHER',
+  BOOLEAN: 'BOOL',
+  ROWID: 'STRING',
+  NCHAR: 'STRING',
+  NVARCHAR: 'STRING',
+  LONGNVARCHAR: 'STRING',
+  NCLOB: 'OTHER',
+  SQLXML: 'STRING',
+  REF_CURSOR: 'OTHER',
+  TIME_WITH_TIMEZONE: 'DATE',
+  TIMESTAMP_WITH_TIMEZONE: 'DATE'
+}
+
 export interface Data {
   errMsg?: string
-  fields: readonly { name: string; displayType: DisplayType; sqlType?: string }[]
+  fields: readonly { name: string; displayType: DisplayType; sqlType?: SQLType }[]
   records: readonly unknown[][]
 }
 

@@ -1,4 +1,12 @@
-import { IconCommonAdd, IconCommonSub } from '@app/assets/icons'
+import {
+  IconCommonAdd,
+  IconCommonDataAsset,
+  IconCommonDataTypeBool,
+  IconCommonDataTypeInt,
+  IconCommonDataTypeString,
+  IconCommonDataTypeTime,
+  IconCommonSub
+} from '@app/assets/icons'
 import { setBlockTranscation } from '@app/context/editorTranscations'
 import { useBlockSuspense, useGetProfileSpec, useQuerySnapshot } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
@@ -16,6 +24,7 @@ import { MenuItem } from './MenuItem'
 import { MenuWrapper } from './MenuWrapper'
 import ConfigIconButton from './v11n/components/ConfigIconButton'
 import { ConfigSection } from './v11n/components/ConfigSection'
+import { SQLTypeReduced } from './v11n/types'
 
 export default function SideBarSmartQuery(props: { storyId: string; blockId: string }) {
   const block = useBlockSuspense<Editor.VisualizationBlock>(props.blockId)
@@ -267,6 +276,15 @@ export const SmartQueryConfig: React.FC<{
                     draft.content.dimensions = dimensions.filter((_d, i) => i !== index)
                   })
                 }}
+                icon={
+                  {
+                    OTHER: <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />,
+                    BOOL: <IconCommonDataTypeBool color={ThemingVariables.colors.gray[0]} />,
+                    NUMBER: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
+                    DATE: <IconCommonDataTypeTime color={ThemingVariables.colors.gray[0]} />,
+                    STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
+                  }[SQLTypeReduced[dimension.fieldType]]
+                }
                 className={css`
                   margin-top: 8px;
                 `}
@@ -333,7 +351,7 @@ export const SmartQueryConfig: React.FC<{
   )
 }
 
-function ConfigItem(props: { children: ReactNode; onClick(): void; className?: string }) {
+function ConfigItem(props: { icon?: ReactNode; children: ReactNode; onClick(): void; className?: string }) {
   return (
     <div
       className={cx(
@@ -341,12 +359,12 @@ function ConfigItem(props: { children: ReactNode; onClick(): void; className?: s
           height: 32px;
           display: flex;
           align-items: center;
-          justify-content: space-between;
           padding-left: 6px;
         `,
         props.className
       )}
     >
+      {props.icon}
       <span
         className={css`
           font-style: normal;
@@ -354,10 +372,16 @@ function ConfigItem(props: { children: ReactNode; onClick(): void; className?: s
           font-size: 12px;
           line-height: 14px;
           color: ${ThemingVariables.colors.text[0]};
+          margin-left: ${props.icon ? 10 : 0}px;
         `}
       >
         {props.children}
       </span>
+      <div
+        className={css`
+          flex: 1;
+        `}
+      ></div>
       <ConfigIconButton
         icon={IconCommonSub}
         onClick={props.onClick}

@@ -1,5 +1,5 @@
 /// <reference types="resize-observer-browser" />
-import type { Config, Type, Data } from '../components/v11n/types'
+import type { Config, Type, Data, SQLType } from '../components/v11n/types'
 import type { MotionValue } from 'framer-motion'
 
 // fix https://github.com/framer/motion/issues/840
@@ -78,7 +78,7 @@ export type AggregatedMetric = {
   name: string
   deprecated?: boolean
   fieldName: string
-  fieldType: string
+  fieldType: SQLType
   func: string
 }
 
@@ -93,7 +93,7 @@ export type Metric = AggregatedMetric | CustomSQLMetric
 export type Dimension = {
   name: string
   fieldName: string
-  fieldType: string
+  fieldType: SQLType
   func?: string
 }
 

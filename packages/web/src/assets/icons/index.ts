@@ -21,6 +21,10 @@ import IconCommonCopy from './common/copy.svg?component'
 import IconCommonCustomSqlMetric from './common/custom_sql_metric.svg?component'
 import IconCommonDataAssetSetting from './common/data_asset_setting.svg?component'
 import IconCommonDataAsset from './common/data_asset.svg?component'
+import IconCommonDataTypeBool from './common/data_type_bool.svg?component'
+import IconCommonDataTypeInt from './common/data_type_int.svg?component'
+import IconCommonDataTypeString from './common/data_type_string.svg?component'
+import IconCommonDataTypeTime from './common/data_type_time.svg?component'
 import IconCommonDbt from './common/dbt.svg?component'
 import IconCommonDot from './common/dot.svg?component'
 import IconCommonDownstream from './common/downstream.svg?component'
@@ -139,6 +143,10 @@ export {
   IconCommonCustomSqlMetric,
   IconCommonDataAssetSetting,
   IconCommonDataAsset,
+  IconCommonDataTypeBool,
+  IconCommonDataTypeInt,
+  IconCommonDataTypeString,
+  IconCommonDataTypeTime,
   IconCommonDbt,
   IconCommonDot,
   IconCommonDownstream,
