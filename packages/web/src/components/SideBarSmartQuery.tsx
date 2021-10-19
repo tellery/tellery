@@ -1,5 +1,6 @@
 import {
   IconCommonAdd,
+  IconCommonArrowLeft,
   IconCommonDataAsset,
   IconCommonDataTypeBool,
   IconCommonDataTypeInt,
@@ -67,6 +68,7 @@ export const SmartQueryConfig: React.FC<{
   const [dimensionVisible, setDimensionVisible] = useState(false)
   const [filtersVisible, setFiltersVisible] = useState(false)
   const snapshot = useQuerySnapshot(queryBuilderBlock.id)
+  const fields = snapshot?.data.fields || []
 
   if (!snapshot) {
     return null
@@ -158,7 +160,7 @@ export const SmartQueryConfig: React.FC<{
       <ConfigSection
         title="Dimensions"
         right={
-          snapshot.data.fields.length === 0 ? null : (
+          fields.length === 0 ? null : (
             <Tippy
               visible={dimensionVisible}
               onClickOutside={() => {
@@ -172,7 +174,7 @@ export const SmartQueryConfig: React.FC<{
               appendTo={document.body}
               content={
                 <MenuWrapper>
-                  {snapshot.data.fields.map((field, index) =>
+                  {fields.map((field, index) =>
                     field.sqlType &&
                     spec?.queryBuilderSpec.bucketization[field.sqlType] &&
                     Object.keys(spec.queryBuilderSpec.bucketization[field.sqlType]).length ? (
@@ -188,6 +190,19 @@ export const SmartQueryConfig: React.FC<{
                               <MenuItem
                                 key={func}
                                 title={lowerCase(func)}
+                                icon={
+                                  field.sqlType ? (
+                                    {
+                                      OTHER: <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />,
+                                      BOOL: <IconCommonDataTypeBool color={ThemingVariables.colors.gray[0]} />,
+                                      NUMBER: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
+                                      DATE: <IconCommonDataTypeTime color={ThemingVariables.colors.gray[0]} />,
+                                      STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
+                                    }[SQLTypeReduced[field.sqlType]]
+                                  ) : (
+                                    <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />
+                                  )
+                                }
                                 disabled={
                                   !!dimensions.find(
                                     (dimension) =>
@@ -218,13 +233,25 @@ export const SmartQueryConfig: React.FC<{
                           </MenuWrapper>
                         }
                       >
-                        <MenuItem key={field.name + index} title={field.name} side={`${field.sqlType} >`} />
+                        <MenuItem
+                          key={field.name + index}
+                          title={field.name}
+                          icon={<IconCommonArrowLeft color={ThemingVariables.colors.gray[0]} />}
+                        />
                       </Tippy>
                     ) : field.sqlType && spec?.queryBuilderSpec.bucketization[field.sqlType] ? (
                       <MenuItem
                         key={field.name + index}
                         title={field.name}
-                        side={field.sqlType}
+                        icon={
+                          {
+                            OTHER: <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />,
+                            BOOL: <IconCommonDataTypeBool color={ThemingVariables.colors.gray[0]} />,
+                            NUMBER: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
+                            DATE: <IconCommonDataTypeTime color={ThemingVariables.colors.gray[0]} />,
+                            STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
+                          }[SQLTypeReduced[field.sqlType]]
+                        }
                         disabled={
                           !!dimensions.find(
                             (dimension) => dimension.fieldName === field.name && dimension.fieldType === field.sqlType
@@ -297,7 +324,7 @@ export const SmartQueryConfig: React.FC<{
       <ConfigSection
         title="Filters"
         right={
-          snapshot.data.fields.length === 0 ? null : (
+          fields.length === 0 ? null : (
             <Tippy
               visible={filtersVisible}
               onClickOutside={() => {
