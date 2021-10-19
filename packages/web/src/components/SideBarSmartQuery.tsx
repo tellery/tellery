@@ -13,7 +13,7 @@ import { useBlockSuspense, useGetProfileSpec, useQuerySnapshot } from '@app/hook
 import { useCommit } from '@app/hooks/useCommit'
 import { useRefreshSnapshot } from '@app/hooks/useStorySnapshotManager'
 import { ThemingVariables } from '@app/styles'
-import { Editor } from '@app/types'
+import { Dimension, Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
 import Tippy from '@tippyjs/react'
 import produce from 'immer'
@@ -52,7 +52,9 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
   return (
     <SmartQueryConfig
       queryBuilderBlock={queryBuilderBlock}
-      content={smartQueryBlock.content}
+      metricIds={smartQueryBlock.content.metricIds}
+      dimensions={smartQueryBlock.content.dimensions}
+      filters={smartQueryBlock.content.filters}
       onChange={setSmartQueryBlock}
     />
   )
@@ -60,9 +62,11 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
 
 export const SmartQueryConfig: React.FC<{
   queryBuilderBlock: Editor.QueryBuilder
-  content: Editor.SmartQueryBlock['content']
+  metricIds: string[]
+  dimensions: Dimension[]
+  filters?: Editor.FilterBuilder[]
   onChange: (update: (block: WritableDraft<Editor.SmartQueryBlock>) => void) => void
-}> = ({ queryBuilderBlock, content: { metricIds, dimensions, filters }, onChange }) => {
+}> = ({ queryBuilderBlock, metricIds, dimensions, filters, onChange }) => {
   const { data: spec } = useGetProfileSpec()
   const [metricVisible, setMetricVisible] = useState(false)
   const [dimensionVisible, setDimensionVisible] = useState(false)

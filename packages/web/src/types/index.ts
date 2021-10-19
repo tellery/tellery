@@ -267,7 +267,7 @@ export namespace Editor {
     IS_BETWEEN = 'isBetween'
   }
 
-  type FilterBuilder = {
+  export type FilterBuilder = {
     operator: 'and' | 'or'
     operands: {
       fieldName: string
