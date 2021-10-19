@@ -42,7 +42,10 @@ export default function FilterPopover(props: { value: Value; onChange(value: Val
       <div
         className={css`
           border-top: 1px solid ${ThemingVariables.colors.gray[1]};
-          padding: 10px;
+          padding: 10px 10px 10px 0;
+          > div + div {
+            margin-top: 4px;
+          }
         `}
       >
         {props.value.operands.map((operand, index) => (
@@ -84,19 +87,31 @@ export default function FilterPopover(props: { value: Value; onChange(value: Val
             />
           </FilterItemView>
         ))}
-        <div
-          className={css`
-            height: 44px;
-            width: 406px;
-            border-radius: 4px;
-            background-color: ${ThemingVariables.colors.gray[3]};
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          `}
+        <FilterItemView
+          index={props.value.operands.length}
+          value={props.value.operator}
+          onChange={(v) => {
+            props.onChange(
+              produce(props.value, (draft) => {
+                draft.operator = v
+              })
+            )
+          }}
         >
-          <IconCommonAdd color={ThemingVariables.colors.text[0]} />
-        </div>
+          <div
+            className={css`
+              height: 44px;
+              width: 406px;
+              border-radius: 4px;
+              background-color: ${ThemingVariables.colors.gray[3]};
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            `}
+          >
+            <IconCommonAdd color={ThemingVariables.colors.text[0]} />
+          </div>
+        </FilterItemView>
       </div>
     </div>
   )
@@ -108,7 +123,76 @@ function FilterItemView(props: {
   onChange(value: Value['operator']): void
   children: ReactNode
 }) {
-  return <div>{props.children}</div>
+  return (
+    <div
+      className={css`
+        display: flex;
+        align-items: center;
+      `}
+    >
+      {props.index === 1 ? (
+        <select
+          value={props.value}
+          onChange={(e) => {
+            props.onChange(e.target.value as 'and' | 'or')
+          }}
+          className={css`
+            width: 40px;
+            height: 20px;
+            border: none;
+            outline: none;
+            font-weight: 500;
+            font-size: 10px;
+            line-height: 12px;
+            padding: 4px 0;
+            margin: 0 16px;
+            text-align: center;
+            color: ${ThemingVariables.colors.text[0]};
+            background: ${ThemingVariables.colors.primary[4]};
+            border-radius: 40px;
+            cursor: pointer;
+          `}
+        >
+          <option value="and">and</option>
+          <option value="or">or</option>
+        </select>
+      ) : (
+        <div
+          className={css`
+            width: 40px;
+            height: 20px;
+            border: none;
+            outline: none;
+            font-weight: 500;
+            font-size: 10px;
+            line-height: 12px;
+            margin: 0 16px;
+            padding: 4px 0;
+            text-align: center;
+            color: ${ThemingVariables.colors.primary[2]};
+            background: ${ThemingVariables.colors.primary[4]};
+            border-radius: 40px;
+          `}
+        >
+          {props.index === 0 ? 'where' : props.value}
+        </div>
+      )}
+      <div
+        className={css`
+          height: 44px;
+          width: 406px;
+          border-radius: 4px;
+          background-color: ${ThemingVariables.colors.gray[3]};
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 6px;
+        `}
+      >
+        {props.children}
+      </div>
+    </div>
+  )
 }
 
 function FilterItem(props: {
@@ -117,5 +201,13 @@ function FilterItem(props: {
   onAdd(): void
   onDelete(): void
 }) {
-  return <div>{JSON.stringify(props.value)}</div>
+  return (
+    <div
+      className={css`
+        color: ${ThemingVariables.colors.text[0]};
+      `}
+    >
+      {JSON.stringify(props.value)}
+    </div>
+  )
 }
