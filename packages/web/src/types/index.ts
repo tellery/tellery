@@ -252,7 +252,7 @@ export namespace Editor {
 
   export type DataAssetBlock = QueryBuilder
 
-  enum Filter {
+  export enum Filter {
     EQ = 'eq',
     NE = 'ne',
     LT = 'lt',
