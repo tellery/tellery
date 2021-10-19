@@ -102,7 +102,7 @@ export const SQLTypeReduced: { [key in keyof typeof SQLType]: 'OTHER' | 'BOOL' |
 
 export interface Data {
   errMsg?: string
-  fields: readonly { name: string; displayType: DisplayType; sqlType?: SQLType }[]
+  fields: readonly { name: string; displayType: DisplayType; sqlType: SQLType }[]
   records: readonly unknown[][]
 }
 

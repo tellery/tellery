@@ -331,13 +331,14 @@ export const SmartQueryConfig: React.FC<{
                 setFiltersVisible(false)
               }}
               interactive={true}
-              placement="left"
+              placement="left-start"
               theme="tellery"
               arrow={false}
               offset={[0, 160]}
               appendTo={document.body}
               content={
                 <FilterPopover
+                  fields={fields}
                   value={
                     filters
                       ? filters[0]

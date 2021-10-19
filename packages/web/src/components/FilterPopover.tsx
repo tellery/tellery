@@ -5,10 +5,16 @@ import { css } from '@emotion/css'
 import produce from 'immer'
 import { ReactNode } from 'react'
 import IconButton from './kit/IconButton'
+import { SQLType } from './v11n/types'
 
 type Value = NonNullable<Editor.SmartQueryBlock['content']['filters']>[0]
 
-export default function FilterPopover(props: { value: Value; onChange(value: Value): void; onClose(): void }) {
+export default function FilterPopover(props: {
+  fields: readonly { name: string; sqlType: SQLType }[]
+  value: Value
+  onChange(value: Value): void
+  onClose(): void
+}) {
   return (
     <div
       className={css`
@@ -70,13 +76,6 @@ export default function FilterPopover(props: { value: Value; onChange(value: Val
                   })
                 )
               }}
-              onAdd={() => {
-                props.onChange(
-                  produce(props.value, (draft) => {
-                    draft.operands.push()
-                  })
-                )
-              }}
               onDelete={() => {
                 props.onChange(
                   produce(props.value, (draft) => {
@@ -99,6 +98,18 @@ export default function FilterPopover(props: { value: Value; onChange(value: Val
           }}
         >
           <div
+            onClick={() => {
+              props.onChange(
+                produce(props.value, (draft) => {
+                  draft.operands.push({
+                    fieldName: props.fields[0].name,
+                    fieldType: props.fields[0].sqlType,
+                    func: Editor.Filter.EQ,
+                    args: []
+                  })
+                })
+              )
+            }}
             className={css`
               height: 44px;
               width: 406px;
@@ -107,6 +118,7 @@ export default function FilterPopover(props: { value: Value; onChange(value: Val
               display: flex;
               align-items: center;
               justify-content: center;
+              cursor: pointer;
             `}
           >
             <IconCommonAdd color={ThemingVariables.colors.text[0]} />
@@ -198,7 +210,6 @@ function FilterItemView(props: {
 function FilterItem(props: {
   value: Value['operands'][0]
   onChange(value: Value['operands'][0]): void
-  onAdd(): void
   onDelete(): void
 }) {
   return (
