@@ -220,7 +220,7 @@ function FilterItem(props: {
   return (
     <div
       className={css`
-        color: ${ThemingVariables.colors.text[0]};
+        display: flex;
       `}
     >
       <div
@@ -267,6 +267,38 @@ function FilterItem(props: {
           {props.fields.map((f) => (
             <option key={f.name} value={f.name}>
               {f.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div
+        className={css`
+          width: 120px;
+          height: 32px;
+          background-color: ${ThemingVariables.colors.gray[5]};
+          border: 1px solid ${ThemingVariables.colors.gray[1]};
+          box-sizing: border-box;
+          border-radius: 4px;
+          display: flex;
+          align-items: center;
+          padding: 0 6px;
+          margin-left: 4px;
+        `}
+      >
+        <select
+          className={css`
+            width: 100%;
+            outline: none;
+            border: none;
+            font-size: 12px;
+            color: ${ThemingVariables.colors.text[0]};
+            cursor: pointer;
+            padding: 0;
+          `}
+        >
+          {Object.entries(Editor.Filter).map(([key, value]) => (
+            <option key={key} value={value}>
+              {value}
             </option>
           ))}
         </select>
