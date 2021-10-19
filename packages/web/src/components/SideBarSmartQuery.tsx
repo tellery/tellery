@@ -343,7 +343,7 @@ export const SmartQueryConfig: React.FC<{
                     filters
                       ? filters[0]
                       : {
-                          operands: [{ fieldName: 'string', fieldType: 'string', func: Editor.Filter.GT, args: [] }],
+                          operands: [],
                           operator: 'and'
                         }
                   }

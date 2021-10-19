@@ -271,7 +271,7 @@ export namespace Editor {
     operator: 'and' | 'or'
     operands: {
       fieldName: string
-      fieldType: string
+      fieldType: SQLType
       func: Filter
       args: string[]
     }[]

@@ -1,11 +1,19 @@
-import { IconCommonAdd, IconCommonClose } from '@app/assets/icons'
+import {
+  IconCommonAdd,
+  IconCommonClose,
+  IconCommonDataAsset,
+  IconCommonDataTypeBool,
+  IconCommonDataTypeInt,
+  IconCommonDataTypeString,
+  IconCommonDataTypeTime
+} from '@app/assets/icons'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { css } from '@emotion/css'
 import produce from 'immer'
-import { ReactNode } from 'react'
+import React, { ReactNode } from 'react'
 import IconButton from './kit/IconButton'
-import { SQLType } from './v11n/types'
+import { SQLType, SQLTypeReduced } from './v11n/types'
 
 type Value = NonNullable<Editor.SmartQueryBlock['content']['filters']>[0]
 
@@ -68,6 +76,7 @@ export default function FilterPopover(props: {
             }}
           >
             <FilterItem
+              fields={props.fields}
               value={operand}
               onChange={(v) => {
                 props.onChange(
@@ -195,9 +204,6 @@ function FilterItemView(props: {
           width: 406px;
           border-radius: 4px;
           background-color: ${ThemingVariables.colors.gray[3]};
-          display: flex;
-          align-items: center;
-          justify-content: center;
           padding: 6px;
         `}
       >
@@ -208,6 +214,7 @@ function FilterItemView(props: {
 }
 
 function FilterItem(props: {
+  fields: readonly { name: string; sqlType: SQLType }[]
   value: Value['operands'][0]
   onChange(value: Value['operands'][0]): void
   onDelete(): void
@@ -218,7 +225,54 @@ function FilterItem(props: {
         color: ${ThemingVariables.colors.text[0]};
       `}
     >
-      {JSON.stringify(props.value)}
+      <div
+        className={css`
+          width: 140px;
+          height: 32px;
+          background-color: ${ThemingVariables.colors.gray[5]};
+          border: 1px solid #dedede;
+          box-sizing: border-box;
+          border-radius: 4px;
+          display: flex;
+          align-items: center;
+          padding: 0 6px;
+        `}
+      >
+        {
+          {
+            OTHER: <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />,
+            BOOL: <IconCommonDataTypeBool color={ThemingVariables.colors.gray[0]} />,
+            NUMBER: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
+            DATE: <IconCommonDataTypeTime color={ThemingVariables.colors.gray[0]} />,
+            STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
+          }[SQLTypeReduced[props.value.fieldType]]
+        }
+        <select
+          value={props.value.fieldName}
+          onChange={(e) => {
+            const field = props.fields.find((f) => f.name === e.target.value)
+            if (field) {
+              props.onChange({ fieldName: field.name, fieldType: field.sqlType, func: Editor.Filter.EQ, args: [] })
+            }
+          }}
+          className={css`
+            flex: 1;
+            outline: none;
+            border: none;
+            font-size: 12px;
+            color: ${ThemingVariables.colors.text[0]};
+            cursor: pointer;
+            padding: 0;
+            margin-left: 6px;
+          `}
+        >
+          {props.fields.map((f) => (
+            <option key={f.name} value={f.name}>
+              {f.name}
+            </option>
+          ))}
+        </select>
+      </div>
     </div>
   )
 }
