@@ -120,10 +120,8 @@ export default function FilterPopover(props: {
               )
             }}
             className={css`
-              height: 44px;
-              width: 406px;
-              border-radius: 4px;
-              background-color: ${ThemingVariables.colors.gray[3]};
+              height: 100%;
+              width: 100%;
               display: flex;
               align-items: center;
               justify-content: center;
@@ -230,7 +228,7 @@ function FilterItem(props: {
           width: 140px;
           height: 32px;
           background-color: ${ThemingVariables.colors.gray[5]};
-          border: 1px solid #dedede;
+          border: 1px solid ${ThemingVariables.colors.gray[1]};
           box-sizing: border-box;
           border-radius: 4px;
           display: flex;
