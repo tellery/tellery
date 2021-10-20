@@ -22,10 +22,9 @@ import { useSqlEditor } from '@app/hooks/useSqlEditor'
 import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
 import { useWorkspace } from '@app/hooks/useWorkspace'
-import { useCreateSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
-import { blockIdGenerator, DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
+import { DRAG_HANDLE_WIDTH } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import MonacoEditor from '@monaco-editor/react'
 import Tippy from '@tippyjs/react'
@@ -36,8 +35,8 @@ import isHotkey from 'is-hotkey'
 import { omit } from 'lodash'
 import React, { SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'react-toastify'
+import { useWindowSize } from 'react-use'
 import { Tab, TabList, TabPanel, TabStateReturn, useTabState } from 'reakit/Tab'
-import invariant from 'tiny-invariant'
 import YAML from 'yaml'
 import { setBlockTranscation } from '../context/editorTranscations'
 import { BlockingUI } from './BlockingUI'
@@ -120,10 +119,17 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
   const [resizeConfig] = useLocalStorage('MainSQLEditorConfig_v2', {
     y: -300
   })
+  const { height: windowHeight } = useWindowSize()
   const y = useMotionValue(resizeConfig.y)
   const height = useTransform(y, (y) => Math.abs(y - 0.5 * DRAG_HANDLE_WIDTH))
   const placeholderHeight = useTransform(height, (height) => (open ? height : 0))
   const translateY = useMotionValue(height.get())
+
+  useEffect(() => {
+    if (height.get() > windowHeight * 0.7) {
+      y.set(-windowHeight * 0.7)
+    }
+  }, [height, windowHeight, y])
 
   const workspace = useWorkspace()
   const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)
@@ -501,7 +507,8 @@ export const StoryQuestionEditor: React.FC<{
       ? (queryBlock as Editor.SmartQueryBlock).content.queryBuilderId
       : undefined,
     (queryBlock as Editor.SmartQueryBlock)?.content?.metricIds,
-    (queryBlock as Editor.SmartQueryBlock)?.content?.dimensions
+    (queryBlock as Editor.SmartQueryBlock)?.content?.dimensions,
+    (queryBlock as Editor.SmartQueryBlock)?.content?.filters
   )
 
   useEffect(() => {
@@ -569,7 +576,6 @@ export const StoryQuestionEditor: React.FC<{
   const workspace = useWorkspace()
   const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)
   const profileType = profile?.type
-  const createSnapshot = useCreateSnapshot()
   const sidebarEditor = useSideBarQuestionEditor(storyId)
   const refreshSnapshot = useRefreshSnapshot(storyId)
   const mutatingCount = useSnapshotMutating(queryBlock.id)
@@ -587,6 +593,10 @@ export const StoryQuestionEditor: React.FC<{
       refreshSnapshot.execute(queryBlock).then((res) => {
         if (res.errMsg) {
           setSQLError(res.errMsg)
+          setSqlSidePanel(true)
+        } else {
+          setSQLError(null)
+          setSqlSidePanel(false)
         }
       })
     }, 0)
@@ -710,7 +720,7 @@ export const StoryQuestionEditor: React.FC<{
                   }
                 `}
               >
-                {(sqlError || sqlSidePanel) && (
+                {sqlError && (
                   <IconButton
                     icon={IconCommonError}
                     color={ThemingVariables.colors.negative[0]}

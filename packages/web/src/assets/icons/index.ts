@@ -21,6 +21,10 @@ import IconCommonCopy from './common/copy.svg?component'
 import IconCommonCustomSqlMetric from './common/custom_sql_metric.svg?component'
 import IconCommonDataAssetSetting from './common/data_asset_setting.svg?component'
 import IconCommonDataAsset from './common/data_asset.svg?component'
+import IconCommonDataTypeBool from './common/data_type_bool.svg?component'
+import IconCommonDataTypeInt from './common/data_type_int.svg?component'
+import IconCommonDataTypeString from './common/data_type_string.svg?component'
+import IconCommonDataTypeTime from './common/data_type_time.svg?component'
 import IconCommonDbt from './common/dbt.svg?component'
 import IconCommonDot from './common/dot.svg?component'
 import IconCommonDownstream from './common/downstream.svg?component'
@@ -97,7 +101,6 @@ import IconMenuText from './menu/text.svg?component'
 import IconMenuToDo from './menu/to_do.svg?component'
 import IconMenuToggleList from './menu/toggle_list.svg?component'
 import IconMenuUpload from './menu/upload.svg?component'
-import IconMiscCloseCircle from './misc/close_circle.svg?component'
 import IconMiscImageBlock from './misc/image_block.svg?component'
 import IconMiscNoResult from './misc/no_result.svg?component'
 import IconMiscQuestionBlock from './misc/question_block.svg?component'
@@ -139,6 +142,10 @@ export {
   IconCommonCustomSqlMetric,
   IconCommonDataAssetSetting,
   IconCommonDataAsset,
+  IconCommonDataTypeBool,
+  IconCommonDataTypeInt,
+  IconCommonDataTypeString,
+  IconCommonDataTypeTime,
   IconCommonDbt,
   IconCommonDot,
   IconCommonDownstream,
@@ -215,7 +222,6 @@ export {
   IconMenuToDo,
   IconMenuToggleList,
   IconMenuUpload,
-  IconMiscCloseCircle,
   IconMiscImageBlock,
   IconMiscNoResult,
   IconMiscQuestionBlock,

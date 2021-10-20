@@ -1,5 +1,4 @@
-import { isQueryBlock } from '@app/components/editor/Blocks/utils'
-import { TelleryStoryBlocks } from '@app/store/block'
+import { StoryVisualizationBlocksAtom, TelleryBlockAtom } from '@app/store/block'
 import type { Editor } from '@app/types'
 import { selectorFamily, useRecoilValue } from 'recoil'
 
@@ -9,12 +8,13 @@ export const StoryResourcesAtom = selectorFamily<Editor.QueryBlock[], string>({
     (storyId) =>
     ({ get }) => {
       const result: Editor.VisualizationBlock[] = []
-      const blocksMap = get(TelleryStoryBlocks(storyId))
+      const blocksMap = get(StoryVisualizationBlocksAtom({ storyId }))
 
       Object.values(blocksMap).forEach((block) => {
-        const currentNode = block
-        if (isQueryBlock(block.type)) {
-          result.push(currentNode as Editor.VisualizationBlock)
+        const queryBlockId = block.content?.queryId
+        if (queryBlockId) {
+          const queryBlock = get(TelleryBlockAtom(queryBlockId))
+          result.push(queryBlock as Editor.QueryBlock)
         }
       })
 

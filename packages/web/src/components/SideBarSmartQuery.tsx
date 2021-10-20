@@ -1,30 +1,38 @@
-import { IconCommonAdd, IconCommonSub } from '@app/assets/icons'
+import {
+  IconCommonAdd,
+  IconCommonArrowLeft,
+  IconCommonDataAsset,
+  IconCommonDataTypeBool,
+  IconCommonDataTypeInt,
+  IconCommonDataTypeString,
+  IconCommonDataTypeTime,
+  IconCommonSub
+} from '@app/assets/icons'
 import { setBlockTranscation } from '@app/context/editorTranscations'
 import { useBlockSuspense, useGetProfileSpec, useQuerySnapshot } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
 import { useRefreshSnapshot } from '@app/hooks/useStorySnapshotManager'
 import { ThemingVariables } from '@app/styles'
-import { Editor } from '@app/types'
+import { Dimension, Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
 import Tippy from '@tippyjs/react'
 import produce from 'immer'
 import { WritableDraft } from 'immer/dist/internal'
 import { lowerCase, uniq, uniqBy } from 'lodash'
-import { ReactNode, useCallback, useState } from 'react'
+import React, { ReactNode, useCallback, useEffect, useState } from 'react'
+import FilterCard from './FilterCard'
+import FilterPopover from './FilterPopover'
 import { MenuItem } from './MenuItem'
 import { MenuWrapper } from './MenuWrapper'
 import ConfigIconButton from './v11n/components/ConfigIconButton'
 import { ConfigSection } from './v11n/components/ConfigSection'
+import { SQLTypeReduced } from './v11n/types'
 
 export default function SideBarSmartQuery(props: { storyId: string; blockId: string }) {
   const block = useBlockSuspense<Editor.VisualizationBlock>(props.blockId)
   const smartQueryBlock = useBlockSuspense<Editor.SmartQueryBlock>(block.content?.queryId!)
   const queryBuilderBlock = useBlockSuspense<Editor.QueryBuilder>(smartQueryBlock.content?.queryBuilderId)
-  const snapshot = useQuerySnapshot(props.storyId, queryBuilderBlock.id)
-  const { data: spec } = useGetProfileSpec()
-  const [metricVisible, setMetricVisible] = useState(false)
-  const [dimensionVisible, setDimensionVisible] = useState(false)
-  const { metricIds, dimensions } = smartQueryBlock.content
+
   const commit = useCommit()
   const mutateSnapshot = useRefreshSnapshot(props.storyId)
   const setSmartQueryBlock = useCallback(
@@ -38,10 +46,42 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
     [smartQueryBlock, mutateSnapshot, commit, props.storyId]
   )
 
-  if (!queryBuilderBlock || !snapshot) {
+  if (!queryBuilderBlock) {
     return null
   }
 
+  return (
+    <SmartQueryConfig
+      queryBuilderBlock={queryBuilderBlock}
+      metricIds={smartQueryBlock.content.metricIds}
+      dimensions={smartQueryBlock.content.dimensions}
+      filters={smartQueryBlock.content.filters}
+      onChange={setSmartQueryBlock}
+    />
+  )
+}
+
+export const SmartQueryConfig: React.FC<{
+  queryBuilderBlock: Editor.QueryBuilder
+  metricIds: string[]
+  dimensions: Dimension[]
+  filters?: Editor.FilterBuilder[]
+  onChange: (update: (block: WritableDraft<Editor.SmartQueryBlock>) => void) => void
+}> = ({ queryBuilderBlock, metricIds, dimensions, filters, onChange }) => {
+  const { data: spec } = useGetProfileSpec()
+  const [metricVisible, setMetricVisible] = useState(false)
+  const [dimensionVisible, setDimensionVisible] = useState(false)
+  const [filtersVisible, setFiltersVisible] = useState(false)
+  const snapshot = useQuerySnapshot(queryBuilderBlock.id)
+  const fields = snapshot?.data.fields || []
+  const [filter, setFilter] = useState(filters?.[0])
+  useEffect(() => {
+    setFilter(filters?.[0])
+  }, [filters])
+
+  if (!snapshot) {
+    return null
+  }
   return (
     <>
       <ConfigSection
@@ -67,7 +107,7 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
                       title={metric.name}
                       disabled={metric.deprecated || metricIds.includes(metricId)}
                       onClick={() => {
-                        setSmartQueryBlock((draft) => {
+                        onChange((draft) => {
                           draft.content.metricIds = uniq([...metricIds, metricId])
                         })
                         setMetricVisible(false)
@@ -98,7 +138,7 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
                 <ConfigItem
                   key={metricId}
                   onClick={() => {
-                    setSmartQueryBlock((draft) => {
+                    onChange((draft) => {
                       draft.content.metricIds = metricIds.filter((_m, i) => i !== index)
                     })
                   }}
@@ -112,7 +152,7 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
                 <ConfigItem
                   key={metricId}
                   onClick={() => {
-                    setSmartQueryBlock((draft) => {
+                    onChange((draft) => {
                       draft.content.metricIds = metricIds.filter((_m, i) => i !== index)
                     })
                   }}
@@ -129,7 +169,7 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
       <ConfigSection
         title="Dimensions"
         right={
-          snapshot.data.fields.length === 0 ? null : (
+          fields.length === 0 ? null : (
             <Tippy
               visible={dimensionVisible}
               onClickOutside={() => {
@@ -143,7 +183,7 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
               appendTo={document.body}
               content={
                 <MenuWrapper>
-                  {snapshot.data.fields.map((field, index) =>
+                  {fields.map((field, index) =>
                     field.sqlType &&
                     spec?.queryBuilderSpec.bucketization[field.sqlType] &&
                     Object.keys(spec.queryBuilderSpec.bucketization[field.sqlType]).length ? (
@@ -159,6 +199,19 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
                               <MenuItem
                                 key={func}
                                 title={lowerCase(func)}
+                                icon={
+                                  field.sqlType ? (
+                                    {
+                                      OTHER: <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />,
+                                      BOOL: <IconCommonDataTypeBool color={ThemingVariables.colors.gray[0]} />,
+                                      NUMBER: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
+                                      DATE: <IconCommonDataTypeTime color={ThemingVariables.colors.gray[0]} />,
+                                      STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
+                                    }[SQLTypeReduced[field.sqlType]]
+                                  ) : (
+                                    <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />
+                                  )
+                                }
                                 disabled={
                                   !!dimensions.find(
                                     (dimension) =>
@@ -168,7 +221,7 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
                                   )
                                 }
                                 onClick={() => {
-                                  setSmartQueryBlock((draft) => {
+                                  onChange((draft) => {
                                     draft.content.dimensions = uniqBy(
                                       [
                                         ...dimensions,
@@ -189,20 +242,32 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
                           </MenuWrapper>
                         }
                       >
-                        <MenuItem key={field.name + index} title={field.name} side={`${field.sqlType} >`} />
+                        <MenuItem
+                          key={field.name + index}
+                          title={field.name}
+                          icon={<IconCommonArrowLeft color={ThemingVariables.colors.gray[0]} />}
+                        />
                       </Tippy>
                     ) : field.sqlType && spec?.queryBuilderSpec.bucketization[field.sqlType] ? (
                       <MenuItem
                         key={field.name + index}
                         title={field.name}
-                        side={field.sqlType}
+                        icon={
+                          {
+                            OTHER: <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />,
+                            BOOL: <IconCommonDataTypeBool color={ThemingVariables.colors.gray[0]} />,
+                            NUMBER: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
+                            DATE: <IconCommonDataTypeTime color={ThemingVariables.colors.gray[0]} />,
+                            STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
+                          }[SQLTypeReduced[field.sqlType]]
+                        }
                         disabled={
                           !!dimensions.find(
                             (dimension) => dimension.fieldName === field.name && dimension.fieldType === field.sqlType
                           )
                         }
                         onClick={() => {
-                          setSmartQueryBlock((draft) => {
+                          onChange((draft) => {
                             draft.content.dimensions = uniqBy(
                               [
                                 ...dimensions,
@@ -243,10 +308,19 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
               <ConfigItem
                 key={dimension.name + index}
                 onClick={() => {
-                  setSmartQueryBlock((draft) => {
+                  onChange((draft) => {
                     draft.content.dimensions = dimensions.filter((_d, i) => i !== index)
                   })
                 }}
+                icon={
+                  {
+                    OTHER: <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />,
+                    BOOL: <IconCommonDataTypeBool color={ThemingVariables.colors.gray[0]} />,
+                    NUMBER: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
+                    DATE: <IconCommonDataTypeTime color={ThemingVariables.colors.gray[0]} />,
+                    STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
+                  }[SQLTypeReduced[dimension.fieldType]]
+                }
                 className={css`
                   margin-top: 8px;
                 `}
@@ -256,11 +330,75 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
             ))
           : null}
       </ConfigSection>
+      <ConfigSection
+        title="Filters"
+        right={
+          <Tippy
+            visible={filtersVisible}
+            // onClickOutside={() => {
+            //   setFiltersVisible(false)
+            // }}
+            interactive={true}
+            placement="left-start"
+            theme="tellery"
+            arrow={false}
+            offset={[0, 160]}
+            appendTo={document.body}
+            content={
+              <FilterPopover
+                fields={fields}
+                value={
+                  filter || {
+                    operands: [],
+                    operator: 'and'
+                  }
+                }
+                onChange={setFilter}
+                onClose={() => {
+                  onChange((draft) => {
+                    draft.content.filters = filter ? [filter] : []
+                  })
+                  setFiltersVisible(false)
+                }}
+              />
+            }
+            className={css`
+              width: 100%;
+              text-align: start;
+              margin-top: 8px;
+            `}
+          >
+            <div>
+              <ConfigIconButton
+                icon={IconCommonAdd}
+                disabled={!!filter}
+                onClick={() => {
+                  setFiltersVisible((old) => !old)
+                }}
+              />
+            </div>
+          </Tippy>
+        }
+      >
+        {filter ? (
+          <FilterCard
+            value={filter}
+            onEdit={() => {
+              setFiltersVisible(true)
+            }}
+            onDelete={() => {
+              onChange((draft) => {
+                delete draft.content.filters
+              })
+            }}
+          />
+        ) : null}
+      </ConfigSection>
     </>
   )
 }
 
-function ConfigItem(props: { children: ReactNode; onClick(): void; className?: string }) {
+function ConfigItem(props: { icon?: ReactNode; children: ReactNode; onClick(): void; className?: string }) {
   return (
     <div
       className={cx(
@@ -268,12 +406,12 @@ function ConfigItem(props: { children: ReactNode; onClick(): void; className?: s
           height: 32px;
           display: flex;
           align-items: center;
-          justify-content: space-between;
           padding-left: 6px;
         `,
         props.className
       )}
     >
+      {props.icon}
       <span
         className={css`
           font-style: normal;
@@ -281,10 +419,16 @@ function ConfigItem(props: { children: ReactNode; onClick(): void; className?: s
           font-size: 12px;
           line-height: 14px;
           color: ${ThemingVariables.colors.text[0]};
+          margin-left: ${props.icon ? 10 : 0}px;
         `}
       >
         {props.children}
       </span>
+      <div
+        className={css`
+          flex: 1;
+        `}
+      ></div>
       <ConfigIconButton
         icon={IconCommonSub}
         onClick={props.onClick}

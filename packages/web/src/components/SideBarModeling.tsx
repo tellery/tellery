@@ -18,11 +18,12 @@ import { ConfigItem } from './v11n/components/ConfigItem'
 import { ConfigPopoverWithTabs } from './v11n/components/ConfigPopoverWithTabs'
 import { ConfigSection } from './v11n/components/ConfigSection'
 import { ConfigSelect } from './v11n/components/ConfigSelect'
+import { SQLType } from './v11n/types'
 
 export default function SideBarModeling(props: { storyId: string; blockId: string }) {
   const block = useBlockSuspense<Editor.VisualizationBlock>(props.blockId)
   const queryBlock = useBlockSuspense<Editor.QueryBlock>(block.content?.queryId!)
-  const snapshot = useQuerySnapshot(props.storyId, queryBlock.id)
+  const snapshot = useQuerySnapshot(queryBlock.id)
   const commit = useCommit()
   const setBlock = useCallback(
     (update: (block: WritableDraft<Editor.QueryBuilder>) => void) => {
@@ -42,9 +43,41 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
   const metrics =
     queryBlock.type === Editor.BlockType.QueryBuilder ? (queryBlock as Editor.QueryBuilder).content?.metrics || {} : {}
   const { data: downstreams } = useQuestionDownstreams(queryBlock?.id)
+  const [description, setDescription] = useState((queryBlock as Editor.QueryBuilder).content?.description)
+  useEffect(() => {
+    setDescription((queryBlock as Editor.QueryBuilder).content?.description)
+  }, [queryBlock])
 
   return (
     <>
+      <ConfigSection title="Description">
+        <textarea
+          value={description}
+          onChange={(e) => {
+            setDescription(e.target.value)
+          }}
+          onBlur={() => {
+            setBlock((draft) => {
+              if (draft.content) {
+                draft.content.description = description
+              }
+            })
+          }}
+          className={css`
+            resize: none;
+            outline: none;
+            padding: 9px 6px;
+            font-size: 12px;
+            line-height: 14px;
+            color: ${ThemingVariables.colors.text[0]};
+            border: 1px solid ${ThemingVariables.colors.gray[1]};
+            box-sizing: border-box;
+            border-radius: 4px;
+            height: 60px;
+            width: 100%;
+          `}
+        />
+      </ConfigSection>
       {queryBlock.type === Editor.BlockType.QueryBuilder ? (
         <ConfigSection
           title="Metrics"
@@ -192,9 +225,10 @@ function MetricItem(props: {
         height: 32px;
         display: flex;
         align-items: center;
+        padding-left: 6px;
       `}
     >
-      <Icon />
+      <Icon color={ThemingVariables.colors.gray[0]} />
       <ConfigInput
         value={value}
         onChange={setValue}
@@ -207,6 +241,7 @@ function MetricItem(props: {
           font-weight: normal;
           font-size: 12px;
           line-height: 14px;
+          margin-left: 10px;
           color: ${ThemingVariables.colors.text[0]};
         `}
       />
@@ -222,11 +257,11 @@ function MetricItem(props: {
 }
 
 function MetricConfigCreator(props: {
-  fields: { name: string; type: string }[]
+  fields: { name: string; type: SQLType }[]
   metrics: { [id: string]: Metric }
   onCreate(metrics: Metric[]): void
 }) {
-  const [field, setField] = useState<{ name: string; type: string }>()
+  const [field, setField] = useState<{ name: string; type: SQLType }>()
   const [map, setMap] = useState<Record<string, string>>({})
   const array = useMemo(() => Object.entries(map), [map])
   const { data: spec } = useGetProfileSpec()

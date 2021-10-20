@@ -513,8 +513,9 @@ const _StoryEditor: React.FC<{
         insertNewEmptyBlock({ type: newType }, currentBlock.id, 'top')
         break
       }
-      default:
+      default: {
         toggleBlockType(currentBlock.id, newType, prefixLength)
+      }
     }
   }, [
     blockAdminValue,

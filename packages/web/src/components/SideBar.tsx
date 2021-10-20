@@ -1,6 +1,7 @@
 import {
   IconCommonAllQuestion,
   IconCommonHome,
+  IconCommonQuestion,
   IconCommonSearch,
   IconCommonSetting,
   IconCommonStar,

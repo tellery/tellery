@@ -323,7 +323,7 @@ const _VisualizationBlockBody: React.FC<{
   return (
     <>
       <React.Suspense fallback={<></>}>
-        <QuestionBlockStatus queryId={queryId} storyId={block.storyId!} />
+        <QuestionBlockStatus queryId={queryId} />
       </React.Suspense>
 
       <motion.div
@@ -375,7 +375,7 @@ const _VisualizationBlockContent: React.FC<{
   parentType: Editor.BlockType
 }> = ({ queryId, block }) => {
   const queryBlock = useBlockSuspense<Editor.QueryBlock>(queryId)
-  const snapshotId = useQuerySnapshotId(block.storyId!, queryId)
+  const snapshotId = useQuerySnapshotId(queryId)
   const commit = useCommit()
 
   const visualization = block.content?.visualization
@@ -624,8 +624,7 @@ const QuestionBlockHeader = memo(_QuestionBlockHeader)
 
 const _QuestionBlockStatus: React.FC<{
   queryId: string
-  storyId: string
-}> = ({ queryId, storyId }) => {
+}> = ({ queryId }) => {
   const queryBlock = useBlockSuspense<Editor.QueryBlock>(queryId)
   const mutatingCount = useSnapshotMutating(queryBlock.id)
 
@@ -720,7 +719,7 @@ const _QuestionBlockStatus: React.FC<{
           `}
         >
           <React.Suspense fallback={<></>}>
-            <SnapshotUpdatedAt loading={loading} queryBlock={queryBlock} storyId={storyId} />
+            <SnapshotUpdatedAt loading={loading} queryBlock={queryBlock} />
           </React.Suspense>
         </div>
       </div>
@@ -732,9 +731,8 @@ const QuestionBlockStatus = memo(_QuestionBlockStatus)
 export const SnapshotUpdatedAt: React.FC<{
   loading: boolean
   queryBlock: Editor.QueryBlock
-  storyId: string
-}> = ({ loading, queryBlock, storyId }) => {
-  const snapshot = useQuerySnapshot(storyId, queryBlock.id)
+}> = ({ loading, queryBlock }) => {
+  const snapshot = useQuerySnapshot(queryBlock.id)
   const [mutatingStartTimeStamp, setMutatingStartTimeStamp] = useState(0)
   const [nowTimeStamp, setNowTimeStamp] = useState(0)
   useEffect(() => {

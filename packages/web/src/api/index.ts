@@ -24,14 +24,16 @@ export const translateSmartQuery = async (
   workspace: Workspace,
   queryBuilderId?: string,
   metricIds: string[] = [],
-  dimensions: Dimension[] = []
+  dimensions: Dimension[] = [],
+  filters: Editor.FilterBuilder[] = []
 ) => {
   return request.post('/api/connectors/translateSmartQuery', {
     workspaceId: workspace.id,
     connectorId: workspace.preferences.connectorId,
     queryBuilderId,
     metricIds,
-    dimensions
+    dimensions,
+    filters
   })
 }
 

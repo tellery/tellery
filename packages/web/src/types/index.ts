@@ -1,5 +1,5 @@
 /// <reference types="resize-observer-browser" />
-import type { Config, Type, Data } from '../components/v11n/types'
+import type { Config, Type, Data, SQLType } from '../components/v11n/types'
 import type { MotionValue } from 'framer-motion'
 
 // fix https://github.com/framer/motion/issues/840
@@ -78,7 +78,7 @@ export type AggregatedMetric = {
   name: string
   deprecated?: boolean
   fieldName: string
-  fieldType: string
+  fieldType: SQLType
   func: string
 }
 
@@ -93,7 +93,7 @@ export type Metric = AggregatedMetric | CustomSQLMetric
 export type Dimension = {
   name: string
   fieldName: string
-  fieldType: string
+  fieldType: SQLType
   func?: string
 }
 
@@ -230,6 +230,7 @@ export namespace Editor {
 
   export interface QueryBuilder extends BaseQueryBlock {
     content?: BaseQueryBlock['content'] & {
+      description?: string
       fields?: {
         name: string
         type: string
@@ -252,12 +253,52 @@ export namespace Editor {
 
   export type DataAssetBlock = QueryBuilder
 
+  export enum Filter {
+    EQ = 'eq',
+    NE = 'ne',
+    LT = 'lt',
+    LTE = 'lte',
+    GT = 'gt',
+    GTE = 'gte',
+    CONTAINS = 'contains',
+    IS_NULL = 'isNull',
+    IS_NOT_NULL = 'isNotNull',
+    IS_TRUE = 'isTrue',
+    IS_NOT_TRUE = 'isNotTrue',
+    IS_BETWEEN = 'isBetween'
+  }
+
+  export const FilterNames = {
+    [Editor.Filter.EQ]: 'equals',
+    [Editor.Filter.NE]: 'not equals',
+    [Editor.Filter.LT]: 'less than',
+    [Editor.Filter.LTE]: 'less or equal than',
+    [Editor.Filter.GT]: 'greater than',
+    [Editor.Filter.GTE]: 'greater or equal than',
+    [Editor.Filter.CONTAINS]: 'contains',
+    [Editor.Filter.IS_NULL]: 'is null',
+    [Editor.Filter.IS_NOT_NULL]: 'is not null',
+    [Editor.Filter.IS_TRUE]: 'is true',
+    [Editor.Filter.IS_NOT_TRUE]: 'is not true',
+    [Editor.Filter.IS_BETWEEN]: 'between'
+  }
+
+  export type FilterBuilder = {
+    operator: 'and' | 'or'
+    operands: {
+      fieldName: string
+      fieldType: SQLType
+      func: Filter
+      args: string[]
+    }[]
+  }
+
   export interface SmartQueryBlock extends ContentBlock {
     content: ContentBlock['content'] & {
       queryBuilderId: string
       metricIds: string[]
       dimensions: Dimension[]
-      // filters: Filter[]
+      filters?: FilterBuilder[]
       title: Token[]
       snapshotId?: string
     }

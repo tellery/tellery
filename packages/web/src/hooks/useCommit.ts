@@ -143,7 +143,7 @@ const TranscationPromiseMap: Record<string, { resolve: (value: unknown) => void;
   {}
 
 export interface CommitInterface {
-  storyId: string
+  storyId?: string
   env?: Env
   transcation:
     | Omit<Transcation, 'workspaceId'>
@@ -193,22 +193,24 @@ export const commit = async ({
   try {
     startTranscation()
 
-    const { contents: selection } = recoilCallback!.snapshot.getLoadable(TelleryStorySelectionAtom(storyId))
     const [patchedOperations, reversedOperations] = applyOperations(transcation.operations, {
       recoilCallback,
       shouldReformat,
       userId,
       storyId
     })
-    if (!UNDO_STACK[storyId]) {
-      UNDO_STACK[storyId] = []
-    }
-    UNDO_STACK[storyId].push({
-      env: env ?? { selection },
-      transcation: { ...createTranscation({ operations: reversedOperations }), workspaceId }
-    })
-    if (REDO_STACK[storyId]?.length) {
-      REDO_STACK[storyId].length = 0
+    if (storyId) {
+      const { contents: selection } = recoilCallback!.snapshot.getLoadable(TelleryStorySelectionAtom(storyId))
+      if (!UNDO_STACK[storyId]) {
+        UNDO_STACK[storyId] = []
+      }
+      UNDO_STACK[storyId].push({
+        env: env ?? { selection },
+        transcation: { ...createTranscation({ operations: reversedOperations }), workspaceId }
+      })
+      if (REDO_STACK[storyId]?.length) {
+        REDO_STACK[storyId].length = 0
+      }
     }
     appendTransaction({ ...transcation, operations: patchedOperations })
 
@@ -456,7 +458,10 @@ const applyOperations = (
 
     if (updatedVersionsSet.has(operation.id) === false) {
       const storyId = updatedBlock.storyId
-
+      // TODO: fix unloaded block logic
+      if (!storyId) {
+        break
+      }
       invariant(storyId, 'storyId is undefined')
 
       if (isNewCreated) {

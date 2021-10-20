@@ -65,7 +65,7 @@ const VisualizationBlockContent: React.FC<{
   blockFormat: BlockFormatInterface
 }> = ({ block, blockFormat }) => {
   const queryBlock = block
-  const snapshotId = useQuerySnapshotId(block.storyId!, block.id)
+  const snapshotId = useQuerySnapshotId(block.id)
   const mutateSnapshot = useRefreshSnapshot(block.storyId!)
   const mutatingCount = useSnapshotMutating(queryBlock.id)
 
