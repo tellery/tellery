@@ -1,15 +1,18 @@
 import bluebird from 'bluebird'
 import _ from 'lodash'
+import { nanoid } from 'nanoid'
 import { createQueryBuilder, getManager, getRepository, In } from 'typeorm'
 
 import { Block } from '../core/block'
 import { SmartQueryBlock } from '../core/block/smartQuery'
-import { LinkWithStoryId, loadLinkEntitiesByBlockIds } from '../core/link'
+import { getLinksFromSql, LinkWithStoryId, loadLinkEntitiesByBlockIds } from '../core/link'
 import { getIPermission, IPermission } from '../core/permission'
 import { translateSmartQuery } from '../core/translator/smartQuery'
 import BlockEntity from '../entities/block'
-import { BlockDTO, BlockParentType, BlockType } from '../types/block'
+import { BlockDTO, BlockParentType, BlockType, ExportedBlock } from '../types/block'
+import { defaultPermissions } from '../types/permission'
 import { QueryBuilderSpec } from '../types/queryBuilder'
+import { isLinkToken, Token } from '../types/token'
 import { canGetBlockData, canGetWorkspaceData } from '../utils/permission'
 
 export class BlockService {
@@ -204,6 +207,108 @@ export class BlockService {
         { concurrency: 10 },
       )
     })
+  }
+
+  async exportStories(
+    operatorId: string,
+    workspaceId: string,
+    storyIds: string[],
+  ): Promise<ExportedBlock[]> {
+    const allBlocks = await bluebird.map(
+      storyIds,
+      async (id) => this.listAccessibleBlocksByStoryId(operatorId, workspaceId, id),
+      { concurrency: 10 },
+    )
+    return _(allBlocks)
+      .flatMap((bs) =>
+        bs.map((b) => {
+          return _.pick(b.toDTO(), [
+            'id',
+            'type',
+            'parentId',
+            'parentTable',
+            'storyId',
+            'content',
+            'format',
+            'children',
+          ])
+        }),
+      )
+      .value()
+  }
+
+  async importStories(
+    operatorId: string,
+    workspaceId: string,
+    blocks: ExportedBlock[],
+  ): Promise<string[]> {
+    const idMap = new Map(blocks.map((it) => [it.id, nanoid()]))
+    const importedBlockDTOs = blocks.map((b) =>
+      this.explodeExportedBlock(operatorId, workspaceId, b, idMap),
+    )
+    const entities = _(importedBlockDTOs)
+      .map((b) => Block.fromArgs(b).toModel(workspaceId))
+      .value()
+    await getRepository(BlockEntity).save(entities)
+    return _(entities).map('id').value()
+  }
+
+  handleContent(content: any, idMap: Map<string, string>) {
+    // check title first
+    if (content.title) {
+      _.range(content.title.length).forEach((index) => {
+        const token = content.title[index] as Token
+        if (isLinkToken(token)) {
+          content.title[index][1][0][2] = idMap.get(token[1][0][2])!
+        }
+      })
+    }
+    if (content.sql) {
+      const links = getLinksFromSql(content.sql)
+      content.sql = _(links)
+        .map('blockId')
+        .reduce(
+          (acc, val) => acc.replace(new RegExp(val, 'g'), idMap.get(val)!),
+          content.sql as string,
+        )
+    }
+    return content
+  }
+
+  explodeExportedBlock(
+    operatorId: string,
+    workspaceId: string,
+    body: ExportedBlock,
+    idMap: Map<string, string>,
+  ): BlockDTO {
+    const newDate = Date.now()
+    const {
+      id: oldId,
+      type,
+      parentId: oldParentId,
+      storyId: oldStoryId,
+      parentTable,
+      content: oldContent,
+      format,
+      children: oldChildren,
+    } = body
+    return {
+      id: idMap.get(oldId)!,
+      type,
+      parentId: parentTable === BlockParentType.WORKSPACE ? workspaceId : idMap.get(oldParentId)!,
+      parentTable,
+      storyId: idMap.get(oldStoryId)!,
+      permissions: defaultPermissions,
+      content: this.handleContent(oldContent, idMap),
+      format,
+      children: (oldChildren ?? []).map((i) => idMap.get(i)!),
+      alive: true,
+      version: 1,
+      createdById: operatorId,
+      lastEditedById: operatorId,
+      createdAt: newDate,
+      updatedAt: newDate,
+    }
   }
 }
 
