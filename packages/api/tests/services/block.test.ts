@@ -3,9 +3,11 @@ import _ from 'lodash'
 import { nanoid } from 'nanoid'
 import { getRepository } from 'typeorm'
 import { createDatabaseCon } from '../../src/clients/db/orm'
+import { FakeSocketManager } from '../../src/clients/socket/fake'
 import { FakePermission } from '../../src/core/permission'
 import BlockEntity from '../../src/entities/block'
 import { BlockService } from '../../src/services/block'
+import { OperationService } from '../../src/services/operation'
 import { BlockParentType, BlockType } from '../../src/types/block'
 import { defaultPermissions } from '../../src/types/permission'
 import {
@@ -19,6 +21,7 @@ import {
 } from '../testutils'
 
 const blockService = new BlockService(new FakePermission())
+const operationService = new OperationService(new FakePermission(), new FakeSocketManager())
 
 test.before(async () => {
   await createDatabaseCon()
@@ -197,7 +200,13 @@ test('downgradeQueryBuilder', async (t) => {
     alive: true,
   })
 
-  await blockService.downgradeQueryBuilder('user1', 'test', queryBuilderId, queryBuilderSpec)
+  await blockService.downgradeQueryBuilder(
+    'user1',
+    'test',
+    queryBuilderId,
+    queryBuilderSpec,
+    operationService,
+  )
 
   const res = await blockService.mget('user1', 'test', [
     queryBuilderId,

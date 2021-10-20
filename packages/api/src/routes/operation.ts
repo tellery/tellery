@@ -1,19 +1,13 @@
 import { plainToClass, Type } from 'class-transformer'
 import { IsArray, IsDefined, IsEnum, ValidateNested } from 'class-validator'
-import config from 'config'
 import { Context } from 'koa'
 import Router from 'koa-router'
 import { isEmpty } from 'lodash'
 
-import { getSocketManager } from '../clients/socket'
-import { getIPermission } from '../core/permission'
-import { OperationService } from '../services/operation'
-import { getNotificationService } from '../socket/routers/story'
+import { getOperationService } from '../services/operation'
 import { OperationCmdType, OperationTableType } from '../types/operation'
 import { validate } from '../utils/http'
 import { mustGetUser } from '../utils/user'
-
-let operationService: OperationService
 
 class FEOPRequest {
   @IsDefined()
@@ -60,19 +54,6 @@ class SaveTransactionsRequest {
   @Type(() => TransactionRequest)
   @ValidateNested()
   transactions!: TransactionRequest[]
-}
-
-function getOperationService(): OperationService {
-  if (operationService) {
-    return operationService
-  }
-  operationService = new OperationService(
-    getIPermission(),
-    getSocketManager(
-      config.has('socket.url') ? config.get('socket.url') : getNotificationService(),
-    ),
-  )
-  return operationService
 }
 
 async function saveTransactions(ctx: Context) {

@@ -1,7 +1,7 @@
 import bluebird from 'bluebird'
 import _ from 'lodash'
 import { nanoid } from 'nanoid'
-import { createQueryBuilder, getManager, getRepository, In } from 'typeorm'
+import { createQueryBuilder, getRepository, In } from 'typeorm'
 
 import { Block } from '../core/block'
 import { SmartQueryBlock } from '../core/block/smartQuery'
@@ -10,10 +10,12 @@ import { getIPermission, IPermission } from '../core/permission'
 import { translateSmartQuery } from '../core/translator/smartQuery'
 import BlockEntity from '../entities/block'
 import { BlockDTO, BlockParentType, BlockType, ExportedBlock } from '../types/block'
+import { OperationCmdType, OperationTableType } from '../types/operation'
 import { defaultPermissions } from '../types/permission'
 import { QueryBuilderSpec } from '../types/queryBuilder'
 import { isLinkToken, Token } from '../types/token'
 import { canGetBlockData, canGetWorkspaceData } from '../utils/permission'
+import { OperationService } from './operation'
 
 export class BlockService {
   private permission: IPermission
@@ -167,19 +169,22 @@ export class BlockService {
    * Downgrade a query builder to regular SQL query
    * searching for its downstream smartQuery, and translate them to SQL query, then change their type
    * TODO: use a cache to replace getting queryBuilderSpec from the connector
+   * operationService is exposed for testing
    */
   async downgradeQueryBuilder(
     operatorId: string,
     workspaceId: string,
     queryBuilderId: string,
     queryBuilderSpec: QueryBuilderSpec,
-  ): Promise<any> {
+    operationService: OperationService,
+  ): Promise<void> {
     await canGetWorkspaceData(this.permission, operatorId, workspaceId)
 
     const downstreamSmartQueries = _(
       await createQueryBuilder(BlockEntity, 'blocks')
         .where('type = :type', { type: BlockType.SMART_QUERY })
         .andWhere("content ->> 'queryBuilderId' = :id", { id: queryBuilderId })
+        .andWhere('alive = true')
         .getMany(),
     )
       .map((b) => Block.fromEntity(b) as SmartQueryBlock)
@@ -195,18 +200,34 @@ export class BlockService {
       { concurrency: 10 },
     )
 
-    await getManager().transaction(async (t) => {
-      await t.getRepository(BlockEntity).update(queryBuilderId, { type: BlockType.SQL })
-      await bluebird.map(
-        translatedSmartQueries,
-        async ([id, content]) =>
-          t.getRepository(BlockEntity).update(id, {
-            content,
-            type: BlockType.SQL,
-          }),
-        { concurrency: 10 },
-      )
+    const opBuilder = (id: string, path: string, args: any) => ({
+      cmd: OperationCmdType.SET,
+      id,
+      path: [path],
+      table: OperationTableType.BLOCK,
+      args,
     })
+    const ops = [
+      _(translatedSmartQueries)
+        .map(([id, content]) => opBuilder(id, 'content', content))
+        .value(),
+      _(translatedSmartQueries)
+        // take the first
+        .map(0)
+        .concat([queryBuilderId])
+        .map((id) => opBuilder(id, 'type', BlockType.SQL))
+        .value(),
+    ]
+    await operationService.saveTransactions(
+      operatorId,
+      _(ops)
+        .map((operations) => ({
+          id: nanoid(),
+          workspaceId,
+          operations,
+        }))
+        .value(),
+    )
   }
 
   async exportStories(

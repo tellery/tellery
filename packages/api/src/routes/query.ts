@@ -6,6 +6,7 @@ import { getIConnectorManagerFromDB } from '../clients/connector'
 
 import blockService from '../services/block'
 import connectorService from '../services/connector'
+import { getOperationService } from '../services/operation'
 import { validate } from '../utils/http'
 import { mustGetUser } from '../utils/user'
 
@@ -32,7 +33,13 @@ async function downgradeQueryBuilder(ctx: Context) {
   const manager = await getIConnectorManagerFromDB(workspaceId, connectorId)
   const { queryBuilderSpec } = await connectorService.getProfileSpec(manager, user.id, workspaceId)
 
-  await blockService.downgradeQueryBuilder(user.id, workspaceId, queryBuilderId, queryBuilderSpec)
+  await blockService.downgradeQueryBuilder(
+    user.id,
+    workspaceId,
+    queryBuilderId,
+    queryBuilderSpec,
+    getOperationService(),
+  )
   ctx.body = {}
 }
 

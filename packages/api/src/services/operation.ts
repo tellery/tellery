@@ -1,12 +1,16 @@
 import bluebird from 'bluebird'
 import _ from 'lodash'
 import { getManager } from 'typeorm'
+import config from 'config'
 
 import { NotificationOpt, SocketManager } from '../clients/socket/interface'
 import { OperationManager } from '../core/operation'
 import { IPermission } from '../core/permission'
 import { OperationTableType, SingleOperation } from '../types/operation'
 import activityService, { ActivitySyncService } from './activitySync'
+import { getSocketManager } from '../clients/socket'
+import { getIPermission } from '../core/permission'
+import { getNotificationService } from '../socket/routers/story'
 
 export class OperationService {
   private permission: IPermission
@@ -129,4 +133,18 @@ export class OperationService {
       this.socketManger.sendEntitiesChangedNotification(workspaceId, operatorId, opts),
     )
   }
+}
+let operationService: OperationService
+
+export function getOperationService(): OperationService {
+  if (operationService) {
+    return operationService
+  }
+  operationService = new OperationService(
+    getIPermission(),
+    getSocketManager(
+      config.has('socket.url') ? config.get('socket.url') : getNotificationService(),
+    ),
+  )
+  return operationService
 }
