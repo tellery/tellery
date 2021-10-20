@@ -725,7 +725,7 @@ export function useTranslateSmartQuery(
   queryBuilderId?: string,
   metricIds: string[] = [],
   dimensions: Dimension[] = [],
-  filters: Editor.FilterBuilder[] = []
+  filters?: Editor.FilterBuilder
 ) {
   const workspace = useWorkspace()
   return useQuery(

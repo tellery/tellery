@@ -8,7 +8,7 @@ import IconButton from './kit/IconButton'
 import { MenuItem } from './MenuItem'
 import { MenuWrapper } from './MenuWrapper'
 
-type Value = NonNullable<Editor.SmartQueryBlock['content']['filters']>[0]
+type Value = NonNullable<Editor.SmartQueryBlock['content']['filters']>
 
 export default function FilterCard(props: { value: Value; onEdit(): void; onDelete(): void }) {
   const [visible, setVisible] = useState(false)

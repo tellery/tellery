@@ -25,7 +25,7 @@ export const translateSmartQuery = async (
   queryBuilderId?: string,
   metricIds: string[] = [],
   dimensions: Dimension[] = [],
-  filters: Editor.FilterBuilder[] = []
+  filters?: Editor.FilterBuilder
 ) => {
   return request.post<{ sql: string }>('/api/connectors/translateSmartQuery', {
     workspaceId: workspace.id,

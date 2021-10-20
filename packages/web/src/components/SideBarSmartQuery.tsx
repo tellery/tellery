@@ -65,7 +65,7 @@ export const SmartQueryConfig: React.FC<{
   queryBuilderBlock: Editor.QueryBuilder
   metricIds: string[]
   dimensions: Dimension[]
-  filters?: Editor.FilterBuilder[]
+  filters?: Editor.FilterBuilder
   onChange: (update: (block: WritableDraft<Editor.SmartQueryBlock>) => void) => void
 }> = ({ queryBuilderBlock, metricIds, dimensions, filters, onChange }) => {
   const { data: spec } = useGetProfileSpec()
@@ -74,9 +74,9 @@ export const SmartQueryConfig: React.FC<{
   const [filtersVisible, setFiltersVisible] = useState(false)
   const snapshot = useQuerySnapshot(queryBuilderBlock.id)
   const fields = snapshot?.data.fields || []
-  const [filter, setFilter] = useState(filters?.[0])
+  const [filter, setFilter] = useState(filters)
   useEffect(() => {
-    setFilter(filters?.[0])
+    setFilter(filters)
   }, [filters])
 
   if (!snapshot) {
@@ -356,7 +356,7 @@ export const SmartQueryConfig: React.FC<{
                 onChange={setFilter}
                 onClose={() => {
                   onChange((draft) => {
-                    draft.content.filters = filter ? [filter] : []
+                    draft.content.filters = filter
                   })
                   setFiltersVisible(false)
                 }}

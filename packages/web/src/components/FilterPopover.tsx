@@ -20,7 +20,7 @@ import { MenuItem } from './MenuItem'
 import { MenuWrapper } from './MenuWrapper'
 import { SQLType, SQLTypeReduced } from './v11n/types'
 
-type Value = NonNullable<Editor.SmartQueryBlock['content']['filters']>[0]
+type Value = NonNullable<Editor.SmartQueryBlock['content']['filters']>
 
 const typeToFunc = {
   OTHER: [] as Editor.Filter[],

@@ -206,7 +206,7 @@ const Page = () => {
   const [queryBuilderId, setQueryBuilderId] = useState<string | null>(null)
   const [metricIds, setMetricIds] = useState<string[]>()
   const [dimensions, setDiemensions] = useState<Dimension[]>()
-  const [filters, setFilters] = useState<Editor.FilterBuilder[]>()
+  const [filters, setFilters] = useState<Editor.FilterBuilder>()
   const [visConfig, setVisConfig] = useState<Config<Type> | null>(null)
   const [data, setData] = useState<Data | null>(null)
   const [sql, setSql] = useState<string | null>(null)
@@ -214,9 +214,11 @@ const Page = () => {
 
   useEffect(() => {
     if (!queryBuilderId) return
-    translateSmartQuery(workspace, queryBuilderId, metricIds, dimensions, filters).then((response) => {
-      setSql(response.data.sql)
-    })
+    translateSmartQuery(workspace, queryBuilderId, metricIds, dimensions, filters)
+      .then((response) => {
+        setSql(response.data.sql)
+      })
+      .catch(console.error)
   }, [dimensions, filters, metricIds, queryBuilderId, workspace])
 
   const mutation = useMutation(sqlRequest, {

@@ -36,18 +36,22 @@ export const QuerySelectorFamily = selectorFamily<
       if (queryBlock.type === Editor.BlockType.SQL || queryBlock.type === Editor.BlockType.QueryBuilder) {
         return getReplacedSql((queryBlock as Editor.SQLBlock).content?.sql ?? '')
       }
-      if (queryBlock.type === Editor.BlockType.SmartQuery) {
-        const smartQueryBlock = queryBlock as Editor.SmartQueryBlock
-        const workspace = get(WorkspaceAtom)
-        if (!workspace) return { sql: '', isTemp: false }
-        const response = await translateSmartQuery(
-          workspace,
-          smartQueryBlock.content.queryBuilderId,
-          smartQueryBlock.content?.metricIds,
-          smartQueryBlock.content?.dimensions,
-          smartQueryBlock.content?.filters
-        )
-        return getReplacedSql(response.data.sql as string)
+      try {
+        if (queryBlock.type === Editor.BlockType.SmartQuery) {
+          const smartQueryBlock = queryBlock as Editor.SmartQueryBlock
+          const workspace = get(WorkspaceAtom)
+          if (!workspace) return { sql: '', isTemp: false }
+          const response = await translateSmartQuery(
+            workspace,
+            smartQueryBlock.content.queryBuilderId,
+            smartQueryBlock.content?.metricIds,
+            smartQueryBlock.content?.dimensions,
+            smartQueryBlock.content?.filters
+          )
+          return getReplacedSql(response.data.sql)
+        }
+      } catch {
+        return { sql: '', isTemp: isTemp }
       }
       return { sql: '', isTemp: isTemp }
     },
