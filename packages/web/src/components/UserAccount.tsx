@@ -150,7 +150,7 @@ export default function UserAccount(props: { onClose(): void }) {
           Update
         </FormButton>
       </div>
-      <FormError message={handleUpdateUser.error?.response?.data.errMsg} />
+      <FormError message={(handleUpdateUser.error?.response?.data as any).errMsg} />
     </form>
   )
 }

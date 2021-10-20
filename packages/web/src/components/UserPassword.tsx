@@ -138,7 +138,7 @@ export default function UserPassword(props: { onClose(): void }) {
           Update password
         </FormButton>
       </div>
-      <FormError message={handleUpdateUser.error?.response?.data.errMsg} />
+      <FormError message={(handleUpdateUser.error?.response?.data as any).errMsg} />
     </form>
   )
 }

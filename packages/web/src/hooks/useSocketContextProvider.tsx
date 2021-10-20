@@ -8,7 +8,7 @@ import debug from 'debug'
 import { createContext, useContext, useEffect, useState } from 'react'
 import { useQueryClient } from 'react-query'
 import io, { Socket } from 'socket.io-client'
-import type { DefaultEventsMap } from 'socket.io-client/build/typed-events'
+import type { DefaultEventsMap } from '@socket.io/component-emitter'
 
 export const logger = debug('tellery:socket')
 

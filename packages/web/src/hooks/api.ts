@@ -69,14 +69,14 @@ export const useUpdateBlocks = () => {
   return updateBlocks
 }
 
-export const useFetchStoryChunk = <T extends Editor.BaseBlock = Story>(id: string, suspense: boolean = true) => {
+export const useFetchStoryChunk = (id: string, suspense: boolean = true) => {
   const updateBlocks = useUpdateBlocks()
   const workspace = useWorkspace()
-  useQuery<Record<string, Editor.BaseBlock>>(
+  useQuery(
     ['story', 'chunk', workspace, id],
     async () =>
       request
-        .post('/api/stories/load', {
+        .post<{ blocks: Record<string, Editor.BaseBlock> }>('/api/stories/load', {
           workspaceId: workspace.id,
           storyId: id
         })
@@ -208,11 +208,11 @@ export const useRefetchMetrics = () => {
 
 export const useListDatabases = () => {
   const workspace = useWorkspace()
-  return useQuery<string[]>(
+  return useQuery(
     ['listDatabases', workspace],
     () =>
       request
-        .post('/api/connectors/listDatabases', {
+        .post<{ databases: string[] }>('/api/connectors/listDatabases', {
           connectorId: workspace.preferences.connectorId,
           profile: workspace.preferences.profile,
           workspaceId: workspace.id
@@ -227,11 +227,11 @@ export const useListDatabases = () => {
 
 export const useListCollections = (database?: string) => {
   const workspace = useWorkspace()
-  return useQuery<string[]>(
+  return useQuery(
     ['listCollections', workspace, database],
     () =>
       request
-        .post('/api/connectors/listCollections', {
+        .post<{ collections: string[] }>('/api/connectors/listCollections', {
           connectorId: workspace.preferences.connectorId,
           profile: workspace.preferences.profile,
           database,
@@ -522,25 +522,29 @@ export const useQuestionDownstreams = (id?: string) => {
   return { data: items, refetch }
 }
 
-export function useWorkspaceList(options?: UseQueryOptions<Workspace[]>) {
-  return useQuery<Workspace[]>(
+export function useWorkspaceList(options?: Omit<UseQueryOptions, 'queryKey' | 'queryFn'>) {
+  return useQuery(
     ['workspaces', 'list'],
-    () => request.post('/api/workspaces/list').then((res) => res.data.workspaces),
+    () => request.post<{ workspaces: Workspace[] }>('/api/workspaces/list').then((res) => res.data.workspaces),
     options
   )
 }
 
 export function useWorkspaceView() {
   const workspace = useWorkspace()
-  return useQuery<{ id: string; pinnedList: string[] }>(['workspaces', 'getView', workspace], () =>
-    request.post('/api/workspaces/getView', { workspaceId: workspace.id }).then((res) => res.data)
+  return useQuery(['workspaces', 'getView', workspace], () =>
+    request
+      .post<{ id: string; pinnedList: string[] }>('/api/workspaces/getView', { workspaceId: workspace.id })
+      .then((res) => res.data)
   )
 }
 
 export function useWorkspaceDetail() {
   const workspace = useWorkspace()
-  return useQuery<Workspace>(['workspaces', 'getDetail', workspace], () =>
-    request.post('/api/workspaces/getDetail', { workspaceId: workspace.id }).then((res) => res.data.workspace)
+  return useQuery(['workspaces', 'getDetail', workspace], () =>
+    request
+      .post<{ workspace: Workspace }>('/api/workspaces/getDetail', { workspaceId: workspace.id })
+      .then((res) => res.data.workspace)
   )
 }
 
@@ -601,11 +605,11 @@ type StoryVisisRecord = { storyId: string; userId: string; lastVisitTimestamp: n
 
 export const useStoryVisits = (storyId: string = '', limit = 5) => {
   const workspace = useWorkspace()
-  return useQuery<StoryVisisRecord>(
+  return useQuery(
     ['story', storyId, 'visits', workspace],
     () =>
       request
-        .post('/api/stories/getVisits', { workspaceId: workspace.id, storyId, limit })
+        .post<{ visits: StoryVisisRecord }>('/api/stories/getVisits', { workspaceId: workspace.id, storyId, limit })
         .then((res) => res.data.visits),
     { enabled: !!storyId }
   )
@@ -641,18 +645,22 @@ export const useRecordStoryVisits = () => {
 
 export const useConnectorsList = () => {
   const workspace = useWorkspace()
-  return useQuery<{ id: string; url: string; name: string }[]>(['connector', 'list', workspace], () =>
-    request.post('/api/connectors/list', { workspaceId: workspace.id }).then((res) => res.data.connectors)
+  return useQuery(['connector', 'list', workspace], () =>
+    request
+      .post<{ connectors: { id: string; url: string; name: string }[] }>('/api/connectors/list', {
+        workspaceId: workspace.id
+      })
+      .then((res) => res.data.connectors)
   )
 }
 
 export const useConnectorsGetProfile = (connectorId?: string) => {
   const workspace = useWorkspace()
-  return useQuery<ProfileConfig>(
+  return useQuery(
     ['connector', 'getProfile', connectorId, workspace],
     () =>
       request
-        .post('/api/connectors/getProfile', { connectorId, workspaceId: workspace.id })
+        .post<{ profile: ProfileConfig }>('/api/connectors/getProfile', { connectorId, workspaceId: workspace.id })
         .then((res) => res.data.profile),
     { enabled: !!connectorId }
   )
@@ -660,16 +668,16 @@ export const useConnectorsGetProfile = (connectorId?: string) => {
 
 export const useConnectorsGetProfileConfigs = (connectorId?: string) => {
   const workspace = useWorkspace()
-  return useQuery<
-    {
-      type: string
-      configs: AvailableConfig[]
-    }[]
-  >(
+  return useQuery(
     ['connector', 'getProfileConfigs', connectorId, workspace.id],
     () =>
       request
-        .post('/api/connectors/getProfileConfigs', { connectorId, workspaceId: workspace.id })
+        .post<{
+          configs: {
+            type: string
+            configs: AvailableConfig[]
+          }[]
+        }>('/api/connectors/getProfileConfigs', { connectorId, workspaceId: workspace.id })
         .then((res) => res.data.configs),
     {
       enabled: !!connectorId
@@ -689,21 +697,21 @@ export function useConnectorsUpsertProfile(connectorId: string) {
 
 export const useGetProfileSpec = () => {
   const workspace = useWorkspace()
-  return useQuery<{
-    queryBuilderSpec: {
-      aggregation: Record<string, Record<string, string>>
-      bucketization: Record<string, Record<string, string>>
-      identifier: string
-      stringLiteral: string
-    }
-    name: string
-    tokenizer: string
-    type: string
-  }>(
+  return useQuery(
     ['connector', 'getProfileSpec', workspace.id, workspace.preferences.connectorId, workspace.preferences.profile],
     () =>
       request
-        .post('/api/connectors/getProfileSpec', {
+        .post<{
+          queryBuilderSpec: {
+            aggregation: Record<string, Record<string, string>>
+            bucketization: Record<string, Record<string, string>>
+            identifier: string
+            stringLiteral: string
+          }
+          name: string
+          tokenizer: string
+          type: string
+        }>('/api/connectors/getProfileSpec', {
           workspaceId: workspace.id,
           connectorId: workspace.preferences.connectorId,
           profile: workspace.preferences.profile
@@ -720,7 +728,7 @@ export function useTranslateSmartQuery(
   filters: Editor.FilterBuilder[] = []
 ) {
   const workspace = useWorkspace()
-  return useQuery<string>(
+  return useQuery(
     [
       'connectors',
       'translateSmartQuery',
@@ -822,15 +830,15 @@ export const useAllThoughts = () => {
   const workspace = useWorkspace()
   const result = useQuery(['thought', 'loadAll', workspace], async () => {
     return request
-      .post('/api/thought/loadAll', {
-        workspaceId: workspace.id
-      })
-      .then((res) => {
-        return res.data.thoughts as {
+      .post<{
+        thoughts: {
           id: string
           date: string
         }[]
+      }>('/api/thought/loadAll', {
+        workspaceId: workspace.id
       })
+      .then((res) => res.data.thoughts)
   })
   return result
 }

@@ -17,7 +17,7 @@ import { useStoryResources } from '@app/hooks/useStoryResources'
 import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
 import { ThemingVariables } from '@app/styles'
 import { PopoverMotionVariants } from '@app/styles/animations'
-import { Editor, Story, Thought } from '@app/types'
+import { Editor } from '@app/types'
 import { DEFAULT_TIPPY_DELAY } from '@app/utils'
 import { DndItemDataBlockType, DnDItemTypes } from '@app/utils/dnd'
 import { useDraggable } from '@dnd-kit/core'
@@ -60,7 +60,7 @@ const StoryResources: React.FC<{ storyId: string }> = ({ storyId }) => {
 }
 
 export const CurrentStoryQueries: React.FC<{ storyId: string }> = ({ storyId }) => {
-  useFetchStoryChunk<Story | Thought>(storyId)
+  useFetchStoryChunk(storyId)
   const { t } = useTranslation()
 
   return storyId ? (

@@ -1,8 +1,7 @@
-import { request, updateUser, userConfirm, userGenerate, userLogin, userLogout } from '@app/api'
+import { request, updateUser, userConfirm, userLogin, userLogout } from '@app/api'
 import type { User } from '@app/hooks/api'
 import { tracker } from '@app/utils/openReplay'
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
 export function useProvideAuth() {
@@ -22,10 +21,6 @@ export function useProvideAuth() {
 
   const confirm = useCallback((args: { code: string }) => {
     return userConfirm(args)
-  }, [])
-
-  const generate = useCallback((args: { email: string }) => {
-    return userGenerate(args)
   }, [])
 
   const update = useCallback(
@@ -56,7 +51,6 @@ export function useProvideAuth() {
     login,
     logout,
     confirm,
-    // generate,
     autoLogin,
     update,
     setUser

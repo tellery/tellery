@@ -27,7 +27,7 @@ export const translateSmartQuery = async (
   dimensions: Dimension[] = [],
   filters: Editor.FilterBuilder[] = []
 ) => {
-  return request.post('/api/connectors/translateSmartQuery', {
+  return request.post<{ sql: string }>('/api/connectors/translateSmartQuery', {
     workspaceId: workspace.id,
     connectorId: workspace.preferences.connectorId,
     queryBuilderId,
@@ -38,7 +38,7 @@ export const translateSmartQuery = async (
 }
 
 export const getWorkspaceList = async () =>
-  request.post('/api/workspaces/list').then((res) => res.data.workspaces as Workspace[])
+  request.post<{ workspaces: Workspace[] }>('/api/workspaces/list').then((res) => res.data.workspaces)
 
 export const userLogin = async ({ email, password }: { email: string; password: string }) => {
   const { data } = await request.post<User>('/api/users/login', { email, password })
@@ -52,11 +52,6 @@ export const userLogout = async () => {
 
 export const userConfirm = async ({ code }: { code: string }) => {
   const { data } = await request.post<Pick<User, 'id' | 'status'>>('/api/users/confirm', { code })
-  return data
-}
-
-export const userGenerate = async ({ email }: { email: string }) => {
-  const { data } = await request.post<Pick<User, 'id' | 'status'>>('/api/users/generate', { email })
   return data
 }
 
@@ -99,14 +94,8 @@ export const importFromCSV = (props: {
   })
 }
 
-export const getStoriesByTitle = async ({
-  title,
-  workspaceId
-}: {
-  title: string
-  workspaceId: string
-}): Promise<Story[]> => {
-  const stories = await request.post('/api/stories/listByTitle', {
+export const getStoriesByTitle = async ({ title, workspaceId }: { title: string; workspaceId: string }) => {
+  const stories = await request.post<{ blocks: Story[] }>('/api/stories/listByTitle', {
     workspaceId,
     title
   })
@@ -132,9 +121,9 @@ export async function searchBlocks<T extends Editor.BlockType>(
   limit: number,
   workspaceId: string,
   type?: T
-): Promise<SearchBlockResult<T>> {
+) {
   return request
-    .post('/api/search', {
+    .post<{ results: SearchBlockResult<T> }>('/api/search', {
       keyword,
       workspaceId,
       types: ['block'],
@@ -148,9 +137,9 @@ export async function referenceCompletion<T extends Editor.BlockType>(
   workspaceId: string,
   keyword: string,
   limit: number
-): Promise<SearchBlockResult<T>> {
+) {
   return request
-    .post('/api/referenceCompletion', {
+    .post<{ results: SearchBlockResult<T> }>('/api/referenceCompletion', {
       workspaceId,
       keyword,
       limit
@@ -178,7 +167,7 @@ const fetcher: {
 export const fetchEntities = debounce((items: EntityRequestItems, workspaceId: string) => {
   fetcher.items = {}
   request
-    .post('/api/mgetResources', {
+    .post<EntityRequestItems>('/api/mgetResources', {
       requests: [
         ...(Object.values(items?.blocks ?? {}) as { args: EntityRequest }[]).map(({ args }) => ({
           type: 'block',
@@ -301,11 +290,12 @@ export async function getCollectionSchema(props: {
   connectorId: string
   profile: string
   workspaceId: string
-}): Promise<{ name: string; sqlType: string; displayType: DisplayType }[]> {
+}) {
   return request
-    .post('/api/connectors/getCollectionSchema', {
-      ...props
-    })
+    .post<{ fields: { name: string; sqlType: string; displayType: DisplayType }[] }>(
+      '/api/connectors/getCollectionSchema',
+      { ...props }
+    )
     .then((res) => res.data.fields)
 }
 
@@ -376,5 +366,5 @@ export function saveTranscations(transcations: Transcation[]) {
 }
 
 export const getMetabaseToken = (params: { siteUrl: string; payload: object }) => {
-  return request.post('/api/thirdParty/metabase/token', params)
+  return request.post<{ token: string }>('/api/thirdParty/metabase/token', params)
 }
