@@ -385,7 +385,9 @@ function FilterItem(props: {
               background-color: ${ThemingVariables.colors.gray[5]};
               border: 1px solid ${ThemingVariables.colors.gray[1]};
               box-sizing: border-box;
+              border-radius: 4px;
               margin-left: 4px;
+              padding: 0 6px;
             `}
           />
         ))
