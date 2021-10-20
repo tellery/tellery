@@ -1,5 +1,6 @@
 import {
   IconCommonAdd,
+  IconCommonArrowDropDown,
   IconCommonClose,
   IconCommonCloseCircle,
   IconCommonDataAsset,
@@ -11,9 +12,12 @@ import {
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { css } from '@emotion/css'
+import Tippy from '@tippyjs/react'
 import produce from 'immer'
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useState } from 'react'
 import IconButton from './kit/IconButton'
+import { MenuItem } from './MenuItem'
+import { MenuWrapper } from './MenuWrapper'
 import { SQLType, SQLTypeReduced } from './v11n/types'
 
 type Value = NonNullable<Editor.SmartQueryBlock['content']['filters']>[0]
@@ -285,6 +289,9 @@ function FilterItem(props: {
   onChange(value: Value['operands'][0]): void
   onDelete(): void
 }) {
+  const [visible0, setVisible0] = useState(false)
+  const [visible1, setVisible1] = useState(false)
+
   return (
     <div
       className={css`
@@ -315,37 +322,72 @@ function FilterItem(props: {
             STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
           }[SQLTypeReduced[props.value.fieldType]]
         }
-        <select
-          value={props.value.fieldName}
-          onChange={(e) => {
-            const field = props.fields.find((f) => f.name === e.target.value)
-            if (field) {
-              const funcs = typeToFunc[SQLTypeReduced[field.sqlType]]
-              props.onChange({
-                fieldName: field.name,
-                fieldType: field.sqlType,
-                func: funcs.includes(props.value.func) ? props.value.func : funcs[0],
-                args: []
-              })
-            }
+        <Tippy
+          visible={visible0}
+          onClickOutside={() => {
+            setVisible0(false)
           }}
-          className={css`
-            flex: 1;
-            outline: none;
-            border: none;
-            font-size: 12px;
-            color: ${ThemingVariables.colors.text[0]};
-            cursor: pointer;
-            padding: 0;
-            margin-left: 6px;
-          `}
+          interactive={true}
+          placement="bottom-start"
+          offset={[-35, 5]}
+          theme="tellery"
+          arrow={false}
+          appendTo={document.body}
+          content={
+            <MenuWrapper>
+              {props.fields.map((f) => (
+                <MenuItem
+                  key={f.name}
+                  icon={
+                    {
+                      OTHER: <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />,
+                      BOOL: <IconCommonDataTypeBool color={ThemingVariables.colors.gray[0]} />,
+                      NUMBER: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
+                      DATE: <IconCommonDataTypeTime color={ThemingVariables.colors.gray[0]} />,
+                      STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
+                    }[SQLTypeReduced[f.sqlType]]
+                  }
+                  title={f.name}
+                  onClick={() => {
+                    const funcs = typeToFunc[SQLTypeReduced[f.sqlType]]
+                    props.onChange({
+                      fieldName: f.name,
+                      fieldType: f.sqlType,
+                      func: funcs.includes(props.value.func) ? props.value.func : funcs[0],
+                      args: []
+                    })
+                    setVisible0(false)
+                  }}
+                />
+              ))}
+            </MenuWrapper>
+          }
         >
-          {props.fields.map((f) => (
-            <option key={f.name} value={f.name}>
-              {f.name}
-            </option>
-          ))}
-        </select>
+          <div
+            onClick={() => setVisible0((old) => !old)}
+            className={css`
+              display: flex;
+              flex: 1;
+              align-items: center;
+              cursor: pointer;
+            `}
+          >
+            <div
+              className={css`
+                flex: 1;
+                width: 0;
+                margin-left: 6px;
+                font-size: 12px;
+                color: ${ThemingVariables.colors.text[0]};
+                text-overflow: ellipsis;
+                overflow: hidden;
+              `}
+            >
+              {props.value.fieldName}
+            </div>
+            <IconCommonArrowDropDown color={ThemingVariables.colors.text[0]} />
+          </div>
+        </Tippy>
       </div>
       <div
         className={css`
@@ -362,31 +404,61 @@ function FilterItem(props: {
           margin-left: 4px;
         `}
       >
-        <select
-          value={props.value.func}
-          onChange={(e) => {
-            props.onChange({
-              ...props.value,
-              func: e.target.value as Editor.Filter,
-              args: []
-            })
+        <Tippy
+          visible={visible1}
+          onClickOutside={() => {
+            setVisible1(false)
           }}
-          className={css`
-            width: 100%;
-            outline: none;
-            border: none;
-            font-size: 12px;
-            color: ${ThemingVariables.colors.text[0]};
-            cursor: pointer;
-            padding: 0;
-          `}
+          interactive={true}
+          placement="bottom-start"
+          offset={[-15, 5]}
+          theme="tellery"
+          arrow={false}
+          appendTo={document.body}
+          content={
+            <MenuWrapper>
+              {typeToFunc[SQLTypeReduced[props.value.fieldType]].map((filter) => (
+                <MenuItem
+                  key={filter}
+                  title={Editor.FilterNames[filter]}
+                  onClick={() => {
+                    props.onChange({
+                      ...props.value,
+                      func: filter,
+                      args: []
+                    })
+                    setVisible1(false)
+                  }}
+                />
+              ))}
+            </MenuWrapper>
+          }
         >
-          {typeToFunc[SQLTypeReduced[props.value.fieldType]].map((filter) => (
-            <option key={filter} value={filter}>
-              {Editor.FilterNames[filter]}
-            </option>
-          ))}
-        </select>
+          <div
+            onClick={() => setVisible1((old) => !old)}
+            className={css`
+              display: flex;
+              flex: 1;
+              align-items: center;
+              cursor: pointer;
+            `}
+          >
+            <div
+              className={css`
+                flex: 1;
+                width: 0;
+                margin-left: 6px;
+                font-size: 12px;
+                color: ${ThemingVariables.colors.text[0]};
+                text-overflow: ellipsis;
+                overflow: hidden;
+              `}
+            >
+              {props.value.func}
+            </div>
+            <IconCommonArrowDropDown color={ThemingVariables.colors.text[0]} />
+          </div>
+        </Tippy>
       </div>
       {funcArgs[props.value.func] ? (
         Array.from({ length: funcArgs[props.value.func] }).map((_, index) => (
