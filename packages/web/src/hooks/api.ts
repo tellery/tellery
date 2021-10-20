@@ -9,10 +9,8 @@ import {
   ResourceType,
   SearchBlockResult,
   searchBlocks,
-  sqlRequest,
   translateSmartQuery
 } from '@app/api'
-import { isDataAssetBlock } from '@app/components/editor/Blocks/utils'
 import { useAsync } from '@app/hooks'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import type { AvailableConfig, BackLinks, Dimension, ProfileConfig, Story, UserInfo, Workspace } from '@app/types'
