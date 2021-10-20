@@ -1,6 +1,7 @@
 import {
   IconCommonAdd,
   IconCommonClose,
+  IconCommonCloseCircle,
   IconCommonDataAsset,
   IconCommonDataTypeBool,
   IconCommonDataTypeInt,
@@ -264,6 +265,7 @@ function FilterItem(props: {
     <div
       className={css`
         display: flex;
+        align-items: center;
       `}
     >
       <div
@@ -294,7 +296,7 @@ function FilterItem(props: {
           onChange={(e) => {
             const field = props.fields.find((f) => f.name === e.target.value)
             if (field) {
-              const funcs = typeToFunc[SQLTypeReduced[props.value.fieldType]]
+              const funcs = typeToFunc[SQLTypeReduced[field.sqlType]]
               props.onChange({
                 fieldName: field.name,
                 fieldType: field.sqlType,
@@ -362,29 +364,46 @@ function FilterItem(props: {
           ))}
         </select>
       </div>
-      {Array.from({ length: funcArgs[props.value.func] }).map((_, index) => (
-        <input
-          key={index}
-          value={props.value.args[index]}
-          onChange={(e) => {
-            props.onChange(
-              produce(props.value, (draft) => {
-                draft.args[index] = e.target.value
-              })
-            )
-          }}
+      {funcArgs[props.value.func] ? (
+        Array.from({ length: funcArgs[props.value.func] }).map((_, index) => (
+          <input
+            key={index}
+            value={props.value.args[index]}
+            onChange={(e) => {
+              props.onChange(
+                produce(props.value, (draft) => {
+                  draft.args[index] = e.target.value
+                })
+              )
+            }}
+            className={css`
+              width: 0;
+              flex: 1;
+              height: 32px;
+              outline: none;
+              border: none;
+              background-color: ${ThemingVariables.colors.gray[5]};
+              border: 1px solid ${ThemingVariables.colors.gray[1]};
+              box-sizing: border-box;
+              margin-left: 4px;
+            `}
+          />
+        ))
+      ) : (
+        <div
           className={css`
-            width: 0;
             flex: 1;
-            outline: none;
-            border: none;
-            background-color: ${ThemingVariables.colors.gray[5]};
-            border: 1px solid ${ThemingVariables.colors.gray[1]};
-            box-sizing: border-box;
-            margin-left: 4px;
           `}
         />
-      ))}
+      )}
+      <IconCommonCloseCircle
+        color={ThemingVariables.colors.gray[0]}
+        onClick={props.onDelete}
+        className={css`
+          margin-left: 6px;
+          cursor: pointer;
+        `}
+      />
     </div>
   )
 }
