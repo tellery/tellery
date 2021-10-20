@@ -76,7 +76,7 @@ export const updateUser = async ({
         currentPassword
       },
       isEmpty
-    ) as any
+    )
   )
   return data
 }

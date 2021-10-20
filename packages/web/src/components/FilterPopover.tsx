@@ -24,7 +24,7 @@ type Value = NonNullable<Editor.SmartQueryBlock['content']['filters']>
 
 const typeToFunc = {
   OTHER: [] as Editor.Filter[],
-  BOOL: [Editor.Filter.IS_TRUE, Editor.Filter.IS_NOT_TRUE],
+  BOOL: [Editor.Filter.IS_TRUE, Editor.Filter.IS_FALSE],
   NUMBER: [
     Editor.Filter.EQ,
     Editor.Filter.NE,
@@ -36,17 +36,7 @@ const typeToFunc = {
     Editor.Filter.IS_NOT_NULL,
     Editor.Filter.IS_BETWEEN
   ],
-  DATE: [
-    Editor.Filter.EQ,
-    Editor.Filter.NE,
-    Editor.Filter.LT,
-    Editor.Filter.LTE,
-    Editor.Filter.GT,
-    Editor.Filter.GTE,
-    Editor.Filter.IS_NULL,
-    Editor.Filter.IS_NOT_NULL,
-    Editor.Filter.IS_BETWEEN
-  ],
+  DATE: [Editor.Filter.LTE, Editor.Filter.GTE, Editor.Filter.IS_BETWEEN],
   STRING: [Editor.Filter.EQ, Editor.Filter.NE, Editor.Filter.CONTAINS, Editor.Filter.IS_NULL, Editor.Filter.IS_NOT_NULL]
 }
 
@@ -61,7 +51,7 @@ const funcArgs = {
   [Editor.Filter.IS_NULL]: 0,
   [Editor.Filter.IS_NOT_NULL]: 0,
   [Editor.Filter.IS_TRUE]: 0,
-  [Editor.Filter.IS_NOT_TRUE]: 0,
+  [Editor.Filter.IS_FALSE]: 0,
   [Editor.Filter.IS_BETWEEN]: 2
 }
 
@@ -454,7 +444,7 @@ function FilterItem(props: {
                 overflow: hidden;
               `}
             >
-              {props.value.func}
+              {Editor.FilterNames[props.value.func]}
             </div>
             <IconCommonArrowDropDown color={ThemingVariables.colors.text[0]} />
           </div>

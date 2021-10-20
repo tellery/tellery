@@ -119,18 +119,6 @@ const Diagram: React.FC<{
   const chart = useChart(props.config?.type ?? Type.TABLE)
   const ref = useRef(null)
   const dimensions = useDimensions(ref, 0)
-
-  const handleConfigChange = useCallback(
-    (
-      key1: keyof Config<Type>,
-      value1: Config<Type>[keyof Config<Type>],
-      key2: keyof Config<Type>,
-      value2: Config<Type>[keyof Config<Type>],
-      key3: keyof Config<Type>,
-      value3: Config<Type>[keyof Config<Type>]
-    ) => {},
-    []
-  )
   const defaultConfig = useMemo(() => {
     // ensure snapshot data is valid
     return (
@@ -151,7 +139,7 @@ const Diagram: React.FC<{
         dimensions={dimensions}
         data={props.data!}
         config={defaultConfig as never}
-        onConfigChange={handleConfigChange as any}
+        onConfigChange={() => {}}
       />
     </div>
   )
