@@ -1,5 +1,5 @@
 import { TelleryStoryBlocks } from '@app/store/block'
-import type { Editor, Story, Thought } from '@app/types'
+import type { Editor } from '@app/types'
 import { useEffect, useState } from 'react'
 import { useRecoilValueLoadable } from 'recoil'
 import { useFetchStoryChunk } from './api'
@@ -11,7 +11,7 @@ export const useStoryBlocksMap = (storyId: string) => {
     setState(undefined)
   }, [storyId])
 
-  useFetchStoryChunk<Story | Thought>(storyId)
+  useFetchStoryChunk(storyId)
 
   const value = useRecoilValueLoadable(TelleryStoryBlocks(storyId))
 

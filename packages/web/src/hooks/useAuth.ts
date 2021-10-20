@@ -2,7 +2,6 @@ import {
   request,
   updateUser,
   userConfirm,
-  userGenerate,
   userInviteMembersToWorkspace,
   userLogin,
   userLogout
@@ -30,10 +29,6 @@ export function useProvideAuth() {
 
   const confirm = useCallback((args: { code: string }) => {
     return userConfirm(args)
-  }, [])
-
-  const generate = useCallback((args: { email: string }) => {
-    return userGenerate(args)
   }, [])
 
   const inviteMembersToWorkspace = useCallback(
@@ -71,7 +66,6 @@ export function useProvideAuth() {
     login,
     logout,
     confirm,
-    // generate,
     inviteMembersToWorkspace,
     autoLogin,
     update,

@@ -1,13 +1,23 @@
-import { plainToClass } from 'class-transformer'
-import { IsDefined, IsEmail, IsOptional, Matches, MaxLength } from 'class-validator'
+import { plainToClass, Type } from 'class-transformer'
+import {
+  IsArray,
+  IsDefined,
+  IsEmail,
+  IsEnum,
+  IsOptional,
+  Matches,
+  MaxLength,
+  ValidateNested,
+} from 'class-validator'
 import { Context } from 'koa'
 import Router from 'koa-router'
+import { NotFoundError } from '../error/error'
 
-import userService from '../services/user'
+import { defaultUserService as userService } from '../services/user'
+import { PermissionWorkspaceRole } from '../types/permission'
 import { isAnonymous } from '../utils/env'
 import { validate } from '../utils/http'
 import { mustGetUser } from '../utils/user'
-
 class UpdateUserInfoRequest {
   @IsOptional()
   avatar?: string
@@ -50,9 +60,32 @@ class LoginRequest {
   password!: string
 }
 
+class UserRole {
+  @IsDefined()
+  @IsEmail()
+  email!: string
+
+  @IsEnum(PermissionWorkspaceRole)
+  role!: PermissionWorkspaceRole
+}
+class InviteMembersToWorkspaceRequest {
+  @IsDefined()
+  workspaceId!: string
+
+  @IsDefined()
+  @IsArray()
+  @Type(() => UserRole)
+  @ValidateNested()
+  users!: UserRole[]
+}
+
 async function getUserInfo(ctx: Context) {
-  const user = await userService.getById(mustGetUser(ctx).id)
-  ctx.body = user.toDTO()
+  const userId = mustGetUser(ctx).id
+  const [user] = await userService.getInfos([userId])
+  if (!user) {
+    throw NotFoundError.resourceNotFound(userId)
+  }
+  ctx.body = user
 }
 
 async function updateUserInfo(ctx: Context) {
@@ -111,6 +144,20 @@ function setToken(ctx: Context, token: string | null) {
   ctx.auth_token = token
 }
 
+async function inviteMembersToWorkspace(ctx: Context) {
+  const payload = plainToClass(InviteMembersToWorkspaceRequest, ctx.request.body)
+  await validate(ctx, payload)
+
+  const user = mustGetUser(ctx)
+
+  const res = await userService.inviteMembersToWorkspace(
+    user.id,
+    payload.workspaceId,
+    payload.users,
+  )
+  ctx.body = res
+}
+
 const router = new Router()
 
 router.post('/update', updateUserInfo)
@@ -119,5 +166,6 @@ router.post('/confirm', confirmUser)
 router.post('/me', getUserInfo)
 router.post('/login', login)
 router.post('/logout', logout)
+router.post('/inviteMembersToWorkspace', inviteMembersToWorkspace)
 
 export default router

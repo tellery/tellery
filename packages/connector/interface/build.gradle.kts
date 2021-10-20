@@ -6,7 +6,7 @@ val grpcVersion: String by project
 val jacksonVersion: String by project
 
 // Version for releasing snapshot, should be the next version (one to be released)
-val snapshotVersion = "0.8.3"
+val snapshotVersion = "0.8.4"
 
 repositories {
     jcenter()
@@ -45,7 +45,7 @@ dependencies {
     api("com.michael-bull.kotlin-coroutines-jdbc:kotlin-coroutines-jdbc:1.0.2")
 
     api("com.aventrix.jnanoid:jnanoid:2.0.0")
-    api("com.amazonaws:aws-java-sdk-s3:1.12.84")
+    api("com.amazonaws:aws-java-sdk-s3:1.12.91")
     api("com.opencsv:opencsv:5.5.2")
 
     api("com.github.kittinunf.fuel:fuel:2.3.1")

@@ -1,5 +1,3 @@
-import _ from 'lodash'
-
 type DataType = string
 type FunctionName = string
 type QueryBuilderTranslation = Map<DataType, Map<FunctionName, string>>
@@ -52,18 +50,18 @@ type FilterBuilder =
     }
 
 enum Filter {
-  EQ = 'eq',
-  NE = 'ne',
-  LT = 'lt',
-  LTE = 'lte',
-  GT = 'gt',
-  GTE = 'gte',
-  CONTAINS = 'contains',
-  IS_NULL = 'isNull',
-  IS_NOT_NULL = 'isNotNull',
-  IS_TRUE = 'isTrue',
-  IS_NOT_TRUE = 'isNotTrue',
-  IS_BETWEEN = 'isBetween',
+  EQ = 'EQ',
+  NE = 'NE',
+  LT = 'LT',
+  LTE = 'LTE',
+  GT = 'GT',
+  GTE = 'GTE',
+  CONTAINS = 'CONTAINS',
+  IS_NULL = 'IS_NULL',
+  IS_NOT_NULL = 'IS_NOT_NULL',
+  IS_TRUE = 'IS_TRUE',
+  IS_FALSE = 'IS_FALSE',
+  IS_BETWEEN = 'IS_BETWEEN',
 }
 
 const filterFunctions = new Map([
@@ -77,8 +75,8 @@ const filterFunctions = new Map([
   [Filter.IS_NULL, '? IS NULL'],
   [Filter.IS_NOT_NULL, '? IS NOT NULL'],
   [Filter.IS_TRUE, '? IS TRUE'],
-  [Filter.IS_NOT_TRUE, '? IS NOT TRUE'],
-  [Filter.IS_BETWEEN, '? IS BETWEEN ? AND ?'],
+  [Filter.IS_FALSE, '? IS FALSE'],
+  [Filter.IS_BETWEEN, '? BETWEEN ? AND ?'],
 ])
 
 const typeToFilter = {
@@ -100,18 +98,8 @@ const typeToFilter = {
     Filter.IS_NULL,
     Filter.IS_NOT_NULL,
   ],
-  'DATE,TIME,TIMESTAMP': [
-    Filter.EQ,
-    Filter.NE,
-    Filter.LT,
-    Filter.LTE,
-    Filter.GT,
-    Filter.GTE,
-    Filter.IS_NULL,
-    Filter.IS_NOT_NULL,
-    Filter.IS_BETWEEN,
-  ],
-  BOOLEAN: [Filter.IS_TRUE, Filter.IS_NOT_TRUE],
+  'DATE,TIME,TIMESTAMP': [Filter.LTE, Filter.GTE, Filter.IS_BETWEEN],
+  BOOLEAN: [Filter.IS_TRUE, Filter.IS_FALSE],
 }
 
 const filterSpec: QueryBuilderTranslation = new Map(

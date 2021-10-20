@@ -73,7 +73,7 @@ export default function Login() {
               <FormLabel>Password</FormLabel>
               <FormInput type="password" {...register('password')} error={errors.password} />
               <ErrorMessage errors={errors} name="password" render={FormError} />
-              <FormError message={handleUserLogin.error?.response?.data.errMsg} />
+              <FormError message={(handleUserLogin.error?.response?.data as any)?.errMsg} />
             </div>
           </div>
         }

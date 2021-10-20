@@ -2,7 +2,7 @@ import 'reflect-metadata'
 
 import { getRepository } from 'typeorm'
 import { nanoid } from 'nanoid'
-import * as _ from 'lodash'
+import _ from 'lodash'
 
 import { createDatabaseCon } from '../clients/db/orm'
 import { UserEntity } from '../entities/user'
@@ -314,7 +314,7 @@ async function main() {
     pinnedList: [storyId],
   })
 
-  await getRepository(BlockEntity).save([story, question])
+  await getRepository(BlockEntity).save([story, visualization, question])
   await getRepository(SnapshotEntity).save([snapshot])
   await getRepository(WorkspaceViewEntity).save([workspaceView])
 }

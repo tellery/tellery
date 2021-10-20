@@ -30,7 +30,7 @@ const useMetabaseToken = (block: Editor.MetabaseBlock) => {
           },
           params: {}
         }
-      }).then((res) => res.data.token as string)
+      }).then((res) => res.data.token)
     },
     enabled: !!(block.content.siteUrl && block.content.publicToken === undefined)
   })

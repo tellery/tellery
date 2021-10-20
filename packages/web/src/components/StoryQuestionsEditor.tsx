@@ -9,7 +9,6 @@ import { SQLEditor } from '@app/components/SQLEditor'
 import { useBindHovering } from '@app/hooks'
 import { useBlockSuspense, useConnectorsGetProfile, useTranslateSmartQuery } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
-import { useDimensions } from '@app/hooks/useDimensions'
 import { useLocalStorage } from '@app/hooks/useLocalStorage'
 import {
   EditorDraft,
@@ -23,10 +22,9 @@ import { useSqlEditor } from '@app/hooks/useSqlEditor'
 import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
 import { useWorkspace } from '@app/hooks/useWorkspace'
-import { useCreateSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
-import { blockIdGenerator, DRAG_HANDLE_WIDTH, queryClient } from '@app/utils'
+import { DRAG_HANDLE_WIDTH } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import MonacoEditor from '@monaco-editor/react'
 import Tippy from '@tippyjs/react'
@@ -39,7 +37,6 @@ import React, { SetStateAction, useCallback, useEffect, useMemo, useRef, useStat
 import { toast } from 'react-toastify'
 import { useWindowSize } from 'react-use'
 import { Tab, TabList, TabPanel, TabStateReturn, useTabState } from 'reakit/Tab'
-import invariant from 'tiny-invariant'
 import YAML from 'yaml'
 import { setBlockTranscation } from '../context/editorTranscations'
 import { BlockingUI } from './BlockingUI'
@@ -510,7 +507,8 @@ export const StoryQuestionEditor: React.FC<{
       ? (queryBlock as Editor.SmartQueryBlock).content.queryBuilderId
       : undefined,
     (queryBlock as Editor.SmartQueryBlock)?.content?.metricIds,
-    (queryBlock as Editor.SmartQueryBlock)?.content?.dimensions
+    (queryBlock as Editor.SmartQueryBlock)?.content?.dimensions,
+    (queryBlock as Editor.SmartQueryBlock)?.content?.filters
   )
 
   useEffect(() => {
@@ -598,6 +596,7 @@ export const StoryQuestionEditor: React.FC<{
           setSqlSidePanel(true)
         } else {
           setSQLError(null)
+          setSqlSidePanel(false)
         }
       })
     }, 0)
@@ -721,7 +720,7 @@ export const StoryQuestionEditor: React.FC<{
                   }
                 `}
               >
-                {(sqlError || sqlSidePanel) && (
+                {sqlError && (
                   <IconButton
                     icon={IconCommonError}
                     color={ThemingVariables.colors.negative[0]}

@@ -62,6 +62,10 @@ export class StorageError extends Error {
       'Your current storage does not support import data into warehouse by connector, we are working in progress!',
     )
   }
+
+  static invalidUpload(): StorageError {
+    return new StorageError('Invalid upload file')
+  }
 }
 
 export class DBTError extends Error {

@@ -1,13 +1,21 @@
 import bluebird from 'bluebird'
 import _ from 'lodash'
-import { getRepository, In } from 'typeorm'
+import { nanoid } from 'nanoid'
+import { createQueryBuilder, getRepository, In } from 'typeorm'
 
 import { Block } from '../core/block'
-import { LinkWithStoryId, loadLinkEntitiesByBlockIds } from '../core/link'
+import { SmartQueryBlock } from '../core/block/smartQuery'
+import { getLinksFromSql, LinkWithStoryId, loadLinkEntitiesByBlockIds } from '../core/link'
 import { getIPermission, IPermission } from '../core/permission'
+import { translateSmartQuery } from '../core/translator/smartQuery'
 import BlockEntity from '../entities/block'
-import { BlockDTO, BlockParentType } from '../types/block'
+import { BlockDTO, BlockParentType, BlockType, ExportedBlock } from '../types/block'
+import { OperationCmdType, OperationTableType } from '../types/operation'
+import { defaultPermissions } from '../types/permission'
+import { QueryBuilderSpec } from '../types/queryBuilder'
+import { isLinkToken, Token } from '../types/token'
 import { canGetBlockData, canGetWorkspaceData } from '../utils/permission'
+import { OperationService } from './operation'
 
 export class BlockService {
   private permission: IPermission
@@ -156,6 +164,176 @@ export class BlockService {
     block.children = []
   }
   /* eslint-enable no-param-reassign */
+
+  /**
+   * Downgrade a query builder to regular SQL query
+   * searching for its downstream smartQuery, and translate them to SQL query, then change their type
+   * TODO: use a cache to replace getting queryBuilderSpec from the connector
+   * operationService is exposed for testing
+   */
+  async downgradeQueryBuilder(
+    operatorId: string,
+    workspaceId: string,
+    queryBuilderId: string,
+    queryBuilderSpec: QueryBuilderSpec,
+    operationService: OperationService,
+  ): Promise<void> {
+    await canGetWorkspaceData(this.permission, operatorId, workspaceId)
+
+    const downstreamSmartQueries = _(
+      await createQueryBuilder(BlockEntity, 'blocks')
+        .where('type = :type', { type: BlockType.SMART_QUERY })
+        .andWhere("content ->> 'queryBuilderId' = :id", { id: queryBuilderId })
+        .andWhere('alive = true')
+        .getMany(),
+    )
+      .map((b) => Block.fromEntity(b) as SmartQueryBlock)
+      .value()
+
+    const translatedSmartQueries = await bluebird.map(
+      downstreamSmartQueries,
+      async (b) => {
+        const content = b.getContent()
+        const sql = await translateSmartQuery(content, queryBuilderSpec)
+        return [b.id, { ...content, sql }] as [string, Record<string, unknown>]
+      },
+      { concurrency: 10 },
+    )
+
+    const opBuilder = (id: string, path: string, args: any) => ({
+      cmd: OperationCmdType.SET,
+      id,
+      path: [path],
+      table: OperationTableType.BLOCK,
+      args,
+    })
+    const ops = [
+      _(translatedSmartQueries)
+        .map(([id, content]) => opBuilder(id, 'content', content))
+        .value(),
+      _(translatedSmartQueries)
+        // take the first
+        .map(0)
+        .concat([queryBuilderId])
+        .map((id) => opBuilder(id, 'type', BlockType.SQL))
+        .value(),
+    ]
+    const failures = await operationService.saveTransactions(
+      operatorId,
+      _(ops)
+        .map((operations) => ({
+          id: nanoid(),
+          workspaceId,
+          operations,
+        }))
+        .value(),
+    )
+    if (!_.isEmpty(failures)) {
+      throw failures[0].error
+    }
+  }
+
+  async exportStories(
+    operatorId: string,
+    workspaceId: string,
+    storyIds: string[],
+  ): Promise<ExportedBlock[]> {
+    const allBlocks = await bluebird.map(
+      storyIds,
+      async (id) => this.listAccessibleBlocksByStoryId(operatorId, workspaceId, id),
+      { concurrency: 10 },
+    )
+    return _(allBlocks)
+      .flatMap((bs) =>
+        bs.map((b) => {
+          return _.pick(b.toDTO(), [
+            'id',
+            'type',
+            'parentId',
+            'parentTable',
+            'storyId',
+            'content',
+            'format',
+            'children',
+          ])
+        }),
+      )
+      .value()
+  }
+
+  async importStories(
+    operatorId: string,
+    workspaceId: string,
+    blocks: ExportedBlock[],
+  ): Promise<string[]> {
+    const idMap = new Map(blocks.map((it) => [it.id, nanoid()]))
+    const importedBlockDTOs = blocks.map((b) =>
+      this.explodeExportedBlock(operatorId, workspaceId, b, idMap),
+    )
+    const entities = _(importedBlockDTOs)
+      .map((b) => Block.fromArgs(b).toModel(workspaceId))
+      .value()
+    await getRepository(BlockEntity).save(entities)
+    return _(entities).map('id').value()
+  }
+
+  handleContent(content: any, idMap: Map<string, string>) {
+    // check title first
+    if (content.title) {
+      _.range(content.title.length).forEach((index) => {
+        const token = content.title[index] as Token
+        if (isLinkToken(token)) {
+          content.title[index][1][0][2] = idMap.get(token[1][0][2])!
+        }
+      })
+    }
+    if (content.sql) {
+      const links = getLinksFromSql(content.sql)
+      content.sql = _(links)
+        .map('blockId')
+        .reduce(
+          (acc, val) => acc.replace(new RegExp(val, 'g'), idMap.get(val)!),
+          content.sql as string,
+        )
+    }
+    return content
+  }
+
+  explodeExportedBlock(
+    operatorId: string,
+    workspaceId: string,
+    body: ExportedBlock,
+    idMap: Map<string, string>,
+  ): BlockDTO {
+    const newDate = Date.now()
+    const {
+      id: oldId,
+      type,
+      parentId: oldParentId,
+      storyId: oldStoryId,
+      parentTable,
+      content: oldContent,
+      format,
+      children: oldChildren,
+    } = body
+    return {
+      id: idMap.get(oldId)!,
+      type,
+      parentId: parentTable === BlockParentType.WORKSPACE ? workspaceId : idMap.get(oldParentId)!,
+      parentTable,
+      storyId: idMap.get(oldStoryId)!,
+      permissions: defaultPermissions,
+      content: this.handleContent(oldContent, idMap),
+      format,
+      children: (oldChildren ?? []).map((i) => idMap.get(i)!),
+      alive: true,
+      version: 1,
+      createdById: operatorId,
+      lastEditedById: operatorId,
+      createdAt: newDate,
+      updatedAt: newDate,
+    }
+  }
 }
 
 const service = new BlockService(getIPermission())

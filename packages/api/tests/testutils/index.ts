@@ -130,14 +130,18 @@ export async function mockThoughts(
   return getRepository(BlockEntity).save(models)
 }
 
-export async function mockBlocks(len: number, storyId?: string): Promise<BlockEntity[]> {
+export async function mockBlocks(
+  len: number,
+  storyId?: string,
+  workspaceId?: string,
+): Promise<BlockEntity[]> {
   const models = _(len)
     .range()
     .map(() => {
       const entity = new BlockEntity()
       Object.assign(entity, {
         id: nanoid(),
-        workspaceId: 'test',
+        workspaceId: workspaceId ?? 'test',
         interKey: nanoid(),
         parentId: storyId ?? nanoid(),
         parentTable: BlockParentType.BLOCK,
@@ -264,4 +268,94 @@ export function stringCompare(t: ExecutionContext<any>, a: string, b: string): v
     return _(currStr).split(' ').compact().join(' ')
   }
   t.deepEqual(splitAndJoin(a), splitAndJoin(b))
+}
+
+const objConverter = (t: { [key: string]: { [key: string]: string } }) =>
+  new Map(
+    Object.entries(t).flatMap(([k, v]) => {
+      const vMap = new Map(Object.entries(v))
+      return k.split(',').map((subKey: string) => [subKey, vMap])
+    }),
+  )
+
+export const queryBuilderSpec = {
+  identifier: '`?`',
+  stringLiteral: "'?'",
+  aggregation: objConverter({
+    'CHAR,VARCHAR,LONGVARCHAR,DATE,TIME,TIMESTAMP': {
+      count: 'count(?)',
+      countDistinct: 'count(distinct ?)',
+    },
+    'TINYINT,SMALLINT,INTEGER,FLOAT,REAL,DOUBLE,NUMERIC,DECIMAL': {
+      sum: 'sum(?)',
+      avg: 'avg(?)',
+      min: 'min(?)',
+      max: 'max(?)',
+      median: 'percentile(?, 0.5)',
+      std: 'stddev(?)',
+    },
+  }),
+  bucketization: objConverter({
+    'DATE,TIME,TIMESTAMP': {
+      byYear: 'year(?)',
+      byMonth: "date_format(?, 'yyyy-MM')",
+      byWeek: 'weekofyear(?)',
+      byDate: 'to_date(?)',
+    },
+  }),
+  typeConversion: new Map(
+    Object.entries({
+      'TINYINT,SMALLINT,INTEGER,BIGINT,FLOAT,REAL,DOUBLE,NUMERIC,DECIMAL': '?',
+      'CHAR,VARCHAR,LONGVARCHAR': "'?'",
+      DATE: "date('?')",
+      'TIME,TIMESTAMP': "timestamp('?')",
+    }).flatMap(([k, v]) => k.split(',').map((subKey) => [subKey, v])),
+  ),
+}
+
+export const queryBuilderContent = {
+  title: [['qb1']],
+  sql: 'select uid, visit, dt, cost from test',
+  fields: [
+    {
+      name: 'uid',
+      type: 'VARCHAR',
+    },
+    {
+      name: 'visit',
+      type: 'INTEGER',
+    },
+    {
+      name: 'dt',
+      type: 'TIMESTAMP',
+    },
+    {
+      name: 'cost',
+      type: 'DECIMAL',
+    },
+  ],
+  metrics: {
+    mid1: {
+      name: 'active_user',
+      fieldName: 'uid',
+      fieldType: 'VARCHAR',
+      func: 'countDistinct',
+    },
+    mid2: {
+      name: 'avg_cost',
+      fieldName: 'cost',
+      fieldType: 'DECIMAL',
+      func: 'avg',
+    },
+    mid3: {
+      name: 'total_visit',
+      fieldName: 'visit',
+      fieldType: 'INTEGER',
+      func: 'sum',
+    },
+    mid4: {
+      name: 'visit_p95',
+      rawSql: 'percentile(visit, 0.95)',
+    },
+  },
 }

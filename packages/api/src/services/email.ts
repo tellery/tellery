@@ -46,7 +46,7 @@ export class EmailService {
     inviterName: string,
     inviteeInfos: { userId: string; email: string }[],
     workspace: string,
-  ): Promise<{ email: string; link: string }[]> {
+  ): Promise<{ email: string; inviteLink: string }[]> {
     const key = 'invitation.html'
     const title = `[Tellery] ${inviterName} invited you to ${workspace}`
     const sendFunc = async ({ userId, email }: { userId: string; email: string }) => {
@@ -58,7 +58,7 @@ export class EmailService {
       } catch (err) {
         console.log(err)
       }
-      return { email, link }
+      return { email, inviteLink: link }
     }
     return bluebird.map(inviteeInfos, sendFunc)
   }

@@ -5,14 +5,13 @@ import Router from 'koa-router'
 import { nanoid } from 'nanoid'
 import { getIConnectorManager, getIConnectorManagerFromDB } from '../clients/connector'
 import connectorService from '../services/connector'
-import storageService from '../services/storage'
 import { AuthData, AuthType } from '../types/auth'
 import { errorResponse, validate } from '../utils/http'
 import { mustGetUser } from '../utils/user'
 import { streamHttpErrorCb, withKeepaliveStream } from '../utils/stream'
-import { StorageError, UnauthorizedError } from '../error/error'
+import { UnauthorizedError } from '../error/error'
 import { translate } from '../core/translator'
-import { filterSpec, SelectBuilder } from '../types/queryBuilder'
+import { FilterBuilder, filterSpec, SelectBuilder } from '../types/queryBuilder'
 import { translateSmartQuery } from '../core/translator/smartQuery'
 
 class AddConnectorRequest {
@@ -212,6 +211,8 @@ class TranslateSmartQueryRequest {
   @IsArray()
   @Type(() => Object)
   dimensions!: SelectBuilder[]
+
+  filters?: FilterBuilder
 }
 
 async function listConnectorsRouter(ctx: Context) {
@@ -515,14 +516,14 @@ async function translateSmartQueryRouter(ctx: Context) {
   const payload = plainToClass(TranslateSmartQueryRequest, ctx.request.body)
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
-  const { workspaceId, connectorId, queryBuilderId, metricIds, dimensions } = payload
+  const { workspaceId, connectorId, queryBuilderId, metricIds, dimensions, filters } = payload
 
   const manager = await getIConnectorManagerFromDB(workspaceId, connectorId)
 
   const { queryBuilderSpec } = await connectorService.getProfileSpec(manager, user.id, workspaceId)
 
   const assembledSql = await translateSmartQuery(
-    { queryBuilderId, metricIds, dimensions },
+    { queryBuilderId, metricIds, dimensions, filters },
     queryBuilderSpec,
   )
 

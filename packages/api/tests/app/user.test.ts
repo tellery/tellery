@@ -8,7 +8,7 @@ import { getRepository } from 'typeorm'
 import app from '../../src'
 import { createDatabaseCon } from '../../src/clients/db/orm'
 import { UserEntity } from '../../src/entities/user'
-import userService from '../../src/services/user'
+import { defaultUserService as userService } from '../../src/services/user'
 import { AccountStatus } from '../../src/types/user'
 import { USER_TOKEN_HEADER_KEY } from '../../src/utils/user'
 

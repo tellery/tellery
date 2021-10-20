@@ -150,6 +150,11 @@ export class ConnectorManager implements IConnectorManager {
       )
     const queryBuilderSpec = {
       ...rawSpec,
+      typeConversion: new Map(
+        Object.entries(rawSpec.typeConversion).flatMap(([k, v]) =>
+          k.split(',').map((subKey) => [subKey, v]),
+        ),
+      ),
       aggregation: objConverter(rawSpec.aggregation),
       bucketization: objConverter(rawSpec.bucketization),
     }

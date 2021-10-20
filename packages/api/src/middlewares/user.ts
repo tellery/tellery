@@ -9,7 +9,7 @@ import { PermissionWorkspaceRole } from '../types/permission'
 import { isAnonymous } from '../utils/env'
 import { setUserToken, USER_TOKEN_HEADER_KEY } from '../utils/user'
 
-const ignorePaths = ['/api/users/login']
+const ignorePaths = ['/api/users/login', '/api/internal']
 
 // 15 days
 const d15 = 1000 * 3600 * 24 * 15
@@ -17,9 +17,9 @@ const d15 = 1000 * 3600 * 24 * 15
 export default async function user(ctx: Context, next: Next): Promise<unknown> {
   const token = ctx.headers[USER_TOKEN_HEADER_KEY] || ctx.cookies.get(USER_TOKEN_HEADER_KEY)
   let payload: { userId: string; expiresAt: number } | undefined
-  const pathIncluded = !ignorePaths.includes(ctx.path)
+  const skipAuth = ignorePaths.some((p) => ctx.path.startsWith(p))
 
-  if (pathIncluded) {
+  if (!skipAuth) {
     if (token && _.isString(token)) {
       payload = await userService.verifyToken(token)
     } else if (isAnonymous() && ctx.path === '/api/users/me') {
@@ -37,8 +37,11 @@ export default async function user(ctx: Context, next: Next): Promise<unknown> {
         if (!admin) {
           throw new Error('missing super user')
         }
-        await workspaceService.inviteMembers(admin.userId, workspace.id, [
-          { email: _(payload).get('email'), role: PermissionWorkspaceRole.MEMBER },
+        await workspaceService.addMembers(admin.userId, workspace.id, [
+          {
+            userId: payload.userId,
+            role: PermissionWorkspaceRole.MEMBER,
+          },
         ])
       }
     }
@@ -51,8 +54,8 @@ export default async function user(ctx: Context, next: Next): Promise<unknown> {
   const resp = await next()
 
   // refresh token
-  if (payload && payload.expiresAt - d15 < _.now()) {
-    ctx.auth_token = await userService.generateToken(payload.userId)
+  if (token && _.isString(token) && payload && payload.expiresAt - d15 < _.now()) {
+    ctx.auth_token = await userService.refreshToken(token)
   }
 
   const { auth_token: at } = ctx

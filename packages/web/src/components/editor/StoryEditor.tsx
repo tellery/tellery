@@ -212,7 +212,7 @@ const _StoryEditor: React.FC<{
   const isSelectingRef = useRef<DOMRect | null>(null)
   const mouseDownEventRef = useRef<MouseEvent | null>(null)
   const lastInputCharRef = useRef<string | null>(null)
-  useFetchStoryChunk<Story | Thought>(storyId)
+  useFetchStoryChunk(storyId)
   const rootBlock = useBlockSuspense<Story | Thought>(storyId)
   const blocksMap = useStoryBlocksMap(storyId)
   const blocksMapsRef = useRef<Record<string, Editor.BaseBlock> | null>(null)
@@ -513,8 +513,9 @@ const _StoryEditor: React.FC<{
         insertNewEmptyBlock({ type: newType }, currentBlock.id, 'top')
         break
       }
-      default:
+      default: {
         toggleBlockType(currentBlock.id, newType, prefixLength)
+      }
     }
   }, [
     blockAdminValue,

@@ -99,7 +99,7 @@ export function WorkspacePreferences(props: { onClose(): void }) {
           flex: 1;
         `}
       />
-      <FormError message={handleWorkspaceUpdate.error?.response?.data.errMsg} />
+      <FormError message={(handleWorkspaceUpdate.error?.response?.data as any)?.errMsg} />
       <FormButton
         type="submit"
         variant="primary"

@@ -12,7 +12,7 @@ const blockLocalPreferencesAtoms = atomFamily<
 )
 
 export const useBlockLocalPreferences = <T>(blockId: string, key: string, initValue: T) => {
-  const atom = useAtom<T, SetStateAction<T>>(blockLocalPreferencesAtoms({ id: blockId, key, initValue }))
+  const atom = useAtom<T, SetStateAction<T>, void>(blockLocalPreferencesAtoms({ id: blockId, key, initValue }))
   return atom
 }
 

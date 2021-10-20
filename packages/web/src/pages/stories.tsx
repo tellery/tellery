@@ -78,7 +78,7 @@ const Page = () => {
   }, [s])
   const getBlockTitle = useGetBlockTitleTextSnapshot()
   const { data, fetchNextPage, refetch } = useStoriesSearch(keyword)
-  const { data: workspaceVirew } = useWorkspaceView()
+  const { data: workspaceView } = useWorkspaceView()
   const items = useMemo<StoryListItemValue[]>(
     () =>
       data?.pages
@@ -109,16 +109,16 @@ const Page = () => {
                 : undefined,
               user: results.users[story.createdById!],
               relatedStories: results.links[storyId].map((id) => results.blocks[id]),
-              isPinned: !!workspaceVirew?.pinnedList.includes(storyId)
+              isPinned: !!workspaceView?.pinnedList.includes(storyId)
             }
           })
         )
         .flat() || [],
-    [data?.pages, getBlockTitle, workspaceVirew?.pinnedList]
+    [data?.pages, getBlockTitle, workspaceView?.pinnedList]
   )
   const isItemLoaded = useCallback((index: number) => !!items[index], [items])
   const isFooter = useCallback((index: number) => index === items.length, [items])
-  const { data: workspaceView, refetch: refetchWorkspaceView } = useWorkspaceView()
+  const { refetch: refetchWorkspaceView } = useWorkspaceView()
   // eslint-disable-next-line react/display-name
   const isSmallScreen = useMediaQuery(`only screen and (max-width: ${breakpoints[1]}px)`)
   const [sticky, setSticky] = useState(isSmallScreen)
@@ -351,7 +351,7 @@ const Page = () => {
                           isItemLoaded,
                           isFooter,
                           items,
-                          workspaceView,
+                          workspaceView: workspaceView,
                           refetch,
                           refetchWorkspaceView,
                           large,

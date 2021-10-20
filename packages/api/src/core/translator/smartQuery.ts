@@ -59,9 +59,8 @@ async function translateSmartQuery(
   const dimensions = dimensionsRaw.map((it) => assembleSelectField(it, bucketization, identifier))
 
   const selectClause = [...dimensions, ...measures].join(', ') || '*'
-  const whereClause = filters
-    ? `WHERE ${assembleWhereField(filters, typeConversion, identifier)}`
-    : ''
+  const filterBody = filters ? assembleWhereField(filters, typeConversion, identifier) : ''
+  const whereClause = filterBody ? `WHERE ${filterBody}` : ''
   const groupByClause =
     dimensions && dimensions.length > 0
       ? `GROUP BY ${_.range(1, dimensions.length + 1).join(', ')}`
@@ -103,7 +102,7 @@ function assembleSelectField(
 }
 
 function wrapBracket(str: string): string {
-  return `(${str})`
+  return str === '' ? str : `(${str})`
 }
 
 function assembleWhereField(
