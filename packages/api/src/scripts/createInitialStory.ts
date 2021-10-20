@@ -314,7 +314,7 @@ async function main() {
     pinnedList: [storyId],
   })
 
-  await getRepository(BlockEntity).save([story, question])
+  await getRepository(BlockEntity).save([story, visualization, question])
   await getRepository(SnapshotEntity).save([snapshot])
   await getRepository(WorkspaceViewEntity).save([workspaceView])
 }
