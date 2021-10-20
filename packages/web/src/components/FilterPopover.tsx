@@ -101,15 +101,13 @@ export default function FilterPopover(props: {
         className={css`
           border-top: 1px solid ${ThemingVariables.colors.gray[1]};
           padding: 10px 10px 10px 0;
-          > div + div {
-            margin-top: 4px;
-          }
         `}
       >
         {props.value.operands.map((operand, index) => (
           <FilterItemView
             key={index}
             index={index}
+            isLast={false}
             value={props.value.operator}
             onChange={(v) => {
               props.onChange(
@@ -141,6 +139,7 @@ export default function FilterPopover(props: {
         ))}
         <FilterItemView
           index={props.value.operands.length}
+          isLast={true}
           value={props.value.operator}
           onChange={(v) => {
             props.onChange(
@@ -182,6 +181,7 @@ export default function FilterPopover(props: {
 
 function FilterItemView(props: {
   index: number
+  isLast: boolean
   value: Value['operator']
   onChange(value: Value['operator']): void
   children: ReactNode
@@ -190,56 +190,80 @@ function FilterItemView(props: {
     <div
       className={css`
         display: flex;
-        align-items: center;
+        align-items: flex-start;
+        height: ${props.isLast ? 44 : 48}px;
       `}
     >
-      {props.index === 1 ? (
-        <select
-          value={props.value}
-          onChange={(e) => {
-            props.onChange(e.target.value as 'and' | 'or')
-          }}
-          className={css`
-            width: 40px;
-            height: 20px;
-            border: none;
-            outline: none;
-            font-weight: 500;
-            font-size: 10px;
-            line-height: 12px;
-            padding: 4px 0;
-            margin: 0 16px;
-            text-align: center;
-            color: ${ThemingVariables.colors.text[0]};
-            background: ${ThemingVariables.colors.primary[4]};
-            border-radius: 40px;
-            cursor: pointer;
-          `}
-        >
-          <option value="and">and</option>
-          <option value="or">or</option>
-        </select>
-      ) : (
+      <div>
         <div
           className={css`
-            width: 40px;
-            height: 20px;
-            border: none;
-            outline: none;
-            font-weight: 500;
-            font-size: 10px;
-            line-height: 12px;
-            margin: 0 16px;
-            padding: 4px 0;
-            text-align: center;
-            color: ${ThemingVariables.colors.primary[2]};
-            background: ${ThemingVariables.colors.primary[4]};
-            border-radius: 40px;
+            height: 12px;
+            width: 36px;
+            border-right: 1px solid ${props.index === 0 ? 'transparent' : ThemingVariables.colors.primary[4]};
           `}
-        >
-          {props.index === 0 ? 'where' : props.value}
-        </div>
-      )}
+        />
+        {props.index === 1 ? (
+          <select
+            value={props.value}
+            onChange={(e) => {
+              props.onChange(e.target.value as 'and' | 'or')
+            }}
+            className={css`
+              width: 40px;
+              height: 20px;
+              border: none;
+              outline: none;
+              font-weight: 500;
+              font-size: 10px;
+              line-height: 12px;
+              padding: 2px 0;
+              margin-left: 16px;
+              text-align: center;
+              color: ${ThemingVariables.colors.text[0]};
+              background: ${ThemingVariables.colors.primary[4]};
+              border-radius: 40px;
+              cursor: pointer;
+            `}
+          >
+            <option value="and">and</option>
+            <option value="or">or</option>
+          </select>
+        ) : (
+          <div
+            className={css`
+              width: 40px;
+              height: 20px;
+              border: none;
+              outline: none;
+              font-weight: 500;
+              font-size: 10px;
+              line-height: 12px;
+              margin-left: 16px;
+              padding: 4px 0;
+              text-align: center;
+              color: ${ThemingVariables.colors.primary[2]};
+              background: ${ThemingVariables.colors.primary[4]};
+              border-radius: 40px;
+            `}
+          >
+            {props.index === 0 ? 'where' : props.value}
+          </div>
+        )}
+        <div
+          className={css`
+            height: 16px;
+            width: 36px;
+            border-right: 1px solid ${props.isLast ? 'transparent' : ThemingVariables.colors.primary[4]};
+          `}
+        />
+      </div>
+      <div
+        className={css`
+          height: 22px;
+          width: 16px;
+          border-bottom: 1px solid ${ThemingVariables.colors.primary[4]};
+        `}
+      />
       <div
         className={css`
           height: 44px;
