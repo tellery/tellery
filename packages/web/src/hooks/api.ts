@@ -568,21 +568,6 @@ export function useWorkspaceUpdateRole() {
   return useAsync(handleUpdateRole)
 }
 
-export function useWorkspaceInviteMembers(members: { email: string; role: Workspace['members'][0]['role'] }[]) {
-  const workspace = useWorkspace()
-  const handleInviteMembers = useCallback(
-    () =>
-      request
-        .post<{ linkPairs: { [email: string]: string } }>('/api/workspaces/inviteMembers', {
-          workspaceId: workspace.id,
-          users: members
-        })
-        .then((response) => response.data),
-    [members, workspace.id]
-  )
-  return useAsync(handleInviteMembers)
-}
-
 export function useWorkspaceKickout() {
   const workspace = useWorkspace()
   const handleKickout = useCallback(
