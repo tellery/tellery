@@ -32,7 +32,7 @@ async function downgradeQueryBuilder(ctx: Context) {
   const manager = await getIConnectorManagerFromDB(workspaceId, connectorId)
   const { queryBuilderSpec } = await connectorService.getProfileSpec(manager, user.id, workspaceId)
 
-  await blockService.downgradeQueryBuilder(user.id, workspaceId, connectorId, queryBuilderSpec)
+  await blockService.downgradeQueryBuilder(user.id, workspaceId, queryBuilderId, queryBuilderSpec)
   ctx.body = {}
 }
 
