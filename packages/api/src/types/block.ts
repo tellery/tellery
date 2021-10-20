@@ -75,4 +75,15 @@ type BlockDTO = {
   alive: boolean
 }
 
-export { BlockType, BlockDTO, BlockParentType }
+type ExportedBlock = {
+  id: string
+  type: BlockType
+  parentId: string
+  parentTable: BlockParentType
+  storyId: string
+  content: any
+  format?: any
+  children?: string[]
+}
+
+export { BlockType, BlockDTO, BlockParentType, ExportedBlock }

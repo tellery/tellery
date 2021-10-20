@@ -130,14 +130,18 @@ export async function mockThoughts(
   return getRepository(BlockEntity).save(models)
 }
 
-export async function mockBlocks(len: number, storyId?: string): Promise<BlockEntity[]> {
+export async function mockBlocks(
+  len: number,
+  storyId?: string,
+  workspaceId?: string,
+): Promise<BlockEntity[]> {
   const models = _(len)
     .range()
     .map(() => {
       const entity = new BlockEntity()
       Object.assign(entity, {
         id: nanoid(),
-        workspaceId: 'test',
+        workspaceId: workspaceId ?? 'test',
         interKey: nanoid(),
         parentId: storyId ?? nanoid(),
         parentTable: BlockParentType.BLOCK,
