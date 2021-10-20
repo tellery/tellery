@@ -309,9 +309,7 @@ export const queryBuilderSpec = {
       'CHAR,VARCHAR,LONGVARCHAR': "'?'",
       DATE: "date('?')",
       'TIME,TIMESTAMP': "timestamp('?')",
-    }).flatMap(([k, v]) => {
-      return k.split(',').map((subKey) => [subKey, v])
-    }),
+    }).flatMap(([k, v]) => k.split(',').map((subKey) => [subKey, v])),
   ),
 }
 

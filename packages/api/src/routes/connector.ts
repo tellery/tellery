@@ -212,8 +212,7 @@ class TranslateSmartQueryRequest {
   @Type(() => Object)
   dimensions!: SelectBuilder[]
 
-  @IsDefined()
-  filters!: FilterBuilder
+  filters?: FilterBuilder
 }
 
 async function listConnectorsRouter(ctx: Context) {
