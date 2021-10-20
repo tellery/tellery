@@ -17,9 +17,9 @@ const d15 = 1000 * 3600 * 24 * 15
 export default async function user(ctx: Context, next: Next): Promise<unknown> {
   const token = ctx.headers[USER_TOKEN_HEADER_KEY] || ctx.cookies.get(USER_TOKEN_HEADER_KEY)
   let payload: { userId: string; expiresAt: number } | undefined
-  const skip = ignorePaths.some((p) => ctx.path.startsWith(p))
+  const skipAuth = ignorePaths.some((p) => ctx.path.startsWith(p))
 
-  if (skip) {
+  if (!skipAuth) {
     if (token && _.isString(token)) {
       payload = await userService.verifyToken(token)
     } else if (isAnonymous() && ctx.path === '/api/users/me') {
