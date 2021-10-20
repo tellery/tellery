@@ -71,8 +71,9 @@ const DataAssestCardTagInlineContainer = styled.div`
   overflow: hidden;
   min-width: 0;
   white-space: nowrap;
-  text-overflow: clip;
+  text-overflow: ellipsis;
   flex-shrink: 0;
+  color: ${ThemingVariables.colors.gray[0]};
   > * + * {
     margin-left: 2px;
   }
