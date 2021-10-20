@@ -32,6 +32,7 @@ const DataAssestCardSection = styled.div`
   font-size: 10px;
   line-height: 14px;
   padding-bottom: 4px;
+  margin-top: 8px;
 `
 
 const DataAssestCardDescription = styled.div<{ isExpanded: boolean }>`
@@ -45,7 +46,7 @@ const DataAssestCardDescription = styled.div<{ isExpanded: boolean }>`
 const DataAssestCardTagsWrapper = styled.div`
   display: flex;
   flex-wrap: wrap;
-  margin: 0;
+  margin: 0 -4px;
 `
 
 const DataAssestCardTag = styled.div`
@@ -54,8 +55,10 @@ const DataAssestCardTag = styled.div`
   width: calc(50% - 8px);
   font-size: 10px;
   line-height: 14px;
-  color: #ffffff;
+  color: ${ThemingVariables.colors.text[1]};
   padding: 5px;
+  text-align: center;
+  background-color: #ffffff;
   margin-left: 4px;
   margin-bottom: 4px;
   white-space: nowrap;
@@ -78,7 +81,7 @@ const DataAssestCardTitle = styled.div`
 `
 
 const DataAssestCardTagInline = styled.div`
-  background: ${ThemingVariables.colors.gray[0]};
+  background: ${ThemingVariables.colors.primary[2]};
   border-radius: 4px;
   display: inline-flex;
   font-size: 10px;
@@ -92,7 +95,6 @@ const DataAssestCardContainer = styled.div`
   align-items: center;
   cursor: grab;
   position: relative;
-  padding: 6px;
   margin: 0 10px 8px 10px;
   padding: 10px;
   user-select: none;
@@ -105,7 +107,6 @@ const DataAssestCardContainer = styled.div`
   min-height: 110px;
   display: flex;
   box-shadow: 0px 0px 8px rgba(0, 0, 0, 0);
-  transition: all 150ms;
   overflow: hidden;
   :hover {
     box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.16);
@@ -142,7 +143,8 @@ export const DataAssetItem: React.FC<{
   return (
     <DataAssestCardContainer
       style={{
-        height: isExpanded ? 'auto' : 110
+        height: isExpanded ? 'auto' : 110,
+        paddingBottom: isExpanded ? 16 : 10
       }}
       {...listeners}
       {...attributes}
