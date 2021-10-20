@@ -101,7 +101,6 @@ import IconMenuText from './menu/text.svg?component'
 import IconMenuToDo from './menu/to_do.svg?component'
 import IconMenuToggleList from './menu/toggle_list.svg?component'
 import IconMenuUpload from './menu/upload.svg?component'
-import IconMiscCloseCircle from './misc/close_circle.svg?component'
 import IconMiscImageBlock from './misc/image_block.svg?component'
 import IconMiscNoResult from './misc/no_result.svg?component'
 import IconMiscQuestionBlock from './misc/question_block.svg?component'
@@ -223,7 +222,6 @@ export {
   IconMenuToDo,
   IconMenuToggleList,
   IconMenuUpload,
-  IconMiscCloseCircle,
   IconMiscImageBlock,
   IconMiscNoResult,
   IconMiscQuestionBlock,
