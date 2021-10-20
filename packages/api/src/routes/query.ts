@@ -40,7 +40,8 @@ async function downgradeQueryBuilder(ctx: Context) {
     queryBuilderSpec,
     getOperationService(),
   )
-  ctx.body = {}
+
+  ctx.body = { success: true }
 }
 
 const router = new Router()

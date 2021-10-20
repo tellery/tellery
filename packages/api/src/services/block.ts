@@ -218,7 +218,7 @@ export class BlockService {
         .map((id) => opBuilder(id, 'type', BlockType.SQL))
         .value(),
     ]
-    await operationService.saveTransactions(
+    const failures = await operationService.saveTransactions(
       operatorId,
       _(ops)
         .map((operations) => ({
@@ -228,6 +228,9 @@ export class BlockService {
         }))
         .value(),
     )
+    if (!_.isEmpty(failures)) {
+      throw failures[0].error
+    }
   }
 
   async exportStories(
