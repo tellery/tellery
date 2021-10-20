@@ -335,9 +335,9 @@ export const SmartQueryConfig: React.FC<{
         right={
           <Tippy
             visible={filtersVisible}
-            onClickOutside={() => {
-              setFiltersVisible(false)
-            }}
+            // onClickOutside={() => {
+            //   setFiltersVisible(false)
+            // }}
             interactive={true}
             placement="left-start"
             theme="tellery"
