@@ -48,24 +48,24 @@ export const DefaultSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
           overflow-x: auto;
           white-space: nowrap;
           padding-right: 16px;
+          flex-shrink: 0;
         `}
       >
         <Tab as={SideBarTabHeader} {...tab} id="Data Assets" selected={tab.selectedId === 'Data Assets'}>
           {t`Data Assets`}
         </Tab>
       </TabList>
-      <PerfectScrollbar
-        options={{ suppressScrollX: true }}
+      <TabPanel
+        {...tab}
         className={css`
           flex: 1;
+          overflow: hidden;
         `}
       >
-        <TabPanel {...tab}>
-          <React.Suspense fallback={<></>}>
-            <SideBarDataAssets storyId={storyId} />
-          </React.Suspense>
-        </TabPanel>
-      </PerfectScrollbar>
+        <React.Suspense fallback={<></>}>
+          <SideBarDataAssets storyId={storyId} />
+        </React.Suspense>
+      </TabPanel>
     </div>
   )
 }

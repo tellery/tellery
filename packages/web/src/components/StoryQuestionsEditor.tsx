@@ -596,6 +596,7 @@ export const StoryQuestionEditor: React.FC<{
           setSqlSidePanel(true)
         } else {
           setSQLError(null)
+          setSqlSidePanel(false)
         }
       })
     }, 0)
@@ -719,7 +720,7 @@ export const StoryQuestionEditor: React.FC<{
                   }
                 `}
               >
-                {(sqlError || sqlSidePanel) && (
+                {sqlError && (
                   <IconButton
                     icon={IconCommonError}
                     color={ThemingVariables.colors.negative[0]}
