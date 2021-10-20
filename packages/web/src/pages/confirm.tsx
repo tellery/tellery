@@ -37,7 +37,7 @@ export default function Confirm() {
         subtitle="We will create an account for you."
         footer={
           <>
-            <FormError message={(handleUserConfirm.error?.response?.data as any).errMsg} />
+            <FormError message={(handleUserConfirm.error?.response?.data as any)?.errMsg} />
             <FormButton
               type="button"
               variant="primary"
