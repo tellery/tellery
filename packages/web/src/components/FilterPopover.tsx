@@ -17,6 +17,49 @@ import { SQLType, SQLTypeReduced } from './v11n/types'
 
 type Value = NonNullable<Editor.SmartQueryBlock['content']['filters']>[0]
 
+const typeToFunc = {
+  OTHER: [] as Editor.Filter[],
+  BOOL: [Editor.Filter.IS_TRUE, Editor.Filter.IS_NOT_TRUE],
+  NUMBER: [
+    Editor.Filter.EQ,
+    Editor.Filter.NE,
+    Editor.Filter.LT,
+    Editor.Filter.LTE,
+    Editor.Filter.GT,
+    Editor.Filter.GTE,
+    Editor.Filter.IS_NULL,
+    Editor.Filter.IS_NOT_NULL,
+    Editor.Filter.IS_BETWEEN
+  ],
+  DATE: [
+    Editor.Filter.EQ,
+    Editor.Filter.NE,
+    Editor.Filter.LT,
+    Editor.Filter.LTE,
+    Editor.Filter.GT,
+    Editor.Filter.GTE,
+    Editor.Filter.IS_NULL,
+    Editor.Filter.IS_NOT_NULL,
+    Editor.Filter.IS_BETWEEN
+  ],
+  STRING: [Editor.Filter.EQ, Editor.Filter.NE, Editor.Filter.CONTAINS, Editor.Filter.IS_NULL, Editor.Filter.IS_NOT_NULL]
+}
+
+const funcArgs = {
+  [Editor.Filter.EQ]: 1,
+  [Editor.Filter.NE]: 1,
+  [Editor.Filter.LT]: 1,
+  [Editor.Filter.LTE]: 1,
+  [Editor.Filter.GT]: 1,
+  [Editor.Filter.GTE]: 1,
+  [Editor.Filter.CONTAINS]: 1,
+  [Editor.Filter.IS_NULL]: 0,
+  [Editor.Filter.IS_NOT_NULL]: 0,
+  [Editor.Filter.IS_TRUE]: 0,
+  [Editor.Filter.IS_NOT_TRUE]: 0,
+  [Editor.Filter.IS_BETWEEN]: 2
+}
+
 export default function FilterPopover(props: {
   fields: readonly { name: string; sqlType: SQLType }[]
   value: Value
@@ -225,6 +268,7 @@ function FilterItem(props: {
     >
       <div
         className={css`
+          flex-shrink: 0;
           width: 140px;
           height: 32px;
           background-color: ${ThemingVariables.colors.gray[5]};
@@ -250,7 +294,13 @@ function FilterItem(props: {
           onChange={(e) => {
             const field = props.fields.find((f) => f.name === e.target.value)
             if (field) {
-              props.onChange({ fieldName: field.name, fieldType: field.sqlType, func: Editor.Filter.EQ, args: [] })
+              const funcs = typeToFunc[SQLTypeReduced[props.value.fieldType]]
+              props.onChange({
+                fieldName: field.name,
+                fieldType: field.sqlType,
+                func: funcs.includes(props.value.func) ? props.value.func : funcs[0],
+                args: []
+              })
             }
           }}
           className={css`
@@ -273,6 +323,7 @@ function FilterItem(props: {
       </div>
       <div
         className={css`
+          flex-shrink: 0;
           width: 120px;
           height: 32px;
           background-color: ${ThemingVariables.colors.gray[5]};
@@ -286,6 +337,14 @@ function FilterItem(props: {
         `}
       >
         <select
+          value={props.value.func}
+          onChange={(e) => {
+            props.onChange({
+              ...props.value,
+              func: e.target.value as Editor.Filter,
+              args: []
+            })
+          }}
           className={css`
             width: 100%;
             outline: none;
@@ -296,13 +355,36 @@ function FilterItem(props: {
             padding: 0;
           `}
         >
-          {Object.entries(Editor.Filter).map(([key, value]) => (
-            <option key={key} value={value}>
-              {value}
+          {typeToFunc[SQLTypeReduced[props.value.fieldType]].map((filter) => (
+            <option key={filter} value={filter}>
+              {filter}
             </option>
           ))}
         </select>
       </div>
+      {Array.from({ length: funcArgs[props.value.func] }).map((_, index) => (
+        <input
+          key={index}
+          value={props.value.args[index]}
+          onChange={(e) => {
+            props.onChange(
+              produce(props.value, (draft) => {
+                draft.args[index] = e.target.value
+              })
+            )
+          }}
+          className={css`
+            width: 0;
+            flex: 1;
+            outline: none;
+            border: none;
+            background-color: ${ThemingVariables.colors.gray[5]};
+            border: 1px solid ${ThemingVariables.colors.gray[1]};
+            box-sizing: border-box;
+            margin-left: 4px;
+          `}
+        />
+      ))}
     </div>
   )
 }
