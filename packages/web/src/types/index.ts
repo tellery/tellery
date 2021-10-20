@@ -268,6 +268,21 @@ export namespace Editor {
     IS_BETWEEN = 'isBetween'
   }
 
+  export const FilterNames = {
+    [Editor.Filter.EQ]: 'equals',
+    [Editor.Filter.NE]: 'not equals',
+    [Editor.Filter.LT]: 'less than',
+    [Editor.Filter.LTE]: 'less or equal than',
+    [Editor.Filter.GT]: 'greater than',
+    [Editor.Filter.GTE]: 'greater or equal than',
+    [Editor.Filter.CONTAINS]: 'contains',
+    [Editor.Filter.IS_NULL]: 'is null',
+    [Editor.Filter.IS_NOT_NULL]: 'is not null',
+    [Editor.Filter.IS_TRUE]: 'is true',
+    [Editor.Filter.IS_NOT_TRUE]: 'is not true',
+    [Editor.Filter.IS_BETWEEN]: 'between'
+  }
+
   export type FilterBuilder = {
     operator: 'and' | 'or'
     operands: {

@@ -359,7 +359,7 @@ function FilterItem(props: {
         >
           {typeToFunc[SQLTypeReduced[props.value.fieldType]].map((filter) => (
             <option key={filter} value={filter}>
-              {filter}
+              {Editor.FilterNames[filter]}
             </option>
           ))}
         </select>

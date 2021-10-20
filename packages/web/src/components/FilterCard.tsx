@@ -97,7 +97,7 @@ export default function FilterCard(props: { value: Value; onEdit(): void; onDele
                 color: ${ThemingVariables.colors.text[1]};
               `}
             >
-              {operand.func}
+              {Editor.FilterNames[operand.func]}
             </span>
             &nbsp;
             <span
