@@ -329,54 +329,67 @@ export const SmartQueryConfig: React.FC<{
       <ConfigSection
         title="Filters"
         right={
-          fields.length === 0 ? null : (
-            <Tippy
-              visible={filtersVisible}
-              onClickOutside={() => {
-                setFiltersVisible(false)
-              }}
-              interactive={true}
-              placement="left-start"
-              theme="tellery"
-              arrow={false}
-              offset={[0, 160]}
-              appendTo={document.body}
-              content={
-                <FilterPopover
-                  fields={fields}
-                  value={
-                    filters?.[0] || {
-                      operands: [],
-                      operator: 'and'
-                    }
+          <Tippy
+            visible={filtersVisible}
+            onClickOutside={() => {
+              setFiltersVisible(false)
+            }}
+            interactive={true}
+            placement="left-start"
+            theme="tellery"
+            arrow={false}
+            offset={[0, 160]}
+            appendTo={document.body}
+            content={
+              <FilterPopover
+                fields={fields}
+                value={
+                  filters?.[0] || {
+                    operands: [],
+                    operator: 'and'
                   }
-                  onChange={(value) =>
-                    onChange((draft) => {
-                      draft.content.filters = [value]
-                    })
-                  }
-                  onClose={() => {
-                    setFiltersVisible(false)
-                  }}
-                />
-              }
-              className={css`
-                width: 100%;
-                text-align: start;
-                margin-top: 8px;
-              `}
-            >
+                }
+                onChange={(value) =>
+                  onChange((draft) => {
+                    draft.content.filters = [value]
+                  })
+                }
+                onClose={() => {
+                  setFiltersVisible(false)
+                }}
+              />
+            }
+            className={css`
+              width: 100%;
+              text-align: start;
+              margin-top: 8px;
+            `}
+          >
+            <div>
               <ConfigIconButton
                 icon={IconCommonAdd}
+                disabled={!!filters?.[0]}
                 onClick={() => {
                   setFiltersVisible((old) => !old)
                 }}
               />
-            </Tippy>
-          )
+            </div>
+          </Tippy>
         }
       >
-        {filters?.[0] ? <FilterCard value={filters[0]} /> : null}
+        {filters?.[0] ? (
+          <FilterCard
+            value={filters[0]}
+            onEdit={() => {
+              setFiltersVisible(true)
+            }}
+            onDelete={() => {
+              onChange((draft) => {
+                delete draft.content.filters
+              })
+            }}
+          />
+        ) : null}
       </ConfigSection>
     </>
   )
