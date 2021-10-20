@@ -17,7 +17,6 @@ export default function FilterCard(props: { value: Value }) {
       <div
         className={css`
           width: 30px;
-          height: 100px;
           position: relative;
         `}
       >
@@ -54,9 +53,51 @@ export default function FilterCard(props: { value: Value }) {
         className={css`
           flex: 1;
           width: 0;
+          > div + div {
+            margin-top: 4px;
+          }
         `}
       >
-        {JSON.stringify(props.value.operands)}
+        {props.value.operands.map((operand, index) => (
+          <div
+            key={index}
+            className={css`
+              background: ${ThemingVariables.colors.gray[5]};
+              border: 1px solid ${ThemingVariables.colors.gray[1]};
+              border-radius: 4px;
+              padding: 6px 8.5px;
+              font-size: 10px;
+              line-height: 12px;
+              margin-left: 6px;
+            `}
+          >
+            <span
+              className={css`
+                font-weight: 500;
+                color: ${ThemingVariables.colors.text[0]};
+              `}
+            >
+              {operand.fieldName}
+            </span>
+            &nbsp;
+            <span
+              className={css`
+                color: ${ThemingVariables.colors.text[1]};
+              `}
+            >
+              {operand.func}
+            </span>
+            &nbsp;
+            <span
+              className={css`
+                font-weight: 500;
+                color: ${ThemingVariables.colors.text[0]};
+              `}
+            >
+              {operand.args.join('~')}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   )
