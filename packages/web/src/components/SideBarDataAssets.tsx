@@ -66,10 +66,12 @@ const DataAssestCardTag = styled.div`
   text-overflow: ellipsis;
 `
 
-const DataAssestCardTagInlineWrapper = styled.div`
+const DataAssestCardTagInlineContainer = styled.div`
   margin-top: auto;
-  overflow: auto;
+  overflow: hidden;
   min-width: 0;
+  white-space: nowrap;
+  text-overflow: clip;
   flex-shrink: 0;
   > * + * {
     margin-left: 2px;
@@ -80,14 +82,21 @@ const DataAssestCardTitle = styled.div`
   margin-bottom: 7px;
 `
 
+const DataAssestCardTagInlineWrapper = styled.div`
+  display: inline-flex;
+`
+
 const DataAssestCardTagInline = styled.div`
   background: ${ThemingVariables.colors.primary[2]};
   border-radius: 4px;
-  display: inline-flex;
   font-size: 10px;
   line-height: 14px;
   color: #ffffff;
   padding: 2px 4px;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `
 
 const DataAssestCardContainer = styled.div`
@@ -97,6 +106,7 @@ const DataAssestCardContainer = styled.div`
   position: relative;
   margin: 0 10px 8px 10px;
   padding: 10px;
+  padding-bottom: 16px;
   user-select: none;
   position: relative;
   background-color: ${ThemingVariables.colors.gray[3]};
@@ -143,8 +153,7 @@ export const DataAssetItem: React.FC<{
   return (
     <DataAssestCardContainer
       style={{
-        height: isExpanded ? 'auto' : 110,
-        paddingBottom: isExpanded ? 16 : 10
+        height: isExpanded ? 'auto' : 110
       }}
       {...listeners}
       {...attributes}
@@ -220,13 +229,17 @@ export const DataAssetItem: React.FC<{
           )}
         </>
       ) : (
-        <DataAssestCardTagInlineWrapper>
+        <DataAssestCardTagInlineContainer>
           {Object.keys(block.content?.metrics ?? {}).map((metricId) => {
             const metric = block.content?.metrics?.[metricId]
             if (!metric) return null
-            return <DataAssestCardTagInline key={metricId}>{metric?.name}</DataAssestCardTagInline>
+            return (
+              <DataAssestCardTagInlineWrapper key={metricId}>
+                <DataAssestCardTagInline>{metric?.name}</DataAssestCardTagInline>
+              </DataAssestCardTagInlineWrapper>
+            )
           })}
-        </DataAssestCardTagInlineWrapper>
+        </DataAssestCardTagInlineContainer>
       )}
       <div
         className={css`
