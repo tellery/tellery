@@ -7,7 +7,7 @@ import {
 } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useOpenStory } from '@app/hooks'
-import { useSearchMetrics } from '@app/hooks/api'
+import { useQuerySnapshot, useSearchMetrics } from '@app/hooks/api'
 import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
@@ -18,11 +18,26 @@ import styled from '@emotion/styled'
 import Tippy from '@tippyjs/react'
 import { AnimationControls, motion, MotionStyle } from 'framer-motion'
 import React, { useMemo, useState } from 'react'
+import ContentLoader from 'react-content-loader'
 import { CircularLoading } from './CircularLoading'
 import { useGetBlockTitleTextSnapshot } from './editor'
 import IconButton from './kit/IconButton'
 import { MenuItem } from './MenuItem'
-import { SideBarLoader } from './SideBarLoader'
+
+export const DataAssestCardLoader: React.FC = () => {
+  return (
+    <ContentLoader
+      viewBox="0 0 284 110"
+      style={{ padding: '0' }}
+      className={css`
+        margin: 0 10px 8px 10px;
+        box-sizing: border-box;
+      `}
+    >
+      <rect x="0" y="0" rx="0" ry="0" width="284" height="110" />
+    </ContentLoader>
+  )
+}
 
 const DataAssestCardSection = styled.div`
   border-top: solid 1px ${ThemingVariables.colors.gray[1]};
@@ -151,6 +166,16 @@ export const DataAssetItem: React.FC<{
     } as DndItemDataBlockType
   })
 
+  const snapshot = useQuerySnapshot(block.id)
+
+  const fields = useMemo(
+    () =>
+      snapshot?.data.fields
+        .filter((field) => field.sqlType)
+        .map((field) => ({ name: field.name, type: field.sqlType! })),
+    [snapshot?.data.fields]
+  )
+
   return (
     <DataAssestCardContainer
       style={{
@@ -218,11 +243,11 @@ export const DataAssetItem: React.FC<{
               </DataAssestCardTagsWrapper>
             </>
           )}
-          {block.content?.fields?.length && (
+          {fields?.length && (
             <>
               <DataAssestCardSection>Dimension</DataAssestCardSection>
               <DataAssestCardTagsWrapper>
-                {block.content?.fields?.map((field) => {
+                {fields?.map((field) => {
                   return <DataAssestCardTag key={field.name}>{field?.name}</DataAssestCardTag>
                 })}
               </DataAssestCardTagsWrapper>
@@ -412,7 +437,7 @@ const AllMetricsSection: React.FC<{ storyId: string }> = ({ storyId }) => {
       >
         {dataAssetBlocks.map((block, index) => {
           return (
-            <React.Suspense key={block.id} fallback={<SideBarLoader />}>
+            <React.Suspense key={block.id} fallback={<DataAssestCardLoader />}>
               <DataAssetItem
                 block={block}
                 currentStoryId={storyId!}
