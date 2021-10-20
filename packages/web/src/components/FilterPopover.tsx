@@ -377,6 +377,8 @@ function FilterItem(props: {
               )
             }}
             className={css`
+              font-size: 12px;
+              color: ${ThemingVariables.colors.text[0]};
               width: 0;
               flex: 1;
               height: 32px;

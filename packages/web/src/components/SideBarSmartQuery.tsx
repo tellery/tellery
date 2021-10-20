@@ -20,6 +20,7 @@ import produce from 'immer'
 import { WritableDraft } from 'immer/dist/internal'
 import { lowerCase, uniq, uniqBy } from 'lodash'
 import React, { ReactNode, useCallback, useState } from 'react'
+import FilterCard from './FilterCard'
 import FilterPopover from './FilterPopover'
 import { MenuItem } from './MenuItem'
 import { MenuWrapper } from './MenuWrapper'
@@ -344,12 +345,10 @@ export const SmartQueryConfig: React.FC<{
                 <FilterPopover
                   fields={fields}
                   value={
-                    filters
-                      ? filters[0]
-                      : {
-                          operands: [],
-                          operator: 'and'
-                        }
+                    filters?.[0] || {
+                      operands: [],
+                      operator: 'and'
+                    }
                   }
                   onChange={(value) =>
                     onChange((draft) => {
@@ -377,7 +376,7 @@ export const SmartQueryConfig: React.FC<{
           )
         }
       >
-        {JSON.stringify(filters)}
+        {filters?.[0] ? <FilterCard value={filters[0]} /> : null}
       </ConfigSection>
     </>
   )
