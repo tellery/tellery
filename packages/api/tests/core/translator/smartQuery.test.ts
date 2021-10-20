@@ -240,13 +240,13 @@ test('smart query sql assemble with condition', async (t) => {
             {
               fieldName: 'cost',
               fieldType: 'DECIMAL',
-              func: 'lt',
+              func: 'LT',
               args: ['1000'],
             },
             {
               fieldName: 'uid',
               fieldType: 'VARCHAR',
-              func: 'ne',
+              func: 'NE',
               args: ['123123123'],
             },
           ],
@@ -254,13 +254,13 @@ test('smart query sql assemble with condition', async (t) => {
         {
           fieldName: 'dt',
           fieldType: 'TIMESTAMP',
-          func: 'isBetween',
+          func: 'IS_BETWEEN',
           args: ['2020-01-01', '2020-03-01'],
         },
         {
           fieldName: 'cost',
           fieldType: 'DECIMAL',
-          func: 'isNotNull',
+          func: 'IS_NOT_NULL',
           args: [],
         },
       ],
