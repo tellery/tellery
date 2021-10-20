@@ -254,18 +254,18 @@ export namespace Editor {
   export type DataAssetBlock = QueryBuilder
 
   export enum Filter {
-    EQ = 'eq',
-    NE = 'ne',
-    LT = 'lt',
-    LTE = 'lte',
-    GT = 'gt',
-    GTE = 'gte',
-    CONTAINS = 'contains',
-    IS_NULL = 'isNull',
-    IS_NOT_NULL = 'isNotNull',
-    IS_TRUE = 'isTrue',
-    IS_NOT_TRUE = 'isNotTrue',
-    IS_BETWEEN = 'isBetween'
+    EQ = 'EQ',
+    NE = 'NE',
+    LT = 'LT',
+    LTE = 'LTE',
+    GT = 'GT',
+    GTE = 'GTE',
+    CONTAINS = 'CONTAINS',
+    IS_NULL = 'IS_NULL',
+    IS_NOT_NULL = 'IS_NOT_NULL',
+    IS_TRUE = 'IS_TRUE',
+    IS_FALSE = 'IS_FALSE',
+    IS_BETWEEN = 'IS_BETWEEN'
   }
 
   export const FilterNames = {
@@ -279,7 +279,7 @@ export namespace Editor {
     [Editor.Filter.IS_NULL]: 'is null',
     [Editor.Filter.IS_NOT_NULL]: 'is not null',
     [Editor.Filter.IS_TRUE]: 'is true',
-    [Editor.Filter.IS_NOT_TRUE]: 'is not true',
+    [Editor.Filter.IS_FALSE]: 'is false',
     [Editor.Filter.IS_BETWEEN]: 'between'
   }
 
