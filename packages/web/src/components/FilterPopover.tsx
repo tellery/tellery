@@ -289,7 +289,8 @@ function FilterItem(props: {
   onChange(value: Value['operands'][0]): void
   onDelete(): void
 }) {
-  const [visible, setVisible] = useState(false)
+  const [visible0, setVisible0] = useState(false)
+  const [visible1, setVisible1] = useState(false)
 
   return (
     <div
@@ -322,12 +323,13 @@ function FilterItem(props: {
           }[SQLTypeReduced[props.value.fieldType]]
         }
         <Tippy
-          visible={visible}
+          visible={visible0}
           onClickOutside={() => {
-            setVisible(false)
+            setVisible0(false)
           }}
           interactive={true}
-          placement="bottom"
+          placement="bottom-start"
+          offset={[-35, 5]}
           theme="tellery"
           arrow={false}
           appendTo={document.body}
@@ -354,7 +356,7 @@ function FilterItem(props: {
                       func: funcs.includes(props.value.func) ? props.value.func : funcs[0],
                       args: []
                     })
-                    setVisible(false)
+                    setVisible0(false)
                   }}
                 />
               ))}
@@ -362,11 +364,12 @@ function FilterItem(props: {
           }
         >
           <div
-            onClick={() => setVisible((old) => !old)}
+            onClick={() => setVisible0((old) => !old)}
             className={css`
               display: flex;
               flex: 1;
               align-items: center;
+              cursor: pointer;
             `}
           >
             <div
@@ -376,7 +379,6 @@ function FilterItem(props: {
                 margin-left: 6px;
                 font-size: 12px;
                 color: ${ThemingVariables.colors.text[0]};
-                cursor: pointer;
                 text-overflow: ellipsis;
                 overflow: hidden;
               `}
@@ -402,31 +404,61 @@ function FilterItem(props: {
           margin-left: 4px;
         `}
       >
-        <select
-          value={props.value.func}
-          onChange={(e) => {
-            props.onChange({
-              ...props.value,
-              func: e.target.value as Editor.Filter,
-              args: []
-            })
+        <Tippy
+          visible={visible1}
+          onClickOutside={() => {
+            setVisible1(false)
           }}
-          className={css`
-            width: 100%;
-            outline: none;
-            border: none;
-            font-size: 12px;
-            color: ${ThemingVariables.colors.text[0]};
-            cursor: pointer;
-            padding: 0;
-          `}
+          interactive={true}
+          placement="bottom-start"
+          offset={[-15, 5]}
+          theme="tellery"
+          arrow={false}
+          appendTo={document.body}
+          content={
+            <MenuWrapper>
+              {typeToFunc[SQLTypeReduced[props.value.fieldType]].map((filter) => (
+                <MenuItem
+                  key={filter}
+                  title={Editor.FilterNames[filter]}
+                  onClick={() => {
+                    props.onChange({
+                      ...props.value,
+                      func: filter,
+                      args: []
+                    })
+                    setVisible1(false)
+                  }}
+                />
+              ))}
+            </MenuWrapper>
+          }
         >
-          {typeToFunc[SQLTypeReduced[props.value.fieldType]].map((filter) => (
-            <option key={filter} value={filter}>
-              {Editor.FilterNames[filter]}
-            </option>
-          ))}
-        </select>
+          <div
+            onClick={() => setVisible1((old) => !old)}
+            className={css`
+              display: flex;
+              flex: 1;
+              align-items: center;
+              cursor: pointer;
+            `}
+          >
+            <div
+              className={css`
+                flex: 1;
+                width: 0;
+                margin-left: 6px;
+                font-size: 12px;
+                color: ${ThemingVariables.colors.text[0]};
+                text-overflow: ellipsis;
+                overflow: hidden;
+              `}
+            >
+              {props.value.func}
+            </div>
+            <IconCommonArrowDropDown color={ThemingVariables.colors.text[0]} />
+          </div>
+        </Tippy>
       </div>
       {funcArgs[props.value.func] ? (
         Array.from({ length: funcArgs[props.value.func] }).map((_, index) => (
