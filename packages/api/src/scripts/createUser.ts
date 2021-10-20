@@ -3,7 +3,7 @@ import { getConnection } from 'typeorm'
 
 import { createDatabaseCon } from '../clients/db/orm'
 import { UserEntity } from '../entities/user'
-import userService from '../services/user'
+import { defaultUserService } from '../services/user'
 import { AccountStatus } from '../types/user'
 
 async function main() {
@@ -20,9 +20,13 @@ async function main() {
   }
 
   return getConnection().transaction(async (t) => {
-    const users = await userService.createUserByEmailsIfNotExist([email], t, AccountStatus.ACTIVE)
+    const users = await defaultUserService.createUserByEmailsIfNotExist(
+      [email],
+      t,
+      AccountStatus.ACTIVE,
+    )
     const user = users[email]
-    const md5Pass = userService.getConvertedPassword(password, user.id)
+    const md5Pass = defaultUserService.getConvertedPassword(password, user.id)
     return t.getRepository(UserEntity).update(user.id, { username, password: md5Pass })
   })
 }

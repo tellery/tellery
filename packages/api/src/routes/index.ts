@@ -13,6 +13,8 @@ import users from './user'
 import workspaces from './workspace'
 import thirdParty from './thirdParty'
 import dbt from './dbt'
+import internal from './internal'
+import { isSaaS } from '../utils/env'
 
 const router = new Router({
   prefix: '/api',
@@ -24,12 +26,17 @@ router.use('/operations', operations.routes(), operations.allowedMethods())
 router.use('/stories', stories.routes(), stories.allowedMethods())
 router.use('/questions', questions.routes(), questions.allowedMethods())
 router.use('/queries', queries.routes(), queries.allowedMethods())
-router.use('/users', users.routes(), users.allowedMethods())
 router.use('/workspaces', workspaces.routes(), workspaces.allowedMethods())
 router.use('/activities', activities.routes(), activities.allowedMethods())
 router.use('/storage', upload.routes(), upload.allowedMethods())
 router.use('/thought', thought.routes(), thought.allowedMethods())
 router.use('/thirdParty', thirdParty.routes(), thirdParty.allowedMethods())
+// in SaaS deployment, exposes internal and hide users
+if (isSaaS()) {
+  router.use('/internal', internal.routes(), internal.allowedMethods())
+} else {
+  router.use('/users', users.routes(), users.allowedMethods())
+}
 router.use('', global.routes(), global.allowedMethods())
 
 export default router

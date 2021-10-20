@@ -11,6 +11,7 @@ import { mustGetUser } from '../utils/user'
 import { validate } from '../utils/http'
 import { readableStreamWrapper } from '../utils/stream'
 import selfhostedStorage from '../store/selfhostedStorage'
+import { NotFoundError, StorageError } from '../error/error'
 
 class ProvisionRequest {
   @IsDefined()
@@ -49,7 +50,7 @@ async function getFile(ctx: Context) {
     fileKey,
   )
   if (!fetchedObject) {
-    ctx.throw(404)
+    throw NotFoundError.resourceNotFound(`file ${fileKey}`)
   }
   ctx.set({
     'Cache-Control': `public, max-age=${maxAge}`,
@@ -79,7 +80,7 @@ async function upload(ctx: Context) {
   const payload = plainToClass(UploadRequest, ctx.request.body)
   await validate(ctx, payload)
   if (!ctx.request.files) {
-    ctx.throw(400)
+    throw StorageError.invalidUpload()
   }
   const file = ctx.request.files.file as File
   const { name, size, path } = file

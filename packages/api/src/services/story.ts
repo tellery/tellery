@@ -18,7 +18,7 @@ import { mergeSearchFilters } from '../utils/common'
 import { md5 } from '../utils/helper'
 import { loadMore } from '../utils/loadMore'
 import { canGetBlockData, canGetWorkspaceData } from '../utils/permission'
-import * as userService from './user'
+import userService from './user'
 import { LinkType } from '../types/link'
 
 export class StoryService {
