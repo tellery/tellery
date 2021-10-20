@@ -44,7 +44,8 @@ export const QuerySelectorFamily = selectorFamily<
           workspace,
           smartQueryBlock.content.queryBuilderId,
           smartQueryBlock.content?.metricIds,
-          smartQueryBlock.content?.dimensions
+          smartQueryBlock.content?.dimensions,
+          smartQueryBlock.content?.filters
         )
         return getReplacedSql(response.data.sql as string)
       }

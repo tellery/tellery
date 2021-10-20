@@ -207,6 +207,7 @@ const Page = () => {
   const [queryBuilderId, setQueryBuilderId] = useState<string | null>(null)
   const [metricIds, setMetricIds] = useState<string[]>()
   const [dimensions, setDiemensions] = useState<Dimension[]>()
+  const [filters, setFilters] = useState<Editor.FilterBuilder[]>()
   const [visConfig, setVisConfig] = useState<Config<Type> | null>(null)
   const [data, setData] = useState<Data | null>(null)
   const [sql, setSql] = useState<string | null>(null)
@@ -214,10 +215,10 @@ const Page = () => {
 
   useEffect(() => {
     if (!queryBuilderId) return
-    translateSmartQuery(workspace, queryBuilderId, metricIds, dimensions).then((response) => {
+    translateSmartQuery(workspace, queryBuilderId, metricIds, dimensions, filters).then((response) => {
       setSql(response.data.sql)
     })
-  }, [dimensions, metricIds, queryBuilderId, workspace])
+  }, [dimensions, filters, metricIds, queryBuilderId, workspace])
 
   const mutation = useMutation(sqlRequest, {
     mutationKey: 'explore'
@@ -240,8 +241,9 @@ const Page = () => {
     setData(null)
     if (!queryBuilderId) {
       cancelMutation()
-      setDiemensions(undefined)
       setMetricIds(undefined)
+      setDiemensions(undefined)
+      setFilters(undefined)
     }
   }, [cancelMutation, queryBuilderId, queryClient])
 
@@ -271,17 +273,19 @@ const Page = () => {
     (update: (block: WritableDraft<Editor.SmartQueryBlock>) => void) => {
       const oldBlock = createEmptyBlock<Editor.SmartQueryBlock>({
         content: {
-          dimensions: dimensions,
-          metricIds: metricIds,
+          metricIds: metricIds || [],
+          dimensions: dimensions || [],
+          filters,
           queryBuilderId: queryBuilderId ?? '',
           title: []
-        } as any
+        }
       })
       const newBlock = produce(oldBlock, update)
-      setDiemensions(newBlock.content.dimensions)
       setMetricIds(newBlock.content.metricIds)
+      setDiemensions(newBlock.content.dimensions)
+      setFilters(newBlock.content.filters)
     },
-    [dimensions, metricIds, queryBuilderId]
+    [dimensions, filters, metricIds, queryBuilderId]
   )
 
   const setVisConfigBlock = useCallback(

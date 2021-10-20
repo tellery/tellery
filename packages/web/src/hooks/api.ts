@@ -718,12 +718,21 @@ export const useGetProfileSpec = () => {
 export function useTranslateSmartQuery(
   queryBuilderId?: string,
   metricIds: string[] = [],
-  dimensions: Dimension[] = []
+  dimensions: Dimension[] = [],
+  filters: Editor.FilterBuilder[] = []
 ) {
   const workspace = useWorkspace()
   return useQuery<string>(
-    ['connectors', 'translateSmartQuery', workspace.id, queryBuilderId, ...metricIds, JSON.stringify(dimensions)],
-    () => translateSmartQuery(workspace, queryBuilderId, metricIds, dimensions).then((res) => res.data.sql),
+    [
+      'connectors',
+      'translateSmartQuery',
+      workspace.id,
+      queryBuilderId,
+      ...metricIds,
+      JSON.stringify(dimensions),
+      JSON.stringify(filters)
+    ],
+    () => translateSmartQuery(workspace, queryBuilderId, metricIds, dimensions, filters).then((res) => res.data.sql),
     { enabled: !!queryBuilderId }
   )
 }
