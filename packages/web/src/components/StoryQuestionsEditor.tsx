@@ -507,7 +507,8 @@ export const StoryQuestionEditor: React.FC<{
       ? (queryBlock as Editor.SmartQueryBlock).content.queryBuilderId
       : undefined,
     (queryBlock as Editor.SmartQueryBlock)?.content?.metricIds,
-    (queryBlock as Editor.SmartQueryBlock)?.content?.dimensions
+    (queryBlock as Editor.SmartQueryBlock)?.content?.dimensions,
+    (queryBlock as Editor.SmartQueryBlock)?.content?.filters
   )
 
   useEffect(() => {

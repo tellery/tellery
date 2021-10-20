@@ -6,16 +6,15 @@ import { VisualizationConfig } from '@app/components/SideBarVisualization'
 import { charts, useChart } from '@app/components/v11n/charts'
 import { Config, Data, Type } from '@app/components/v11n/types'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
-import { useBlock, useBlockSuspense, useSearchMetrics } from '@app/hooks/api'
+import { useBlockSuspense, useSearchMetrics } from '@app/hooks/api'
 import { useDimensions } from '@app/hooks/useDimensions'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { ThemingVariables } from '@app/styles'
 import { Dimension, Editor } from '@app/types'
-import { css, cx, keyframes } from '@emotion/css'
+import { css, keyframes } from '@emotion/css'
 import produce from 'immer'
 import { WritableDraft } from 'immer/dist/internal'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from 'react-query'
 
 const AllMetricsSection: React.FC<{ setQueryBuilderId: React.Dispatch<React.SetStateAction<string | null>> }> = ({
@@ -207,6 +206,7 @@ const Page = () => {
   const [queryBuilderId, setQueryBuilderId] = useState<string | null>(null)
   const [metricIds, setMetricIds] = useState<string[]>()
   const [dimensions, setDiemensions] = useState<Dimension[]>()
+  const [filters, setFilters] = useState<Editor.FilterBuilder[]>()
   const [visConfig, setVisConfig] = useState<Config<Type> | null>(null)
   const [data, setData] = useState<Data | null>(null)
   const [sql, setSql] = useState<string | null>(null)
@@ -214,10 +214,10 @@ const Page = () => {
 
   useEffect(() => {
     if (!queryBuilderId) return
-    translateSmartQuery(workspace, queryBuilderId, metricIds, dimensions).then((response) => {
+    translateSmartQuery(workspace, queryBuilderId, metricIds, dimensions, filters).then((response) => {
       setSql(response.data.sql)
     })
-  }, [dimensions, metricIds, queryBuilderId, workspace])
+  }, [dimensions, filters, metricIds, queryBuilderId, workspace])
 
   const mutation = useMutation(sqlRequest, {
     mutationKey: 'explore'
@@ -240,8 +240,9 @@ const Page = () => {
     setData(null)
     if (!queryBuilderId) {
       cancelMutation()
-      setDiemensions(undefined)
       setMetricIds(undefined)
+      setDiemensions(undefined)
+      setFilters(undefined)
     }
   }, [cancelMutation, queryBuilderId, queryClient])
 
@@ -271,17 +272,19 @@ const Page = () => {
     (update: (block: WritableDraft<Editor.SmartQueryBlock>) => void) => {
       const oldBlock = createEmptyBlock<Editor.SmartQueryBlock>({
         content: {
-          dimensions: dimensions,
-          metricIds: metricIds,
+          metricIds: metricIds || [],
+          dimensions: dimensions || [],
+          filters,
           queryBuilderId: queryBuilderId ?? '',
           title: []
-        } as any
+        }
       })
       const newBlock = produce(oldBlock, update)
-      setDiemensions(newBlock.content.dimensions)
       setMetricIds(newBlock.content.metricIds)
+      setDiemensions(newBlock.content.dimensions)
+      setFilters(newBlock.content.filters)
     },
-    [dimensions, metricIds, queryBuilderId]
+    [dimensions, filters, metricIds, queryBuilderId]
   )
 
   const setVisConfigBlock = useCallback(

@@ -18,6 +18,7 @@ import { ConfigItem } from './v11n/components/ConfigItem'
 import { ConfigPopoverWithTabs } from './v11n/components/ConfigPopoverWithTabs'
 import { ConfigSection } from './v11n/components/ConfigSection'
 import { ConfigSelect } from './v11n/components/ConfigSelect'
+import { SQLType } from './v11n/types'
 
 export default function SideBarModeling(props: { storyId: string; blockId: string }) {
   const block = useBlockSuspense<Editor.VisualizationBlock>(props.blockId)
@@ -222,11 +223,11 @@ function MetricItem(props: {
 }
 
 function MetricConfigCreator(props: {
-  fields: { name: string; type: string }[]
+  fields: { name: string; type: SQLType }[]
   metrics: { [id: string]: Metric }
   onCreate(metrics: Metric[]): void
 }) {
-  const [field, setField] = useState<{ name: string; type: string }>()
+  const [field, setField] = useState<{ name: string; type: SQLType }>()
   const [map, setMap] = useState<Record<string, string>>({})
   const array = useMemo(() => Object.entries(map), [map])
   const { data: spec } = useGetProfileSpec()
