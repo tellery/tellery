@@ -1,6 +1,12 @@
 import { IconCommonAdd, IconCommonAggregatedMetric, IconCommonCustomSqlMetric, IconCommonSub } from '@app/assets/icons'
 import { setBlockTranscation } from '@app/context/editorTranscations'
-import { useBlockSuspense, useGetProfileSpec, useQuerySnapshot, useQuestionDownstreams } from '@app/hooks/api'
+import {
+  useBlockSuspense,
+  useDowngradeQueryBuilder,
+  useGetProfileSpec,
+  useQuerySnapshot,
+  useQuestionDownstreams
+} from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
 import { ThemingVariables } from '@app/styles'
 import { CustomSQLMetric, Editor, Metric } from '@app/types'
@@ -47,6 +53,7 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
   useEffect(() => {
     setDescription((queryBlock as Editor.QueryBuilder).content?.description)
   }, [queryBlock])
+  const handleDowngradeQueryBuilder = useDowngradeQueryBuilder(queryBlock.id)
 
   return (
     <>
@@ -156,6 +163,21 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
                 />
               ))
             : null}
+          <FormButton
+            variant="danger"
+            onClick={async () => {
+              if (confirm('Confirm cancel data asset?')) {
+                await handleDowngradeQueryBuilder.execute()
+              }
+            }}
+            disabled={handleDowngradeQueryBuilder.status === 'pending'}
+            className={css`
+              width: 100%;
+              margin-top: 8px;
+            `}
+          >
+            Cancel data asset
+          </FormButton>
         </ConfigSection>
       ) : (
         <ConfigSection>

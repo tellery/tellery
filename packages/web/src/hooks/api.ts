@@ -822,6 +822,18 @@ export function usePullRepo(connectorId: string, profile?: string) {
   return useAsync(handlePullRepo)
 }
 
+export function useDowngradeQueryBuilder(queryBuilderId: string) {
+  const workspace = useWorkspace()
+  const handleDowngradeQueryBuilder = useCallback(async () => {
+    await request.post('/api/queries/downgradeQueryBuilder', {
+      workspaceId: workspace.id,
+      connectorId: workspace.preferences.connectorId,
+      queryBuilderId
+    })
+  }, [queryBuilderId, workspace.id, workspace.preferences.connectorId])
+  return useAsync(handleDowngradeQueryBuilder)
+}
+
 /**
  * dbt end
  */
