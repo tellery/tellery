@@ -76,7 +76,7 @@ const filterFunctions = new Map([
   [Filter.IS_NOT_NULL, '? IS NOT NULL'],
   [Filter.IS_TRUE, '? IS TRUE'],
   [Filter.IS_FALSE, '? IS FALSE'],
-  [Filter.IS_BETWEEN, '? IS BETWEEN ? AND ?'],
+  [Filter.IS_BETWEEN, '? BETWEEN ? AND ?'],
 ])
 
 const typeToFilter = {
