@@ -274,6 +274,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
                 box-sizing: border-box;
                 border-radius: 20px;
                 border: 4px solid transparent;
+                pointer-events: none;
                 border-color: ${ThemingVariables.colors.primary[3]};
               }
             `
