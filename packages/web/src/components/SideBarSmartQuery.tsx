@@ -15,6 +15,9 @@ import { useRefreshSnapshot } from '@app/hooks/useStorySnapshotManager'
 import { ThemingVariables } from '@app/styles'
 import { Dimension, Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
+import { FlipModifier } from '@popperjs/core/lib/modifiers/flip'
+import { OffsetModifier } from '@popperjs/core/lib/modifiers/offset'
+import { PreventOverflowModifier } from '@popperjs/core/lib/modifiers/preventOverflow'
 import Tippy from '@tippyjs/react'
 import produce from 'immer'
 import { WritableDraft } from 'immer/dist/internal'
@@ -27,6 +30,19 @@ import { MenuWrapper } from './MenuWrapper'
 import ConfigIconButton from './v11n/components/ConfigIconButton'
 import { ConfigSection } from './v11n/components/ConfigSection'
 import { SQLTypeReduced } from './v11n/types'
+
+const popperModifiers: Partial<Partial<OffsetModifier | PreventOverflowModifier | FlipModifier>>[] = [
+  {
+    name: 'preventOverflow',
+    enabled: true,
+    options: {
+      boundary: document.body,
+      altAxis: true,
+      altBoundary: true,
+      padding: 10
+    }
+  }
+]
 
 export default function SideBarSmartQuery(props: { storyId: string; blockId: string }) {
   const block = useBlockSuspense<Editor.VisualizationBlock>(props.blockId)
@@ -99,6 +115,7 @@ export const SmartQueryConfig: React.FC<{
               arrow={false}
               offset={[0, 0]}
               appendTo={document.body}
+              popperOptions={{ modifiers: popperModifiers }}
               content={
                 <MenuWrapper>
                   {Object.entries(queryBuilderBlock.content?.metrics || {}).map(([metricId, metric]) => (
@@ -181,6 +198,7 @@ export const SmartQueryConfig: React.FC<{
               arrow={false}
               offset={[0, 0]}
               appendTo={document.body}
+              popperOptions={{ modifiers: popperModifiers }}
               content={
                 <MenuWrapper>
                   {fields.map((field, index) =>
@@ -193,6 +211,8 @@ export const SmartQueryConfig: React.FC<{
                         arrow={false}
                         interactive={true}
                         offset={[-12, 10]}
+                        appendTo={document.body}
+                        popperOptions={{ modifiers: popperModifiers }}
                         content={
                           <MenuWrapper>
                             {Object.keys(spec.queryBuilderSpec.bucketization[field.sqlType]).map((func) => (
@@ -344,6 +364,7 @@ export const SmartQueryConfig: React.FC<{
             arrow={false}
             offset={[0, 160]}
             appendTo={document.body}
+            popperOptions={{ modifiers: popperModifiers }}
             content={
               <FilterPopover
                 fields={fields}

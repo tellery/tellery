@@ -12,6 +12,9 @@ import {
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { css } from '@emotion/css'
+import { FlipModifier } from '@popperjs/core/lib/modifiers/flip'
+import { OffsetModifier } from '@popperjs/core/lib/modifiers/offset'
+import { PreventOverflowModifier } from '@popperjs/core/lib/modifiers/preventOverflow'
 import Tippy from '@tippyjs/react'
 import produce from 'immer'
 import React, { ReactNode, useState } from 'react'
@@ -21,6 +24,19 @@ import { MenuWrapper } from './MenuWrapper'
 import { SQLType, SQLTypeReduced } from './v11n/types'
 
 type Value = NonNullable<Editor.SmartQueryBlock['content']['filters']>
+
+const popperModifiers: Partial<Partial<OffsetModifier | PreventOverflowModifier | FlipModifier>>[] = [
+  {
+    name: 'preventOverflow',
+    enabled: true,
+    options: {
+      boundary: document.body,
+      altAxis: true,
+      altBoundary: true,
+      padding: 10
+    }
+  }
+]
 
 const typeToFunc = {
   OTHER: [] as Editor.Filter[],
@@ -318,11 +334,12 @@ function FilterItem(props: {
             setVisible0(false)
           }}
           interactive={true}
-          placement="bottom-start"
-          offset={[-35, 5]}
+          // placement="bottom-start"
+          // offset={[-35, 5]}
           theme="tellery"
           arrow={false}
           appendTo={document.body}
+          popperOptions={{ modifiers: popperModifiers }}
           content={
             <MenuWrapper>
               {props.fields.map((f) => (
@@ -400,11 +417,12 @@ function FilterItem(props: {
             setVisible1(false)
           }}
           interactive={true}
-          placement="bottom-start"
-          offset={[-15, 5]}
+          // placement="bottom-start"
+          // offset={[-15, 5]}
           theme="tellery"
           arrow={false}
           appendTo={document.body}
+          popperOptions={{ modifiers: popperModifiers }}
           content={
             <MenuWrapper>
               {typeToFunc[SQLTypeReduced[props.value.fieldType]].map((filter) => (
