@@ -42,11 +42,11 @@ module.exports = {
   // for SaaS usage
   deploy: {
     mode: process.env.DEPLOY_MODE || 'local',
-    userServiceEndpoint: process.env.UserServiceEndpoint || '',
+    userServiceEndpoint: process.env.USER_SERVICE_ENDPOINT || '',
   },
   frontendConfig: {
     SENTRY_DSN: process.env.FRONTEND_SENTRY_DSN || '',
     GA4_ID: process.env.FRONTEND_GA4_ID || '',
-    VERSION: '0.8.2',
+    VERSION: '0.8.3',
   },
 }
