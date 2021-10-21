@@ -1,4 +1,4 @@
-import { IconCommonAdd, IconCommonAggregatedMetric, IconCommonCustomSqlMetric, IconCommonSub } from '@app/assets/icons'
+import { IconCommonAdd, IconCommonAggregatedMetric, IconCommonCustomSqlMetric, IconCommonEdit } from '@app/assets/icons'
 import { setBlockTranscation } from '@app/context/editorTranscations'
 import {
   useBlockSuspense,
@@ -9,7 +9,7 @@ import {
 } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
 import { ThemingVariables } from '@app/styles'
-import { CustomSQLMetric, Editor, Metric } from '@app/types'
+import { AggregatedMetric, CustomSQLMetric, Editor, Metric } from '@app/types'
 import { blockIdGenerator } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import produce from 'immer'
@@ -21,6 +21,7 @@ import QuestionDownstreams from './QuestionDownstreams'
 import ConfigIconButton from './v11n/components/ConfigIconButton'
 import { ConfigInput } from './v11n/components/ConfigInput'
 import { ConfigItem } from './v11n/components/ConfigItem'
+import { ConfigPopover } from './v11n/components/ConfigPopover'
 import { ConfigPopoverWithTabs } from './v11n/components/ConfigPopoverWithTabs'
 import { ConfigSection } from './v11n/components/ConfigSection'
 import { ConfigSelect } from './v11n/components/ConfigSelect'
@@ -57,34 +58,36 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
 
   return (
     <>
-      <ConfigSection title="Description">
-        <textarea
-          value={description}
-          onChange={(e) => {
-            setDescription(e.target.value)
-          }}
-          onBlur={() => {
-            setBlock((draft) => {
-              if (draft.content) {
-                draft.content.description = description
-              }
-            })
-          }}
-          className={css`
-            resize: none;
-            outline: none;
-            padding: 9px 6px;
-            font-size: 12px;
-            line-height: 14px;
-            color: ${ThemingVariables.colors.text[0]};
-            border: 1px solid ${ThemingVariables.colors.gray[1]};
-            box-sizing: border-box;
-            border-radius: 4px;
-            height: 60px;
-            width: 100%;
-          `}
-        />
-      </ConfigSection>
+      {queryBlock.type === Editor.BlockType.QueryBuilder ? (
+        <ConfigSection title="Description">
+          <textarea
+            value={description}
+            onChange={(e) => {
+              setDescription(e.target.value)
+            }}
+            onBlur={() => {
+              setBlock((draft) => {
+                if (draft.content) {
+                  draft.content.description = description
+                }
+              })
+            }}
+            className={css`
+              resize: none;
+              outline: none;
+              padding: 9px 6px;
+              font-size: 12px;
+              line-height: 14px;
+              color: ${ThemingVariables.colors.text[0]};
+              border: 1px solid ${ThemingVariables.colors.gray[1]};
+              box-sizing: border-box;
+              border-radius: 4px;
+              height: 60px;
+              width: 100%;
+            `}
+          />
+        </ConfigSection>
+      ) : null}
       {queryBlock.type === Editor.BlockType.QueryBuilder ? (
         <ConfigSection
           title="Metrics"
@@ -144,12 +147,12 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
             ? Object.entries(metrics).map(([metricId, metric]) => (
                 <MetricItem
                   key={metricId}
-                  name={metric.name}
-                  Icon={(metric as CustomSQLMetric).rawSql ? IconCommonCustomSqlMetric : IconCommonAggregatedMetric}
-                  onChangeName={(name) => {
+                  value={metric}
+                  Icon={'rawSql' in metric ? IconCommonCustomSqlMetric : IconCommonAggregatedMetric}
+                  onChange={(metric) => {
                     setBlock((draft) => {
                       if (draft.content?.metrics?.[metricId]) {
-                        draft.content.metrics[metricId].name = name
+                        draft.content.metrics[metricId] = metric
                       }
                     })
                   }}
@@ -230,15 +233,15 @@ function getFuncs(type: string, aggregation?: Record<string, Record<string, stri
 }
 
 function MetricItem(props: {
-  name: string
+  value: Metric
+  onChange(value: Metric): void
   Icon: React.ForwardRefExoticComponent<React.SVGAttributes<SVGElement>>
-  onChangeName(name: string): void
   onRemove(): void
 }) {
-  const [value, setValue] = useState('')
+  const [name, setName] = useState('')
   useEffect(() => {
-    setValue(props.name)
-  }, [props.name])
+    setName(props.value.name)
+  }, [props.value.name])
   const { Icon } = props
 
   return (
@@ -252,10 +255,10 @@ function MetricItem(props: {
     >
       <Icon color={ThemingVariables.colors.gray[0]} />
       <ConfigInput
-        value={value}
-        onChange={setValue}
+        value={name}
+        onChange={setName}
         onBlur={() => {
-          props.onChangeName(value)
+          props.onChange({ ...props.value, name })
         }}
         className={css`
           flex: 1;
@@ -267,13 +270,25 @@ function MetricItem(props: {
           color: ${ThemingVariables.colors.text[0]};
         `}
       />
-      <ConfigIconButton
-        icon={IconCommonSub}
-        onClick={props.onRemove}
-        className={css`
-          flex-shrink: 0;
-        `}
-      />
+      <ConfigPopover
+        width={360}
+        title={'rawSql' in props.value ? 'Custom SQL metric' : 'Aggregated metric'}
+        content={
+          'rawSql' in props.value ? (
+            <MetricSQLEditor value={props.value} onChange={props.onChange} onRemove={props.onRemove} />
+          ) : (
+            <MetricConfigEditor value={props.value} onChange={props.onChange} onRemove={props.onRemove} />
+          )
+        }
+      >
+        <ConfigIconButton
+          icon={IconCommonEdit}
+          onClick={() => {}}
+          className={css`
+            flex-shrink: 0;
+          `}
+        />
+      </ConfigPopover>
     </div>
   )
 }
@@ -378,6 +393,91 @@ function MetricConfigCreator(props: {
   )
 }
 
+function MetricConfigEditor(props: {
+  value: AggregatedMetric
+  onChange(value: AggregatedMetric): void
+  onRemove(): void
+}) {
+  const { data: spec } = useGetProfileSpec()
+  const [value, setValue] = useState(props.value)
+  useEffect(() => {
+    setValue(props.value)
+  }, [props.value])
+
+  return (
+    <>
+      <ConfigItem label="Column">
+        <span
+          className={css`
+            font-size: 12px;
+            line-height: 14px;
+            color: ${ThemingVariables.colors.text[0]};
+            padding: 0 6px;
+          `}
+        >
+          {value.fieldName}
+        </span>
+      </ConfigItem>
+      <Divider half={true} />
+      <ConfigItem label="Calculations">null</ConfigItem>
+      <ConfigItem
+        label={
+          <ConfigSelect
+            options={getFuncs(value.fieldType, spec?.queryBuilderSpec.aggregation)}
+            value={value.func}
+            onChange={(func) => {
+              props.onChange({ ...value, func })
+            }}
+            className={css`
+              overflow: hidden;
+              text-overflow: ellipsis;
+              flex-shrink: 1;
+            `}
+          />
+        }
+      >
+        <ConfigInput
+          value={value.name}
+          onChange={(name) => {
+            props.onChange({ ...value, name })
+          }}
+        />
+      </ConfigItem>
+      <Divider />
+      <div
+        className={css`
+          display: flex;
+        `}
+      >
+        <FormButton
+          variant="primary"
+          onClick={() => {
+            props.onChange(value)
+          }}
+          className={css`
+            flex: 1;
+            width: 0;
+            margin-right: 8px;
+          `}
+        >
+          Save
+        </FormButton>
+        <FormButton
+          variant="danger"
+          onClick={() => {
+            props.onRemove()
+          }}
+          className={css`
+            width: 100px;
+          `}
+        >
+          Delete
+        </FormButton>
+      </div>
+    </>
+  )
+}
+
 function MetricSQLCreator(props: { onCreate(metrics: Metric[]): void }) {
   const [name, setName] = useState('')
   const [rawSql, setRawSql] = useState('')
@@ -424,6 +524,77 @@ function MetricSQLCreator(props: { onCreate(metrics: Metric[]): void }) {
       >
         Add to metrics
       </FormButton>
+    </>
+  )
+}
+
+function MetricSQLEditor(props: { value: CustomSQLMetric; onChange(value: CustomSQLMetric): void; onRemove(): void }) {
+  const [name, setName] = useState('')
+  const [rawSql, setRawSql] = useState('')
+  useEffect(() => {
+    setName(props.value.name)
+    setRawSql(props.value.rawSql)
+  }, [props.value])
+
+  return (
+    <>
+      <ConfigItem label="Metric name">
+        <ConfigInput value={name} onChange={setName} />
+      </ConfigItem>
+      <Divider half={true} />
+      <ConfigItem label="SQL">null</ConfigItem>
+      <textarea
+        value={rawSql}
+        onChange={(e) => {
+          setRawSql(e.target.value)
+        }}
+        spellCheck="false"
+        autoComplete="off"
+        className={css`
+          height: 160px;
+          width: 100%;
+          resize: none;
+          border: none;
+          outline: none;
+          background: ${ThemingVariables.colors.gray[3]};
+          border-radius: 4px;
+          padding: 8px;
+          margin-bottom: -3px;
+        `}
+      />
+      <Divider />
+      <div
+        className={css`
+          display: flex;
+        `}
+      >
+        <FormButton
+          variant="primary"
+          onClick={() => {
+            props.onChange({ name, rawSql })
+            setName('')
+            setRawSql('')
+          }}
+          className={css`
+            flex: 1;
+            width: 0;
+            margin-right: 8px;
+          `}
+        >
+          Save
+        </FormButton>
+        <FormButton
+          variant="danger"
+          onClick={() => {
+            props.onRemove()
+          }}
+          className={css`
+            width: 100px;
+          `}
+        >
+          Delete
+        </FormButton>
+      </div>
     </>
   )
 }

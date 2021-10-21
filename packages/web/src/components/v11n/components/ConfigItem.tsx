@@ -34,6 +34,7 @@ export function ConfigItem(props: { label: ReactNode; children: ReactNode; multi
         className={css`
           width: ${props.multiline ? 'unset' : '160px'};
           line-height: 0;
+          flex-shrink: 0;
         `}
       >
         {props.children}
