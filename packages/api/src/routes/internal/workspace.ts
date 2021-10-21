@@ -5,6 +5,7 @@ import Router from 'koa-router'
 import { PermissionWorkspaceRole } from '../../types/permission'
 import { validate } from '../../utils/http'
 import workspaceService from '../../services/workspace'
+import { LoadMoreKey } from '../../types/common'
 
 class UserRole {
   @IsDefined()
@@ -38,6 +39,40 @@ class CreateWorkspaceRequest {
   avatar?: string
 }
 
+class ListWorkspacesRequest {
+  @IsDefined()
+  operatorId!: string
+
+  @ValidateNested()
+  next?: LoadMoreKey
+}
+
+class GetWorkspaceDetailRequest {
+  @IsDefined()
+  operatorId!: string
+
+  @IsDefined()
+  workspaceId!: string
+}
+
+async function listWorkspaces(ctx: Context) {
+  const payload = plainToClass(ListWorkspacesRequest, ctx.request.body)
+  await validate(ctx, payload)
+
+  const { operatorId, next } = payload
+  const res = await workspaceService.list(operatorId, next)
+  ctx.body = res
+}
+
+async function getWorkspaceDetail(ctx: Context) {
+  const payload = plainToClass(GetWorkspaceDetailRequest, ctx.request.body)
+  await validate(ctx, payload)
+
+  const { operatorId, workspaceId } = payload
+  const workspace = await workspaceService.get(operatorId, workspaceId)
+  ctx.body = { workspace }
+}
+
 async function createWorkspace(ctx: Context) {
   const payload = plainToClass(CreateWorkspaceRequest, ctx.request.body)
   await validate(ctx, payload)
@@ -60,6 +95,8 @@ async function addMembers(ctx: Context) {
 
 const router = new Router()
 
+router.post('/list', listWorkspaces)
+router.post('/getDetail', getWorkspaceDetail)
 router.post('/addMembers', addMembers)
 router.post('/create', createWorkspace)
 
