@@ -9,7 +9,7 @@ import {
 } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
 import { ThemingVariables } from '@app/styles'
-import { CustomSQLMetric, Editor, Metric } from '@app/types'
+import { AggregatedMetric, CustomSQLMetric, Editor, Metric } from '@app/types'
 import { blockIdGenerator } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import produce from 'immer'
@@ -270,7 +270,15 @@ function MetricItem(props: {
           color: ${ThemingVariables.colors.text[0]};
         `}
       />
-      <ConfigPopover title={'rawSql' in props.value ? 'Custom SQL metric' : 'Aggregated metric'} content={null}>
+      <ConfigPopover
+        width={360}
+        title={'rawSql' in props.value ? 'Custom SQL metric' : 'Aggregated metric'}
+        content={
+          'rawSql' in props.value ? null : (
+            <MetricConfigEditor value={props.value} onChange={props.onChange} onRemove={props.onRemove} />
+          )
+        }
+      >
         <ConfigIconButton
           icon={IconCommonEdit}
           onClick={() => {}}
@@ -379,6 +387,91 @@ function MetricConfigCreator(props: {
       >
         Add to metrics
       </FormButton>
+    </>
+  )
+}
+
+function MetricConfigEditor(props: {
+  value: AggregatedMetric
+  onChange(value: AggregatedMetric): void
+  onRemove(): void
+}) {
+  const { data: spec } = useGetProfileSpec()
+  const [value, setValue] = useState(props.value)
+  useEffect(() => {
+    setValue(props.value)
+  }, [props.value])
+
+  return (
+    <>
+      <ConfigItem label="Column">
+        <span
+          className={css`
+            font-size: 12px;
+            line-height: 14px;
+            color: ${ThemingVariables.colors.text[0]};
+            padding: 0 6px;
+          `}
+        >
+          {value.fieldName}
+        </span>
+      </ConfigItem>
+      <Divider half={true} />
+      <ConfigItem label="Calculations">null</ConfigItem>
+      <ConfigItem
+        label={
+          <ConfigSelect
+            options={getFuncs(value.fieldType, spec?.queryBuilderSpec.aggregation)}
+            value={value.func}
+            onChange={(func) => {
+              props.onChange({ ...value, func })
+            }}
+            className={css`
+              overflow: hidden;
+              text-overflow: ellipsis;
+              flex-shrink: 1;
+            `}
+          />
+        }
+      >
+        <ConfigInput
+          value={value.name}
+          onChange={(name) => {
+            props.onChange({ ...value, name })
+          }}
+        />
+      </ConfigItem>
+      <Divider />
+      <div
+        className={css`
+          display: flex;
+        `}
+      >
+        <FormButton
+          variant="primary"
+          onClick={() => {
+            props.onChange(value)
+          }}
+          className={css`
+            flex: 1;
+            width: 0;
+            margin-right: 8px;
+          `}
+        >
+          Save
+        </FormButton>
+        <FormButton
+          variant="danger"
+          onClick={() => {
+            props.onRemove()
+          }}
+          className={css`
+            width: 100px;
+          `}
+        >
+          Delete
+        </FormButton>
+      </div>
     </>
   )
 }
