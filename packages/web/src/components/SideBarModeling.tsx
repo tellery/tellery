@@ -21,6 +21,7 @@ import QuestionDownstreams from './QuestionDownstreams'
 import ConfigIconButton from './v11n/components/ConfigIconButton'
 import { ConfigInput } from './v11n/components/ConfigInput'
 import { ConfigItem } from './v11n/components/ConfigItem'
+import { ConfigPopover } from './v11n/components/ConfigPopover'
 import { ConfigPopoverWithTabs } from './v11n/components/ConfigPopoverWithTabs'
 import { ConfigSection } from './v11n/components/ConfigSection'
 import { ConfigSelect } from './v11n/components/ConfigSelect'
@@ -146,12 +147,12 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
             ? Object.entries(metrics).map(([metricId, metric]) => (
                 <MetricItem
                   key={metricId}
-                  name={metric.name}
+                  value={metric}
                   Icon={(metric as CustomSQLMetric).rawSql ? IconCommonCustomSqlMetric : IconCommonAggregatedMetric}
-                  onChangeName={(name) => {
+                  onChange={(metric) => {
                     setBlock((draft) => {
                       if (draft.content?.metrics?.[metricId]) {
-                        draft.content.metrics[metricId].name = name
+                        draft.content.metrics[metricId] = metric
                       }
                     })
                   }}
@@ -232,15 +233,15 @@ function getFuncs(type: string, aggregation?: Record<string, Record<string, stri
 }
 
 function MetricItem(props: {
-  name: string
+  value: Metric
+  onChange(value: Metric): void
   Icon: React.ForwardRefExoticComponent<React.SVGAttributes<SVGElement>>
-  onChangeName(name: string): void
   onRemove(): void
 }) {
-  const [value, setValue] = useState('')
+  const [name, setName] = useState('')
   useEffect(() => {
-    setValue(props.name)
-  }, [props.name])
+    setName(props.value.name)
+  }, [props.value.name])
   const { Icon } = props
 
   return (
@@ -254,10 +255,10 @@ function MetricItem(props: {
     >
       <Icon color={ThemingVariables.colors.gray[0]} />
       <ConfigInput
-        value={value}
-        onChange={setValue}
+        value={name}
+        onChange={setName}
         onBlur={() => {
-          props.onChangeName(value)
+          props.onChange({ ...props.value, name })
         }}
         className={css`
           flex: 1;
@@ -269,13 +270,15 @@ function MetricItem(props: {
           color: ${ThemingVariables.colors.text[0]};
         `}
       />
-      <ConfigIconButton
-        icon={IconCommonEdit}
-        onClick={() => {}}
-        className={css`
-          flex-shrink: 0;
-        `}
-      />
+      <ConfigPopover title={'rawSql' in props.value ? 'Custom SQL metric' : 'Aggregated metric'} content={null}>
+        <ConfigIconButton
+          icon={IconCommonEdit}
+          onClick={() => {}}
+          className={css`
+            flex-shrink: 0;
+          `}
+        />
+      </ConfigPopover>
     </div>
   )
 }
