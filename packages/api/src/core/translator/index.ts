@@ -41,9 +41,9 @@ function withLimit(sql: string, limit: number): string {
   const singleLinedSql = sql.replace(/\n/g, ' ')
   // TODO: replace this regex by a proper parser
   const sqlType =
-    singleLinedSql.match(
-      /^(?:with.+\)\s+)?(select|update|delete|insert|desc|create|alter|drop|grant)/i,
-    )?.[1] ?? 'unknown'
+    singleLinedSql
+      .match(/^(?:with.+\)\s+)?(select|update|delete|insert|desc|create|alter|drop|grant)/i)?.[1]
+      ?.toLowerCase() ?? 'unknown'
 
   // if sql is not a select clause or it has been limited already, return
   if (sqlType !== 'select' || singleLinedSql.match(/limit \d+\s*$/i) !== null) {
