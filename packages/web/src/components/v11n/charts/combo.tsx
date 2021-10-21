@@ -79,7 +79,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
       data.fields.find(
         ({ name, displayType }) =>
           // X and Y axis can't be the same
-          name === dimensions?.[0].name ||
+          name === dimensions?.[0]?.name ||
           (name !== y?.name && (isTimeSeries(displayType) || name === 'dt' || name === 'date' || name === 'ts'))
       ) ||
       // then, select numeric data as the X axis
