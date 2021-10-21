@@ -269,17 +269,17 @@ export namespace Editor {
   }
 
   export const FilterNames = {
-    [Editor.Filter.EQ]: 'equals',
-    [Editor.Filter.NE]: 'not equals',
-    [Editor.Filter.LT]: 'less than',
-    [Editor.Filter.LTE]: 'less or equal than',
-    [Editor.Filter.GT]: 'greater than',
-    [Editor.Filter.GTE]: 'greater or equal than',
+    [Editor.Filter.EQ]: '=',
+    [Editor.Filter.NE]: '≠',
+    [Editor.Filter.LT]: '<',
+    [Editor.Filter.LTE]: '≤',
+    [Editor.Filter.GT]: '>',
+    [Editor.Filter.GTE]: '≥',
     [Editor.Filter.CONTAINS]: 'contains',
     [Editor.Filter.IS_NULL]: 'is null',
     [Editor.Filter.IS_NOT_NULL]: 'is not null',
     [Editor.Filter.IS_TRUE]: 'is true',
-    [Editor.Filter.IS_FALSE]: 'is false',
+    [Editor.Filter.IS_FALSE]: 'is not true',
     [Editor.Filter.IS_BETWEEN]: 'between'
   }
 
