@@ -35,8 +35,12 @@ export function SQLEditor(props: {
     bottom: number
   }
   className?: string
-  onSave?(): void
-  onRun?(): void
+  onSave?: {
+    readonly current: (snapshotId?: string | undefined) => void
+  }
+  onRun?: {
+    readonly current: () => Promise<void>
+  }
 }) {
   const [editor, setEditor] = useState<editor.IStandaloneCodeEditor>()
   const { onRun, onSave } = props
@@ -67,8 +71,8 @@ export function SQLEditor(props: {
       })
     })
 
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, () => onSave?.())
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => onRun?.())
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, () => onSave?.current())
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => onRun?.current())
     return () => {
       unsubscribe.dispose()
     }

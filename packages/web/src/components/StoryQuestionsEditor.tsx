@@ -35,7 +35,7 @@ import isHotkey from 'is-hotkey'
 import { omit } from 'lodash'
 import React, { SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'react-toastify'
-import { useWindowSize } from 'react-use'
+import { useLatest, useWindowSize } from 'react-use'
 import { Tab, TabList, TabPanel, TabStateReturn, useTabState } from 'reakit/Tab'
 import YAML from 'yaml'
 import { setBlockTranscation } from '../context/editorTranscations'
@@ -545,6 +545,7 @@ export const StoryQuestionEditor: React.FC<{
 
   const save = useCallback(
     (snapshotId?: string) => {
+      console.log('save')
       if (!block) {
         toast.error('block is undefined')
         return
@@ -682,6 +683,9 @@ export const StoryQuestionEditor: React.FC<{
     !!(visualizationBlock && queryBlock.storyId !== visualizationBlock?.storyId) ||
     queryBlock.type === Editor.BlockType.SmartQuery
 
+  const latestSave = useLatest(save)
+  const latestRun = useLatest(run)
+
   return (
     <TabPanel
       {...tab}
@@ -783,11 +787,9 @@ export const StoryQuestionEditor: React.FC<{
             storyId={storyId}
             padding={{ top: 20, bottom: 0 }}
             languageId={profileType}
-            onChange={(e) => {
-              setSql(e)
-            }}
-            onRun={run}
-            onSave={save}
+            onChange={setSql}
+            onRun={latestRun}
+            onSave={latestSave}
             readOnly={sqlReadOnly}
           />
         )}
