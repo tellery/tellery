@@ -723,7 +723,15 @@ export function useTranslateSmartQuery(
       JSON.stringify(dimensions),
       JSON.stringify(filters)
     ],
-    () => translateSmartQuery(workspace, queryBuilderId, metricIds, dimensions, filters).then((res) => res.data.sql),
+    () =>
+      translateSmartQuery(
+        workspace.id,
+        workspace.preferences?.connectorId!,
+        queryBuilderId,
+        metricIds,
+        dimensions,
+        filters
+      ).then((res) => res.data.sql),
     { enabled: !!queryBuilderId }
   )
 }

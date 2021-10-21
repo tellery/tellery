@@ -21,15 +21,16 @@ request.interceptors.response.use(undefined, (error) => {
 })
 
 export const translateSmartQuery = async (
-  workspace: Workspace,
+  workspaceId: string,
+  connectorId: string,
   queryBuilderId?: string,
   metricIds: string[] = [],
   dimensions: Dimension[] = [],
   filters?: Editor.FilterBuilder
 ) => {
   return request.post<{ sql: string }>('/api/connectors/translateSmartQuery', {
-    workspaceId: workspace.id,
-    connectorId: workspace.preferences.connectorId,
+    workspaceId: workspaceId,
+    connectorId: connectorId,
     queryBuilderId,
     metricIds,
     dimensions,

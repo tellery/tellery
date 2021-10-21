@@ -202,7 +202,14 @@ const Page = () => {
 
   useEffect(() => {
     if (!queryBuilderId) return
-    translateSmartQuery(workspace, queryBuilderId, metricIds, dimensions, filters)
+    translateSmartQuery(
+      workspace.id,
+      workspace.preferences?.connectorId!,
+      queryBuilderId,
+      metricIds,
+      dimensions,
+      filters
+    )
       .then((response) => {
         setSql(response.data.sql)
       })

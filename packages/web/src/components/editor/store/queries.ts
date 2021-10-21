@@ -1,5 +1,3 @@
-import { translateSmartQuery } from '@app/api'
-import { WorkspaceAtom } from '@app/hooks/useWorkspace'
 import { TelleryBlockAtom } from '@app/store/block'
 import { Editor } from '@app/types'
 import { VARIABLE_REGEX } from '@app/utils'
@@ -7,7 +5,13 @@ import { selectorFamily } from 'recoil'
 import { VariableAtomFamily, VariableAtomFamilyDefault } from './variables'
 
 export const QuerySelectorFamily = selectorFamily<
-  { sql: string; isTemp: boolean },
+  {
+    query: {
+      type: 'sql' | 'smart'
+      data: string
+    }
+    isTemp: boolean
+  },
   { storyId: string; queryId: string }
 >({
   key: 'QuerySelectorFamily',
@@ -16,8 +20,8 @@ export const QuerySelectorFamily = selectorFamily<
     async ({ get }) => {
       const queryBlock = get(TelleryBlockAtom(queryId)) as Editor.QueryBlock
       let isTemp = false
-      const getReplacedSql = (sql: string) => {
-        const replacedSql = sql.replace(VARIABLE_REGEX, (name) => {
+      const getReplacedQuery = (data: string, type: 'sql' | 'smart' = 'sql') => {
+        const replacedData = data.replace(VARIABLE_REGEX, (name) => {
           const variableName = name.slice(2, -2)
           const variable = get(VariableAtomFamily({ storyId, name: variableName }))
           const defaultValue = get(VariableAtomFamilyDefault({ storyId, name: variableName }))
@@ -31,29 +35,46 @@ export const QuerySelectorFamily = selectorFamily<
           }
           return name
         })
-        return { sql: replacedSql, isTemp: isTemp }
+        return {
+          query: {
+            type: type,
+            data: replacedData
+          },
+          isTemp: isTemp
+        }
       }
       if (queryBlock.type === Editor.BlockType.SQL || queryBlock.type === Editor.BlockType.QueryBuilder) {
-        return getReplacedSql((queryBlock as Editor.SQLBlock).content?.sql ?? '')
+        return getReplacedQuery((queryBlock as Editor.SQLBlock).content?.sql ?? '')
       }
       try {
         if (queryBlock.type === Editor.BlockType.SmartQuery) {
           const smartQueryBlock = queryBlock as Editor.SmartQueryBlock
-          const workspace = get(WorkspaceAtom)
-          if (!workspace) return { sql: '', isTemp: false }
-          const response = await translateSmartQuery(
-            workspace,
-            smartQueryBlock.content.queryBuilderId,
-            smartQueryBlock.content?.metricIds,
-            smartQueryBlock.content?.dimensions,
-            smartQueryBlock.content?.filters
+          return getReplacedQuery(
+            JSON.stringify({
+              queryBuilderId: smartQueryBlock.content.queryBuilderId,
+              metricIds: smartQueryBlock.content?.metricIds,
+              dimensions: smartQueryBlock.content?.dimensions,
+              filters: smartQueryBlock.content?.filters
+            }),
+            'smart'
           )
-          return getReplacedSql(response.data.sql)
         }
       } catch {
-        return { sql: '', isTemp: isTemp }
+        return {
+          query: {
+            type: 'sql',
+            data: ''
+          },
+          isTemp: isTemp
+        }
       }
-      return { sql: '', isTemp: isTemp }
+      return {
+        query: {
+          type: 'sql',
+          data: ''
+        },
+        isTemp: isTemp
+      }
     },
   cachePolicy_UNSTABLE: {
     eviction: 'most-recent'

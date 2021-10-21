@@ -1,4 +1,4 @@
-import { sqlRequest } from '@app/api'
+import { sqlRequest, translateSmartQuery } from '@app/api'
 import { isExecuteableBlockType } from '@app/components/editor/Blocks/utils'
 import { QuerySelectorFamily } from '@app/components/editor/store/queries'
 import { charts } from '@app/components/v11n/charts'
@@ -9,6 +9,7 @@ import { QuerySnapshotIdAtom, useCreateSnapshot } from '@app/store/block'
 import { Editor, Story } from '@app/types'
 import { blockIdGenerator } from '@app/utils'
 import dayjs from 'dayjs'
+import { dequal } from 'dequal'
 import { isEqual } from 'lodash'
 import React, { useCallback, useContext, useEffect, useMemo } from 'react'
 import { useIsMutating, useQueryClient } from 'react-query'
@@ -17,7 +18,7 @@ import invariant from 'tiny-invariant'
 import { usePrevious } from '.'
 import { useBlockSuspense, useFetchStoryChunk, useGetBlock, useGetSnapshot } from './api'
 import { useCommit } from './useCommit'
-import { useGetCompiledSQL } from './useCompiledQuery'
+import { useGetCompiledQuery } from './useCompiledQuery'
 import { useStoryPermissions } from './useStoryPermissions'
 import { useStoryResources } from './useStoryResources'
 
@@ -28,13 +29,29 @@ export const useRefreshSnapshot = (storyId: string) => {
   const createSnapshot = useCreateSnapshot()
   const getSnapshot = useGetSnapshot()
   const getBlock = useGetBlock()
-  const getCompiledSQL = useGetCompiledSQL()
+  const getCompiledQuery = useGetCompiledQuery()
 
   const execute = useRecoilCallback(
     ({ set, reset }) =>
       async (queryBlock: Editor.QueryBlock) => {
         const originalBlockId = queryBlock.id
-        const { sql, isTemp } = await getCompiledSQL(storyId, queryBlock.id)
+        const { query, isTemp } = await getCompiledQuery(storyId, queryBlock.id)
+        let sql = ''
+        if (query.type === 'sql') {
+          sql = query.data
+        } else if (query.type === 'smart') {
+          const { queryBuilderId, metricIds, dimensions, filters } = JSON.parse(query.data)
+          sql = (
+            await translateSmartQuery(
+              workspace.id,
+              workspace.preferences?.connectorId!,
+              queryBuilderId,
+              metricIds,
+              dimensions,
+              filters
+            )
+          ).data.sql
+        }
         const mutations = queryClient
           .getMutationCache()
           .getAll()
@@ -156,7 +173,7 @@ export const useRefreshSnapshot = (storyId: string) => {
       createSnapshot,
       getSnapshot,
       getBlock,
-      getCompiledSQL,
+      getCompiledQuery,
       queryClient,
       storyId,
       workspace.id,
@@ -243,7 +260,7 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
       const currentQuery = compiledQueries[i]
       if (!previousQuery || !currentQuery) continue
       if (
-        (previousQuery.sql !== currentQuery.sql && currentQuery.isTemp) ||
+        (dequal(previousQuery, currentQuery) !== true && currentQuery.isTemp) ||
         currentQuery.isTemp !== previousQuery.isTemp
       ) {
         const queryBlock = resourcesBlocks[i]
