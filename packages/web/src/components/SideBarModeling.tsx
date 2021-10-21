@@ -148,7 +148,7 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
                 <MetricItem
                   key={metricId}
                   value={metric}
-                  Icon={(metric as CustomSQLMetric).rawSql ? IconCommonCustomSqlMetric : IconCommonAggregatedMetric}
+                  Icon={'rawSql' in metric ? IconCommonCustomSqlMetric : IconCommonAggregatedMetric}
                   onChange={(metric) => {
                     setBlock((draft) => {
                       if (draft.content?.metrics?.[metricId]) {
@@ -274,7 +274,9 @@ function MetricItem(props: {
         width={360}
         title={'rawSql' in props.value ? 'Custom SQL metric' : 'Aggregated metric'}
         content={
-          'rawSql' in props.value ? null : (
+          'rawSql' in props.value ? (
+            <MetricSQLEditor value={props.value} onChange={props.onChange} onRemove={props.onRemove} />
+          ) : (
             <MetricConfigEditor value={props.value} onChange={props.onChange} onRemove={props.onRemove} />
           )
         }
@@ -522,6 +524,77 @@ function MetricSQLCreator(props: { onCreate(metrics: Metric[]): void }) {
       >
         Add to metrics
       </FormButton>
+    </>
+  )
+}
+
+function MetricSQLEditor(props: { value: CustomSQLMetric; onChange(value: CustomSQLMetric): void; onRemove(): void }) {
+  const [name, setName] = useState('')
+  const [rawSql, setRawSql] = useState('')
+  useEffect(() => {
+    setName(props.value.name)
+    setRawSql(props.value.rawSql)
+  }, [props.value])
+
+  return (
+    <>
+      <ConfigItem label="Metric name">
+        <ConfigInput value={name} onChange={setName} />
+      </ConfigItem>
+      <Divider half={true} />
+      <ConfigItem label="SQL">null</ConfigItem>
+      <textarea
+        value={rawSql}
+        onChange={(e) => {
+          setRawSql(e.target.value)
+        }}
+        spellCheck="false"
+        autoComplete="off"
+        className={css`
+          height: 160px;
+          width: 100%;
+          resize: none;
+          border: none;
+          outline: none;
+          background: ${ThemingVariables.colors.gray[3]};
+          border-radius: 4px;
+          padding: 8px;
+          margin-bottom: -3px;
+        `}
+      />
+      <Divider />
+      <div
+        className={css`
+          display: flex;
+        `}
+      >
+        <FormButton
+          variant="primary"
+          onClick={() => {
+            props.onChange({ name, rawSql })
+            setName('')
+            setRawSql('')
+          }}
+          className={css`
+            flex: 1;
+            width: 0;
+            margin-right: 8px;
+          `}
+        >
+          Save
+        </FormButton>
+        <FormButton
+          variant="danger"
+          onClick={() => {
+            props.onRemove()
+          }}
+          className={css`
+            width: 100px;
+          `}
+        >
+          Delete
+        </FormButton>
+      </div>
     </>
   )
 }
