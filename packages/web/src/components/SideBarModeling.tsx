@@ -1,4 +1,4 @@
-import { IconCommonAdd, IconCommonAggregatedMetric, IconCommonCustomSqlMetric, IconCommonSub } from '@app/assets/icons'
+import { IconCommonAdd, IconCommonAggregatedMetric, IconCommonCustomSqlMetric, IconCommonEdit } from '@app/assets/icons'
 import { setBlockTranscation } from '@app/context/editorTranscations'
 import {
   useBlockSuspense,
@@ -57,34 +57,36 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
 
   return (
     <>
-      <ConfigSection title="Description">
-        <textarea
-          value={description}
-          onChange={(e) => {
-            setDescription(e.target.value)
-          }}
-          onBlur={() => {
-            setBlock((draft) => {
-              if (draft.content) {
-                draft.content.description = description
-              }
-            })
-          }}
-          className={css`
-            resize: none;
-            outline: none;
-            padding: 9px 6px;
-            font-size: 12px;
-            line-height: 14px;
-            color: ${ThemingVariables.colors.text[0]};
-            border: 1px solid ${ThemingVariables.colors.gray[1]};
-            box-sizing: border-box;
-            border-radius: 4px;
-            height: 60px;
-            width: 100%;
-          `}
-        />
-      </ConfigSection>
+      {queryBlock.type === Editor.BlockType.QueryBuilder ? (
+        <ConfigSection title="Description">
+          <textarea
+            value={description}
+            onChange={(e) => {
+              setDescription(e.target.value)
+            }}
+            onBlur={() => {
+              setBlock((draft) => {
+                if (draft.content) {
+                  draft.content.description = description
+                }
+              })
+            }}
+            className={css`
+              resize: none;
+              outline: none;
+              padding: 9px 6px;
+              font-size: 12px;
+              line-height: 14px;
+              color: ${ThemingVariables.colors.text[0]};
+              border: 1px solid ${ThemingVariables.colors.gray[1]};
+              box-sizing: border-box;
+              border-radius: 4px;
+              height: 60px;
+              width: 100%;
+            `}
+          />
+        </ConfigSection>
+      ) : null}
       {queryBlock.type === Editor.BlockType.QueryBuilder ? (
         <ConfigSection
           title="Metrics"
@@ -268,8 +270,8 @@ function MetricItem(props: {
         `}
       />
       <ConfigIconButton
-        icon={IconCommonSub}
-        onClick={props.onRemove}
+        icon={IconCommonEdit}
+        onClick={() => {}}
         className={css`
           flex-shrink: 0;
         `}
