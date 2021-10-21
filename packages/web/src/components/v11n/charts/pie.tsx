@@ -40,7 +40,7 @@ export const pie: Chart<Type.PIE> = {
       keys: data.fields.map(({ name }) => name),
 
       dimension: dimensions
-        ? dimensions[0].name
+        ? dimensions[0]?.name
         : data.fields.find(({ displayType }) => displayType === DisplayType.STRING)?.name || data.fields[0].name,
       measurement:
         data.fields.find(({ displayType }) => isNumeric(displayType) && !isTimeSeries(displayType))?.name ||
