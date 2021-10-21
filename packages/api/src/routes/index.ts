@@ -31,12 +31,11 @@ router.use('/activities', activities.routes(), activities.allowedMethods())
 router.use('/storage', upload.routes(), upload.allowedMethods())
 router.use('/thought', thought.routes(), thought.allowedMethods())
 router.use('/thirdParty', thirdParty.routes(), thirdParty.allowedMethods())
-// in SaaS deployment, exposes internal and hide users
+router.use('/users', users.routes(), users.allowedMethods())
+router.use('', global.routes(), global.allowedMethods())
+// exposes internal interfaces only for SaaS
 if (isSaaS()) {
   router.use('/internal', internal.routes(), internal.allowedMethods())
-} else {
-  router.use('/users', users.routes(), users.allowedMethods())
 }
-router.use('', global.routes(), global.allowedMethods())
 
 export default router

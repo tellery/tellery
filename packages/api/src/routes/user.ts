@@ -15,7 +15,7 @@ import { NotFoundError } from '../error/error'
 
 import { defaultUserService as userService } from '../services/user'
 import { PermissionWorkspaceRole } from '../types/permission'
-import { isAnonymous } from '../utils/env'
+import { isAnonymous, isSaaS } from '../utils/env'
 import { validate } from '../utils/http'
 import { mustGetUser } from '../utils/user'
 class UpdateUserInfoRequest {
@@ -160,12 +160,14 @@ async function inviteMembersToWorkspace(ctx: Context) {
 
 const router = new Router()
 
-router.post('/update', updateUserInfo)
-router.post('/generate', generateUser)
-router.post('/confirm', confirmUser)
 router.post('/me', getUserInfo)
-router.post('/login', login)
-router.post('/logout', logout)
-router.post('/inviteMembersToWorkspace', inviteMembersToWorkspace)
+if (!isSaaS()) {
+  router.post('/update', updateUserInfo)
+  router.post('/generate', generateUser)
+  router.post('/confirm', confirmUser)
+  router.post('/login', login)
+  router.post('/logout', logout)
+  router.post('/inviteMembersToWorkspace', inviteMembersToWorkspace)
+}
 
 export default router
