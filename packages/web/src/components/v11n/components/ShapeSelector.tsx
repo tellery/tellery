@@ -34,7 +34,7 @@ export function ShapeSelector(props: {
     >
       <ConfigPopover
         title="Shape details"
-        content={
+        content={() => (
           <>
             <ConfigItem label="Color" multiline={true}>
               <ConfigColorPicker
@@ -68,7 +68,7 @@ export function ShapeSelector(props: {
               </div>
             </ConfigItem>
           </>
-        }
+        )}
       >
         <div
           className={css`

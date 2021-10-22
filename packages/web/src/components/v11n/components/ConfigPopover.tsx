@@ -5,7 +5,12 @@ import Tippy from '@tippyjs/react'
 import { ReactNode, useState } from 'react'
 import ConfigIconButton from './ConfigIconButton'
 
-export function ConfigPopover(props: { title: string; content: ReactNode; children: ReactNode; width?: number }) {
+export function ConfigPopover(props: {
+  title: string
+  content: ({ onClose }: { onClose: () => void }) => ReactNode
+  children: ReactNode
+  width?: number
+}) {
   const [visible, setVisible] = useState(false)
 
   return (
@@ -61,7 +66,11 @@ export function ConfigPopover(props: { title: string; content: ReactNode; childr
               border-top: 1px solid ${ThemingVariables.colors.gray[1]};
             `}
           >
-            {props.content}
+            {props.content({
+              onClose() {
+                setVisible(false)
+              }
+            })}
           </div>
         </div>
       }

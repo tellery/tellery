@@ -273,11 +273,31 @@ function MetricItem(props: {
       <ConfigPopover
         width={360}
         title={'rawSql' in props.value ? 'Custom SQL metric' : 'Aggregated metric'}
-        content={
+        content={({ onClose }) =>
           'rawSql' in props.value ? (
-            <MetricSQLEditor value={props.value} onChange={props.onChange} onRemove={props.onRemove} />
+            <MetricSQLEditor
+              value={props.value}
+              onChange={(v) => {
+                props.onChange(v)
+                onClose()
+              }}
+              onRemove={() => {
+                props.onRemove()
+                onClose()
+              }}
+            />
           ) : (
-            <MetricConfigEditor value={props.value} onChange={props.onChange} onRemove={props.onRemove} />
+            <MetricConfigEditor
+              value={props.value}
+              onChange={(v) => {
+                props.onChange(v)
+                onClose()
+              }}
+              onRemove={() => {
+                props.onRemove()
+                onClose()
+              }}
+            />
           )
         }
       >
@@ -571,9 +591,7 @@ function MetricSQLEditor(props: { value: CustomSQLMetric; onChange(value: Custom
         <FormButton
           variant="primary"
           onClick={() => {
-            props.onChange({ name, rawSql })
-            setName('')
-            setRawSql('')
+            props.onChange({ ...props.value, name, rawSql })
           }}
           className={css`
             flex: 1;

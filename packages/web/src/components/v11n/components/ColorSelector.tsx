@@ -32,7 +32,7 @@ export function ColorSelector(props: {
     >
       <ConfigPopover
         title="Color detail"
-        content={
+        content={() => (
           <ConfigItem label="Color" multiline={true}>
             <ConfigColorPicker
               value={props.value.color}
@@ -44,7 +44,7 @@ export function ColorSelector(props: {
               }}
             />
           </ConfigItem>
-        }
+        )}
       >
         <div
           className={css`

@@ -105,7 +105,7 @@ export function MoreSettingPopover(props: {
   return (
     <ConfigPopover
       title="Shape details"
-      content={
+      content={() => (
         <>
           <ConfigItem label="Type">
             <div
@@ -157,7 +157,7 @@ export function MoreSettingPopover(props: {
             </>
           ) : null}
         </>
-      }
+      )}
     >
       <ConfigIconButton icon={IconCommonMore} />
     </ConfigPopover>

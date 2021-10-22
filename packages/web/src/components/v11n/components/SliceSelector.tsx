@@ -29,7 +29,7 @@ export function SliceSelector(props: {
     >
       <ConfigPopover
         title="Slice detail"
-        content={
+        content={() => (
           <ConfigItem label="Color" multiline={true}>
             <ConfigColorPicker
               value={props.value.color}
@@ -41,7 +41,7 @@ export function SliceSelector(props: {
               }}
             />
           </ConfigItem>
-        }
+        )}
       >
         <div
           className={css`
