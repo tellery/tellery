@@ -92,7 +92,12 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
 
       xAxises: x ? [x.name] : [],
       dimensions: tail(dimensions?.map(({ name }) => name)) || [],
-      yAxises: dimensions ? [differenceBy(data.fields, dimensions, 'name')[0]?.name] : y ? [y.name] : [],
+      yAxises:
+        dimensions?.length === 1
+          ? differenceBy(data.fields, dimensions, 'name').map(({ name }) => name)
+          : y
+          ? [y.name]
+          : [],
       y2Axises: [],
 
       groups: [],
