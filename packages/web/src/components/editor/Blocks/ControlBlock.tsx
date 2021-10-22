@@ -19,8 +19,6 @@ const ControlBlock: BlockComponent<
   }>
 > = ({ block, blockFormat, parentType }) => {
   const contentRef = useRef<HTMLDivElement | null>(null)
-  const { readonly } = useBlockBehavior()
-  const workspace = useWorkspace()
   const inputRef = useRef<HTMLInputElement | null>(null)
   const blockTranscation = useBlockTranscations()
   const variableName = block.content.name ?? block.id
@@ -30,7 +28,9 @@ const ControlBlock: BlockComponent<
 
   useEffect(() => {
     if (!inputRef.current) return
-    inputRef.current.value = defaultValue
+    if (defaultValue !== undefined) {
+      inputRef.current.value = defaultValue
+    }
   }, [defaultValue])
 
   useEffect(() => {
@@ -61,6 +61,15 @@ const ControlBlock: BlockComponent<
         flex-direction: column;
         max-width: 150px;
       `}
+      onPaste={(e) => {
+        e.stopPropagation()
+      }}
+      onCopy={(e) => {
+        e.stopPropagation()
+      }}
+      onKeyDown={(e) => {
+        e.stopPropagation()
+      }}
     >
       <div>
         variable name:
@@ -71,6 +80,7 @@ const ControlBlock: BlockComponent<
             border-radius: 5px;
             border: 1px solid ${ThemingVariables.colors.gray[1]};
           `}
+          placeholder="input text"
           onChange={(e) => {
             blockTranscation.updateBlockProps(block.storyId!, block.id, ['content', 'name'], e.currentTarget.value)
           }}
@@ -123,6 +133,7 @@ const ControlBlock: BlockComponent<
                   const value = parseInt(e.currentTarget.value, 10)
                   submitChange(value)
                 }}
+                placeholder="input number"
                 type="number"
                 ref={inputRef}
                 style={{

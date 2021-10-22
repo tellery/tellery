@@ -814,6 +814,9 @@ const AddLinkOperation = (props: {
               onPaste={(e) => {
                 e.stopPropagation()
               }}
+              onCopy={(e) => {
+                e.stopPropagation()
+              }}
               ref={inputRef}
               // onSelect={(e) => {
               //   e.preventDefault()
