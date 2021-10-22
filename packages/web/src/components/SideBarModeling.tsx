@@ -97,7 +97,7 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
               content={[
                 ({ onClose }) =>
                   fields ? (
-                    <MetricConfigCreator
+                    <AggregatedMetricCreator
                       fields={fields}
                       metrics={metrics}
                       onCreate={(ms) => {
@@ -119,7 +119,7 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
                   ) : null,
                 ({ onClose }) =>
                   fields ? (
-                    <MetricSQLCreator
+                    <SQLMetricCreator
                       onCreate={(ms) => {
                         setBlock((draft) => {
                           if (draft.content) {
@@ -275,7 +275,7 @@ function MetricItem(props: {
         title={'rawSql' in props.value ? 'Custom SQL metric' : 'Aggregated metric'}
         content={({ onClose }) =>
           'rawSql' in props.value ? (
-            <MetricSQLEditor
+            <SQLMetricEditor
               value={props.value}
               onChange={(v) => {
                 props.onChange(v)
@@ -287,7 +287,7 @@ function MetricItem(props: {
               }}
             />
           ) : (
-            <MetricConfigEditor
+            <AggregatedMetricEditor
               value={props.value}
               onChange={(v) => {
                 props.onChange(v)
@@ -313,7 +313,7 @@ function MetricItem(props: {
   )
 }
 
-function MetricConfigCreator(props: {
+function AggregatedMetricCreator(props: {
   fields: { name: string; type: SQLType }[]
   metrics: { [id: string]: Metric }
   onCreate(metrics: Metric[]): void
@@ -413,7 +413,7 @@ function MetricConfigCreator(props: {
   )
 }
 
-function MetricConfigEditor(props: {
+function AggregatedMetricEditor(props: {
   value: AggregatedMetric
   onChange(value: AggregatedMetric): void
   onRemove(): void
@@ -446,7 +446,7 @@ function MetricConfigEditor(props: {
             options={getFuncs(value.fieldType, spec?.queryBuilderSpec.aggregation)}
             value={value.func}
             onChange={(func) => {
-              props.onChange({ ...value, func })
+              setValue({ ...value, func })
             }}
             className={css`
               overflow: hidden;
@@ -459,7 +459,7 @@ function MetricConfigEditor(props: {
         <ConfigInput
           value={value.name}
           onChange={(name) => {
-            props.onChange({ ...value, name })
+            setValue({ ...value, name })
           }}
         />
       </ConfigItem>
@@ -498,7 +498,7 @@ function MetricConfigEditor(props: {
   )
 }
 
-function MetricSQLCreator(props: { onCreate(metrics: Metric[]): void }) {
+function SQLMetricCreator(props: { onCreate(metrics: Metric[]): void }) {
   const [name, setName] = useState('')
   const [rawSql, setRawSql] = useState('')
 
@@ -548,7 +548,7 @@ function MetricSQLCreator(props: { onCreate(metrics: Metric[]): void }) {
   )
 }
 
-function MetricSQLEditor(props: { value: CustomSQLMetric; onChange(value: CustomSQLMetric): void; onRemove(): void }) {
+function SQLMetricEditor(props: { value: CustomSQLMetric; onChange(value: CustomSQLMetric): void; onRemove(): void }) {
   const [name, setName] = useState('')
   const [rawSql, setRawSql] = useState('')
   useEffect(() => {
