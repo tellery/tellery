@@ -168,12 +168,24 @@ export const convertBlocksOrTokensToPureText = (
       data: Record<string, Editor.BaseBlock>
     }
 
-    return value.children
+    const blocksToText = (blocks: Record<string, Editor.BaseBlock>, rootId: string, level: number): string => {
+      const block = blocks[rootId]
+      const childrenIds = block.children ?? []
+      return (
+        (level > 0 ? '  '.repeat(level) : '') +
+        blockTitleToText(block, snapshot) +
+        '\n' +
+        childrenIds.map((id) => blocksToText(blocks, id, level + 1)).join('\n')
+      )
+    }
+
+    const text = value.children
       .map((id) => {
-        const block = value.data[id]
-        return blockTitleToText(block, snapshot)
+        return blocksToText(value.data, id, 0)
       })
       .join('\n')
+
+    return text
   }
   return 'tellery'
 }
