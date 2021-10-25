@@ -140,8 +140,10 @@ export default function FilterCard(props: { value: Value; onEdit(): void; onDele
                 title="Delete"
                 icon={<IconMenuDelete />}
                 onClick={() => {
-                  setVisible(false)
-                  props.onDelete()
+                  if (confirm('Delete filter?')) {
+                    setVisible(false)
+                    props.onDelete()
+                  }
                 }}
               />
             </MenuWrapper>

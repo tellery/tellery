@@ -17,7 +17,8 @@ import { OffsetModifier } from '@popperjs/core/lib/modifiers/offset'
 import { PreventOverflowModifier } from '@popperjs/core/lib/modifiers/preventOverflow'
 import Tippy from '@tippyjs/react'
 import produce from 'immer'
-import React, { ReactNode, useState } from 'react'
+import React, { ReactNode, useEffect, useState } from 'react'
+import { FormButton } from './kit/FormButton'
 import IconButton from './kit/IconButton'
 import { MenuItem } from './MenuItem'
 import { MenuWrapper } from './MenuWrapper'
@@ -75,8 +76,14 @@ export default function FilterPopover(props: {
   fields: readonly { name: string; sqlType: SQLType }[]
   value: Value
   onChange(value: Value): void
+  onDelete(): void
   onClose(): void
 }) {
+  const [value, setValue] = useState(props.value)
+  useEffect(() => {
+    setValue(props.value)
+  }, [props.value])
+
   return (
     <div
       className={css`
@@ -113,15 +120,15 @@ export default function FilterPopover(props: {
           padding: 10px 10px 10px 0;
         `}
       >
-        {props.value.operands.map((operand, index) => (
+        {value.operands.map((operand, index) => (
           <FilterItemView
             key={index}
             index={index}
             isLast={false}
-            value={props.value.operator}
+            value={value.operator}
             onChange={(v) => {
-              props.onChange(
-                produce(props.value, (draft) => {
+              setValue(
+                produce(value, (draft) => {
                   draft.operator = v
                 })
               )
@@ -131,15 +138,15 @@ export default function FilterPopover(props: {
               fields={props.fields}
               value={operand}
               onChange={(v) => {
-                props.onChange(
-                  produce(props.value, (draft) => {
+                setValue(
+                  produce(value, (draft) => {
                     draft.operands[index] = v
                   })
                 )
               }}
               onDelete={() => {
-                props.onChange(
-                  produce(props.value, (draft) => {
+                setValue(
+                  produce(value, (draft) => {
                     draft.operands.splice(index, 1)
                   })
                 )
@@ -148,12 +155,12 @@ export default function FilterPopover(props: {
           </FilterItemView>
         ))}
         <FilterItemView
-          index={props.value.operands.length}
+          index={value.operands.length}
           isLast={true}
-          value={props.value.operator}
+          value={value.operator}
           onChange={(v) => {
-            props.onChange(
-              produce(props.value, (draft) => {
+            setValue(
+              produce(value, (draft) => {
                 draft.operator = v
               })
             )
@@ -161,8 +168,8 @@ export default function FilterPopover(props: {
         >
           <div
             onClick={() => {
-              props.onChange(
-                produce(props.value, (draft) => {
+              setValue(
+                produce(value, (draft) => {
                   draft.operands.push({
                     fieldName: props.fields[0].name,
                     fieldType: props.fields[0].sqlType,
@@ -184,6 +191,39 @@ export default function FilterPopover(props: {
             <IconCommonAdd color={ThemingVariables.colors.text[0]} />
           </div>
         </FilterItemView>
+      </div>
+      <div
+        className={css`
+          border: 1px solid ${ThemingVariables.colors.gray[1]};
+          padding: 8px 10px;
+          display: flex;
+        `}
+      >
+        <FormButton
+          variant="primary"
+          onClick={() => {
+            props.onChange(value)
+          }}
+          className={css`
+            flex: 1;
+          `}
+        >
+          Save
+        </FormButton>
+        <FormButton
+          variant="danger"
+          onClick={() => {
+            if (confirm('Delete filter?')) {
+              props.onDelete()
+            }
+          }}
+          className={css`
+            margin-left: 8px;
+            width: 140px;
+          `}
+        >
+          Delete
+        </FormButton>
       </div>
     </div>
   )

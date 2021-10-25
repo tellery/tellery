@@ -22,7 +22,7 @@ import Tippy from '@tippyjs/react'
 import produce from 'immer'
 import { WritableDraft } from 'immer/dist/internal'
 import { lowerCase, uniq, uniqBy } from 'lodash'
-import React, { ReactNode, useCallback, useEffect, useState } from 'react'
+import React, { ReactNode, useCallback, useState } from 'react'
 import FilterCard from './FilterCard'
 import FilterPopover from './FilterPopover'
 import { MenuItem } from './MenuItem'
@@ -90,10 +90,6 @@ export const SmartQueryConfig: React.FC<{
   const [filtersVisible, setFiltersVisible] = useState(false)
   const snapshot = useQuerySnapshot(queryBuilderBlock.id)
   const fields = snapshot?.data.fields || []
-  const [filter, setFilter] = useState(filters)
-  useEffect(() => {
-    setFilter(filters)
-  }, [filters])
 
   if (!snapshot) {
     return null
@@ -369,16 +365,24 @@ export const SmartQueryConfig: React.FC<{
               <FilterPopover
                 fields={fields}
                 value={
-                  filter || {
+                  filters || {
                     operands: [],
                     operator: 'and'
                   }
                 }
-                onChange={setFilter}
-                onClose={() => {
+                onChange={(value) => {
                   onChange((draft) => {
-                    draft.content.filters = filter
+                    draft.content.filters = value
                   })
+                  setFiltersVisible(false)
+                }}
+                onDelete={() => {
+                  onChange((draft) => {
+                    delete draft.content.filters
+                  })
+                  setFiltersVisible(false)
+                }}
+                onClose={() => {
                   setFiltersVisible(false)
                 }}
               />
@@ -392,7 +396,7 @@ export const SmartQueryConfig: React.FC<{
             <div>
               <ConfigIconButton
                 icon={IconCommonAdd}
-                disabled={!!filter}
+                disabled={!!filters}
                 onClick={() => {
                   setFiltersVisible((old) => !old)
                 }}
@@ -401,9 +405,9 @@ export const SmartQueryConfig: React.FC<{
           </Tippy>
         }
       >
-        {filter ? (
+        {filters ? (
           <FilterCard
-            value={filter}
+            value={filters}
             onEdit={() => {
               setFiltersVisible(true)
             }}
