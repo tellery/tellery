@@ -556,6 +556,32 @@ function SQLMiniEditor(props: {
     })
   }, [monaco?.editor])
   const handleSqlRequest = useAsync(sqlRequest)
+  const run = useCallback(
+    () =>
+      handleSqlRequest.execute({
+        workspaceId: workspace.id,
+        sql: `select ${props.value} from {{${props.block.id}}}`,
+        questionId: props.block.id,
+        connectorId: workspace.preferences.connectorId!,
+        profile: workspace.preferences.profile!,
+        maxRow: 1
+      }),
+    [
+      handleSqlRequest,
+      props.block.id,
+      props.value,
+      workspace.id,
+      workspace.preferences.connectorId,
+      workspace.preferences.profile
+    ]
+  )
+  const [editor, setEditor] = useState<editor.IStandaloneCodeEditor>()
+  useEffect(() => {
+    if (!monaco) {
+      return
+    }
+    editor?.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => run())
+  }, [editor, monaco, run])
 
   return (
     <>
@@ -575,16 +601,6 @@ function SQLMiniEditor(props: {
               handleSqlRequest.status === 'pending' ||
               !workspace.preferences.connectorId ||
               !workspace.preferences.profile
-            }
-            onClick={() =>
-              handleSqlRequest.execute({
-                workspaceId: workspace.id,
-                sql: `select ${props.value} from {{${props.block.id}}}`,
-                questionId: props.block.id,
-                connectorId: workspace.preferences.connectorId!,
-                profile: workspace.preferences.profile!,
-                maxRow: 1
-              })
             }
             className={css`
               margin-left: 10px;
@@ -625,6 +641,7 @@ function SQLMiniEditor(props: {
         theme="tellery-mini"
         onChange={(v) => props.onChange(v || '')}
         height={160}
+        onMount={setEditor}
         options={{
           glyphMargin: false,
           folding: false,
