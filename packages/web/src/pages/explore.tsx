@@ -1,109 +1,42 @@
 import { sqlRequest, translateSmartQuery } from '@app/api'
-import { IconCommonClose, IconCommonRefresh } from '@app/assets/icons'
-import { BlockTitle, useGetBlockTitleTextSnapshot } from '@app/components/editor'
+import { IconCommonCopy, IconCommonRefresh, IconCommonSave, IconMiscDragToExplore } from '@app/assets/icons'
+import { FormButton } from '@app/components/kit/FormButton'
+import { AllMetricsSection, DataAssestCardLoader, DataAssetItem } from '@app/components/SideBarDataAssets'
 import { SmartQueryConfig } from '@app/components/SideBarSmartQuery'
 import { VisualizationConfig } from '@app/components/SideBarVisualization'
 import { charts, useChart } from '@app/components/v11n/charts'
+import { SideBarTabHeader } from '@app/components/v11n/components/Tab'
 import { Config, Data, Type } from '@app/components/v11n/types'
+import { MouseSensorOptions } from '@app/context/blockDnd'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
-import { useBlockSuspense, useSearchMetrics } from '@app/hooks/api'
+import { useBlockSuspense } from '@app/hooks/api'
 import { useDimensions } from '@app/hooks/useDimensions'
+import { useSideBarQuestionEditorState } from '@app/hooks/useSideBarQuestionEditor'
 import { useWorkspace } from '@app/hooks/useWorkspace'
+import { DndSensor } from '@app/lib/dnd-kit/dndSensor'
 import { ThemingVariables } from '@app/styles'
 import { Dimension, Editor } from '@app/types'
+import { TELLERY_MIME_TYPES } from '@app/utils'
+import { DndItemDataBlockType } from '@app/utils/dnd'
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  MouseSensor,
+  useDroppable,
+  useSensor,
+  useSensors
+} from '@dnd-kit/core'
 import { css, keyframes } from '@emotion/css'
-import produce from 'immer'
-import { WritableDraft } from 'immer/dist/internal'
+import styled from '@emotion/styled'
+import copy from 'copy-to-clipboard'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import PerfectScrollbar from 'react-perfect-scrollbar'
 import { useMutation, useQueryClient } from 'react-query'
-
-const AllMetricsSection: React.FC<{ setQueryBuilderId: React.Dispatch<React.SetStateAction<string | null>> }> = ({
-  setQueryBuilderId
-}) => {
-  const metricBlocksQuery = useSearchMetrics('', 1000)
-
-  const dataAssetBlocks = useMemo(() => {
-    const metricsBlocks = Object.values(metricBlocksQuery.data?.blocks ?? {}).filter(
-      (block) => block.type === Editor.BlockType.QueryBuilder
-    )
-    return metricsBlocks
-  }, [metricBlocksQuery.data?.blocks])
-
-  return (
-    <>
-      {dataAssetBlocks.map((block) => {
-        return (
-          <React.Suspense key={block.id} fallback={<></>}>
-            <DataAssetItem
-              block={block}
-              onClick={() => {
-                setQueryBuilderId(block.id)
-              }}
-            />
-          </React.Suspense>
-        )
-      })}
-    </>
-  )
-}
-
-export const DataAssetItem: React.FC<{ block: Editor.BaseBlock; onClick: React.MouseEventHandler<HTMLDivElement> }> = ({
-  block,
-  onClick
-}) => {
-  const getBlockTitle = useGetBlockTitleTextSnapshot()
-
-  return (
-    <div
-      className={css`
-        display: flex;
-        :hover {
-          .button {
-            opacity: 1;
-          }
-        }
-      `}
-      onClick={onClick}
-    >
-      <div
-        className={css`
-          display: flex;
-          align-items: center;
-          cursor: pointer;
-          padding: 6px;
-          margin: 0 10px 5px 10px;
-          user-select: none;
-          height: 32px;
-          position: relative;
-          border-radius: 4px;
-          flex: 1;
-          :hover {
-            background: ${ThemingVariables.colors.gray[5]};
-            box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.12);
-          }
-          :hover {
-            > svg {
-              opacity: 1;
-            }
-          }
-        `}
-      >
-        <span
-          className={css`
-            font-size: 12px;
-            line-height: 14px;
-            color: ${ThemingVariables.colors.text[0]};
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-          `}
-        >
-          {getBlockTitle(block)}
-        </span>
-      </div>
-    </div>
-  )
-}
+import { Tab, TabList, TabPanel, useTabState } from 'reakit'
+import { Updater, useImmer } from 'use-immer'
 
 const Diagram: React.FC<{
   className?: string
@@ -111,11 +44,6 @@ const Diagram: React.FC<{
   config: Config<Type> | null
   queryDimensions: Dimension[]
 }> = (props) => {
-  // const diagram = useMemo(() => {
-  //   return chart && props.data ? (
-
-  //   ) : null
-  // }, [chart, props.data, chartDimensions, props.config, handleConfigChange])
   const chart = useChart(props.config?.type ?? Type.TABLE)
   const ref = useRef(null)
   const dimensions = useDimensions(ref, 0)
@@ -145,42 +73,6 @@ const Diagram: React.FC<{
   )
 }
 
-const QueryTab: React.FC<{
-  queryBuilderId: string
-  metricIds?: string[]
-  dimensions?: Dimension[]
-  back: React.MouseEventHandler<SVGElement>
-  onChange: (update: (block: WritableDraft<Editor.SmartQueryBlock>) => void) => void
-}> = ({ queryBuilderId, dimensions, metricIds, back, onChange }) => {
-  const queryBuilderBlock = useBlockSuspense<Editor.QueryBuilder>(queryBuilderId)
-
-  return (
-    <>
-      <div
-        className={css`
-          display: flex;
-          align-items: center;
-          padding: 10px;
-        `}
-      >
-        <IconCommonClose
-          onClick={back}
-          className={css`
-            cursor: pointer;
-          `}
-        />
-        <BlockTitle block={queryBuilderBlock} />
-      </div>
-      <SmartQueryConfig
-        onChange={onChange}
-        metricIds={metricIds ?? []}
-        dimensions={dimensions ?? []}
-        queryBuilderBlock={queryBuilderBlock}
-      />
-    </>
-  )
-}
-
 const rotateAnimation = keyframes`
   0% {
     transform: rotate(0);
@@ -189,13 +81,99 @@ const rotateAnimation = keyframes`
     transform: rotate(360deg);
   }
 `
+
+const CustomDndContext: React.FC<{ setQueryBuilderId: React.Dispatch<React.SetStateAction<string | null>> }> = ({
+  children,
+  setQueryBuilderId
+}) => {
+  const [activeId, setActiveId] = useState<string | null>(null)
+  const mouseSensor = useSensor(MouseSensor, MouseSensorOptions)
+  const sensors = useSensors(mouseSensor)
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const item = event.active.data.current as DndItemDataBlockType
+      setActiveId(null)
+      if (event.over) {
+        console.log(item)
+        setQueryBuilderId(item?.originalBlockId!)
+      }
+    },
+    [setQueryBuilderId]
+  )
+
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    const item = event.active.data.current as DndItemDataBlockType
+    setActiveId(item.originalBlockId)
+  }, [])
+
+  const handleDragCancel = useCallback(() => {
+    setActiveId(null)
+  }, [])
+
+  return (
+    <DndContext
+      onDragEnd={handleDragEnd}
+      onDragStart={handleDragStart}
+      onDragCancel={handleDragCancel}
+      sensors={sensors}
+    >
+      <DragOverlay dropAnimation={null}>
+        {activeId ? (
+          <React.Suspense key={activeId} fallback={<DataAssestCardLoader />}>
+            <DataAssetItem blockId={activeId} isExpanded={false} />
+          </React.Suspense>
+        ) : null}
+      </DragOverlay>
+      {children}
+    </DndContext>
+  )
+}
+
+const Droppable: React.FC<{ className: string; style: React.CSSProperties }> = (props) => {
+  const { isOver, setNodeRef } = useDroppable({
+    id: 'explore'
+  })
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        ...props.style,
+        backgroundColor: isOver ? ThemingVariables.colors.gray[3] : props.style.backgroundColor
+      }}
+      className={props.className}
+    >
+      {props.children}
+    </div>
+  )
+}
+
+const ButtonsGroup = styled.div`
+  display: flex;
+  padding: 0 32px;
+  margin: auto;
+  justify-content: space-around;
+  > * + * {
+    margin-left: 11px;
+  }
+`
+
+const PageButton = styled(FormButton)`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 230px;
+  > svg {
+    margin-right: 5px;
+  }
+`
+
 const Page = () => {
   const workspace = useWorkspace()
   const [queryBuilderId, setQueryBuilderId] = useState<string | null>(null)
-  const [metricIds, setMetricIds] = useState<string[]>()
-  const [dimensions, setDiemensions] = useState<Dimension[]>()
-  const [filters, setFilters] = useState<Editor.FilterBuilder>()
-  const [visConfig, setVisConfig] = useState<Config<Type> | null>(null)
+  const [queryBlock, setQueryBlock] = useImmer<Editor.SmartQueryBlock | null>(null)
+  const [visBlock, setVisBlock] = useImmer<Editor.VisualizationBlock | null>(null)
   const [data, setData] = useState<Data | null>(null)
   const [sql, setSql] = useState<string | null>(null)
   const queryClient = useQueryClient()
@@ -206,15 +184,15 @@ const Page = () => {
       workspace.id,
       workspace.preferences?.connectorId!,
       queryBuilderId,
-      metricIds,
-      dimensions,
-      filters
+      queryBlock?.content.metricIds,
+      queryBlock?.content.dimensions,
+      queryBlock?.content.filters
     )
       .then((response) => {
         setSql(response.data.sql)
       })
       .catch(console.error)
-  }, [dimensions, filters, metricIds, queryBuilderId, workspace])
+  }, [queryBlock, queryBuilderId, workspace])
 
   const mutation = useMutation(sqlRequest, {
     mutationKey: 'explore'
@@ -235,15 +213,29 @@ const Page = () => {
 
   useEffect(() => {
     setData(null)
-    if (!queryBuilderId) {
+    if (queryBuilderId) {
       cancelMutation()
-      setMetricIds(undefined)
-      setDiemensions(undefined)
-      setFilters(undefined)
+      const newQueryBlock = createEmptyBlock<Editor.SmartQueryBlock>({
+        type: Editor.BlockType.SmartQuery,
+        content: {
+          queryBuilderId: queryBuilderId!,
+          metricIds: [],
+          dimensions: [],
+          title: []
+        }
+      })
+      setQueryBlock(newQueryBlock)
+      setVisBlock(
+        createEmptyBlock<Editor.VisualizationBlock>({
+          type: Editor.BlockType.Visualization,
+          content: { queryId: newQueryBlock.id },
+          children: [newQueryBlock.id]
+        })
+      )
     }
-  }, [cancelMutation, queryBuilderId, queryClient])
+  }, [cancelMutation, queryBuilderId, queryClient, setQueryBlock, setVisBlock])
 
-  useEffect(() => {
+  const refresh = useCallback(() => {
     if (!sql) {
       return
     }
@@ -265,124 +257,305 @@ const Page = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sql, workspace.id, workspace.preferences.connectorId, workspace.preferences.profile])
 
-  const setSmartQueryBlock = useCallback(
-    (update: (block: WritableDraft<Editor.SmartQueryBlock>) => void) => {
-      const oldBlock = createEmptyBlock<Editor.SmartQueryBlock>({
-        content: {
-          metricIds: metricIds || [],
-          dimensions: dimensions || [],
-          filters,
-          queryBuilderId: queryBuilderId ?? '',
-          title: []
-        }
-      })
-      const newBlock = produce(oldBlock, update)
-      setMetricIds(newBlock.content.metricIds)
-      setDiemensions(newBlock.content.dimensions)
-      setFilters(newBlock.content.filters)
-    },
-    [dimensions, filters, metricIds, queryBuilderId]
-  )
+  useEffect(() => {
+    refresh()
+  }, [refresh])
 
-  const setVisConfigBlock = useCallback(
-    (update: (block: WritableDraft<Editor.VisualizationBlock>) => void) => {
-      const oldBlock = createEmptyBlock<Editor.VisualizationBlock>({
-        content: {
-          visualization: visConfig ?? undefined
+  const handleCopy = useCallback(() => {
+    if (!visBlock || !queryBlock) return
+    copy('tellery', {
+      debug: true,
+      onCopy: (clipboardData) => {
+        const fragment = {
+          type: TELLERY_MIME_TYPES.BLOCKS,
+          value: {
+            children: [visBlock.id],
+            data: {
+              [visBlock.id]: visBlock,
+              [queryBlock.id]: queryBlock
+            }
+          }
         }
-      })
-      const newBlock = produce(oldBlock, update)
-      setVisConfig(newBlock.content?.visualization ?? null)
-    },
-    [visConfig]
-  )
+        ;(clipboardData as DataTransfer).setData(fragment.type, JSON.stringify(fragment.value))
+      }
+    })
+  }, [queryBlock, visBlock])
+
+  const handleSave = useCallback(() => {}, [])
 
   return (
-    <>
+    <CustomDndContext setQueryBuilderId={setQueryBuilderId}>
       <div
         className={css`
           display: flex;
+          flex-direction: column;
           height: 100vh;
-          overflow: hidden;
           width: 100%;
         `}
       >
         <div
           className={css`
-            height: 100%;
-            width: 240px;
-            flex-shrink: 0;
-            border-right: solid 1px ${ThemingVariables.colors.gray[1]};
-            overflow-y: auto;
+            background: #ffffff;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.08);
+            font-family: Helvetica Neue;
+            font-style: normal;
+            font-weight: bold;
+            font-size: 24px;
+            line-height: 29px;
+            padding: 23px;
+            color: #333333;
+            z-index: 10;
           `}
         >
-          <React.Suspense fallback={<></>}>
-            {!queryBuilderId && <AllMetricsSection setQueryBuilderId={setQueryBuilderId} />}
-            {queryBuilderId && (
-              <QueryTab
-                metricIds={metricIds}
-                dimensions={dimensions}
-                queryBuilderId={queryBuilderId}
-                onChange={setSmartQueryBlock}
-                back={() => {
-                  setQueryBuilderId(null)
-                }}
-              />
-            )}
-          </React.Suspense>
+          Metric explore
         </div>
         <div
           className={css`
-            background-color: ${ThemingVariables.colors.primary[5]};
-            border-radius: 20px;
-            margin: 10vh 20px;
-            padding: 20px;
-            height: 50vh;
-            flex: 1;
+            display: flex;
             overflow: hidden;
           `}
         >
-          {mutation.isLoading && (
-            <>
-              <IconCommonRefresh
-                width="22px"
-                height="22px"
-                fill={ThemingVariables.colors.warning[0]}
-                className={css`
-                  animation: ${rotateAnimation} 1.2s linear infinite;
-                `}
-              />
-            </>
-          )}
           <div
             className={css`
-              width: 100%;
-              overflow: hidden;
               height: 100%;
+              width: 304px;
+              flex-shrink: 0;
+              border-right: solid 1px ${ThemingVariables.colors.gray[1]};
+              overflow-y: auto;
             `}
           >
-            {data && <Diagram config={visConfig} data={data} queryDimensions={dimensions ?? []} />}
+            <AllMetricsSection />
+          </div>
+          <div
+            className={css`
+              flex: 1;
+              overflow: hidden;
+            `}
+          >
+            <Droppable
+              className={css`
+                border-radius: 20px;
+                margin: 32px;
+                height: 50vh;
+                padding: 15px;
+                overflow: hidden;
+                border-radius: 20px;
+                position: relative;
+              `}
+              style={{
+                border: queryBuilderId ? '4px solid #dedede' : '4px dashed #dedede',
+                backgroundColor: queryBuilderId ? ThemingVariables.colors.gray[4] : 'none'
+              }}
+            >
+              {mutation.isLoading && (
+                <>
+                  <IconCommonRefresh
+                    width="22px"
+                    height="22px"
+                    fill={ThemingVariables.colors.warning[0]}
+                    className={css`
+                      animation: ${rotateAnimation} 1.2s linear infinite;
+                      position: absolute;
+                      left: 20px;
+                      top: 20px;
+                      z-index: 10;
+                    `}
+                  />
+                </>
+              )}
+              <div
+                className={css`
+                  width: 100%;
+                  overflow: hidden;
+                  height: 100%;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  flex-direction: column;
+                `}
+              >
+                {!queryBuilderId && (
+                  <>
+                    <IconMiscDragToExplore />
+                    <div
+                      className={css`
+                        font-family: Helvetica Neue;
+                        font-style: normal;
+                        font-weight: 500;
+                        font-size: 14px;
+                        line-height: 17px;
+                        color: #999999;
+                        margin-top: 15px;
+                      `}
+                    >
+                      Drag here to explore
+                    </div>
+                  </>
+                )}
+                {data && (
+                  <Diagram
+                    config={visBlock?.content?.visualization ?? null}
+                    data={data}
+                    queryDimensions={queryBlock?.content.dimensions ?? []}
+                  />
+                )}
+              </div>
+            </Droppable>
+            <ButtonsGroup>
+              <PageButton
+                variant={'secondary'}
+                className={css`
+                  flex: 1;
+                `}
+                onClick={refresh}
+              >
+                <IconCommonRefresh />
+                Refresh
+              </PageButton>
+              <PageButton
+                variant={'secondary'}
+                className={css`
+                  flex: 1;
+                `}
+                onClick={handleCopy}
+              >
+                <IconCommonCopy />
+                Copy
+              </PageButton>
+              {/* <PageButton
+                variant={'secondary'}
+                className={css`
+                  flex: 1;
+                `}
+                onClick={handleSave}
+              >
+                <IconCommonSave />
+                Save
+              </PageButton> */}
+            </ButtonsGroup>
+          </div>
+          <div
+            className={css`
+              width: 304px;
+              flex-shrink: 0;
+              border-left: solid 1px ${ThemingVariables.colors.gray[1]};
+            `}
+          >
+            {queryBlock && visBlock && (
+              <ExploreSideBarRight
+                queryBlock={queryBlock}
+                data={data}
+                visBlock={visBlock}
+                setQueryBlock={setQueryBlock}
+                setVisBlock={setVisBlock}
+              />
+            )}
           </div>
         </div>
-        <div
-          className={css`
-            width: 240px;
-            flex-shrink: 0;
-            border-left: solid 1px ${ThemingVariables.colors.gray[1]};
-          `}
-        >
-          {data && (
-            <VisualizationConfig
-              config={visConfig}
-              data={data}
-              metricIds={metricIds}
-              dimensions={dimensions}
-              onChange={setVisConfigBlock}
-            />
-          )}
-        </div>
       </div>
-    </>
+    </CustomDndContext>
+  )
+}
+
+const ExploreSideBarRight: React.FC<{
+  queryBlock: Editor.SmartQueryBlock
+  visBlock: Editor.VisualizationBlock
+  setQueryBlock: Updater<Editor.SmartQueryBlock | null>
+  data: Data | null
+  setVisBlock: Updater<Editor.VisualizationBlock | null>
+}> = ({ queryBlock, visBlock, setQueryBlock, setVisBlock, data }) => {
+  const tab = useTabState()
+  const { t } = useTranslation()
+  const [sideBarEditorState, setSideBarEditorState] = useSideBarQuestionEditorState('explore')
+  const queryBuilderBlock = useBlockSuspense(queryBlock.content.queryBuilderId)
+  useEffect(() => {
+    if (sideBarEditorState?.activeTab) {
+      tab.setSelectedId(sideBarEditorState?.activeTab)
+    }
+  }, [sideBarEditorState, tab])
+
+  const changeTab = useCallback(
+    (tab: 'Visualization' | 'Query') => {
+      setSideBarEditorState((value) => {
+        if (value) {
+          return { ...value, activeTab: tab }
+        }
+        return value
+      })
+    },
+    [setSideBarEditorState]
+  )
+
+  return (
+    <div
+      className={css`
+        height: 100%;
+        border-left: 1px solid #dedede;
+        display: flex;
+        background-color: #fff;
+        flex-direction: column;
+      `}
+    >
+      <TabList
+        {...tab}
+        className={css`
+          border-bottom: solid 1px ${ThemingVariables.colors.gray[1]};
+          overflow-x: auto;
+          white-space: nowrap;
+          padding-right: 16px;
+        `}
+      >
+        {queryBlock.type === Editor.BlockType.SmartQuery ? (
+          <Tab
+            as={SideBarTabHeader}
+            {...tab}
+            id="Query"
+            selected={tab.selectedId === 'Query'}
+            onClick={() => {
+              changeTab('Query')
+            }}
+          >
+            {t`Query`}
+          </Tab>
+        ) : null}
+        <Tab
+          as={SideBarTabHeader}
+          {...tab}
+          id="Visualization"
+          selected={tab.selectedId === 'Visualization'}
+          onClick={() => {
+            changeTab('Visualization')
+          }}
+        >
+          {t`Visualization`}
+        </Tab>
+      </TabList>
+      <PerfectScrollbar
+        options={{ suppressScrollX: true }}
+        className={css`
+          flex: 1;
+        `}
+      >
+        <TabPanel {...tab}>
+          <SmartQueryConfig
+            queryBuilderBlock={queryBuilderBlock}
+            metricIds={queryBlock.content.metricIds}
+            dimensions={queryBlock.content.dimensions}
+            filters={queryBlock.content.filters}
+            onChange={setQueryBlock as any}
+          />
+        </TabPanel>
+        <TabPanel {...tab}>
+          <VisualizationConfig
+            config={visBlock.content?.visualization}
+            data={data}
+            metricIds={queryBlock.content.metricIds}
+            dimensions={queryBlock.content.dimensions}
+            onChange={setVisBlock as any}
+          />
+        </TabPanel>
+      </PerfectScrollbar>
+    </div>
   )
 }
 

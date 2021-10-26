@@ -866,7 +866,6 @@ export const MoreDropdownSelect: React.FC<{
         className={cx(
           css`
             border: none;
-            background: transparent;
             outline: none;
             display: flex;
             align-items: center;

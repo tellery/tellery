@@ -10,6 +10,7 @@ import { useSelectionArea } from '@app/hooks/useSelectionArea'
 import { useSetSideBarQuestionEditorState } from '@app/hooks/useSideBarQuestionEditor'
 import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
 import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor, Story, Thought } from '@app/types'
@@ -103,6 +104,7 @@ const useEditorClipboardManager = (
 ) => {
   const snapshot = useBlockSnapshot()
   const blockTranscations = useBlockTranscations()
+  const workspace = useWorkspace()
 
   const setClipboardWithFragment = useCallback(
     (e: React.ClipboardEvent<HTMLDivElement>, fragment: any) => {
@@ -157,12 +159,15 @@ const useEditorClipboardManager = (
       copy('tellery', {
         debug: true,
         onCopy: (clipboardData) => {
-          setClipboardWithFragment({ clipboardData } as React.ClipboardEvent<HTMLDivElement>, fragment)
+          setClipboardWithFragment({ clipboardData } as React.ClipboardEvent<HTMLDivElement>, {
+            ...fragment,
+            workspaceId: workspace.id
+          })
           deleteBlockFragmentFromSelection()
         }
       })
     },
-    [deleteBlockFragmentFromSelection, getSelection, setClipboardWithFragment, snapshot]
+    [deleteBlockFragmentFromSelection, getSelection, setClipboardWithFragment, snapshot, workspace.id]
   )
 
   const doCopy = useCallback(
@@ -175,11 +180,14 @@ const useEditorClipboardManager = (
       copy('tellery', {
         debug: true,
         onCopy: (clipboardData) => {
-          setClipboardWithFragment({ clipboardData } as React.ClipboardEvent<HTMLDivElement>, fragment)
+          setClipboardWithFragment({ clipboardData } as React.ClipboardEvent<HTMLDivElement>, {
+            ...fragment,
+            workspaceId: workspace.id
+          })
         }
       })
     },
-    [getSelection, setClipboardWithFragment, snapshot]
+    [getSelection, setClipboardWithFragment, snapshot, workspace.id]
   )
 
   return useMemo(
@@ -222,6 +230,7 @@ const _StoryEditor: React.FC<{
   const blockAdminValue = useBlockAdminProvider(storyId)
   const snapshot = useBlockSnapshot()
   const location = useLocation()
+  const workspace = useWorkspace()
 
   const getBlockLocalPreferences = useGetBlockLocalPreferences()
   useEffect(() => {
@@ -692,7 +701,7 @@ const _StoryEditor: React.FC<{
   const focusBlockHandler = usePushFocusedBlockIdState()
   const { t } = useTranslation()
 
-  const afterDuplicateBlocks = useCallback(
+  const syncDuplicatedBlocks = useCallback(
     (duplicatedBlocksFragment: { children: string[]; data: Record<string, Editor.BaseBlock> }) => {
       const lastBlockId = duplicatedBlocksFragment.children[duplicatedBlocksFragment.children.length - 1]
       const currentBlock = duplicatedBlocksFragment.data[lastBlockId]
@@ -778,13 +787,13 @@ const _StoryEditor: React.FC<{
       })
 
       setSelectedBlocks(duplicatedBlocksFragment.children)
-      afterDuplicateBlocks(duplicatedBlocksFragment)
+      syncDuplicatedBlocks(duplicatedBlocksFragment)
       // if(.some(block => isQu))
       // toast('duplicate success')
 
       return duplicatedBlocksFragment
     },
-    [afterDuplicateBlocks, blockTranscations, setSelectedBlocks, snapshot, storyId]
+    [syncDuplicatedBlocks, blockTranscations, setSelectedBlocks, snapshot, storyId]
   )
 
   const globalKeyDownHandler = useCallback(
@@ -1328,6 +1337,7 @@ const _StoryEditor: React.FC<{
           const telleryBlocksData: {
             children: string[]
             data: Record<string, Editor.BaseBlock>
+            workspaceId?: string
           } = JSON.parse(telleryBlockDataStr)
 
           const targetBlock = getBlockFromSnapshot(targetBlockId, snapshot)
@@ -1347,7 +1357,7 @@ const _StoryEditor: React.FC<{
 
           setSelectedBlocks(duplicatedBlocksFragment.children)
 
-          afterDuplicateBlocks(duplicatedBlocksFragment)
+          telleryBlocksData.workspaceId === workspace.id && syncDuplicatedBlocks(duplicatedBlocksFragment)
         } else if (telleryTokenDataStr) {
           if (!selectionState) return
           if (isSelectionCollapsed(selectionState) && selectionState.type === TellerySelectionType.Inline) {
@@ -1454,11 +1464,12 @@ const _StoryEditor: React.FC<{
       updateBlockTitle,
       setUploadResource,
       snapshot,
+      workspace,
       setSelectedBlocks,
       afterUrlPasted,
       focusingBlockId,
       setSelectionState,
-      afterDuplicateBlocks
+      syncDuplicatedBlocks
     ]
   )
 

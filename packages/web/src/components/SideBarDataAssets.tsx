@@ -7,7 +7,7 @@ import {
 } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useOpenStory } from '@app/hooks'
-import { useQuerySnapshot, useSearchMetrics } from '@app/hooks/api'
+import { useBlockSuspense, useQuerySnapshot, useSearchMetrics } from '@app/hooks/api'
 import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
@@ -119,7 +119,7 @@ const DataAssestCardContainer = styled.div`
   display: flex;
   align-items: center;
   cursor: grab;
-  position: relative;
+  /* position: relative; */
   margin: 0 10px 8px 10px;
   padding: 10px;
   padding-bottom: 16px;
@@ -142,29 +142,38 @@ const DataAssestCardContainer = styled.div`
   }
 `
 
-export const DataAssetItem: React.FC<{
-  block: Editor.DataAssetBlock
-  currentStoryId: string
-  isExpanded: boolean
-  setExpanded: (expanded: boolean) => void
-}> = ({ block, currentStoryId, isExpanded, setExpanded }) => {
-  const getBlockTitle = useGetBlockTitleTextSnapshot()
-
+const Draggable: React.FC<{ element?: any; blockId: string; currentStoryId?: string }> = (props) => {
+  const Element = props.element || 'div'
   const { attributes, listeners, setNodeRef } = useDraggable({
-    id: `drag-${block.id}`,
+    id: `drag-${props.blockId}`,
     data: {
       type: DnDItemTypes.Block,
-      originalBlockId: block.id,
+      originalBlockId: props.blockId,
       blockData: createEmptyBlock<Editor.VisualizationBlock>({
         type: Editor.BlockType.Visualization,
-        storyId: currentStoryId,
-        parentId: currentStoryId,
+        storyId: props.currentStoryId,
+        parentId: props.currentStoryId,
         content: {
-          fromDataAssetId: block.id
+          fromDataAssetId: props.blockId
         }
       })
     } as DndItemDataBlockType
   })
+
+  return (
+    <Element ref={setNodeRef} {...listeners} {...attributes}>
+      {props.children}
+    </Element>
+  )
+}
+
+export const DataAssetItem: React.FC<{
+  blockId: string
+  isExpanded: boolean
+  setExpanded?: (expanded: boolean) => void
+}> = ({ blockId, isExpanded, setExpanded }) => {
+  const getBlockTitle = useGetBlockTitleTextSnapshot()
+  const block = useBlockSuspense<Editor.DataAssetBlock>(blockId)
 
   const snapshot = useQuerySnapshot(block.id)
 
@@ -181,11 +190,8 @@ export const DataAssetItem: React.FC<{
       style={{
         height: isExpanded ? 'auto' : 110
       }}
-      {...listeners}
-      {...attributes}
-      ref={setNodeRef}
       onClick={() => {
-        setExpanded(!isExpanded)
+        setExpanded?.(!isExpanded)
       }}
     >
       <IconCommonSmartQuery
@@ -219,7 +225,6 @@ export const DataAssetItem: React.FC<{
           {getBlockTitle(block)}
         </span>
         <DataAssestMenu
-          storyId={currentStoryId}
           block={block}
           className={css`
             margin-left: auto;
@@ -294,11 +299,7 @@ export const DataAssetItem: React.FC<{
   )
 }
 
-const DataAssestMenu: React.FC<{ storyId: string; block: Editor.DataAssetBlock; className?: string }> = ({
-  storyId,
-  block,
-  className
-}) => {
+const DataAssestMenu: React.FC<{ block: Editor.DataAssetBlock; className?: string }> = ({ block, className }) => {
   const animation = useTippyMenuAnimation('scale')
   const [visible, setVisible] = useState(false)
   const show = () => setVisible(true)
@@ -375,7 +376,7 @@ export const DataAssestMenuContent: React.FC<{
   )
 }
 
-const AllMetricsSection: React.FC<{ storyId: string }> = ({ storyId }) => {
+export const AllMetricsSection: React.FC<{ storyId?: string }> = ({ storyId }) => {
   const [keyword, setKeyword] = useState('')
   const metricBlocksQuery = useSearchMetrics(keyword, 1000)
 
@@ -394,7 +395,6 @@ const AllMetricsSection: React.FC<{ storyId: string }> = ({ storyId }) => {
         display: flex;
         flex-direction: column;
         flex: 1;
-        overflow: hidden;
         height: 100%;
       `}
     >
@@ -438,18 +438,20 @@ const AllMetricsSection: React.FC<{ storyId: string }> = ({ storyId }) => {
         {dataAssetBlocks.map((block, index) => {
           return (
             <React.Suspense key={block.id} fallback={<DataAssestCardLoader />}>
-              <DataAssetItem
-                block={block}
-                currentStoryId={storyId!}
-                isExpanded={expandedIndex === index}
-                setExpanded={(value) => {
-                  if (value) {
-                    setExpandedIndex(index)
-                  } else {
-                    setExpandedIndex(-1)
-                  }
-                }}
-              />
+              <Draggable blockId={block.id} currentStoryId={storyId}>
+                <DataAssetItem
+                  blockId={block.id}
+                  isExpanded={expandedIndex === index}
+                  setExpanded={(value) => {
+                    console.log('set expanded')
+                    if (value) {
+                      setExpandedIndex(index)
+                    } else {
+                      setExpandedIndex(-1)
+                    }
+                  }}
+                />
+              </Draggable>
             </React.Suspense>
           )
         })}
