@@ -18,6 +18,11 @@ import { PreventOverflowModifier } from '@popperjs/core/lib/modifiers/preventOve
 import Tippy from '@tippyjs/react'
 import produce from 'immer'
 import React, { ReactNode, useEffect, useState } from 'react'
+import DateRangePicker from '@wojtekmaj/react-daterange-picker/dist/entry.nostyle'
+import DatePicker from 'react-date-picker/dist/entry.nostyle'
+import '@wojtekmaj/react-daterange-picker/dist/DateRangePicker.css'
+import 'react-date-picker/dist/DatePicker.css'
+import 'react-calendar/dist/Calendar.css'
 import { FormButton } from './kit/FormButton'
 import IconButton from './kit/IconButton'
 import { MenuItem } from './MenuItem'
@@ -53,7 +58,7 @@ const typeToFunc = {
     Editor.Filter.IS_NOT_NULL,
     Editor.Filter.IS_BETWEEN
   ],
-  DATE: [Editor.Filter.LTE, Editor.Filter.GTE, Editor.Filter.IS_BETWEEN],
+  DATE: [Editor.Filter.EQ, Editor.Filter.IS_BETWEEN],
   STRING: [Editor.Filter.EQ, Editor.Filter.NE, Editor.Filter.CONTAINS, Editor.Filter.IS_NULL, Editor.Filter.IS_NOT_NULL]
 }
 
@@ -509,34 +514,72 @@ function FilterItem(props: {
         </Tippy>
       </div>
       {funcArgs[props.value.func] ? (
-        Array.from({ length: funcArgs[props.value.func] }).map((_, index) => (
-          <input
-            key={index}
-            value={props.value.args[index]}
-            onChange={(e) => {
-              props.onChange(
-                produce(props.value, (draft) => {
-                  draft.args[index] = e.target.value
-                })
-              )
-            }}
-            className={css`
-              font-size: 12px;
-              color: ${ThemingVariables.colors.text[0]};
-              width: 0;
-              flex: 1;
-              height: 32px;
-              outline: none;
-              border: none;
-              background-color: ${ThemingVariables.colors.gray[5]};
-              border: 1px solid ${ThemingVariables.colors.gray[1]};
-              box-sizing: border-box;
-              border-radius: 4px;
-              margin-left: 4px;
-              padding: 0 6px;
-            `}
-          />
-        ))
+        SQLTypeReduced[props.value.fieldType] === 'DATE' ? (
+          funcArgs[props.value.func] === 1 ? (
+            <DatePicker
+              value={props.value.args[0] ? new Date(props.value.args[0]) : new Date()}
+              onChange={(v?: Date) =>
+                props.onChange(
+                  produce(props.value, (draft) => {
+                    if (v) {
+                      draft.args[0] = v.toString()
+                    } else {
+                      draft.args = []
+                    }
+                  })
+                )
+              }
+            />
+          ) : (
+            <DateRangePicker
+              value={
+                props.value.args.length
+                  ? props.value.args.map((arg) => (arg ? new Date(arg) : new Date()))
+                  : [new Date(), new Date()]
+              }
+              onChange={(v?: Date[]) => {
+                props.onChange(
+                  produce(props.value, (draft) => {
+                    if (v) {
+                      draft.args = v.map((t) => t.toString())
+                    } else {
+                      draft.args = []
+                    }
+                  })
+                )
+              }}
+            />
+          )
+        ) : (
+          Array.from({ length: funcArgs[props.value.func] }).map((_, index) => (
+            <input
+              key={index}
+              value={props.value.args[index]}
+              onChange={(e) => {
+                props.onChange(
+                  produce(props.value, (draft) => {
+                    draft.args[index] = e.target.value
+                  })
+                )
+              }}
+              className={css`
+                font-size: 12px;
+                color: ${ThemingVariables.colors.text[0]};
+                width: 0;
+                flex: 1;
+                height: 32px;
+                outline: none;
+                border: none;
+                background-color: ${ThemingVariables.colors.gray[5]};
+                border: 1px solid ${ThemingVariables.colors.gray[1]};
+                box-sizing: border-box;
+                border-radius: 4px;
+                margin-left: 4px;
+                padding: 0 6px;
+              `}
+            />
+          ))
+        )
       ) : (
         <div
           className={css`
