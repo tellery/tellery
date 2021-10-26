@@ -49,6 +49,28 @@ function useSqlEditorColor(monaco?: Monaco) {
         'editorLink.activeForeground': '#002FA7'
       }
     })
+    monaco.editor.defineTheme('tellery-mini', {
+      base: 'vs',
+      inherit: true,
+      rules: [
+        { background: '#F7F7F7' } as unknown as editor.ITokenThemeRule,
+        { token: 'identifier', foreground: '#333333' },
+        { token: 'number', foreground: '#333333' },
+        { token: 'keyword', foreground: '#1480BD' },
+        { token: 'predefined', foreground: '#FF6157' },
+        { token: 'string', foreground: '#45B16A' },
+        { token: 'operator', foreground: '#AA5C31' },
+        { token: 'delimiter.parenthesis', foreground: '#B4B4B4' },
+        { token: 'transclusion', foreground: '#555555' },
+        { token: 'comment', foreground: '#B4B4B4' }
+      ],
+      colors: {
+        'editor.background': '#F7F7F7',
+        'textLink.foreground': '#002FA7',
+        'textLink.activeForeground': '#002FA7',
+        'editorLink.activeForeground': '#002FA7'
+      }
+    })
   }, [monaco])
 }
 

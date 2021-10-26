@@ -2,16 +2,19 @@ import { IconCommonAdd, IconCommonAggregatedMetric, IconCommonCustomSqlMetric, I
 import { setBlockTranscation } from '@app/context/editorTranscations'
 import {
   useBlockSuspense,
+  useConnectorsGetProfile,
   useDowngradeQueryBuilder,
   useGetProfileSpec,
   useQuerySnapshot,
   useQuestionDownstreams
 } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { ThemingVariables } from '@app/styles'
 import { AggregatedMetric, CustomSQLMetric, Editor, Metric } from '@app/types'
 import { blockIdGenerator } from '@app/utils'
 import { css, cx } from '@emotion/css'
+import MonacoEditor from '@monaco-editor/react'
 import produce from 'immer'
 import { WritableDraft } from 'immer/dist/internal'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
@@ -499,27 +502,40 @@ function AggregatedMetricEditor(props: {
 }
 
 function SQLMiniEditor(props: { value: string; onChange(value: string): void }) {
+  const workspace = useWorkspace()
+  const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)
+
   return (
     <>
       <ConfigItem label="SQL">null</ConfigItem>
-      <textarea
+      <MonacoEditor
+        language={profile?.type}
         value={props.value}
-        onChange={(e) => {
-          props.onChange(e.target.value)
+        theme="tellery-mini"
+        onChange={(v) => props.onChange(v || '')}
+        height={160}
+        options={{
+          glyphMargin: false,
+          folding: false,
+          lineNumbers: 'off',
+          lineDecorationsWidth: 0,
+          lineNumbersMinChars: 0,
+          fixedOverflowWidgets: false,
+          quickSuggestions: false,
+          minimap: { enabled: false }
         }}
-        spellCheck="false"
-        autoComplete="off"
-        className={css`
-          height: 160px;
-          width: 100%;
-          resize: none;
-          border: none;
-          outline: none;
-          background: ${ThemingVariables.colors.gray[3]};
-          border-radius: 4px;
-          padding: 8px;
-          margin-bottom: -3px;
-        `}
+        wrapperProps={{
+          className: css`
+            width: 100%;
+            resize: none;
+            border: none;
+            outline: none;
+            background: ${ThemingVariables.colors.gray[3]};
+            border-radius: 4px;
+            padding: 8px;
+            margin-bottom: -3px;
+          `
+        }}
       />
     </>
   )

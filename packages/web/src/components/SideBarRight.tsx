@@ -9,7 +9,6 @@ import {
 } from '@app/assets/icons'
 import { useBlockSuspense } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
-import { useCommit } from '@app/hooks/useCommit'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { DEFAULT_TITLE } from '@app/utils'
