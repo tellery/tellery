@@ -580,7 +580,8 @@ function SQLMiniEditor(props: {
                 sql: `select ${props.value} from {{${props.block.id}}}`,
                 questionId: props.block.id,
                 connectorId: workspace.preferences.connectorId!,
-                profile: workspace.preferences.profile!
+                profile: workspace.preferences.profile!,
+                maxRow: 1
               })
               setSqlError(res.errMsg)
               setIsSqlSuccess(!res.errMsg)
