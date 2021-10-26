@@ -5,6 +5,7 @@ import {
   IconCommonCustomSqlMetric,
   IconCommonEdit,
   IconCommonError,
+  IconCommonMore,
   IconCommonRun,
   IconCommonSuccess
 } from '@app/assets/icons'
@@ -33,6 +34,8 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { CheckBox } from './CheckBox'
 import { FormButton } from './kit/FormButton'
 import IconButton from './kit/IconButton'
+import { MenuItem } from './MenuItem'
+import { MenuWrapper } from './MenuWrapper'
 import QuestionDownstreams from './QuestionDownstreams'
 import ConfigIconButton from './v11n/components/ConfigIconButton'
 import { ConfigInput } from './v11n/components/ConfigInput'
@@ -75,7 +78,33 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
   return (
     <>
       {queryBlock.type === Editor.BlockType.QueryBuilder ? (
-        <ConfigSection title="Description">
+        <ConfigSection
+          title="Description"
+          right={
+            <Tippy
+              interactive={true}
+              theme="tellery"
+              arrow={false}
+              appendTo={document.body}
+              trigger="click"
+              placement="bottom-start"
+              content={
+                <MenuWrapper>
+                  <MenuItem
+                    title="Cancel data asset"
+                    onClick={async () => {
+                      if (confirm('Confirm cancel data asset?')) {
+                        await handleDowngradeQueryBuilder.execute()
+                      }
+                    }}
+                  />
+                </MenuWrapper>
+              }
+            >
+              <IconButton icon={IconCommonMore} />
+            </Tippy>
+          }
+        >
           <textarea
             value={description}
             onChange={(e) => {
@@ -186,21 +215,6 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
                 />
               ))
             : null}
-          <FormButton
-            variant="danger"
-            onClick={async () => {
-              if (confirm('Confirm cancel data asset?')) {
-                await handleDowngradeQueryBuilder.execute()
-              }
-            }}
-            disabled={handleDowngradeQueryBuilder.status === 'pending'}
-            className={css`
-              width: 100%;
-              margin-top: 8px;
-            `}
-          >
-            Cancel data asset
-          </FormButton>
         </ConfigSection>
       ) : (
         <ConfigSection>
