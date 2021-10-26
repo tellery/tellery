@@ -77,7 +77,7 @@
     "@types/koa-mount": "^4.0.1",
     "@types/koa-router": "^7.4.4",
     "@types/koa-static": "^4.0.2",
-    "@types/lodash": "^4.14.175",
+    "@types/lodash": "^4.14.176",
     "@types/node": "^16.11.1",
     "@types/nodemailer": "^6.4.4",
     "@types/pg": "^8.6.1",
