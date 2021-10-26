@@ -9,6 +9,7 @@ import {
   useQuestionDownstreams
 } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
+import { useRefreshSnapshot } from '@app/hooks/useStorySnapshotManager'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { ThemingVariables } from '@app/styles'
 import { AggregatedMetric, CustomSQLMetric, Editor, Metric } from '@app/types'
@@ -123,6 +124,7 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
                 ({ onClose }) =>
                   fields ? (
                     <SQLMetricCreator
+                      storyId={props.storyId}
                       onCreate={(ms) => {
                         setBlock((draft) => {
                           if (draft.content) {
@@ -150,6 +152,7 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
             ? Object.entries(metrics).map(([metricId, metric]) => (
                 <MetricItem
                   key={metricId}
+                  storyId={props.storyId}
                   value={metric}
                   Icon={'rawSql' in metric ? IconCommonCustomSqlMetric : IconCommonAggregatedMetric}
                   onChange={(metric) => {
@@ -236,6 +239,7 @@ function getFuncs(type: string, aggregation?: Record<string, Record<string, stri
 }
 
 function MetricItem(props: {
+  storyId: string
   value: Metric
   onChange(value: Metric): void
   Icon: React.ForwardRefExoticComponent<React.SVGAttributes<SVGElement>>
@@ -279,6 +283,7 @@ function MetricItem(props: {
         content={({ onClose }) =>
           'rawSql' in props.value ? (
             <SQLMetricEditor
+              storyId={props.storyId}
               value={props.value}
               onChange={(v) => {
                 props.onChange(v)
@@ -501,7 +506,8 @@ function AggregatedMetricEditor(props: {
   )
 }
 
-function SQLMiniEditor(props: { value: string; onChange(value: string): void }) {
+function SQLMiniEditor(props: { storyId: string; value: string; onChange(value: string): void }) {
+  const refreshSnapshot = useRefreshSnapshot(props.storyId)
   const workspace = useWorkspace()
   const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)
 
@@ -544,7 +550,7 @@ function SQLMiniEditor(props: { value: string; onChange(value: string): void }) 
   )
 }
 
-function SQLMetricCreator(props: { onCreate(metrics: Metric[]): void }) {
+function SQLMetricCreator(props: { storyId: string; onCreate(metrics: Metric[]): void }) {
   const [name, setName] = useState('')
   const [rawSql, setRawSql] = useState('')
 
@@ -554,7 +560,7 @@ function SQLMetricCreator(props: { onCreate(metrics: Metric[]): void }) {
         <ConfigInput value={name} onChange={setName} />
       </ConfigItem>
       <Divider half={true} />
-      <SQLMiniEditor value={rawSql} onChange={setRawSql} />
+      <SQLMiniEditor storyId={props.storyId} value={rawSql} onChange={setRawSql} />
       <Divider />
       <FormButton
         variant="secondary"
@@ -575,7 +581,12 @@ function SQLMetricCreator(props: { onCreate(metrics: Metric[]): void }) {
   )
 }
 
-function SQLMetricEditor(props: { value: CustomSQLMetric; onChange(value: CustomSQLMetric): void; onRemove(): void }) {
+function SQLMetricEditor(props: {
+  storyId: string
+  value: CustomSQLMetric
+  onChange(value: CustomSQLMetric): void
+  onRemove(): void
+}) {
   const [name, setName] = useState('')
   const [rawSql, setRawSql] = useState('')
   useEffect(() => {
@@ -589,7 +600,7 @@ function SQLMetricEditor(props: { value: CustomSQLMetric; onChange(value: Custom
         <ConfigInput value={name} onChange={setName} />
       </ConfigItem>
       <Divider half={true} />
-      <SQLMiniEditor value={rawSql} onChange={setRawSql} />
+      <SQLMiniEditor storyId={props.storyId} value={rawSql} onChange={setRawSql} />
       <Divider />
       <div
         className={css`
