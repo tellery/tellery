@@ -319,3 +319,80 @@ test('empty filter', async (t) => {
     `SELECT case when cost > 10 then 'high' else 'low' AS \`costHigh\`, to_date(\`dt\`) AS \`dt byDate\`, count(distinct \`uid\`) AS \`active_user\`, percentile(visit, 0.95) AS \`visit_p95\` FROM {{ ${queryBuilderId} }} GROUP BY 1, 2 ORDER BY 2`,
   )
 })
+
+test('IN filter', async (t) => {
+  const storyId = nanoid()
+  const queryBuilderId = nanoid()
+
+  await getRepository(BlockEntity).save({
+    id: queryBuilderId,
+    workspaceId: 'test',
+    interKey: queryBuilderId,
+    parentId: storyId,
+    parentTable: BlockParentType.BLOCK,
+    storyId,
+    content: queryBuilderContent,
+    type: BlockType.QUERY_BUILDER,
+    children: [],
+    alive: true,
+  })
+
+  const smartQueryExecution: SmartQueryExecution = {
+    queryBuilderId,
+    metricIds: ['mid1', 'mid4'],
+    dimensions: [
+      {
+        name: 'dt byDate',
+        fieldName: 'dt',
+        fieldType: 'TIMESTAMP',
+        func: 'byDate',
+      },
+      {
+        name: 'costHigh',
+        rawSql: "case when cost > 10 then 'high' else 'low'",
+      },
+    ],
+    filters: {
+      operator: 'and',
+      operands: [
+        {
+          operator: 'or',
+          operands: [
+            {
+              fieldName: 'cost',
+              fieldType: 'DECIMAL',
+              func: 'LT',
+              args: ['1000'],
+            },
+            {
+              fieldName: 'uid',
+              fieldType: 'VARCHAR',
+              func: 'NE',
+              args: ['123123123'],
+            },
+          ],
+        },
+        {
+          fieldName: 'uid',
+          fieldType: 'VARCHAR',
+          func: 'IN',
+          args: ['123', '456', '789'],
+        },
+        {
+          fieldName: 'cost',
+          fieldType: 'DECIMAL',
+          func: 'IS_NOT_NULL',
+          args: [],
+        },
+      ],
+    },
+  }
+
+  const sql = await translateSmartQuery(smartQueryExecution, queryBuilderSpec)
+  await getRepository(BlockEntity).delete([queryBuilderId])
+  stringCompare(
+    t,
+    sql,
+    `SELECT to_date(\`dt\`) AS \`dt byDate\`, case when cost > 10 then 'high' else 'low' AS \`costHigh\`, count(distinct \`uid\`) AS \`active_user\`, percentile(visit, 0.95) AS \`visit_p95\` FROM {{ ${queryBuilderId} }} WHERE ((\`cost\` < 1000 OR \`uid\` != '123123123') AND \`uid\` IN ('123', '456', '789') AND \`cost\` IS NOT NULL) GROUP BY 1, 2 ORDER BY 1`,
+  )
+})

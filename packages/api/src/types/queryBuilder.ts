@@ -56,6 +56,7 @@ enum Filter {
   LTE = 'LTE',
   GT = 'GT',
   GTE = 'GTE',
+  IN = 'IN',
   CONTAINS = 'CONTAINS',
   IS_NULL = 'IS_NULL',
   IS_NOT_NULL = 'IS_NOT_NULL',
@@ -71,6 +72,7 @@ const filterFunctions = new Map([
   [Filter.LTE, '? <= ?'],
   [Filter.GT, '? > ?'],
   [Filter.GTE, '? >= ?'],
+  [Filter.IN, '? IN (...?)'],
   [Filter.CONTAINS, '? LIKE %?%'],
   [Filter.IS_NULL, '? IS NULL'],
   [Filter.IS_NOT_NULL, '? IS NOT NULL'],
@@ -80,7 +82,19 @@ const filterFunctions = new Map([
 ])
 
 const typeToFilter = {
-  'TINYINT,SMALLINT,INTEGER,BIGINT,FLOAT,REAL,DOUBLE,NUMERIC,DECIMAL': [
+  'TINYINT,SMALLINT,INTEGER,BIGINT': [
+    Filter.EQ,
+    Filter.NE,
+    Filter.LT,
+    Filter.LTE,
+    Filter.GT,
+    Filter.GTE,
+    Filter.IS_NULL,
+    Filter.IS_NOT_NULL,
+    Filter.IS_BETWEEN,
+    Filter.IN,
+  ],
+  'FLOAT,REAL,DOUBLE,NUMERIC,DECIMAL': [
     Filter.EQ,
     Filter.NE,
     Filter.LT,
@@ -97,6 +111,7 @@ const typeToFilter = {
     Filter.CONTAINS,
     Filter.IS_NULL,
     Filter.IS_NOT_NULL,
+    Filter.IN,
   ],
   'DATE,TIME,TIMESTAMP': [Filter.LTE, Filter.GTE, Filter.IS_BETWEEN],
   BOOLEAN: [Filter.IS_TRUE, Filter.IS_FALSE],

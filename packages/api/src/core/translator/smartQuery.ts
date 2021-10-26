@@ -131,10 +131,15 @@ function assembleWhereField(
     const { fieldName, fieldType, func, args } = builder
     const quotedFieldName = quote.replace('?', fieldName)
     const convertedArgs = args.map((i) => (typeConversion.get(fieldType) ?? '?').replace('?', i))
-    return [quotedFieldName, ...convertedArgs].reduce(
-      (acc, replacer) => acc.replace('?', replacer),
-      filterSpec.get(fieldType)?.get(func) ?? '?',
-    )
+    const f = filterSpec.get(fieldType)?.get(func) ?? '?'
+    if (f.includes('...?')) {
+      return f.replace('...?', convertedArgs.join(', ')).replace('?', quotedFieldName)
+    } else {
+      return [quotedFieldName, ...convertedArgs].reduce(
+        (acc, replacer) => acc.replace('?', replacer),
+        f,
+      )
+    }
   }
 }
 
