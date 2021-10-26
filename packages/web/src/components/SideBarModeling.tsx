@@ -577,7 +577,7 @@ function SQLMiniEditor(props: {
               setSqlError(undefined)
               const res = await sqlRequest({
                 workspaceId: workspace.id,
-                sql: `select ${0} from {{${1}}}`,
+                sql: `select ${props.value} from {{${props.block.id}}}`,
                 questionId: props.block.id,
                 connectorId: workspace.preferences.connectorId!,
                 profile: workspace.preferences.profile!
@@ -593,6 +593,7 @@ function SQLMiniEditor(props: {
             <Tippy
               theme="tellery"
               arrow={false}
+              interactive={true}
               content={
                 <div
                   className={css`
@@ -602,6 +603,7 @@ function SQLMiniEditor(props: {
                     background-color: ${ThemingVariables.colors.negative[1]};
                     padding: 15px;
                     border-radius: 10px;
+                    overflow: auto;
                   `}
                 >
                   {sqlError}
