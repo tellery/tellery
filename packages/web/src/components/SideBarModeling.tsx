@@ -4,7 +4,9 @@ import {
   IconCommonClose,
   IconCommonCustomSqlMetric,
   IconCommonEdit,
-  IconCommonRun
+  IconCommonError,
+  IconCommonRun,
+  IconCommonSuccess
 } from '@app/assets/icons'
 import { setBlockTranscation } from '@app/context/editorTranscations'
 import {
@@ -23,6 +25,7 @@ import { AggregatedMetric, CustomSQLMetric, Editor, Metric } from '@app/types'
 import { blockIdGenerator } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import MonacoEditor from '@monaco-editor/react'
+import Tippy from '@tippyjs/react'
 import produce from 'immer'
 import { WritableDraft } from 'immer/dist/internal'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
@@ -528,6 +531,8 @@ function SQLMiniEditor(props: {
   const workspace = useWorkspace()
   const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)
   const mutatingCount = useSnapshotMutating(props.block.id)
+  const [sqlError, setSqlError] = useState<string>()
+  const [isSqlSuccess, setIsSqlSuccess] = useState(false)
 
   return (
     <>
@@ -543,10 +548,42 @@ function SQLMiniEditor(props: {
             hoverContent={mutatingCount !== 0 ? 'Cancel Query' : 'Execute Query'}
             icon={mutatingCount !== 0 ? IconCommonClose : IconCommonRun}
             color={ThemingVariables.colors.primary[1]}
-            onClick={() =>
-              mutatingCount !== 0 ? refreshSnapshot.cancel(props.block.id) : refreshSnapshot.execute(props.block)
-            }
+            onClick={async () => {
+              if (mutatingCount !== 0) {
+                refreshSnapshot.cancel(props.block.id)
+                return
+              }
+              setIsSqlSuccess(false)
+              setSqlError(undefined)
+              const res = await refreshSnapshot.execute(props.block)
+              setSqlError(res.errMsg)
+              setIsSqlSuccess(!res.errMsg)
+            }}
+            className={css`
+              margin-left: 10px;
+            `}
           />
+          {sqlError && (
+            <Tippy
+              theme="tellery"
+              arrow={false}
+              content={
+                <div
+                  className={css`
+                    box-shadow: ${ThemingVariables.boxShadows[0]};
+                    color: ${ThemingVariables.colors.text[0]};
+                    background-color: ${ThemingVariables.colors.gray[5]};
+                    border-radius: 8px;
+                  `}
+                >
+                  {sqlError}
+                </div>
+              }
+            >
+              <IconButton icon={IconCommonError} color={ThemingVariables.colors.negative[0]} />
+            </Tippy>
+          )}
+          {isSqlSuccess && <IconButton icon={IconCommonSuccess} color={ThemingVariables.colors.positive[0]} />}
         </div>
       </ConfigItem>
       <MonacoEditor
