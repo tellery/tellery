@@ -24,10 +24,11 @@ import { ThemingVariables } from '@app/styles'
 import { AggregatedMetric, CustomSQLMetric, Editor, Metric } from '@app/types'
 import { blockIdGenerator } from '@app/utils'
 import { css, cx } from '@emotion/css'
-import MonacoEditor from '@monaco-editor/react'
+import MonacoEditor, { useMonaco } from '@monaco-editor/react'
 import Tippy from '@tippyjs/react'
 import produce from 'immer'
 import { WritableDraft } from 'immer/dist/internal'
+import type { editor } from 'monaco-editor'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { CheckBox } from './CheckBox'
 import { FormButton } from './kit/FormButton'
@@ -533,6 +534,31 @@ function SQLMiniEditor(props: {
   const mutatingCount = useSnapshotMutating(props.block.id)
   const [sqlError, setSqlError] = useState<string>()
   const [isSqlSuccess, setIsSqlSuccess] = useState(false)
+  const monaco = useMonaco()
+  useEffect(() => {
+    monaco?.editor.defineTheme('tellery-mini', {
+      base: 'vs',
+      inherit: true,
+      rules: [
+        { background: '#F7F7F7' } as unknown as editor.ITokenThemeRule,
+        { token: 'identifier', foreground: '#333333' },
+        { token: 'number', foreground: '#333333' },
+        { token: 'keyword', foreground: '#1480BD' },
+        { token: 'predefined', foreground: '#FF6157' },
+        { token: 'string', foreground: '#45B16A' },
+        { token: 'operator', foreground: '#AA5C31' },
+        { token: 'delimiter.parenthesis', foreground: '#B4B4B4' },
+        { token: 'transclusion', foreground: '#555555' },
+        { token: 'comment', foreground: '#B4B4B4' }
+      ],
+      colors: {
+        'editor.background': '#F7F7F7',
+        'textLink.foreground': '#002FA7',
+        'textLink.activeForeground': '#002FA7',
+        'editorLink.activeForeground': '#002FA7'
+      }
+    })
+  }, [monaco?.editor])
 
   return (
     <>
