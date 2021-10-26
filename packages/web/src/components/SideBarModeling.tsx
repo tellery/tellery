@@ -9,6 +9,7 @@ import {
   IconCommonSuccess
 } from '@app/assets/icons'
 import { setBlockTranscation } from '@app/context/editorTranscations'
+import { useAsync } from '@app/hooks'
 import {
   useBlockSuspense,
   useConnectorsGetProfile,
@@ -529,8 +530,6 @@ function SQLMiniEditor(props: {
 }) {
   const workspace = useWorkspace()
   const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)
-  const [sqlError, setSqlError] = useState<string>()
-  const [isSqlSuccess, setIsSqlSuccess] = useState(false)
   const monaco = useMonaco()
   useEffect(() => {
     monaco?.editor.defineTheme('tellery-mini', {
@@ -556,6 +555,7 @@ function SQLMiniEditor(props: {
       }
     })
   }, [monaco?.editor])
+  const handleSqlRequest = useAsync(sqlRequest)
 
   return (
     <>
@@ -571,11 +571,13 @@ function SQLMiniEditor(props: {
             hoverContent="Execute Query"
             icon={IconCommonRun}
             color={ThemingVariables.colors.primary[1]}
-            disabled={!workspace.preferences.connectorId || !workspace.preferences.profile}
-            onClick={async () => {
-              setIsSqlSuccess(false)
-              setSqlError(undefined)
-              const res = await sqlRequest({
+            disabled={
+              handleSqlRequest.status === 'pending' ||
+              !workspace.preferences.connectorId ||
+              !workspace.preferences.profile
+            }
+            onClick={() =>
+              handleSqlRequest.execute({
                 workspaceId: workspace.id,
                 sql: `select ${props.value} from {{${props.block.id}}}`,
                 questionId: props.block.id,
@@ -583,14 +585,12 @@ function SQLMiniEditor(props: {
                 profile: workspace.preferences.profile!,
                 maxRow: 1
               })
-              setSqlError(res.errMsg)
-              setIsSqlSuccess(!res.errMsg)
-            }}
+            }
             className={css`
               margin-left: 10px;
             `}
           />
-          {sqlError && (
+          {handleSqlRequest.value?.errMsg && (
             <Tippy
               theme="tellery"
               arrow={false}
@@ -607,14 +607,16 @@ function SQLMiniEditor(props: {
                     overflow: auto;
                   `}
                 >
-                  {sqlError}
+                  {handleSqlRequest.value.errMsg}
                 </div>
               }
             >
               <IconButton icon={IconCommonError} color={ThemingVariables.colors.negative[0]} />
             </Tippy>
           )}
-          {isSqlSuccess && <IconButton icon={IconCommonSuccess} color={ThemingVariables.colors.positive[0]} />}
+          {handleSqlRequest.value && !handleSqlRequest.value.errMsg && (
+            <IconButton icon={IconCommonSuccess} color={ThemingVariables.colors.positive[0]} />
+          )}
         </div>
       </ConfigItem>
       <MonacoEditor
