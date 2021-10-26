@@ -170,6 +170,14 @@ const SideBarContent: React.FC = () => {
               }}
             />
             <MainSideBarItem
+              icon={IconCommonQuestion}
+              hoverTitle={t`Explore`}
+              onClick={() => {
+                history.push('/explore')
+                closeSideBar()
+              }}
+            />
+            <MainSideBarItem
               icon={IconCommonHome}
               hoverTitle={t`Home`}
               onClick={() => {

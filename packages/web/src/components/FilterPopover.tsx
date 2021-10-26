@@ -117,7 +117,14 @@ export default function FilterPopover(props: {
         >
           Filter
         </h3>
-        <IconButton icon={IconCommonClose} color={ThemingVariables.colors.text[0]} onClick={props.onClose} />
+        <IconButton
+          icon={IconCommonClose}
+          color={ThemingVariables.colors.text[0]}
+          onClick={() => {
+            setValue(props.value)
+            props.onClose()
+          }}
+        />
       </div>
       <div
         className={css`
