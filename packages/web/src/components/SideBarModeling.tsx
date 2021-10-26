@@ -627,11 +627,11 @@ function SQLMiniEditor(props: {
                 </div>
               }
             >
-              <IconButton icon={IconCommonError} color={ThemingVariables.colors.negative[0]} />
+              <IconCommonError color={ThemingVariables.colors.negative[0]} />
             </Tippy>
           )}
           {handleSqlRequest.value && !handleSqlRequest.value.errMsg && (
-            <IconButton icon={IconCommonSuccess} color={ThemingVariables.colors.positive[0]} />
+            <IconCommonSuccess color={ThemingVariables.colors.positive[0]} />
           )}
         </div>
       </ConfigItem>
