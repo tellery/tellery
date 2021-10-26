@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, MouseEvent } from 'react'
-import { orderBy, sumBy } from 'lodash'
+import { isEqual, orderBy, sumBy } from 'lodash'
 import { css } from '@emotion/css'
 import { Pie, Label, PieChart, Tooltip, Legend, Cell } from '@tellery/recharts'
 import { useTextWidth } from '@tag0/use-text-width'
@@ -203,14 +203,7 @@ export const pie: Chart<Type.PIE> = {
     const showLegend = props.config.showLegend && props.dimensions.width - props.dimensions.height >= 100
     const { onConfigChange } = props
     useEffect(() => {
-      if (
-        orderBy(props.config.slices, ['key'])
-          .map(({ key }) => key)
-          .join() ===
-        orderBy(data, ['key'])
-          .map(({ key }) => key)
-          .join()
-      ) {
+      if (isEqual(props.config.slices, data)) {
         return
       }
       onConfigChange(
