@@ -597,6 +597,7 @@ function SQLMiniEditor(props: {
             hoverContent="Execute Query"
             icon={IconCommonRun}
             color={ThemingVariables.colors.primary[1]}
+            onClick={run}
             disabled={
               handleSqlRequest.status === 'pending' ||
               !workspace.preferences.connectorId ||
