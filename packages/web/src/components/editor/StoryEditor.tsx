@@ -152,17 +152,14 @@ const useEditorClipboardManager = (
       const selection = window.getSelection()
       selection?.removeAllRanges()
       const selectionState = getSelection()
-      const fragment = selectionState ? getBlocksFragmentFromSelection(selectionState, snapshot) : null
+      const fragment = selectionState ? getBlocksFragmentFromSelection(selectionState, snapshot, workspace.id) : null
       if (fragment) {
         e.preventDefault()
       }
       copy('tellery', {
         debug: true,
         onCopy: (clipboardData) => {
-          setClipboardWithFragment({ clipboardData } as React.ClipboardEvent<HTMLDivElement>, {
-            ...fragment,
-            workspaceId: workspace.id
-          })
+          setClipboardWithFragment({ clipboardData } as React.ClipboardEvent<HTMLDivElement>, fragment)
           deleteBlockFragmentFromSelection()
         }
       })
@@ -173,17 +170,14 @@ const useEditorClipboardManager = (
   const doCopy = useCallback(
     (e: KeyboardEvent) => {
       const selectionState = getSelection()
-      const fragment = selectionState ? getBlocksFragmentFromSelection(selectionState, snapshot) : null
+      const fragment = selectionState ? getBlocksFragmentFromSelection(selectionState, snapshot, workspace.id) : null
       if (fragment) {
         e.preventDefault()
       }
       copy('tellery', {
         debug: true,
         onCopy: (clipboardData) => {
-          setClipboardWithFragment({ clipboardData } as React.ClipboardEvent<HTMLDivElement>, {
-            ...fragment,
-            workspaceId: workspace.id
-          })
+          setClipboardWithFragment({ clipboardData } as React.ClipboardEvent<HTMLDivElement>, fragment)
         }
       })
     },
@@ -1363,11 +1357,14 @@ const _StoryEditor: React.FC<{
           if (isSelectionCollapsed(selectionState) && selectionState.type === TellerySelectionType.Inline) {
             e.preventDefault()
             const targetBlockId = selectionState.anchor.blockId
-            const telleryTokensData: Editor.Token[] = JSON.parse(telleryTokenDataStr)
+            const telleryTokensData: {
+              data: Editor.Token[]
+              workspaceId?: string
+            } = JSON.parse(telleryTokenDataStr)
 
             const targetBlock = getBlockFromSnapshot(targetBlockId, snapshot)
             const [tokens1, tokens2] = splitBlockTokens(targetBlock!.content!.title || [], selectionState)
-            const beforeToken = mergeTokens([...tokens1, ...(telleryTokensData || [])])
+            const beforeToken = mergeTokens([...tokens1, ...(telleryTokensData.data || [])])
             const afterToken = tokens2
             updateBlockTitle(targetBlockId, mergeTokens([...beforeToken, ...afterToken]))
           }

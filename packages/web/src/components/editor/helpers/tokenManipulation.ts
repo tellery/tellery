@@ -116,13 +116,18 @@ export const getBlockOrTokensFromSelection = (
   return block
 }
 
-export const getBlocksFragmentFromSelection = (selectionState: TellerySelection, snapshot: BlockSnapshot) => {
+export const getBlocksFragmentFromSelection = (
+  selectionState: TellerySelection,
+  snapshot: BlockSnapshot,
+  workspaceId?: string
+) => {
   if (selectionState === null)
     return {
       type: TELLERY_MIME_TYPES.BLOCKS,
       value: {
         children: [],
-        data: {}
+        data: {},
+        workspaceId
       }
     }
 
@@ -133,7 +138,10 @@ export const getBlocksFragmentFromSelection = (selectionState: TellerySelection,
     )
     return {
       type: TELLERY_MIME_TYPES.TOKEN,
-      value: fragment as Editor.Token[]
+      value: {
+        data: fragment as Editor.Token[],
+        workspaceId
+      }
     }
   } else if (selectionState.type === TellerySelectionType.Block) {
     const selectedIds = selectionState.selectedBlocks
@@ -141,7 +149,8 @@ export const getBlocksFragmentFromSelection = (selectionState: TellerySelection,
       type: TELLERY_MIME_TYPES.BLOCKS,
       value: {
         children: selectedIds,
-        data: getSubsetOfBlocksSnapshot(snapshot, selectedIds)
+        data: getSubsetOfBlocksSnapshot(snapshot, selectedIds),
+        workspaceId
       }
     }
   }
