@@ -1,4 +1,11 @@
-import { IconCommonAdd, IconCommonAggregatedMetric, IconCommonCustomSqlMetric, IconCommonEdit } from '@app/assets/icons'
+import {
+  IconCommonAdd,
+  IconCommonAggregatedMetric,
+  IconCommonClose,
+  IconCommonCustomSqlMetric,
+  IconCommonEdit,
+  IconCommonRun
+} from '@app/assets/icons'
 import { setBlockTranscation } from '@app/context/editorTranscations'
 import {
   useBlockSuspense,
@@ -9,7 +16,7 @@ import {
   useQuestionDownstreams
 } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
-import { useRefreshSnapshot } from '@app/hooks/useStorySnapshotManager'
+import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { ThemingVariables } from '@app/styles'
 import { AggregatedMetric, CustomSQLMetric, Editor, Metric } from '@app/types'
@@ -21,6 +28,7 @@ import { WritableDraft } from 'immer/dist/internal'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { CheckBox } from './CheckBox'
 import { FormButton } from './kit/FormButton'
+import IconButton from './kit/IconButton'
 import QuestionDownstreams from './QuestionDownstreams'
 import ConfigIconButton from './v11n/components/ConfigIconButton'
 import { ConfigInput } from './v11n/components/ConfigInput'
@@ -125,6 +133,7 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
                   fields ? (
                     <SQLMetricCreator
                       storyId={props.storyId}
+                      block={queryBlock}
                       onCreate={(ms) => {
                         setBlock((draft) => {
                           if (draft.content) {
@@ -153,6 +162,7 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
                 <MetricItem
                   key={metricId}
                   storyId={props.storyId}
+                  block={queryBlock}
                   value={metric}
                   Icon={'rawSql' in metric ? IconCommonCustomSqlMetric : IconCommonAggregatedMetric}
                   onChange={(metric) => {
@@ -240,6 +250,7 @@ function getFuncs(type: string, aggregation?: Record<string, Record<string, stri
 
 function MetricItem(props: {
   storyId: string
+  block: Editor.QueryBlock
   value: Metric
   onChange(value: Metric): void
   Icon: React.ForwardRefExoticComponent<React.SVGAttributes<SVGElement>>
@@ -284,6 +295,7 @@ function MetricItem(props: {
           'rawSql' in props.value ? (
             <SQLMetricEditor
               storyId={props.storyId}
+              block={props.block}
               value={props.value}
               onChange={(v) => {
                 props.onChange(v)
@@ -506,14 +518,37 @@ function AggregatedMetricEditor(props: {
   )
 }
 
-function SQLMiniEditor(props: { storyId: string; value: string; onChange(value: string): void }) {
+function SQLMiniEditor(props: {
+  storyId: string
+  block: Editor.QueryBlock
+  value: string
+  onChange(value: string): void
+}) {
   const refreshSnapshot = useRefreshSnapshot(props.storyId)
   const workspace = useWorkspace()
   const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)
+  const mutatingCount = useSnapshotMutating(props.block.id)
 
   return (
     <>
-      <ConfigItem label="SQL">null</ConfigItem>
+      <ConfigItem label="SQL">
+        <div
+          className={css`
+            display: flex;
+            flex-direction: row-reverse;
+            padding-right: 6px;
+          `}
+        >
+          <IconButton
+            hoverContent={mutatingCount !== 0 ? 'Cancel Query' : 'Execute Query'}
+            icon={mutatingCount !== 0 ? IconCommonClose : IconCommonRun}
+            color={ThemingVariables.colors.primary[1]}
+            onClick={() =>
+              mutatingCount !== 0 ? refreshSnapshot.cancel(props.block.id) : refreshSnapshot.execute(props.block)
+            }
+          />
+        </div>
+      </ConfigItem>
       <MonacoEditor
         language={profile?.type}
         value={props.value}
@@ -550,7 +585,7 @@ function SQLMiniEditor(props: { storyId: string; value: string; onChange(value: 
   )
 }
 
-function SQLMetricCreator(props: { storyId: string; onCreate(metrics: Metric[]): void }) {
+function SQLMetricCreator(props: { storyId: string; block: Editor.QueryBlock; onCreate(metrics: Metric[]): void }) {
   const [name, setName] = useState('')
   const [rawSql, setRawSql] = useState('')
 
@@ -560,7 +595,7 @@ function SQLMetricCreator(props: { storyId: string; onCreate(metrics: Metric[]):
         <ConfigInput value={name} onChange={setName} />
       </ConfigItem>
       <Divider half={true} />
-      <SQLMiniEditor storyId={props.storyId} value={rawSql} onChange={setRawSql} />
+      <SQLMiniEditor storyId={props.storyId} block={props.block} value={rawSql} onChange={setRawSql} />
       <Divider />
       <FormButton
         variant="secondary"
@@ -583,6 +618,7 @@ function SQLMetricCreator(props: { storyId: string; onCreate(metrics: Metric[]):
 
 function SQLMetricEditor(props: {
   storyId: string
+  block: Editor.QueryBlock
   value: CustomSQLMetric
   onChange(value: CustomSQLMetric): void
   onRemove(): void
@@ -600,7 +636,7 @@ function SQLMetricEditor(props: {
         <ConfigInput value={name} onChange={setName} />
       </ConfigItem>
       <Divider half={true} />
-      <SQLMiniEditor storyId={props.storyId} value={rawSql} onChange={setRawSql} />
+      <SQLMiniEditor storyId={props.storyId} block={props.block} value={rawSql} onChange={setRawSql} />
       <Divider />
       <div
         className={css`
