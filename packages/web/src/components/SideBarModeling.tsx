@@ -498,21 +498,14 @@ function AggregatedMetricEditor(props: {
   )
 }
 
-function SQLMetricCreator(props: { onCreate(metrics: Metric[]): void }) {
-  const [name, setName] = useState('')
-  const [rawSql, setRawSql] = useState('')
-
+function SQLMiniEditor(props: { value: string; onChange(value: string): void }) {
   return (
     <>
-      <ConfigItem label="Metric name">
-        <ConfigInput value={name} onChange={setName} />
-      </ConfigItem>
-      <Divider half={true} />
       <ConfigItem label="SQL">null</ConfigItem>
       <textarea
-        value={rawSql}
+        value={props.value}
         onChange={(e) => {
-          setRawSql(e.target.value)
+          props.onChange(e.target.value)
         }}
         spellCheck="false"
         autoComplete="off"
@@ -528,6 +521,21 @@ function SQLMetricCreator(props: { onCreate(metrics: Metric[]): void }) {
           margin-bottom: -3px;
         `}
       />
+    </>
+  )
+}
+
+function SQLMetricCreator(props: { onCreate(metrics: Metric[]): void }) {
+  const [name, setName] = useState('')
+  const [rawSql, setRawSql] = useState('')
+
+  return (
+    <>
+      <ConfigItem label="Metric name">
+        <ConfigInput value={name} onChange={setName} />
+      </ConfigItem>
+      <Divider half={true} />
+      <SQLMiniEditor value={rawSql} onChange={setRawSql} />
       <Divider />
       <FormButton
         variant="secondary"
@@ -562,26 +570,7 @@ function SQLMetricEditor(props: { value: CustomSQLMetric; onChange(value: Custom
         <ConfigInput value={name} onChange={setName} />
       </ConfigItem>
       <Divider half={true} />
-      <ConfigItem label="SQL">null</ConfigItem>
-      <textarea
-        value={rawSql}
-        onChange={(e) => {
-          setRawSql(e.target.value)
-        }}
-        spellCheck="false"
-        autoComplete="off"
-        className={css`
-          height: 160px;
-          width: 100%;
-          resize: none;
-          border: none;
-          outline: none;
-          background: ${ThemingVariables.colors.gray[3]};
-          border-radius: 4px;
-          padding: 8px;
-          margin-bottom: -3px;
-        `}
-      />
+      <SQLMiniEditor value={rawSql} onChange={setRawSql} />
       <Divider />
       <div
         className={css`
