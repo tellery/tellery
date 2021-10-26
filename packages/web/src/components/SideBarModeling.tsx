@@ -524,7 +524,7 @@ function SQLMiniEditor(props: { value: string; onChange(value: string): void }) 
           quickSuggestions: false,
           minimap: { enabled: false },
           scrollBeyondLastLine: false,
-          scrollBeyondLastColumn: false,
+          scrollBeyondLastColumn: 0,
           wordWrap: 'on'
         }}
         wrapperProps={{
