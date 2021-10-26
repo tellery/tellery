@@ -1,22 +1,38 @@
-import { IconCommonAdd, IconCommonAggregatedMetric, IconCommonCustomSqlMetric, IconCommonEdit } from '@app/assets/icons'
+import { sqlRequest } from '@app/api'
+import {
+  IconCommonAdd,
+  IconCommonAggregatedMetric,
+  IconCommonCustomSqlMetric,
+  IconCommonEdit,
+  IconCommonError,
+  IconCommonRun,
+  IconCommonSuccess
+} from '@app/assets/icons'
 import { setBlockTranscation } from '@app/context/editorTranscations'
+import { useAsync } from '@app/hooks'
 import {
   useBlockSuspense,
+  useConnectorsGetProfile,
   useDowngradeQueryBuilder,
   useGetProfileSpec,
   useQuerySnapshot,
   useQuestionDownstreams
 } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
+import { useWorkspace } from '@app/hooks/useWorkspace'
 import { ThemingVariables } from '@app/styles'
 import { AggregatedMetric, CustomSQLMetric, Editor, Metric } from '@app/types'
 import { blockIdGenerator } from '@app/utils'
 import { css, cx } from '@emotion/css'
+import MonacoEditor, { useMonaco } from '@monaco-editor/react'
+import Tippy from '@tippyjs/react'
 import produce from 'immer'
 import { WritableDraft } from 'immer/dist/internal'
+import type { editor } from 'monaco-editor'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { CheckBox } from './CheckBox'
 import { FormButton } from './kit/FormButton'
+import IconButton from './kit/IconButton'
 import QuestionDownstreams from './QuestionDownstreams'
 import ConfigIconButton from './v11n/components/ConfigIconButton'
 import { ConfigInput } from './v11n/components/ConfigInput'
@@ -120,6 +136,8 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
                 ({ onClose }) =>
                   fields ? (
                     <SQLMetricCreator
+                      storyId={props.storyId}
+                      block={queryBlock}
                       onCreate={(ms) => {
                         setBlock((draft) => {
                           if (draft.content) {
@@ -147,6 +165,8 @@ export default function SideBarModeling(props: { storyId: string; blockId: strin
             ? Object.entries(metrics).map(([metricId, metric]) => (
                 <MetricItem
                   key={metricId}
+                  storyId={props.storyId}
+                  block={queryBlock}
                   value={metric}
                   Icon={'rawSql' in metric ? IconCommonCustomSqlMetric : IconCommonAggregatedMetric}
                   onChange={(metric) => {
@@ -233,6 +253,8 @@ function getFuncs(type: string, aggregation?: Record<string, Record<string, stri
 }
 
 function MetricItem(props: {
+  storyId: string
+  block: Editor.QueryBlock
   value: Metric
   onChange(value: Metric): void
   Icon: React.ForwardRefExoticComponent<React.SVGAttributes<SVGElement>>
@@ -276,6 +298,8 @@ function MetricItem(props: {
         content={({ onClose }) =>
           'rawSql' in props.value ? (
             <SQLMetricEditor
+              storyId={props.storyId}
+              block={props.block}
               value={props.value}
               onChange={(v) => {
                 props.onChange(v)
@@ -498,7 +522,157 @@ function AggregatedMetricEditor(props: {
   )
 }
 
-function SQLMetricCreator(props: { onCreate(metrics: Metric[]): void }) {
+function SQLMiniEditor(props: {
+  storyId: string
+  block: Editor.QueryBlock
+  value: string
+  onChange(value: string): void
+}) {
+  const workspace = useWorkspace()
+  const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)
+  const monaco = useMonaco()
+  useEffect(() => {
+    monaco?.editor.defineTheme('tellery-mini', {
+      base: 'vs',
+      inherit: true,
+      rules: [
+        { background: '#F7F7F7' } as unknown as editor.ITokenThemeRule,
+        { token: 'identifier', foreground: '#333333' },
+        { token: 'number', foreground: '#333333' },
+        { token: 'keyword', foreground: '#1480BD' },
+        { token: 'predefined', foreground: '#FF6157' },
+        { token: 'string', foreground: '#45B16A' },
+        { token: 'operator', foreground: '#AA5C31' },
+        { token: 'delimiter.parenthesis', foreground: '#B4B4B4' },
+        { token: 'transclusion', foreground: '#555555' },
+        { token: 'comment', foreground: '#B4B4B4' }
+      ],
+      colors: {
+        'editor.background': '#F7F7F7',
+        'textLink.foreground': '#002FA7',
+        'textLink.activeForeground': '#002FA7',
+        'editorLink.activeForeground': '#002FA7'
+      }
+    })
+  }, [monaco?.editor])
+  const handleSqlRequest = useAsync(sqlRequest)
+  const run = useCallback(
+    () =>
+      handleSqlRequest.execute({
+        workspaceId: workspace.id,
+        sql: `select ${props.value} from {{${props.block.id}}}`,
+        questionId: props.block.id,
+        connectorId: workspace.preferences.connectorId!,
+        profile: workspace.preferences.profile!,
+        maxRow: 1
+      }),
+    [
+      handleSqlRequest,
+      props.block.id,
+      props.value,
+      workspace.id,
+      workspace.preferences.connectorId,
+      workspace.preferences.profile
+    ]
+  )
+  const [editor, setEditor] = useState<editor.IStandaloneCodeEditor>()
+  useEffect(() => {
+    if (!monaco) {
+      return
+    }
+    editor?.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => run())
+  }, [editor, monaco, run])
+
+  return (
+    <>
+      <ConfigItem label="SQL">
+        <div
+          className={css`
+            display: flex;
+            flex-direction: row-reverse;
+            padding-right: 6px;
+          `}
+        >
+          <IconButton
+            hoverContent="Execute Query"
+            icon={IconCommonRun}
+            color={ThemingVariables.colors.primary[1]}
+            disabled={
+              handleSqlRequest.status === 'pending' ||
+              !workspace.preferences.connectorId ||
+              !workspace.preferences.profile
+            }
+            className={css`
+              margin-left: 10px;
+            `}
+          />
+          {handleSqlRequest.value?.errMsg && (
+            <Tippy
+              theme="tellery"
+              arrow={false}
+              interactive={true}
+              content={
+                <div
+                  className={css`
+                    color: ${ThemingVariables.colors.negative[0]};
+                    font-size: 12px;
+                    line-height: 14px;
+                    background-color: ${ThemingVariables.colors.negative[1]};
+                    padding: 15px;
+                    border-radius: 10px;
+                    overflow: auto;
+                  `}
+                >
+                  {handleSqlRequest.value.errMsg}
+                </div>
+              }
+            >
+              <IconCommonError color={ThemingVariables.colors.negative[0]} />
+            </Tippy>
+          )}
+          {handleSqlRequest.value && !handleSqlRequest.value.errMsg && (
+            <IconCommonSuccess color={ThemingVariables.colors.positive[0]} />
+          )}
+        </div>
+      </ConfigItem>
+      <MonacoEditor
+        language={profile?.type}
+        value={props.value}
+        theme="tellery-mini"
+        onChange={(v) => props.onChange(v || '')}
+        height={160}
+        onMount={setEditor}
+        options={{
+          glyphMargin: false,
+          folding: false,
+          lineNumbers: 'off',
+          lineDecorationsWidth: 0,
+          lineNumbersMinChars: 0,
+          fixedOverflowWidgets: false,
+          quickSuggestions: false,
+          minimap: { enabled: false },
+          scrollBeyondLastLine: false,
+          scrollBeyondLastColumn: 0,
+          wordWrap: 'on'
+        }}
+        wrapperProps={{
+          className: css`
+            width: 100%;
+            resize: none;
+            border: none;
+            outline: none;
+            background: ${ThemingVariables.colors.gray[3]};
+            border-radius: 4px;
+            padding: 8px;
+            margin-bottom: -3px;
+          `
+        }}
+      />
+    </>
+  )
+}
+
+function SQLMetricCreator(props: { storyId: string; block: Editor.QueryBlock; onCreate(metrics: Metric[]): void }) {
   const [name, setName] = useState('')
   const [rawSql, setRawSql] = useState('')
 
@@ -508,26 +682,7 @@ function SQLMetricCreator(props: { onCreate(metrics: Metric[]): void }) {
         <ConfigInput value={name} onChange={setName} />
       </ConfigItem>
       <Divider half={true} />
-      <ConfigItem label="SQL">null</ConfigItem>
-      <textarea
-        value={rawSql}
-        onChange={(e) => {
-          setRawSql(e.target.value)
-        }}
-        spellCheck="false"
-        autoComplete="off"
-        className={css`
-          height: 160px;
-          width: 100%;
-          resize: none;
-          border: none;
-          outline: none;
-          background: ${ThemingVariables.colors.gray[3]};
-          border-radius: 4px;
-          padding: 8px;
-          margin-bottom: -3px;
-        `}
-      />
+      <SQLMiniEditor storyId={props.storyId} block={props.block} value={rawSql} onChange={setRawSql} />
       <Divider />
       <FormButton
         variant="secondary"
@@ -548,7 +703,13 @@ function SQLMetricCreator(props: { onCreate(metrics: Metric[]): void }) {
   )
 }
 
-function SQLMetricEditor(props: { value: CustomSQLMetric; onChange(value: CustomSQLMetric): void; onRemove(): void }) {
+function SQLMetricEditor(props: {
+  storyId: string
+  block: Editor.QueryBlock
+  value: CustomSQLMetric
+  onChange(value: CustomSQLMetric): void
+  onRemove(): void
+}) {
   const [name, setName] = useState('')
   const [rawSql, setRawSql] = useState('')
   useEffect(() => {
@@ -562,26 +723,7 @@ function SQLMetricEditor(props: { value: CustomSQLMetric; onChange(value: Custom
         <ConfigInput value={name} onChange={setName} />
       </ConfigItem>
       <Divider half={true} />
-      <ConfigItem label="SQL">null</ConfigItem>
-      <textarea
-        value={rawSql}
-        onChange={(e) => {
-          setRawSql(e.target.value)
-        }}
-        spellCheck="false"
-        autoComplete="off"
-        className={css`
-          height: 160px;
-          width: 100%;
-          resize: none;
-          border: none;
-          outline: none;
-          background: ${ThemingVariables.colors.gray[3]};
-          border-radius: 4px;
-          padding: 8px;
-          margin-bottom: -3px;
-        `}
-      />
+      <SQLMiniEditor storyId={props.storyId} block={props.block} value={rawSql} onChange={setRawSql} />
       <Divider />
       <div
         className={css`
