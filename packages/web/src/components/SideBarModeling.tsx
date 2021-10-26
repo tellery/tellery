@@ -1,7 +1,7 @@
+import { sqlRequest } from '@app/api'
 import {
   IconCommonAdd,
   IconCommonAggregatedMetric,
-  IconCommonClose,
   IconCommonCustomSqlMetric,
   IconCommonEdit,
   IconCommonError,
@@ -18,7 +18,6 @@ import {
   useQuestionDownstreams
 } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
-import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { ThemingVariables } from '@app/styles'
 import { AggregatedMetric, CustomSQLMetric, Editor, Metric } from '@app/types'
@@ -528,10 +527,8 @@ function SQLMiniEditor(props: {
   value: string
   onChange(value: string): void
 }) {
-  const refreshSnapshot = useRefreshSnapshot(props.storyId)
   const workspace = useWorkspace()
   const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)
-  const mutatingCount = useSnapshotMutating(props.block.id)
   const [sqlError, setSqlError] = useState<string>()
   const [isSqlSuccess, setIsSqlSuccess] = useState(false)
   const monaco = useMonaco()
@@ -571,17 +568,20 @@ function SQLMiniEditor(props: {
           `}
         >
           <IconButton
-            hoverContent={mutatingCount !== 0 ? 'Cancel Query' : 'Execute Query'}
-            icon={mutatingCount !== 0 ? IconCommonClose : IconCommonRun}
+            hoverContent="Execute Query"
+            icon={IconCommonRun}
             color={ThemingVariables.colors.primary[1]}
+            disabled={!workspace.preferences.connectorId || !workspace.preferences.profile}
             onClick={async () => {
-              if (mutatingCount !== 0) {
-                refreshSnapshot.cancel(props.block.id)
-                return
-              }
               setIsSqlSuccess(false)
               setSqlError(undefined)
-              const res = await refreshSnapshot.execute(props.block)
+              const res = await sqlRequest({
+                workspaceId: workspace.id,
+                sql: `select ${0} from {{${1}}}`,
+                questionId: props.block.id,
+                connectorId: workspace.preferences.connectorId!,
+                profile: workspace.preferences.profile!
+              })
               setSqlError(res.errMsg)
               setIsSqlSuccess(!res.errMsg)
             }}
@@ -596,10 +596,12 @@ function SQLMiniEditor(props: {
               content={
                 <div
                   className={css`
-                    box-shadow: ${ThemingVariables.boxShadows[0]};
-                    color: ${ThemingVariables.colors.text[0]};
-                    background-color: ${ThemingVariables.colors.gray[5]};
-                    border-radius: 8px;
+                    color: ${ThemingVariables.colors.negative[0]};
+                    font-size: 12px;
+                    line-height: 14px;
+                    background-color: ${ThemingVariables.colors.negative[1]};
+                    padding: 15px;
+                    border-radius: 10px;
                   `}
                 >
                   {sqlError}
