@@ -1,5 +1,6 @@
 import {
   IconCommonAdd,
+  IconCommonArrowDouble,
   IconCommonArrowDropDown,
   IconCommonClose,
   IconCommonCloseCircle,
@@ -28,6 +29,7 @@ import IconButton from './kit/IconButton'
 import { MenuItem } from './MenuItem'
 import { MenuWrapper } from './MenuWrapper'
 import { SQLType, SQLTypeReduced } from './v11n/types'
+import dayjs from 'dayjs'
 
 type Value = NonNullable<Editor.SmartQueryBlock['content']['filters']>
 
@@ -566,12 +568,40 @@ function FilterItem(props: {
                 maxDetail="month"
                 calendarIcon={null}
                 clearIcon={null}
-                value={props.value.args[0] ? new Date(props.value.args[0]) : new Date()}
+                prev2Label={
+                  <IconCommonArrowDouble
+                    color={ThemingVariables.colors.text[1]}
+                    className={css`
+                      display: block;
+                      transform: rotate(180deg);
+                    `}
+                  />
+                }
+                prevLabel={
+                  <IconCommonArrowDropDown
+                    color={ThemingVariables.colors.text[1]}
+                    className={css`
+                      display: block;
+                      transform: rotate(90deg);
+                    `}
+                  />
+                }
+                nextLabel={
+                  <IconCommonArrowDropDown
+                    color={ThemingVariables.colors.text[1]}
+                    className={css`
+                      display: block;
+                      transform: rotate(270deg);
+                    `}
+                  />
+                }
+                next2Label={<IconCommonArrowDouble color={ThemingVariables.colors.text[1]} />}
+                value={props.value.args[0] ? new Date(props.value.args[0]) : null}
                 onChange={(v?: Date) =>
                   props.onChange(
                     produce(props.value, (draft) => {
                       if (v) {
-                        draft.args[0] = v.toString()
+                        draft.args[0] = dayjs(v).format('YYYY-MM-DD')
                       } else {
                         draft.args = []
                       }
@@ -603,16 +633,42 @@ function FilterItem(props: {
                 maxDetail="month"
                 calendarIcon={null}
                 clearIcon={null}
+                prev2Label={
+                  <IconCommonArrowDouble
+                    color={ThemingVariables.colors.text[1]}
+                    className={css`
+                      display: block;
+                      transform: rotate(180deg);
+                    `}
+                  />
+                }
+                prevLabel={
+                  <IconCommonArrowDropDown
+                    color={ThemingVariables.colors.text[1]}
+                    className={css`
+                      display: block;
+                      transform: rotate(90deg);
+                    `}
+                  />
+                }
+                nextLabel={
+                  <IconCommonArrowDropDown
+                    color={ThemingVariables.colors.text[1]}
+                    className={css`
+                      display: block;
+                      transform: rotate(270deg);
+                    `}
+                  />
+                }
+                next2Label={<IconCommonArrowDouble color={ThemingVariables.colors.text[1]} />}
                 value={
-                  props.value.args.length
-                    ? props.value.args.map((arg) => (arg ? new Date(arg) : new Date()))
-                    : [new Date(), new Date()]
+                  props.value.args.length ? props.value.args.map((arg) => (arg ? new Date(arg) : new Date())) : null
                 }
                 onChange={(v?: Date[]) => {
                   props.onChange(
                     produce(props.value, (draft) => {
                       if (v) {
-                        draft.args = v.map((t) => t.toString())
+                        draft.args = v.map((t) => dayjs(t).format('YYYY-MM-DD'))
                       } else {
                         draft.args = []
                       }
