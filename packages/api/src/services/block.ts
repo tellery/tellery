@@ -227,6 +227,7 @@ export class BlockService {
           operations,
         }))
         .value(),
+      { skipPermissionCheck: true },
     )
     if (!_.isEmpty(failures)) {
       throw failures[0].error
