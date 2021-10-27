@@ -13,16 +13,20 @@ import { useBlockSuspense } from '@app/hooks/api'
 import { useDimensions } from '@app/hooks/useDimensions'
 import { useSideBarQuestionEditorState } from '@app/hooks/useSideBarQuestionEditor'
 import { useWorkspace } from '@app/hooks/useWorkspace'
-import { DndSensor } from '@app/lib/dnd-kit/dndSensor'
 import { ThemingVariables } from '@app/styles'
 import { Dimension, Editor } from '@app/types'
 import { TELLERY_MIME_TYPES } from '@app/utils'
 import { DndItemDataBlockType } from '@app/utils/dnd'
 import {
+  closestCenter,
   DndContext,
   DragEndEvent,
   DragOverlay,
   DragStartEvent,
+  getBoundingClientRect,
+  MeasuringConfiguration,
+  MeasuringFrequency,
+  MeasuringStrategy,
   MouseSensor,
   useDroppable,
   useSensor,
@@ -35,6 +39,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import { useMutation, useQueryClient } from 'react-query'
+import { toast } from 'react-toastify'
 import { Tab, TabList, TabPanel, useTabState } from 'reakit'
 import { Updater, useImmer } from 'use-immer'
 
@@ -43,6 +48,7 @@ const Diagram: React.FC<{
   data: Data | null
   config: Config<Type> | null
   queryDimensions: Dimension[]
+  setVisBlock: Updater<Editor.VisualizationBlock | null>
 }> = (props) => {
   const chart = useChart(props.config?.type ?? Type.TABLE)
   const ref = useRef(null)
@@ -53,7 +59,32 @@ const Diagram: React.FC<{
       props.config ?? charts[Type.TABLE].initializeConfig(props.data!, { cache: {}, dimensions: props.queryDimensions })
     )
   }, [props.config, props.data, props.queryDimensions])
-
+  const handleConfigChange = useCallback(
+    (
+      key1: keyof Config<Type>,
+      value1: Config<Type>[keyof Config<Type>],
+      key2: keyof Config<Type>,
+      value2: Config<Type>[keyof Config<Type>],
+      key3: keyof Config<Type>,
+      value3: Config<Type>[keyof Config<Type>]
+    ) => {
+      props.setVisBlock((draft) => {
+        if (!draft) return
+        if (draft.content?.visualization) {
+          if (key1) {
+            draft.content.visualization[key1] = value1
+          }
+          if (key2) {
+            draft.content.visualization[key2] = value2
+          }
+          if (key3) {
+            draft.content.visualization[key3] = value3
+          }
+        }
+      })
+    },
+    [props]
+  )
   return (
     <div
       ref={ref}
@@ -67,7 +98,7 @@ const Diagram: React.FC<{
         dimensions={dimensions}
         data={props.data!}
         config={defaultConfig as never}
-        onConfigChange={() => {}}
+        onConfigChange={handleConfigChange}
       />
     </div>
   )
@@ -81,6 +112,14 @@ const rotateAnimation = keyframes`
     transform: rotate(360deg);
   }
 `
+
+const DEFAULT_LAYOUT_MEASURING: MeasuringConfiguration = {
+  droppable: {
+    measure: getBoundingClientRect,
+    strategy: MeasuringStrategy.BeforeDragging,
+    frequency: MeasuringFrequency.Optimized
+  }
+}
 
 const CustomDndContext: React.FC<{ setQueryBuilderId: React.Dispatch<React.SetStateAction<string | null>> }> = ({
   children,
@@ -113,10 +152,12 @@ const CustomDndContext: React.FC<{ setQueryBuilderId: React.Dispatch<React.SetSt
 
   return (
     <DndContext
+      collisionDetection={closestCenter}
       onDragEnd={handleDragEnd}
       onDragStart={handleDragStart}
       onDragCancel={handleDragCancel}
       sensors={sensors}
+      measuring={DEFAULT_LAYOUT_MEASURING}
     >
       <DragOverlay dropAnimation={null}>
         {activeId ? (
@@ -279,6 +320,7 @@ const Page = () => {
         ;(clipboardData as DataTransfer).setData(fragment.type, JSON.stringify(fragment.value))
       }
     })
+    toast.success('Success copied')
   }, [queryBlock, visBlock])
 
   const handleSave = useCallback(() => {}, [])
@@ -315,17 +357,13 @@ const Page = () => {
             overflow: hidden;
           `}
         >
-          <div
+          <AllMetricsSection
             className={css`
-              height: 100%;
               width: 304px;
               flex-shrink: 0;
               border-right: solid 1px ${ThemingVariables.colors.gray[1]};
-              overflow-y: auto;
             `}
-          >
-            <AllMetricsSection />
-          </div>
+          />
           <div
             className={css`
               flex: 1;
@@ -397,6 +435,7 @@ const Page = () => {
                     config={visBlock?.content?.visualization ?? null}
                     data={data}
                     queryDimensions={queryBlock?.content.dimensions ?? []}
+                    setVisBlock={setVisBlock}
                   />
                 )}
               </div>
@@ -422,7 +461,7 @@ const Page = () => {
                 <IconCommonCopy />
                 Copy
               </PageButton>
-              {/* <PageButton
+              <PageButton
                 variant={'secondary'}
                 className={css`
                   flex: 1;
@@ -431,7 +470,7 @@ const Page = () => {
               >
                 <IconCommonSave />
                 Save
-              </PageButton> */}
+              </PageButton>
             </ButtonsGroup>
           </div>
           <div

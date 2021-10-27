@@ -376,7 +376,7 @@ export const DataAssestMenuContent: React.FC<{
   )
 }
 
-export const AllMetricsSection: React.FC<{ storyId?: string }> = ({ storyId }) => {
+export const AllMetricsSection: React.FC<{ storyId?: string; className?: string }> = ({ storyId, className }) => {
   const [keyword, setKeyword] = useState('')
   const metricBlocksQuery = useSearchMetrics(keyword, 1000)
 
@@ -391,12 +391,14 @@ export const AllMetricsSection: React.FC<{ storyId?: string }> = ({ storyId }) =
 
   return (
     <div
-      className={css`
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        height: 100%;
-      `}
+      className={cx(
+        css`
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+        `,
+        className
+      )}
     >
       <div
         className={css`
