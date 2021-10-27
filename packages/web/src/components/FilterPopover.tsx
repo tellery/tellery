@@ -1,5 +1,6 @@
 import {
   IconCommonAdd,
+  IconCommonArrowDouble,
   IconCommonArrowDropDown,
   IconCommonClose,
   IconCommonCloseCircle,
@@ -9,20 +10,26 @@ import {
   IconCommonDataTypeString,
   IconCommonDataTypeTime
 } from '@app/assets/icons'
-import { ThemingVariables } from '@app/styles'
+import { TelleryThemeLight, ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
-import { css } from '@emotion/css'
+import { css, cx } from '@emotion/css'
 import { FlipModifier } from '@popperjs/core/lib/modifiers/flip'
 import { OffsetModifier } from '@popperjs/core/lib/modifiers/offset'
 import { PreventOverflowModifier } from '@popperjs/core/lib/modifiers/preventOverflow'
 import Tippy from '@tippyjs/react'
 import produce from 'immer'
 import React, { ReactNode, useEffect, useState } from 'react'
+import DateRangePicker from '@wojtekmaj/react-daterange-picker/dist/entry.nostyle'
+import DatePicker from 'react-date-picker/dist/entry.nostyle'
+import '@wojtekmaj/react-daterange-picker/dist/DateRangePicker.css'
+import 'react-date-picker/dist/DatePicker.css'
 import { FormButton } from './kit/FormButton'
 import IconButton from './kit/IconButton'
 import { MenuItem } from './MenuItem'
 import { MenuWrapper } from './MenuWrapper'
 import { SQLType, SQLTypeReduced } from './v11n/types'
+import dayjs from 'dayjs'
+import { SVG2DataURI } from '@app/lib/svg'
 
 type Value = NonNullable<Editor.SmartQueryBlock['content']['filters']>
 
@@ -53,7 +60,7 @@ const typeToFunc = {
     Editor.Filter.IS_NOT_NULL,
     Editor.Filter.IS_BETWEEN
   ],
-  DATE: [Editor.Filter.LTE, Editor.Filter.GTE, Editor.Filter.IS_BETWEEN],
+  DATE: [Editor.Filter.EQ, Editor.Filter.IS_BETWEEN],
   STRING: [Editor.Filter.EQ, Editor.Filter.NE, Editor.Filter.CONTAINS, Editor.Filter.IS_NULL, Editor.Filter.IS_NOT_NULL]
 }
 
@@ -71,6 +78,130 @@ const funcArgs = {
   [Editor.Filter.IS_FALSE]: 0,
   [Editor.Filter.IS_BETWEEN]: 2
 }
+
+const calenderClassName = css`
+  .react-calendar {
+    width: 290px;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    box-shadow: ${ThemingVariables.boxShadows[0]};
+    background-color: ${ThemingVariables.colors.gray[5]};
+    overflow: hidden;
+  }
+
+  .react-calendar__month-view__weekdays__weekday {
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 15px;
+    color: ${ThemingVariables.colors.text[2]};
+
+    abbr {
+      text-decoration: none;
+    }
+  }
+
+  .react-calendar__navigation {
+    display: flex;
+  }
+
+  .react-calendar__navigation__arrow {
+    background: transparent;
+    border: none;
+    outline: none;
+    width: 36px;
+    height: 36px;
+    padding: 8px;
+    margin: 8px 0;
+  }
+
+  .react-calendar__navigation__label {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 20px;
+  }
+
+  .react-calendar__month-view__weekdays {
+    padding: 0 2px;
+  }
+
+  .react-calendar__month-view__weekdays__weekday {
+    height: 30px;
+    text-align: center;
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 15px;
+    color: ${ThemingVariables.colors.text[2]};
+  }
+
+  .react-calendar__tile {
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 17px;
+    background: transparent;
+    border: none;
+    outline: none;
+    width: 30px;
+    height: 30px;
+    color: ${ThemingVariables.colors.text[0]};
+    cursor: pointer;
+
+    :hover {
+      background-image: ${SVG2DataURI(() => (
+        <svg width="38" height="30" viewBox="0 0 38 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="0" width="30" height="30" rx="8" fill={TelleryThemeLight.colors.primary[4]} />
+        </svg>
+      ))};
+    }
+  }
+
+  .react-calendar__month-view__days {
+    margin: 0 2px;
+    width: 266px;
+    height: 182px;
+  }
+
+  .react-calendar__tile--range {
+    background-color: ${ThemingVariables.colors.primary[4]};
+  }
+
+  .react-calendar__tile--rangeStart,
+  .react-calendar__tile--rangeEnd {
+    abbr {
+      color: ${ThemingVariables.colors.gray[5]};
+    }
+    background-repeat: no-repeat;
+  }
+
+  .react-calendar__tile--rangeStart {
+    background-image: ${SVG2DataURI(() => (
+      <svg width="38" height="30" viewBox="0 0 38 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="12" height="30" fill="white" />
+        <rect x="4" y="0" width="30" height="30" rx="8" fill={TelleryThemeLight.colors.primary[1]} />
+      </svg>
+    ))} !important;
+  }
+
+  .react-calendar__tile--rangeEnd {
+    background-image: ${SVG2DataURI(() => (
+      <svg width="38" height="30" viewBox="0 0 38 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="26" y="0" width="12" height="30" fill="white" />
+        <rect x="4" y="0" width="30" height="30" rx="8" fill={TelleryThemeLight.colors.primary[1]} />
+      </svg>
+    ))} !important;
+  }
+
+  .react-calendar__tile--rangeBothEnds {
+    background-color: transparent;
+  }
+
+  .react-calendar__month-view__days__day--neighboringMonth {
+    color: ${ThemingVariables.colors.text[2]};
+  }
+`
 
 export default function FilterPopover(props: {
   fields: readonly { name: string; sqlType: SQLType }[]
@@ -95,7 +226,7 @@ export default function FilterPopover(props: {
     >
       <div
         className={css`
-          height: 48px;
+          min-height: 48px;
           padding: 0 16px;
           display: flex;
           align-items: center;
@@ -246,15 +377,20 @@ function FilterItemView(props: {
   return (
     <div
       className={css`
+        height: 100%;
         display: flex;
-        align-items: flex-start;
-        height: ${props.isLast ? 44 : 48}px;
+        align-items: stretch;
       `}
     >
-      <div>
+      <div
+        className={css`
+          display: flex;
+          flex-direction: column;
+        `}
+      >
         <div
           className={css`
-            height: 12px;
+            flex: 1;
             width: 36px;
             border-right: 1px solid ${props.index === 0 ? 'transparent' : ThemingVariables.colors.primary[4]};
           `}
@@ -266,6 +402,7 @@ function FilterItemView(props: {
               props.onChange(e.target.value as 'and' | 'or')
             }}
             className={css`
+              -webkit-appearance: none;
               width: 40px;
               height: 20px;
               border: none;
@@ -308,7 +445,7 @@ function FilterItemView(props: {
         )}
         <div
           className={css`
-            height: 16px;
+            flex: 1;
             width: 36px;
             border-right: 1px solid ${props.isLast ? 'transparent' : ThemingVariables.colors.primary[4]};
           `}
@@ -316,18 +453,19 @@ function FilterItemView(props: {
       </div>
       <div
         className={css`
-          height: 22px;
           width: 16px;
+          align-self: center;
           border-bottom: 1px solid ${ThemingVariables.colors.primary[4]};
         `}
       />
       <div
         className={css`
-          height: 44px;
+          min-height: 44px;
           width: 406px;
           border-radius: 4px;
           background-color: ${ThemingVariables.colors.gray[3]};
           padding: 6px;
+          margin-top: ${props.index === 0 ? 0 : 4}px;
         `}
       >
         {props.children}
@@ -354,207 +492,366 @@ function FilterItem(props: {
     >
       <div
         className={css`
-          flex-shrink: 0;
-          width: 140px;
-          height: 32px;
-          background-color: ${ThemingVariables.colors.gray[5]};
-          border: 1px solid ${ThemingVariables.colors.gray[1]};
-          box-sizing: border-box;
-          border-radius: 4px;
+          flex: 1;
+          width: 0;
           display: flex;
           align-items: center;
-          padding: 0 6px;
+          flex-wrap: wrap;
         `}
       >
-        {
-          {
-            OTHER: <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />,
-            BOOL: <IconCommonDataTypeBool color={ThemingVariables.colors.gray[0]} />,
-            NUMBER: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
-            DATE: <IconCommonDataTypeTime color={ThemingVariables.colors.gray[0]} />,
-            STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
-          }[SQLTypeReduced[props.value.fieldType]]
-        }
-        <Tippy
-          visible={visible0}
-          onClickOutside={() => {
-            setVisible0(false)
-          }}
-          interactive={true}
-          // placement="bottom-start"
-          // offset={[-35, 5]}
-          theme="tellery"
-          arrow={false}
-          appendTo={document.body}
-          popperOptions={{ modifiers: popperModifiers }}
-          content={
-            <MenuWrapper>
-              {props.fields.map((f) => (
-                <MenuItem
-                  key={f.name}
-                  icon={
-                    {
-                      OTHER: <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />,
-                      BOOL: <IconCommonDataTypeBool color={ThemingVariables.colors.gray[0]} />,
-                      NUMBER: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
-                      DATE: <IconCommonDataTypeTime color={ThemingVariables.colors.gray[0]} />,
-                      STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
-                    }[SQLTypeReduced[f.sqlType]]
-                  }
-                  title={f.name}
-                  onClick={() => {
-                    const funcs = typeToFunc[SQLTypeReduced[f.sqlType]]
-                    props.onChange({
-                      fieldName: f.name,
-                      fieldType: f.sqlType,
-                      func: funcs.includes(props.value.func) ? props.value.func : funcs[0],
-                      args: []
-                    })
-                    setVisible0(false)
-                  }}
-                />
-              ))}
-            </MenuWrapper>
-          }
-        >
-          <div
-            onClick={() => setVisible0((old) => !old)}
-            className={css`
-              display: flex;
-              flex: 1;
-              align-items: center;
-              cursor: pointer;
-            `}
-          >
-            <div
-              className={css`
-                flex: 1;
-                width: 0;
-                margin-left: 6px;
-                font-size: 12px;
-                color: ${ThemingVariables.colors.text[0]};
-                text-overflow: ellipsis;
-                overflow: hidden;
-              `}
-            >
-              {props.value.fieldName}
-            </div>
-            <IconCommonArrowDropDown color={ThemingVariables.colors.text[0]} />
-          </div>
-        </Tippy>
-      </div>
-      <div
-        className={css`
-          flex-shrink: 0;
-          width: 120px;
-          height: 32px;
-          background-color: ${ThemingVariables.colors.gray[5]};
-          border: 1px solid ${ThemingVariables.colors.gray[1]};
-          box-sizing: border-box;
-          border-radius: 4px;
-          display: flex;
-          align-items: center;
-          padding: 0 6px;
-          margin-left: 4px;
-        `}
-      >
-        <Tippy
-          visible={visible1}
-          onClickOutside={() => {
-            setVisible1(false)
-          }}
-          interactive={true}
-          // placement="bottom-start"
-          // offset={[-15, 5]}
-          theme="tellery"
-          arrow={false}
-          appendTo={document.body}
-          popperOptions={{ modifiers: popperModifiers }}
-          content={
-            <MenuWrapper>
-              {typeToFunc[SQLTypeReduced[props.value.fieldType]].map((filter) => (
-                <MenuItem
-                  key={filter}
-                  title={Editor.FilterNames[filter]}
-                  onClick={() => {
-                    props.onChange({
-                      ...props.value,
-                      func: filter,
-                      args: []
-                    })
-                    setVisible1(false)
-                  }}
-                />
-              ))}
-            </MenuWrapper>
-          }
-        >
-          <div
-            onClick={() => setVisible1((old) => !old)}
-            className={css`
-              display: flex;
-              flex: 1;
-              align-items: center;
-              cursor: pointer;
-            `}
-          >
-            <div
-              className={css`
-                flex: 1;
-                width: 0;
-                margin-left: 6px;
-                font-size: 12px;
-                color: ${ThemingVariables.colors.text[0]};
-                text-overflow: ellipsis;
-                overflow: hidden;
-              `}
-            >
-              {Editor.FilterNames[props.value.func]}
-            </div>
-            <IconCommonArrowDropDown color={ThemingVariables.colors.text[0]} />
-          </div>
-        </Tippy>
-      </div>
-      {funcArgs[props.value.func] ? (
-        Array.from({ length: funcArgs[props.value.func] }).map((_, index) => (
-          <input
-            key={index}
-            value={props.value.args[index]}
-            onChange={(e) => {
-              props.onChange(
-                produce(props.value, (draft) => {
-                  draft.args[index] = e.target.value
-                })
-              )
-            }}
-            className={css`
-              font-size: 12px;
-              color: ${ThemingVariables.colors.text[0]};
-              width: 0;
-              flex: 1;
-              height: 32px;
-              outline: none;
-              border: none;
-              background-color: ${ThemingVariables.colors.gray[5]};
-              border: 1px solid ${ThemingVariables.colors.gray[1]};
-              box-sizing: border-box;
-              border-radius: 4px;
-              margin-left: 4px;
-              padding: 0 6px;
-            `}
-          />
-        ))
-      ) : (
         <div
           className={css`
-            flex: 1;
+            flex-shrink: 0;
+            width: 140px;
+            height: 32px;
+            background-color: ${ThemingVariables.colors.gray[5]};
+            border: 1px solid ${ThemingVariables.colors.gray[1]};
+            box-sizing: border-box;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding: 0 6px;
           `}
-        />
-      )}
+        >
+          {
+            {
+              OTHER: <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />,
+              BOOL: <IconCommonDataTypeBool color={ThemingVariables.colors.gray[0]} />,
+              NUMBER: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
+              DATE: <IconCommonDataTypeTime color={ThemingVariables.colors.gray[0]} />,
+              STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
+            }[SQLTypeReduced[props.value.fieldType]]
+          }
+          <Tippy
+            visible={visible0}
+            onClickOutside={() => {
+              setVisible0(false)
+            }}
+            interactive={true}
+            // placement="bottom-start"
+            // offset={[-35, 5]}
+            theme="tellery"
+            arrow={false}
+            appendTo={document.body}
+            popperOptions={{ modifiers: popperModifiers }}
+            content={
+              <MenuWrapper>
+                {props.fields.map((f) => (
+                  <MenuItem
+                    key={f.name}
+                    icon={
+                      {
+                        OTHER: <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />,
+                        BOOL: <IconCommonDataTypeBool color={ThemingVariables.colors.gray[0]} />,
+                        NUMBER: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
+                        DATE: <IconCommonDataTypeTime color={ThemingVariables.colors.gray[0]} />,
+                        STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
+                      }[SQLTypeReduced[f.sqlType]]
+                    }
+                    title={f.name}
+                    onClick={() => {
+                      const funcs = typeToFunc[SQLTypeReduced[f.sqlType]]
+                      props.onChange({
+                        fieldName: f.name,
+                        fieldType: f.sqlType,
+                        func: funcs.includes(props.value.func) ? props.value.func : funcs[0],
+                        args: []
+                      })
+                      setVisible0(false)
+                    }}
+                  />
+                ))}
+              </MenuWrapper>
+            }
+          >
+            <div
+              onClick={() => setVisible0((old) => !old)}
+              className={css`
+                display: flex;
+                flex: 1;
+                align-items: center;
+                cursor: pointer;
+              `}
+            >
+              <div
+                className={css`
+                  flex: 1;
+                  width: 0;
+                  margin-left: 6px;
+                  font-size: 12px;
+                  color: ${ThemingVariables.colors.text[0]};
+                  text-overflow: ellipsis;
+                  overflow: hidden;
+                `}
+              >
+                {props.value.fieldName}
+              </div>
+              <IconCommonArrowDropDown color={ThemingVariables.colors.text[0]} />
+            </div>
+          </Tippy>
+        </div>
+        <div
+          className={css`
+            flex-shrink: 0;
+            width: 120px;
+            height: 32px;
+            background-color: ${ThemingVariables.colors.gray[5]};
+            border: 1px solid ${ThemingVariables.colors.gray[1]};
+            box-sizing: border-box;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding: 0 6px;
+            margin-left: 4px;
+          `}
+        >
+          <Tippy
+            visible={visible1}
+            onClickOutside={() => {
+              setVisible1(false)
+            }}
+            interactive={true}
+            // placement="bottom-start"
+            // offset={[-15, 5]}
+            theme="tellery"
+            arrow={false}
+            appendTo={document.body}
+            popperOptions={{ modifiers: popperModifiers }}
+            content={
+              <MenuWrapper>
+                {typeToFunc[SQLTypeReduced[props.value.fieldType]].map((filter) => (
+                  <MenuItem
+                    key={filter}
+                    title={Editor.FilterNames[filter]}
+                    onClick={() => {
+                      props.onChange({
+                        ...props.value,
+                        func: filter,
+                        args: []
+                      })
+                      setVisible1(false)
+                    }}
+                  />
+                ))}
+              </MenuWrapper>
+            }
+          >
+            <div
+              onClick={() => setVisible1((old) => !old)}
+              className={css`
+                display: flex;
+                flex: 1;
+                align-items: center;
+                cursor: pointer;
+              `}
+            >
+              <div
+                className={css`
+                  flex: 1;
+                  width: 0;
+                  margin-left: 6px;
+                  font-size: 12px;
+                  color: ${ThemingVariables.colors.text[0]};
+                  text-overflow: ellipsis;
+                  overflow: hidden;
+                `}
+              >
+                {Editor.FilterNames[props.value.func]}
+              </div>
+              <IconCommonArrowDropDown color={ThemingVariables.colors.text[0]} />
+            </div>
+          </Tippy>
+        </div>
+        {funcArgs[props.value.func] ? (
+          SQLTypeReduced[props.value.fieldType] === 'DATE' ? (
+            funcArgs[props.value.func] === 1 ? (
+              <DatePicker
+                view="month"
+                format="yyyy-MM-dd"
+                maxDetail="month"
+                calendarIcon={null}
+                clearIcon={null}
+                prev2Label={
+                  <IconCommonArrowDouble
+                    color={ThemingVariables.colors.text[1]}
+                    className={css`
+                      display: block;
+                      transform: rotate(180deg);
+                    `}
+                  />
+                }
+                prevLabel={
+                  <IconCommonArrowDropDown
+                    color={ThemingVariables.colors.text[1]}
+                    className={css`
+                      display: block;
+                      transform: rotate(90deg);
+                    `}
+                  />
+                }
+                nextLabel={
+                  <IconCommonArrowDropDown
+                    color={ThemingVariables.colors.text[1]}
+                    className={css`
+                      display: block;
+                      transform: rotate(270deg);
+                    `}
+                  />
+                }
+                next2Label={<IconCommonArrowDouble color={ThemingVariables.colors.text[1]} />}
+                value={props.value.args[0] ? new Date(props.value.args[0]) : null}
+                onChange={(v?: Date) =>
+                  props.onChange(
+                    produce(props.value, (draft) => {
+                      if (v) {
+                        draft.args[0] = dayjs(v).format('YYYY-MM-DD')
+                      } else {
+                        draft.args = []
+                      }
+                    })
+                  )
+                }
+                className={cx(
+                  calenderClassName,
+                  css`
+                    .react-date-picker__wrapper {
+                      font-size: 12px;
+                      color: ${ThemingVariables.colors.text[0]};
+                      height: 32px;
+                      width: 100px;
+                      outline: none;
+                      border: none;
+                      background-color: ${ThemingVariables.colors.gray[5]};
+                      border: 1px solid ${ThemingVariables.colors.gray[1]};
+                      box-sizing: border-box;
+                      border-radius: 4px;
+                      margin-left: 4px;
+                      padding: 0 6px;
+
+                      input {
+                        outline: none;
+                      }
+                    }
+                  `
+                )}
+              />
+            ) : (
+              <DateRangePicker
+                format="yyyy-MM-dd"
+                maxDetail="month"
+                calendarIcon={null}
+                clearIcon={null}
+                prev2Label={
+                  <IconCommonArrowDouble
+                    color={ThemingVariables.colors.text[1]}
+                    className={css`
+                      display: block;
+                      transform: rotate(180deg);
+                    `}
+                  />
+                }
+                prevLabel={
+                  <IconCommonArrowDropDown
+                    color={ThemingVariables.colors.text[1]}
+                    className={css`
+                      display: block;
+                      transform: rotate(90deg);
+                    `}
+                  />
+                }
+                nextLabel={
+                  <IconCommonArrowDropDown
+                    color={ThemingVariables.colors.text[1]}
+                    className={css`
+                      display: block;
+                      transform: rotate(270deg);
+                    `}
+                  />
+                }
+                next2Label={<IconCommonArrowDouble color={ThemingVariables.colors.text[1]} />}
+                value={
+                  props.value.args.length ? props.value.args.map((arg) => (arg ? new Date(arg) : new Date())) : null
+                }
+                onChange={(v?: Date[]) => {
+                  props.onChange(
+                    produce(props.value, (draft) => {
+                      if (v) {
+                        draft.args = v.map((t) => dayjs(t).format('YYYY-MM-DD'))
+                      } else {
+                        draft.args = []
+                      }
+                    })
+                  )
+                }}
+                rangeDivider="~"
+                className={cx(
+                  calenderClassName,
+                  css`
+                    .react-daterange-picker__wrapper {
+                      font-size: 12px;
+                      color: ${ThemingVariables.colors.text[0]};
+                      height: 32px;
+                      width: 200px;
+                      outline: none;
+                      border: none;
+                      background-color: ${ThemingVariables.colors.gray[5]};
+                      border: 1px solid ${ThemingVariables.colors.gray[1]};
+                      box-sizing: border-box;
+                      border-radius: 4px;
+                      margin-top: 4px;
+                      padding: 0 6px;
+
+                      input {
+                        outline: none;
+                      }
+                    }
+                  `
+                )}
+              />
+            )
+          ) : (
+            Array.from({ length: funcArgs[props.value.func] }).map((_, index) => (
+              <input
+                key={index}
+                value={props.value.args[index]}
+                onChange={(e) => {
+                  props.onChange(
+                    produce(props.value, (draft) => {
+                      draft.args[index] = e.target.value
+                    })
+                  )
+                }}
+                className={css`
+                  font-size: 12px;
+                  color: ${ThemingVariables.colors.text[0]};
+                  width: 0;
+                  flex: 1;
+                  height: 32px;
+                  outline: none;
+                  border: none;
+                  background-color: ${ThemingVariables.colors.gray[5]};
+                  border: 1px solid ${ThemingVariables.colors.gray[1]};
+                  box-sizing: border-box;
+                  border-radius: 4px;
+                  margin-left: 4px;
+                  padding: 0 6px;
+                `}
+              />
+            ))
+          )
+        ) : (
+          <div
+            className={css`
+              flex: 1;
+            `}
+          />
+        )}
+      </div>
       <IconCommonCloseCircle
         color={ThemingVariables.colors.gray[0]}
         onClick={props.onDelete}
         className={css`
+          flex-shrink: 0;
           margin-left: 6px;
           cursor: pointer;
         `}
