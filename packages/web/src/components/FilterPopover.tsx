@@ -98,6 +98,39 @@ const calenderClassName = css`
       text-decoration: none;
     }
   }
+
+  .react-calendar__navigation {
+    display: flex;
+  }
+
+  .react-calendar__navigation__arrow {
+    background: transparent;
+    border: none;
+    outline: none;
+    width: 36px;
+    height: 36px;
+    padding: 8px;
+    margin: 8px 0;
+  }
+
+  .react-calendar__navigation__label {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 20px;
+  }
+
+  .react-calendar__month-view__weekdays__weekday {
+    height: 30px;
+    vertical-align: middle;
+    text-align: center;
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 15px;
+    color: ${ThemingVariables.colors.text[2]};
+  }
 `
 
 export default function FilterPopover(props: {
@@ -563,6 +596,7 @@ function FilterItem(props: {
           SQLTypeReduced[props.value.fieldType] === 'DATE' ? (
             funcArgs[props.value.func] === 1 ? (
               <DatePicker
+                view="month"
                 format="yyyy-MM-dd"
                 maxDetail="month"
                 calendarIcon={null}
