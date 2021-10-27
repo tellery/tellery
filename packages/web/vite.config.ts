@@ -41,7 +41,18 @@ export default defineConfig(({ command, mode }: { command: string; mode: string 
     },
     server: {
       proxy: {
-        '/api': process.env.DEV_PROXY_API || 'http://localhost:8000'
+        '/api': {
+          target: process.env.DEV_PROXY_API || 'http://localhost:8000',
+          changeOrigin: true,
+          configure: (proxy, options) => {
+            proxy.on('proxyRes', function (proxyRes, req, res) {
+              const cookies = proxyRes.headers['set-cookie'] as unknown as string[]
+              if (cookies && cookies.length) {
+                proxyRes.headers['set-cookie'] = [cookies[0].replace('samesite=none; secure; ', '')]
+              }
+            })
+          }
+        }
       }
     },
     build: {
