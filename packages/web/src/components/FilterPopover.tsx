@@ -615,6 +615,7 @@ function FilterItem(props: {
                     })
                   )
                 }}
+                rangeDivider="~"
                 className={css`
                   .react-daterange-picker__wrapper {
                     font-size: 12px;
