@@ -98,7 +98,7 @@ const Diagram: React.FC<{
         dimensions={dimensions}
         data={props.data!}
         config={defaultConfig as never}
-        onConfigChange={handleConfigChange}
+        onConfigChange={handleConfigChange as any}
       />
     </div>
   )
@@ -269,7 +269,7 @@ const Page = () => {
       setVisBlock(
         createEmptyBlock<Editor.VisualizationBlock>({
           type: Editor.BlockType.Visualization,
-          content: { queryId: newQueryBlock.id },
+          content: { queryId: newQueryBlock.id, title: [['smart query from metrics exploration']] },
           children: [newQueryBlock.id]
         })
       )
