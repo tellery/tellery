@@ -23,7 +23,6 @@ import DateRangePicker from '@wojtekmaj/react-daterange-picker/dist/entry.nostyl
 import DatePicker from 'react-date-picker/dist/entry.nostyle'
 import '@wojtekmaj/react-daterange-picker/dist/DateRangePicker.css'
 import 'react-date-picker/dist/DatePicker.css'
-import 'react-calendar/dist/Calendar.css'
 import { FormButton } from './kit/FormButton'
 import IconButton from './kit/IconButton'
 import { MenuItem } from './MenuItem'
