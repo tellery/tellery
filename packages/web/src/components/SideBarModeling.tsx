@@ -574,7 +574,7 @@ function SQLMiniEditor(props: {
     () =>
       handleSqlRequest.execute({
         workspaceId: workspace.id,
-        sql: `select ${props.value} from {{${props.block.id}}}`,
+        sql: `select ${props.value} as metric from {{${props.block.id}}}`,
         questionId: props.block.id,
         connectorId: workspace.preferences.connectorId!,
         profile: workspace.preferences.profile!,
@@ -608,7 +608,7 @@ function SQLMiniEditor(props: {
           `}
         >
           <IconButton
-            hoverContent="Execute Query"
+            hoverContent="Test SQL"
             icon={IconCommonRun}
             color={ThemingVariables.colors.primary[1]}
             onClick={run}
@@ -671,16 +671,30 @@ function SQLMiniEditor(props: {
           wordWrap: 'on'
         }}
         wrapperProps={{
-          className: css`
-            width: 100%;
-            resize: none;
-            border: none;
-            outline: none;
-            background: ${ThemingVariables.colors.gray[3]};
-            border-radius: 4px;
-            padding: 8px;
-            margin-bottom: -3px;
-          `
+          className: cx(
+            props.value
+              ? undefined
+              : css`
+                  ::before {
+                    position: absolute;
+                    left: 10px;
+                    top: 6px;
+                    z-index: 10;
+                    content: 'e.g. count(id)/count(distinct_id)';
+                    color: ${ThemingVariables.colors.text[1]};
+                  }
+                `,
+            css`
+              width: 100%;
+              resize: none;
+              border: none;
+              outline: none;
+              background: ${ThemingVariables.colors.gray[3]};
+              border-radius: 4px;
+              padding: 8px;
+              margin-bottom: -3px;
+            `
+          )
         }}
       />
     </>
