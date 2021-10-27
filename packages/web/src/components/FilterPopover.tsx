@@ -11,7 +11,7 @@ import {
 } from '@app/assets/icons'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
-import { css } from '@emotion/css'
+import { css, cx } from '@emotion/css'
 import { FlipModifier } from '@popperjs/core/lib/modifiers/flip'
 import { OffsetModifier } from '@popperjs/core/lib/modifiers/offset'
 import { PreventOverflowModifier } from '@popperjs/core/lib/modifiers/preventOverflow'
@@ -76,6 +76,28 @@ const funcArgs = {
   [Editor.Filter.IS_FALSE]: 0,
   [Editor.Filter.IS_BETWEEN]: 2
 }
+
+const calenderClassName = css`
+  .react-calendar {
+    width: 290px;
+    border-radius: 8px;
+    border: none;
+    box-shadow: ${ThemingVariables.boxShadows[0]};
+    background-color: ${ThemingVariables.colors.gray[5]};
+    overflow: hidden;
+  }
+
+  .react-calendar__month-view__weekdays__weekday {
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 15px;
+    color: ${ThemingVariables.colors.text[2]};
+
+    abbr {
+      text-decoration: none;
+    }
+  }
+`
 
 export default function FilterPopover(props: {
   fields: readonly { name: string; sqlType: SQLType }[]
@@ -556,42 +578,24 @@ function FilterItem(props: {
                     })
                   )
                 }
-                className={css`
-                  .react-date-picker__wrapper {
-                    font-size: 12px;
-                    color: ${ThemingVariables.colors.text[0]};
-                    height: 32px;
-                    outline: none;
-                    border: none;
-                    background-color: ${ThemingVariables.colors.gray[5]};
-                    border: 1px solid ${ThemingVariables.colors.gray[1]};
-                    box-sizing: border-box;
-                    border-radius: 4px;
-                    margin-left: 4px;
-                    padding: 0 6px;
-                  }
-
-                  .react-calendar {
-                    width: 290px;
-                    height: 296px;
-                    border-radius: 8px;
-                    border: none;
-                    box-shadow: ${ThemingVariables.boxShadows[0]};
-                    background-color: ${ThemingVariables.colors.gray[5]};
-                    overflow: hidden;
-                  }
-
-                  .react-calendar__month-view__weekdays__weekday {
-                    font-weight: 500;
-                    font-size: 12px;
-                    line-height: 15px;
-                    color: ${ThemingVariables.colors.text[2]};
-
-                    abbr {
-                      text-decoration: none;
+                className={cx(
+                  calenderClassName,
+                  css`
+                    .react-date-picker__wrapper {
+                      font-size: 12px;
+                      color: ${ThemingVariables.colors.text[0]};
+                      height: 32px;
+                      outline: none;
+                      border: none;
+                      background-color: ${ThemingVariables.colors.gray[5]};
+                      border: 1px solid ${ThemingVariables.colors.gray[1]};
+                      box-sizing: border-box;
+                      border-radius: 4px;
+                      margin-left: 4px;
+                      padding: 0 6px;
                     }
-                  }
-                `}
+                  `
+                )}
               />
             ) : (
               <DateRangePicker
@@ -616,42 +620,24 @@ function FilterItem(props: {
                   )
                 }}
                 rangeDivider="~"
-                className={css`
-                  .react-daterange-picker__wrapper {
-                    font-size: 12px;
-                    color: ${ThemingVariables.colors.text[0]};
-                    height: 32px;
-                    outline: none;
-                    border: none;
-                    background-color: ${ThemingVariables.colors.gray[5]};
-                    border: 1px solid ${ThemingVariables.colors.gray[1]};
-                    box-sizing: border-box;
-                    border-radius: 4px;
-                    margin-top: 4px;
-                    padding: 0 6px;
-                  }
-
-                  .react-calendar {
-                    width: 290px;
-                    height: 296px;
-                    border-radius: 8px;
-                    border: none;
-                    box-shadow: ${ThemingVariables.boxShadows[0]};
-                    background-color: ${ThemingVariables.colors.gray[5]};
-                    overflow: hidden;
-                  }
-
-                  .react-calendar__month-view__weekdays__weekday {
-                    font-weight: 500;
-                    font-size: 12px;
-                    line-height: 15px;
-                    color: ${ThemingVariables.colors.text[2]};
-
-                    abbr {
-                      text-decoration: none;
+                className={cx(
+                  calenderClassName,
+                  css`
+                    .react-daterange-picker__wrapper {
+                      font-size: 12px;
+                      color: ${ThemingVariables.colors.text[0]};
+                      height: 32px;
+                      outline: none;
+                      border: none;
+                      background-color: ${ThemingVariables.colors.gray[5]};
+                      border: 1px solid ${ThemingVariables.colors.gray[1]};
+                      box-sizing: border-box;
+                      border-radius: 4px;
+                      margin-top: 4px;
+                      padding: 0 6px;
                     }
-                  }
-                `}
+                  `
+                )}
               />
             )
           ) : (
