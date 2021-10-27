@@ -100,7 +100,7 @@ export default function FilterPopover(props: {
     >
       <div
         className={css`
-          height: 48px;
+          min-height: 48px;
           padding: 0 16px;
           display: flex;
           align-items: center;
@@ -251,15 +251,21 @@ function FilterItemView(props: {
   return (
     <div
       className={css`
+        height: 100%;
         display: flex;
-        align-items: flex-start;
-        height: ${props.isLast ? 44 : 48}px;
+        align-items: stretch;
       `}
     >
-      <div>
+      <div
+        className={css`
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+        `}
+      >
         <div
           className={css`
-            height: 12px;
+            flex: 1;
             width: 36px;
             border-right: 1px solid ${props.index === 0 ? 'transparent' : ThemingVariables.colors.primary[4]};
           `}
@@ -313,7 +319,7 @@ function FilterItemView(props: {
         )}
         <div
           className={css`
-            height: 16px;
+            flex: 1;
             width: 36px;
             border-right: 1px solid ${props.isLast ? 'transparent' : ThemingVariables.colors.primary[4]};
           `}
@@ -321,18 +327,19 @@ function FilterItemView(props: {
       </div>
       <div
         className={css`
-          height: 22px;
           width: 16px;
+          align-self: center;
           border-bottom: 1px solid ${ThemingVariables.colors.primary[4]};
         `}
       />
       <div
         className={css`
-          height: 44px;
+          min-height: 44px;
           width: 406px;
           border-radius: 4px;
           background-color: ${ThemingVariables.colors.gray[3]};
           padding: 6px;
+          margin-top: ${props.index === 0 ? 0 : 4}px;
         `}
       >
         {props.children}
@@ -359,245 +366,264 @@ function FilterItem(props: {
     >
       <div
         className={css`
-          flex-shrink: 0;
-          width: 140px;
-          height: 32px;
-          background-color: ${ThemingVariables.colors.gray[5]};
-          border: 1px solid ${ThemingVariables.colors.gray[1]};
-          box-sizing: border-box;
-          border-radius: 4px;
+          flex: 1;
+          width: 0;
           display: flex;
           align-items: center;
-          padding: 0 6px;
+          flex-wrap: wrap;
         `}
       >
-        {
-          {
-            OTHER: <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />,
-            BOOL: <IconCommonDataTypeBool color={ThemingVariables.colors.gray[0]} />,
-            NUMBER: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
-            DATE: <IconCommonDataTypeTime color={ThemingVariables.colors.gray[0]} />,
-            STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
-          }[SQLTypeReduced[props.value.fieldType]]
-        }
-        <Tippy
-          visible={visible0}
-          onClickOutside={() => {
-            setVisible0(false)
-          }}
-          interactive={true}
-          // placement="bottom-start"
-          // offset={[-35, 5]}
-          theme="tellery"
-          arrow={false}
-          appendTo={document.body}
-          popperOptions={{ modifiers: popperModifiers }}
-          content={
-            <MenuWrapper>
-              {props.fields.map((f) => (
-                <MenuItem
-                  key={f.name}
-                  icon={
-                    {
-                      OTHER: <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />,
-                      BOOL: <IconCommonDataTypeBool color={ThemingVariables.colors.gray[0]} />,
-                      NUMBER: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
-                      DATE: <IconCommonDataTypeTime color={ThemingVariables.colors.gray[0]} />,
-                      STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
-                    }[SQLTypeReduced[f.sqlType]]
-                  }
-                  title={f.name}
-                  onClick={() => {
-                    const funcs = typeToFunc[SQLTypeReduced[f.sqlType]]
-                    props.onChange({
-                      fieldName: f.name,
-                      fieldType: f.sqlType,
-                      func: funcs.includes(props.value.func) ? props.value.func : funcs[0],
-                      args: []
-                    })
-                    setVisible0(false)
-                  }}
-                />
-              ))}
-            </MenuWrapper>
-          }
-        >
-          <div
-            onClick={() => setVisible0((old) => !old)}
-            className={css`
-              display: flex;
-              flex: 1;
-              align-items: center;
-              cursor: pointer;
-            `}
-          >
-            <div
-              className={css`
-                flex: 1;
-                width: 0;
-                margin-left: 6px;
-                font-size: 12px;
-                color: ${ThemingVariables.colors.text[0]};
-                text-overflow: ellipsis;
-                overflow: hidden;
-              `}
-            >
-              {props.value.fieldName}
-            </div>
-            <IconCommonArrowDropDown color={ThemingVariables.colors.text[0]} />
-          </div>
-        </Tippy>
-      </div>
-      <div
-        className={css`
-          flex-shrink: 0;
-          width: 120px;
-          height: 32px;
-          background-color: ${ThemingVariables.colors.gray[5]};
-          border: 1px solid ${ThemingVariables.colors.gray[1]};
-          box-sizing: border-box;
-          border-radius: 4px;
-          display: flex;
-          align-items: center;
-          padding: 0 6px;
-          margin-left: 4px;
-        `}
-      >
-        <Tippy
-          visible={visible1}
-          onClickOutside={() => {
-            setVisible1(false)
-          }}
-          interactive={true}
-          // placement="bottom-start"
-          // offset={[-15, 5]}
-          theme="tellery"
-          arrow={false}
-          appendTo={document.body}
-          popperOptions={{ modifiers: popperModifiers }}
-          content={
-            <MenuWrapper>
-              {typeToFunc[SQLTypeReduced[props.value.fieldType]].map((filter) => (
-                <MenuItem
-                  key={filter}
-                  title={Editor.FilterNames[filter]}
-                  onClick={() => {
-                    props.onChange({
-                      ...props.value,
-                      func: filter,
-                      args: []
-                    })
-                    setVisible1(false)
-                  }}
-                />
-              ))}
-            </MenuWrapper>
-          }
-        >
-          <div
-            onClick={() => setVisible1((old) => !old)}
-            className={css`
-              display: flex;
-              flex: 1;
-              align-items: center;
-              cursor: pointer;
-            `}
-          >
-            <div
-              className={css`
-                flex: 1;
-                width: 0;
-                margin-left: 6px;
-                font-size: 12px;
-                color: ${ThemingVariables.colors.text[0]};
-                text-overflow: ellipsis;
-                overflow: hidden;
-              `}
-            >
-              {Editor.FilterNames[props.value.func]}
-            </div>
-            <IconCommonArrowDropDown color={ThemingVariables.colors.text[0]} />
-          </div>
-        </Tippy>
-      </div>
-      {funcArgs[props.value.func] ? (
-        SQLTypeReduced[props.value.fieldType] === 'DATE' ? (
-          funcArgs[props.value.func] === 1 ? (
-            <DatePicker
-              value={props.value.args[0] ? new Date(props.value.args[0]) : new Date()}
-              onChange={(v?: Date) =>
-                props.onChange(
-                  produce(props.value, (draft) => {
-                    if (v) {
-                      draft.args[0] = v.toString()
-                    } else {
-                      draft.args = []
-                    }
-                  })
-                )
-              }
-            />
-          ) : (
-            <DateRangePicker
-              value={
-                props.value.args.length
-                  ? props.value.args.map((arg) => (arg ? new Date(arg) : new Date()))
-                  : [new Date(), new Date()]
-              }
-              onChange={(v?: Date[]) => {
-                props.onChange(
-                  produce(props.value, (draft) => {
-                    if (v) {
-                      draft.args = v.map((t) => t.toString())
-                    } else {
-                      draft.args = []
-                    }
-                  })
-                )
-              }}
-            />
-          )
-        ) : (
-          Array.from({ length: funcArgs[props.value.func] }).map((_, index) => (
-            <input
-              key={index}
-              value={props.value.args[index]}
-              onChange={(e) => {
-                props.onChange(
-                  produce(props.value, (draft) => {
-                    draft.args[index] = e.target.value
-                  })
-                )
-              }}
-              className={css`
-                font-size: 12px;
-                color: ${ThemingVariables.colors.text[0]};
-                width: 0;
-                flex: 1;
-                height: 32px;
-                outline: none;
-                border: none;
-                background-color: ${ThemingVariables.colors.gray[5]};
-                border: 1px solid ${ThemingVariables.colors.gray[1]};
-                box-sizing: border-box;
-                border-radius: 4px;
-                margin-left: 4px;
-                padding: 0 6px;
-              `}
-            />
-          ))
-        )
-      ) : (
         <div
           className={css`
-            flex: 1;
+            flex-shrink: 0;
+            width: 140px;
+            height: 32px;
+            background-color: ${ThemingVariables.colors.gray[5]};
+            border: 1px solid ${ThemingVariables.colors.gray[1]};
+            box-sizing: border-box;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding: 0 6px;
           `}
-        />
-      )}
+        >
+          {
+            {
+              OTHER: <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />,
+              BOOL: <IconCommonDataTypeBool color={ThemingVariables.colors.gray[0]} />,
+              NUMBER: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
+              DATE: <IconCommonDataTypeTime color={ThemingVariables.colors.gray[0]} />,
+              STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
+            }[SQLTypeReduced[props.value.fieldType]]
+          }
+          <Tippy
+            visible={visible0}
+            onClickOutside={() => {
+              setVisible0(false)
+            }}
+            interactive={true}
+            // placement="bottom-start"
+            // offset={[-35, 5]}
+            theme="tellery"
+            arrow={false}
+            appendTo={document.body}
+            popperOptions={{ modifiers: popperModifiers }}
+            content={
+              <MenuWrapper>
+                {props.fields.map((f) => (
+                  <MenuItem
+                    key={f.name}
+                    icon={
+                      {
+                        OTHER: <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />,
+                        BOOL: <IconCommonDataTypeBool color={ThemingVariables.colors.gray[0]} />,
+                        NUMBER: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
+                        DATE: <IconCommonDataTypeTime color={ThemingVariables.colors.gray[0]} />,
+                        STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
+                      }[SQLTypeReduced[f.sqlType]]
+                    }
+                    title={f.name}
+                    onClick={() => {
+                      const funcs = typeToFunc[SQLTypeReduced[f.sqlType]]
+                      props.onChange({
+                        fieldName: f.name,
+                        fieldType: f.sqlType,
+                        func: funcs.includes(props.value.func) ? props.value.func : funcs[0],
+                        args: []
+                      })
+                      setVisible0(false)
+                    }}
+                  />
+                ))}
+              </MenuWrapper>
+            }
+          >
+            <div
+              onClick={() => setVisible0((old) => !old)}
+              className={css`
+                display: flex;
+                flex: 1;
+                align-items: center;
+                cursor: pointer;
+              `}
+            >
+              <div
+                className={css`
+                  flex: 1;
+                  width: 0;
+                  margin-left: 6px;
+                  font-size: 12px;
+                  color: ${ThemingVariables.colors.text[0]};
+                  text-overflow: ellipsis;
+                  overflow: hidden;
+                `}
+              >
+                {props.value.fieldName}
+              </div>
+              <IconCommonArrowDropDown color={ThemingVariables.colors.text[0]} />
+            </div>
+          </Tippy>
+        </div>
+        <div
+          className={css`
+            flex-shrink: 0;
+            width: 120px;
+            height: 32px;
+            background-color: ${ThemingVariables.colors.gray[5]};
+            border: 1px solid ${ThemingVariables.colors.gray[1]};
+            box-sizing: border-box;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding: 0 6px;
+            margin-left: 4px;
+          `}
+        >
+          <Tippy
+            visible={visible1}
+            onClickOutside={() => {
+              setVisible1(false)
+            }}
+            interactive={true}
+            // placement="bottom-start"
+            // offset={[-15, 5]}
+            theme="tellery"
+            arrow={false}
+            appendTo={document.body}
+            popperOptions={{ modifiers: popperModifiers }}
+            content={
+              <MenuWrapper>
+                {typeToFunc[SQLTypeReduced[props.value.fieldType]].map((filter) => (
+                  <MenuItem
+                    key={filter}
+                    title={Editor.FilterNames[filter]}
+                    onClick={() => {
+                      props.onChange({
+                        ...props.value,
+                        func: filter,
+                        args: []
+                      })
+                      setVisible1(false)
+                    }}
+                  />
+                ))}
+              </MenuWrapper>
+            }
+          >
+            <div
+              onClick={() => setVisible1((old) => !old)}
+              className={css`
+                display: flex;
+                flex: 1;
+                align-items: center;
+                cursor: pointer;
+              `}
+            >
+              <div
+                className={css`
+                  flex: 1;
+                  width: 0;
+                  margin-left: 6px;
+                  font-size: 12px;
+                  color: ${ThemingVariables.colors.text[0]};
+                  text-overflow: ellipsis;
+                  overflow: hidden;
+                `}
+              >
+                {Editor.FilterNames[props.value.func]}
+              </div>
+              <IconCommonArrowDropDown color={ThemingVariables.colors.text[0]} />
+            </div>
+          </Tippy>
+        </div>
+        {funcArgs[props.value.func] ? (
+          SQLTypeReduced[props.value.fieldType] === 'DATE' ? (
+            funcArgs[props.value.func] === 1 ? (
+              <DatePicker
+                format="yyyy-MM-dd"
+                maxDetail="month"
+                calendarIcon={null}
+                clearIcon={null}
+                value={props.value.args[0] ? new Date(props.value.args[0]) : new Date()}
+                onChange={(v?: Date) =>
+                  props.onChange(
+                    produce(props.value, (draft) => {
+                      if (v) {
+                        draft.args[0] = v.toString()
+                      } else {
+                        draft.args = []
+                      }
+                    })
+                  )
+                }
+              />
+            ) : (
+              <DateRangePicker
+                format="yyyy-MM-dd"
+                maxDetail="month"
+                calendarIcon={null}
+                clearIcon={null}
+                value={
+                  props.value.args.length
+                    ? props.value.args.map((arg) => (arg ? new Date(arg) : new Date()))
+                    : [new Date(), new Date()]
+                }
+                onChange={(v?: Date[]) => {
+                  props.onChange(
+                    produce(props.value, (draft) => {
+                      if (v) {
+                        draft.args = v.map((t) => t.toString())
+                      } else {
+                        draft.args = []
+                      }
+                    })
+                  )
+                }}
+              />
+            )
+          ) : (
+            Array.from({ length: funcArgs[props.value.func] }).map((_, index) => (
+              <input
+                key={index}
+                value={props.value.args[index]}
+                onChange={(e) => {
+                  props.onChange(
+                    produce(props.value, (draft) => {
+                      draft.args[index] = e.target.value
+                    })
+                  )
+                }}
+                className={css`
+                  font-size: 12px;
+                  color: ${ThemingVariables.colors.text[0]};
+                  width: 0;
+                  flex: 1;
+                  height: 32px;
+                  outline: none;
+                  border: none;
+                  background-color: ${ThemingVariables.colors.gray[5]};
+                  border: 1px solid ${ThemingVariables.colors.gray[1]};
+                  box-sizing: border-box;
+                  border-radius: 4px;
+                  margin-left: 4px;
+                  padding: 0 6px;
+                `}
+              />
+            ))
+          )
+        ) : (
+          <div
+            className={css`
+              flex: 1;
+            `}
+          />
+        )}
+      </div>
       <IconCommonCloseCircle
         color={ThemingVariables.colors.gray[0]}
         onClick={props.onDelete}
         className={css`
+          flex-shrink: 0;
           margin-left: 6px;
           cursor: pointer;
         `}
