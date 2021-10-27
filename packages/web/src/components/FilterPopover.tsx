@@ -718,6 +718,7 @@ function FilterItem(props: {
                       font-size: 12px;
                       color: ${ThemingVariables.colors.text[0]};
                       height: 32px;
+                      width: 100px;
                       outline: none;
                       border: none;
                       background-color: ${ThemingVariables.colors.gray[5]};
@@ -726,6 +727,10 @@ function FilterItem(props: {
                       border-radius: 4px;
                       margin-left: 4px;
                       padding: 0 6px;
+
+                      input {
+                        outline: none;
+                      }
                     }
                   `
                 )}
@@ -786,6 +791,7 @@ function FilterItem(props: {
                       font-size: 12px;
                       color: ${ThemingVariables.colors.text[0]};
                       height: 32px;
+                      width: 200px;
                       outline: none;
                       border: none;
                       background-color: ${ThemingVariables.colors.gray[5]};
@@ -794,6 +800,10 @@ function FilterItem(props: {
                       border-radius: 4px;
                       margin-top: 4px;
                       padding: 0 6px;
+
+                      input {
+                        outline: none;
+                      }
                     }
                   `
                 )}
