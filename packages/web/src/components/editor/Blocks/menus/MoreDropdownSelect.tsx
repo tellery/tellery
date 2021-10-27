@@ -1,5 +1,4 @@
 import {
-  IconCommonArrowDropDown,
   IconCommonLink,
   IconCommonLock,
   IconCommonMore,
@@ -29,7 +28,7 @@ import copy from 'copy-to-clipboard'
 import dayjs from 'dayjs'
 import download from 'downloadjs'
 import html2canvas from 'html2canvas'
-import React, { forwardRef, ReactNode, useCallback, useState } from 'react'
+import React, { ReactNode, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import invariant from 'tiny-invariant'
@@ -38,39 +37,7 @@ import { getBlockImageById } from '../../helpers/contentEditable'
 import { useEditor } from '../../hooks'
 import { useBlockBehavior } from '../../hooks/useBlockBehavior'
 import { isExecuteableBlockType } from '../utils'
-import { PopoverMotionVariants } from '@app/styles/animations'
-import { AnimatePresence, motion } from 'framer-motion'
-
-export const StyledDropdownMenuContent: React.FC<{ open: boolean }> = ({ children, open }) => {
-  return (
-    <AnimatePresence>
-      {open && (
-        <DropdownMenu.Content asChild forceMount>
-          <motion.div
-            initial={'inactive'}
-            animate={'active'}
-            exit={'inactive'}
-            transition={{ duration: 0.15 }}
-            variants={PopoverMotionVariants.scale}
-            className={css`
-              background: ${ThemingVariables.colors.gray[5]};
-              box-shadow: ${ThemingVariables.boxShadows[0]};
-              border-radius: 8px;
-              padding: 8px;
-              width: 260px;
-              overflow: hidden;
-              outline: none;
-              display: flex;
-              flex-direction: column;
-            `}
-          >
-            {children}
-          </motion.div>
-        </DropdownMenu.Content>
-      )}
-    </AnimatePresence>
-  )
-}
+import { StyledDropdownMenuContent, StyledDropDownItem, StyledDropDownTriggerItem } from '../../../kit/DropDownMenu'
 
 export const MoreDropdownSelect: React.FC<{
   block: Editor.VisualizationBlock
@@ -329,127 +296,6 @@ export const MoreDropdownSelect: React.FC<{
           </>
         )}
       </StyledDropdownMenuContent>
-
-      {/*
-                   
-                   
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </Menu> */}
     </DropdownMenu.Root>
   )
 }
-type SyltedMenuItemProps = {
-  icon?: ReactNode
-  title: ReactNode
-  side?: ReactNode
-  isActive?: boolean
-  size?: 'small' | 'medium' | 'large'
-  onClick?: React.MouseEventHandler<HTMLButtonElement>
-} & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>
-
-const StyledMenuItem = forwardRef<HTMLDivElement, SyltedMenuItemProps>((props, ref) => {
-  const { size = 'medium', title, side, isActive, onClick, icon, children, ...rest } = props
-  return (
-    <div
-      {...rest}
-      ref={ref}
-      className={cx(
-        size === 'small' &&
-          css`
-            height: 24px;
-          `,
-        size === 'medium' &&
-          css`
-            height: 36px;
-          `,
-        size === 'large' &&
-          css`
-            height: 44px;
-          `,
-        css`
-          border-radius: 8px;
-          padding: 0px 8px;
-          outline: none;
-          border: none;
-          width: 100%;
-          background: transparent;
-          box-sizing: border-box;
-          cursor: pointer;
-          transition: all 0.1s ease;
-          display: block;
-          color: ${ThemingVariables.colors.text[0]};
-          font-size: 12px;
-          line-height: 14px;
-          text-decoration: none;
-          white-space: nowrap;
-          text-overflow: ellipsis;
-          overflow: hidden;
-          display: flex;
-          align-items: center;
-          &:hover {
-            background: ${ThemingVariables.colors.primary[4]};
-          }
-          &:active {
-            background: ${ThemingVariables.colors.primary[3]};
-          }
-        `,
-        props.isActive &&
-          css`
-            background: ${ThemingVariables.colors.primary[3]};
-          `
-      )}
-      onClick={props.onClick}
-    >
-      {props?.icon}
-      <span
-        className={css`
-          margin-left: 8px;
-        `}
-      >
-        {props.title}
-      </span>
-      {props.side && (
-        <div
-          className={css`
-            margin-left: auto;
-          `}
-        >
-          {props.side}
-        </div>
-      )}
-    </div>
-  )
-})
-
-StyledMenuItem.displayName = 'StyledMenuItem'
-
-const StyledDropDownItem = forwardRef<HTMLDivElement, SyltedMenuItemProps>((props, ref) => {
-  return (
-    <DropdownMenu.Item asChild>
-      <StyledMenuItem {...props} ref={ref} />
-    </DropdownMenu.Item>
-  )
-})
-StyledDropDownItem.displayName = 'StyledDropDownItem'
-
-const StyledDropDownTriggerItem = forwardRef<HTMLDivElement, SyltedMenuItemProps>((props, ref) => {
-  return (
-    <DropdownMenu.TriggerItem asChild>
-      <StyledMenuItem
-        {...props}
-        ref={ref}
-        side={
-          <IconCommonArrowDropDown
-            className={css`
-              transform: rotate(-90deg);
-            `}
-          />
-        }
-      />
-    </DropdownMenu.TriggerItem>
-  )
-})
-
-StyledDropDownTriggerItem.displayName = 'StyledDropDownTriggerItem'

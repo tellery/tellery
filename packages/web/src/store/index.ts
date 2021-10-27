@@ -9,15 +9,6 @@ export const editorCreateNewBlockPopoverState = (id: string = '') => {
   return editorCreateNewBlockPopoverStateStore[id]
 }
 
-export const editorTransformBlockPopoverStateStore: Record<string, PrimitiveAtom<boolean>> = {}
-
-export const editorTransformBlockPopoverState = (id: string = '') => {
-  if (!editorTransformBlockPopoverStateStore[id]) {
-    editorTransformBlockPopoverStateStore[id] = atom(false) as PrimitiveAtom<boolean>
-  }
-  return editorTransformBlockPopoverStateStore[id]
-}
-
 export const blockSQLLoadingStateStore: Record<string, PrimitiveAtom<boolean>> = {}
 
 export const blockSQLLoadingState = (id: string = '') => {

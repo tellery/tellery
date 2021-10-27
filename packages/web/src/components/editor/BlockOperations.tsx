@@ -1,14 +1,14 @@
 import { IconCommonDrag } from '@app/assets/icons'
-import { editorTransformBlockPopoverState } from '@app/store'
 import { ThemingVariables } from '@app/styles'
 import { PopoverMotionVariants } from '@app/styles/animations'
 import { DndItemDataBlockIdsType, DnDItemTypes } from '@app/utils/dnd'
 import { useDraggable } from '@dnd-kit/core'
 import { css, cx } from '@emotion/css'
 import styled from '@emotion/styled'
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useAtom } from 'jotai'
 import React, { memo, useEffect, useMemo, useState } from 'react'
+import { StyledDropdownMenuContent } from '../kit/DropDownMenu'
 import { TellerySelectionType } from './helpers'
 import { useEditor } from './hooks'
 import { useBlockHovering } from './hooks/useBlockHovering'
@@ -25,13 +25,16 @@ const BlockOperation = styled.div<{ padding: number }>`
     background-color: ${ThemingVariables.colors.primary[5]};
   }
 `
-
-const _BlockDragOperation: React.FC<{
-  blockId: string
-  storyId: string
-  dragRef: React.MutableRefObject<HTMLDivElement | null>
-  setIsDragging: React.Dispatch<React.SetStateAction<boolean>>
-}> = (props) => {
+const _BlockDragOperation = React.forwardRef<
+  HTMLDivElement,
+  {
+    blockId: string
+    storyId: string
+    dragRef: React.MutableRefObject<HTMLDivElement | null>
+    setIsDragging: React.Dispatch<React.SetStateAction<boolean>>
+    setOpen: React.Dispatch<React.SetStateAction<boolean>>
+  }
+>(({ children, ...props }, forwardedRef) => {
   const { blockId, storyId } = props
   const editor = useEditor()
   const [selectionState] = useStorySelection(storyId)
@@ -69,8 +72,6 @@ const _BlockDragOperation: React.FC<{
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [blockDrag.setNodeRef, props.dragRef])
 
-  const [, setTransformPopoverOpen] = useAtom(editorTransformBlockPopoverState(blockId))
-
   const listeners = useMemo(() => {
     return {
       ...blockDrag.listeners,
@@ -95,6 +96,7 @@ const _BlockDragOperation: React.FC<{
   return (
     <>
       <BlockOperation
+        ref={forwardedRef}
         padding={1}
         className={cx(
           'no-select',
@@ -108,14 +110,14 @@ const _BlockDragOperation: React.FC<{
         onClick={(e) => {
           e.stopPropagation()
           e.preventDefault()
-          setTransformPopoverOpen(true)
+          props.setOpen(true)
         }}
       >
         <IconCommonDrag color={ThemingVariables.colors.gray[0]} />
       </BlockOperation>
     </>
   )
-}
+})
 
 const BlockDragOperation = memo(_BlockDragOperation)
 
@@ -127,41 +129,63 @@ export const _BlockOperations: React.FC<{
   const { blockId } = props
   const blockHovring = useBlockHovering(blockId)
   const [isDragging, setIsDragging] = useState(false)
-  const operations = useMemo(() => {
-    return <BlockDragOperation {...props} setIsDragging={setIsDragging} />
-  }, [props])
-
+  const [open, setOpen] = useState(false)
   return (
     <>
-      <BlockOperationPopover id={blockId} />
-      <AnimatePresence>
-        {(blockHovring || isDragging) && (
-          <motion.div initial={'inactive'} animate={'active'} exit={'inactive'} variants={PopoverMotionVariants.fade}>
-            <div
-              style={{
-                opacity: blockHovring ? 1 : 0
-              }}
-              className={css`
-                position: absolute;
-                transform: translateX(-30px);
-                top: 0;
-                height: 24px;
-                display: inline-flex;
-                align-items: center;
-                transition: opacity 0.35s;
-              `}
-            >
-              <div
-                className={css`
-                  display: flex;
-                `}
+      <DropdownMenu.Root
+        onOpenChange={(open) => {
+          setOpen(open)
+        }}
+        open={open}
+      >
+        <div
+          className={css`
+            position: absolute;
+            transform: translateX(-30px);
+            top: 0;
+            height: 24px;
+            width: 24px;
+            display: inline-flex;
+            align-items: center;
+          `}
+        >
+          {/* use fake trigger to position dropdown content */}
+          <DropdownMenu.Trigger
+            className={css`
+              width: 100%;
+              height: 100%;
+              position: absolute;
+              left: 0;
+              top: 0;
+              pointer-events: none;
+              opacity: 0;
+            `}
+          ></DropdownMenu.Trigger>
+
+          <AnimatePresence>
+            {(isDragging || blockHovring) && (
+              <motion.div
+                initial={'inactive'}
+                animate={'active'}
+                exit={'inactive'}
+                variants={PopoverMotionVariants.fade}
               >
-                {operations}
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                <BlockDragOperation {...props} setIsDragging={setIsDragging} setOpen={setOpen} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        <StyledDropdownMenuContent open={open} align="start" side="left">
+          <BlockOperationPopover
+            id={blockId}
+            open={open}
+            close={() => {
+              setOpen(false)
+            }}
+          />
+        </StyledDropdownMenuContent>
+      </DropdownMenu.Root>
     </>
   )
 }

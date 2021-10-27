@@ -6,28 +6,21 @@ import {
   IconMenuInsertAfter,
   IconMenuInsertBefore
 } from '@app/assets/icons'
-import { getBlockWrapElementById } from '@app/components/editor/helpers/contentEditable'
+import { StyledDropDownItem } from '@app/components/kit/DropDownMenu'
 import FormSwitch from '@app/components/kit/FormSwitch'
 import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { useBlockSuspense, useUser } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
-import { editorTransformBlockPopoverState } from '@app/store'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { TELLERY_MIME_TYPES } from '@app/utils'
-import { css, cx } from '@emotion/css'
-import type { FlipModifier } from '@popperjs/core/lib/modifiers/flip'
-import type { OffsetModifier } from '@popperjs/core/lib/modifiers/offset'
-import { PreventOverflowModifier } from '@popperjs/core/lib/modifiers/preventOverflow'
+import { css } from '@emotion/css'
 import copy from 'copy-to-clipboard'
 import dayjs from 'dayjs'
-import { useAtom } from 'jotai'
-import React, { memo, ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import React, { memo, ReactNode, useCallback, useEffect, useMemo } from 'react'
 import { toast } from 'react-toastify'
 import invariant from 'tiny-invariant'
-import { MenuItem } from '../../MenuItem'
-import { EditorPopover } from '../EditorPopover'
 import { TellerySelectionType } from '../helpers'
 import { useEditor } from '../hooks'
 
@@ -38,79 +31,15 @@ export interface OperationInterface {
   side?: ReactNode
 }
 
-const PopperModifiers: Partial<Partial<OffsetModifier | PreventOverflowModifier | FlipModifier>>[] = [
-  {
-    name: 'offset',
-    enabled: true,
-    options: {
-      offset: [0, 10]
-    }
-  },
-  {
-    name: 'preventOverflow',
-    enabled: true,
-    options: {
-      boundary: document.getElementsByTagName('main')[0],
-      altAxis: true,
-      altBoundary: true,
-      padding: 10
-    }
-  },
-  {
-    name: 'flip',
-    options: {
-      altBoundary: false,
-      fallbackPlacements: ['left']
-    }
-  }
-]
-
-const _BlockOperationPopover = (props: { id: string; children?: ReactNode }) => {
+const _BlockOperationPopover: React.FC<{ id: string; children?: ReactNode; open: boolean; close: Function }> = (
+  props
+) => {
   const { id } = props
-
-  const [open, setOpen] = useAtom(editorTransformBlockPopoverState(id))
-  const [referenceElement, setReferenceElement] = useState<HTMLDivElement | null>(null)
-  const editor = useEditor<Editor.BaseBlock>()
-
   const closeHandler = useCallback(() => {
-    setReferenceElement(null)
-    setOpen(false)
-  }, [setOpen])
+    props.close()
+  }, [props])
 
-  useEffect(() => {
-    if (open && props.id) {
-      const blockElement = getBlockWrapElementById(props.id ?? null)
-      blockElement && setReferenceElement(blockElement)
-    } else {
-      closeHandler()
-    }
-  }, [props.id, setOpen, open, editor, closeHandler])
-
-  return (
-    <EditorPopover
-      open={open && !!id}
-      setOpen={setOpen}
-      disableClickThrough
-      referenceElement={referenceElement}
-      placement="left-start"
-      modifiers={PopperModifiers}
-    >
-      <div
-        className={cx(
-          css`
-            background: ${ThemingVariables.colors.gray[5]};
-            box-shadow: ${ThemingVariables.boxShadows[0]};
-            border-radius: 8px;
-            padding: 8px;
-            width: 260px;
-            overflow: hidden;
-          `
-        )}
-      >
-        {open && id && <BlockPopoverInner id={id} requestClose={closeHandler} />}
-      </div>
-    </EditorPopover>
-  )
+  return id ? <BlockPopoverInner id={id} requestClose={closeHandler} /> : null
 }
 
 export const BlockOperationPopover = memo(_BlockOperationPopover)
@@ -268,7 +197,7 @@ export const BlockPopoverInner: React.FC<{ id: string; requestClose: () => void 
         return (
           <React.Fragment key={index}>
             {operations.map((operation) => (
-              <MenuItem
+              <StyledDropDownItem
                 key={operation.title}
                 title={operation.title}
                 icon={operation.icon}
