@@ -81,6 +81,7 @@ const funcArgs = {
 const calenderClassName = css`
   .react-calendar {
     width: 290px;
+    padding: 10px;
     border-radius: 8px;
     border: none;
     box-shadow: ${ThemingVariables.boxShadows[0]};
@@ -122,14 +123,32 @@ const calenderClassName = css`
     line-height: 20px;
   }
 
+  .react-calendar__month-view__weekdays {
+    padding: 0 6px;
+  }
+
   .react-calendar__month-view__weekdays__weekday {
     height: 30px;
-    vertical-align: middle;
     text-align: center;
     font-weight: 500;
     font-size: 12px;
     line-height: 15px;
     color: ${ThemingVariables.colors.text[2]};
+  }
+
+  .react-calendar__tile {
+    background: transparent;
+    border: none;
+    outline: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+  }
+
+  .react-calendar__month-view__days {
+    margin: 0 6px;
+    width: 258px;
+    height: 182px;
   }
 `
 
@@ -314,7 +333,6 @@ function FilterItemView(props: {
     >
       <div
         className={css`
-          height: 100%;
           display: flex;
           flex-direction: column;
         `}
