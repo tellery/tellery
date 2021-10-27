@@ -10,7 +10,7 @@ import {
   IconCommonDataTypeString,
   IconCommonDataTypeTime
 } from '@app/assets/icons'
-import { ThemingVariables } from '@app/styles'
+import { TelleryThemeLight, ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
 import { FlipModifier } from '@popperjs/core/lib/modifiers/flip'
@@ -148,6 +148,14 @@ const calenderClassName = css`
     height: 30px;
     color: ${ThemingVariables.colors.text[0]};
     cursor: pointer;
+
+    :hover {
+      background-image: ${SVG2DataURI(() => (
+        <svg width="38" height="30" viewBox="0 0 38 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="0" width="30" height="30" rx="8" fill={TelleryThemeLight.colors.primary[4]} />
+        </svg>
+      ))};
+    }
   }
 
   .react-calendar__month-view__days {
@@ -172,18 +180,18 @@ const calenderClassName = css`
     background-image: ${SVG2DataURI(() => (
       <svg width="38" height="30" viewBox="0 0 38 30" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="0" y="0" width="12" height="30" fill="white" />
-        <rect x="4" y="0" width="30" height="30" rx="8" fill="#002FA7" />
+        <rect x="4" y="0" width="30" height="30" rx="8" fill={TelleryThemeLight.colors.primary[1]} />
       </svg>
-    ))};
+    ))} !important;
   }
 
   .react-calendar__tile--rangeEnd {
     background-image: ${SVG2DataURI(() => (
       <svg width="38" height="30" viewBox="0 0 38 30" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="26" y="0" width="12" height="30" fill="white" />
-        <rect x="4" y="0" width="30" height="30" rx="8" fill="#002FA7" />
+        <rect x="4" y="0" width="30" height="30" rx="8" fill={TelleryThemeLight.colors.primary[1]} />
       </svg>
-    ))};
+    ))} !important;
   }
 
   .react-calendar__tile--rangeBothEnds {
