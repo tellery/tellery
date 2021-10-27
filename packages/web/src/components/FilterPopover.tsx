@@ -402,6 +402,7 @@ function FilterItemView(props: {
               props.onChange(e.target.value as 'and' | 'or')
             }}
             className={css`
+              -webkit-appearance: none;
               width: 40px;
               height: 20px;
               border: none;

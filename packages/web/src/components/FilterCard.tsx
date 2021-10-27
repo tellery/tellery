@@ -115,6 +115,7 @@ export default function FilterCard(props: { value: Value; onEdit(): void; onDele
         className={css`
           flex-shrink: 0;
           padding-top: 3px;
+          margin-left: 4px;
         `}
       >
         <Tippy
