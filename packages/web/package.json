@@ -22,6 +22,7 @@
     "@monaco-editor/react": "^4.3.1",
     "@openreplay/tracker": "^3.4.4",
     "@popperjs/core": "^2.10.2",
+    "@radix-ui/react-dropdown-menu": "^0.1.1",
     "@react-hook/media-query": "^1.1.1",
     "@sentry/browser": "^6.13.3",
     "@sentry/react": "^6.13.3",
