@@ -1,6 +1,8 @@
 import { sqlRequest, translateSmartQuery } from '@app/api'
 import { IconCommonCopy, IconCommonRefresh, IconCommonSave, IconMiscDragToExplore } from '@app/assets/icons'
 import { FormButton } from '@app/components/kit/FormButton'
+import IconButton from '@app/components/kit/IconButton'
+import { ExploreSaveMenu } from '@app/components/menus/ExploreSaveMenu'
 import { AllMetricsSection, DataAssestCardLoader, DataAssetItem } from '@app/components/SideBarDataAssets'
 import { SmartQueryConfig } from '@app/components/SideBarSmartQuery'
 import { VisualizationConfig } from '@app/components/SideBarVisualization'
@@ -34,6 +36,7 @@ import {
 } from '@dnd-kit/core'
 import { css, keyframes } from '@emotion/css'
 import styled from '@emotion/styled'
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import copy from 'copy-to-clipboard'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -103,15 +106,6 @@ const Diagram: React.FC<{
     </div>
   )
 }
-
-const rotateAnimation = keyframes`
-  0% {
-    transform: rotate(0);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-`
 
 const DEFAULT_LAYOUT_MEASURING: MeasuringConfiguration = {
   droppable: {
@@ -218,6 +212,7 @@ const Page = () => {
   const [data, setData] = useState<Data | null>(null)
   const [sql, setSql] = useState<string | null>(null)
   const queryClient = useQueryClient()
+  const [autoRefresh, setAutoRefresh] = useState(false)
 
   useEffect(() => {
     if (!queryBuilderId) return
@@ -255,6 +250,7 @@ const Page = () => {
   useEffect(() => {
     setData(null)
     if (queryBuilderId) {
+      setAutoRefresh(false)
       cancelMutation()
       const newQueryBlock = createEmptyBlock<Editor.SmartQueryBlock>({
         type: Editor.BlockType.SmartQuery,
@@ -299,6 +295,15 @@ const Page = () => {
   }, [sql, workspace.id, workspace.preferences.connectorId, workspace.preferences.profile])
 
   useEffect(() => {
+    if (autoRefresh) {
+      refresh()
+    }
+    // only refresh when sql changed and auto refresh is true
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sql])
+
+  const execute = useCallback(() => {
+    setAutoRefresh(true)
     refresh()
   }, [refresh])
 
@@ -385,22 +390,6 @@ const Page = () => {
                 backgroundColor: queryBuilderId ? ThemingVariables.colors.gray[4] : 'none'
               }}
             >
-              {mutation.isLoading && (
-                <>
-                  <IconCommonRefresh
-                    width="22px"
-                    height="22px"
-                    fill={ThemingVariables.colors.warning[0]}
-                    className={css`
-                      animation: ${rotateAnimation} 1.2s linear infinite;
-                      position: absolute;
-                      left: 20px;
-                      top: 20px;
-                      z-index: 10;
-                    `}
-                  />
-                </>
-              )}
               <div
                 className={css`
                   width: 100%;
@@ -412,7 +401,7 @@ const Page = () => {
                   flex-direction: column;
                 `}
               >
-                {!queryBuilderId && (
+                {(!(queryBuilderId && data) || (mutation.isLoading && !data)) && (
                   <>
                     <IconMiscDragToExplore />
                     <div
@@ -426,7 +415,9 @@ const Page = () => {
                         margin-top: 15px;
                       `}
                     >
-                      Drag here to explore
+                      {queryBuilderId
+                        ? 'Select Measures and Dimensions, click query to see your results'
+                        : 'Drag here to explore'}
                     </div>
                   </>
                 )}
@@ -446,10 +437,16 @@ const Page = () => {
                 className={css`
                   flex: 1;
                 `}
-                onClick={refresh}
+                onClick={mutation.isLoading ? cancelMutation : execute}
               >
-                <IconCommonRefresh />
-                Refresh
+                <IconButton
+                  spin={mutation.isLoading}
+                  icon={IconCommonRefresh}
+                  className={css`
+                    margin-right: 5px;
+                  `}
+                />
+                {mutation.isLoading ? 'Cancel' : 'Query'}
               </PageButton>
               <PageButton
                 variant={'secondary'}
@@ -461,16 +458,21 @@ const Page = () => {
                 <IconCommonCopy />
                 Copy
               </PageButton>
-              <PageButton
-                variant={'secondary'}
-                className={css`
-                  flex: 1;
-                `}
-                onClick={handleSave}
-              >
-                <IconCommonSave />
-                Save
-              </PageButton>
+              {/* <ExploreSaveMenu
+                block={visBlock}
+                button={
+                  <PageButton
+                    variant={'secondary'}
+                    className={css`
+                      flex: 1;
+                    `}
+                    onClick={handleSave}
+                  >
+                    <IconCommonSave />
+                    Save
+                  </PageButton>
+                }
+              ></ExploreSaveMenu> */}
             </ButtonsGroup>
           </div>
           <div

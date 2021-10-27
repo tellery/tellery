@@ -2,19 +2,22 @@ import { css, cx } from '@emotion/css'
 import type { ButtonHTMLAttributes } from 'react'
 import { ThemingVariables } from '@app/styles'
 import { CircularLoading } from '../CircularLoading'
+import React from 'react'
 
-export function FormButton(
-  props: ButtonHTMLAttributes<HTMLButtonElement> & {
+export const FormButton = React.forwardRef<
+  HTMLButtonElement,
+  ButtonHTMLAttributes<HTMLButtonElement> & {
     variant: 'primary' | 'secondary' | 'danger'
     loading?: boolean
   }
-) {
+>((props, ref) => {
   const { className, children, disabled, loading, ...restProps } = props
 
   return (
     <button
       {...restProps}
       disabled={loading || disabled}
+      ref={ref}
       className={cx(
         css`
           position: relative;
@@ -69,4 +72,6 @@ export function FormButton(
       ) : null}
     </button>
   )
-}
+})
+
+FormButton.displayName = 'FormButton'
