@@ -29,6 +29,7 @@ import { MenuItem } from './MenuItem'
 import { MenuWrapper } from './MenuWrapper'
 import { SQLType, SQLTypeReduced } from './v11n/types'
 import dayjs from 'dayjs'
+import { SVG2DataURI } from '@app/lib/svg'
 
 type Value = NonNullable<Editor.SmartQueryBlock['content']['filters']>
 
@@ -124,7 +125,7 @@ const calenderClassName = css`
   }
 
   .react-calendar__month-view__weekdays {
-    padding: 0 6px;
+    padding: 0 2px;
   }
 
   .react-calendar__month-view__weekdays__weekday {
@@ -137,18 +138,60 @@ const calenderClassName = css`
   }
 
   .react-calendar__tile {
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 17px;
     background: transparent;
     border: none;
     outline: none;
     width: 30px;
     height: 30px;
-    border-radius: 8px;
+    color: ${ThemingVariables.colors.text[0]};
+    cursor: pointer;
   }
 
   .react-calendar__month-view__days {
-    margin: 0 6px;
-    width: 258px;
+    margin: 0 2px;
+    width: 266px;
     height: 182px;
+  }
+
+  .react-calendar__tile--range {
+    background-color: ${ThemingVariables.colors.primary[4]};
+  }
+
+  .react-calendar__tile--rangeStart,
+  .react-calendar__tile--rangeEnd {
+    abbr {
+      color: ${ThemingVariables.colors.gray[5]};
+    }
+    background-repeat: no-repeat;
+  }
+
+  .react-calendar__tile--rangeStart {
+    background-image: ${SVG2DataURI(() => (
+      <svg width="38" height="30" viewBox="0 0 38 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="12" height="30" fill="white" />
+        <rect x="4" y="0" width="30" height="30" rx="8" fill="#002FA7" />
+      </svg>
+    ))};
+  }
+
+  .react-calendar__tile--rangeEnd {
+    background-image: ${SVG2DataURI(() => (
+      <svg width="38" height="30" viewBox="0 0 38 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="26" y="0" width="12" height="30" fill="white" />
+        <rect x="4" y="0" width="30" height="30" rx="8" fill="#002FA7" />
+      </svg>
+    ))};
+  }
+
+  .react-calendar__tile--rangeBothEnds {
+    background-color: transparent;
+  }
+
+  .react-calendar__month-view__days__day--neighboringMonth {
+    color: ${ThemingVariables.colors.text[2]};
   }
 `
 
