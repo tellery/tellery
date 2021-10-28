@@ -252,7 +252,7 @@ export const table: Chart<Type.TABLE> = {
                             `
                           : undefined
                       )}
-                      align={isNumeric(column.displayType) ? 'right' : 'left'}
+                      align={isNumeric(column.displayType) && !isTimeSeries(column.displayType) ? 'right' : 'left'}
                     >
                       {formatRecord(record[column.order], displayTypes[column.name])}
                     </td>
