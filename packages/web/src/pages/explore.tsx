@@ -17,7 +17,7 @@ import { useSideBarQuestionEditorState } from '@app/hooks/useSideBarQuestionEdit
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { ThemingVariables } from '@app/styles'
 import { Dimension, Editor } from '@app/types'
-import { TELLERY_MIME_TYPES } from '@app/utils'
+import { blockIdGenerator, TELLERY_MIME_TYPES } from '@app/utils'
 import { DndItemDataBlockType } from '@app/utils/dnd'
 import {
   closestCenter,
@@ -252,6 +252,7 @@ const Page = () => {
     if (queryBuilderId) {
       setAutoRefresh(false)
       cancelMutation()
+      const visBlockId = blockIdGenerator()
       const newQueryBlock = createEmptyBlock<Editor.SmartQueryBlock>({
         type: Editor.BlockType.SmartQuery,
         content: {
@@ -259,7 +260,8 @@ const Page = () => {
           metricIds: [],
           dimensions: [],
           title: []
-        }
+        },
+        parentId: visBlockId
       })
       setQueryBlock(newQueryBlock)
       setVisBlock(
@@ -307,26 +309,32 @@ const Page = () => {
     refresh()
   }, [refresh])
 
+  const blockFragment = useMemo(() => {
+    if (!visBlock || !queryBlock) return null
+
+    return {
+      children: [visBlock.id],
+      data: {
+        [visBlock.id]: visBlock,
+        [queryBlock.id]: queryBlock
+      }
+    }
+  }, [queryBlock, visBlock])
+
   const handleCopy = useCallback(() => {
-    if (!visBlock || !queryBlock) return
+    if (!blockFragment) return
     copy('tellery', {
       debug: true,
       onCopy: (clipboardData) => {
         const fragment = {
           type: TELLERY_MIME_TYPES.BLOCKS,
-          value: {
-            children: [visBlock.id],
-            data: {
-              [visBlock.id]: visBlock,
-              [queryBlock.id]: queryBlock
-            }
-          }
+          value: blockFragment
         }
         ;(clipboardData as DataTransfer).setData(fragment.type, JSON.stringify(fragment.value))
       }
     })
     toast.success('Success copied')
-  }, [queryBlock, visBlock])
+  }, [blockFragment])
 
   const handleSave = useCallback(() => {}, [])
 
@@ -458,8 +466,8 @@ const Page = () => {
                 <IconCommonCopy />
                 Copy
               </PageButton>
-              {/* <ExploreSaveMenu
-                block={visBlock}
+              <ExploreSaveMenu
+                blockFragment={blockFragment}
                 button={
                   <PageButton
                     variant={'secondary'}
@@ -472,7 +480,7 @@ const Page = () => {
                     Save
                   </PageButton>
                 }
-              ></ExploreSaveMenu> */}
+              ></ExploreSaveMenu>
             </ButtonsGroup>
           </div>
           <div

@@ -3,6 +3,7 @@ import type { Operation, Transcation } from '@app/hooks/useCommit'
 import { BlockSnapshot, getBlockFromSnapshot } from '@app/store/block'
 import { Editor } from '@app/types'
 import { addPrefixToBlockTitle, blockIdGenerator } from '@app/utils'
+import dayjs from 'dayjs'
 import { dequal } from 'dequal'
 import { cloneDeep } from 'lodash'
 import { toast } from 'react-toastify'
@@ -151,7 +152,6 @@ export const getDuplicatedBlocksFragment = (
   blockMapping: Record<string, string> = {}
 ) => {
   let result: Record<string, Editor.BaseBlock> = {}
-
   children.forEach((currentId) => {
     const currentBlock = data[currentId]
     const newId = blockIdGenerator()
@@ -372,26 +372,17 @@ export const duplicateStoryTranscation = ({
   return transcation as Transcation
 }
 
-const getMappedSnapshot = (snapshot: BlockSnapshot, mapper: (snapshot: BlockSnapshot) => void) => {
-  const newSnapshot = new Map(snapshot)
-
-  mapper(newSnapshot)
-  return newSnapshot
-}
-
 export const insertBlocksAndMoveOperations = ({
   blocksFragment,
-  targetBlockId,
+  targetBlock,
   storyId,
   direction,
-  snapshot,
   path = 'children'
 }: {
   blocksFragment: { children: string[]; data: Record<string, Editor.BaseBlock> }
-  targetBlockId: string
+  targetBlock: Editor.Block
   storyId: string
   direction: 'top' | 'left' | 'bottom' | 'right' | 'child'
-  snapshot: BlockSnapshot
   path?: 'children'
 }) => {
   const operations: Operation[] = []
@@ -402,52 +393,76 @@ export const insertBlocksAndMoveOperations = ({
     operations.push({ cmd: 'set', id: block.id, path: [], args: block, table: 'block' })
   }
 
-  const newSnapshot = getMappedSnapshot(snapshot, (newSnapshot) => {
-    for (const block of insertedBlocks) {
-      newSnapshot.set(block.id, block)
-    }
-  })
-
   operations.push(
     ...moveBlocksTranscation({
-      sourceBlockIds: blocksFragment.children,
-      targetBlockId,
+      sourceBlockFragment: blocksFragment,
+      targetBlock: targetBlock,
       storyId,
       direction,
       deleteSourceBlock: false,
-      snapshot: newSnapshot,
       path
     }).operations
   )
   return operations
 }
 
+export const createThoughtTranscation = ({
+  id,
+  workspaceId,
+  userId
+}: {
+  id: string
+  workspaceId: string
+  userId: string
+}) => {
+  return createTranscation({
+    operations: [
+      {
+        cmd: 'set',
+        id: id,
+        path: [],
+        table: 'block',
+        args: {
+          id: id,
+          alive: true,
+          parentId: workspaceId, // workspaceId
+          parentTable: 'workspace',
+          content: { date: dayjs().format('YYYY-MM-DD') },
+          children: [],
+          permissions: [{ role: 'manager', type: 'user', id: userId }],
+          type: 'thought',
+          storyId: id,
+          version: 0
+        }
+      }
+    ]
+  })
+}
+
 export const moveBlocksTranscation = ({
-  sourceBlockIds,
-  targetBlockId,
+  sourceBlockFragment,
+  targetBlock,
   storyId,
   direction,
   deleteSourceBlock = true,
-  snapshot,
   path = 'children'
 }: {
-  sourceBlockIds: string[]
-  targetBlockId: string
+  sourceBlockFragment: { children: string[]; data: Record<string, Editor.Block> }
+  targetBlock: Editor.Block
   storyId: string
   direction: 'top' | 'left' | 'bottom' | 'right' | 'child'
   deleteSourceBlock: boolean
-  snapshot: BlockSnapshot
   path?: 'children'
 }) => {
   const operations: Operation[] = []
-  const sourceBlocks = sourceBlockIds.map((id) => getBlockFromSnapshot(id, snapshot))
-  const sourceBlock = cloneDeep(sourceBlocks[0])
+  const leadingSourceBlockId = sourceBlockFragment.children[0]!
+  const leadingSourceBlock = sourceBlockFragment.data[leadingSourceBlockId]
+  const targetBlockId = targetBlock.id
 
-  if (sourceBlocks.length === 1 && sourceBlock.id === targetBlockId) {
+  if (leadingSourceBlockId === targetBlockId) {
     invariant(false, 'illegal moveBlocksTranscation')
   }
 
-  const targetBlock = getBlockFromSnapshot(targetBlockId, snapshot)
   let newSourceBlockParentId: string | null = null
 
   if (direction === 'top' || direction === 'bottom') {
@@ -456,9 +471,9 @@ export const moveBlocksTranscation = ({
         ...[
           {
             cmd: 'listRemove',
-            id: getBlockFromSnapshot(sourceBlock.id, snapshot).parentId,
+            id: leadingSourceBlock.parentId,
             path: [path],
-            args: { id: sourceBlock.id },
+            args: { id: leadingSourceBlockId },
             table: 'block'
           }
         ]
@@ -471,7 +486,7 @@ export const moveBlocksTranscation = ({
             cmd: 'listBefore',
             id: targetBlock.parentId,
             args: {
-              id: sourceBlock.id,
+              id: leadingSourceBlockId,
               before: targetBlockId
             },
             table: 'block',
@@ -487,7 +502,7 @@ export const moveBlocksTranscation = ({
             cmd: 'listAfter',
             id: targetBlock.parentId,
             args: {
-              id: sourceBlock.id,
+              id: leadingSourceBlockId,
               after: targetBlockId
             },
             table: 'block',
@@ -508,9 +523,9 @@ export const moveBlocksTranscation = ({
           ...[
             {
               cmd: 'listRemove',
-              id: getBlockFromSnapshot(sourceBlock.id, snapshot).parentId,
+              id: leadingSourceBlock.parentId,
               path: [path],
-              args: { id: sourceBlock.id },
+              args: { id: leadingSourceBlockId },
               table: 'block'
             }
           ]
@@ -539,7 +554,7 @@ export const moveBlocksTranscation = ({
             cmd: 'listBefore',
             id: newColumnBlock.id,
             args: {
-              id: sourceBlock.id
+              id: leadingSourceBlockId
             },
             table: 'block',
             path: [path]
@@ -621,9 +636,9 @@ export const moveBlocksTranscation = ({
           ...[
             {
               cmd: 'listRemove',
-              id: getBlockFromSnapshot(sourceBlock.id, snapshot).parentId,
+              id: leadingSourceBlock.parentId,
               path: [path],
-              args: { id: sourceBlock.id },
+              args: { id: leadingSourceBlockId },
               table: 'block'
             }
           ]
@@ -632,7 +647,7 @@ export const moveBlocksTranscation = ({
         ...[
           {
             cmd: 'listRemove',
-            id: getBlockFromSnapshot(targetBlock.id, snapshot).parentId,
+            id: targetBlock.parentId,
             path: [path],
             args: { id: targetBlock.id },
             table: 'block'
@@ -693,7 +708,7 @@ export const moveBlocksTranscation = ({
             {
               cmd: 'listBefore',
               id: columnBlockA.id,
-              args: { id: sourceBlock.id },
+              args: { id: leadingSourceBlockId },
               table: 'block',
               path: [path]
             }
@@ -728,7 +743,7 @@ export const moveBlocksTranscation = ({
             {
               cmd: 'listBefore',
               id: columnBlockB.id,
-              args: { id: sourceBlock.id },
+              args: { id: leadingSourceBlockId },
               table: 'block',
               path: [path]
             }
@@ -743,7 +758,7 @@ export const moveBlocksTranscation = ({
         {
           cmd: 'listBefore',
           id: targetBlockId,
-          args: { id: sourceBlock.id },
+          args: { id: leadingSourceBlockId },
           table: 'block',
           path: [path]
         }
@@ -755,36 +770,35 @@ export const moveBlocksTranscation = ({
 
   // ...and just place other blocks next to the first block
   const parentId = newSourceBlockParentId
-  let afterId = sourceBlocks[0].id
-  cloneDeep(sourceBlocks)
-    .slice(1)
-    .forEach((block) => {
-      invariant(parentId, 'parent id is null')
-      if (deleteSourceBlock) {
-        operations.push({
-          cmd: 'listRemove',
-          id: getBlockFromSnapshot(block.id, snapshot).parentId,
-          path: [path],
-          args: { id: block.id },
-          table: 'block'
-        })
-      }
-      operations.push(
-        ...[
-          {
-            cmd: 'listAfter',
-            id: parentId,
-            args: {
-              id: block.id,
-              after: afterId
-            },
-            table: 'block',
-            path: [path]
-          }
-        ]
-      )
-      afterId = block.id
-    })
+  let afterId = leadingSourceBlockId
+  sourceBlockFragment.children.slice(1).forEach((blockId) => {
+    invariant(parentId, 'parent id is null')
+    const block = sourceBlockFragment.data[blockId]
+    if (deleteSourceBlock) {
+      operations.push({
+        cmd: 'listRemove',
+        id: block.parentId,
+        path: [path],
+        args: { id: block.id },
+        table: 'block'
+      })
+    }
+    operations.push(
+      ...[
+        {
+          cmd: 'listAfter',
+          id: parentId,
+          args: {
+            id: block.id,
+            after: afterId
+          },
+          table: 'block',
+          path: [path]
+        }
+      ]
+    )
+    afterId = block.id
+  })
 
   return createTranscation({ operations })
 }

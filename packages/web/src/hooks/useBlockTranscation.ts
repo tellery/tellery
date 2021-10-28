@@ -1,5 +1,7 @@
 import { saveTranscations } from '@app/api'
+import { getSubsetOfBlocksSnapshot } from '@app/components/editor/utils'
 import {
+  createThoughtTranscation,
   createTranscation,
   duplicateStoryTranscation,
   insertBlocksAndMoveOperations,
@@ -13,6 +15,8 @@ import { blockIdGenerator } from '@app/utils'
 import debug from 'debug'
 import React, { useCallback, useContext } from 'react'
 import invariant from 'tiny-invariant'
+import { useGetBlock } from './api'
+import { useLoggedUser } from './useAuth'
 import { Operation, useCommit } from './useCommit'
 
 export const logger = debug('tellery:blocktranscations')
@@ -20,23 +24,35 @@ export const logger = debug('tellery:blocktranscations')
 export const useBlockTranscationProvider = () => {
   const commit = useCommit()
   const workspace = useWorkspace()
+  const user = useLoggedUser()
+  const getBlock = useGetBlock()
 
   const moveBlocks = useCallback(
-    (storyId, { blockIds, targetBlockId, direction }) => {
+    async (storyId, { blocksFragment, targetBlockId, direction }) => {
+      const targetBlock = await getBlock(targetBlockId)
       return commit({
         transcation: (snapshot) =>
           moveBlocksTranscation({
             storyId,
-            sourceBlockIds: blockIds,
-            targetBlockId,
+            sourceBlockFragment: blocksFragment,
+            targetBlock: targetBlock,
             direction,
-            deleteSourceBlock: true,
-            snapshot
+            deleteSourceBlock: true
           }),
         storyId
       })
     },
-    [commit]
+    [commit, getBlock]
+  )
+
+  const createNewThought = useCallback(
+    async (props: { id?: string }) => {
+      const thoughtId = props.id ?? blockIdGenerator()
+      return commit({
+        transcation: createThoughtTranscation({ id: thoughtId, workspaceId: workspace.id, userId: user.id })
+      })
+    },
+    [commit, user.id, workspace.id]
   )
 
   const createNewStory = useCallback(
@@ -72,7 +88,7 @@ export const useBlockTranscationProvider = () => {
   )
 
   const insertBlocks = useCallback(
-    (
+    async (
       storyId: string,
       {
         blocksFragment,
@@ -80,22 +96,22 @@ export const useBlockTranscationProvider = () => {
         direction,
         path = 'children'
       }: {
-        blocksFragment: { children: string[]; data: Record<string, Editor.BaseBlock> }
+        blocksFragment: { children: string[]; data: Record<string, Editor.Block> }
         targetBlockId: string
         direction: 'top' | 'left' | 'bottom' | 'right' | 'child'
         path?: 'children'
       }
     ) => {
+      const targetBlock = await getBlock(targetBlockId)
+
       return commit({
         transcation: (snapshot) => {
-          logger('insert block')
           return createTranscation({
             operations: insertBlocksAndMoveOperations({
               storyId,
               blocksFragment,
-              targetBlockId,
+              targetBlock: targetBlock,
               direction,
-              snapshot,
               path
             })
           })
@@ -103,7 +119,7 @@ export const useBlockTranscationProvider = () => {
         storyId
       })
     },
-    [commit]
+    [commit, getBlock]
   )
 
   const removeBlocks = useCallback(
@@ -279,6 +295,7 @@ export const useBlockTranscationProvider = () => {
     unpinStory,
     deleteStory,
     duplicateStory,
+    createNewThought,
     updateBlockProps
   }
 }

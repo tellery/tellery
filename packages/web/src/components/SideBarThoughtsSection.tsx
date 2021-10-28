@@ -3,6 +3,7 @@ import { createTranscation } from '@app/context/editorTranscations'
 import { useOpenStory } from '@app/hooks'
 import { useAllThoughts } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
+import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useCommit } from '@app/hooks/useCommit'
 import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
 import { useStoryPathParams } from '@app/hooks/useStoryPathParams'
@@ -22,44 +23,17 @@ import { SideBarContentLayout } from './SideBarContentLayout'
 
 export const SideBarThoughtsSection: React.FC<{ close: Function }> = (props) => {
   const { data: thoughts, refetch: refetchThoughts } = useAllThoughts()
-  const workspace = useWorkspace()
-  const commit = useCommit()
   const openStory = useOpenStory()
   const [date, setDate] = useState(new Date())
   const [activeStartDate, setActiveStartDate] = useState(new Date())
-
-  const user = useLoggedUser()
+  const blockTranscations = useBlockTranscations()
 
   const createTodaysNotes = useCallback(async () => {
     const id = blockIdGenerator()
-    await commit({
-      storyId: id,
-      transcation: createTranscation({
-        operations: [
-          {
-            cmd: 'set',
-            id: id,
-            path: [],
-            table: 'block',
-            args: {
-              id: id,
-              alive: true,
-              parentId: workspace.id, // workspaceId
-              parentTable: 'workspace',
-              content: { date: dayjs().format('YYYY-MM-DD') },
-              children: [],
-              permissions: [{ role: 'manager', type: 'user', id: user.id }],
-              type: 'thought',
-              storyId: id,
-              version: 0
-            }
-          }
-        ]
-      })
-    })
+    await blockTranscations.createNewThought({ id })
     openStory(id, {})
     refetchThoughts()
-  }, [commit, openStory, refetchThoughts, user.id, workspace.id])
+  }, [blockTranscations, openStory, refetchThoughts])
 
   const showCreateTodaysNotes = useMemo(() => {
     if (thoughts === undefined) return false

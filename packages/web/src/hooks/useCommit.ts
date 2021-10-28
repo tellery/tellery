@@ -19,6 +19,7 @@ import { toast } from 'react-toastify'
 import { CallbackInterface, useRecoilCallback } from 'recoil'
 import { useLoggedUser } from './useAuth'
 import { TelleryStorySelectionAtom } from '@app/components/editor/hooks/useStorySelection'
+import { useGetBlock } from './api'
 
 type Env = {
   selection?: TellerySelection
@@ -147,6 +148,7 @@ export interface CommitInterface {
   env?: Env
   transcation:
     | Omit<Transcation, 'workspaceId'>
+    | ((snapshot: typeof TelleryBlockMap) => Promise<Omit<Transcation, 'workspaceId'>>)
     | ((snapshot: typeof TelleryBlockMap) => Omit<Transcation, 'workspaceId'>)
   recoilCallback: CallbackInterface
   shouldReformat?: boolean
@@ -187,7 +189,7 @@ export const commit = async ({
 }: CommitInterface) => {
   const transcation =
     typeof transcationOrGenerator === 'function'
-      ? { ...transcationOrGenerator(TelleryBlockMap), workspaceId }
+      ? { ...(await transcationOrGenerator(TelleryBlockMap)), workspaceId }
       : { ...transcationOrGenerator, workspaceId }
   logger('commit transcation', transcation)
   try {
@@ -251,6 +253,7 @@ export const useCommitHistory = <T = unknown>(userId: string, storyId: string) =
 export const useCommitProvider = () => {
   const user = useLoggedUser()
   const workspace = useWorkspace()
+  // const getBlock = useGetBlock()
   const callbackedCommit = useRecoilCallback(
     (recoilCallback) => (commitOptions: Omit<CommitInterface, 'recoilCallback' | 'userId' | 'workspaceId'>) => {
       logger('callback commit')
@@ -439,15 +442,15 @@ const applyOperations = (
 
         shouldReformat && pushReformatColumnsOperations(operations, i, updatedBlock)
 
-        if (options.storyId && isnertedBlock.storyId === options.storyId) {
-          operations.splice(i + 1, 0, {
-            cmd: 'update',
-            id: (operation.args as any).id,
-            args: updatedBlock.id,
-            table: 'block',
-            path: ['parentId']
-          })
-        }
+        // if (options.storyId && isnertedBlock.storyId === options.storyId) {
+        operations.splice(i + 1, 0, {
+          cmd: 'update',
+          id: (operation.args as any).id,
+          args: updatedBlock.id,
+          table: 'block',
+          path: ['parentId']
+        })
+        // }
         break
       }
       default:

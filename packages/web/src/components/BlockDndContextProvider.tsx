@@ -123,7 +123,7 @@ const _TelleryDNDContext: React.FC<{
             })
           } else {
             blockTranscations.moveBlocks(overStoryId, {
-              blockIds,
+              blocksFragment: { children: blockIds, data: getSubsetOfBlocksSnapshot(snapshot, blockIds) },
               targetBlockId: id,
               direction: droppingAreaRef.current.direction
             })

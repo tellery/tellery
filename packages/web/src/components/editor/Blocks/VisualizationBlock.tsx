@@ -162,9 +162,8 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
                 children: [newQueryBlock.id],
                 data: { [newQueryBlock.id]: newQueryBlock }
               },
-              targetBlockId: block.id,
-              direction: 'child',
-              snapshot
+              targetBlock: block,
+              direction: 'child'
             }),
             { cmd: 'set', path: ['content', 'queryId'], args: newQueryBlock.id, table: 'block', id: block.id }
           ]
@@ -172,7 +171,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
         storyId: block.storyId!
       })
     },
-    [block.id, block.storyId, commit, fetchBlock, snapshot]
+    [block, commit, fetchBlock]
   )
 
   useEffect(() => {
@@ -207,9 +206,8 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
                   children: [newQueryBlock.id],
                   data: { [newQueryBlock.id]: newQueryBlock }
                 },
-                targetBlockId: block.id!,
-                direction: 'child',
-                snapshot
+                targetBlock: block,
+                direction: 'child'
               }),
               { cmd: 'set', path: ['content', 'queryId'], args: newQueryBlock.id, table: 'block', id: block.id }
             ]

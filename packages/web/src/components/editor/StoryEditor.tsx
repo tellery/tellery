@@ -987,9 +987,8 @@ const _StoryEditor: React.FC<{
                           children: [newBlock.id],
                           data: { [newBlock.id]: newBlock }
                         },
-                        targetBlockId: block.id,
+                        targetBlock: block,
                         direction: block.type === Editor.BlockType.Story ? 'child' : 'bottom',
-                        snapshot,
                         path: 'children'
                       })
                     ]

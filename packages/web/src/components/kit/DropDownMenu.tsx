@@ -110,7 +110,7 @@ const StyledMenuItem = forwardRef<HTMLDivElement, SyltedMenuItemProps>((props, r
       {props?.icon}
       <span
         className={css`
-          margin-left: 8px;
+          margin-left: 6px;
         `}
       >
         {props.title}
