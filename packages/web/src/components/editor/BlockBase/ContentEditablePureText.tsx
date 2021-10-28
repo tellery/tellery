@@ -251,7 +251,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
           props.onClick?.()
         }}
         onFocus={() => {
-          console.log('is focusing')
+          // console.log('is focusing')
           setIsFocusing(true)
           props.onFocus?.()
         }}

@@ -445,7 +445,6 @@ export const AllMetricsSection: React.FC<{ storyId?: string; className?: string 
                   blockId={block.id}
                   isExpanded={expandedIndex === index}
                   setExpanded={(value) => {
-                    console.log('set expanded')
                     if (value) {
                       setExpandedIndex(index)
                     } else {

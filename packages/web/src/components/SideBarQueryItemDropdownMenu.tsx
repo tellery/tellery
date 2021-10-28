@@ -111,7 +111,6 @@ export const SideBarQueryItemDropdownMenuContent: React.FC<{
                   <FormButton
                     variant="danger"
                     onClick={async () => {
-                      console.log(storyId, [block.id])
                       await blockTranscations.removeBlocks(storyId, [block.id], 'resources')
                     }}
                   >

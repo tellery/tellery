@@ -545,7 +545,6 @@ export const StoryQuestionEditor: React.FC<{
 
   const save = useCallback(
     (snapshotId?: string) => {
-      console.log('save')
       if (!block) {
         toast.error('block is undefined')
         return
