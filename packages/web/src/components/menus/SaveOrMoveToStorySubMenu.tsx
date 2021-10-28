@@ -80,7 +80,8 @@ export const SaveOrMoveToStorySubMenu: React.FC<{
   useEffect(() => {
     if (ref.current) {
       const element = ref.current
-      const scrollListenser = (e: Event) => {
+      const scrollListenser = (e: any) => {
+        if (!e.currentTarget) return
         if (
           hasNextPage &&
           status !== 'loading' &&
