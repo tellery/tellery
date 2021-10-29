@@ -19,6 +19,9 @@ export function formatDate(time: number | string | Date): string {
 }
 
 export function formatRecord(value: unknown, type?: DisplayType, noNumberSplitter = false): string {
+  if (value === null) {
+    return 'null'
+  }
   if (type === DisplayType.DATETIME) {
     return formatDateTime(new Date(value as number))
   }
