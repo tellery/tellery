@@ -1,15 +1,14 @@
 import { saveTranscations } from '@app/api'
-import { getSubsetOfBlocksSnapshot } from '@app/components/editor/utils'
 import {
   createThoughtTranscation,
   createTranscation,
   duplicateStoryTranscation,
   insertBlocksAndMoveOperations,
-  moveBlocksTranscation
+  moveBlocksTranscation,
+  removeBlocksOperations
 } from '@app/context/editorTranscations'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useWorkspace } from '@app/hooks/useWorkspace'
-import { getBlockFromSnapshot } from '@app/store/block'
 import { Editor, Permission } from '@app/types'
 import { blockIdGenerator } from '@app/utils'
 import debug from 'debug'
@@ -123,40 +122,18 @@ export const useBlockTranscationProvider = () => {
   )
 
   const removeBlocks = useCallback(
-    (storyId: string, targetBlockIds: string[], path: 'children' = 'children') => {
+    async (storyId: string, targetBlockIds: string[], path: 'children' = 'children') => {
+      const targetBlocks = await Promise.all(targetBlockIds.map((id) => getBlock(id)))
       return commit({
         transcation: (snapshot) => {
-          const operations: Operation[] = []
-          targetBlockIds.forEach((targetId) => {
-            const targetBlock = getBlockFromSnapshot(targetId, snapshot)
-            operations.push(
-              ...[
-                {
-                  cmd: 'listRemove',
-                  id: targetBlock.parentId,
-                  path: [path],
-                  args: { id: targetBlock.id },
-                  table: 'block'
-                }
-              ]
-            )
-            if (storyId === targetBlock.storyId) {
-              operations.push({
-                cmd: 'update',
-                id: targetId,
-                path: ['alive'],
-                args: false,
-                table: 'block'
-              })
-            }
-          })
+          const operations: Operation[] = removeBlocksOperations(targetBlocks, storyId)
 
           return createTranscation({ operations: operations })
         },
         storyId
       })
     },
-    [commit]
+    [commit, getBlock]
   )
 
   const updateBlockPermissions = useCallback(

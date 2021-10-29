@@ -2,14 +2,16 @@ import { DEFAULT_QUESTION_BLOCK_ASPECT_RATIO, DEFAULT_QUESTION_BLOCK_WIDTH } fro
 import { Editor } from '@app/types'
 import { blockIdGenerator } from '@app/utils'
 import { cloneDeep } from 'lodash'
+import { useCallback } from 'react'
 
 export const useCreateEmptyBlock = () => {
-  return <T extends Editor.BaseBlock = Editor.BaseBlock>(args: Partial<T>) => {
+  const handler = useCallback(<T extends Editor.BaseBlock = Editor.BaseBlock>(args: Partial<T>) => {
     const block = createEmptyBlock({
       ...args
     })
     return block as T
-  }
+  }, [])
+  return handler
 }
 
 export const DEFAULT_VISULIZATION_FORMAT = {

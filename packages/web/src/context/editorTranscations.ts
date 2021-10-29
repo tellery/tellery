@@ -147,8 +147,8 @@ export const canOutdention = (parentBlock: Editor.BaseBlock, blockIds: string[])
 export const getDuplicatedBlocksFragment = (
   children: string[],
   data: Record<string, Editor.BaseBlock>,
-  storyId: string,
-  parentId: string,
+  storyId: string | undefined,
+  parentId: string | undefined,
   blockMapping: Record<string, string> = {}
 ) => {
   let result: Record<string, Editor.BaseBlock> = {}
@@ -370,6 +370,33 @@ export const duplicateStoryTranscation = ({
   const transcation = createTranscation({ operations })
 
   return transcation as Transcation
+}
+
+export const removeBlocksOperations = (targetBlocks: Editor.Block[], storyId: string) => {
+  const operations: Operation[] = []
+  targetBlocks.forEach((targetBlock) => {
+    operations.push(
+      ...[
+        {
+          cmd: 'listRemove',
+          id: targetBlock.parentId,
+          path: ['children'],
+          args: { id: targetBlock.id },
+          table: 'block'
+        }
+      ]
+    )
+    if (storyId === targetBlock.storyId) {
+      operations.push({
+        cmd: 'update',
+        id: targetBlock.id,
+        path: ['alive'],
+        args: false,
+        table: 'block'
+      })
+    }
+  })
+  return operations
 }
 
 export const insertBlocksAndMoveOperations = ({

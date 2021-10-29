@@ -14,13 +14,11 @@ import { useWorkspace } from '@app/hooks/useWorkspace'
 import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor, Story, Thought } from '@app/types'
-import { isUrl, parseTelleryUrl, TelleryGlyph, TELLERY_MIME_TYPES } from '@app/utils'
+import { isUrl, TELLERY_MIME_TYPES } from '@app/utils'
 import { css, cx } from '@emotion/css'
-import copy from 'copy-to-clipboard'
 import debug from 'debug'
 import { dequal } from 'dequal'
 import { motion } from 'framer-motion'
-import update from 'immutability-helper'
 import isHotkey from 'is-hotkey'
 import React, { CSSProperties, memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -33,15 +31,12 @@ import invariant from 'tiny-invariant'
 import {
   addMark,
   applyTransformOnTokensFromSelectionState,
-  convertBlocksOrTokensToPureText,
-  getBlocksFragmentFromSelection,
   isSelectionAtStart,
   isSelectionCollapsed,
   isSelectionCrossBlock,
   mergeTokens,
   splitBlockTokens,
-  splitToken,
-  tokenPosition2SplitedTokenPosition
+  splitToken
 } from '.'
 import { ThoughtItemHeader } from '../ThoughtItem'
 import {
@@ -87,111 +82,17 @@ import { BlockAdminContext, useBlockAdminProvider } from './hooks/useBlockAdminP
 import { useBlockHoveringState } from './hooks/useBlockHovering'
 import { useGetBlockLocalPreferences } from './hooks/useBlockLocalPreferences'
 import { useDebouncedDimension } from './hooks/useDebouncedDimensions'
-import { useSetPastedActions } from './hooks/usePastedActionsState'
 import { useStorySelection } from './hooks/useStorySelection'
 import { useSetUploadResource } from './hooks/useUploadResource'
+import { notifyUrlPasted } from './oberveables'
 import { BlockTextOperationMenu } from './Popovers/BlockTextOperationMenu'
 import { TransformPastedMenu } from './Popovers/TransformPastedMenu'
 import { StoryBlockOperatorsProvider } from './StoryBlockOperatorsProvider'
+import { useEditorClipboardManager } from './hooks/useEditorClipboardManager'
+import { useHandleUrlPasted } from './hooks/useHandleUrlPasted'
 import { getFilteredOrderdSubsetOfBlocks, getSubsetOfBlocksSnapshot } from './utils'
 
-const logger = debug('tellery:editor')
-
-const useEditorClipboardManager = (
-  storyId: string,
-  getSelection: () => TellerySelection | null,
-  updateBlockTitle: any
-) => {
-  const snapshot = useBlockSnapshot()
-  const blockTranscations = useBlockTranscations()
-  const workspace = useWorkspace()
-
-  const setClipboardWithFragment = useCallback(
-    (e: React.ClipboardEvent<HTMLDivElement>, fragment: any) => {
-      logger('on copy set')
-      if (e.clipboardData) {
-        // const blocks = Object.values(editorState.blocksMap)
-        e.clipboardData.setData(fragment.type, JSON.stringify(fragment.value))
-        e.clipboardData.setData('text/plain', convertBlocksOrTokensToPureText(fragment, snapshot))
-        logger('set success', fragment)
-      }
-    },
-    [snapshot]
-  )
-
-  const deleteBlockFragmentFromSelection = useCallback(() => {
-    const selectionState = getSelection()
-    if (selectionState === null) return
-    if (selectionState?.type === TellerySelectionType.Inline) {
-      const block = getBlockFromSnapshot(selectionState.anchor.blockId, snapshot)
-      const tokens = block?.content?.title || []
-      const splitedTokens = splitToken(tokens)
-
-      const startPosition =
-        selectionState.anchor.blockId === block.id && selectionState.anchor.nodeIndex !== -1
-          ? tokenPosition2SplitedTokenPosition(tokens, selectionState.anchor.nodeIndex, selectionState.anchor.offset)
-          : null
-      const endPosition =
-        selectionState.focus.blockId === block.id && selectionState.anchor.nodeIndex !== -1
-          ? tokenPosition2SplitedTokenPosition(tokens, selectionState.focus.nodeIndex, selectionState.focus.offset)
-          : null
-
-      if (startPosition !== null && endPosition !== null) {
-        updateBlockTitle(
-          block.id,
-          mergeTokens([...splitedTokens.slice(0, startPosition), ...splitedTokens.slice(endPosition)])
-        )
-      }
-    } else {
-      blockTranscations.removeBlocks(storyId, selectionState.selectedBlocks)
-    }
-  }, [blockTranscations, getSelection, snapshot, storyId, updateBlockTitle])
-
-  const doCut = useCallback(
-    (e: KeyboardEvent) => {
-      const selection = window.getSelection()
-      selection?.removeAllRanges()
-      const selectionState = getSelection()
-      const fragment = selectionState ? getBlocksFragmentFromSelection(selectionState, snapshot, workspace.id) : null
-      if (fragment) {
-        e.preventDefault()
-      }
-      copy('tellery', {
-        debug: true,
-        onCopy: (clipboardData) => {
-          setClipboardWithFragment({ clipboardData } as React.ClipboardEvent<HTMLDivElement>, fragment)
-          deleteBlockFragmentFromSelection()
-        }
-      })
-    },
-    [deleteBlockFragmentFromSelection, getSelection, setClipboardWithFragment, snapshot, workspace.id]
-  )
-
-  const doCopy = useCallback(
-    (e: KeyboardEvent) => {
-      const selectionState = getSelection()
-      const fragment = selectionState ? getBlocksFragmentFromSelection(selectionState, snapshot, workspace.id) : null
-      if (fragment) {
-        e.preventDefault()
-      }
-      copy('tellery', {
-        debug: true,
-        onCopy: (clipboardData) => {
-          setClipboardWithFragment({ clipboardData } as React.ClipboardEvent<HTMLDivElement>, fragment)
-        }
-      })
-    },
-    [getSelection, setClipboardWithFragment, snapshot, workspace.id]
-  )
-
-  return useMemo(
-    () => ({
-      doCut,
-      doCopy
-    }),
-    [doCopy, doCut]
-  )
-}
+export const logger = debug('tellery:editor')
 
 const _StoryEditor: React.FC<{
   storyId: string
@@ -458,7 +359,7 @@ const _StoryEditor: React.FC<{
   )
 
   const insertNewEmptyBlock = useCallback(
-    (
+    async (
       blockOptions: Partial<Editor.Block>,
       targetBlockId: string,
       direction: 'top' | 'bottom' | 'child' = 'bottom',
@@ -687,7 +588,7 @@ const _StoryEditor: React.FC<{
 
   const user = useLoggedUser()
   const commitHistory = useCommitHistory<{ selection: TellerySelection }>(user.id, storyId)
-
+  useHandleUrlPasted(storyId, getSelection, updateBlockTitle)
   const locked = useMemo(() => {
     return !!(rootBlock as Story)?.format?.locked || canWrite === false
   }, [canWrite, rootBlock])
@@ -1217,70 +1118,6 @@ const _StoryEditor: React.FC<{
   )
 
   const setUploadResource = useSetUploadResource()
-  const setPastedActions = useSetPastedActions()
-
-  const afterUrlPasted = useCallback(
-    async (url: string) => {
-      const selectionState = getSelection()
-      const telleryUrlParams = parseTelleryUrl(url)
-      if (!selectionState) return
-      if (selectionState.type !== TellerySelectionType.Inline) return
-      const currentBlock = getBlockFromSnapshot(selectionState.anchor.blockId, snapshot)
-      const tokens = currentBlock!.content!.title ?? []
-
-      const getRemovePastedUrlTokens = () => {
-        const newTokens = update(tokens, { $splice: [[selectionState.focus.nodeIndex, 1]] })
-        return newTokens
-      }
-
-      if (telleryUrlParams && telleryUrlParams.blockId) {
-        const block = await fetchBlock(telleryUrlParams.blockId)
-        if (isVisualizationBlock(block.type)) {
-          const linkdBlock = createEmptyBlock({
-            content: block.content,
-            children: [],
-            format: block.format,
-            storyId: storyId,
-            type: block.type,
-            parentId: storyId
-          })
-          setPastedActions([
-            { type: 'Dismiss', action: () => {} },
-            {
-              type: 'Create linked question',
-              action: () => {
-                updateBlockTitle(currentBlock.id, getRemovePastedUrlTokens())
-                blockTranscations.insertBlocks(storyId, {
-                  blocksFragment: {
-                    children: [linkdBlock.id],
-                    data: { [linkdBlock.id]: linkdBlock }
-                  },
-                  targetBlockId: selectionState.anchor.blockId,
-                  direction: 'bottom'
-                })
-              }
-            }
-          ])
-        }
-      }
-      if (telleryUrlParams && !telleryUrlParams.blockId) {
-        setPastedActions([
-          { type: 'Dismiss', action: () => {} },
-          {
-            type: 'Link story',
-            action: () => {
-              const newTokens = mergeTokens([
-                ...getRemovePastedUrlTokens(),
-                [TelleryGlyph.BI_LINK, [[Editor.InlineType.Reference, 's', telleryUrlParams.storyId]]]
-              ])
-              updateBlockTitle(currentBlock.id, newTokens)
-            }
-          }
-        ])
-      }
-    },
-    [getSelection, fetchBlock, storyId, setPastedActions, blockTranscations, snapshot, updateBlockTitle]
-  )
 
   const pasteHandler = useCallback(
     (e: React.ClipboardEvent<HTMLElement>) => {
@@ -1384,9 +1221,7 @@ const _StoryEditor: React.FC<{
                 const beforeToken = mergeTokens([...tokens1, [content, [[Editor.InlineType.Link, content]]]])
                 const afterToken = tokens2
                 updateBlockTitle(currentBlock.id, mergeTokens([...beforeToken, ...afterToken]))
-                setTimeout(() => {
-                  afterUrlPasted(content)
-                }, 0)
+                notifyUrlPasted(content)
               } else {
                 const beforeToken = mergeTokens([...tokens1, [content]])
                 const afterToken = tokens2
@@ -1462,7 +1297,6 @@ const _StoryEditor: React.FC<{
       snapshot,
       workspace,
       setSelectedBlocks,
-      afterUrlPasted,
       focusingBlockId,
       setSelectionState,
       syncDuplicatedBlocks

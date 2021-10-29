@@ -12,14 +12,14 @@ import {
   DragMoveEvent,
   DragOverlay,
   DragStartEvent,
+  getBoundingClientRect,
   MeasuringConfiguration,
+  MeasuringFrequency,
   MeasuringStrategy,
   MouseSensor,
   useDraggable,
   useSensor,
-  useSensors,
-  getBoundingClientRect,
-  MeasuringFrequency
+  useSensors
 } from '@dnd-kit/core'
 import { css, cx } from '@emotion/css'
 import { Global } from '@emotion/react'
@@ -36,6 +36,7 @@ import {
 import { useSetDroppingArea } from '../hooks/useDroppingArea'
 import { DndSensor } from '../lib/dnd-kit/dndSensor'
 import { useSetUploadResource } from './editor/hooks/useUploadResource'
+import { notifyBlockManuallyCreated } from './editor/oberveables'
 import { getSubsetOfBlocksSnapshot } from './editor/utils'
 
 const DEFAULT_LAYOUT_MEASURING: MeasuringConfiguration = {
@@ -79,24 +80,30 @@ const _TelleryDNDContext: React.FC<{
       const item = event.active.data.current as DndItemDataType
       logger('drag end', item, droppingAreaRef.current)
       if (droppingAreaRef.current) {
-        if (item.type === DnDItemTypes.Block) {
+        if (item.type === DnDItemTypes.Block || item.type === DnDItemTypes.BlocksFragment) {
           const id = droppingAreaRef.current.blockId
-          const blockData = item.blockData
           const over = event.over
           if (!over) return
           const overData = over.data.current
           const overStoryId = overData?.storyId
+          const fragment =
+            item.type === DnDItemTypes.Block
+              ? {
+                  children: [item.blockData.id],
+                  data: { [item.blockData.id]: item.blockData }
+                }
+              : getDuplicatedBlocksFragment(item.children, item.data, overStoryId, overStoryId)
+
           invariant(overData?.storyId, 'overing story id is null')
           blockTranscations.insertBlocks(overStoryId, {
-            blocksFragment: {
-              children: [blockData.id],
-              data: { [blockData.id]: blockData }
-            },
+            blocksFragment: fragment,
             targetBlockId: id,
             direction: droppingAreaRef.current.direction
           })
 
-          focusBlockHandler(blockData.id, blockData.storyId, false)
+          const block = fragment.data[fragment.children[0]]
+          focusBlockHandler(block.id, block.storyId, false)
+          notifyBlockManuallyCreated(block.id)
         } else if (item.type === DnDItemTypes.BlockIds) {
           const id = droppingAreaRef.current.blockId
           const blockIds = item.ids

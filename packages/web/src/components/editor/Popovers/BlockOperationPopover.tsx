@@ -127,12 +127,12 @@ export const BlockPopoverInner: React.FC<{ id: string; requestClose: () => void 
       <StyledDropDownItem
         title={'Add block above'}
         icon={<IconMenuInsertBefore color={ThemingVariables.colors.text[0]} />}
-        onClick={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        onClick={async (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
           e.preventDefault()
           e.stopPropagation()
           requestClose()
           invariant(editor, 'editor context is null')
-          const newBlock = editor?.insertNewEmptyBlock({ type: Editor.BlockType.Text }, id, 'top')
+          const newBlock = await editor?.insertNewEmptyBlock({ type: Editor.BlockType.Text }, id, 'top')
           invariant(newBlock, 'block not created')
           editor?.setSelectionState({
             type: TellerySelectionType.Inline,
@@ -147,14 +147,14 @@ export const BlockPopoverInner: React.FC<{ id: string; requestClose: () => void 
       <StyledDropDownItem
         title={'Add block below'}
         icon={<IconMenuInsertAfter color={ThemingVariables.colors.text[0]} />}
-        onClick={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        onClick={async (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
           e.preventDefault()
           e.stopPropagation()
           requestClose()
 
           invariant(editor, 'editor context is null')
 
-          const newBlock = editor?.insertNewEmptyBlock({ type: Editor.BlockType.Text }, id, 'bottom')
+          const newBlock = await editor?.insertNewEmptyBlock({ type: Editor.BlockType.Text }, id, 'bottom')
           invariant(newBlock, 'block not created')
           editor?.setSelectionState({
             type: TellerySelectionType.Inline,

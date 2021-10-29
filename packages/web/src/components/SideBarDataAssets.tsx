@@ -11,7 +11,8 @@ import { useBlockSuspense, useQuerySnapshot, useSearchMetrics } from '@app/hooks
 import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
-import { DndItemDataBlockType, DnDItemTypes } from '@app/utils/dnd'
+import { addPrefixToBlockTitle, blockIdGenerator } from '@app/utils'
+import { DndBlocksFragment, DndItemDataBlockType, DnDItemTypes } from '@app/utils/dnd'
 import { useDraggable } from '@dnd-kit/core'
 import { css, cx } from '@emotion/css'
 import styled from '@emotion/styled'
@@ -144,20 +145,47 @@ const DataAssestCardContainer = styled.div`
 
 const Draggable: React.FC<{ element?: any; blockId: string; currentStoryId?: string }> = (props) => {
   const Element = props.element || 'div'
+  const queryBlockBlock = useBlockSuspense<Editor.DataAssetBlock>(props.blockId)
+  const blockFragment = useMemo(() => {
+    const visBlockId = blockIdGenerator()
+    const queryBlockId = blockIdGenerator()
+    const visBlock = createEmptyBlock<Editor.VisualizationBlock>({
+      id: visBlockId,
+      type: Editor.BlockType.Visualization,
+      storyId: props.currentStoryId,
+      parentId: props.currentStoryId,
+      children: [queryBlockId],
+      content: {
+        queryId: queryBlockId
+      }
+    })
+    const queryBlock = createEmptyBlock<Editor.SmartQueryBlock>({
+      type: Editor.BlockType.SmartQuery,
+      id: queryBlockId,
+      parentId: visBlockId,
+      storyId: props.currentStoryId,
+      content: {
+        title: addPrefixToBlockTitle(queryBlockBlock.content?.title, 'smart query of '),
+        queryBuilderId: props.blockId,
+        metricIds: [],
+        dimensions: []
+      }
+    })
+    return {
+      children: [visBlockId],
+      data: {
+        [visBlockId]: visBlock,
+        [queryBlockId]: queryBlock
+      }
+    }
+  }, [props.blockId, props.currentStoryId, queryBlockBlock.content?.title])
+
   const { attributes, listeners, setNodeRef } = useDraggable({
     id: `drag-${props.blockId}`,
     data: {
-      type: DnDItemTypes.Block,
-      originalBlockId: props.blockId,
-      blockData: createEmptyBlock<Editor.VisualizationBlock>({
-        type: Editor.BlockType.Visualization,
-        storyId: props.currentStoryId,
-        parentId: props.currentStoryId,
-        content: {
-          fromDataAssetId: props.blockId
-        }
-      })
-    } as DndItemDataBlockType
+      type: DnDItemTypes.BlocksFragment,
+      ...blockFragment
+    } as DndBlocksFragment
   })
 
   return (

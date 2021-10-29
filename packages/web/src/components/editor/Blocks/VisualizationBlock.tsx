@@ -13,34 +13,20 @@ import { TippySingletonContextProvider } from '@app/components/TippySingletonCon
 import { charts } from '@app/components/v11n/charts'
 import { Diagram } from '@app/components/v11n/Diagram'
 import { Config, Data, Type } from '@app/components/v11n/types'
-import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useOnScreen } from '@app/hooks'
 import { useBlockSuspense, useQuerySnapshot, useQuerySnapshotId, useSnapshot } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
-import { useFetchBlock } from '@app/hooks/useFetchBlock'
 import { useInterval } from '@app/hooks/useInterval'
 import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
 import { useSideBarQuestionEditor, useSideBarQuestionEditorState } from '@app/hooks/useSideBarQuestionEditor'
 import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
-import { useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Dimension, Editor } from '@app/types'
-import { addPrefixToBlockTitle } from '@app/utils'
 import { css, cx, keyframes } from '@emotion/css'
 import Tippy from '@tippyjs/react'
 import dayjs from 'dayjs'
 import { motion } from 'framer-motion'
-import React, {
-  memo,
-  ReactNode,
-  useCallback,
-  useContext,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState
-} from 'react'
+import React, { memo, ReactNode, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import DetectableOverflow from 'react-detectable-overflow'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -50,11 +36,11 @@ import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
 import { BlockResizer } from '../BlockBase/BlockResizer'
 import { BlockTitle } from '../BlockTitle'
 import { DebouncedResizeBlock } from '../DebouncedResizeBlock'
-import { createTranscation, insertBlocksAndMoveOperations } from '../helpers'
+import { createTranscation } from '../helpers'
 import { useEditor } from '../hooks'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
-import { DEFAULT_QUESTION_BLOCK_ASPECT_RATIO, DEFAULT_QUESTION_BLOCK_WIDTH } from '../utils'
+import { blockManuallyCreatedSubject } from '../oberveables'
 import { MoreDropdownSelect } from './menus/MoreDropdownSelect'
 import { BlockComponent, isExecuteableBlockType, registerBlock } from './utils'
 const FOOTER_HEIGHT = 20
@@ -119,108 +105,31 @@ const VisualizationInstructionsContext = React.createContext<ReturnType<
   typeof useVisualizationBlockInstructionsProvider
 > | null>(null)
 
-const useVisualizationBlockInstructions = () => {
-  const context = useContext(VisualizationInstructionsContext)
-  return context
-}
-
 const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProps> = (props, ref) => {
   const editor = useEditor<Editor.VisualizationBlock>()
   const { block } = props
-  const commit = useCommit()
-  const snapshot = useBlockSnapshot()
   const [measureRef, rect] = useMeasure<HTMLDivElement>()
   const elementRef = useRef<HTMLDivElement | null>(null)
-  const queryId = block.content?.queryId
-  const fromDataAssetId = block.content?.fromDataAssetId
-  const fetchBlock = useFetchBlock()
+  const queryId = block.content!.queryId!
   const instructions = useVisualizationBlockInstructionsProvider(block)
   const sidebarEditor = useSideBarQuestionEditor(block.storyId!)
+  const queryBlock = useBlockSuspense<Editor.QueryBlock>(queryId)
 
   useImperativeHandle(ref, () => instructions, [instructions])
 
-  const createSmartQuery = useCallback(
-    async (queryBuilderId: string) => {
-      const queryBuilderBlock = await fetchBlock(queryBuilderId)
-      const newQueryBlock = createEmptyBlock<Editor.SmartQueryBlock>({
-        type: Editor.BlockType.SmartQuery,
-        storyId: block.storyId!,
-        parentId: block.storyId!,
-        content: {
-          title: addPrefixToBlockTitle(queryBuilderBlock.content?.title, 'smart query of '),
-          queryBuilderId: queryBuilderId,
-          metricIds: [],
-          dimensions: []
-        }
-      })
-      commit({
-        transcation: createTranscation({
-          operations: [
-            ...insertBlocksAndMoveOperations({
-              storyId: block.storyId!,
-              blocksFragment: {
-                children: [newQueryBlock.id],
-                data: { [newQueryBlock.id]: newQueryBlock }
-              },
-              targetBlock: block,
-              direction: 'child'
-            }),
-            { cmd: 'set', path: ['content', 'queryId'], args: newQueryBlock.id, table: 'block', id: block.id }
-          ]
-        }),
-        storyId: block.storyId!
-      })
-    },
-    [block, commit, fetchBlock]
-  )
-
   useEffect(() => {
-    if (!block.content) {
-      // setIsPopoverOpen(true)
-      editor?.updateBlockProps?.(block.id, ['content'], {
-        title: [],
-        format: {
-          width: DEFAULT_QUESTION_BLOCK_WIDTH,
-          aspectRatio: DEFAULT_QUESTION_BLOCK_ASPECT_RATIO
-        }
-      })
-    }
-
-    if (!queryId) {
-      if (fromDataAssetId) {
-        createSmartQuery(fromDataAssetId).then(() => {
+    const subscription = blockManuallyCreatedSubject.subscribe((blockId) => {
+      if (queryBlock.type === Editor.BlockType.SmartQuery) {
+        if (blockId === block.id) {
           sidebarEditor.open({ blockId: block.id, activeTab: 'Query' })
-        })
-      } else {
-        const newQueryBlock = createEmptyBlock({
-          type: Editor.BlockType.SQL,
-          storyId: block.storyId!,
-          parentId: block.id!
-        })
-        commit({
-          transcation: createTranscation({
-            operations: [
-              ...insertBlocksAndMoveOperations({
-                storyId: block.storyId!,
-                blocksFragment: {
-                  children: [newQueryBlock.id],
-                  data: { [newQueryBlock.id]: newQueryBlock }
-                },
-                targetBlock: block,
-                direction: 'child'
-              }),
-              { cmd: 'set', path: ['content', 'queryId'], args: newQueryBlock.id, table: 'block', id: block.id }
-            ]
-          }),
-          storyId: block.storyId!
-        })
+        }
       }
+    })
+    return () => {
+      subscription.unsubscribe()
     }
+  }, [block.id, queryBlock.type, sidebarEditor])
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  // const [hoveringHandlers, hovering] = useBindHovering()
   const hovering = useHoverDirty(elementRef)
 
   const { small } = useBlockBehavior()

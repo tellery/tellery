@@ -13,20 +13,26 @@ import {
   IconMenuToggleList,
   IconMenuUpload
 } from '@app/assets/icons'
-import { DEFAULT_VISULIZATION_FORMAT } from '@app/helpers/blockFactory'
+import {
+  createTranscation,
+  insertBlocksAndMoveOperations,
+  removeBlocksOperations
+} from '@app/context/editorTranscations'
+import { createEmptyBlock, DEFAULT_VISULIZATION_FORMAT } from '@app/helpers/blockFactory'
 import { useBindHovering } from '@app/hooks'
 import { useBlockSuspense } from '@app/hooks/api'
+import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
+import { useCommit } from '@app/hooks/useCommit'
 import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
-import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
+import { BlockFragment } from '@app/utils/dnd'
 import { css, cx } from '@emotion/css'
 import debug from 'debug'
 import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import invariant from 'tiny-invariant'
 import { mergeTokens, splitToken, tokenPosition2SplitedTokenPosition } from '..'
-import { isVisualizationBlock } from '../Blocks/utils'
 import { EditorPopover } from '../EditorPopover'
 import { TellerySelection, tellerySelection2Native, TellerySelectionType } from '../helpers/tellerySelection'
 import { useEditableContextMenu, useEditor } from '../hooks'
@@ -103,7 +109,7 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
   // const [selectedResultIndex, setSelectedResultIndex] = useState(0)
   const currentBlock = useBlockSuspense(id)
   const focusBlockHandler = usePushFocusedBlockIdState()
-
+  const blockTranscations = useBlockTranscations()
   const removeBlockSlashCommandText = useCallback(() => {
     invariant(selection && selection.type !== TellerySelectionType.Block, 'selection type is block')
 
@@ -122,41 +128,91 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
     const mergedTokens = mergeTokens(splitedTokens)
 
     editor?.updateBlockTitle?.(id, mergedTokens)
-    return currentBlock
+    return { ...currentBlock, content: { ...currentBlock.content, title: mergedTokens } }
   }, [currentBlock, editor, id, selection])
+  const commit = useCommit()
 
-  const createOrToggleBlock = useCallback(
-    (options: Partial<Editor.Block>) => (block: Editor.BaseBlock) => {
+  const insertBlockFragment = useCallback(
+    (blocksFragment: BlockFragment, block: Editor.Block) => {
       invariant(editor, 'editor is null')
-      let blockId = ''
+      const operations = []
+      operations.push(
+        ...insertBlocksAndMoveOperations({
+          storyId: block.storyId!,
+          blocksFragment,
+          targetBlock: block,
+          direction: 'bottom',
+          path: 'children'
+        })
+      )
+
+      const leadingBlockId = blocksFragment.children[0]
       if (isEmptyTitleBlock(block)) {
-        blockId = block.id
-        const type = options.type!
-        editor?.updateBlockProps(id, ['type'], type)
-        if (options.content) {
-          editor?.updateBlockProps(id, ['content'], options.content!)
-        }
-        if (options.format) {
-          editor?.updateBlockProps(id, ['format'], options.format!)
-        }
-      } else {
-        const newBlock = editor.insertNewEmptyBlock(options, id, 'bottom')
-        blockId = newBlock.id
+        operations.push(...removeBlocksOperations([block], block.storyId!))
+      }
+
+      commit({ transcation: createTranscation({ operations }), storyId: block.storyId! })
+
+      setTimeout(() => {
         editor?.setSelectionState({
           type: TellerySelectionType.Inline,
-          storyId: newBlock.storyId!,
-          anchor: { blockId, offset: 0, nodeIndex: 0 },
-          focus: { blockId, offset: 0, nodeIndex: 0 }
+          storyId: block.storyId!,
+          anchor: { blockId: leadingBlockId, offset: 0, nodeIndex: 0 },
+          focus: { blockId: leadingBlockId, offset: 0, nodeIndex: 0 }
         })
-      }
+      }, 0)
+    },
+    [commit, editor]
+  )
 
-      if (isVisualizationBlock(options.type!)) {
-        focusBlockHandler(blockId, block.storyId, true, false)
+  const createOrToggleBlock = useCallback(
+    (options: Partial<Editor.Block>) => async (block: Editor.BaseBlock) => {
+      invariant(editor, 'editor is null')
+      const newBlock = createEmptyBlock({ ...options, parentId: block.parentId, storyId: block.storyId })
+      const blockFragment = {
+        children: [newBlock.id],
+        data: {
+          [newBlock.id]: newBlock
+        }
       }
+      insertBlockFragment(blockFragment, block)
+      setOpen(false)
+    },
+    [editor, insertBlockFragment, setOpen]
+  )
+
+  const createOrToggleQueryBlock = useCallback(
+    () => async (block: Editor.BaseBlock) => {
+      invariant(editor, 'editor is null')
+      const visBlock = createEmptyBlock<Editor.VisualizationBlock>({
+        type: Editor.BlockType.Visualization,
+        format: DEFAULT_VISULIZATION_FORMAT,
+        storyId: block.storyId!,
+        parentId: block.parentId
+      })
+      const queryBlock = createEmptyBlock<Editor.QueryBlock>({
+        type: Editor.BlockType.SQL,
+        storyId: block.storyId!,
+        parentId: visBlock.id
+      })
+      queryBlock.parentId = visBlock.id
+      visBlock.content = { ...visBlock.content, queryId: queryBlock.id }
+      visBlock.children = [queryBlock.id]
+
+      const blockFragment = {
+        children: [visBlock.id],
+        data: {
+          [visBlock.id]: visBlock,
+          [queryBlock.id]: queryBlock
+        }
+      }
+      insertBlockFragment(blockFragment, block)
+
+      focusBlockHandler(visBlock.id, block.storyId, true, false)
 
       setOpen(false)
     },
-    [editor, focusBlockHandler, id, setOpen]
+    [editor, focusBlockHandler, insertBlockFragment, setOpen]
   )
 
   const operations = useMemo(() => {
@@ -168,7 +224,7 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
       // },
       {
         title: 'SQL Query',
-        action: createOrToggleBlock({ type: Editor.BlockType.Visualization, format: DEFAULT_VISULIZATION_FORMAT }),
+        action: createOrToggleQueryBlock(),
         icon: <IconCommonSqlQuery color={ThemingVariables.colors.text[0]} />
       },
       {
@@ -276,7 +332,7 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
       //   icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
       // }
     ].filter((item) => item.title.toLowerCase().indexOf(keyword.toLowerCase()) !== -1)
-  }, [createOrToggleBlock, keyword])
+  }, [createOrToggleBlock, createOrToggleQueryBlock, keyword])
 
   useEffect(() => {
     if (operations.length === 0) {
@@ -284,15 +340,13 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
     }
   }, [operations, setOpen])
 
-  const snapshot = useBlockSnapshot()
   const execSelectedOperation = useCallback(
     (index: number) => {
-      removeBlockSlashCommandText()
-      const block = getBlockFromSnapshot(id, snapshot)
+      const block = removeBlockSlashCommandText()
       logger('getBlockFromSnapshot', block)
       operations[index].action(block)
     },
-    [id, operations, removeBlockSlashCommandText, snapshot]
+    [operations, removeBlockSlashCommandText]
   )
 
   const [selectedResultIndex, setSelectedResultIndex, navigatingMode] = useEditableContextMenu(

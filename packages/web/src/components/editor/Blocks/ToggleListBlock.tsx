@@ -22,10 +22,10 @@ export const ToggleListBlock: BlockComponent<
 
   const editor = useEditor()
   const createFirstChild = useCallback<React.MouseEventHandler<HTMLDivElement>>(
-    (e) => {
+    async (e) => {
       e.stopPropagation()
       invariant(editor, 'editor context is null')
-      const newBlock = editor?.insertNewEmptyBlock({ type: Editor.BlockType.Text }, block.id, 'child')
+      const newBlock = await editor?.insertNewEmptyBlock({ type: Editor.BlockType.Text }, block.id, 'child')
       invariant(newBlock, 'block not created')
       editor?.setSelectionState({
         type: TellerySelectionType.Inline,
