@@ -1,8 +1,10 @@
 import { BlockSnapshot, getBlockFromSnapshot } from '@app/store/block'
 import { Editor } from '@app/types'
 import { DEFAULT_TITLE, TelleryGlyph, TELLERY_MIME_TYPES } from '@app/utils'
+import { BlockFragment } from '@app/utils/dnd'
 import dayjs from 'dayjs'
 import { dequal } from 'dequal'
+import { string } from 'mathjs'
 import invariant from 'tiny-invariant'
 import { isDataAssetBlock, isQueryBlock, isVisualizationBlock } from '../Blocks/utils'
 import { getSubsetOfBlocksSnapshot, TOKEN_MAP } from '../utils'
@@ -116,11 +118,26 @@ export const getBlockOrTokensFromSelection = (
   return block
 }
 
+export type TelleryPasteBlocksFragment = {
+  type: TELLERY_MIME_TYPES.BLOCKS
+  value: { workspaceId?: string } & BlockFragment
+}
+
+export type TelleryPasteTokensFragment = {
+  workspaceId: string
+  type: TELLERY_MIME_TYPES.TOKEN
+  value: {
+    data: Editor.Token[]
+    workspaceId?: string
+  }
+}
+export type TelleryPasteFragment = TelleryPasteBlocksFragment | TelleryPasteTokensFragment
+
 export const getBlocksFragmentFromSelection = (
   selectionState: TellerySelection,
   snapshot: BlockSnapshot,
   workspaceId?: string
-) => {
+): TelleryPasteFragment | null => {
   if (selectionState === null)
     return {
       type: TELLERY_MIME_TYPES.BLOCKS,
@@ -129,7 +146,7 @@ export const getBlocksFragmentFromSelection = (
         data: {},
         workspaceId
       }
-    }
+    } as TelleryPasteBlocksFragment
 
   if (selectionState.type === TellerySelectionType.Inline) {
     const fragment = getBlockOrTokensFromSelection(
@@ -142,7 +159,7 @@ export const getBlocksFragmentFromSelection = (
         data: fragment as Editor.Token[],
         workspaceId
       }
-    }
+    } as TelleryPasteTokensFragment
   } else if (selectionState.type === TellerySelectionType.Block) {
     const selectedIds = selectionState.selectedBlocks
     return {
@@ -152,25 +169,15 @@ export const getBlocksFragmentFromSelection = (
         data: getSubsetOfBlocksSnapshot(snapshot, selectedIds),
         workspaceId
       }
-    }
+    } as TelleryPasteBlocksFragment
   }
+  return null
 }
 
 // TODO: display children text
-export const convertBlocksOrTokensToPureText = (
-  fragment: {
-    type: string
-    value:
-      | {
-          children: string[]
-          data: Record<string, Editor.BaseBlock>
-        }
-      | Editor.Token[]
-  },
-  snapshot: BlockSnapshot
-) => {
+export const convertBlocksOrTokensToPureText = (fragment: TelleryPasteFragment, snapshot: BlockSnapshot) => {
   if (fragment.type === TELLERY_MIME_TYPES.TOKEN) {
-    return tokensToText(fragment.value as Editor.Token[], snapshot)
+    return tokensToText(fragment.value.data as Editor.Token[], snapshot)
   } else if (fragment.type === TELLERY_MIME_TYPES.BLOCKS) {
     const value = fragment.value as {
       children: string[]

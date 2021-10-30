@@ -61,9 +61,9 @@ import { FormulaResultValueRenderer } from '../BlockBase/BlockRenderer'
 import { isTextBlock } from '../Blocks/utils'
 import { EditorPopover } from '../EditorPopover'
 import { useEditor, useGetBlockTitleTextSnapshot } from '../hooks'
+import { useFormula } from '../hooks/useFormula'
 import { useInlineFormulaPopoverState } from '../hooks/useInlineFormulaPopoverState'
 import { useStorySelection } from '../hooks/useStorySelection'
-import { useFormula } from '../hooks/useFormula'
 const MARK_TYPES = Object.values(Editor.InlineType)
 
 const InlineEditingAtom = atom({ key: 'InlineEditingAtom', default: false })
@@ -176,9 +176,10 @@ const BlockTextOperationMenuInner = ({
       return null
     }
   }, [range, currentBlock, setOpen])
+
   const pop = usePopper(range, modalRef, {
     placement: 'top',
-    strategy: 'fixed',
+    strategy: 'absolute',
     modifiers: [
       {
         name: 'preventOverflow',
@@ -194,6 +195,16 @@ const BlockTextOperationMenuInner = ({
       }
     ]
   })
+
+  useEffect(() => {
+    const editorElement = document.getElementsByClassName('editor')[0]
+    if (!pop) return
+    const updatePop = pop.update!
+    editorElement.addEventListener('scroll', updatePop, { passive: true })
+    return () => {
+      editorElement.removeEventListener('scroll', updatePop)
+    }
+  }, [pop])
 
   const selectedTokens = useMemo(
     () => splitToken(currentBlock?.content?.title).slice(tokenRange?.start, tokenRange?.end) || [],

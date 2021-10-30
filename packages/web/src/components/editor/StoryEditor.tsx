@@ -1055,14 +1055,22 @@ const _StoryEditor: React.FC<{
     ]
   )
 
-  const cutHandler = useCallback((e: React.ClipboardEvent<HTMLDivElement>) => {
-    e.preventDefault()
-  }, [])
+  const cutHandler = useCallback(
+    (e: React.ClipboardEvent<HTMLDivElement>) => {
+      e.preventDefault()
+      editorClipboardManager.doCut(e)
+    },
+    [editorClipboardManager]
+  )
 
-  const copyHandler = useCallback((e: React.ClipboardEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    logger('copy')
-  }, [])
+  const copyHandler = useCallback(
+    (e: React.ClipboardEvent<HTMLDivElement>) => {
+      e.preventDefault()
+      editorClipboardManager.doCopy(e)
+      logger('copy')
+    },
+    [editorClipboardManager]
+  )
 
   const onMouseUp = useCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     if (e.defaultPrevented) return

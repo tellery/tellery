@@ -8,6 +8,7 @@ import {
   getBlocksFragmentFromSelection,
   mergeTokens,
   splitToken,
+  TelleryPasteFragment,
   tokenPosition2SplitedTokenPosition
 } from '..'
 import { TellerySelection, TellerySelectionType } from '../helpers'
@@ -23,7 +24,7 @@ export const useEditorClipboardManager = (
   const workspace = useWorkspace()
 
   const setClipboardWithFragment = useCallback(
-    (e: React.ClipboardEvent<HTMLDivElement>, fragment: any) => {
+    (e: React.ClipboardEvent<HTMLDivElement>, fragment: TelleryPasteFragment) => {
       logger('on copy set')
       if (e.clipboardData) {
         // const blocks = Object.values(editorState.blocksMap)
@@ -64,14 +65,13 @@ export const useEditorClipboardManager = (
   }, [blockTranscations, getSelection, snapshot, storyId, updateBlockTitle])
 
   const doCut = useCallback(
-    (e: KeyboardEvent) => {
+    (e: Event) => {
       const selection = window.getSelection()
       selection?.removeAllRanges()
       const selectionState = getSelection()
       const fragment = selectionState ? getBlocksFragmentFromSelection(selectionState, snapshot, workspace.id) : null
-      if (fragment) {
-        e.preventDefault()
-      }
+      if (!fragment) return
+      e.preventDefault()
       copy('tellery', {
         debug: true,
         onCopy: (clipboardData) => {
@@ -84,12 +84,11 @@ export const useEditorClipboardManager = (
   )
 
   const doCopy = useCallback(
-    (e: KeyboardEvent) => {
+    (e: Event) => {
       const selectionState = getSelection()
       const fragment = selectionState ? getBlocksFragmentFromSelection(selectionState, snapshot, workspace.id) : null
-      if (fragment) {
-        e.preventDefault()
-      }
+      if (!fragment) return
+      e.preventDefault()
       copy('tellery', {
         debug: true,
         onCopy: (clipboardData) => {
