@@ -65,7 +65,7 @@ export const useEditorClipboardManager = (
   }, [blockTranscations, getSelection, snapshot, storyId, updateBlockTitle])
 
   const doCut = useCallback(
-    (e: Event) => {
+    (e: React.ClipboardEvent<HTMLDivElement> | KeyboardEvent) => {
       const selection = window.getSelection()
       selection?.removeAllRanges()
       const selectionState = getSelection()
@@ -84,7 +84,7 @@ export const useEditorClipboardManager = (
   )
 
   const doCopy = useCallback(
-    (e: Event) => {
+    (e: React.ClipboardEvent<HTMLDivElement> | KeyboardEvent) => {
       const selectionState = getSelection()
       const fragment = selectionState ? getBlocksFragmentFromSelection(selectionState, snapshot, workspace.id) : null
       if (!fragment) return
