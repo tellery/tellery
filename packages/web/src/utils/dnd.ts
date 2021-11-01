@@ -24,6 +24,7 @@ export type BlockFragment = {
 
 export type DndBlocksFragment = {
   type: DnDItemTypes.BlocksFragment
+  originalBlockId: string
 } & BlockFragment
 
 export type DndItemDataBlockIdsType = {

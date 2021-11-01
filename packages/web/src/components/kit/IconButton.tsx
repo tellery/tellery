@@ -1,18 +1,8 @@
+import { useTippySingleton } from '@app/hooks/useTippySingleton'
 import { css, cx } from '@emotion/css'
 import Tippy from '@tippyjs/react'
-import { isNil, omitBy } from 'lodash'
-import React, {
-  FunctionComponent,
-  SVGAttributes,
-  ButtonHTMLAttributes,
-  useMemo,
-  forwardRef,
-  ReactNode,
-  useEffect
-} from 'react'
-import { ThemingVariables } from '@app/styles'
-import { motion, useAnimation } from 'framer-motion'
-import { useTippySingleton } from '@app/hooks/useTippySingleton'
+import React, { ButtonHTMLAttributes, forwardRef, FunctionComponent, ReactNode, SVGAttributes } from 'react'
+import { Icon } from './Icon'
 
 export default forwardRef<
   HTMLButtonElement,
@@ -26,31 +16,6 @@ export default forwardRef<
 >(function IconButton(props, ref) {
   const { icon, spin, size, className, hoverContent, ...restProps } = props
   const tippySingleton = useTippySingleton()
-
-  const iconProps = useMemo(
-    () =>
-      omitBy(
-        {
-          width: size,
-          height: size,
-          color: props.disabled ? ThemingVariables.colors.gray[0] : props.color
-        },
-        isNil
-      ),
-    [props.color, props.disabled, size]
-  )
-
-  const controls = useAnimation()
-
-  useEffect(() => {
-    if (spin) {
-      controls.stop()
-      controls.start({ rotate: 360 })
-    } else {
-      controls.set({ rotate: 0 })
-      controls.stop()
-    }
-  }, [controls, spin])
 
   const content = (
     <button
@@ -73,19 +38,7 @@ export default forwardRef<
       aria-label={icon.name}
       {...restProps}
     >
-      <motion.div
-        animate={controls}
-        transition={{ type: 'tween', repeat: Infinity, duration: 0.75, ease: 'linear' }}
-        className={css`
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          background: transparent;
-          outline: none;
-        `}
-      >
-        {icon(iconProps)}
-      </motion.div>
+      <Icon icon={icon} size={size} spin={spin} color={props.color} />
     </button>
   )
 

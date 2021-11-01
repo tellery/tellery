@@ -1,7 +1,7 @@
 import { sqlRequest, translateSmartQuery } from '@app/api'
 import { IconCommonCopy, IconCommonRefresh, IconCommonSave, IconMiscDragToExplore } from '@app/assets/icons'
 import { FormButton } from '@app/components/kit/FormButton'
-import IconButton from '@app/components/kit/IconButton'
+import { Icon } from '@app/components/kit/Icon'
 import { ExploreSaveMenu } from '@app/components/menus/ExploreSaveMenu'
 import { AllMetricsSection, DataAssestCardLoader, DataAssetItem } from '@app/components/SideBarDataAssets'
 import { SmartQueryConfig } from '@app/components/SideBarSmartQuery'
@@ -18,7 +18,7 @@ import { useWorkspace } from '@app/hooks/useWorkspace'
 import { ThemingVariables } from '@app/styles'
 import { Dimension, Editor } from '@app/types'
 import { blockIdGenerator, TELLERY_MIME_TYPES } from '@app/utils'
-import { DndItemDataBlockType } from '@app/utils/dnd'
+import { DndBlocksFragment } from '@app/utils/dnd'
 import {
   closestCenter,
   DndContext,
@@ -34,9 +34,8 @@ import {
   useSensor,
   useSensors
 } from '@dnd-kit/core'
-import { css, keyframes } from '@emotion/css'
+import { css } from '@emotion/css'
 import styled from '@emotion/styled'
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import copy from 'copy-to-clipboard'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -125,18 +124,18 @@ const CustomDndContext: React.FC<{ setQueryBuilderId: React.Dispatch<React.SetSt
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
-      const item = event.active.data.current as DndItemDataBlockType
+      const item = event.active.data.current as DndBlocksFragment
       setActiveId(null)
       if (event.over) {
         console.log(item)
-        setQueryBuilderId(item?.originalBlockId!)
+        setQueryBuilderId(item.originalBlockId!)
       }
     },
     [setQueryBuilderId]
   )
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
-    const item = event.active.data.current as DndItemDataBlockType
+    const item = event.active.data.current as DndBlocksFragment
     setActiveId(item.originalBlockId)
   }, [])
 
@@ -447,7 +446,7 @@ const Page = () => {
                 `}
                 onClick={mutation.isLoading ? cancelMutation : execute}
               >
-                <IconButton
+                <Icon
                   spin={mutation.isLoading}
                   icon={IconCommonRefresh}
                   className={css`

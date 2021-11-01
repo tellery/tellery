@@ -176,7 +176,8 @@ const Draggable: React.FC<{ element?: any; blockId: string; currentStoryId?: str
       data: {
         [visBlockId]: visBlock,
         [queryBlockId]: queryBlock
-      }
+      },
+      originalBlockId: props.blockId
     }
   }, [props.blockId, props.currentStoryId, queryBlockBlock.content?.title])
 
