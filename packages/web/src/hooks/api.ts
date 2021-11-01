@@ -727,7 +727,7 @@ export function useTranslateSmartQuery(
       translateSmartQuery(
         workspace.id,
         workspace.preferences?.connectorId!,
-        queryBuilderId,
+        queryBuilderId!,
         metricIds,
         dimensions,
         filters

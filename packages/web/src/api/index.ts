@@ -23,7 +23,7 @@ request.interceptors.response.use(undefined, (error) => {
 export const translateSmartQuery = async (
   workspaceId: string,
   connectorId: string,
-  queryBuilderId?: string,
+  queryBuilderId: string,
   metricIds: string[] = [],
   dimensions: Dimension[] = [],
   filters?: Editor.FilterBuilder
