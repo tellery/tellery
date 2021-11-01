@@ -17,7 +17,7 @@ export const NewStoryButton: React.FC<{ classname: string; tipPlacement?: Placem
 
   const handleCreateNewSotry = useCallback(async () => {
     const id = blockIdGenerator()
-    await blockTranscations.createNewStory({ id: id })
+    blockTranscations.createNewStory({ id: id })
     history.push(`/story/${id}`, {
       focusTitle: true
     })

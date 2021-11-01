@@ -55,7 +55,7 @@ export const useBlockTranscationProvider = () => {
   )
 
   const createNewStory = useCallback(
-    async (props?: { id: string; title?: string }) => {
+    (props?: { id: string; title?: string }) => {
       const id = props?.id ? props.id : blockIdGenerator()
       const title = props?.title ? props.title : undefined
       return commit({

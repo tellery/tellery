@@ -55,9 +55,8 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
     (update: (block: WritableDraft<Editor.SmartQueryBlock>) => void) => {
       const oldBlock = smartQueryBlock
       const newBlock = produce(oldBlock, update)
-      commit({ transcation: setBlockTranscation({ oldBlock, newBlock }), storyId: props.storyId }).then(() => {
-        mutateSnapshot.execute(newBlock)
-      })
+      commit({ transcation: setBlockTranscation({ oldBlock, newBlock }), storyId: props.storyId })
+      mutateSnapshot.execute(newBlock)
     },
     [smartQueryBlock, mutateSnapshot, commit, props.storyId]
   )
@@ -145,9 +144,10 @@ export const SmartQueryConfig: React.FC<{
           )
         }
       >
-        {metricIds.length
-          ? metricIds.map((metricId, index) =>
-              queryBuilderBlock.content?.metrics?.[metricId] ? (
+        {metricIds.length > 0 &&
+          metricIds.map((metricId, index) => (
+            <React.Fragment key={metricId}>
+              {queryBuilderBlock.content?.metrics?.[metricId] ? (
                 <ConfigItem
                   key={metricId}
                   onClick={() => {
@@ -175,9 +175,9 @@ export const SmartQueryConfig: React.FC<{
                 >
                   {metricId}
                 </ConfigItem>
-              )
-            )
-          : null}
+              )}
+            </React.Fragment>
+          ))}
       </ConfigSection>
       <ConfigSection
         title="Dimensions"
@@ -197,110 +197,112 @@ export const SmartQueryConfig: React.FC<{
               popperOptions={{ modifiers: popperModifiers }}
               content={
                 <MenuWrapper>
-                  {fields.map((field, index) =>
-                    field.sqlType &&
-                    spec?.queryBuilderSpec.bucketization[field.sqlType] &&
-                    Object.keys(spec.queryBuilderSpec.bucketization[field.sqlType]).length ? (
-                      <Tippy
-                        theme="tellery"
-                        placement="left-start"
-                        arrow={false}
-                        interactive={true}
-                        offset={[-12, 10]}
-                        appendTo={document.body}
-                        popperOptions={{ modifiers: popperModifiers }}
-                        content={
-                          <MenuWrapper>
-                            {Object.keys(spec.queryBuilderSpec.bucketization[field.sqlType]).map((func) => (
-                              <MenuItem
-                                key={func}
-                                title={lowerCase(func)}
-                                icon={
-                                  field.sqlType ? (
-                                    {
-                                      OTHER: <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />,
-                                      BOOL: <IconCommonDataTypeBool color={ThemingVariables.colors.gray[0]} />,
-                                      NUMBER: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
-                                      DATE: <IconCommonDataTypeTime color={ThemingVariables.colors.gray[0]} />,
-                                      STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
-                                    }[SQLTypeReduced[field.sqlType]]
-                                  ) : (
-                                    <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />
-                                  )
-                                }
-                                disabled={
-                                  !!dimensions.find(
-                                    (dimension) =>
-                                      dimension.fieldName === field.name &&
-                                      dimension.fieldType === field.sqlType &&
-                                      dimension.func === func
-                                  )
-                                }
-                                onClick={() => {
-                                  onChange((draft) => {
-                                    draft.content.dimensions = uniqBy(
-                                      [
-                                        ...dimensions,
-                                        {
-                                          name: `${field.name} ${lowerCase(func)}`,
-                                          fieldName: field.name,
-                                          fieldType: field.sqlType!,
-                                          func
-                                        }
-                                      ],
-                                      (dimension) => `${dimension.name}${dimension.fieldType}${dimension.func}`
+                  {fields.map((field, index) => (
+                    <React.Fragment key={field.name}>
+                      {field.sqlType &&
+                      spec?.queryBuilderSpec.bucketization[field.sqlType] &&
+                      Object.keys(spec.queryBuilderSpec.bucketization[field.sqlType]).length ? (
+                        <Tippy
+                          theme="tellery"
+                          placement="left-start"
+                          arrow={false}
+                          interactive={true}
+                          offset={[-12, 10]}
+                          appendTo={document.body}
+                          popperOptions={{ modifiers: popperModifiers }}
+                          content={
+                            <MenuWrapper>
+                              {Object.keys(spec.queryBuilderSpec.bucketization[field.sqlType]).map((func) => (
+                                <MenuItem
+                                  key={func}
+                                  title={lowerCase(func)}
+                                  icon={
+                                    field.sqlType ? (
+                                      {
+                                        OTHER: <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />,
+                                        BOOL: <IconCommonDataTypeBool color={ThemingVariables.colors.gray[0]} />,
+                                        NUMBER: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
+                                        DATE: <IconCommonDataTypeTime color={ThemingVariables.colors.gray[0]} />,
+                                        STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
+                                      }[SQLTypeReduced[field.sqlType]]
+                                    ) : (
+                                      <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />
                                     )
-                                  })
-                                  setDimensionVisible(false)
-                                }}
-                              />
-                            ))}
-                          </MenuWrapper>
-                        }
-                      >
+                                  }
+                                  disabled={
+                                    !!dimensions.find(
+                                      (dimension) =>
+                                        dimension.fieldName === field.name &&
+                                        dimension.fieldType === field.sqlType &&
+                                        dimension.func === func
+                                    )
+                                  }
+                                  onClick={() => {
+                                    onChange((draft) => {
+                                      draft.content.dimensions = uniqBy(
+                                        [
+                                          ...dimensions,
+                                          {
+                                            name: `${field.name} ${lowerCase(func)}`,
+                                            fieldName: field.name,
+                                            fieldType: field.sqlType!,
+                                            func
+                                          }
+                                        ],
+                                        (dimension) => `${dimension.name}${dimension.fieldType}${dimension.func}`
+                                      )
+                                    })
+                                    setDimensionVisible(false)
+                                  }}
+                                />
+                              ))}
+                            </MenuWrapper>
+                          }
+                        >
+                          <MenuItem
+                            key={field.name + index}
+                            title={field.name}
+                            icon={<IconCommonArrowLeft color={ThemingVariables.colors.gray[0]} />}
+                          />
+                        </Tippy>
+                      ) : field.sqlType && spec?.queryBuilderSpec.bucketization[field.sqlType] ? (
                         <MenuItem
                           key={field.name + index}
                           title={field.name}
-                          icon={<IconCommonArrowLeft color={ThemingVariables.colors.gray[0]} />}
-                        />
-                      </Tippy>
-                    ) : field.sqlType && spec?.queryBuilderSpec.bucketization[field.sqlType] ? (
-                      <MenuItem
-                        key={field.name + index}
-                        title={field.name}
-                        icon={
-                          {
-                            OTHER: <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />,
-                            BOOL: <IconCommonDataTypeBool color={ThemingVariables.colors.gray[0]} />,
-                            NUMBER: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
-                            DATE: <IconCommonDataTypeTime color={ThemingVariables.colors.gray[0]} />,
-                            STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
-                          }[SQLTypeReduced[field.sqlType]]
-                        }
-                        disabled={
-                          !!dimensions.find(
-                            (dimension) => dimension.fieldName === field.name && dimension.fieldType === field.sqlType
-                          )
-                        }
-                        onClick={() => {
-                          onChange((draft) => {
-                            draft.content.dimensions = uniqBy(
-                              [
-                                ...dimensions,
-                                {
-                                  name: field.name,
-                                  fieldName: field.name,
-                                  fieldType: field.sqlType!
-                                }
-                              ],
-                              (dimension) => `${dimension.name}${dimension.fieldType}${dimension.func}`
+                          icon={
+                            {
+                              OTHER: <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />,
+                              BOOL: <IconCommonDataTypeBool color={ThemingVariables.colors.gray[0]} />,
+                              NUMBER: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
+                              DATE: <IconCommonDataTypeTime color={ThemingVariables.colors.gray[0]} />,
+                              STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
+                            }[SQLTypeReduced[field.sqlType]]
+                          }
+                          disabled={
+                            !!dimensions.find(
+                              (dimension) => dimension.fieldName === field.name && dimension.fieldType === field.sqlType
                             )
-                          })
-                          setDimensionVisible(false)
-                        }}
-                      />
-                    ) : null
-                  )}
+                          }
+                          onClick={() => {
+                            onChange((draft) => {
+                              draft.content.dimensions = uniqBy(
+                                [
+                                  ...dimensions,
+                                  {
+                                    name: field.name,
+                                    fieldName: field.name,
+                                    fieldType: field.sqlType!
+                                  }
+                                ],
+                                (dimension) => `${dimension.name}${dimension.fieldType}${dimension.func}`
+                              )
+                            })
+                            setDimensionVisible(false)
+                          }}
+                        />
+                      ) : null}
+                    </React.Fragment>
+                  ))}
                 </MenuWrapper>
               }
               className={css`

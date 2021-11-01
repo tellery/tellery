@@ -102,7 +102,7 @@ export const StoryConfigPopOver: React.FC<{
         ...story?.format,
         [key]: value
       }
-      await commit({
+      commit({
         storyId: story.id,
         transcation: createTranscation({
           operations: [{ cmd: 'update', path: ['format'], args: newFormat, table: 'block', id: story.id }]

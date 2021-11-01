@@ -9,7 +9,7 @@ const ConfigIconButton = forwardRef<
     color?: string
   }
 >(function ConfigIconButton(props, ref) {
-  const { className, ...restProps } = props
+  const { className, icon, ...restProps } = props
   const color = props.disabled ? ThemingVariables.colors.text[2] : props.color || ThemingVariables.colors.text[0]
 
   return (

@@ -329,7 +329,7 @@ const BlockTextOperationMenuInner = ({
         } as unknown as Story
 
         // TODO: use a transcation
-        await commit({
+        commit({
           storyId: currentBlock.storyId!,
           transcation: createTranscation({
             operations: [

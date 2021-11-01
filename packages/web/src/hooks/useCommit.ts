@@ -19,7 +19,7 @@ import { toast } from 'react-toastify'
 import { CallbackInterface, useRecoilCallback } from 'recoil'
 import { useLoggedUser } from './useAuth'
 import { TelleryStorySelectionAtom } from '@app/components/editor/hooks/useStorySelection'
-import { useGetBlock } from './api'
+import { notifyTranscationApplied } from '@app/utils/oberveables'
 
 type Env = {
   selection?: TellerySelection
@@ -148,7 +148,6 @@ export interface CommitInterface {
   env?: Env
   transcation:
     | Omit<Transcation, 'workspaceId'>
-    | ((snapshot: typeof TelleryBlockMap) => Promise<Omit<Transcation, 'workspaceId'>>)
     | ((snapshot: typeof TelleryBlockMap) => Omit<Transcation, 'workspaceId'>)
   recoilCallback: CallbackInterface
   shouldReformat?: boolean
@@ -178,7 +177,7 @@ export const appendOperation = (_operations: Operation[]) => {
 }
 
 // FIXME: commit order
-export const commit = async ({
+export const commit = ({
   env = null,
   storyId,
   userId,
@@ -189,7 +188,7 @@ export const commit = async ({
 }: CommitInterface) => {
   const transcation =
     typeof transcationOrGenerator === 'function'
-      ? { ...(await transcationOrGenerator(TelleryBlockMap)), workspaceId }
+      ? { ...transcationOrGenerator(TelleryBlockMap), workspaceId }
       : { ...transcationOrGenerator, workspaceId }
   logger('commit transcation', transcation)
   try {
@@ -219,16 +218,11 @@ export const commit = async ({
     endTranscation()
 
     logger('commit transcation end')
-    return new Promise((resolve, reject) => {
-      TranscationPromiseMap[transcation.id] = {
-        resolve,
-        reject
-      }
-    })
+    return [transcation.id, true]
   } catch (err) {
     endTranscation()
     console.error(err)
-    return Promise.reject(err)
+    return [transcation.id, false]
   }
 }
 
@@ -535,15 +529,15 @@ export const syncStory = throttle(() => {
   const parsedTransactions: Transcation[] = JSON.parse(transactions)
   localStorage.removeItem(TRANSACTIONS_KEY)
   return saveTranscations(parsedTransactions)
-    .then((res) => {
+    .then(() => {
       parsedTransactions.forEach((transaction) => {
-        TranscationPromiseMap[transaction.id].resolve(res)
+        notifyTranscationApplied(transaction.id, true)
       })
     })
     .catch((err) => {
       console.error(err)
       parsedTransactions.forEach((transaction) => {
-        TranscationPromiseMap[transaction.id].reject(err)
+        notifyTranscationApplied(transaction.id, false)
       })
     })
     .finally(() => {

@@ -14,7 +14,7 @@ export type EditorContextInterface<BlockType> = {
   blurEditor: () => void
   // moveBlocks: (sourceBlockIds: string[], targetBlockId: string, direction: 'left' | 'right' | 'bottom' | 'top') => void
   setSelectionState: SetterOrUpdater<TellerySelection | null>
-  removeBlocks: (targetBlockIds: string[]) => Promise<void>
+  removeBlocks: (targetBlockIds: string[]) => Promise<any>
   deleteBackward: (unit: 'character', options: { selection: TellerySelection }) => void
   getSelection: () => TellerySelection | null
   toggleBlockType: (id: string, type: Editor.BlockType, removePrefixCount: number) => void

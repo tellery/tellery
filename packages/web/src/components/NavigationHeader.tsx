@@ -128,7 +128,7 @@ export const _NavigationHeader = (props: {
         ...props.format,
         [key]: value
       }
-      await commit({
+      commit({
         storyId: props.storyId,
         transcation: createTranscation({
           operations: [{ cmd: 'update', path: ['format'], args: newFormat, table: 'block', id: props.storyId }]

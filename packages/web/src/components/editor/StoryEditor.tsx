@@ -1,5 +1,5 @@
 import { createEmptyBlock } from '@app/helpers/blockFactory'
-import { useBlockSuspense, useFetchStoryChunk } from '@app/hooks/api'
+import { useBlockSuspense, useFetchStoryChunk, useGetBlock } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { Operation, useCommit, useCommitHistory } from '@app/hooks/useCommit'
@@ -126,6 +126,7 @@ const _StoryEditor: React.FC<{
   const snapshot = useBlockSnapshot()
   const location = useLocation()
   const workspace = useWorkspace()
+  const getBlock = useGetBlock()
 
   const getBlockLocalPreferences = useGetBlockLocalPreferences()
   useEffect(() => {
@@ -295,14 +296,14 @@ const _StoryEditor: React.FC<{
   const commit = useCommit()
   const blockTranscations = useBlockTranscations()
 
-  const createFirstOrLastBlockHandler = useCallback(() => {
+  const createFirstOrLastBlockHandler = useCallback(async () => {
     if (!permissions.canWrite) return
     const newBlock = createEmptyBlock<Editor.BaseBlock>({
       type: Editor.BlockType.Text,
       storyId,
       parentId: storyId
     })
-    const parentBlock = getBlockFromSnapshot(newBlock.parentId, snapshot)
+    const parentBlock = await getBlock(newBlock.parentId)
     const lastBlockId = parentBlock?.children?.[parentBlock.children?.length - 1]
     invariant(parentBlock, 'parentBLock not found')
     commit({
@@ -314,7 +315,7 @@ const _StoryEditor: React.FC<{
     } else {
       setSelectionAtBlockStart(newBlock)
     }
-  }, [commit, permissions.canWrite, setSelectionAtBlockStart, snapshot, storyId])
+  }, [commit, getBlock, permissions.canWrite, setSelectionAtBlockStart, storyId])
 
   const updateBlockProps = useCallback(
     (blockId: string, path: string[], args: any) => {
@@ -326,8 +327,8 @@ const _StoryEditor: React.FC<{
   )
 
   const updateBlockTitle = useCallback(
-    (blockId: string, tokens: Editor.Token[]) => {
-      const oldBlock = getBlockFromSnapshot(blockId, snapshot)
+    async (blockId: string, tokens: Editor.Token[]) => {
+      const oldBlock = await getBlock(blockId)
       updateBlockProps(blockId, ['content', 'title'], tokens)
       if (dequal(oldBlock.content?.title, tokens) === false) {
         setSelectionState((oldSelection) => {
@@ -340,14 +341,14 @@ const _StoryEditor: React.FC<{
         })
       }
     },
-    [setSelectionState, snapshot, updateBlockProps]
+    [getBlock, setSelectionState, updateBlockProps]
   )
 
   const editorClipboardManager = useEditorClipboardManager(storyId, getSelection, updateBlockTitle)
 
   const toggleBlockType = useCallback(
-    (id, type, removePrefixCount: number) => {
-      const block = getBlockFromSnapshot(id, snapshot)
+    async (id, type, removePrefixCount: number) => {
+      const block = await getBlock(id)
       if (removePrefixCount) {
         const blockTitle: Editor.Token[] = block?.content?.title ?? []
         const splitedTokens = splitToken(blockTitle)
@@ -355,7 +356,7 @@ const _StoryEditor: React.FC<{
       }
       updateBlockProps(id, ['type'], type)
     },
-    [snapshot, updateBlockProps, updateBlockTitle]
+    [getBlock, updateBlockProps, updateBlockTitle]
   )
 
   const insertNewEmptyBlock = useCallback(
@@ -385,44 +386,53 @@ const _StoryEditor: React.FC<{
   )
 
   useEffect(() => {
-    if (selectionState?.type !== TellerySelectionType.Inline || !lastInputCharRef.current) {
-      return
-    }
-
-    const currentBlock = getBlockFromSnapshot(selectionState.anchor.blockId, snapshot)
-    if (currentBlock.type === Editor.BlockType.Story || isQuestionLikeBlock(currentBlock.type)) {
-      return
-    }
-
-    // logger('lastinput', lastInputChar)
-    const splitedTokens = splitToken(currentBlock.content?.title ?? [])
-    const transformData = getTransformedTypeAndPrefixLength(splitedTokens, 1, selectionState, lastInputCharRef.current)
-    if (!transformData) return
-    // logger('transform', transformData)
-
-    const prefixLength = transformData ? (transformData[1] as number) : 0
-    const newType = transformData ? (transformData[0] as Editor.BlockType) : null
-
-    switch (newType) {
-      case Editor.BlockType.Visualization: {
-        toggleBlockType(currentBlock.id, newType, prefixLength)
-        blockAdminValue.getBlockInstanceById(currentBlock.id).then((instance) => {
-          instance.blockRef.current.openMenu()
-        })
-
-        break
+    const afterAdded = async () => {
+      if (selectionState?.type !== TellerySelectionType.Inline || !lastInputCharRef.current) {
+        return
       }
-      case Editor.BlockType.Divider: {
-        toggleBlockType(currentBlock.id, currentBlock.type, prefixLength)
-        insertNewEmptyBlock({ type: newType }, currentBlock.id, 'top')
-        break
+
+      const currentBlock = await getBlock(selectionState.anchor.blockId)
+      if (currentBlock.type === Editor.BlockType.Story || isQuestionLikeBlock(currentBlock.type)) {
+        return
       }
-      default: {
-        toggleBlockType(currentBlock.id, newType, prefixLength)
+
+      // logger('lastinput', lastInputChar)
+      const splitedTokens = splitToken(currentBlock.content?.title ?? [])
+      const transformData = getTransformedTypeAndPrefixLength(
+        splitedTokens,
+        1,
+        selectionState,
+        lastInputCharRef.current
+      )
+      if (!transformData) return
+      // logger('transform', transformData)
+
+      const prefixLength = transformData ? (transformData[1] as number) : 0
+      const newType = transformData ? (transformData[0] as Editor.BlockType) : null
+
+      switch (newType) {
+        case Editor.BlockType.Visualization: {
+          toggleBlockType(currentBlock.id, newType, prefixLength)
+          blockAdminValue.getBlockInstanceById(currentBlock.id).then((instance) => {
+            instance.blockRef.current.openMenu()
+          })
+
+          break
+        }
+        case Editor.BlockType.Divider: {
+          toggleBlockType(currentBlock.id, currentBlock.type, prefixLength)
+          insertNewEmptyBlock({ type: newType }, currentBlock.id, 'top')
+          break
+        }
+        default: {
+          toggleBlockType(currentBlock.id, newType, prefixLength)
+        }
       }
     }
+    afterAdded()
   }, [
     blockAdminValue,
+    getBlock,
     insertNewEmptyBlock,
     lastInputCharRef,
     selectionState,
@@ -436,7 +446,7 @@ const _StoryEditor: React.FC<{
   }, [selectionState])
 
   const deleteBackward = useCallback(
-    (unit: 'character', options: { selection: TellerySelection }) => {
+    async (unit: 'character', options: { selection: TellerySelection }) => {
       const operations: Operation[] = []
       const selectionState = options?.selection
       if (selectionState === null || selectionState.type === TellerySelectionType.Block) {
@@ -444,7 +454,7 @@ const _StoryEditor: React.FC<{
       }
 
       const blockId = selectionState.anchor.blockId
-      const block = getBlockFromSnapshot(blockId, snapshot)
+      const block = await getBlock(blockId)
 
       // Content should be merge to prvious text block
       const mergeForward =
@@ -563,7 +573,7 @@ const _StoryEditor: React.FC<{
       }
       commit({ transcation: createTranscation({ operations: operations }), storyId })
     },
-    [commit, setSelectionState, snapshot, storyId]
+    [commit, getBlock, setSelectionState, snapshot, storyId]
   )
 
   const toggleBlocksIndention = useCallback(
@@ -747,7 +757,7 @@ const _StoryEditor: React.FC<{
           hotkeys: ['mod+z'],
           handler: async (e) => {
             e.preventDefault()
-            const env = await commitHistory.undo()
+            const env = commitHistory.undo()
             env?.selection && setSelectionState(env.selection)
           }
         },
@@ -755,7 +765,7 @@ const _StoryEditor: React.FC<{
           hotkeys: ['mod+shift+z'],
           handler: async (e) => {
             e.preventDefault()
-            const env = await commitHistory.redo()
+            const env = commitHistory.redo()
             env?.selection && setSelectionState(env.selection)
           }
         }
@@ -1584,9 +1594,6 @@ const EditorEmptyStateEndPlaceHolder = ({
         width: 100%;
         cursor: text;
       `}
-      onMouseDown={(e) => {
-        e.preventDefault()
-      }}
       onClick={(e) => {
         e.preventDefault()
         onClick(e)

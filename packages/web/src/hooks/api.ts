@@ -482,7 +482,7 @@ export const useGetBlock = () => {
   const getBlock = useRecoilCallback(
     (recoilCallback) => async (blockId: string) => {
       const snapshot = await recoilCallback.snapshot.getPromise(TelleryBlockAtom(blockId))
-      return snapshot
+      return snapshot as Editor.Block
     },
     []
   )

@@ -38,6 +38,7 @@ import { DndSensor } from '../lib/dnd-kit/dndSensor'
 import { useSetUploadResource } from './editor/hooks/useUploadResource'
 import { notifyBlockManuallyCreated } from './editor/oberveables'
 import { getSubsetOfBlocksSnapshot } from './editor/utils'
+import { DataAssetItem } from './SideBarDataAssets'
 
 const DEFAULT_LAYOUT_MEASURING: MeasuringConfiguration = {
   droppable: {
@@ -247,6 +248,8 @@ const _TelleryDNDContext: React.FC<{
         setPreviewData(<ContentBlocks blockIds={[data.originalBlockId]} readonly parentType={Editor.BlockType.Story} />)
       } else if (data.type === DnDItemTypes.BlockIds) {
         setPreviewData(<ContentBlocks blockIds={data.ids} readonly parentType={Editor.BlockType.Story} />)
+      } else if (data.type === DnDItemTypes.BlocksFragment) {
+        setPreviewData(<DataAssetItem blockId={data.originalBlockId} isExpanded={false} />)
       } else {
         setPreviewData(
           <div
