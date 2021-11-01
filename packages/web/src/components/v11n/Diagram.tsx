@@ -11,6 +11,7 @@ import { useCallback, useMemo, useRef } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { useChart } from './charts'
 import { Config, Data, Type } from './types'
+import { throttle } from 'lodash'
 
 function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   return (
@@ -47,7 +48,7 @@ export function Diagram(props: {
     (update: (block: WritableDraft<Editor.VisualizationBlock>) => void) => {
       const oldBlock = block
       if (oldBlock) {
-        const newBlock = produce(oldBlock, update)
+        const newBlock = produce(oldBlock, throttle(update, 500))
         commit({ transcation: setBlockTranscation({ oldBlock, newBlock }), storyId: props.storyId })
       }
     },
