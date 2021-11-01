@@ -1088,18 +1088,22 @@ const _StoryEditor: React.FC<{
     isSelectingRef.current = null
   }, [])
 
-  const onMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    if (e.defaultPrevented) return
-    const rootBlock = findRootBlock(e.target as HTMLElement)
-    const id = rootBlock?.dataset.blockId
-    if (isSelectingRef.current) return
-    if (e.nativeEvent.button === 0) {
-      mouseDownEventRef.current = e.nativeEvent
-    }
-    if (id && rootBlock) {
-      isSelectingRef.current = rootBlock.getBoundingClientRect()
-    }
-  }, [])
+  const onMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      if (e.defaultPrevented) return
+      const rootBlock = findRootBlock(e.target as HTMLElement)
+      const id = rootBlock?.dataset.blockId
+      if (isSelectingRef.current) return
+      if (e.nativeEvent.button === 0) {
+        mouseDownEventRef.current = e.nativeEvent
+      }
+      if (id && rootBlock) {
+        isSelectingRef.current = rootBlock.getBoundingClientRect()
+      }
+      setSelectedBlocks([])
+    },
+    [setSelectedBlocks]
+  )
 
   const onMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {

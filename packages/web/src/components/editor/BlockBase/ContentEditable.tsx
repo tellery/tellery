@@ -518,7 +518,6 @@ const _ContentEditable: React.ForwardRefRenderFunction<
             }
           }
         }}
-        // contentEditable={'true'}
         contentEditable={readonly ? 'false' : 'true'}
         onSelect={(e) => {
           if (!editbleRef.current) return
