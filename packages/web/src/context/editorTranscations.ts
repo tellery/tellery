@@ -780,6 +780,18 @@ export const moveBlocksTranscation = ({
       }
     }
   } else if (direction === 'child') {
+    deleteSourceBlock &&
+      operations.push(
+        ...[
+          {
+            cmd: 'listRemove',
+            id: leadingSourceBlock.parentId,
+            path: [path],
+            args: { id: leadingSourceBlockId },
+            table: 'block'
+          }
+        ]
+      )
     operations.push(
       ...[
         {

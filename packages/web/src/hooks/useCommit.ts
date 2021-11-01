@@ -185,7 +185,7 @@ export const commit = ({
   recoilCallback,
   workspaceId,
   shouldReformat = true
-}: CommitInterface) => {
+}: CommitInterface): [string, boolean] => {
   const transcation =
     typeof transcationOrGenerator === 'function'
       ? { ...transcationOrGenerator(TelleryBlockMap), workspaceId }

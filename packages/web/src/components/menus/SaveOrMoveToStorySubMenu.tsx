@@ -4,6 +4,7 @@ import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { blockIdGenerator } from '@app/utils'
+import { waitForTranscationApplied } from '@app/utils/oberveables'
 import { css } from '@emotion/css'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -113,10 +114,16 @@ export const SaveOrMoveToStorySubMenu: React.FC<{
     [data?.pages, getBlockTitle]
   )
 
+  const hasExactSame = useMemo(() => {
+    if (items?.length === 0) return false
+    return items?.some((item) => item.originTitle === keyword)
+  }, [keyword, items])
+
   const createNewStoryAndMoveTo = useCallback(
     async (title: string) => {
       const newStoryId = blockIdGenerator()
-      await blockTranscations.createNewStory({ id: newStoryId, title })
+      const [transcationId] = await blockTranscations.createNewStory({ id: newStoryId, title })
+      await waitForTranscationApplied(transcationId)
       await saveOrMoveToStory(newStoryId)
     },
     [blockTranscations, saveOrMoveToStory]
@@ -150,6 +157,19 @@ export const SaveOrMoveToStorySubMenu: React.FC<{
           `}
           ref={ref}
         >
+          {hasExactSame === false && keyword.length > 1 && (
+            <StyledDropDownItem
+              title={`Create ${keyword}`}
+              onClick={async () => {
+                await createNewStoryAndMoveTo(keyword)
+                if (mode === 'save') {
+                  toast.success('Saved to story')
+                } else {
+                  toast.success('Moved to story')
+                }
+              }}
+            />
+          )}
           {items.map((item) => {
             return (
               <StyledDropDownItem
