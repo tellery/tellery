@@ -31,7 +31,9 @@ export class OperationService {
     operatorId: string,
     workspaceId: string,
     data: SingleOperation[],
+    opts: { skipPermissionCheck?: boolean } = {},
   ): Promise<void> {
+    const { skipPermissionCheck = false } = opts
     return getManager().transaction(async (t) => {
       const cache: { [k: string]: OperationManager } = {}
       await bluebird.each(data, async (val) => {
@@ -44,7 +46,7 @@ export class OperationService {
               operatorId,
               val.table,
               t,
-              this.permission,
+              !skipPermissionCheck ? this.permission : null,
               this.activityService,
             )
             cache[val.id] = m
@@ -66,6 +68,7 @@ export class OperationService {
   async saveTransactions(
     operatorId: string,
     data: { id: string; workspaceId: string; operations: SingleOperation[] }[],
+    opts: { skipPermissionCheck?: boolean } = {},
   ): Promise<{ error: Error; transactionId: string }[]> {
     const res: { error: Error; transactionId: string }[] = []
     const successes: { id: string; workspaceId: string; operations: SingleOperation[] }[] = []
@@ -76,6 +79,7 @@ export class OperationService {
           operatorId,
           transaction.workspaceId,
           transaction.operations,
+          opts,
         )
         successes.push(transaction)
       } catch (error: unknown) {

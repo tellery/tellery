@@ -28,7 +28,7 @@ export class OperationManager {
 
   operator: string
 
-  permission: IPermission
+  permission: IPermission | null
 
   operation: IOperation
 
@@ -50,7 +50,7 @@ export class OperationManager {
     operator: string,
     table: OperationTableType,
     manager: EntityManager,
-    permission: IPermission,
+    permission: IPermission | null,
     activityService: ActivitySyncService,
   ) {
     this.id = id
@@ -77,7 +77,9 @@ export class OperationManager {
   }
 
   async end(): Promise<void> {
-    await this.operation.checkPermission(this.permission, this.entity, this._origin)
+    if (this.permission) {
+      await this.operation.checkPermission(this.permission, this.entity, this._origin)
+    }
     await this.operation.save(this.entity, this._origin)
     // record the operation
     const before = this._origin
