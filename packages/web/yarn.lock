@@ -6905,10 +6905,10 @@ react-fit@^1.0.3:
     detect-element-overflow "^1.2.0"
     prop-types "^15.6.0"
 
-react-ga4@^1.3.0:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/react-ga4/-/react-ga4-1.3.0.tgz#f86faca877d71f9b43ecb1f45fd5647c63213c8e"
-  integrity sha512-Zv/RrbSmB5o52SJ2Ls1rw6JsMyTW5zxw9e+ZlymiHgyzEEGBlxGhAmEXTymJ4uJkikxS8O31i45mCzfSIjXE5g==
+react-ga4@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/react-ga4/-/react-ga4-1.4.0.tgz#cee869f76c554a81790b8e2ad7f678fdd5e8cf71"
+  integrity sha512-pF74ndJMf+cR44s1QlGfUc+L1YlC2UKsJ/r6YL+iWlFLoYd/e3AWbRec4A4EXCzPD+c9FuBiVQDO/0ZcLWloDg==
 
 react-helmet@^6.1.0:
   version "6.1.0"
