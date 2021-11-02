@@ -34,8 +34,8 @@ module.exports = {
   },
   secretKey: process.env.SECRET_KEY || 'SABD7KacL28vxZd6BgOSGStJGbh',
   server: {
-    protocol: process.env.SERVER_PROTO || 'https',
     host: process.env.SERVER_HOST,
+    protocol: process.env.SERVER_PROTO || 'http',
     webPort: process.env.SERVER_WEB_PORT || 80,
     port: process.env.SERVER_PORT || 8000,
   },
