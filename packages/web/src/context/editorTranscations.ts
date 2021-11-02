@@ -807,9 +807,23 @@ export const moveBlocksTranscation = ({
     newSourceBlockParentId = targetBlockId
   }
 
+  sourceBlockFragment.children.forEach((blockId) => {
+    const block = sourceBlockFragment.data[blockId]
+    if (block.storyId !== storyId) {
+      operations.push({
+        cmd: 'update',
+        id: block.id,
+        path: ['storyId'],
+        args: storyId,
+        table: 'block'
+      })
+    }
+  })
+
   // ...and just place other blocks next to the first block
   const parentId = newSourceBlockParentId
   let afterId = leadingSourceBlockId
+
   sourceBlockFragment.children.slice(1).forEach((blockId) => {
     invariant(parentId, 'parent id is null')
     const block = sourceBlockFragment.data[blockId]
