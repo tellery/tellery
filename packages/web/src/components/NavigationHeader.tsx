@@ -13,7 +13,7 @@ import { useMediaQuery } from '@app/hooks'
 import { useWorkspaceView } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useCommit } from '@app/hooks/useCommit'
-import { useRightSideBarConfig } from '@app/hooks/useRightSideBarConfig'
+import { useRightSideBarUIConfig } from '@app/hooks/useRightSideBarConfig'
 import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
 import { breakpoints, ThemingVariables } from '@app/styles'
@@ -99,7 +99,7 @@ const ThoughtTitle = () => {
 }
 
 const SidebarButton = () => {
-  const [rightSideBarState, setRightSideBarState] = useRightSideBarConfig()
+  const [rightSideBarState, setRightSideBarState] = useRightSideBarUIConfig()
 
   return (
     <IconButton

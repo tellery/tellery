@@ -1,15 +1,24 @@
-// import { CircularLoading } from '@app/components/CircularLoading'
+import { IconCommonSetting } from '@app/assets/icons'
+import IconButton from '@app/components/kit/IconButton'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
-import { useWorkspace } from '@app/hooks/useWorkspace'
+import { useSideBarVariableEditor } from '@app/hooks/useSideBarQuestionEditor'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { css } from '@emotion/css'
-import React, { useEffect, useRef, useCallback } from 'react'
-import { useBlockBehavior } from '../hooks/useBlockBehavior'
+import styled from '@emotion/styled'
+import React, { useCallback, useEffect, useRef } from 'react'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
 import { useVariable } from '../hooks/useVariable'
 import { BlockComponent, registerBlock } from './utils'
-import Tippy from '@tippyjs/react'
+
+const StyledInput = styled.input`
+  outline: none;
+  border-radius: 5px;
+  width: 100%;
+  height: 100%;
+  border: none;
+  padding: 0 8px;
+`
 
 const ControlBlock: BlockComponent<
   React.FC<{
@@ -25,6 +34,7 @@ const ControlBlock: BlockComponent<
   const [variableValue, setVariableValue] = useVariable(block.storyId!, variableName)
   const defaultValue = block.content.defaultValue
   const isDefaultValue = defaultValue === variableValue
+  const sideBarVariableEditor = useSideBarVariableEditor(block.storyId!)
 
   useEffect(() => {
     if (!inputRef.current) return
@@ -46,20 +56,15 @@ const ControlBlock: BlockComponent<
     [setVariableValue]
   )
 
-  const setDefaultValue = useCallback(
-    (value: unknown) => {
-      blockTranscation.updateBlockProps(block.storyId!, block.id, ['content', 'defaultValue'], value)
-      setVariableValue(value)
-    },
-    [block.id, block.storyId, blockTranscation, setVariableValue]
-  )
-
   return (
     <div
       className={css`
         display: flex;
-        flex-direction: column;
-        max-width: 150px;
+        max-width: 316px;
+        height: 36px;
+        background-color: ${ThemingVariables.colors.primary[0]};
+        align-items: center;
+        border-radius: 4px;
       `}
       onPaste={(e) => {
         e.stopPropagation()
@@ -71,14 +76,20 @@ const ControlBlock: BlockComponent<
         e.stopPropagation()
       }}
     >
-      <div>
-        variable name:
+      <div
+        className={css`
+          flex: 1;
+          min-width: 80px;
+        `}
+      >
         <input
           className={css`
             outline: none;
-            background-color: ${ThemingVariables.colors.gray[5]};
-            border-radius: 5px;
-            border: 1px solid ${ThemingVariables.colors.gray[1]};
+            border: none;
+            padding: 10px 13px;
+            width: 100%;
+            background-color: transparent;
+            color: ${ThemingVariables.colors.gray[5]};
           `}
           placeholder="input text"
           onChange={(e) => {
@@ -87,83 +98,69 @@ const ControlBlock: BlockComponent<
           value={variableName}
         />
       </div>
-      <div>
-        value:
-        <Tippy
-          content={' Press Enter to confirm, Shift+Enter to set as default value'}
-          placement="left"
-          trigger="focusin"
-        >
-          <div>
-            {block.content.type === 'text' && (
-              <input
-                onBlur={(e) => {
-                  submitChange(e.currentTarget.value)
-                }}
-                ref={inputRef}
-                style={{
-                  border: `1px ${isDefaultValue ? 'solid' : 'dashed'} ${ThemingVariables.colors.gray[1]}`
-                }}
-                className={css`
-                  outline: none;
-                  background-color: ${ThemingVariables.colors.gray[5]};
-                  border-radius: 5px;
-                `}
-                // value={variableValue as string}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && e.shiftKey === false) {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    e.currentTarget.blur()
-                    submitChange(e.currentTarget.value)
-                  } else if (e.key === 'Enter' && e.shiftKey === true) {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    e.currentTarget.blur()
-                    setDefaultValue(e.currentTarget.value)
-                  } else {
-                    e.stopPropagation()
-                  }
-                }}
-              />
-            )}
-            {block.content.type === 'number' && (
-              <input
-                onBlur={(e) => {
-                  const value = parseInt(e.currentTarget.value, 10)
-                  submitChange(value)
-                }}
-                placeholder="input number"
-                type="number"
-                ref={inputRef}
-                style={{
-                  border: `1px ${isDefaultValue ? 'solid' : 'dashed'} ${ThemingVariables.colors.gray[1]}`
-                }}
-                className={css`
-                  outline: none;
-                  background-color: ${ThemingVariables.colors.gray[5]};
-                  border-radius: 5px;
-                `}
-                onKeyDown={(e) => {
-                  const value = parseInt(e.currentTarget.value, 10)
-                  if (e.key === 'Enter' && e.shiftKey === false) {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    e.currentTarget.blur()
-                    submitChange(value)
-                  } else if (e.key === 'Enter' && e.shiftKey === true) {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    e.currentTarget.blur()
-                    setDefaultValue(value)
-                  } else {
-                    e.stopPropagation()
-                  }
-                }}
-              />
-            )}
-          </div>
-        </Tippy>
+      <div
+        className={css`
+          flex: 4;
+          padding: 2px 0;
+          height: 100%;
+        `}
+      >
+        {block.content.type === 'text' && (
+          <StyledInput
+            onBlur={(e) => {
+              submitChange(e.currentTarget.value)
+            }}
+            ref={inputRef}
+            // value={variableValue as string}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                e.stopPropagation()
+                e.currentTarget.blur()
+                submitChange(e.currentTarget.value)
+              } else {
+                e.stopPropagation()
+              }
+            }}
+          />
+        )}
+        {block.content.type === 'number' && (
+          <StyledInput
+            onBlur={(e) => {
+              const value = parseInt(e.currentTarget.value, 10)
+              submitChange(value)
+            }}
+            placeholder="input number"
+            type="number"
+            ref={inputRef}
+            onKeyDown={(e) => {
+              const value = parseInt(e.currentTarget.value, 10)
+              if (e.key === 'Enter' && e.shiftKey === false) {
+                e.preventDefault()
+                e.stopPropagation()
+                e.currentTarget.blur()
+                submitChange(value)
+              } else {
+                e.stopPropagation()
+              }
+            }}
+          />
+        )}
+      </div>
+      <div
+        className={css`
+          display: flex;
+          padding: 10px;
+        `}
+      >
+        <IconButton
+          icon={IconCommonSetting}
+          color={ThemingVariables.colors.gray[5]}
+          onClick={(e) => {
+            e.preventDefault()
+            sideBarVariableEditor.open({ blockId: block.id, activeTab: 'Variable' })
+          }}
+        />
       </div>
     </div>
   )

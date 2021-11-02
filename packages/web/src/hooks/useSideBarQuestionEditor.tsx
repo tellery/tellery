@@ -1,20 +1,20 @@
 import { useCallback, useMemo } from 'react'
 import { atomFamily, useRecoilState, useSetRecoilState } from 'recoil'
-import { useSetRightSideBarConfig } from './useRightSideBarConfig'
+import { useSetRightSideBarUIConfig } from './useRightSideBarConfig'
 
 export const useSideBarQuestionEditor = (storyId: string) => {
-  const setSideBarQuestionEditorState = useSetSideBarQuestionEditorState(storyId)
-  const setRightSideBarState = useSetRightSideBarConfig()
+  const setSideBarRightState = useSetSideBarRightState(storyId)
+  const setRightSideBarUIConfig = useSetRightSideBarUIConfig()
   const open = useCallback(
     ({ blockId, activeTab }: { blockId: string; activeTab: 'Visualization' | 'Modeling' | 'Query' }) => {
-      setSideBarQuestionEditorState({ blockId, activeTab })
-      setRightSideBarState((state) => ({ ...state, folded: false }))
+      setSideBarRightState({ type: 'Question', data: { blockId, activeTab } })
+      setRightSideBarUIConfig((state) => ({ ...state, folded: false }))
     },
-    [setRightSideBarState, setSideBarQuestionEditorState]
+    [setRightSideBarUIConfig, setSideBarRightState]
   )
   const close = useCallback(() => {
-    setSideBarQuestionEditorState(null)
-  }, [setSideBarQuestionEditorState])
+    setSideBarRightState(null)
+  }, [setSideBarRightState])
 
   return useMemo(
     () => ({
@@ -25,18 +25,44 @@ export const useSideBarQuestionEditor = (storyId: string) => {
   )
 }
 
-export const SideBarQuestionEditorAtom = atomFamily<
-  { blockId: string; activeTab: 'Visualization' | 'Modeling' | 'Query' } | null,
+export const useSideBarVariableEditor = (storyId: string) => {
+  const setSideBarRightState = useSetSideBarRightState(storyId)
+  const setRightSideBarUIConfig = useSetRightSideBarUIConfig()
+  const open = useCallback(
+    ({ blockId, activeTab }: { blockId: string; activeTab: 'Variable' | 'Help' }) => {
+      setSideBarRightState({ type: 'Variable', data: { blockId, activeTab } })
+      setRightSideBarUIConfig((state) => ({ ...state, folded: false }))
+    },
+    [setRightSideBarUIConfig, setSideBarRightState]
+  )
+  const close = useCallback(() => {
+    setSideBarRightState(null)
+  }, [setSideBarRightState])
+
+  return useMemo(
+    () => ({
+      open,
+      close
+    }),
+    [close, open]
+  )
+}
+
+export const SideBarRightAtom = atomFamily<
+  {
+    type: 'Question' | 'Variable' | 'DataAssets'
+    data: { blockId: string; activeTab: string }
+  } | null,
   string
 >({
   default: null,
-  key: 'SideBarQuestionEditorAtom'
+  key: 'SideBarRightAtom'
 })
 
-export const useSetSideBarQuestionEditorState = (storyId: string) => {
-  return useSetRecoilState(SideBarQuestionEditorAtom(storyId))
+export const useSetSideBarRightState = (storyId: string) => {
+  return useSetRecoilState(SideBarRightAtom(storyId))
 }
 
-export const useSideBarQuestionEditorState = (storyId: string) => {
-  return useRecoilState(SideBarQuestionEditorAtom(storyId))
+export const useSideBarRightState = (storyId: string) => {
+  return useRecoilState(SideBarRightAtom(storyId))
 }

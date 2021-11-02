@@ -1,15 +1,15 @@
 import { useAtom } from 'jotai'
 import { atomWithStorage, useUpdateAtom } from 'jotai/utils'
 
-const SideBarConfigAtom = atomWithStorage('Tellery:RightSidebarConfig', {
+const SideBarUIConfigAtom = atomWithStorage('Tellery:RightSidebarUIConfig', {
   folded: true,
   width: 305
 })
 
-export const useRightSideBarConfig = () => {
-  return useAtom(SideBarConfigAtom)
+export const useRightSideBarUIConfig = () => {
+  return useAtom(SideBarUIConfigAtom)
 }
 
-export const useSetRightSideBarConfig = () => {
-  return useUpdateAtom(SideBarConfigAtom)
+export const useSetRightSideBarUIConfig = () => {
+  return useUpdateAtom(SideBarUIConfigAtom)
 }

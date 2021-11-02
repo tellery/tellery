@@ -17,7 +17,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import { Tab, TabList, TabPanel, useTabState } from 'reakit/Tab'
-import { useSideBarQuestionEditor, useSideBarQuestionEditorState } from '../hooks/useSideBarQuestionEditor'
+import { useSideBarQuestionEditor, useSideBarRightState } from '../hooks/useSideBarQuestionEditor'
 import { ContentEditablePureText, EditableSimpleRef } from './editor/BlockBase/ContentEditablePureText'
 import IconButton from './kit/IconButton'
 import { SideBarDataAssets } from './SideBarDataAssets'
@@ -25,6 +25,7 @@ import SideBarModeling from './SideBarModeling'
 import SideBarSmartQuery from './SideBarSmartQuery'
 import SideBarVisualization from './SideBarVisualization'
 import { SideBarTabHeader } from './v11n/components/Tab'
+import { VariableSettingsSection } from './VariableSettingsSection'
 
 export const DefaultSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
   const tab = useTabState()
@@ -178,16 +179,98 @@ export const QuestionTitleEditor: React.FC<{ blockId: string; storyId: string }>
   )
 }
 
+export const VariableSideBar: React.FC<{ storyId: string; blockId: string }> = ({ storyId, blockId }) => {
+  const tab = useTabState()
+  const { t } = useTranslation()
+  const block = useBlockSuspense<Editor.VisualizationBlock>(blockId)
+  const queryBlock = useBlockSuspense(block.content?.queryId || blockId)
+  const [sideBarEditorState, setSideBarEditorState] = useSideBarRightState(storyId)
+
+  useEffect(() => {
+    if (sideBarEditorState?.data?.activeTab) {
+      tab.setSelectedId(sideBarEditorState.data?.activeTab)
+    }
+  }, [sideBarEditorState, tab])
+
+  const changeTab = useCallback(
+    (tab: 'Variable' | 'Help') => {
+      setSideBarEditorState((value) => {
+        if (value) {
+          return { ...value, data: { ...value.data, activeTab: tab } }
+        }
+        return value
+      })
+    },
+    [setSideBarEditorState]
+  )
+
+  return (
+    <div
+      className={css`
+        height: 100%;
+        border-left: 1px solid #dedede;
+        display: flex;
+        background-color: #fff;
+        flex-direction: column;
+      `}
+    >
+      <TabList
+        {...tab}
+        className={css`
+          border-bottom: solid 1px ${ThemingVariables.colors.gray[1]};
+          overflow-x: auto;
+          white-space: nowrap;
+          padding-right: 16px;
+        `}
+      >
+        <Tab
+          as={SideBarTabHeader}
+          {...tab}
+          id="Variable"
+          selected={tab.selectedId === 'Variable'}
+          onClick={() => {
+            changeTab('Variable')
+          }}
+        >
+          {t`Variable`}
+        </Tab>
+        {/* <Tab
+          as={SideBarTabHeader}
+          {...tab}
+          id="Help"
+          selected={tab.selectedId === 'Help'}
+          onClick={() => {
+            changeTab('Help')
+          }}
+        >
+          {t`Help`}
+        </Tab> */}
+      </TabList>
+
+      <TabPanel {...tab}>
+        <React.Suspense fallback={<></>}>
+          <VariableSettingsSection storyId={storyId} blockId={blockId} />
+        </React.Suspense>
+      </TabPanel>
+      {/* <TabPanel {...tab}>
+          <React.Suspense fallback={<></>}>
+            <SideBarVisualization storyId={storyId} blockId={blockId} key={blockId} />
+          </React.Suspense>
+        </TabPanel> */}
+    </div>
+  )
+}
+
 export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string }> = ({ storyId, blockId }) => {
   const tab = useTabState()
   const { t } = useTranslation()
   const block = useBlockSuspense<Editor.VisualizationBlock>(blockId)
   const queryBlock = useBlockSuspense(block.content?.queryId || blockId)
-  const [sideBarEditorState, setSideBarEditorState] = useSideBarQuestionEditorState(storyId)
+  const [sideBarEditorState, setSideBarEditorState] = useSideBarRightState(storyId)
 
   useEffect(() => {
-    if (sideBarEditorState?.activeTab) {
-      tab.setSelectedId(sideBarEditorState?.activeTab)
+    if (sideBarEditorState?.data?.activeTab) {
+      tab.setSelectedId(sideBarEditorState.data?.activeTab)
     }
   }, [sideBarEditorState, tab])
 
@@ -195,7 +278,7 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
     (tab: 'Visualization' | 'Modeling' | 'Query') => {
       setSideBarEditorState((value) => {
         if (value) {
-          return { ...value, activeTab: tab }
+          return { ...value, data: { ...value.data, activeTab: tab } }
         }
         return value
       })
@@ -292,16 +375,14 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
 }
 
 export const SideBarRight: React.FC<{ storyId: string }> = ({ storyId }) => {
-  const [sideBarEditorState] = useSideBarQuestionEditorState(storyId)
-  // const tab = useTabState()
-  // const { setSelectedId } = tab
+  const [sideBarEditorState] = useSideBarRightState(storyId)
 
-  // useEffect(() => {
-  //   setSelectedId(sideBarEditorState?.activeTab || 'Data Assets')
-  // }, [setSelectedId, sideBarEditorState])
+  if (sideBarEditorState?.type === 'Variable' && sideBarEditorState.data?.blockId) {
+    return <VariableSideBar storyId={storyId} blockId={sideBarEditorState.data.blockId} />
+  }
 
-  if (sideBarEditorState?.blockId) {
-    return <QuestionEditorSideBar storyId={storyId} blockId={sideBarEditorState.blockId} />
+  if (sideBarEditorState?.type === 'Question' && sideBarEditorState.data?.blockId) {
+    return <QuestionEditorSideBar storyId={storyId} blockId={sideBarEditorState.data.blockId} />
   }
 
   return <DefaultSideBar storyId={storyId} />

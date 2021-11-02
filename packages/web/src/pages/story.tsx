@@ -7,7 +7,7 @@ import { StoryQuestionsEditor } from '@app/components/StoryQuestionsEditor'
 import { useMediaQuery } from '@app/hooks'
 import { useBlockSuspense, useFetchStoryChunk, useRecordStoryVisits, useStoryPinnedStatus } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
-import { useRightSideBarConfig } from '@app/hooks/useRightSideBarConfig'
+import { useRightSideBarUIConfig } from '@app/hooks/useRightSideBarConfig'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { BlockFormatAtom, BlockTitleAtom, BlockTypeAtom } from '@app/store/block'
 import { ThemingVariables } from '@app/styles'
@@ -25,7 +25,7 @@ const _Page: React.FC = () => {
   const recordVisits = useRecordStoryVisits()
   const user = useLoggedUser()
   const workspace = useWorkspace()
-  const [rightSideBarState] = useRightSideBarConfig()
+  const [rightSideBarState] = useRightSideBarUIConfig()
 
   useEffect(() => {
     if (id) {
@@ -91,7 +91,7 @@ const _Page: React.FC = () => {
 }
 
 const RightSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
-  const [rightSideBarState] = useRightSideBarConfig()
+  const [rightSideBarState] = useRightSideBarUIConfig()
   const matches = useMediaQuery('only screen and (min-width: 700px)')
 
   const rightSideBarOpen = matches && !rightSideBarState.folded

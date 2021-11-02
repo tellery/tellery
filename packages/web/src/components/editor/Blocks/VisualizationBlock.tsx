@@ -18,7 +18,7 @@ import { useBlockSuspense, useQuerySnapshot, useQuerySnapshotId, useSnapshot } f
 import { useCommit } from '@app/hooks/useCommit'
 import { useInterval } from '@app/hooks/useInterval'
 import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
-import { useSideBarQuestionEditor, useSideBarQuestionEditorState } from '@app/hooks/useSideBarQuestionEditor'
+import { useSideBarQuestionEditor, useSideBarRightState } from '@app/hooks/useSideBarQuestionEditor'
 import { useRefreshSnapshot, useSnapshotMutating } from '@app/hooks/useStorySnapshotManager'
 import { ThemingVariables } from '@app/styles'
 import { Dimension, Editor } from '@app/types'
@@ -133,7 +133,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
   const hovering = useHoverDirty(elementRef)
 
   const { small } = useBlockBehavior()
-  const [sideBarQuestionEditorState, setSideBarQuestionEditorState] = useSideBarQuestionEditorState(block.storyId!)
+  const [sideBarQuestionEditorState, setSideBarQuestionEditorState] = useSideBarRightState(block.storyId!)
 
   return (
     <VisualizationInstructionsContext.Provider value={instructions}>
@@ -145,7 +145,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
         // {...hoveringHandlers()}
         className={cx(
           QuestionsBlockContainer,
-          sideBarQuestionEditorState?.blockId === block.id &&
+          sideBarQuestionEditorState?.data?.blockId === block.id &&
             css`
               :before {
                 content: ' ';
@@ -168,7 +168,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
             if (state !== null) {
               return {
                 ...state,
-                blockId: block.id
+                data: { ...state.data, blockId: block.id }
               }
             }
             return state

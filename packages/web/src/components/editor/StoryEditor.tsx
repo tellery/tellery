@@ -7,7 +7,7 @@ import { useFetchBlock } from '@app/hooks/useFetchBlock'
 import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
 import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
 import { useSelectionArea } from '@app/hooks/useSelectionArea'
-import { useSetSideBarQuestionEditorState } from '@app/hooks/useSideBarQuestionEditor'
+import { useSetSideBarRightState } from '@app/hooks/useSideBarQuestionEditor'
 import { useStoryBlocksMap } from '@app/hooks/useStoryBlock'
 import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { useWorkspace } from '@app/hooks/useWorkspace'
@@ -1360,7 +1360,7 @@ const _StoryEditor: React.FC<{
     setSelectedBlocks
   ])
 
-  const setSideBarRightState = useSetSideBarQuestionEditorState(storyId)
+  const setSideBarRightState = useSetSideBarRightState(storyId)
 
   // stay
   const editorClickHandler = useCallback<React.MouseEventHandler<HTMLDivElement>>(

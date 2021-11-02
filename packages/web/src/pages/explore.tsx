@@ -13,7 +13,7 @@ import { MouseSensorOptions } from '@app/context/blockDnd'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useBlockSuspense } from '@app/hooks/api'
 import { useDimensions } from '@app/hooks/useDimensions'
-import { useSideBarQuestionEditorState } from '@app/hooks/useSideBarQuestionEditor'
+import { useSideBarRightState } from '@app/hooks/useSideBarQuestionEditor'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { ThemingVariables } from '@app/styles'
 import { Dimension, Editor } from '@app/types'
@@ -514,11 +514,11 @@ const ExploreSideBarRight: React.FC<{
 }> = ({ queryBlock, visBlock, setQueryBlock, setVisBlock, data }) => {
   const tab = useTabState()
   const { t } = useTranslation()
-  const [sideBarEditorState, setSideBarEditorState] = useSideBarQuestionEditorState('explore')
+  const [sideBarEditorState, setSideBarEditorState] = useSideBarRightState('explore')
   const queryBuilderBlock = useBlockSuspense(queryBlock.content.queryBuilderId)
   useEffect(() => {
-    if (sideBarEditorState?.activeTab) {
-      tab.setSelectedId(sideBarEditorState?.activeTab)
+    if (sideBarEditorState?.data?.activeTab) {
+      tab.setSelectedId(sideBarEditorState.data?.activeTab)
     }
   }, [sideBarEditorState, tab])
 
