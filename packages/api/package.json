@@ -1,6 +1,6 @@
 {
   "name": "tellery-api",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "description": "",
   "main": "dist/src/index.js",
   "scripts": {
