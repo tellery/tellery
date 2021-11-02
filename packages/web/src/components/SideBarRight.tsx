@@ -35,7 +35,6 @@ export const DefaultSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
     <div
       className={css`
         height: 100%;
-        border-left: 1px solid #dedede;
         display: flex;
         background-color: #fff;
         flex-direction: column;
@@ -208,7 +207,6 @@ export const VariableSideBar: React.FC<{ storyId: string; blockId: string }> = (
     <div
       className={css`
         height: 100%;
-        border-left: 1px solid #dedede;
         display: flex;
         background-color: #fff;
         flex-direction: column;
@@ -290,7 +288,6 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
     <div
       className={css`
         height: 100%;
-        border-left: 1px solid #dedede;
         display: flex;
         background-color: #fff;
         flex-direction: column;

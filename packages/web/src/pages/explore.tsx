@@ -538,7 +538,6 @@ const ExploreSideBarRight: React.FC<{
     <div
       className={css`
         height: 100%;
-        border-left: 1px solid #dedede;
         display: flex;
         background-color: #fff;
         flex-direction: column;
