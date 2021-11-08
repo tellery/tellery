@@ -265,7 +265,8 @@ export namespace Editor {
     IS_NOT_NULL = 'IS_NOT_NULL',
     IS_TRUE = 'IS_TRUE',
     IS_FALSE = 'IS_FALSE',
-    IS_BETWEEN = 'IS_BETWEEN'
+    IS_BETWEEN = 'IS_BETWEEN',
+    IN = 'IN'
   }
 
   export const FilterNames = {
@@ -280,7 +281,8 @@ export namespace Editor {
     [Editor.Filter.IS_NOT_NULL]: 'is not null',
     [Editor.Filter.IS_TRUE]: 'is true',
     [Editor.Filter.IS_FALSE]: 'is not true',
-    [Editor.Filter.IS_BETWEEN]: 'between'
+    [Editor.Filter.IS_BETWEEN]: 'between',
+    [Editor.Filter.IN]: 'in'
   }
 
   export type FilterBuilder = {

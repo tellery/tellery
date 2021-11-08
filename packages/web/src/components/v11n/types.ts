@@ -58,18 +58,20 @@ export enum SQLType {
   TIMESTAMP_WITH_TIMEZONE = 'TIMESTAMP_WITH_TIMEZONE'
 }
 
-export const SQLTypeReduced: { [key in keyof typeof SQLType]: 'OTHER' | 'BOOL' | 'NUMBER' | 'DATE' | 'STRING' } = {
+export const SQLTypeReduced: {
+  [key in keyof typeof SQLType]: 'OTHER' | 'BOOL' | 'INT' | 'FLOAT' | 'DATE' | 'STRING'
+} = {
   NULL: 'OTHER',
   BIT: 'BOOL',
-  TINYINT: 'NUMBER',
-  SMALLINT: 'NUMBER',
-  INTEGER: 'NUMBER',
-  BIGINT: 'NUMBER',
-  FLOAT: 'NUMBER',
-  REAL: 'NUMBER',
-  DOUBLE: 'NUMBER',
-  NUMERIC: 'NUMBER',
-  DECIMAL: 'NUMBER',
+  TINYINT: 'INT',
+  SMALLINT: 'INT',
+  INTEGER: 'INT',
+  BIGINT: 'INT',
+  FLOAT: 'FLOAT',
+  REAL: 'FLOAT',
+  DOUBLE: 'FLOAT',
+  NUMERIC: 'FLOAT',
+  DECIMAL: 'FLOAT',
   CHAR: 'STRING',
   VARCHAR: 'STRING',
   LONGVARCHAR: 'STRING',
