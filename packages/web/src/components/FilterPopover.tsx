@@ -30,6 +30,7 @@ import { MenuWrapper } from './MenuWrapper'
 import { SQLType, SQLTypeReduced } from './v11n/types'
 import dayjs from 'dayjs'
 import { SVG2DataURI } from '@app/lib/svg'
+import { TagsInput } from 'react-tag-input-component'
 
 type Value = NonNullable<Editor.SmartQueryBlock['content']['filters']>
 
@@ -508,6 +509,37 @@ function FilterItem(props: {
       className={css`
         display: flex;
         align-items: center;
+
+        .rti--container {
+          box-shadow: none !important;
+          width: 100%;
+          margin-top: 4px;
+          background-color: ${ThemingVariables.colors.gray[5]};
+          --rti-bg: ${ThemingVariables.colors.gray[5]};
+          --rti-border: ${ThemingVariables.colors.gray[1]};
+          --rti-main: ${ThemingVariables.colors.gray[1]};
+          --rti-radius: 4px;
+          --rti-s: 2px;
+          --rti-tag: #ebeef8;
+          --rti-tag-remove: ${ThemingVariables.colors.gray[0]};
+
+          .rti--tag {
+            padding: 6px;
+            height: 26px;
+
+            span {
+              font-size: 12px;
+              line-height: 14px;
+              color: ${ThemingVariables.colors.text[0]};
+            }
+
+            button {
+              font-size: 12px;
+              color: ${ThemingVariables.colors.gray[0]};
+              margin-left: 4px;
+            }
+          }
+        }
       `}
     >
       <div
@@ -684,7 +716,18 @@ function FilterItem(props: {
             </div>
           </Tippy>
         </div>
-        {funcArgs[props.value.func] ? (
+        {props.value.func === Editor.Filter.IN ? (
+          <TagsInput
+            value={props.value.args}
+            onChange={(value) => {
+              props.onChange(
+                produce(props.value, (draft) => {
+                  draft.args = value
+                })
+              )
+            }}
+          />
+        ) : funcArgs[props.value.func] ? (
           SQLTypeReduced[props.value.fieldType] === 'DATE' ? (
             funcArgs[props.value.func] === 1 ? (
               <DatePicker
