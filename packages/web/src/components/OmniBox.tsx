@@ -8,7 +8,7 @@ import { useSearchBlocks } from '@app/hooks/api'
 import { useAtom } from 'jotai'
 import { compact } from 'lodash'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { omniboxShowState } from '@app/store'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
@@ -22,7 +22,7 @@ import { blockIdGenerator } from '@app/utils'
 const PAGE_LIMIT = 51
 
 export function OmniBox() {
-  const router = useHistory()
+  const navigate = useNavigate()
   const [show, setShow] = useAtom(omniboxShowState)
   const [keyword, setKeyword] = useState('')
   const { data, isLoading } = useSearchBlocks(keyword, PAGE_LIMIT, undefined, { enabled: !!keyword })
@@ -126,7 +126,7 @@ export function OmniBox() {
       } else if (e.key === 'Enter') {
         const item = items[activeIndex]
         if (activeIndex === PAGE_LIMIT - 1) {
-          router.push(`/stories?s=${keyword}`)
+          navigate(`/stories?s=${keyword}`)
         } else if (item?.storyId) {
           if (item.type === ResultType.STORY) {
             handleOpenStory(item.storyId, undefined)
@@ -144,7 +144,7 @@ export function OmniBox() {
     return () => {
       document.removeEventListener('keydown', onKeyDown)
     }
-  }, [activeIndex, activeIndexMod, handleCreateNewSotry, handleOpenStory, items, keyword, router, setShow, show])
+  }, [activeIndex, activeIndexMod, handleCreateNewSotry, handleOpenStory, items, keyword, navigate, setShow, show])
   const ref = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   useEffect(() => {
@@ -281,7 +281,7 @@ export function OmniBox() {
                         setActiveIndex(index)
                       }}
                       onClick={() => {
-                        router.push(`/stories?s=${keyword}`)
+                        navigate(`/stories?s=${keyword}`)
                         setShow(false)
                       }}
                     />

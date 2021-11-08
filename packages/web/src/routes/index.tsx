@@ -13,7 +13,7 @@ import Explore from '@app/pages/explore'
 import Story from '@app/pages/story'
 import React, { useEffect } from 'react'
 import ReactGA from 'react-ga4'
-import { Route, Switch } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 import { useLocation } from 'react-use'
 
 const ENABLE_GA = env.PROD && env.GA4_ID
@@ -28,54 +28,36 @@ const PrivateRoutes = () => {
   if (!user) return null
 
   return (
-    <Switch>
-      <React.Suspense fallback={<BlockingUI blocking size={50} />}>
-        <CombineProviderSession>
-          <Main>
-            <OmniBox />
-            <React.Suspense fallback={<BlockingUI blocking size={50} />}>
-              <Route path="/story/:id">
-                <Story />
-              </Route>
-              <Route path="/stories">
-                <Stories />
-              </Route>
-              <Route path="/explore">
-                <Explore />
-              </Route>
-              <Route path="/">
-                <Index />
-              </Route>
-            </React.Suspense>
-          </Main>
-        </CombineProviderSession>
-      </React.Suspense>
-    </Switch>
+    <React.Suspense fallback={<BlockingUI blocking size={50} />}>
+      <CombineProviderSession>
+        <Main>
+          <OmniBox />
+          <React.Suspense fallback={<BlockingUI blocking size={50} />}>
+            <Routes>
+              <Route path="/story/:id" element={<Story />}></Route>
+              <Route path="/stories" element={<Stories />}></Route>
+              <Route path="/explore" element={<Explore />}></Route>
+              <Route path="/" element={<Index />}></Route>
+            </Routes>
+          </React.Suspense>
+        </Main>
+      </CombineProviderSession>
+    </React.Suspense>
   )
 }
 
-export const Routes = () => {
+export const AppRoutes = () => {
   const locaiton = useLocation()
   useEffect(() => {
     ENABLE_GA && ReactGA.send('pageview')
   }, [locaiton])
 
   return (
-    <>
-      <Switch>
-        <Route path="/login">
-          <Login />
-        </Route>
-        <Route path="/confirm">
-          <Confirm />
-        </Route>
-        <Route path="/embed/:id">
-          <Embed />
-        </Route>
-        <Route>
-          <PrivateRoutes />
-        </Route>
-      </Switch>
-    </>
+    <Routes>
+      <Route path="/login" element={<Login />}></Route>
+      <Route path="/confirm" element={<Confirm />}></Route>
+      <Route path="/embed/:id" element={<Embed />}></Route>
+      <Route path="*" element={<PrivateRoutes />}></Route>
+    </Routes>
   )
 }

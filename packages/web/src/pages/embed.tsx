@@ -12,7 +12,7 @@ import React, { forwardRef, useMemo } from 'react'
 import { useParams } from 'react-router'
 
 const Page = () => {
-  const { id } = useParams<{ id: string }>()
+  const { id } = useParams()
   if (!id) return null
 
   return (

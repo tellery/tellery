@@ -20,7 +20,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useUpdateAtom } from 'jotai/utils'
 import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useClickAway } from 'react-use'
 import Avatar from './Avatar'
 import { MainSideBarTabHeader } from './MainSideBarTabHeader'
@@ -72,7 +72,7 @@ const SideBarContent: React.FC = () => {
   const [modalContent, setModalContent] = useState<ReactNode>(null)
   const [activeSideBarTab, setActiveSideBarTab] = useState<keyof typeof SideBarContents | null>(null)
   const ref = useRef(null)
-  const history = useHistory()
+  const navigate = useNavigate()
   const workspace = useWorkspace()
   const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)
   const setOmniboxShow = useUpdateAtom(omniboxShowState)
@@ -173,7 +173,7 @@ const SideBarContent: React.FC = () => {
               icon={IconCommonQuestion}
               hoverTitle={t`Explore`}
               onClick={() => {
-                history.push('/explore')
+                navigate('/explore')
                 closeSideBar()
               }}
             />
@@ -181,7 +181,7 @@ const SideBarContent: React.FC = () => {
               icon={IconCommonHome}
               hoverTitle={t`Home`}
               onClick={() => {
-                history.push('/stories')
+                navigate('/stories')
                 closeSideBar()
               }}
             />

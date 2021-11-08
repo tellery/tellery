@@ -26,7 +26,7 @@ import copy from 'copy-to-clipboard'
 import dayjs from 'dayjs'
 import { AnimationControls, motion, MotionStyle } from 'framer-motion'
 import React, { useCallback } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
 const upsertPermission = (permissions: Permission[], permission: Permission): Permission[] => {
@@ -56,7 +56,7 @@ export const StoryConfigPopOver: React.FC<{
   const { data: createdBy } = useUser(story?.createdById ?? null)
   const { data: lastEditedBy } = useUser(story?.lastEditedById ?? null)
   const user = useLoggedUser()
-  const history = useHistory()
+  const navigate = useNavigate()
   const permissions = useStoryPermissions(story.id)
 
   const setWorkspacePermission = useCallback(
@@ -235,7 +235,7 @@ export const StoryConfigPopOver: React.FC<{
             onClick={async () => {
               if (confirm(`Delete story?`)) {
                 await blockTranscation.deleteStory(props.storyId)
-                history.push('/stories')
+                navigate('/stories')
               }
             }}
           />

@@ -9,7 +9,7 @@ import FormLabel from '@app/components/kit/FormLabel'
 import FormModal from '@app/components/kit/FormModal'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import { useHistory } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import isEmail from 'validator/lib/isEmail'
 
 export default function Login() {
@@ -21,17 +21,18 @@ export default function Login() {
   } = useForm<{ email?: string; password?: string }>({ mode: 'onBlur' })
   const auth = useAuth()
   const handleUserLogin = useAsync(auth.login)
-  const history = useHistory()
+  const navigate = useNavigate()
+  const location = useLocation()
   useEffect(() => {
     if (handleUserLogin.status === 'success') {
-      const callback = new URLSearchParams(history.location.search).get('callback')
+      const callback = new URLSearchParams(location.search).get('callback')
       if (callback) {
         window.location.href = callback
       } else {
-        history.push('/')
+        navigate('/')
       }
     }
-  }, [handleUserLogin.status, history])
+  }, [handleUserLogin.status, location.search, navigate])
   const email = watch('email')
   const password = watch('password')
 

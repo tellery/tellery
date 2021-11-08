@@ -5,22 +5,21 @@ import { FormButton } from '@app/components/kit/FormButton'
 import FormError from '@app/components/kit/FormError'
 import FormModal from '@app/components/kit/FormModal'
 import { useEffect, useMemo } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 export default function Confirm() {
-  const history = useHistory()
-  const code = useMemo(
-    () => new URLSearchParams(history.location.search).get('code') || undefined,
-    [history.location.search]
-  )
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  const code = useMemo(() => new URLSearchParams(location.search).get('code') || undefined, [location.search])
   const auth = useAuth()
   const handleUserConfirm = useAsync(auth.confirm)
 
   useEffect(() => {
     if (handleUserConfirm.status === 'success') {
-      history.push('/user')
+      navigate('/user')
     }
-  }, [handleUserConfirm.status, history])
+  }, [handleUserConfirm.status, navigate])
 
   return (
     <div

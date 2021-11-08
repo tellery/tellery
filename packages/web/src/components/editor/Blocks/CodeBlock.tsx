@@ -6,7 +6,7 @@ import { TELLERY_MIME_TYPES } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import 'highlight.js/styles/github.css'
 import { lowlight } from 'lowlight'
-import type { LowlightElementSpan, Text as LowLightText } from 'lowlight/lib/core'
+import type { Text, Span } from 'lowlight/lib/core'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import invariant from 'tiny-invariant'
@@ -18,7 +18,7 @@ import { useBlockHovering } from '../hooks/useBlockHovering'
 import { useLocalSelection } from '../hooks/useStorySelection'
 import { BlockComponent, registerBlock } from './utils'
 
-const getSplitedTokens = (node: LowLightText | LowlightElementSpan, classnames: string[]): Editor.Token[] => {
+const getSplitedTokens = (node: Text | Span, classnames: string[]): Editor.Token[] => {
   if (node.type === 'element') {
     const currentClassnames = [...classnames, ...node.properties.className]
     return node.children

@@ -446,11 +446,11 @@ const _QuestionBlockHeader: React.FC<{
           <Tippy content={t`Click to navigate to the original story`} arrow={false}>
             <Link
               replace
-              to={() => ({
+              to={{
                 pathname: `/story/${queryBlock.storyId}`,
-                hash: `#${queryBlock.parentId}`,
-                state: {}
-              })}
+                hash: `#${queryBlock.parentId}`
+              }}
+              state={{}}
             >
               <IconCommonBackLink
                 className={css`

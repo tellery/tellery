@@ -21,7 +21,7 @@ import { useParams } from 'react-router-dom'
 import { useRecoilValue } from 'recoil'
 
 const _Page: React.FC = () => {
-  const { id } = useParams<{ id: string }>()
+  const { id } = useParams()
   const recordVisits = useRecordStoryVisits()
   const user = useLoggedUser()
   const workspace = useWorkspace()
@@ -33,6 +33,7 @@ const _Page: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, recordVisits.mutate, user.id])
+  if (!id) return null
 
   return (
     <>

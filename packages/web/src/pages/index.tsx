@@ -1,13 +1,14 @@
 import { useEffect } from 'react'
-import { useHistory } from 'react-router'
+import { useNavigate, useLocation } from 'react-router'
 
 const Page = () => {
-  const history = useHistory()
+  const navigate = useNavigate()
+  const location = useLocation()
   useEffect(() => {
-    if (history.location.pathname === '/') {
-      history.push('/stories')
+    if (location.pathname === '/') {
+      navigate('/stories')
     }
-  }, [history])
+  }, [location, navigate])
 
   return <></>
 }

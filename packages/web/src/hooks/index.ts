@@ -1,7 +1,7 @@
 import type { AxiosError } from 'axios'
 import { debounce } from 'lodash'
 import { MutableRefObject, RefObject, useCallback, useEffect, useRef, useState } from 'react'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useHover, ReactDOMAttributes } from '@use-gesture/react'
 import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect'
 export { useMediaQueries, useMediaQuery } from '@react-hook/media-query'
@@ -53,7 +53,7 @@ interface OpenStoryOpetions {
 }
 
 export const useOpenStory = () => {
-  const history = useHistory()
+  const navigate = useNavigate()
   const [openInNewTab, setOpenInNewTab] = useState(false)
   useEffect(() => {
     function down(e: KeyboardEvent) {
@@ -79,10 +79,10 @@ export const useOpenStory = () => {
       if (openInNewTab) {
         window.open(targetUrl)
       } else {
-        history.push(targetUrl)
+        navigate(targetUrl)
       }
     },
-    [history, openInNewTab]
+    [navigate, openInNewTab]
   )
   return handler
 }
