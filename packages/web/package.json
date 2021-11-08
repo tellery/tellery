@@ -157,7 +157,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-promise": "^5.1.1",
     "eslint-plugin-react": "^7.26.1",
-    "eslint-plugin-react-hooks": "^4.2.1-alpha-02f411578-20211019",
+    "eslint-plugin-react-hooks": "^4.2.1-alpha-255221c86-20211103",
     "eslint-plugin-standard": "^5.0.0",
     "file-loader": "^6.2.0",
     "husky": "^7.0.4",
