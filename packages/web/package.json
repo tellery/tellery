@@ -66,7 +66,7 @@
     "lowlight": "^2.4.0",
     "mathjs": "^10.0.0",
     "mini-svg-data-uri": "^1.4.3",
-    "monaco-editor": "^0.29.1",
+    "monaco-editor": "^0.30.0",
     "nanoid": "^3.1.30",
     "normalize.css": "^8.0.1",
     "numeral": "^2.0.6",
