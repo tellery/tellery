@@ -49,7 +49,19 @@ const popperModifiers: Partial<Partial<OffsetModifier | PreventOverflowModifier 
 const typeToFunc = {
   OTHER: [] as Editor.Filter[],
   BOOL: [Editor.Filter.IS_TRUE, Editor.Filter.IS_FALSE],
-  NUMBER: [
+  INT: [
+    Editor.Filter.EQ,
+    Editor.Filter.NE,
+    Editor.Filter.LT,
+    Editor.Filter.LTE,
+    Editor.Filter.GT,
+    Editor.Filter.GTE,
+    Editor.Filter.IS_NULL,
+    Editor.Filter.IS_NOT_NULL,
+    Editor.Filter.IS_BETWEEN,
+    Editor.Filter.IN
+  ],
+  FLOAT: [
     Editor.Filter.EQ,
     Editor.Filter.NE,
     Editor.Filter.LT,
@@ -60,8 +72,15 @@ const typeToFunc = {
     Editor.Filter.IS_NOT_NULL,
     Editor.Filter.IS_BETWEEN
   ],
-  DATE: [Editor.Filter.EQ, Editor.Filter.IS_BETWEEN],
-  STRING: [Editor.Filter.EQ, Editor.Filter.NE, Editor.Filter.CONTAINS, Editor.Filter.IS_NULL, Editor.Filter.IS_NOT_NULL]
+  DATE: [Editor.Filter.LTE, Editor.Filter.GTE, Editor.Filter.IS_BETWEEN],
+  STRING: [
+    Editor.Filter.EQ,
+    Editor.Filter.NE,
+    Editor.Filter.CONTAINS,
+    Editor.Filter.IS_NULL,
+    Editor.Filter.IS_NOT_NULL,
+    Editor.Filter.IN
+  ]
 }
 
 const funcArgs = {
@@ -76,7 +95,8 @@ const funcArgs = {
   [Editor.Filter.IS_NOT_NULL]: 0,
   [Editor.Filter.IS_TRUE]: 0,
   [Editor.Filter.IS_FALSE]: 0,
-  [Editor.Filter.IS_BETWEEN]: 2
+  [Editor.Filter.IS_BETWEEN]: 2,
+  [Editor.Filter.IN]: 1
 }
 
 const calenderClassName = css`
@@ -517,7 +537,8 @@ function FilterItem(props: {
             {
               OTHER: <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />,
               BOOL: <IconCommonDataTypeBool color={ThemingVariables.colors.gray[0]} />,
-              NUMBER: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
+              INT: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
+              FLOAT: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
               DATE: <IconCommonDataTypeTime color={ThemingVariables.colors.gray[0]} />,
               STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
             }[SQLTypeReduced[props.value.fieldType]]
@@ -543,7 +564,8 @@ function FilterItem(props: {
                       {
                         OTHER: <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />,
                         BOOL: <IconCommonDataTypeBool color={ThemingVariables.colors.gray[0]} />,
-                        NUMBER: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
+                        INT: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
+                        FLOAT: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
                         DATE: <IconCommonDataTypeTime color={ThemingVariables.colors.gray[0]} />,
                         STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
                       }[SQLTypeReduced[f.sqlType]]

@@ -221,7 +221,8 @@ export const SmartQueryConfig: React.FC<{
                                       {
                                         OTHER: <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />,
                                         BOOL: <IconCommonDataTypeBool color={ThemingVariables.colors.gray[0]} />,
-                                        NUMBER: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
+                                        INT: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
+                                        FLOAT: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
                                         DATE: <IconCommonDataTypeTime color={ThemingVariables.colors.gray[0]} />,
                                         STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
                                       }[SQLTypeReduced[field.sqlType]]
@@ -273,7 +274,8 @@ export const SmartQueryConfig: React.FC<{
                             {
                               OTHER: <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />,
                               BOOL: <IconCommonDataTypeBool color={ThemingVariables.colors.gray[0]} />,
-                              NUMBER: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
+                              INT: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
+                              FLOAT: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
                               DATE: <IconCommonDataTypeTime color={ThemingVariables.colors.gray[0]} />,
                               STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
                             }[SQLTypeReduced[field.sqlType]]
@@ -334,7 +336,8 @@ export const SmartQueryConfig: React.FC<{
                   {
                     OTHER: <IconCommonDataAsset color={ThemingVariables.colors.gray[0]} />,
                     BOOL: <IconCommonDataTypeBool color={ThemingVariables.colors.gray[0]} />,
-                    NUMBER: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
+                    INT: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
+                    FLOAT: <IconCommonDataTypeInt color={ThemingVariables.colors.gray[0]} />,
                     DATE: <IconCommonDataTypeTime color={ThemingVariables.colors.gray[0]} />,
                     STRING: <IconCommonDataTypeString color={ThemingVariables.colors.gray[0]} />
                   }[SQLTypeReduced[dimension.fieldType]]
