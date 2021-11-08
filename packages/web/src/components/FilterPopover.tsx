@@ -523,6 +523,10 @@ function FilterItem(props: {
           --rti-tag: #ebeef8;
           --rti-tag-remove: ${ThemingVariables.colors.gray[0]};
 
+          .rti--input {
+            height: 26px;
+          }
+
           .rti--tag {
             padding: 6px;
             height: 26px;
