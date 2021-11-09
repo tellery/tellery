@@ -73,7 +73,7 @@ const typeToFunc = {
     Editor.Filter.IS_NOT_NULL,
     Editor.Filter.IS_BETWEEN
   ],
-  DATE: [Editor.Filter.LTE, Editor.Filter.GTE, Editor.Filter.IS_BETWEEN],
+  DATE: [Editor.Filter.EQ, Editor.Filter.LTE, Editor.Filter.GTE, Editor.Filter.IS_BETWEEN],
   STRING: [
     Editor.Filter.EQ,
     Editor.Filter.NE,
