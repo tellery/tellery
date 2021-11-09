@@ -6,7 +6,9 @@ import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { css } from '@emotion/css'
 import styled from '@emotion/styled'
-import React, { useCallback, useEffect, useRef } from 'react'
+import Tippy from '@tippyjs/react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import DetectableOverflow from 'react-detectable-overflow'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
 import { useVariable } from '../hooks/useVariable'
 import { BlockComponent, registerBlock } from './utils'
@@ -56,6 +58,8 @@ const ControlBlock: BlockComponent<
     [setVariableValue]
   )
 
+  const [disableTippy, setDisableTippy] = useState(false)
+
   return (
     <div
       className={css`
@@ -76,28 +80,32 @@ const ControlBlock: BlockComponent<
         e.stopPropagation()
       }}
     >
-      <div
-        className={css`
-          flex: 1;
-          min-width: 80px;
-        `}
-      >
-        <input
+      <Tippy content={variableName} disabled={disableTippy}>
+        <div
           className={css`
-            outline: none;
-            border: none;
-            padding: 10px 13px;
-            width: 100%;
-            background-color: transparent;
-            color: ${ThemingVariables.colors.gray[5]};
+            flex: 1;
+            min-width: 90px;
           `}
-          placeholder="input text"
-          onChange={(e) => {
-            blockTranscation.updateBlockProps(block.storyId!, block.id, ['content', 'name'], e.currentTarget.value)
-          }}
-          value={variableName}
-        />
-      </div>
+        >
+          <input
+            className={css`
+              outline: none;
+              border: none;
+              padding: 10px 13px;
+              width: 100%;
+              background-color: transparent;
+              color: ${ThemingVariables.colors.gray[5]};
+              overflow: hidden;
+              text-overflow: ellipsis;
+            `}
+            placeholder="input text"
+            onChange={(e) => {
+              blockTranscation.updateBlockProps(block.storyId!, block.id, ['content', 'name'], e.currentTarget.value)
+            }}
+            value={variableName}
+          />
+        </div>
+      </Tippy>
       <div
         className={css`
           flex: 4;
