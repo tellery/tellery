@@ -13,8 +13,7 @@ import {
 import IconButton from '@app/components/kit/IconButton'
 import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { env } from '@app/env'
-import { useBlockSuspense, useGetSnapshot, useUser } from '@app/hooks/api'
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
+import { useBlockSuspense, useGetSnapshot, useQuerySnapshotId, useUser } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
 import { useSideBarQuestionEditor } from '@app/hooks/useSideBarQuestionEditor'
@@ -23,6 +22,7 @@ import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { DEFAULT_TIPPY_DELAY, snapshotToCSV, TELLERY_MIME_TYPES } from '@app/utils'
 import { css, cx } from '@emotion/css'
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import Tippy from '@tippyjs/react'
 import copy from 'copy-to-clipboard'
 import dayjs from 'dayjs'
@@ -32,12 +32,12 @@ import React, { ReactNode, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import invariant from 'tiny-invariant'
+import { StyledDropDownItem, StyledDropdownMenuContent, StyledDropDownTriggerItem } from '../../../kit/DropDownMenu'
 import { TellerySelectionType } from '../../helpers'
 import { getBlockImageById } from '../../helpers/contentEditable'
 import { useEditor } from '../../hooks'
 import { useBlockBehavior } from '../../hooks/useBlockBehavior'
 import { isExecuteableBlockType } from '../utils'
-import { StyledDropdownMenuContent, StyledDropDownItem, StyledDropDownTriggerItem } from '../../../kit/DropDownMenu'
 
 export const MoreDropdownSelect: React.FC<{
   block: Editor.VisualizationBlock
@@ -50,6 +50,7 @@ export const MoreDropdownSelect: React.FC<{
   const { readonly } = useBlockBehavior()
   const queryBlock = useBlockSuspense<Editor.QueryBlock>(block.content?.queryId!)
   const canConvertDataAsset = !readonly && queryBlock.storyId === block.storyId
+  const snaphostId = useQuerySnapshotId(queryBlock.id)
   const getSnapshot = useGetSnapshot()
   const questionEditor = useQuestionEditor(block.storyId!)
   const sideBarQuestionEditor = useSideBarQuestionEditor(block.storyId!)
@@ -204,7 +205,7 @@ export const MoreDropdownSelect: React.FC<{
               onClick={async () => {
                 closeMenu()
                 setTimeout(async () => {
-                  const snapshot = await getSnapshot({ snapshotId: queryBlock?.content?.snapshotId })
+                  const snapshot = await getSnapshot({ snapshotId: snaphostId })
                   const snapshotData = snapshot?.data
                   invariant(snapshotData, 'snapshotData is null')
                   const csvString = snapshotToCSV(snapshotData)
