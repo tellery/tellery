@@ -58,13 +58,14 @@ const ControlBlock: BlockComponent<
     [setVariableValue]
   )
 
-  const [disableTippy, setDisableTippy] = useState(false)
+  const [disableTippy, setDisableTippy] = useState(true)
 
   return (
     <div
       className={css`
         display: flex;
         max-width: 316px;
+        max-width: min(316px, 100%);
         height: 36px;
         background-color: ${ThemingVariables.colors.primary[0]};
         align-items: center;
@@ -80,23 +81,42 @@ const ControlBlock: BlockComponent<
         e.stopPropagation()
       }}
     >
-      <Tippy content={variableName} disabled={disableTippy}>
-        <div
+      <div
+        className={css`
+          max-width: 200px;
+          min-width: 80px;
+          position: relative;
+        `}
+      >
+        <DetectableOverflow
           className={css`
-            flex: 1;
-            min-width: 90px;
+            visibility: hidden;
+            padding: 10px 13px;
           `}
+          onChange={(overflowed) => {
+            setDisableTippy(!overflowed)
+          }}
         >
+          {variableName}
+        </DetectableOverflow>
+        <Tippy content={variableName} disabled={disableTippy}>
           <input
             className={css`
               outline: none;
               border: none;
-              padding: 10px 13px;
-              width: 100%;
               background-color: transparent;
               color: ${ThemingVariables.colors.gray[5]};
+              position: absolute;
+              width: 100%;
+              left: 0;
+              top: 0;
+              height: 100%;
               overflow: hidden;
               text-overflow: ellipsis;
+              padding: 10px 13px;
+              ::placeholder {
+                color: ${ThemingVariables.colors.gray[5]};
+              }
             `}
             placeholder="input text"
             onChange={(e) => {
@@ -104,8 +124,8 @@ const ControlBlock: BlockComponent<
             }}
             value={variableName}
           />
-        </div>
-      </Tippy>
+        </Tippy>
+      </div>
       <div
         className={css`
           flex: 4;
