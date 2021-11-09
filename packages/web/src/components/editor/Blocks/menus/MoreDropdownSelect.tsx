@@ -205,6 +205,7 @@ export const MoreDropdownSelect: React.FC<{
               onClick={async () => {
                 closeMenu()
                 setTimeout(async () => {
+                  if (!snaphostId) return
                   const snapshot = await getSnapshot({ snapshotId: snaphostId })
                   const snapshotData = snapshot?.data
                   invariant(snapshotData, 'snapshotData is null')
