@@ -2505,17 +2505,17 @@
   resolved "https://registry.yarnpkg.com/@ungap/promise-all-settled/-/promise-all-settled-1.1.2.tgz#aa58042711d6e3275dd37dc597e5d31e8c290a44"
   integrity sha512-sL/cEvJWAnClXw0wHk85/2L0G6Sj8UB0Ctc1TEMbKSsmpRosqhwj9gWgFRZSrBr2f9tiXISwNhCPmlfqUqyb9Q==
 
-"@use-gesture/core@10.1.4":
-  version "10.1.4"
-  resolved "https://registry.yarnpkg.com/@use-gesture/core/-/core-10.1.4.tgz#72a199eafcd1ef97eebab96b11ae0b2559bf7eba"
-  integrity sha512-7TcntiiON64kGPDovAbjwh2C8+qL2Ts8RaRFNTsWiWv7nOAGbvT969JHJ0zRyJYg8PlAXeCf/q0IpoMyou731Q==
+"@use-gesture/core@10.1.5":
+  version "10.1.5"
+  resolved "https://registry.yarnpkg.com/@use-gesture/core/-/core-10.1.5.tgz#4b956bc8aa6354c20c668930c5cacb16fe4415e4"
+  integrity sha512-Kr3POvOFEfyHyC3MStavQdXdXg8Ys3elJBpxty9tFhNQwOC0+hK/ZHp9vABkre9PCBB/4rtk5Y2t0RG4YUhCpw==
 
-"@use-gesture/react@^10.1.4":
-  version "10.1.4"
-  resolved "https://registry.yarnpkg.com/@use-gesture/react/-/react-10.1.4.tgz#d6b6271bef8043bb444289283b9215966e0c09ed"
-  integrity sha512-1CoMHpN2b2ALqZEcfnxIx+MibVhxx+6u4gGOxwRtkr/emFYJA+bWFtWSYdOM4r8ALGT+1yeVUJJg1YKHDnL8EA==
+"@use-gesture/react@^10.1.5":
+  version "10.1.5"
+  resolved "https://registry.yarnpkg.com/@use-gesture/react/-/react-10.1.5.tgz#078d2c4f399e6451ee9ff169d447b543397d0e67"
+  integrity sha512-Lg3LcQa93MmBt+r2HzmtM+OCWsZ2oOE7jpwfHjXZGlhUWHnv5ZhLrtvNr8rAV2GlKRIjbF8q4BQmP7ahpIlZSQ==
   dependencies:
-    "@use-gesture/core" "10.1.4"
+    "@use-gesture/core" "10.1.5"
 
 "@vitejs/plugin-react-refresh@^1.3.6":
   version "1.3.6"
