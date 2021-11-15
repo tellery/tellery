@@ -32,6 +32,7 @@ type SQLPieces = {
     alias: string
   }[]
   mainBody: string
+  raw?: string
 }
 
 // Matcher of the form {{ $blockId as $alias }} or {{ $blockId }}
@@ -116,8 +117,9 @@ async function buildGraph(
   sql: string,
   opts: Record<string, unknown> = {},
 ): Promise<DirectedGraph<SQLPieces, string>> {
+  const { withRaw = false } = opts
   const res = new DirectedGraph<SQLPieces>()
-  const root = sqlMacro(sql)
+  const root = sqlMacro(sql, withRaw as boolean)
   const queue = new Array<{ key: string; node: SQLPieces }>()
   queue.push({ key: rootKey, node: root })
 
@@ -137,7 +139,9 @@ async function buildGraph(
     // eslint-disable-next-line no-await-in-loop
     const notIncludedSqls = await loadSqlFromBlocks(notIncludedBlockIds, opts)
 
-    _(notIncludedSqls).forEach((s, currKey) => queue.push({ key: currKey, node: sqlMacro(s) }))
+    _(notIncludedSqls).forEach((s, currKey) =>
+      queue.push({ key: currKey, node: sqlMacro(s, withRaw as boolean) }),
+    )
   }
   return res
 }
@@ -220,8 +224,9 @@ function extractPartialQueries(sql: string): PartialQuery[] {
 
 /*
   Extract and structure all customized reference part
+  withRaw is for debugging
 */
-function sqlMacro(sql: string): SQLPieces {
+function sqlMacro(sql: string, withRaw = false): SQLPieces {
   const partialQueries = extractPartialQueries(sql)
 
   const mainBody = _.zip(
@@ -239,6 +244,7 @@ function sqlMacro(sql: string): SQLPieces {
   return {
     mainBody,
     subs: _.map(partialQueries, (i) => _.pick(i, ['blockId', 'alias'])),
+    raw: withRaw ? sql : undefined,
   }
 }
 
@@ -246,4 +252,4 @@ function sqlMapKey(blockId: string, alias?: string): string {
   return `${blockId}${alias ?? ''}`
 }
 
-export { translate, sqlMacro, extractPartialQueries }
+export { buildGraph, translate, sqlMacro, extractPartialQueries }

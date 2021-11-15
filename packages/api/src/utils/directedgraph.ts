@@ -23,14 +23,23 @@ export class DirectedGraph<T, K = string> {
     return edges
   }
 
-  addNode(key: K, node: T) {
+  addNode(key: K, node: T): void {
     if (!this.storage.has(key)) {
       this.storage.set(key, { node, edges: [] })
     }
   }
 
-  addEdge(key1: K, key2: K) {
+  addEdge(key1: K, key2: K): void {
     this.getEdges(key1).push(key2)
+  }
+
+  toJSON(): { nodes: Map<K, T>; edges: Map<K, K[]> } {
+    return {
+      nodes: Object.fromEntries(Array.from(this.storage).map(([k, v]) => [k, v.node])),
+      edges: Object.fromEntries(
+        new Map(Array.from(this.storage).map(([k, v]) => [k, _.uniq(v.edges)])),
+      ),
+    }
   }
 
   printAdjacentList() {
@@ -62,5 +71,9 @@ export class DirectedGraph<T, K = string> {
       recStack.delete(key)
     }
     return shouldExit
+  }
+
+  getKeys(): IterableIterator<K> {
+    return this.storage.keys()
   }
 }

@@ -14,6 +14,7 @@ import workspaces from './workspace'
 import thirdParty from './thirdParty'
 import dbt from './dbt'
 import internal from './internal'
+import explore from './explore'
 import { isSaaS } from '../utils/env'
 
 const router = new Router({
@@ -32,6 +33,7 @@ router.use('/storage', upload.routes(), upload.allowedMethods())
 router.use('/thought', thought.routes(), thought.allowedMethods())
 router.use('/thirdParty', thirdParty.routes(), thirdParty.allowedMethods())
 router.use('/users', users.routes(), users.allowedMethods())
+router.use('/explore', explore.routes(), explore.allowedMethods())
 router.use('', global.routes(), global.allowedMethods())
 // exposes internal interfaces only for SaaS
 if (isSaaS()) {
