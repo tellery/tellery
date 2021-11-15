@@ -47,7 +47,6 @@ export const useStoryOperatorsProvider = (storyId: string) => {
         }
       }
     }) => {
-      // console.info('websocket::message::broadcast', data)
       if (data.type === 'broadcast') {
         if (data.value.event === 'moveMouseInStory') {
           if (data.value.args.storyId === storyId) {

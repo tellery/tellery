@@ -38,7 +38,6 @@ export const useMouseMoveInEmitter = (storyId: string, mouseInBlockId: string | 
         }
       }
     }) => {
-      // console.info('websocket::message::broadcast', data)
       if (data.type === 'broadcast') {
         if (data.value.event === 'activeUsersInStory') {
           if (data.value.args.storyId === storyId) {

@@ -45,7 +45,7 @@ export const uploadFile = async (file: Blob, workspaceId: string) => {
 
     return { key: `${provision.key}` }
   } catch (err) {
-    console.log(err)
+    console.error(err)
     throw err
   }
 }

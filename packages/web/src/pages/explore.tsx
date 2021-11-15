@@ -127,7 +127,6 @@ const CustomDndContext: React.FC<{ setQueryBuilderId: React.Dispatch<React.SetSt
       const item = event.active.data.current as DndBlocksFragment
       setActiveId(null)
       if (event.over) {
-        console.log(item)
         setQueryBuilderId(item.originalBlockId!)
       }
     },

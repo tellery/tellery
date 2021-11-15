@@ -547,7 +547,7 @@ export const syncStory = throttle(() => {
 }, 450)
 
 const appendTransaction = (transaction: Transcation) => {
-  console.info('transaction', JSON.stringify(transaction.operations))
+  logger(JSON.stringify(transaction.operations))
   const transactions = JSON.parse(localStorage.getItem(TRANSACTIONS_KEY) || '[]')
   transactions.push(transaction)
   localStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(transactions))
