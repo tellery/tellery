@@ -807,8 +807,7 @@ export const moveBlocksTranscation = ({
     newSourceBlockParentId = targetBlockId
   }
 
-  sourceBlockFragment.children.forEach((blockId) => {
-    const block = sourceBlockFragment.data[blockId]
+  Object.values(sourceBlockFragment.data).forEach((block) => {
     if (block.storyId !== storyId) {
       operations.push({
         cmd: 'update',
