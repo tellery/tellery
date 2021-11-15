@@ -706,13 +706,14 @@ const _StoryEditor: React.FC<{
       if (e.defaultPrevented) return
 
       const selectionState = getSelection()
-      if (selectionState === null || locked) {
+      if (selectionState === null) {
         return
       }
       const handlers: { hotkeys: string[]; handler: (e: KeyboardEvent) => void }[] = [
         {
           hotkeys: ['backspace'],
           handler: (e) => {
+            if (locked) return
             if (isSelectionCollapsed(selectionState) && selectionState.type === TellerySelectionType.Inline) {
               if (isSelectionAtStart(selectionState)) {
                 e.preventDefault()
@@ -730,12 +731,17 @@ const _StoryEditor: React.FC<{
         {
           hotkeys: ['mod+x'],
           handler: (e) => {
-            editorClipboardManager.doCut(e)
+            if (locked) {
+              editorClipboardManager.doCopy(e)
+            } else {
+              editorClipboardManager.doCut(e)
+            }
           }
         },
         {
           hotkeys: ['mod+d'],
           handler: (e) => {
+            if (locked) return
             e.preventDefault()
             let blockIds: string[] = []
             if (selectionState?.type === TellerySelectionType.Block) {
@@ -749,13 +755,13 @@ const _StoryEditor: React.FC<{
         {
           hotkeys: ['mod+c'],
           handler: (e) => {
-            // e.preventDefault()
             editorClipboardManager.doCopy(e)
           }
         },
         {
           hotkeys: ['mod+z'],
           handler: async (e) => {
+            if (locked) return
             e.preventDefault()
             const env = commitHistory.undo()
             env?.selection && setSelectionState(env.selection)
@@ -764,6 +770,7 @@ const _StoryEditor: React.FC<{
         {
           hotkeys: ['mod+shift+z'],
           handler: async (e) => {
+            if (locked) return
             e.preventDefault()
             const env = commitHistory.redo()
             env?.selection && setSelectionState(env.selection)
@@ -771,7 +778,9 @@ const _StoryEditor: React.FC<{
         }
       ]
       const matchingHandler = handlers.find((handler) =>
-        handler.hotkeys.some((hotkey) => isHotkey(hotkey, { byKey: true }, e))
+        handler.hotkeys.some((hotkey) => {
+          return isHotkey(hotkey, { byKey: true }, e)
+        })
       )
       matchingHandler?.handler(e)
     },

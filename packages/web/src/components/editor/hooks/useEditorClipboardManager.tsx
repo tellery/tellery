@@ -3,6 +3,7 @@ import { useWorkspace } from '@app/hooks/useWorkspace'
 import { getBlockFromSnapshot, useBlockSnapshot } from '@app/store/block'
 import copy from 'copy-to-clipboard'
 import React, { useCallback, useMemo } from 'react'
+import { toast } from 'react-toastify'
 import {
   convertBlocksOrTokensToPureText,
   getBlocksFragmentFromSelection,
@@ -77,6 +78,7 @@ export const useEditorClipboardManager = (
         onCopy: (clipboardData) => {
           setClipboardWithFragment({ clipboardData } as React.ClipboardEvent<HTMLDivElement>, fragment)
           deleteBlockFragmentFromSelection()
+          toast.success('Content copied')
         }
       })
     },
@@ -93,6 +95,7 @@ export const useEditorClipboardManager = (
         debug: true,
         onCopy: (clipboardData) => {
           setClipboardWithFragment({ clipboardData } as React.ClipboardEvent<HTMLDivElement>, fragment)
+          toast.success('Content copied')
         }
       })
     },
