@@ -126,7 +126,7 @@
     "@types/immutability-helper": "^2.6.3",
     "@types/is-hotkey": "^0.1.5",
     "@types/is-url": "^1.2.30",
-    "@types/lodash": "^4.14.176",
+    "@types/lodash": "^4.14.177",
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.11.7",
     "@types/numeral": "^2.0.2",
