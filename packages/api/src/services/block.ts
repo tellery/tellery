@@ -65,12 +65,6 @@ export class BlockService {
       })
       const externalBlocks = _(externalBlockEntities)
         .map((b) => Block.fromEntity(b))
-        .map((b) => {
-          if (!b.alive) {
-            this.overrideContent(b)
-          }
-          return b
-        })
         .value()
       return [...blocks, ...externalBlocks]
     }
@@ -86,11 +80,9 @@ export class BlockService {
       const can = await this.permission.canGetBlockData(operatorId, model)
       const dto = Block.fromEntitySafely(model)?.toDTO()
       if (dto) {
-        if (!can || !dto.alive) {
+        if (!can) {
           // unset content, format and children
           this.overrideContent(dto)
-        }
-        if (!can) {
           // unset permissions
           dto.permissions = []
         }
