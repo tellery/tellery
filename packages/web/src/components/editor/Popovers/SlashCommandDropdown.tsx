@@ -303,6 +303,14 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
         icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
       },
       {
+        title: 'Transclusion Input',
+        action: createOrToggleBlock({
+          type: Editor.BlockType.Control,
+          content: { type: 'transclusion' } as any
+        }),
+        icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
+      },
+      {
         title: 'Text Input',
         action: createOrToggleBlock({
           type: Editor.BlockType.Control,

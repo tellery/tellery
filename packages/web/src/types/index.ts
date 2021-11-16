@@ -322,7 +322,7 @@ export namespace Editor {
     content: ContentBlock['content'] & {
       name: string
       defaultValue: any
-      type: 'text' | 'number'
+      type: 'text' | 'number' | 'transclusion'
     }
   }
 

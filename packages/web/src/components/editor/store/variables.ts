@@ -15,20 +15,30 @@ function* varibleNameMaker() {
   }
 }
 
-export const StoryVariables = selectorFamily<Record<string, { defaultValue: unknown; blockId: string }>, string>({
+export interface TelleryVariable {
+  defaultValue: unknown
+  currentValue: unknown
+  blockId: string
+  type: 'text' | 'number' | 'transclusion'
+}
+
+export const StoryVariables = selectorFamily<Record<string, TelleryVariable>, string>({
   key: 'StoryVariables',
   get:
     (storyId) =>
     ({ get }) => {
-      const result: Record<string, { defaultValue: unknown; blockId: string }> = {}
+      const result: Record<string, TelleryVariable> = {}
       const blocksMap = get(TelleryStoryBlocks(storyId))
 
       Object.values(blocksMap).forEach((block) => {
         if (block.type === Editor.BlockType.Control) {
           const controlBlock = block as Editor.ControlBlock
+          const defaultValue = controlBlock?.content?.defaultValue ?? null
           result[controlBlock.content.name] = {
-            defaultValue: controlBlock?.content?.defaultValue ?? null,
-            blockId: block.id
+            defaultValue: defaultValue,
+            currentValue: defaultValue,
+            blockId: block.id,
+            type: controlBlock?.content.type ?? 'text'
           }
         }
       })
@@ -42,20 +52,20 @@ export const StoryVariables = selectorFamily<Record<string, { defaultValue: unkn
   }
 })
 
-export const VariableAtomFamilyDefault = selectorFamily<unknown, { storyId: string; name: string }>({
+export const VariableAtomFamilyDefault = selectorFamily<TelleryVariable, { storyId: string; name: string }>({
   key: 'VariableAtomFamily/Default',
   get:
     ({ storyId, name }) =>
     async ({ get }) => {
       const variables = get(StoryVariables(storyId))
-      return variables[name]?.defaultValue
+      return variables[name]
     },
   cachePolicy_UNSTABLE: {
     eviction: 'most-recent'
   }
 })
 
-export const VariableAtomFamily = atomFamily<unknown, { storyId: string; name: string }>({
+export const VariableAtomFamily = atomFamily<TelleryVariable, { storyId: string; name: string }>({
   key: 'VariableAtomFamily',
   default: VariableAtomFamilyDefault
 })
@@ -79,7 +89,8 @@ export const FormulaSelectorFamily = selectorFamily<any, { storyId: string; form
         })
         .replace(VARIABLE_REGEX, (variableString) => {
           const variableName = variableString.slice(2, -2)
-          scope[variableName] = get(VariableAtomFamily({ storyId, name: variableName }))
+          const variable = get(VariableAtomFamily({ storyId, name: variableName }))
+          scope[variableName] = variable.currentValue
           return variableName
         })
 

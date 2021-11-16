@@ -24,14 +24,15 @@ export const QuerySelectorFamily = selectorFamily<
         const replacedData = data.replace(VARIABLE_REGEX, (name) => {
           const variableName = name.slice(2, -2)
           const variable = get(VariableAtomFamily({ storyId, name: variableName }))
-          const defaultValue = get(VariableAtomFamilyDefault({ storyId, name: variableName }))
-          const isDefault = defaultValue === variable
+          if (!variable) return ' '
+          const isDefault = variable.defaultValue === variable.currentValue
           if (isDefault !== true) {
             isTemp = true
           }
-          if (variable !== undefined) {
-            if (typeof variable === 'string') return `'${variable}'`
-            if (typeof variable === 'number') return `${variable}`
+          if (variable.currentValue !== undefined) {
+            if (variable.type === 'text') return `'${variable.currentValue}'`
+            if (variable.type === 'number') return `'${variable.currentValue}'`
+            if (variable.type === 'transclusion') return `{{${variable.currentValue}}}`
           }
           return name
         })

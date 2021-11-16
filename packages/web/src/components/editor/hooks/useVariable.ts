@@ -1,4 +1,5 @@
-import { useRecoilState, useSetRecoilState } from 'recoil'
+import { useCallback } from 'react'
+import { useRecoilState } from 'recoil'
 import { VariableAtomFamily } from '../store/variables'
 
 export const useVariable = (storyId: string, name: string) => {
@@ -6,7 +7,18 @@ export const useVariable = (storyId: string, name: string) => {
   return state
 }
 
-export const useSetVariable = (storyId: string, name: string) => {
-  const setState = useSetRecoilState(VariableAtomFamily({ storyId, name }))
-  return setState
+export const useVariableCurrentValueState = (storyId: string, name: string) => {
+  const [state, setState] = useRecoilState(VariableAtomFamily({ storyId, name }))
+  const setValue = useCallback(
+    (value: unknown) => {
+      setState((oldState) => {
+        return {
+          ...oldState,
+          currentValue: value
+        }
+      })
+    },
+    [setState]
+  )
+  return [state.currentValue, setValue] as [unknown, (value: unknown) => void]
 }

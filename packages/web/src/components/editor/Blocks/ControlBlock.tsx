@@ -10,7 +10,7 @@ import Tippy from '@tippyjs/react'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import DetectableOverflow from 'react-detectable-overflow'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
-import { useVariable } from '../hooks/useVariable'
+import { useVariableCurrentValueState } from '../hooks/useVariable'
 import { BlockComponent, registerBlock } from './utils'
 
 const StyledInput = styled.input`
@@ -33,7 +33,7 @@ const ControlBlock: BlockComponent<
   const inputRef = useRef<HTMLInputElement | null>(null)
   const blockTranscation = useBlockTranscations()
   const variableName = block.content.name ?? block.id
-  const [variableValue, setVariableValue] = useVariable(block.storyId!, variableName)
+  const [variableValue, setVariableValue] = useVariableCurrentValueState(block.storyId!, variableName)
   const defaultValue = block.content.defaultValue
   const isDefaultValue = defaultValue === variableValue
   const sideBarVariableEditor = useSideBarVariableEditor(block.storyId!)
@@ -133,7 +133,7 @@ const ControlBlock: BlockComponent<
           height: 100%;
         `}
       >
-        {block.content.type === 'text' && (
+        {(block.content.type === 'text' || block.content.type === 'transclusion') && (
           <StyledInput
             onBlur={(e) => {
               submitChange(e.currentTarget.value)
