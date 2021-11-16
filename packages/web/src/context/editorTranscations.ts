@@ -817,6 +817,13 @@ export const moveBlocksTranscation = ({
         table: 'block'
       })
     }
+    operations.push({
+      cmd: 'setPermissions',
+      id: block.id,
+      path: ['permissions'],
+      args: targetBlock.permissions,
+      table: 'block'
+    })
   })
 
   // ...and just place other blocks next to the first block
