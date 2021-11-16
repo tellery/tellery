@@ -446,6 +446,37 @@ const BlockTextOperationMenuInner = ({
     }
   }, [inlineEditing, markHandler, markdMap, selectedTokens, toggleReference])
 
+  const [openFormulaPopover, setOpenFormulaPopover] = useInlineFormulaPopoverState()
+  const setInlineEditing = useSetInlineEditing()
+
+  const setOpenStatusHandler = useCallback(
+    (status: boolean) => {
+      setInlineEditing(status)
+      if (status === false) {
+        editor?.setSelectionState((state) => {
+          if (state?.type === TellerySelectionType.Inline) {
+            return {
+              ...state,
+              anchor: state.focus
+            }
+          }
+          return state
+        })
+      }
+
+      setTimeout(() => {
+        setOpenFormulaPopover(status)
+      }, 0)
+    },
+    [editor, setInlineEditing, setOpenFormulaPopover]
+  )
+
+  useEffect(() => {
+    if (openFormulaPopover) {
+      setInlineEditing(true)
+    }
+  }, [openFormulaPopover, setInlineEditing])
+
   return (
     <div
       {...pop.attributes.popper}
@@ -461,96 +492,113 @@ const BlockTextOperationMenuInner = ({
         z-index: 1000;
       `}
     >
-      <motion.div
-        initial={'inactive'}
-        animate={'active'}
-        exit={'inactive'}
-        variants={PopoverMotionVariants.fade}
-        transition={{ duration: 0.15 }}
-        className={css`
-          outline: none;
-          background: ${ThemingVariables.colors.gray[5]};
-          box-shadow: ${ThemingVariables.boxShadows[0]};
-          border-radius: 8px;
-          display: inline-flex;
-          overflow: hidden;
-          align-items: stretch;
-          height: 40px;
-        `}
+      {!openFormulaPopover && (
+        <motion.div
+          initial={'inactive'}
+          animate={'active'}
+          exit={'inactive'}
+          variants={PopoverMotionVariants.fade}
+          transition={{ duration: 0.15 }}
+          className={css`
+            outline: none;
+            background: ${ThemingVariables.colors.gray[5]};
+            box-shadow: ${ThemingVariables.boxShadows[0]};
+            border-radius: 8px;
+            display: inline-flex;
+            overflow: hidden;
+            align-items: stretch;
+            height: 40px;
+          `}
+        >
+          <TippySingletonContextProvider delay={500} arrow={false} placement="top">
+            <ToggleTypeOperation
+              toggleBlockType={(type: Editor.BlockType) => {
+                if (!currentBlock?.id) return
+                editor?.updateBlockProps?.(currentBlock.id, ['type'], type)
+                setOpen(false)
+              }}
+              currentType={currentBlock?.type}
+            />
+            <VerticalDivider />
+            <AddLinkOperation markHandler={markHandler} referenceRange={range} />
+            <VerticalDivider />
+            <OperationButtonWithHoverContent
+              type={Editor.InlineType.Bold}
+              hoverContent="Bold"
+              onClick={() => markHandler(Editor.InlineType.Bold, [], !!markdMap.get(Editor.InlineType.Bold))}
+              active={!!markdMap.get(Editor.InlineType.Bold)}
+              icon={IconFontBold}
+            />
+            <OperationButtonWithHoverContent
+              type={Editor.InlineType.Italic}
+              hoverContent="Italic"
+              onClick={() => markHandler(Editor.InlineType.Italic, [], !!markdMap.get(Editor.InlineType.Italic))}
+              active={!!markdMap.get(Editor.InlineType.Italic)}
+              icon={IconFontItalic}
+            />
+            <OperationButtonWithHoverContent
+              type={Editor.InlineType.Underline}
+              hoverContent="Underline"
+              onClick={() => markHandler(Editor.InlineType.Underline, [], !!markdMap.get(Editor.InlineType.Underline))}
+              active={!!markdMap.get(Editor.InlineType.Underline)}
+              icon={IconFontUnderline}
+            />
+            <OperationButtonWithHoverContent
+              type={Editor.InlineType.Strike}
+              hoverContent="Strike-through"
+              onClick={() => markHandler(Editor.InlineType.Strike, [], !!markdMap.get(Editor.InlineType.Strike))}
+              active={!!markdMap.get(Editor.InlineType.Strike)}
+              icon={IconFontStrikethrough}
+            />
+            <OperationButtonWithHoverContent
+              type={Editor.InlineType.Code}
+              hoverContent="Inline code"
+              onClick={() => markHandler(Editor.InlineType.Code, [], !!markdMap.get(Editor.InlineType.Code))}
+              active={!!markdMap.get(Editor.InlineType.Code)}
+              icon={IconFontCode}
+            />
+            <OperationButtonWithHoverContent
+              type={Editor.InlineType.Reference}
+              hoverContent="Reference story"
+              onClick={toggleReference}
+              active={!!markdMap.get(Editor.InlineType.Reference)}
+              icon={IconFontStory}
+            />
+            <VerticalDivider />
+            <OperationButtonWithHoverContent
+              active={false}
+              icon={IconCommonFormula}
+              hoverContent="Inline formula"
+              type={Editor.InlineType.Variable}
+              onClick={() => setOpenStatusHandler(true)}
+            />
+
+            {/* <InlineEquationPopover setInlineEditing={setInlineEditing} markHandler={markHandler} referenceRange={range} /> */}
+            <OperationButtonWithHoverContent
+              type={Editor.InlineType.Hightlighted}
+              hoverContent="Highlight"
+              onClick={() =>
+                markHandler(Editor.InlineType.Hightlighted, [], !!markdMap.get(Editor.InlineType.Hightlighted))
+              }
+              active={!!markdMap.get(Editor.InlineType.Hightlighted)}
+              icon={IconFontColor}
+            />
+          </TippySingletonContextProvider>
+        </motion.div>
+      )}
+      <EditorPopover
+        referenceElement={range}
+        open={openFormulaPopover}
+        setOpen={setOpenStatusHandler}
+        disableClickThrough
       >
-        <TippySingletonContextProvider delay={500} arrow={false} placement="top">
-          <ToggleTypeOperation
-            toggleBlockType={(type: Editor.BlockType) => {
-              if (!currentBlock?.id) return
-              editor?.updateBlockProps?.(currentBlock.id, ['type'], type)
-              setOpen(false)
-            }}
-            currentType={currentBlock?.type}
-          />
-          <VerticalDivider />
-          <AddLinkOperation markHandler={markHandler} referenceRange={range} />
-          <VerticalDivider />
-          <OperationButtonWithHoverContent
-            type={Editor.InlineType.Bold}
-            hoverContent="Bold"
-            onClick={() => markHandler(Editor.InlineType.Bold, [], !!markdMap.get(Editor.InlineType.Bold))}
-            active={!!markdMap.get(Editor.InlineType.Bold)}
-            icon={IconFontBold}
-          />
-          <OperationButtonWithHoverContent
-            type={Editor.InlineType.Italic}
-            hoverContent="Italic"
-            onClick={() => markHandler(Editor.InlineType.Italic, [], !!markdMap.get(Editor.InlineType.Italic))}
-            active={!!markdMap.get(Editor.InlineType.Italic)}
-            icon={IconFontItalic}
-          />
-          <OperationButtonWithHoverContent
-            type={Editor.InlineType.Underline}
-            hoverContent="Underline"
-            onClick={() => markHandler(Editor.InlineType.Underline, [], !!markdMap.get(Editor.InlineType.Underline))}
-            active={!!markdMap.get(Editor.InlineType.Underline)}
-            icon={IconFontUnderline}
-          />
-          <OperationButtonWithHoverContent
-            type={Editor.InlineType.Strike}
-            hoverContent="Strike-through"
-            onClick={() => markHandler(Editor.InlineType.Strike, [], !!markdMap.get(Editor.InlineType.Strike))}
-            active={!!markdMap.get(Editor.InlineType.Strike)}
-            icon={IconFontStrikethrough}
-          />
-          <OperationButtonWithHoverContent
-            type={Editor.InlineType.Code}
-            hoverContent="Inline code"
-            onClick={() => markHandler(Editor.InlineType.Code, [], !!markdMap.get(Editor.InlineType.Code))}
-            active={!!markdMap.get(Editor.InlineType.Code)}
-            icon={IconFontCode}
-          />
-          <OperationButtonWithHoverContent
-            type={Editor.InlineType.Reference}
-            hoverContent="Reference story"
-            onClick={toggleReference}
-            active={!!markdMap.get(Editor.InlineType.Reference)}
-            icon={IconFontStory}
-          />
-          <VerticalDivider />
-          <InlineFormulaPopover
-            editHandler={editFormula}
-            referenceRange={range}
-            storyId={currentBlock.storyId!}
-            initValue={(markdMap.get(Editor.InlineType.Formula) as string) ?? selectionString ?? ''}
-          />
-          {/* <InlineEquationPopover setInlineEditing={setInlineEditing} markHandler={markHandler} referenceRange={range} /> */}
-          <OperationButtonWithHoverContent
-            type={Editor.InlineType.Hightlighted}
-            hoverContent="Highlight"
-            onClick={() =>
-              markHandler(Editor.InlineType.Hightlighted, [], !!markdMap.get(Editor.InlineType.Hightlighted))
-            }
-            active={!!markdMap.get(Editor.InlineType.Hightlighted)}
-            icon={IconFontColor}
-          />
-        </TippySingletonContextProvider>
-      </motion.div>
+        <InlineFormulaInput
+          editHandler={editFormula}
+          setOpen={setOpenStatusHandler}
+          storyId={currentBlock.storyId!}
+          initValue={(markdMap.get(Editor.InlineType.Formula) as string) ?? selectionString ?? ''}
+        />
+      </EditorPopover>
     </div>
   )
 }
@@ -1034,67 +1082,6 @@ const InlineFormulaInput: React.FC<{
           </div>
         </div>
       </div>
-    </>
-  )
-}
-
-const InlineFormulaPopover = (props: {
-  referenceRange: Range | null
-  editHandler: (formula: string) => void
-  storyId: string
-  initValue: string
-}) => {
-  const [open, setOpen] = useInlineFormulaPopoverState()
-  const setInlineEditing = useSetInlineEditing()
-  const editor = useEditor()
-
-  const setOpenStatusHandler = useCallback(
-    (status: boolean) => {
-      setInlineEditing(status)
-      setOpen(status)
-      if (status === false) {
-        editor?.setSelectionState((state) => {
-          if (state?.type === TellerySelectionType.Inline) {
-            return {
-              ...state,
-              anchor: state.focus
-            }
-          }
-          return state
-        })
-      }
-    },
-    [editor, setInlineEditing, setOpen]
-  )
-
-  useEffect(() => {
-    if (open) {
-      setInlineEditing(true)
-    }
-  }, [open, setInlineEditing])
-
-  return (
-    <>
-      <OperationButtonWithHoverContent
-        active={false}
-        icon={IconCommonFormula}
-        hoverContent="Inline formula"
-        type={Editor.InlineType.Variable}
-        onClick={() => setOpenStatusHandler(true)}
-      />
-      <EditorPopover
-        referenceElement={props.referenceRange}
-        open={open}
-        setOpen={setOpenStatusHandler}
-        disableClickThrough
-      >
-        <InlineFormulaInput
-          storyId={props.storyId}
-          editHandler={props.editHandler}
-          setOpen={setOpenStatusHandler}
-          initValue={props.initValue}
-        />
-      </EditorPopover>
     </>
   )
 }
