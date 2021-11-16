@@ -3,7 +3,7 @@ import _ from 'lodash'
 import { getRepository } from 'typeorm'
 import { WorkspaceEntity } from '../entities/workspace'
 
-import userService from '../services/user'
+import userService, { AnonymousUserService } from '../services/user'
 import workspaceService from '../services/workspace'
 import { PermissionWorkspaceRole } from '../types/permission'
 import { isAnonymous } from '../utils/env'
@@ -56,6 +56,10 @@ export default async function user(ctx: Context, next: Next): Promise<unknown> {
   // refresh token
   if (token && _.isString(token) && payload && payload.expiresAt - d15 < _.now()) {
     ctx.auth_token = await userService.refreshToken(token)
+  } else if (isAnonymous() && payload && _.get(payload, 'generated')) {
+    // logic only for anonymous
+    // FIXME: remove this when SaaS works fine
+    ctx.auth_token = await (userService as AnonymousUserService).generateToken(payload.userId)
   }
 
   const { auth_token: at } = ctx
