@@ -247,7 +247,7 @@ export const useBlockTranscationProvider = () => {
   )
 
   const duplicateStory = useCallback(
-    async (storyId: string, newStoryId: string) => {
+    (storyId: string, newStoryId: string) => {
       // const newStoryId: string = ''
       return commit({
         transcation: (snapshot) => {

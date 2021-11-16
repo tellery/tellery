@@ -20,6 +20,7 @@ import { useStoryPermissions } from '@app/hooks/useStoryPermissions'
 import { ThemingVariables } from '@app/styles'
 import type { Permission, PermissionEntityRole, Story } from '@app/types'
 import { blockIdGenerator } from '@app/utils'
+import { waitForTranscationApplied } from '@app/utils/oberveables'
 import { css, cx } from '@emotion/css'
 import Tippy from '@tippyjs/react'
 import copy from 'copy-to-clipboard'
@@ -114,7 +115,8 @@ export const StoryConfigPopOver: React.FC<{
 
   const duplicateStoryHandler = useCallback(async () => {
     const newStoryId = blockIdGenerator()
-    await blockTranscation.duplicateStory(story.id, newStoryId)
+    const [transcationId] = blockTranscation.duplicateStory(story.id, newStoryId)
+    await waitForTranscationApplied(transcationId)
     openStory(newStoryId)
     toast.success('Story copied')
   }, [blockTranscation, openStory, story.id])
