@@ -1,4 +1,4 @@
-import { createEmptyBlock } from '@app/helpers/blockFactory'
+import { useCreateEmptyBlockWithDefaultPermissions } from '@app/helpers/blockFactory'
 import { useBlockSuspense, useFetchStoryChunk, useGetBlock } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
@@ -126,6 +126,7 @@ const _StoryEditor: React.FC<{
   const location = useLocation()
   const workspace = useWorkspace()
   const getBlock = useGetBlock()
+  const createEmptyBlockWithPermissions = useCreateEmptyBlockWithDefaultPermissions(storyId)
 
   const getBlockLocalPreferences = useGetBlockLocalPreferences()
   useEffect(() => {
@@ -297,7 +298,7 @@ const _StoryEditor: React.FC<{
 
   const createFirstOrLastBlockHandler = useCallback(async () => {
     if (!permissions.canWrite) return
-    const newBlock = createEmptyBlock<Editor.BaseBlock>({
+    const newBlock = createEmptyBlockWithPermissions<Editor.BaseBlock>({
       type: Editor.BlockType.Text,
       storyId,
       parentId: storyId
@@ -314,7 +315,7 @@ const _StoryEditor: React.FC<{
     } else {
       setSelectionAtBlockStart(newBlock)
     }
-  }, [commit, getBlock, permissions.canWrite, setSelectionAtBlockStart, storyId])
+  }, [commit, getBlock, permissions.canWrite, setSelectionAtBlockStart, storyId, createEmptyBlockWithPermissions])
 
   const updateBlockProps = useCallback(
     (blockId: string, path: string[], args: any) => {
@@ -365,7 +366,7 @@ const _StoryEditor: React.FC<{
       direction: 'top' | 'bottom' | 'child' = 'bottom',
       path = 'children'
     ) => {
-      const newBlock = createEmptyBlock({
+      const newBlock = createEmptyBlockWithPermissions({
         ...blockOptions,
         storyId: storyId,
         parentId: storyId
@@ -381,7 +382,7 @@ const _StoryEditor: React.FC<{
       })
       return newBlock
     },
-    [blockTranscations, storyId]
+    [blockTranscations, storyId, createEmptyBlockWithPermissions]
   )
 
   useEffect(() => {
@@ -822,7 +823,7 @@ const _StoryEditor: React.FC<{
               const element = getBlockElementContentEditbleById(blockId)
               invariant(element, 'element not exist')
               if (isSelectionAtStart(selectionState)) {
-                const newBlock = createEmptyBlock({
+                const newBlock = createEmptyBlockWithPermissions({
                   type: Editor.BlockType.Text,
                   storyId,
                   parentId: storyId
@@ -852,7 +853,7 @@ const _StoryEditor: React.FC<{
                   return Editor.BlockType.Text
                 }
                 const nextBlockType = getNextBlockType(block)
-                const newBlock = createEmptyBlock({
+                const newBlock = createEmptyBlockWithPermissions({
                   type: nextBlockType,
                   storyId,
                   parentId: storyId
@@ -881,7 +882,7 @@ const _StoryEditor: React.FC<{
                 setSelectionAtBlockStart(newBlock)
               } else {
                 const [tokens1, tokens2] = splitBlockTokens(block.content?.title || [], selectionState)
-                const newBlock = createEmptyBlock({
+                const newBlock = createEmptyBlockWithPermissions({
                   type: Editor.BlockType.Text,
                   storyId: block.storyId!,
                   parentId: block.parentId,
@@ -1062,6 +1063,7 @@ const _StoryEditor: React.FC<{
     [
       getSelection,
       locked,
+      createEmptyBlockWithPermissions,
       setHoverBlockId,
       snapshot,
       storyId,
@@ -1162,7 +1164,7 @@ const _StoryEditor: React.FC<{
         invariant(selectionState?.type === TellerySelectionType.Inline, 'selection state is not inline')
         const files = e.clipboardData.files
         const fileBlocks: Editor.BaseBlock[] = Array.from(files).map(() =>
-          createEmptyBlock({
+          createEmptyBlockWithPermissions({
             type: Editor.BlockType.File,
             storyId,
             parentId: storyId
@@ -1291,7 +1293,7 @@ const _StoryEditor: React.FC<{
 
             if (restParagraphs.length > 1) {
               const newBlocks = restParagraphs.map((text) =>
-                createEmptyBlock({
+                createEmptyBlockWithPermissions({
                   type: Editor.BlockType.Text,
                   storyId,
                   parentId: storyId,
@@ -1319,6 +1321,7 @@ const _StoryEditor: React.FC<{
     },
     [
       locked,
+      createEmptyBlockWithPermissions,
       getSelection,
       blockTranscations,
       storyId,

@@ -1,8 +1,10 @@
 import { DEFAULT_QUESTION_BLOCK_ASPECT_RATIO, DEFAULT_QUESTION_BLOCK_WIDTH } from '@app/components/editor/utils'
+import { BlockPermissionsAtom } from '@app/store/block'
 import { Editor } from '@app/types'
 import { blockIdGenerator } from '@app/utils'
 import { cloneDeep } from 'lodash'
 import { useCallback } from 'react'
+import { useRecoilValue } from 'recoil'
 
 export const useCreateEmptyBlock = () => {
   const handler = useCallback(<T extends Editor.BaseBlock = Editor.BaseBlock>(args: Partial<T>) => {
@@ -81,6 +83,17 @@ export const createEmptyBlock = <T extends Editor.BaseBlock = Editor.BaseBlock>(
       return commonParts
     }
   }
+}
+
+export const useCreateEmptyBlockWithDefaultPermissions = (storyId: string) => {
+  const storyPermissions = useRecoilValue(BlockPermissionsAtom(storyId))
+  const createEmptyBlockWithPermissions = useCallback(
+    <T extends Editor.BaseBlock = Editor.BaseBlock>(args: Partial<T>) => {
+      return createEmptyBlock({ ...args, permissions: storyPermissions })
+    },
+    [storyPermissions]
+  )
+  return createEmptyBlockWithPermissions
 }
 
 export const createDeletedBlock = (id: string) => {
