@@ -75,29 +75,31 @@ export const MoreDropdownSelect: React.FC<{
       open={open}
     >
       <DropdownMenu.Trigger asChild>
-        <IconButton
-          hoverContent={hoverContent}
-          icon={IconCommonMore}
-          color={ThemingVariables.colors.gray[5]}
-          className={cx(
-            css`
-              border: none;
-              outline: none;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              outline: none;
-              border: none;
-              border-radius: 4px;
-              font-size: 16px;
-              font-weight: 500;
-              padding: 0;
-              cursor: pointer;
-              background: transparent;
-            `,
-            className
-          )}
-        ></IconButton>
+        <div>
+          <IconButton
+            hoverContent={hoverContent}
+            icon={IconCommonMore}
+            color={ThemingVariables.colors.gray[5]}
+            className={cx(
+              css`
+                border: none;
+                outline: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                outline: none;
+                border: none;
+                border-radius: 4px;
+                font-size: 16px;
+                font-weight: 500;
+                padding: 0;
+                cursor: pointer;
+                background: transparent;
+              `,
+              className
+            )}
+          ></IconButton>
+        </div>
       </DropdownMenu.Trigger>
       <StyledDropdownMenuContent open={open}>
         <StyledDropDownItem

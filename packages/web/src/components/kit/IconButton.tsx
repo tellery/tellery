@@ -17,44 +17,36 @@ export default forwardRef<
   const { icon, spin, size, className, hoverContent, ...restProps } = props
   const tippySingleton = useTippySingleton()
 
-  const content = (
-    <button
-      ref={ref}
-      className={cx(
-        css`
-          outline: none;
-          border: none;
-          padding: 0;
-          background: transparent;
-          cursor: pointer;
-          font-size: 0;
-          line-height: 0;
-          &:disabled {
-            cursor: not-allowed;
-          }
-        `,
-        className
-      )}
-      aria-label={icon.name}
-      {...restProps}
-    >
-      <Icon icon={icon} size={size} spin={spin} color={props.color} />
-    </button>
-  )
-
-  if (!hoverContent) {
-    return content
-  }
-
   return (
     <Tippy
       singleton={tippySingleton}
       content={hoverContent ?? null}
-      // hideOnClick={false}
+      hideOnClick={false}
       arrow={false}
       disabled={!hoverContent}
     >
-      {content}
+      <button
+        ref={ref}
+        className={cx(
+          css`
+            outline: none;
+            border: none;
+            padding: 0;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0;
+            line-height: 0;
+            &:disabled {
+              cursor: not-allowed;
+            }
+          `,
+          className
+        )}
+        aria-label={icon.name}
+        {...restProps}
+      >
+        <Icon icon={icon} size={size} spin={spin} color={props.color} />
+      </button>
     </Tippy>
   )
 })

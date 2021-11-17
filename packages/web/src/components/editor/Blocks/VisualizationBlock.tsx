@@ -736,6 +736,7 @@ const TitleButtonsInner: React.FC<{
   setIsActive: React.Dispatch<React.SetStateAction<boolean>>
 }> = ({ block, slim, setIsActive }) => {
   const { t } = useTranslation()
+  const ref = useRef<HTMLDivElement>(null)
   const questionEditor = useQuestionEditor(block.storyId!)
   const sideBarQuestionEditor = useSideBarQuestionEditor(block.storyId!)
   const isOriginalQuestion = useMemo(() => {
@@ -746,14 +747,15 @@ const TitleButtonsInner: React.FC<{
   }, [block.children, block.content?.queryId])
 
   return (
-    <div
-      className={css`
-        display: inline-flex;
-        align-items: center;
-        flex-shrink: 0;
-      `}
-    >
-      <TippySingletonContextProvider delay={500} arrow={false} hideOnClick>
+    <TippySingletonContextProvider delay={500} arrow={false} hideOnClick>
+      <div
+        className={css`
+          display: inline-flex;
+          align-items: center;
+          flex-shrink: 0;
+        `}
+        ref={ref}
+      >
         {slim === false && (
           <>
             {block.content?.queryId && (
@@ -785,8 +787,8 @@ const TitleButtonsInner: React.FC<{
             className={QuestionBlockIconButton}
           />
         )}
-      </TippySingletonContextProvider>
-    </div>
+      </div>
+    </TippySingletonContextProvider>
   )
 }
 
