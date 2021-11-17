@@ -93,7 +93,7 @@ export function snapshotToCSV(snpshot: Data) {
     Papa.unparse({
       fields: snpshot.fields.map((field) => field.name),
       data: snpshot.records.map((records) =>
-        records.map((record, index) => formatRecord(record, snpshot.fields[index].displayType))
+        records.map((record, index) => formatRecord(record, snpshot.fields[index].displayType), false)
       )
     })
   )
