@@ -3,7 +3,6 @@ import { useBlockSuspense, useFetchStoryChunk, useGetBlock } from '@app/hooks/ap
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { Operation, useCommit, useCommitHistory } from '@app/hooks/useCommit'
-import { useFetchBlock } from '@app/hooks/useFetchBlock'
 import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
 import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
 import { useSelectionArea } from '@app/hooks/useSelectionArea'
@@ -82,14 +81,14 @@ import { BlockAdminContext, useBlockAdminProvider } from './hooks/useBlockAdminP
 import { useBlockHoveringState } from './hooks/useBlockHovering'
 import { useGetBlockLocalPreferences } from './hooks/useBlockLocalPreferences'
 import { useDebouncedDimension } from './hooks/useDebouncedDimensions'
+import { useEditorClipboardManager } from './hooks/useEditorClipboardManager'
+import { useHandleUrlPasted } from './hooks/useHandleUrlPasted'
 import { useStorySelection } from './hooks/useStorySelection'
 import { useSetUploadResource } from './hooks/useUploadResource'
 import { notifyUrlPasted } from './oberveables'
 import { BlockTextOperationMenu } from './Popovers/BlockTextOperationMenu'
 import { TransformPastedMenu } from './Popovers/TransformPastedMenu'
 import { StoryBlockOperatorsProvider } from './StoryBlockOperatorsProvider'
-import { useEditorClipboardManager } from './hooks/useEditorClipboardManager'
-import { useHandleUrlPasted } from './hooks/useHandleUrlPasted'
 import { getFilteredOrderdSubsetOfBlocks, getSubsetOfBlocksSnapshot } from './utils'
 
 export const logger = debug('tellery:editor')
@@ -215,7 +214,7 @@ const _StoryEditor: React.FC<{
       })
     }
   }, [blockAdminValue, location, setSelectedBlocks, storyId])
-  const fetchBlock = useFetchBlock()
+  const fetchBlock = useGetBlock()
   const questionEditor = useQuestionEditor(storyId)
 
   useEffect(() => {

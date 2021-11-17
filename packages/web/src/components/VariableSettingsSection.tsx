@@ -1,7 +1,8 @@
-import { useBlockSuspense } from '@app/hooks/api'
+import { useBlockSuspense, useGetBlock } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
+import { trasnformPasteBlockLinkToTransclusion } from '@app/utils'
 import styled from '@emotion/styled'
 import React, { useCallback } from 'react'
 import FormInput from './kit/FormInput'
@@ -54,6 +55,8 @@ export const VariableSettingsSection: React.FC<{ storyId: string; blockId: strin
     [block.id, block.storyId, blockTranscations]
   )
 
+  const getBlock = useGetBlock()
+
   return (
     <div>
       <SectionHeader>Settings</SectionHeader>
@@ -80,6 +83,15 @@ export const VariableSettingsSection: React.FC<{ storyId: string; blockId: strin
           value={block.content.defaultValue}
           onChange={(e) => {
             handleUpdateDefaultValue(e.currentTarget.value)
+          }}
+          onPaste={async (e) => {
+            if (block.content.type === 'transclusion') {
+              e.stopPropagation()
+              e.preventDefault()
+              const text = e.clipboardData.getData('text/plain')
+              const transclustionId = await trasnformPasteBlockLinkToTransclusion(text, getBlock)
+              document.execCommand('insertText', false, transclustionId ?? '')
+            }
           }}
         ></VariableFormInput>
       </FormItem>

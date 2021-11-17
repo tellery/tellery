@@ -1,27 +1,13 @@
-import { useFetchBlock } from '@app/hooks/useFetchBlock'
+import { useGetBlock } from '@app/hooks/api'
 import useSqlEditorTransclusion from '@app/hooks/useSqlEditorTransclusion'
 import useSqlEditorVariable from '@app/hooks/useSqlEditorVariable'
 import { ThemingVariables } from '@app/styles'
-import { Editor } from '@app/types'
-import { parseTelleryUrl } from '@app/utils'
+import { trasnformPasteBlockLinkToTransclusion } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import MonacoEditor, { useMonaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor/esm/vs/editor/editor.api'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CircularLoading } from './CircularLoading'
-
-const trasnformPasteText = async (text: string, getBlock: (blockId: string) => Promise<Editor.BaseBlock>) => {
-  const parsedUrlParams = parseTelleryUrl(text)
-  if (parsedUrlParams) {
-    const blockId = parsedUrlParams.blockId
-    const block = await getBlock(blockId)
-    if (block.type === Editor.BlockType.Visualization) {
-      if ((block as Editor.VisualizationBlock).content?.queryId)
-        return `{{${(block as Editor.VisualizationBlock).content?.queryId}}}`
-    }
-    return `{{${block.id}}}`
-  }
-}
 
 export function SQLEditor(props: {
   blockId: string
@@ -46,7 +32,7 @@ export function SQLEditor(props: {
   const { onRun, onSave } = props
   const monaco = useMonaco()
 
-  const fetchBlock = useFetchBlock()
+  const getBlock = useGetBlock()
 
   useEffect(() => {
     editor?.focus()
@@ -60,11 +46,11 @@ export function SQLEditor(props: {
       const pastedString = editor.getModel()?.getValueInRange(e.range)
       if (!pastedString) return
 
-      trasnformPasteText(pastedString, fetchBlock).then((transformedText) => {
+      trasnformPasteBlockLinkToTransclusion(pastedString, getBlock).then((transformedText) => {
         if (transformedText) {
           editor.setSelection(e.range)
           const id = { major: 1, minor: 1 }
-          const text = transformedText
+          const text = `{{${transformedText}}}`
           const op = { identifier: id, range: e.range, text: text, forceMoveMarkers: true }
           editor.executeEdits('transform-pasted-text', [op])
         }
@@ -76,7 +62,7 @@ export function SQLEditor(props: {
     return () => {
       unsubscribe.dispose()
     }
-  }, [editor, fetchBlock, monaco, onRun, onSave])
+  }, [editor, getBlock, monaco, onRun, onSave])
 
   const { onChange } = props
   const handleChange = useCallback(

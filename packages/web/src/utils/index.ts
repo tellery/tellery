@@ -9,6 +9,21 @@ import { Editor } from '@app/types'
 import { mergeTokens } from '@app/components/editor'
 export const DRAG_HANDLE_WIDTH = 4
 
+export const trasnformPasteBlockLinkToTransclusion = async (
+  text: string,
+  getBlock: (blockId: string) => Promise<Editor.BaseBlock>
+) => {
+  const parsedUrlParams = parseTelleryUrl(text)
+  if (parsedUrlParams) {
+    const blockId = parsedUrlParams.blockId
+    const block = await getBlock(blockId)
+    if (block.type === Editor.BlockType.Visualization) {
+      if ((block as Editor.VisualizationBlock).content?.queryId)
+        return (block as Editor.VisualizationBlock).content?.queryId
+    }
+    return block.id
+  }
+}
 const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
 export const blockIdGenerator = customAlphabet(alphabet, 21)
 

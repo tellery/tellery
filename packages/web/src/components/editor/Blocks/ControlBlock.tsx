@@ -1,9 +1,11 @@
 import { IconCommonSetting } from '@app/assets/icons'
 import IconButton from '@app/components/kit/IconButton'
+import { useGetBlock } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useSideBarVariableEditor } from '@app/hooks/useSideBarQuestionEditor'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
+import { trasnformPasteBlockLinkToTransclusion } from '@app/utils'
 import { css } from '@emotion/css'
 import styled from '@emotion/styled'
 import Tippy from '@tippyjs/react'
@@ -29,7 +31,6 @@ const ControlBlock: BlockComponent<
     parentType: Editor.BlockType
   }>
 > = ({ block, blockFormat, parentType }) => {
-  const contentRef = useRef<HTMLDivElement | null>(null)
   const inputRef = useRef<HTMLInputElement | null>(null)
   const blockTranscation = useBlockTranscations()
   const variableName = block.content.name ?? block.id
@@ -59,6 +60,7 @@ const ControlBlock: BlockComponent<
   )
 
   const [disableTippy, setDisableTippy] = useState(true)
+  const getBlock = useGetBlock()
 
   return (
     <div
@@ -138,8 +140,17 @@ const ControlBlock: BlockComponent<
             onBlur={(e) => {
               submitChange(e.currentTarget.value)
             }}
+            onPaste={async (e) => {
+              // TODO: DRY
+              if (block.content.type === 'transclusion') {
+                e.stopPropagation()
+                e.preventDefault()
+                const text = e.clipboardData.getData('text/plain')
+                const transclustionId = await trasnformPasteBlockLinkToTransclusion(text, getBlock)
+                document.execCommand('insertText', false, transclustionId ?? '')
+              }
+            }}
             ref={inputRef}
-            // value={variableValue as string}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault()
