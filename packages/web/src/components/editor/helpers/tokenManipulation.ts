@@ -249,7 +249,7 @@ export const splitTokenAndMarkIndex = (title?: Editor.Token[]) => {
   )
 }
 
-export const blockTitleToText = (block: Editor.BaseBlock, snapshot: BlockSnapshot): string => {
+export const blockTitleToText = (block: Editor.BaseBlock, snapshot?: BlockSnapshot): string => {
   if (
     isQueryBlock(block.type) ||
     isDataAssetBlock(block.type) ||

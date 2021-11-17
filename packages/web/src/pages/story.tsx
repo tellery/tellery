@@ -1,11 +1,17 @@
 import { BlockingUI } from '@app/components/BlockingUI'
-import { StoryEditor, tokensToText } from '@app/components/editor'
+import { blockTitleToText, StoryEditor, tokensToText } from '@app/components/editor'
 import { NavigationHeader } from '@app/components/NavigationHeader'
 import { SideBarRight } from '@app/components/SideBarRight'
 import { StoryBackLinks } from '@app/components/StoryBackLinks'
 import { StoryQuestionsEditor } from '@app/components/StoryQuestionsEditor'
 import { useMediaQuery } from '@app/hooks'
-import { useBlockSuspense, useFetchStoryChunk, useRecordStoryVisits, useStoryPinnedStatus } from '@app/hooks/api'
+import {
+  useBlock,
+  useBlockSuspense,
+  useFetchStoryChunk,
+  useRecordStoryVisits,
+  useStoryPinnedStatus
+} from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useRightSideBarUIConfig } from '@app/hooks/useRightSideBarConfig'
 import { useWorkspace } from '@app/hooks/useWorkspace'
@@ -157,10 +163,10 @@ const StoryContent: React.FC<{ storyId: string }> = ({ storyId }) => {
 
 const StoryHeader: React.FC<{ storyId: string }> = ({ storyId }) => {
   const storyType = useRecoilValue(BlockTypeAtom(storyId))
-  const storyTitle = useRecoilValue(BlockTitleAtom(storyId))
+  const story = useBlockSuspense(storyId)
   const storyForamt = useRecoilValue(BlockFormatAtom(storyId))
   const pinned = useStoryPinnedStatus(storyId)
-  const title = useMemo(() => (storyTitle?.length ? tokensToText(storyTitle) : DEFAULT_TITLE), [storyTitle])
+  const title = useMemo(() => blockTitleToText(story), [story])
 
   return (
     <>
