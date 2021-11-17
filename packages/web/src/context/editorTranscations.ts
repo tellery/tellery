@@ -560,7 +560,8 @@ export const moveBlocksTranscation = ({
       const newColumnBlock = createEmptyBlock({
         type: Editor.BlockType.Column,
         storyId,
-        parentId: targetBlock.parentId
+        parentId: targetBlock.parentId,
+        permissions: targetBlock.permissions
       })
 
       // newColumnBlock.children = [sourceBlock.id]
@@ -627,9 +628,25 @@ export const moveBlocksTranscation = ({
     } else {
       invariant(targetBlock.parentId === targetBlock.storyId, 'target block is not first class')
       invariant(targetBlock.type !== Editor.BlockType.Row, "row block can't be splited")
-      const rowBlock = createEmptyBlock({ type: Editor.BlockType.Row, storyId, parentId: targetBlock.parentId })
-      const columnBlockA = createEmptyBlock({ type: Editor.BlockType.Column, storyId, parentId: rowBlock.id })
-      const columnBlockB = createEmptyBlock({ type: Editor.BlockType.Column, storyId, parentId: rowBlock.id })
+
+      const rowBlock = createEmptyBlock({
+        type: Editor.BlockType.Row,
+        storyId,
+        parentId: targetBlock.parentId,
+        permissions: targetBlock.permissions
+      })
+      const columnBlockA = createEmptyBlock({
+        type: Editor.BlockType.Column,
+        storyId,
+        parentId: rowBlock.id,
+        permissions: targetBlock.permissions
+      })
+      const columnBlockB = createEmptyBlock({
+        type: Editor.BlockType.Column,
+        storyId,
+        parentId: rowBlock.id,
+        permissions: targetBlock.permissions
+      })
 
       operations.push(
         ...[
