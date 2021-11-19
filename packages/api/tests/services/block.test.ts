@@ -64,7 +64,6 @@ test('mgetBlock without permissions', async (t) => {
   // not alive
   const deleted = _(res).find((r) => r.id === blocks[1].id)
   t.is(deleted?.alive, false)
-  t.deepEqual(deleted?.content, {})
 })
 
 test('listAccessibleBlocksByStoryId with alive false blocks', async (t) => {
