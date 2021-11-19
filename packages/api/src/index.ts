@@ -55,6 +55,7 @@ const app = new Koa()
 app.proxy = true
 
 const server = createServer(app.callback())
+server.keepAliveTimeout = config.get<number>('server.keepAliveTimeout')
 
 if (!config.has('socket.url')) {
   initSocketServer(server)
