@@ -495,17 +495,27 @@ export const extractEntitiesFromToken = (token: Editor.Token) => {
   return entities
 }
 
+const isHeaderBlockType = (type: Editor.BlockType) => {
+  return (
+    type === Editor.BlockType.Header || type === Editor.BlockType.SubHeader || type === Editor.BlockType.SubSubHeader
+  )
+}
+
 export const getTransformedTypeAndPrefixLength = (
   tokens: Editor.Token[],
   changedLength: number,
   oldSelection: TellerySelection,
-  lastChar: string
+  lastChar: string,
+  currentBlockType: Editor.BlockType
 ) => {
   if (isSelectionCollapsed(oldSelection) === false) return null
   if (changedLength !== 1) return null
   if (oldSelection.type !== TellerySelectionType.Inline) return null
   if (oldSelection.anchor.nodeIndex !== 0) return null
   if (oldSelection.anchor.offset >= 10) return null
+  if (isHeaderBlockType(currentBlockType)) {
+    return null
+  }
 
   if (Object.keys(TOKEN_MAP).some((pattern) => pattern.endsWith(lastChar)) === false) {
     return null

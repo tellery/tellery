@@ -402,7 +402,8 @@ const _StoryEditor: React.FC<{
         splitedTokens,
         1,
         selectionState,
-        lastInputCharRef.current
+        lastInputCharRef.current,
+        currentBlock.type
       )
       if (!transformData) return
       // logger('transform', transformData)
