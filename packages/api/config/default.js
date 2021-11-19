@@ -38,6 +38,7 @@ module.exports = {
     protocol: process.env.SERVER_PROTO || 'http',
     webPort: process.env.SERVER_WEB_PORT || 80,
     port: process.env.SERVER_PORT || 8000,
+    keepAliveTimeout: process.env.SERVER_KEEP_ALIVE_TIMEOUT || 60 * 1000,
   },
   // for SaaS usage
   deploy: {
