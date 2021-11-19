@@ -336,14 +336,9 @@ const TabHeader: React.FC<{ blockId: string; hovering: boolean; storyId: string 
   const opendQuestionBlockIds = useMemo(() => {
     return Object.keys(questionBlocksMap)
   }, [questionBlocksMap])
+
   const closeTabById = useCallback(
     (tabId: string) => {
-      const isTabDirty = !!questionBlocksMap[tabId].draft
-      if (isTabDirty) {
-        if (confirm("Close this tab without saving? Your changes will be lost if you don't save them.") === false) {
-          return
-        }
-      }
       const currentIndex = opendQuestionBlockIds.findIndex((id) => id === tabId)
       if (tabId === activeId) {
         if (opendQuestionBlockIds[currentIndex - 1]) {
@@ -360,7 +355,20 @@ const TabHeader: React.FC<{ blockId: string; hovering: boolean; storyId: string 
         return rest
       })
     },
-    [activeId, opendQuestionBlockIds, questionBlocksMap, setActiveId, setQuestionBlocksMap]
+    [activeId, opendQuestionBlockIds, setActiveId, setQuestionBlocksMap]
+  )
+
+  const closeTabByIdAndCheckDraft = useCallback(
+    (tabId: string) => {
+      const isTabDirty = !!questionBlocksMap[tabId].draft
+      if (isTabDirty) {
+        if (confirm("Close this tab without saving? Your changes will be lost if you don't save them.") === false) {
+          return
+        }
+      }
+      closeTabById(tabId)
+    },
+    [closeTabById, questionBlocksMap]
   )
 
   const block = useBlockSuspense<Editor.QueryBlock | Editor.VisualizationBlock>(blockId)
@@ -372,6 +380,12 @@ const TabHeader: React.FC<{ blockId: string; hovering: boolean; storyId: string 
   const mutatingCount = useDraftBlockMutating(blockId)
 
   const getBlockTitle = useGetBlockTitleTextSnapshot()
+
+  useEffect(() => {
+    if (block.alive === false) {
+      closeTabById(block.id)
+    }
+  }, [block.alive, block.id, closeTabById])
 
   return (
     <>
@@ -404,7 +418,7 @@ const TabHeader: React.FC<{ blockId: string; hovering: boolean; storyId: string 
         onCloseClick={(e) => {
           e.preventDefault()
           e.stopPropagation()
-          closeTabById(block.id)
+          closeTabByIdAndCheckDraft(block.id)
         }}
       />
     </>
@@ -517,7 +531,7 @@ export const StoryQuestionEditor: React.FC<{
         ...blocksMap,
         [id]: {
           ...blocksMap[id],
-          draft: updateOldDraft(updateOldDraft(blocksMap[id].draft, visualizationBlock ?? queryBlock), queryBlock)
+          draft: updateOldDraft(updateOldDraft(blocksMap[id]?.draft, visualizationBlock ?? queryBlock), queryBlock)
         }
       }
     })
