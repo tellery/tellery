@@ -2,7 +2,7 @@ import { TelleryBlockAtom } from '@app/store/block'
 import { Editor } from '@app/types'
 import { VARIABLE_REGEX } from '@app/utils'
 import { selectorFamily } from 'recoil'
-import { VariableAtomFamily, VariableAtomFamilyDefault } from './variables'
+import { VariableAtomFamily } from './variables'
 
 export const QuerySelectorFamily = selectorFamily<
   {

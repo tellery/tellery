@@ -181,8 +181,6 @@ export const QuestionTitleEditor: React.FC<{ blockId: string; storyId: string }>
 export const VariableSideBar: React.FC<{ storyId: string; blockId: string }> = ({ storyId, blockId }) => {
   const tab = useTabState()
   const { t } = useTranslation()
-  const block = useBlockSuspense<Editor.VisualizationBlock>(blockId)
-  const queryBlock = useBlockSuspense(block.content?.queryId || blockId)
   const [sideBarEditorState, setSideBarEditorState] = useSideBarRightState(storyId)
 
   useEffect(() => {

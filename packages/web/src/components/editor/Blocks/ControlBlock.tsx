@@ -1,6 +1,5 @@
 import { IconCommonSetting } from '@app/assets/icons'
 import IconButton from '@app/components/kit/IconButton'
-import { useGetBlock } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useSideBarVariableEditor } from '@app/hooks/useSideBarQuestionEditor'
 import { ThemingVariables } from '@app/styles'
@@ -10,9 +9,9 @@ import styled from '@emotion/styled'
 import Tippy from '@tippyjs/react'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import DetectableOverflow from 'react-detectable-overflow'
+import { QueryBlockSelectInput } from '../../QueryBlockSelectInput'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
 import { useVariableCurrentValueState } from '../hooks/useVariable'
-import { QueryBlockSelectInput } from '../../QueryBlockSelectInput'
 import { BlockComponent } from './utils'
 
 const StyledInput = styled.input`

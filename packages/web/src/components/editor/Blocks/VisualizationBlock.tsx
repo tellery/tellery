@@ -168,6 +168,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
             if (state !== null) {
               return {
                 ...state,
+                type: 'Question',
                 data: { ...state.data, blockId: block.id }
               }
             }

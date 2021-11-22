@@ -259,10 +259,7 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
       const previousQuery = previouseCompiledQueries[i]
       const currentQuery = compiledQueries[i]
       if (!previousQuery || !currentQuery) continue
-      if (
-        (dequal(previousQuery, currentQuery) !== true && currentQuery.isTemp) ||
-        currentQuery.isTemp !== previousQuery.isTemp
-      ) {
+      if (dequal(previousQuery, currentQuery) !== true || currentQuery.isTemp !== previousQuery.isTemp) {
         const queryBlock = resourcesBlocks[i]
         refreshSnapshot.execute(queryBlock)
       }
