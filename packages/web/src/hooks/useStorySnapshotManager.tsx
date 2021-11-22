@@ -11,7 +11,7 @@ import { blockIdGenerator } from '@app/utils'
 import dayjs from 'dayjs'
 import { dequal } from 'dequal'
 import { isEqual } from 'lodash'
-import React, { useCallback, useContext, useEffect, useMemo } from 'react'
+import React, { useCallback, useContext, useEffect, useMemo, useRef } from 'react'
 import { useIsMutating, useQueryClient } from 'react-query'
 import { useRecoilCallback, useRecoilValue, waitForAll } from 'recoil'
 import invariant from 'tiny-invariant'
@@ -205,6 +205,16 @@ export const useRefreshSnapshot = (storyId: string) => {
 
   return snapshotMutation
 }
+function usePreviousCompare(value: any) {
+  const ref = useRef<null | typeof value>()
+  useEffect(() => {
+    if (dequal(ref.current, value) === false) {
+      ref.current = value
+    }
+  }, [value])
+
+  return ref.current
+}
 
 export const useStorySnapshotManagerProvider = (storyId: string) => {
   useFetchStoryChunk(storyId)
@@ -214,7 +224,7 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
   const compiledQueries = useRecoilValue(
     waitForAll(resourcesBlocks.map((block) => QuerySelectorFamily({ storyId, queryId: block.id })))
   )
-  const previouseCompiledQueries = usePrevious(compiledQueries)
+  const previousComipledQueriesRef = usePreviousCompare(compiledQueries)
 
   const executeableQuestionBlocks = useMemo(() => {
     return resourcesBlocks.filter((block) => isExecuteableBlockType(block.type))
@@ -254,17 +264,17 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
   }, [queryClient, refreshSnapshot, resourcesBlocks])
 
   useEffect(() => {
-    if (!previouseCompiledQueries) return
+    if (!previousComipledQueriesRef) return
     for (let i = 0; i < resourcesBlocks.length; i++) {
-      const previousQuery = previouseCompiledQueries[i]
+      const previousQuery = previousComipledQueriesRef[i]
       const currentQuery = compiledQueries[i]
       if (!previousQuery || !currentQuery) continue
-      if (dequal(previousQuery, currentQuery) !== true || currentQuery.isTemp !== previousQuery.isTemp) {
+      if (dequal(previousQuery, currentQuery) !== true) {
         const queryBlock = resourcesBlocks[i]
         refreshSnapshot.execute(queryBlock)
       }
     }
-  }, [previouseCompiledQueries, compiledQueries, resourcesBlocks, refreshSnapshot])
+  }, [previousComipledQueriesRef, compiledQueries, resourcesBlocks, refreshSnapshot])
 
   const runAll = useCallback(() => {
     executeableQuestionBlocks.forEach((questionBlock: Editor.DataAssetBlock) => {

@@ -5,6 +5,7 @@ import { Editor } from '@app/types'
 import { css } from '@emotion/css'
 import styled from '@emotion/styled'
 import React, { useCallback } from 'react'
+import { useVariableCurrentValueState } from './editor/hooks/useVariable'
 import FormInput from './kit/FormInput'
 import FormSelect from './kit/FormSelect'
 import { QueryBlockSelectInput } from './QueryBlockSelectInput'
@@ -50,6 +51,9 @@ export const VariableSettingsSection: React.FC<{ storyId: string; blockId: strin
     [block.id, block.storyId, blockTranscations]
   )
 
+  const variableName = block.content.name ?? block.id
+  const [, setVariableValue] = useVariableCurrentValueState(block.storyId!, variableName)
+
   const handleUpdateVariableType = useCallback(
     (value: 'number' | 'text' | 'transclusion') => {
       blockTranscations.updateBlockProps(block.storyId!, block.id, ['content', 'type'], value)
@@ -59,12 +63,11 @@ export const VariableSettingsSection: React.FC<{ storyId: string; blockId: strin
 
   const handleUpdateDefaultValue = useCallback(
     (value: string) => {
+      setVariableValue(value)
       blockTranscations.updateBlockProps(block.storyId!, block.id, ['content', 'defaultValue'], value)
     },
-    [block.id, block.storyId, blockTranscations]
+    [block.id, block.storyId, blockTranscations, setVariableValue]
   )
-
-  const getBlock = useGetBlock()
 
   return (
     <div>

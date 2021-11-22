@@ -105,7 +105,6 @@ export const QueryBlockSelectInput: React.FC<{ onChange: (blockId: string) => vo
             />
           )}
           {items.map((item) => {
-            console.log(item)
             return (
               <StyledDropDownItem
                 key={item.id}
