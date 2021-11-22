@@ -25,7 +25,7 @@ plugins {
 dependencies {
     implementation(project(":interface"))
     implementation(platform("com.google.cloud:libraries-bom:24.0.0"))
-    implementation("net.snowflake:snowflake-jdbc:3.13.10")
+    implementation("net.snowflake:snowflake-jdbc:3.13.11")
     runtimeOnly("org.postgresql:postgresql:42.3.1")
     runtimeOnly("com.amazon.redshift:redshift-jdbc42:2.1.0.1")
     implementation("com.google.cloud:google-cloud-bigquery")
