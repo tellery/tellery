@@ -13,7 +13,7 @@ import { BlockResizer } from '../BlockBase/BlockResizer'
 import { UploadFilePlaceHolder } from '../BlockBase/UploadFilePlaceHolder'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
-import { BlockComponent, registerBlock } from './utils'
+import { BlockComponent } from './utils'
 
 const Image = styled(Img)`
   width: 100%;
