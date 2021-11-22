@@ -1,12 +1,26 @@
-import type { Editor } from '@app/types'
+import { Editor } from '@app/types'
 import React, { memo, ReactNode } from 'react'
 import type { BlockFormatInterface } from '../hooks'
 import { DeletedBlock } from './DeletedBlock'
 import { NoPermissionBlock } from './NoPermisionBlock'
-import './init'
 
 import { UnknownBlock } from './UnknownBlock'
 import { Blocks } from './utils'
+
+export type BlockComponent<P = {}> = P & {
+  meta: {
+    hasChildren?: boolean
+    isText?: boolean
+    supportBlockFormat?: boolean
+    needParentType?: boolean
+    forwardRef?: boolean
+    isQuestion?: boolean
+    isResizeable?: boolean
+    isDataAsset?: boolean
+    isExecuteable?: boolean
+    isQuery?: boolean
+  }
+}
 
 const _BlockInner: React.ForwardRefRenderFunction<
   any,

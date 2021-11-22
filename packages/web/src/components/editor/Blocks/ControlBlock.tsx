@@ -5,7 +5,6 @@ import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useSideBarVariableEditor } from '@app/hooks/useSideBarQuestionEditor'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
-import { trasnformPasteBlockLinkToTransclusion } from '@app/utils'
 import { css } from '@emotion/css'
 import styled from '@emotion/styled'
 import Tippy from '@tippyjs/react'
@@ -13,7 +12,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import DetectableOverflow from 'react-detectable-overflow'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
 import { useVariableCurrentValueState } from '../hooks/useVariable'
-import { BlockComponent, registerBlock } from './utils'
+import { QueryBlockSelectInput } from '../../QueryBlockSelectInput'
+import { BlockComponent } from './utils'
 
 const StyledInput = styled.input`
   outline: none;
@@ -24,7 +24,7 @@ const StyledInput = styled.input`
   padding: 0 8px;
 `
 
-const ControlBlock: BlockComponent<
+const _ControlBlock: BlockComponent<
   React.FC<{
     block: Editor.ControlBlock
     blockFormat: BlockFormatInterface
@@ -60,7 +60,6 @@ const ControlBlock: BlockComponent<
   )
 
   const [disableTippy, setDisableTippy] = useState(true)
-  const getBlock = useGetBlock()
 
   return (
     <div
@@ -133,22 +132,13 @@ const ControlBlock: BlockComponent<
           flex: 4;
           padding: 2px 0;
           height: 100%;
+          overflow: hidden;
         `}
       >
-        {(block.content.type === 'text' || block.content.type === 'transclusion') && (
+        {block.content.type === 'text' && (
           <StyledInput
             onBlur={(e) => {
               submitChange(e.currentTarget.value)
-            }}
-            onPaste={async (e) => {
-              // TODO: DRY
-              if (block.content.type === 'transclusion') {
-                e.stopPropagation()
-                e.preventDefault()
-                const text = e.clipboardData.getData('text/plain')
-                const transclustionId = await trasnformPasteBlockLinkToTransclusion(text, getBlock)
-                document.execCommand('insertText', false, transclustionId ?? '')
-              }
             }}
             ref={inputRef}
             onKeyDown={(e) => {
@@ -162,6 +152,16 @@ const ControlBlock: BlockComponent<
               }
             }}
           />
+        )}
+        {block.content.type === 'transclusion' && (
+          <>
+            <QueryBlockSelectInput
+              onChange={(blockId: string) => {
+                submitChange(blockId)
+              }}
+              value={variableValue as string | null}
+            />
+          </>
         )}
         {block.content.type === 'number' && (
           <StyledInput
@@ -205,10 +205,10 @@ const ControlBlock: BlockComponent<
   )
 }
 
-ControlBlock.meta = {
+_ControlBlock.meta = {
   isText: false,
   hasChildren: false,
   isResizeable: false
 }
 
-registerBlock(Editor.BlockType.Control, ControlBlock)
+export const ControlBlock = _ControlBlock

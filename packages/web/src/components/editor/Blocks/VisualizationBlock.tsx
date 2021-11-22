@@ -42,7 +42,7 @@ import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
 import { blockManuallyCreatedSubject } from '../oberveables'
 import { MoreDropdownSelect } from './menus/MoreDropdownSelect'
-import { BlockComponent, isExecuteableBlockType, registerBlock } from './utils'
+import { BlockComponent, isExecuteableBlockType } from './utils'
 const FOOTER_HEIGHT = 20
 const BORDER_WIDTH = 0
 
@@ -297,7 +297,7 @@ const _VisualizationBlockContent: React.FC<{
 
 const VisualizationBlockContent = memo(_VisualizationBlockContent)
 
-const VisualizationBlock = React.forwardRef(_VisualizationBlock) as BlockComponent<
+export const VisualizationBlock = React.forwardRef(_VisualizationBlock) as BlockComponent<
   React.ForwardRefExoticComponent<QuestionBlockProps & React.RefAttributes<any>>
 >
 
@@ -310,9 +310,7 @@ VisualizationBlock.meta = {
   isExecuteable: true
 }
 
-registerBlock(Editor.BlockType.Visualization, VisualizationBlock)
-
-export const QuestionBlockButtons: React.FC<{
+const QuestionBlockButtons: React.FC<{
   block: Editor.VisualizationBlock
   show: boolean
   slim: boolean
@@ -612,7 +610,7 @@ const _QuestionBlockStatus: React.FC<{
 }
 const QuestionBlockStatus = memo(_QuestionBlockStatus)
 
-export const SnapshotUpdatedAt: React.FC<{
+const SnapshotUpdatedAt: React.FC<{
   loading: boolean
   queryBlock: Editor.QueryBlock
 }> = ({ loading, queryBlock }) => {
@@ -641,7 +639,7 @@ export const SnapshotUpdatedAt: React.FC<{
   )
 }
 
-export const LazyRenderDiagram: React.FC<{ storyId: string; blockId: string; data?: Data; config: Config<Type> }> = ({
+const LazyRenderDiagram: React.FC<{ storyId: string; blockId: string; data?: Data; config: Config<Type> }> = ({
   storyId,
   blockId,
   data,

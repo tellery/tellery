@@ -1,9 +1,9 @@
 import React from 'react'
 import { Editor } from '@app/types'
-import { registerBlock, BlockComponent } from './utils'
+import { BlockComponent } from './utils'
 import { UploadFilePlaceHolder } from '../BlockBase/UploadFilePlaceHolder'
 
-const FileBlock: BlockComponent<
+const _FileBlock: BlockComponent<
   React.FC<{
     block: Editor.FileBlock
   }>
@@ -17,9 +17,9 @@ const FileBlock: BlockComponent<
   )
 }
 
-FileBlock.meta = {
+_FileBlock.meta = {
   isText: false,
   hasChildren: false
 }
 
-registerBlock(Editor.BlockType.File, FileBlock)
+export const FileBlock = _FileBlock

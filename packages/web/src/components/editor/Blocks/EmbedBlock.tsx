@@ -5,9 +5,9 @@ import React, { useCallback, useRef, useState } from 'react'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
 import { EmbedBlockPopover } from '../BlockBase/EmbedBlockPopover'
 import type { BlockFormatInterface } from '../hooks'
-import { BlockComponent, registerBlock } from './utils'
+import { BlockComponent } from './utils'
 
-const EmbedBlock: BlockComponent<
+const _EmbedBlock: BlockComponent<
   React.FC<{
     block: Editor.EmbedBlock
     blockFormat: BlockFormatInterface
@@ -52,9 +52,9 @@ const EmbedBlock: BlockComponent<
   )
 }
 
-EmbedBlock.meta = {
+_EmbedBlock.meta = {
   isText: false,
   hasChildren: false,
   supportBlockFormat: true
 }
-registerBlock(Editor.BlockType.Embed, EmbedBlock)
+export const EmbedBlock = _EmbedBlock

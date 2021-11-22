@@ -4,9 +4,9 @@ import { IconCommonDot } from '@app/assets/icons'
 import { Editor } from '@app/types'
 import { ContentEditable } from '../BlockBase/ContentEditable'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
-import { BlockComponent, registerBlock } from './utils'
+import { BlockComponent } from './utils'
 
-export const BulletListBlock: BlockComponent<
+const _BulletListBlock: BlockComponent<
   React.FC<{
     block: Editor.Block
     children: ReactNode
@@ -49,9 +49,9 @@ export const BulletListBlock: BlockComponent<
   )
 }
 
-BulletListBlock.meta = {
+_BulletListBlock.meta = {
   isText: true,
   hasChildren: true
 }
 
-registerBlock(Editor.BlockType.BulletList, BulletListBlock)
+export const BulletListBlock = _BulletListBlock

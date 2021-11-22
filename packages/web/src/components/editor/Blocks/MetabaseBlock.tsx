@@ -7,7 +7,7 @@ import { useQuery } from 'react-query'
 import { BlockPlaceHolder } from '../BlockBase/BlockPlaceHolder'
 import { EmbedBlockPopover } from '../BlockBase/EmbedBlockPopover'
 import type { BlockFormatInterface } from '../hooks'
-import { BlockComponent, registerBlock } from './utils'
+import { BlockComponent } from './utils'
 
 const useMetabaseToken = (block: Editor.MetabaseBlock) => {
   const { data: token } = useQuery({
@@ -42,7 +42,7 @@ const useMetabaseToken = (block: Editor.MetabaseBlock) => {
   return token
 }
 
-const MetabaseBlock: BlockComponent<
+const _MetabaseBlock: BlockComponent<
   React.FC<{
     block: Editor.MetabaseBlock
     blockFormat: BlockFormatInterface
@@ -125,9 +125,9 @@ const MetabaseBlock: BlockComponent<
   )
 }
 
-MetabaseBlock.meta = {
+_MetabaseBlock.meta = {
   isText: false,
   hasChildren: false,
   supportBlockFormat: false
 }
-registerBlock(Editor.BlockType.Metabase, MetabaseBlock)
+export const MetabaseBlock = _MetabaseBlock

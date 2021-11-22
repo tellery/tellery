@@ -1,4 +1,3 @@
-// import { CircularLoading } from '@app/components/CircularLoading'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { ThemingVariables } from '@app/styles'
@@ -41,7 +40,7 @@ const ImageLoader: React.FC = () => (
   ></div>
 )
 
-const ImageBlock: BlockComponent<
+const _ImageBlock: BlockComponent<
   React.FC<{
     block: Editor.ImageBlock
     blockFormat: BlockFormatInterface
@@ -113,10 +112,10 @@ const ImageBlock: BlockComponent<
   )
 }
 
-ImageBlock.meta = {
+_ImageBlock.meta = {
   isText: false,
   hasChildren: false,
   isResizeable: true
 }
 
-registerBlock(Editor.BlockType.Image, ImageBlock)
+export const ImageBlcok = _ImageBlock

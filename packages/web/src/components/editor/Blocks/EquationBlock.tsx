@@ -10,7 +10,7 @@ import { EditorPopover } from '../EditorPopover'
 import { useEditor } from '../hooks'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import { renderEquation } from './katex'
-import { BlockComponent, registerBlock } from './utils'
+import { BlockComponent } from './utils'
 
 interface EquationBlockInterface extends Editor.BaseBlock {
   content: {
@@ -18,7 +18,7 @@ interface EquationBlockInterface extends Editor.BaseBlock {
   } & Editor.BaseBlock['content']
 }
 
-const EquationBlock: BlockComponent<
+const _EquationBlock: BlockComponent<
   React.FC<{
     block: EquationBlockInterface
     parentType: Editor.BlockType
@@ -211,10 +211,10 @@ const _EmbedBlockPopover: React.FC<{
 
 const EmbedBlockPopover = memo(_EmbedBlockPopover)
 
-EquationBlock.meta = {
+_EquationBlock.meta = {
   isText: false,
   hasChildren: false,
   isResizeable: false
 }
 
-registerBlock(Editor.BlockType.Equation, EquationBlock)
+export const EquationBlock = _EquationBlock

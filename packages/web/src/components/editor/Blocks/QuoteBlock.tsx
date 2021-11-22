@@ -1,12 +1,12 @@
-import { css, cx } from '@emotion/css'
-import React from 'react'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
+import { css, cx } from '@emotion/css'
+import React from 'react'
 import { ContentEditable } from '../BlockBase/ContentEditable'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
-import { BlockComponent, registerBlock } from './utils'
+import { BlockComponent } from './utils'
 
-export const QuoteBlock: BlockComponent<
+const _QuoteBlock: BlockComponent<
   React.FC<{
     block: Editor.Block
   }>
@@ -32,9 +32,8 @@ export const QuoteBlock: BlockComponent<
   )
 }
 
-QuoteBlock.meta = {
+_QuoteBlock.meta = {
   isText: true,
   hasChildren: false
 }
-
-registerBlock(Editor.BlockType.Quote, QuoteBlock)
+export const QuoteBlock = _QuoteBlock

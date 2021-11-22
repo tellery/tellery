@@ -3,9 +3,9 @@ import dayjs from 'dayjs'
 import React, { useMemo } from 'react'
 import { Editor, Thought } from '@app/types'
 import { ContentEditable } from '../BlockBase/ContentEditable'
-import { BlockComponent, registerBlock } from './utils'
+import { BlockComponent } from './utils'
 
-export const ThoughtTitleBlock: BlockComponent<React.FC<{ block: Thought }>> = (props: { block: Thought }) => {
+const _ThoughtTitleBlock: BlockComponent<React.FC<{ block: Thought }>> = (props: { block: Thought }) => {
   const { block } = props
 
   const fakeBlock = useMemo(() => {
@@ -47,9 +47,9 @@ export const ThoughtTitleBlock: BlockComponent<React.FC<{ block: Thought }>> = (
   )
 }
 
-ThoughtTitleBlock.meta = {
+_ThoughtTitleBlock.meta = {
   isText: true,
   hasChildren: false
 }
 
-registerBlock(Editor.BlockType.Thought, ThoughtTitleBlock)
+export const ThoughtTitleBlock = _ThoughtTitleBlock

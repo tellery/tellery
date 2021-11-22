@@ -6,9 +6,9 @@ import { css, cx } from '@emotion/css'
 import React, { useCallback } from 'react'
 import { ContentEditable } from '../BlockBase/ContentEditable'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
-import { BlockComponent, registerBlock } from './utils'
+import { BlockComponent } from './utils'
 
-const TodoBlock: BlockComponent<
+const _TodoBlock: BlockComponent<
   React.FC<{
     block: Editor.TodoBlock
   }>
@@ -60,9 +60,9 @@ const TodoBlock: BlockComponent<
   )
 }
 
-TodoBlock.meta = {
+_TodoBlock.meta = {
   isText: true,
   hasChildren: true
 }
 
-registerBlock(Editor.BlockType.Todo, TodoBlock)
+export const TodoBlock = _TodoBlock

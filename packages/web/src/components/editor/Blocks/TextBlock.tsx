@@ -1,9 +1,9 @@
+import { Editor } from '@app/types'
 import { css } from '@emotion/css'
 import React, { ReactNode, useImperativeHandle, useRef } from 'react'
-import { Editor } from '@app/types'
 import { ContentEditable, EditableRef } from '../BlockBase/ContentEditable'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
-import { BlockComponent, registerBlock } from './utils'
+import { BlockComponent } from './utils'
 
 interface TextBlockProps {
   block: Editor.BaseBlock
@@ -38,7 +38,9 @@ const _TextBlock: React.ForwardRefRenderFunction<any, TextBlockProps> = ({ block
   )
 }
 
-const TextBlock = React.forwardRef(_TextBlock) as BlockComponent<
+_TextBlock.displayName = 'TextBlock'
+
+export const TextBlock = React.forwardRef(_TextBlock) as BlockComponent<
   React.ForwardRefExoticComponent<TextBlockProps & React.RefAttributes<any>>
 >
 
@@ -86,8 +88,3 @@ const TEXT_BLOCK_CLASS = new Map([
     `
   ]
 ])
-
-registerBlock(Editor.BlockType.Text, TextBlock)
-registerBlock(Editor.BlockType.Header, TextBlock)
-registerBlock(Editor.BlockType.SubHeader, TextBlock)
-registerBlock(Editor.BlockType.SubSubHeader, TextBlock)

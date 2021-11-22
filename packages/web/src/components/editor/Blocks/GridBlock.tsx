@@ -1,24 +1,24 @@
-import { Operation, useCommit } from '@app/hooks/useCommit'
-import { css, cx } from '@emotion/css'
-import { motion, useMotionValue } from 'framer-motion'
 import { useBlockSuspense, useMgetBlocksSuspense } from '@app/hooks/api'
+import { Operation, useCommit } from '@app/hooks/useCommit'
 import { useDimensions } from '@app/hooks/useDimensions'
-import produce from 'immer'
-import invariant from 'tiny-invariant'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
+import { css, cx } from '@emotion/css'
+import { motion, useMotionValue } from 'framer-motion'
+import produce from 'immer'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import invariant from 'tiny-invariant'
 import { createTranscation } from '../../../context/editorTranscations'
 import { BlockChildren } from '../ContentBlock'
 import { DroppingAreaIndicator } from '../DroppingAreaIndicator'
 import { DroppleableOverlay } from '../DroppleableOverlay'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
-import { registerBlock, BlockComponent } from './utils'
+import { BlockComponent } from './utils'
 
 const BREAK_POINT = 500
 const GAP_WIDTH = 40
 
-const GridBlock: BlockComponent<
+const _GridBlock: BlockComponent<
   React.FC<{
     block: Editor.Block
   }>
@@ -130,18 +130,19 @@ const GridBlock: BlockComponent<
   )
 }
 
-GridBlock.meta = {
+_GridBlock.meta = {
   isText: false,
   hasChildren: true
 }
 
-registerBlock(Editor.BlockType.Row, GridBlock)
+export const GridBlock = _GridBlock
+
 // _GridBlock.whyDidYouRender = true
 // export const GridBlock = memo(_GridBlock, (prev, next) => {
 //   return prev.block.version === next.block.version
 // })
 
-const ColumnBlock: BlockComponent<
+const _ColumnBlock: BlockComponent<
   React.FC<{
     id: string
     childrenCount: number
@@ -322,11 +323,9 @@ const ColumnBlock: BlockComponent<
   )
 }
 
-ColumnBlock.meta = {
+_ColumnBlock.meta = {
   isText: false,
   hasChildren: true
 }
 
-registerBlock(Editor.BlockType.Column, ColumnBlock)
-
-// export const ColumnBlock = memo(_ColumnBlock)
+export const ColumnBlock = _ColumnBlock

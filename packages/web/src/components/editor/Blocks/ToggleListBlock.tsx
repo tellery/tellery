@@ -9,9 +9,9 @@ import { TellerySelectionType } from '../helpers/tellerySelection'
 import { useEditor } from '../hooks'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import { useBlockLocalPreferences } from '../hooks/useBlockLocalPreferences'
-import { BlockComponent, registerBlock } from './utils'
+import { BlockComponent } from './utils'
 
-export const ToggleListBlock: BlockComponent<
+const _ToggleListBlock: BlockComponent<
   React.FC<{
     block: Editor.Block
     children: ReactNode
@@ -86,9 +86,9 @@ export const ToggleListBlock: BlockComponent<
   )
 }
 
-ToggleListBlock.meta = {
+_ToggleListBlock.meta = {
   isText: true,
   hasChildren: true
 }
 
-registerBlock(Editor.BlockType.Toggle, ToggleListBlock)
+export const ToggleListBlock = _ToggleListBlock

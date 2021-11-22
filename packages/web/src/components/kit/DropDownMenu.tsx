@@ -54,7 +54,7 @@ type SyltedMenuItemProps = {
   onClick?: React.MouseEventHandler<HTMLDivElement>
 } & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>
 
-const StyledMenuItem = forwardRef<HTMLDivElement, SyltedMenuItemProps>((props, ref) => {
+export const StyledMenuItem = forwardRef<HTMLDivElement, SyltedMenuItemProps>((props, ref) => {
   const { size = 'medium', title, side, isActive, onClick, icon, children, ...rest } = props
   return (
     <div

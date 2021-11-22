@@ -16,125 +16,7 @@ import { EditorPopover } from '../EditorPopover'
 import { mergeTokens, splitTokenAndMarkIndex, tokensToText } from '../helpers'
 import { useBlockHovering } from '../hooks/useBlockHovering'
 import { useLocalSelection } from '../hooks/useStorySelection'
-import { BlockComponent, registerBlock } from './utils'
-
-const getSplitedTokens = (node: Text | Span, classnames: string[]): Editor.Token[] => {
-  if (node.type === 'element') {
-    const currentClassnames = [...classnames, ...node.properties.className]
-    return node.children
-      .map((child) => getSplitedTokens(child, currentClassnames))
-      .reduce((a, c) => {
-        a.push(...c)
-        return a
-      }, [])
-  } else {
-    const splitedText = node.value.split('')
-    return splitedText.map((char) => [char, [[Editor.InlineType.LocalClassnames, ...classnames]]] as Editor.Token)
-  }
-}
-
-const getHighlightedTokens = (tokens: Editor.Token[], language: string) => {
-  const tokensText = tokensToText(tokens)
-  const root = lowlight.highlight(language, tokensText)
-
-  const highlightedSplitedTokens: Editor.Token[] = root.children
-    .map((child) => getSplitedTokens(child, []))
-    .reduce((a, c) => {
-      a.push(...c)
-      return a
-    }, [])
-  const splitedMarkedTokens = splitTokenAndMarkIndex(tokens)
-  invariant(
-    highlightedSplitedTokens.length === splitedMarkedTokens.length,
-    'highlightedSplitedTokens is not equal to splitedTokens'
-  )
-  const hilightedTokens: Editor.Token[] = []
-  for (let i = 0; i < splitedMarkedTokens.length; i++) {
-    const currentToken = splitedMarkedTokens[i]
-    const classnames = (highlightedSplitedTokens[i][1] as Editor.TokenType[])[0].slice(1) as string[]
-    hilightedTokens[i] = [
-      currentToken[0],
-      [...(currentToken[1] ?? []), [Editor.InlineType.LocalClassnames, ...classnames]]
-    ]
-  }
-  return mergeTokens(hilightedTokens)
-}
-
-const codeBlockRenderer = (language: string = 'SQL') => {
-  return (tokens: Editor.Token[], assestsMap: Record<string, Editor.BaseBlock>) => {
-    const highlightedMarkedTokens = getHighlightedTokens(tokens, language)
-    return BlockRenderer(highlightedMarkedTokens, assestsMap)
-  }
-}
-
-const CodeBlock: BlockComponent<
-  React.FC<{
-    block: Editor.CodeBlock
-  }>
-> = ({ block }) => {
-  const localSelection = useLocalSelection(block.id)
-  const languageRender = useMemo(() => {
-    return codeBlockRenderer(block.content.lang)
-  }, [block.content.lang])
-
-  const pasteHandler = useCallback((e: React.ClipboardEvent<HTMLElement>) => {
-    if (e.clipboardData && e.clipboardData.files.length === 0) {
-      const telleryBlockDataStr = e.clipboardData.getData(TELLERY_MIME_TYPES.BLOCKS)
-      const telleryTokenDataStr = e.clipboardData.getData(TELLERY_MIME_TYPES.TOKEN)
-      const pureText = e.clipboardData.getData('text/plain')
-      if (!telleryBlockDataStr && !telleryTokenDataStr && pureText) {
-        e.clipboardData.clearData()
-        e.clipboardData.setData('text/plain', pureText)
-        e.stopPropagation()
-      }
-    }
-  }, [])
-
-  return (
-    <>
-      <div
-        className={cx(
-          css`
-            display: flex;
-            padding: 30px;
-            line-height: 1.6;
-            font-size: 12px;
-            background-color: ${ThemingVariables.colors.primary[5]};
-            font-family: 'SF Mono', SFMono-Regular, ui-monospace, 'DejaVu Sans Mono', Menlo, Consolas, monospace;
-            white-space: pre;
-            overflow: auto;
-            position: relative;
-          `
-        )}
-        onKeyDown={(e) => {
-          if (!localSelection) return
-          if (e.key === 'Enter') {
-            document.execCommand('insertLineBreak')
-            e.preventDefault()
-            e.stopPropagation()
-          } else if (e.key === 'Tab') {
-            e.preventDefault()
-            e.stopPropagation()
-            if (e.shiftKey) return
-            // TODO: custom insert text will insert after linebreak
-            document.execCommand('insertText', false, '  ')
-          }
-        }}
-        onPaste={pasteHandler}
-      >
-        <CodeBlockOperation block={block as Editor.CodeBlock} />
-        <ContentEditable block={block} placeHolderStrategy="never" tokensRenderer={languageRender}></ContentEditable>
-      </div>
-    </>
-  )
-}
-
-CodeBlock.meta = {
-  isText: true,
-  hasChildren: false
-}
-
-registerBlock(Editor.BlockType.Code, CodeBlock)
+import { BlockComponent } from './utils'
 
 const SUPPORT_LANGS = Object.keys(CodeBlockLangDisplayName) as CodeBlockLang[]
 
@@ -297,3 +179,121 @@ const LangItemCell = (props: {
     </div>
   )
 }
+
+const getSplitedTokens = (node: Text | Span, classnames: string[]): Editor.Token[] => {
+  if (node.type === 'element') {
+    const currentClassnames = [...classnames, ...node.properties.className]
+    return node.children
+      .map((child) => getSplitedTokens(child, currentClassnames))
+      .reduce((a, c) => {
+        a.push(...c)
+        return a
+      }, [])
+  } else {
+    const splitedText = node.value.split('')
+    return splitedText.map((char) => [char, [[Editor.InlineType.LocalClassnames, ...classnames]]] as Editor.Token)
+  }
+}
+
+const getHighlightedTokens = (tokens: Editor.Token[], language: string) => {
+  const tokensText = tokensToText(tokens)
+  const root = lowlight.highlight(language, tokensText)
+
+  const highlightedSplitedTokens: Editor.Token[] = root.children
+    .map((child) => getSplitedTokens(child, []))
+    .reduce((a, c) => {
+      a.push(...c)
+      return a
+    }, [])
+  const splitedMarkedTokens = splitTokenAndMarkIndex(tokens)
+  invariant(
+    highlightedSplitedTokens.length === splitedMarkedTokens.length,
+    'highlightedSplitedTokens is not equal to splitedTokens'
+  )
+  const hilightedTokens: Editor.Token[] = []
+  for (let i = 0; i < splitedMarkedTokens.length; i++) {
+    const currentToken = splitedMarkedTokens[i]
+    const classnames = (highlightedSplitedTokens[i][1] as Editor.TokenType[])[0].slice(1) as string[]
+    hilightedTokens[i] = [
+      currentToken[0],
+      [...(currentToken[1] ?? []), [Editor.InlineType.LocalClassnames, ...classnames]]
+    ]
+  }
+  return mergeTokens(hilightedTokens)
+}
+
+const codeBlockRenderer = (language: string = 'SQL') => {
+  return (tokens: Editor.Token[], assestsMap: Record<string, Editor.BaseBlock>) => {
+    const highlightedMarkedTokens = getHighlightedTokens(tokens, language)
+    return BlockRenderer(highlightedMarkedTokens, assestsMap)
+  }
+}
+
+const _CodeBlock: BlockComponent<
+  React.FC<{
+    block: Editor.CodeBlock
+  }>
+> = ({ block }) => {
+  const localSelection = useLocalSelection(block.id)
+  const languageRender = useMemo(() => {
+    return codeBlockRenderer(block.content.lang)
+  }, [block.content.lang])
+
+  const pasteHandler = useCallback((e: React.ClipboardEvent<HTMLElement>) => {
+    if (e.clipboardData && e.clipboardData.files.length === 0) {
+      const telleryBlockDataStr = e.clipboardData.getData(TELLERY_MIME_TYPES.BLOCKS)
+      const telleryTokenDataStr = e.clipboardData.getData(TELLERY_MIME_TYPES.TOKEN)
+      const pureText = e.clipboardData.getData('text/plain')
+      if (!telleryBlockDataStr && !telleryTokenDataStr && pureText) {
+        e.clipboardData.clearData()
+        e.clipboardData.setData('text/plain', pureText)
+        e.stopPropagation()
+      }
+    }
+  }, [])
+
+  return (
+    <>
+      <div
+        className={cx(
+          css`
+            display: flex;
+            padding: 30px;
+            line-height: 1.6;
+            font-size: 12px;
+            background-color: ${ThemingVariables.colors.primary[5]};
+            font-family: 'SF Mono', SFMono-Regular, ui-monospace, 'DejaVu Sans Mono', Menlo, Consolas, monospace;
+            white-space: pre;
+            overflow: auto;
+            position: relative;
+          `
+        )}
+        onKeyDown={(e) => {
+          if (!localSelection) return
+          if (e.key === 'Enter') {
+            document.execCommand('insertLineBreak')
+            e.preventDefault()
+            e.stopPropagation()
+          } else if (e.key === 'Tab') {
+            e.preventDefault()
+            e.stopPropagation()
+            if (e.shiftKey) return
+            // TODO: custom insert text will insert after linebreak
+            document.execCommand('insertText', false, '  ')
+          }
+        }}
+        onPaste={pasteHandler}
+      >
+        <CodeBlockOperation block={block as Editor.CodeBlock} />
+        <ContentEditable block={block} placeHolderStrategy="never" tokensRenderer={languageRender}></ContentEditable>
+      </div>
+    </>
+  )
+}
+
+_CodeBlock.meta = {
+  isText: true,
+  hasChildren: false
+}
+
+export const CodeBlock = _CodeBlock
