@@ -107,6 +107,7 @@ export const Blocks: Record<string, BlockComponent<any>> = {
   [Editor.BlockType.DBT]: DBTBlock,
   [Editor.BlockType.SQL]: SQLBlock,
   [Editor.BlockType.QueryBuilder]: QueryBuilderBlock,
+  [Editor.BlockType.SmartQuery]: SmartQueryBlock,
   [Editor.BlockType.SnapshotBlock]: SnapshotBlock
 }
 
