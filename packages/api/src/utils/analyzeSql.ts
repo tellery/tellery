@@ -11,7 +11,7 @@ import {
   isUnion,
 } from 'monaco-sql-parser'
 import { buildGraph } from '../core/translator'
-import { DirectedGraph } from './directedgraph'
+import { WeightedDirectedGraph } from './directedgraph'
 import { initTokenizer } from './init-tokenizer'
 
 // //flatten table structure, wiping off transformations
@@ -34,7 +34,7 @@ import { initTokenizer } from './init-tokenizer'
 // }
 
 // replace transclusion part to its AST
-function traverseTree(node: Node, astMap: Map<string, Node | string>): Node {
+export function traverseTree(node: Node, astMap: Map<string, Node | string>): Node {
   function replaceNode(curr: WithAlias<Node | string>): WithAlias<Node | string> {
     const currVal = curr.val
     if (currVal instanceof Node) {
@@ -46,7 +46,7 @@ function traverseTree(node: Node, astMap: Map<string, Node | string>): Node {
         if (!newNode) {
           throw Error(`unknown transclusion ${currVal}`)
         }
-        newNode.blockId = blockId
+        if (newNode instanceof Node) newNode.blockId = blockId
         return WithAlias.of(newNode, curr.alias)
       }
       return curr
@@ -101,10 +101,17 @@ type NNode = {
   id: string
 }
 
+enum EdgeType {
+  DIRECT = 'direct',
+  JOIN = 'join',
+  UNION = 'union',
+}
+
 // Only two types of node would be considered: transclusion and raw
 function buildConnection(
   node: Node | string,
-  graph: DirectedGraph<NNode, string>,
+  graph: WeightedDirectedGraph<NNode, string, EdgeType>,
+  type: EdgeType = EdgeType.DIRECT,
   parentKey?: string,
 ) {
   if (node instanceof Node) {
@@ -114,28 +121,28 @@ function buildConnection(
         graph.addNode(node.blockId, { type: 'transclusion', id: node.blockId })
       }
       if (parentKey) {
-        graph.addEdge(parentKey, node.blockId)
+        graph.addEdge(parentKey, node.blockId, type)
       }
       pKey = node.blockId
     }
     if (isBasic(node)) {
-      buildConnection(node.from.val, graph, pKey)
+      buildConnection(node.from.val, graph, type, pKey)
     } else if (isJoin(node)) {
-      node.joins.forEach((j: Node | string) => buildConnection(j.val, graph, pKey))
+      node.joins.forEach((j) => buildConnection(j.val, graph, EdgeType.JOIN, pKey))
     } else if (isUnion(node)) {
-      node.unions.forEach((u: Node | string) => buildConnection(u.val, graph, pKey))
+      node.unions.forEach((u) => buildConnection(u.val, graph, EdgeType.UNION, pKey))
     }
   } else {
     // reached leaf, connect it with parent
     graph.addNode(node, { type: 'table', id: node })
     if (parentKey) {
-      graph.addEdge(parentKey, node)
+      graph.addEdge(parentKey, node, type)
     }
   }
 }
 
-export function convertToGraph(root: Node): DirectedGraph<NNode, string> {
-  const graph = new DirectedGraph<NNode, string>()
+export function convertToGraph(root: Node): WeightedDirectedGraph<NNode, string, EdgeType> {
+  const graph = new WeightedDirectedGraph<NNode, string, EdgeType>()
   buildConnection(root, graph)
   return graph
 }

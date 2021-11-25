@@ -74,7 +74,7 @@ async function translate(
 /**
  * @returns key: blockId, value: sql
  */
-async function loadSqlFromBlocks(
+export async function loadSqlFromBlocks(
   blockIds: string[],
   opts: Record<string, unknown> = {},
 ): Promise<{ [k: string]: string }> {

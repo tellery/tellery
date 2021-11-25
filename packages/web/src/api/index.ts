@@ -20,6 +20,24 @@ request.interceptors.response.use(undefined, (error) => {
   return Promise.reject(error)
 })
 
+export const analyzeSql = async (
+  workspaceId: string,
+  // connectorId: string,
+  queryId: string
+) =>
+  request
+    .post<{
+      graph: {
+        nodes: { type: 'transclusion' | 'table'; id: string }[]
+        edges: { source: string; target: string; weight: 'direct' | 'union' | 'join' }[]
+      }
+    }>('/api/explore/analyzeSql', {
+      workspaceId,
+      queryId,
+      convertToGraph: true
+    })
+    .then((res) => res.data.graph)
+
 export const translateSmartQuery = async (
   workspaceId: string,
   connectorId: string,

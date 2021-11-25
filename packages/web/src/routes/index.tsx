@@ -11,6 +11,7 @@ import Login from '@app/pages/login'
 import Stories from '@app/pages/stories'
 import Explore from '@app/pages/explore'
 import Story from '@app/pages/story'
+import AnalyzeSql from '@app/pages/analyzeSql'
 import React, { useEffect } from 'react'
 import ReactGA from 'react-ga4'
 import { Route, Routes } from 'react-router-dom'
@@ -37,6 +38,7 @@ const PrivateRoutes = () => {
               <Route path="/story/:id" element={<Story />}></Route>
               <Route path="/stories" element={<Stories />}></Route>
               <Route path="/explore" element={<Explore />}></Route>
+              <Route path="/explore/analyzeSql" element={<AnalyzeSql />}></Route>
               <Route path="/" element={<Index />}></Route>
             </Routes>
           </React.Suspense>
