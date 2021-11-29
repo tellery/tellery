@@ -98,7 +98,9 @@ protobuf {
             artifact = "io.grpc:protoc-gen-grpc-java:$grpcVersion"
         }
         id("kroto") {
-            artifact = "com.github.marcoferrer.krotoplus:protoc-gen-kroto-plus:$krotoplusVersion"
+            // for apple silicon, since the binary of aarch64 has not been released
+            val osxCompatibilityTag = if (osdetector.os == "osx") ":osx-x86_64" else ""
+            artifact = "com.github.marcoferrer.krotoplus:protoc-gen-kroto-plus:$krotoplusVersion$osxCompatibilityTag"
         }
     }
 
