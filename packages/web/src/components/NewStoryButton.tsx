@@ -2,6 +2,7 @@ import { IconCommonAdd } from '@app/assets/icons'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { ThemingVariables } from '@app/styles'
 import { blockIdGenerator } from '@app/utils'
+import { waitForTranscationApplied } from '@app/utils/oberveables'
 import type { Placement } from '@popperjs/core'
 import Tippy from '@tippyjs/react'
 import React, { useCallback } from 'react'
@@ -17,7 +18,8 @@ export const NewStoryButton: React.FC<{ classname: string; tipPlacement?: Placem
 
   const handleCreateNewSotry = useCallback(async () => {
     const id = blockIdGenerator()
-    blockTranscations.createNewStory({ id: id })
+    const [transcationId] = blockTranscations.createNewStory({ id: id })
+    await waitForTranscationApplied(transcationId)
     navigate(`/story/${id}`, {
       state: { focusTitle: true }
     })
