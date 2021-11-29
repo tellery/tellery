@@ -7,6 +7,7 @@ import { VariableAtomFamily } from './variables'
 export const QuerySelectorFamily = selectorFamily<
   {
     query: {
+      id: string
       type: 'sql' | 'smart'
       data: string
     }
@@ -38,6 +39,7 @@ export const QuerySelectorFamily = selectorFamily<
         })
         return {
           query: {
+            id: queryId,
             type: type,
             data: replacedData
           },
@@ -63,6 +65,7 @@ export const QuerySelectorFamily = selectorFamily<
       } catch {
         return {
           query: {
+            id: queryId,
             type: 'sql',
             data: ''
           },
@@ -71,6 +74,7 @@ export const QuerySelectorFamily = selectorFamily<
       }
       return {
         query: {
+          id: queryId,
           type: 'sql',
           data: ''
         },

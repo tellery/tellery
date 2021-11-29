@@ -204,7 +204,7 @@ export const useRefreshSnapshot = (storyId: string) => {
 
   return snapshotMutation
 }
-function usePreviousCompare(value: any) {
+function usePreviousCompare<T>(value: T) {
   const ref = useRef<null | typeof value>()
   useEffect(() => {
     if (dequal(ref.current, value) === false) {
@@ -212,7 +212,7 @@ function usePreviousCompare(value: any) {
     }
   }, [value])
 
-  return ref.current
+  return ref.current as T
 }
 
 export const useStorySnapshotManagerProvider = (storyId: string) => {
@@ -220,14 +220,16 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
   const storyBlock = useBlockSuspense<Story>(storyId)
   const resourcesBlocks = useStoryResources(storyId)
   const queryClient = useQueryClient()
-  const compiledQueries = useRecoilValue(
-    waitForAll(resourcesBlocks.map((block) => QuerySelectorFamily({ storyId, queryId: block.id })))
-  )
-  const previousComipledQueriesRef = usePreviousCompare(compiledQueries)
 
   const executeableQuestionBlocks = useMemo(() => {
     return resourcesBlocks.filter((block) => isExecuteableBlockType(block.type))
   }, [resourcesBlocks])
+
+  const compiledQueries = useRecoilValue(
+    waitForAll(executeableQuestionBlocks.map((block) => QuerySelectorFamily({ storyId, queryId: block.id })))
+  )
+
+  const previousComipledQueriesRef = usePreviousCompare(compiledQueries)
 
   const refreshOnInit = storyBlock?.format?.refreshOnOpen
   const permissions = useStoryPermissions(storyId)
@@ -264,9 +266,11 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
 
   useEffect(() => {
     if (!previousComipledQueriesRef) return
-    for (let i = 0; i < executeableQuestionBlocks.length; i++) {
-      const previousQuery = previousComipledQueriesRef[i]
+    for (let i = 0; i < compiledQueries.length; i++) {
       const currentQuery = compiledQueries[i]
+      const previousQuery = previousComipledQueriesRef.find(
+        (previousQuery) => previousQuery.query.id === currentQuery.query.id
+      )
       if (!previousQuery || !currentQuery) continue
       if (dequal(previousQuery, currentQuery) !== true) {
         const queryBlock = executeableQuestionBlocks[i]
