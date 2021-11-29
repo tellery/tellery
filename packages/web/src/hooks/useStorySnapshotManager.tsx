@@ -15,7 +15,6 @@ import React, { useCallback, useContext, useEffect, useMemo, useRef } from 'reac
 import { useIsMutating, useQueryClient } from 'react-query'
 import { useRecoilCallback, useRecoilValue, waitForAll } from 'recoil'
 import invariant from 'tiny-invariant'
-import { usePrevious } from '.'
 import { useBlockSuspense, useFetchStoryChunk, useGetBlock, useGetSnapshot } from './api'
 import { useCommit } from './useCommit'
 import { useGetCompiledQuery } from './useCompiledQuery'
@@ -246,7 +245,7 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
   }, [refreshOnInit, refreshSnapshot])
 
   useEffect(() => {
-    for (const queryBlock of resourcesBlocks) {
+    for (const queryBlock of executeableQuestionBlocks) {
       const snapshotId = queryBlock?.content?.snapshotId
       const blockId = queryBlock.id
       const mutatingCount = queryClient.isMutating({
@@ -261,20 +260,20 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
         }
       }
     }
-  }, [queryClient, refreshSnapshot, resourcesBlocks])
+  }, [queryClient, refreshSnapshot, executeableQuestionBlocks])
 
   useEffect(() => {
     if (!previousComipledQueriesRef) return
-    for (let i = 0; i < resourcesBlocks.length; i++) {
+    for (let i = 0; i < executeableQuestionBlocks.length; i++) {
       const previousQuery = previousComipledQueriesRef[i]
       const currentQuery = compiledQueries[i]
       if (!previousQuery || !currentQuery) continue
       if (dequal(previousQuery, currentQuery) !== true) {
-        const queryBlock = resourcesBlocks[i]
+        const queryBlock = executeableQuestionBlocks[i]
         refreshSnapshot.execute(queryBlock)
       }
     }
-  }, [previousComipledQueriesRef, compiledQueries, resourcesBlocks, refreshSnapshot])
+  }, [previousComipledQueriesRef, compiledQueries, executeableQuestionBlocks, refreshSnapshot])
 
   const runAll = useCallback(() => {
     executeableQuestionBlocks.forEach((questionBlock: Editor.DataAssetBlock) => {

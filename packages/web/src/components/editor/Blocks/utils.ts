@@ -32,7 +32,7 @@ export type BlockComponent<P = {}> = P & {
   }
 }
 
-const SQLBlock = VirtualBlock as BlockComponent<any>
+const SQLBlock = { ...VirtualBlock } as BlockComponent<any>
 SQLBlock.meta = {
   isText: false,
   forwardRef: true,
@@ -42,7 +42,7 @@ SQLBlock.meta = {
   isQuery: true
 }
 
-const QueryBuilderBlock = VirtualBlock as BlockComponent<any>
+const QueryBuilderBlock = { ...VirtualBlock } as BlockComponent<any>
 QueryBuilderBlock.meta = {
   isText: false,
   forwardRef: true,
@@ -52,7 +52,7 @@ QueryBuilderBlock.meta = {
   isQuery: true
 }
 
-const SnapshotBlock = VirtualBlock as BlockComponent<any>
+const SnapshotBlock = { ...VirtualBlock } as BlockComponent<any>
 SnapshotBlock.meta = {
   isText: false,
   forwardRef: true,
@@ -62,7 +62,7 @@ SnapshotBlock.meta = {
   isQuery: true
 }
 
-const SmartQueryBlock = VirtualBlock as BlockComponent<any>
+const SmartQueryBlock = { ...VirtualBlock } as BlockComponent<any>
 SmartQueryBlock.meta = {
   isText: false,
   forwardRef: true,
@@ -72,7 +72,7 @@ SmartQueryBlock.meta = {
   isQuery: true
 }
 
-const DBTBlock = VirtualBlock as BlockComponent<any>
+const DBTBlock = { ...VirtualBlock } as BlockComponent<any>
 DBTBlock.meta = {
   isText: false,
   forwardRef: true,
