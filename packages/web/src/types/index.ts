@@ -71,7 +71,7 @@ export type Snapshot = {
   createdById?: string
   lastEditedById?: string
   questionId?: string
-  createdAt?: string
+  createdAt?: number
 }
 
 export type AggregatedMetric = {

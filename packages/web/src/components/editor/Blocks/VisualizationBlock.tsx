@@ -629,12 +629,14 @@ const SnapshotUpdatedAt: React.FC<{
     setNowTimeStamp(Date.now())
   }, 1000)
 
+  const createdAt = snapshot?.createdAt ?? queryBlock.content?.lastRunAt
+
   return (
     <>
       {loading
         ? dayjs(nowTimeStamp).subtract(mutatingStartTimeStamp).format('mm:ss')
-        : snapshot?.createdAt ?? queryBlock.content?.lastRunAt
-        ? dayjs(queryBlock.content?.lastRunAt ?? snapshot?.createdAt).fromNow()
+        : createdAt
+        ? dayjs(createdAt).fromNow()
         : ''}
     </>
   )

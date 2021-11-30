@@ -349,7 +349,14 @@ export const useCreateSnapshot = () => {
     (recoilcallback) =>
       async (props: { snapshotId: string; questionId: string; sql: string; data?: unknown; workspaceId: string }) => {
         const { snapshotId, data, sql, questionId, workspaceId } = props
-
+        const snapshot = {
+          createdAt: Date.now(),
+          alive: true,
+          id: snapshotId,
+          questionId: questionId,
+          sql: sql,
+          data: data
+        } as Snapshot
         const transactions: Transcation[] = [
           {
             workspaceId,
@@ -357,13 +364,7 @@ export const useCreateSnapshot = () => {
             operations: [
               {
                 cmd: 'set',
-                args: {
-                  alive: true,
-                  id: snapshotId,
-                  questionId: questionId,
-                  sql: sql,
-                  data: data
-                },
+                args: snapshot,
                 path: [],
                 id: snapshotId,
                 table: 'snapshot'
@@ -371,11 +372,7 @@ export const useCreateSnapshot = () => {
             ]
           }
         ]
-        recoilcallback.set(TellerySnapshotAtom(snapshotId), {
-          id: snapshotId,
-          data: data as Data,
-          sql
-        })
+        recoilcallback.set(TellerySnapshotAtom(snapshotId), snapshot)
         return applyTransactionsAsync(transactions)
       },
     []
