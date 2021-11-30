@@ -10,6 +10,7 @@ import { useStoryPathParams } from '@app/hooks/useStoryPathParams'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { ThemingVariables } from '@app/styles'
 import { blockIdGenerator } from '@app/utils'
+import { waitForTranscationApplied } from '@app/utils/oberveables'
 import { css } from '@emotion/css'
 import dayjs from 'dayjs'
 import React, { useCallback, useMemo, useState } from 'react'
@@ -30,7 +31,8 @@ export const SideBarThoughtsSection: React.FC<{ close: Function }> = (props) => 
 
   const createTodaysNotes = useCallback(async () => {
     const id = blockIdGenerator()
-    await blockTranscations.createNewThought({ id })
+    const [transcationId] = blockTranscations.createNewThought({ id })
+    await waitForTranscationApplied(transcationId)
     openStory(id, {})
     refetchThoughts()
   }, [blockTranscations, openStory, refetchThoughts])

@@ -45,7 +45,7 @@ export const useBlockTranscationProvider = () => {
   )
 
   const createNewThought = useCallback(
-    async (props: { id?: string }) => {
+    (props: { id?: string }) => {
       const thoughtId = props.id ?? blockIdGenerator()
       return commit({
         transcation: createThoughtTranscation({ id: thoughtId, workspaceId: workspace.id, userId: user.id })
