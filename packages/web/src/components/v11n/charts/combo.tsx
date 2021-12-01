@@ -706,7 +706,8 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
             }
         ) as Config<Type.COMBO>['groups']
       )
-    }, [yAxises, y2Axises, props.config.type, onConfigChange, props.config.groups])
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [yAxises, y2Axises, props.config.type, onConfigChange, JSON.stringify(props.config.groups)])
     useEffect(() => {
       if (
         sortBy(props.config.shapes, 'key')
@@ -735,7 +736,8 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
             color: index
           })) as Config<Type.COMBO>['shapes']
       )
-    }, [onConfigChange, shapes, props.config.shapes])
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [onConfigChange, JSON.stringify(shapes), JSON.stringify(props.config.shapes)])
 
     return (
       <ResponsiveContainer>
