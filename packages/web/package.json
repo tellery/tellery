@@ -82,7 +82,7 @@
     "react-ga4": "^1.4.1",
     "react-helmet": "^6.1.0",
     "react-hook-form": "^7.19.5",
-    "react-i18next": "^11.14.2",
+    "react-i18next": "^11.15.1",
     "react-image": "^4.0.3",
     "react-merge-refs": "^1.1.0",
     "react-perfect-scrollbar": "^1.5.8",
