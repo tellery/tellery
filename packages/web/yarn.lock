@@ -5581,10 +5581,10 @@ javascript-natural-sort@^0.7.1:
   resolved "https://registry.yarnpkg.com/javascript-natural-sort/-/javascript-natural-sort-0.7.1.tgz#f9e2303d4507f6d74355a73664d1440fb5a0ef59"
   integrity sha1-+eIwPUUH9tdDVac2ZNFED7Wg71k=
 
-jotai@^1.4.3:
-  version "1.4.4"
-  resolved "https://registry.yarnpkg.com/jotai/-/jotai-1.4.4.tgz#bc62a7a5f45669f5d0a4d6dd438dadf029e8b65e"
-  integrity sha512-LTu++NYHBittzx8FXtzoSva/jTPXZ1I1HLVhINQ1Xe4FKhUqGCRTF+DZFN8a3C+Wq8zPOHRr8kvTGAupFD9SsA==
+jotai@^1.4.7:
+  version "1.4.7"
+  resolved "https://registry.yarnpkg.com/jotai/-/jotai-1.4.7.tgz#ee6b6b1ae427240b223b88e834b15b60364edb69"
+  integrity sha512-EZFmhovnufIVoH0OAW6kuOv8RLjCX2HvHEqzwRG79l/LDeyp1BI+85vrEpR/fQmqh3jUhY4SyjhboEItd4+reQ==
 
 js-cookie@^2.2.1:
   version "2.2.1"
