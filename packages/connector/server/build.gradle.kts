@@ -82,7 +82,7 @@ dependencies {
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
     testImplementation("io.kotest:kotest-property:$kotestVersion")
     testImplementation("io.kotest:kotest-framework-datatest:$kotestVersion")
-    testImplementation("io.kotest.extensions:kotest-extensions-testcontainers:1.0.1")
+    testImplementation("io.kotest.extensions:kotest-extensions-testcontainers:1.1.0")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("org.testcontainers:postgresql:$testContainerVersion")
 }
