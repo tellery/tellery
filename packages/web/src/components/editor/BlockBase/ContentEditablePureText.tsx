@@ -208,6 +208,9 @@ const _ContentEditable: React.ForwardRefRenderFunction<
                 top: 0;
                 right: 0;
                 color: ${ThemingVariables.colors.gray[1]};
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
               }
             `
         )}
