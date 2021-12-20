@@ -11,5 +11,7 @@ export const env = {
   GA4_ID: (TelleryBootstrap.GA4_ID as string) ?? import.meta.env.VITE_GOOGLE_ANALYTICS_4_ID,
   VERSION: TelleryBootstrap.VERSION as string,
   ASAYERIO_PROJECTID: ASAYERIO_PROJECTID ?? undefined,
-  VITE_ENABLE_EMBED: !!import.meta.env.VITE_ENABLE_EMBED
+  VITE_ENABLE_EMBED: !!import.meta.env.VITE_ENABLE_EMBED,
+  MONACO_CDN: (import.meta.env.VITE_MONACO_EDITOR_CDN ??
+    'https://cdn.jsdelivr.net/npm/monaco-editor@0.30.1/min/vs') as string
 }

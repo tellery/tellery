@@ -16,6 +16,10 @@ import { css } from '@emotion/css'
 import { ThemingVariables } from './styles'
 import IconButton from './components/kit/IconButton'
 import { IconCommonClose } from './assets/icons'
+import { loader } from '@monaco-editor/react'
+import { env } from './env'
+
+loader.config({ paths: { vs: env.MONACO_CDN } })
 
 const App: React.FC = () => {
   return (
