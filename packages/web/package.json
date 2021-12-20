@@ -87,7 +87,7 @@
     "react-merge-refs": "^1.1.0",
     "react-perfect-scrollbar": "^1.5.8",
     "react-popper": "^2.2.5",
-    "react-query": "^3.32.3",
+    "react-query": "^3.34.5",
     "react-router-dom": "^6.0.2",
     "react-tag-input-component": "^1.0.7",
     "react-textarea-autosize": "^8.3.3",
