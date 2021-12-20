@@ -60,7 +60,7 @@
     "immutability-helper": "^3.1.1",
     "is-hotkey": "^0.2.0",
     "is-url": "^1.2.4",
-    "jotai": "^1.4.3",
+    "jotai": "^1.4.9",
     "json5": "^2.2.0",
     "katex": "^0.15.1",
     "lowlight": "^2.4.1",
