@@ -34,6 +34,7 @@ import { produce } from 'immer'
 import isHotkey from 'is-hotkey'
 import { omit } from 'lodash'
 import React, { SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import ReactDOM from 'react-dom'
 import { toast } from 'react-toastify'
 import { useLatest, useWindowSize } from 'react-use'
 import { Tab, TabList, TabPanel, TabStateReturn, useTabState } from 'reakit/Tab'
@@ -197,7 +198,7 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
           aria-label="Question Editor Tabs"
           style={{
             backgroundColor: ThemingVariables.colors.gray[4],
-            paddingRight: open ? 130 : 50
+            paddingRight: 50
           }}
           className={css`
             border-top: solid 1px ${ThemingVariables.colors.gray[1]};
@@ -274,10 +275,18 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
               />
             </Tippy>
           </div>
+          <div id="questions-editor-tab-slot"></div>
         </TabList>
         {opendQuestionBlockIds.map((id) => (
           <React.Suspense key={id} fallback={<BlockingUI blocking={true} />}>
-            <StoryQuestionEditor tab={tab} id={id} setActiveId={setActiveId} storyId={storyId} isOpen={open} />
+            <StoryQuestionEditor
+              tab={tab}
+              isActive={activeId === id}
+              id={id}
+              setActiveId={setActiveId}
+              storyId={storyId}
+              isOpen={open}
+            />
           </React.Suspense>
         ))}
         {/* <div
@@ -476,9 +485,10 @@ export const StoryQuestionEditor: React.FC<{
   tab: TabStateReturn
   storyId: string
   isOpen: boolean
+  isActive: boolean
   // block: Editor.QuestionBlock
   // originalBlock: Editor.QuestionBlock
-}> = ({ id, tab, storyId, isOpen }) => {
+}> = ({ id, tab, storyId, isActive }) => {
   const block = useBlockSuspense<Editor.VisualizationBlock | Editor.QueryBlock>(id)
   const visualizationBlock: Editor.VisualizationBlock | null =
     block.type === Editor.BlockType.Visualization ? block : null
@@ -718,52 +728,23 @@ export const StoryQuestionEditor: React.FC<{
       ref={ref}
       onKeyDown={keyDownHandler}
     >
-      {isOpen && (
-        <div
-          className={css`
-            position: absolute;
-            right: 50px;
-            top: -32px;
-          `}
-        >
-          <TippySingletonContextProvider arrow={false}>
-            {isDBT ? null : (
-              <div
-                className={css`
-                  display: inline-flex;
-                  align-items: center;
-                  > * {
-                    margin: 0 10px;
-                  }
-                `}
-              >
-                {sqlError && (
-                  <IconButton
-                    icon={IconCommonError}
-                    color={ThemingVariables.colors.negative[0]}
-                    onClick={() => {
-                      setSqlSidePanel(!sqlSidePanel)
-                    }}
-                  />
-                )}
-                <IconButton
-                  hoverContent={mutatingCount !== 0 ? 'Cancel Query' : 'Execute Query'}
-                  icon={mutatingCount !== 0 ? IconCommonClose : IconCommonRun}
-                  color={ThemingVariables.colors.primary[1]}
-                  disabled={!isExecuteableBlockType(queryBlock.type)}
-                  onClick={mutatingCount !== 0 ? cancelExecuteSql : run}
-                />
-                <IconButton
-                  hoverContent="Save"
-                  disabled={!isDraft || readonly === true}
-                  icon={IconCommonSave}
-                  onClick={() => save()}
-                  color={ThemingVariables.colors.primary[1]}
-                />
-              </div>
-            )}
-          </TippySingletonContextProvider>
-        </div>
+      {isActive && (
+        <TabButtons hasError={!!sqlError} onClickError={() => setSqlSidePanel(!sqlSidePanel)}>
+          <IconButton
+            hoverContent={mutatingCount !== 0 ? 'Cancel Query' : 'Execute Query'}
+            icon={mutatingCount !== 0 ? IconCommonClose : IconCommonRun}
+            color={ThemingVariables.colors.primary[1]}
+            disabled={!isExecuteableBlockType(queryBlock.type)}
+            onClick={mutatingCount !== 0 ? cancelExecuteSql : run}
+          />
+          <IconButton
+            hoverContent="Save"
+            disabled={!isDraft || readonly === true}
+            icon={IconCommonSave}
+            onClick={() => save()}
+            color={ThemingVariables.colors.primary[1]}
+          />
+        </TabButtons>
       )}
       <div
         className={css`
@@ -829,6 +810,39 @@ export const StoryQuestionEditor: React.FC<{
         )}
       </div>
     </TabPanel>
+  )
+}
+
+const TabButtons: React.FC<{
+  hasError: boolean
+  onClickError: React.MouseEventHandler<HTMLButtonElement> | undefined
+}> = ({ onClickError, hasError, children }) => {
+  return ReactDOM.createPortal(
+    <div
+      className={css`
+        display: flex;
+        height: 100%;
+        align-items: center;
+      `}
+    >
+      <TippySingletonContextProvider arrow={false}>
+        <div
+          className={css`
+            display: inline-flex;
+            align-items: center;
+            > * {
+              margin: 0 10px;
+            }
+          `}
+        >
+          {hasError && (
+            <IconButton icon={IconCommonError} color={ThemingVariables.colors.negative[0]} onClick={onClickError} />
+          )}
+          {children}
+        </div>
+      </TippySingletonContextProvider>
+    </div>,
+    document.getElementById('questions-editor-tab-slot')!
   )
 }
 
