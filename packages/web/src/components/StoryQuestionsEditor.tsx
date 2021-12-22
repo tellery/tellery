@@ -124,7 +124,6 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
   const y = useMotionValue(resizeConfig.y)
   const height = useTransform(y, (y) => Math.abs(y - 0.5 * DRAG_HANDLE_WIDTH))
   const placeholderHeight = useTransform(height, (height) => (open ? height : 0))
-  const translateY = useMotionValue(height.get())
 
   useEffect(() => {
     if (height.get() > windowHeight * 0.7) {
@@ -155,15 +154,9 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
     }
   }, [opendQuestionBlockIds, setActiveId, setOpen])
 
-  useEffect(() => {
-    const controls = animate(translateY, open ? 0 : height.get() - (opendQuestionBlockIds.length ? 44 : 0), {
-      type: 'tween',
-      ease: 'easeInOut',
-      duration: 0.25
-    })
-
-    return controls.stop
-  }, [height, open, opendQuestionBlockIds.length, translateY])
+  const translateY = useTransform(height, (height) => {
+    return open ? 0 : height - (opendQuestionBlockIds.length ? 44 : 0)
+  })
 
   return (
     <>
@@ -190,9 +183,10 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
           display: flex;
           flex-direction: column;
           background-color: ${ThemingVariables.colors.gray[5]};
+          transition: transform 0.25s ease-in-out;
         `}
       >
-        <QueryEditorResizer y={y} />
+        {open && <QueryEditorResizer y={y} />}
         <TabList
           {...tab}
           aria-label="Question Editor Tabs"
