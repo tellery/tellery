@@ -4,8 +4,9 @@ import viteSentry from 'vite-plugin-sentry'
 import { visualizer } from 'rollup-plugin-visualizer'
 import react from '@vitejs/plugin-react'
 import optimizeLodashImports from 'rollup-plugin-optimize-lodash-imports'
+const reactSvgPlugin = require('./react-svg')
 const { resolve } = require('path')
-const reactSvgPlugin = require('vite-plugin-react-svg')
+
 /*
 	Configure sentry plugin
 */
@@ -69,9 +70,7 @@ export default defineConfig(({ command, mode }: { command: string; mode: string 
         defaultExport: 'component',
         svgo: true,
         svgoConfig: {
-          plugins: {
-            removeViewBox: false
-          }
+          removeViewBox: false
         },
         expandProps: 'end',
         ref: false,
