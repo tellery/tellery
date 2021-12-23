@@ -45,7 +45,9 @@ const _EquationBlock: BlockComponent<
         setEquationHtml(null)
         return
       }
+      console.log('render equation')
       const html = await renderEquation(equation)
+      console.log(' equation rendered')
       setEquationHtml(html)
     }
     render()

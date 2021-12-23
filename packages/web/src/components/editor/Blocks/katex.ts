@@ -1,5 +1,4 @@
 import 'katex/dist/katex.css'
-
 let katex: any = null
 
 export const getKatex = async () => {
@@ -9,7 +8,7 @@ export const getKatex = async () => {
     // import('katex/dist/katex.css')
     // todo
     katex = await import('katex')
-    return katex
+    return katex.default
   }
 }
 

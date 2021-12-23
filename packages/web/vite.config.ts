@@ -1,9 +1,8 @@
 import { defineConfig, loadEnv } from 'vite'
-import reactRefresh from '@vitejs/plugin-react-refresh'
 import type { ViteSentryPluginOptions } from 'vite-plugin-sentry'
 import viteSentry from 'vite-plugin-sentry'
-import reactJsx from 'vite-react-jsx'
 import { visualizer } from 'rollup-plugin-visualizer'
+import react from '@vitejs/plugin-react'
 import optimizeLodashImports from 'rollup-plugin-optimize-lodash-imports'
 const { resolve } = require('path')
 const reactSvgPlugin = require('vite-plugin-react-svg')
@@ -65,8 +64,7 @@ export default defineConfig(({ command, mode }: { command: string; mode: string 
     },
     plugins: [
       command === 'build' && optimizeLodashImports(),
-      reactJsx(),
-      reactRefresh(),
+      react(),
       reactSvgPlugin({
         defaultExport: 'component',
         svgo: true,
