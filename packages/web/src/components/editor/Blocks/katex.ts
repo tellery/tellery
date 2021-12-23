@@ -7,8 +7,8 @@ export const getKatex = async () => {
   } else {
     // import('katex/dist/katex.css')
     // todo
-    katex = await import('katex')
-    return katex.default
+    katex = (await import('katex')).default
+    return katex
   }
 }
 
