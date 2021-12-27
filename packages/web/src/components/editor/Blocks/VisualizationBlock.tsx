@@ -572,7 +572,7 @@ const _QuestionBlockStatus: React.FC<{
                 <IconCommonRefresh
                   width="12px"
                   height="12px"
-                  fill={ThemingVariables.colors.warning[0]}
+                  color={ThemingVariables.colors.warning[0]}
                   className={css`
                     animation: ${rotateAnimation} 1.2s linear infinite;
                   `}
@@ -580,7 +580,7 @@ const _QuestionBlockStatus: React.FC<{
               </>
             ) : queryBlock.content?.error ? (
               <>
-                <IconCommonError width="12px" height="12px" fill={ThemingVariables.colors.negative[0]} />
+                <IconCommonError width="12px" height="12px" color={ThemingVariables.colors.negative[0]} />
               </>
             ) : null}
           </div>

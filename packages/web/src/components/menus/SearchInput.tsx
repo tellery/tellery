@@ -35,7 +35,7 @@ export const SearchInput: React.FC<
         `}
       ></input>
       <IconCommonSearch
-        fill={ThemingVariables.colors.gray[0]}
+        color={ThemingVariables.colors.gray[0]}
         className={css`
           position: absolute;
           left: 18px;
