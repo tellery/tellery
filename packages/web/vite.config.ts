@@ -70,7 +70,12 @@ export default defineConfig(({ command, mode }: { command: string; mode: string 
         defaultExport: 'component',
         svgo: true,
         svgoConfig: {
-          removeViewBox: false
+          plugins: [
+            {
+              name: 'removeViewBox',
+              active: false
+            }
+          ]
         },
         expandProps: 'end',
         ref: false,
