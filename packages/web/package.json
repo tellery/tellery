@@ -145,7 +145,7 @@
     "@types/react-window-infinite-loader": "^1.0.5",
     "@types/resize-observer-browser": "^0.1.6",
     "@types/socket.io-client": "^3.0.0",
-    "@types/validator": "^13.6.6",
+    "@types/validator": "^13.7.1",
     "@types/web": "^0.0.48",
     "@types/yaml": "^1.9.7",
     "@typescript-eslint/eslint-plugin": "^5.3.1",
