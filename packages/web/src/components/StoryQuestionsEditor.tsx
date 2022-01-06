@@ -36,7 +36,7 @@ import { omit } from 'lodash'
 import React, { SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { toast } from 'react-toastify'
-import { useLatest, useWindowSize } from 'react-use'
+import { useEvent, useLatest, useWindowSize } from 'react-use'
 import { Tab, TabList, TabPanel, TabStateReturn, useTabState } from 'reakit/Tab'
 import YAML from 'yaml'
 import { setBlockTranscation } from '../context/editorTranscations'
@@ -135,7 +135,7 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
   const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)
   useSqlEditor(profile?.type)
 
-  const [questionBlocksMap] = useQuestionEditorBlockMapState(storyId)
+  const [questionBlocksMap, setQuestionBlocksMap] = useQuestionEditorBlockMapState(storyId)
   const [activeId, setActiveId] = useQuestionEditorActiveIdState(storyId)
   const tab = useTabState()
 
@@ -157,6 +157,54 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
   const translateY = useTransform(height, (height) => {
     return open ? 0 : height - (opendQuestionBlockIds.length ? 44 : 0)
   })
+
+  const closeTabById = useCallback(
+    (tabId: string) => {
+      const currentIndex = opendQuestionBlockIds.findIndex((id) => id === tabId)
+      if (tabId === activeId) {
+        if (opendQuestionBlockIds[currentIndex - 1]) {
+          setActiveId(opendQuestionBlockIds[currentIndex - 1])
+        } else if (opendQuestionBlockIds[currentIndex + 1]) {
+          setActiveId(opendQuestionBlockIds[currentIndex + 1])
+        } else {
+          setActiveId(null)
+        }
+      }
+      setQuestionBlocksMap((map) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { [tabId]: omit, ...rest } = map
+        return rest
+      })
+    },
+    [activeId, opendQuestionBlockIds, setActiveId, setQuestionBlocksMap]
+  )
+
+  const keyDownHandler = useCallback(
+    (e: KeyboardEvent) => {
+      if (!open) return
+      console.log(e)
+      const handlers: { hotkeys: string[]; handler: (e: KeyboardEvent) => void }[] = [
+        {
+          hotkeys: ['ctrl+alt+w'],
+          handler: (e) => {
+            console.log('close', activeId)
+            e.preventDefault()
+            e.stopPropagation()
+            if (activeId) {
+              closeTabById(activeId)
+            }
+          }
+        }
+      ]
+      const matchingHandler = handlers.find((handler) =>
+        handler.hotkeys.some((hotkey) => isHotkey(hotkey, { byKey: false }, e))
+      )
+      matchingHandler?.handler(e)
+    },
+    [activeId, closeTabById, open]
+  )
+
+  useEvent('keydown', keyDownHandler)
 
   return (
     <>
@@ -234,6 +282,7 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
                       setOpen(true)
                     }}
                     storyId={storyId}
+                    closeTabById={closeTabById}
                   />
                 </React.Suspense>
               )
@@ -329,37 +378,13 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
   )
 }
 
-const TabHeader: React.FC<{ blockId: string; hovering: boolean; storyId: string }> = ({
-  blockId,
-  hovering,
-  storyId
-}) => {
-  const [questionBlocksMap, setQuestionBlocksMap] = useQuestionEditorBlockMapState(storyId)
-  const [activeId, setActiveId] = useQuestionEditorActiveIdState(storyId)
-  const opendQuestionBlockIds = useMemo(() => {
-    return Object.keys(questionBlocksMap)
-  }, [questionBlocksMap])
-
-  const closeTabById = useCallback(
-    (tabId: string) => {
-      const currentIndex = opendQuestionBlockIds.findIndex((id) => id === tabId)
-      if (tabId === activeId) {
-        if (opendQuestionBlockIds[currentIndex - 1]) {
-          setActiveId(opendQuestionBlockIds[currentIndex - 1])
-        } else if (opendQuestionBlockIds[currentIndex + 1]) {
-          setActiveId(opendQuestionBlockIds[currentIndex + 1])
-        } else {
-          setActiveId(null)
-        }
-      }
-      setQuestionBlocksMap((map) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { [tabId]: omit, ...rest } = map
-        return rest
-      })
-    },
-    [activeId, opendQuestionBlockIds, setActiveId, setQuestionBlocksMap]
-  )
+const TabHeader: React.FC<{
+  blockId: string
+  hovering: boolean
+  storyId: string
+  closeTabById: (tabId: string) => void
+}> = ({ blockId, hovering, storyId, closeTabById }) => {
+  const [questionBlocksMap] = useQuestionEditorBlockMapState(storyId)
 
   const closeTabByIdAndCheckDraft = useCallback(
     (tabId: string) => {
@@ -435,7 +460,8 @@ const QuestionTab: React.FC<{
   isOpen: boolean
   onClick: () => void
   storyId: string
-}> = ({ id, tab, isActive, isOpen, onClick, storyId }) => {
+  closeTabById: (tabId: string) => void
+}> = ({ id, tab, isActive, isOpen, onClick, storyId, closeTabById }) => {
   const [bindHoveringEvents, isHovering] = useBindHovering()
 
   return (
@@ -468,7 +494,7 @@ const QuestionTab: React.FC<{
             `
       )}
     >
-      <TabHeader blockId={id} hovering={isHovering} storyId={storyId} />
+      <TabHeader blockId={id} hovering={isHovering} storyId={storyId} closeTabById={closeTabById} />
     </Tab>
   )
 }

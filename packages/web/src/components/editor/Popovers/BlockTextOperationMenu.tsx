@@ -121,16 +121,12 @@ export const BlockTextOperationMenu = (props: { storyId: string }) => {
 
   useEffect(() => {
     if (mouseDownRef.current) return
-    if (selectionString?.length) {
-      setOpen(true)
-    } else {
-      setOpen(false)
-    }
+    setOpen(true)
   }, [selectionState, selectionString?.length])
 
   return createPortal(
     <AnimatePresence>
-      {open && range && currentBlockId && selectionString?.length && (
+      {open && range && currentBlockId && (
         <BlockTextOperationMenuInner
           currentBlockId={currentBlockId}
           setOpen={setOpen}
@@ -365,6 +361,7 @@ const BlockTextOperationMenuInner = ({
       if (!tokenRange || !currentBlock) {
         return
       }
+      console.log(tokenRange, currentBlock)
       if (markdMap.get(Editor.InlineType.Formula)) {
         const splitedTokens = splitToken(currentBlock?.content?.title || [])
         const transformedTokens = applyTransformOnSplitedTokens(splitedTokens, tokenRange, (): Editor.Token => {
@@ -375,76 +372,27 @@ const BlockTextOperationMenuInner = ({
         editor?.updateBlockTitle?.(currentBlock.id, mergedTokens)
       } else {
         const splitedTokens = splitToken(currentBlock?.content?.title || [])
-        const transformedTokens = applyTransformOnSplitedTokens(splitedTokens, tokenRange, (): Editor.Token => {
-          const uniqueMarks = addMark([], Editor.InlineType.Formula, [formula])
-          return [TelleryGlyph.FORMULA, uniqueMarks]
-        })
-        const mergedTokens = mergeTokens([
-          ...transformedTokens.slice(0, tokenRange.start + 1),
-          ...transformedTokens.slice(tokenRange.end)
-        ])
-        editor?.updateBlockTitle?.(currentBlock.id, mergedTokens)
+        if (tokenRange.start === tokenRange.end) {
+          const mergedTokens = mergeTokens([
+            ...splitedTokens.slice(0, tokenRange.start + 1),
+            [TelleryGlyph.FORMULA, addMark([], Editor.InlineType.Formula, [formula])]
+          ])
+          editor?.updateBlockTitle?.(currentBlock.id, mergedTokens)
+        } else {
+          const transformedTokens = applyTransformOnSplitedTokens(splitedTokens, tokenRange, (): Editor.Token => {
+            const uniqueMarks = addMark([], Editor.InlineType.Formula, [formula])
+            return [TelleryGlyph.FORMULA, uniqueMarks]
+          })
+          const mergedTokens = mergeTokens([
+            ...transformedTokens.slice(0, tokenRange.start + 1),
+            ...transformedTokens.slice(tokenRange.end)
+          ])
+          editor?.updateBlockTitle?.(currentBlock.id, mergedTokens)
+        }
       }
     },
     [currentBlock, editor, markdMap, tokenRange]
   )
-
-  useEffect(() => {
-    const onKeyDown = (e: globalThis.KeyboardEvent) => {
-      if (!selectedTokens.length) {
-        return
-      }
-      if (inlineEditing) {
-        return
-      }
-      const handlers = [
-        {
-          hotkeys: ['mod+b'],
-          handler: () => markHandler(Editor.InlineType.Bold, [], !!markdMap.get(Editor.InlineType.Bold))
-        },
-        {
-          hotkeys: ['mod+i'],
-          handler: () => markHandler(Editor.InlineType.Italic, [], !!markdMap.get(Editor.InlineType.Italic))
-        },
-        {
-          hotkeys: ['mod+u'],
-          handler: () => markHandler(Editor.InlineType.Underline, [], !!markdMap.get(Editor.InlineType.Underline))
-        },
-        {
-          hotkeys: ['mod+e'],
-          handler: () => markHandler(Editor.InlineType.Code, [], !!markdMap.get(Editor.InlineType.Code))
-        },
-        {
-          hotkeys: ['mod+y'],
-          handler: () => markHandler(Editor.InlineType.Strike, [], !!markdMap.get(Editor.InlineType.Strike))
-        },
-        // {
-        //   hotkeys: ['mod+r'],
-        //   handler: (e) => {
-        //     e.preventDefault()
-        //     toggleReference()
-        //   }
-        // },
-        {
-          hotkeys: ['mod+h'],
-          handler: () =>
-            markHandler(Editor.InlineType.Hightlighted, ['orange'], !!markdMap.get(Editor.InlineType.Hightlighted))
-        }
-      ]
-
-      const matchingHandler = handlers.find((handler) =>
-        handler.hotkeys.some((hotkey) => isHotkey(hotkey, { byKey: true }, e))
-      )
-      if (matchingHandler) {
-        e.preventDefault()
-        matchingHandler?.handler()
-      }
-    }
-    document.addEventListener('keydown', onKeyDown)
-    return () => {
-      document.removeEventListener('keydown', onKeyDown)
-    }
-  }, [inlineEditing, markHandler, markdMap, selectedTokens, toggleReference])
 
   const [openFormulaPopover, setOpenFormulaPopover] = useInlineFormulaPopoverState()
   const setInlineEditing = useSetInlineEditing()
@@ -471,6 +419,63 @@ const BlockTextOperationMenuInner = ({
     [editor, setInlineEditing, setOpenFormulaPopover]
   )
 
+  const keydownHandler = useCallback(
+    (e: globalThis.KeyboardEvent) => {
+      // if (!selectedTokens.length) {
+      //   return
+      // }
+      if (inlineEditing) {
+        return
+      }
+      const handlers = [
+        {
+          hotkeys: ['mod+shift+e'],
+          handler: () => {
+            e.preventDefault()
+            e.stopPropagation()
+            setOpenFormulaPopover(true)
+          }
+        },
+        {
+          hotkeys: ['mod+b'],
+          handler: () => markHandler(Editor.InlineType.Bold, [], !!markdMap.get(Editor.InlineType.Bold))
+        },
+        {
+          hotkeys: ['mod+i'],
+          handler: () => markHandler(Editor.InlineType.Italic, [], !!markdMap.get(Editor.InlineType.Italic))
+        },
+        {
+          hotkeys: ['mod+u'],
+          handler: () => markHandler(Editor.InlineType.Underline, [], !!markdMap.get(Editor.InlineType.Underline))
+        },
+        {
+          hotkeys: ['mod+e'],
+          handler: () => markHandler(Editor.InlineType.Code, [], !!markdMap.get(Editor.InlineType.Code))
+        },
+        {
+          hotkeys: ['mod+y'],
+          handler: () => markHandler(Editor.InlineType.Strike, [], !!markdMap.get(Editor.InlineType.Strike))
+        },
+        {
+          hotkeys: ['mod+h'],
+          handler: () =>
+            markHandler(Editor.InlineType.Hightlighted, ['orange'], !!markdMap.get(Editor.InlineType.Hightlighted))
+        }
+      ]
+
+      const matchingHandler = handlers.find((handler) =>
+        handler.hotkeys.some((hotkey) => isHotkey(hotkey, { byKey: true }, e))
+      )
+      if (matchingHandler) {
+        e.preventDefault()
+        matchingHandler?.handler()
+      }
+    },
+    [inlineEditing, markHandler, markdMap, setOpenFormulaPopover]
+  )
+
+  useEvent('keydown', keydownHandler)
+
   useEffect(() => {
     if (openFormulaPopover) {
       setInlineEditing(true)
@@ -492,7 +497,7 @@ const BlockTextOperationMenuInner = ({
         z-index: 1000;
       `}
     >
-      {!openFormulaPopover && (
+      {!openFormulaPopover && selectionString.length !== 0 && (
         <motion.div
           initial={'inactive'}
           animate={'active'}

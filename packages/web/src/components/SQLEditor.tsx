@@ -59,6 +59,10 @@ export function SQLEditor(props: {
 
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => onSave?.current())
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => onRun?.current())
+    editor.onKeyDown((e) => {
+      console.log(e)
+      // e.preventDefault()
+    })
     return () => {
       unsubscribe.dispose()
     }

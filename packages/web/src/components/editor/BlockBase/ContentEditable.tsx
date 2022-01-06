@@ -137,7 +137,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
     const element = editbleRef.current
     if (!element) return
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey || e.metaKey) {
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey) {
         switch (e.key) {
           case 'B':
           case 'b':
