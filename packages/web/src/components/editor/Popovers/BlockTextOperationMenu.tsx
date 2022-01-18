@@ -166,6 +166,7 @@ const BlockTextOperationMenuInner = ({
       if (!tokens || !focus || !anchor) return
       const start = tokenPosition2SplitedTokenPosition(tokens, anchor.nodeIndex, anchor?.offset) ?? 0
       const end = tokenPosition2SplitedTokenPosition(tokens, focus.nodeIndex, focus?.offset) ?? 0
+
       return { start, end }
     } else {
       setOpen(false)
@@ -361,7 +362,6 @@ const BlockTextOperationMenuInner = ({
       if (!tokenRange || !currentBlock) {
         return
       }
-      console.log(tokenRange, currentBlock)
       if (markdMap.get(Editor.InlineType.Formula)) {
         const splitedTokens = splitToken(currentBlock?.content?.title || [])
         const transformedTokens = applyTransformOnSplitedTokens(splitedTokens, tokenRange, (): Editor.Token => {

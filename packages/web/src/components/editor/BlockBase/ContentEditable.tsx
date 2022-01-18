@@ -499,10 +499,12 @@ const _ContentEditable: React.ForwardRefRenderFunction<
             if (formula) {
               e.preventDefault()
               e.stopPropagation()
-              setInlineformulaPopoverState(true)
               const range = new Range()
               range.selectNodeContents(tokenElement)
               restoreRange(range)
+              setTimeout(() => {
+                setInlineformulaPopoverState(true)
+              }, 0)
               editor?.setSelectionState({
                 storyId: block.storyId!,
                 type: TellerySelectionType.Inline,
