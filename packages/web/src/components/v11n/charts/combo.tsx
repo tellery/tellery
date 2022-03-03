@@ -533,7 +533,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
     }, [yAxises, y2Axises, dimensions, filter, records, xAxises, displayTypes])
     // convert result to support stack 100%
     const result100 = useMemo(() => {
-      return result.map((item) => {
+      const resultArray = result.map((item) => {
         const leftSum =
           props.config.groups.find((group) => group.key === 'left')?.stackType === ComboStack.STACK_100
             ? sum(props.config.shapes.filter((shape) => shape.groupId === 'left').map((shape) => item.value[shape.key]))
@@ -557,7 +557,22 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
           )
         }
       })
-    }, [result, props.config.shapes, props.config.groups])
+
+      console.log(displayTypes)
+
+      if (props.config.xType === 'linear' && xAxises.length === 1 && isNumeric(displayTypes[xAxises[0]])) {
+        ;(
+          resultArray as {
+            key: number
+            value: {
+              [x: string]: unknown
+            }
+          }[]
+        ).sort((a, b) => a.key - b.key)
+      }
+
+      return resultArray
+    }, [result, displayTypes, props.config.xType, props.config.groups, props.config.shapes, xAxises])
     const [hoverDataKey, setHoverDataKey] = useState<string>()
     const handleMouseLeave = useCallback(() => {
       setHoverDataKey(undefined)
