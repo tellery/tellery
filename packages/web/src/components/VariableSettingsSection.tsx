@@ -55,7 +55,7 @@ export const VariableSettingsSection: React.FC<{ storyId: string; blockId: strin
   const [, setVariableValue] = useVariableCurrentValueState(block.storyId!, variableName)
 
   const handleUpdateVariableType = useCallback(
-    (value: 'number' | 'text' | 'transclusion') => {
+    (value: 'text' | 'number' | 'transclusion' | 'decimal' | 'float') => {
       blockTranscations.updateBlockProps(block.storyId!, block.id, ['content', 'type'], value)
     },
     [block.id, block.storyId, blockTranscations]
@@ -89,10 +89,10 @@ export const VariableSettingsSection: React.FC<{ storyId: string; blockId: strin
             width: 130px;
           `}
           onChange={(e) => {
-            handleUpdateVariableType(e.target.value as 'text' | 'number' | 'transclusion')
+            handleUpdateVariableType(e.target.value as 'text' | 'number' | 'transclusion' | 'float')
           }}
         >
-          {['text', 'number', 'transclusion'].map((name) => {
+          {['text', 'number', 'transclusion', 'float'].map((name) => {
             return <option key={name}>{name}</option>
           })}
         </FormSelect>
@@ -100,7 +100,7 @@ export const VariableSettingsSection: React.FC<{ storyId: string; blockId: strin
 
       <FormItem>
         <Label>Default value</Label>
-        {(block.content.type === 'text' || block.content.type === 'number') && (
+        {(block.content.type === 'text' || block.content.type === 'number' || block.content.type === 'float') && (
           <VariableFormInput
             value={block.content.defaultValue}
             onChange={(e) => {

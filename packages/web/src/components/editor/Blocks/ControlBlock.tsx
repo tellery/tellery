@@ -162,17 +162,38 @@ const _ControlBlock: BlockComponent<
             />
           </>
         )}
-        {block.content.type === 'number' && (
+        {(block.content.type === 'number' || block.content.type === 'decimal') && (
           <StyledInput
             onBlur={(e) => {
               const value = parseInt(e.currentTarget.value, 10)
               submitChange(value)
             }}
-            placeholder="input number"
+            placeholder="input decimal number"
             type="number"
             ref={inputRef}
             onKeyDown={(e) => {
               const value = parseInt(e.currentTarget.value, 10)
+              if (e.key === 'Enter' && e.shiftKey === false) {
+                e.preventDefault()
+                e.stopPropagation()
+                e.currentTarget.blur()
+                submitChange(value)
+              } else {
+                e.stopPropagation()
+              }
+            }}
+          />
+        )}
+        {block.content.type === 'float' && (
+          <StyledInput
+            onBlur={(e) => {
+              submitChange(e.currentTarget.value)
+            }}
+            placeholder="input float number"
+            type="text"
+            ref={inputRef}
+            onKeyDown={(e) => {
+              const value = e.currentTarget.value
               if (e.key === 'Enter' && e.shiftKey === false) {
                 e.preventDefault()
                 e.stopPropagation()

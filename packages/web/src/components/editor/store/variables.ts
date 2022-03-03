@@ -19,7 +19,7 @@ export interface TelleryVariable {
   defaultValue: unknown
   currentValue: unknown
   blockId: string
-  type: 'text' | 'number' | 'transclusion'
+  type: 'text' | 'number' | 'transclusion' | 'decimal' | 'float'
 }
 
 export const StoryVariables = selectorFamily<Record<string, TelleryVariable>, string>({

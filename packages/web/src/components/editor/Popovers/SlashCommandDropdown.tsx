@@ -319,10 +319,18 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
         icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
       },
       {
-        title: 'Number Input',
+        title: 'Number Input (Decimal)',
         action: createOrToggleBlock({
           type: Editor.BlockType.Control,
           content: { type: 'number' } as any
+        }),
+        icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
+      },
+      {
+        title: 'Number Input (Float)',
+        action: createOrToggleBlock({
+          type: Editor.BlockType.Control,
+          content: { type: 'float' } as any
         }),
         icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
       }
