@@ -558,8 +558,6 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
         }
       })
 
-      console.log(displayTypes)
-
       if (props.config.xType === 'linear' && xAxises.length === 1 && isNumeric(displayTypes[xAxises[0]])) {
         ;(
           resultArray as {
