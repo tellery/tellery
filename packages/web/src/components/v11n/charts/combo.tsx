@@ -881,7 +881,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
             ]}
           />
           <Tooltip
-            cursor={false}
+            // cursor={false}
             wrapperStyle={{ zIndex: 9999999 }}
             isAnimationActive={false}
             allowEscapeViewBox={{ x: false, y: true }}
@@ -889,7 +889,8 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
               <CustomTooltip
                 displayTypes={displayTypes}
                 labelName={props.config.xAxises.length === 1 ? props.config.xAxises[0] : undefined}
-                hide={hoverDataKey === undefined}
+                // hide={hoverDataKey === undefined}
+                hide={false}
                 formatter={(value: unknown, name: string) =>
                   name.endsWith(trendSuffix)
                     ? [null, null]
