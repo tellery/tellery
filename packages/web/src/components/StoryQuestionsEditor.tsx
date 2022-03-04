@@ -637,10 +637,10 @@ export const StoryQuestionEditor: React.FC<{
       refreshSnapshot.execute(queryBlock).then((res) => {
         if (res.errMsg) {
           setSQLError(res.errMsg)
-          setSqlSidePanel(true)
+          // setSqlSidePanel(true)
         } else {
           setSQLError(null)
-          setSqlSidePanel(false)
+          // setSqlSidePanel(false)
         }
       })
     }, 0)
