@@ -637,10 +637,10 @@ export const StoryQuestionEditor: React.FC<{
       refreshSnapshot.execute(queryBlock).then((res) => {
         if (res.errMsg) {
           setSQLError(res.errMsg)
-          // setSqlSidePanel(true)
+          setSqlSidePanel(true)
         } else {
           setSQLError(null)
-          // setSqlSidePanel(false)
+          setSqlSidePanel(false)
         }
       })
     }, 0)
@@ -672,8 +672,8 @@ export const StoryQuestionEditor: React.FC<{
     // })
 
     // save(snapshotId)
-    sidebarEditor.open({ blockId: block.id, activeTab: 'Visualization' })
-  }, [queryBlock, sql, save, refreshSnapshot, sidebarEditor, block.id])
+    sidebarEditor.setState({ blockId: block.id, activeTab: 'Visualization' })
+  }, [queryBlock, sql, save, sidebarEditor, block.id, refreshSnapshot])
 
   const cancelExecuteSql = useCallback(() => {
     if (block?.id) {
