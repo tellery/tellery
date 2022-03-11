@@ -22,3 +22,20 @@ export const useVariableCurrentValueState = (storyId: string, name: string) => {
   )
   return [state.currentValue, setValue] as [unknown, (value: unknown) => void]
 }
+
+export const useVariableDefaultValueState = (storyId: string, name: string) => {
+  const [state, setState] = useRecoilState(VariableAtomFamily({ storyId, name }))
+  const setValue = useCallback(
+    (value: unknown) => {
+      setState((oldState) => {
+        return {
+          ...oldState,
+          defaultValue: value,
+          currentValue: value
+        }
+      })
+    },
+    [setState]
+  )
+  return [state.currentValue, setValue] as [unknown, (value: unknown) => void]
+}

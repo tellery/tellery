@@ -35,7 +35,6 @@ const _ControlBlock: BlockComponent<
   const variableName = block.content.name ?? block.id
   const [variableValue, setVariableValue] = useVariableCurrentValueState(block.storyId!, variableName)
   const defaultValue = block.content.defaultValue
-  const isDefaultValue = defaultValue === variableValue
   const sideBarVariableEditor = useSideBarVariableEditor(block.storyId!)
 
   useEffect(() => {

@@ -16,6 +16,6 @@ export const useGetCompiledQuery = () => {
       },
     []
   )
-  // const getCompiledSQL = useCallback([getRecoilValue])
+
   return getCompiledSQL
 }

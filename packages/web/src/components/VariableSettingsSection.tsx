@@ -4,8 +4,8 @@ import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { css } from '@emotion/css'
 import styled from '@emotion/styled'
-import React, { useCallback } from 'react'
-import { useVariableCurrentValueState } from './editor/hooks/useVariable'
+import React, { useCallback, useEffect, useState } from 'react'
+import { useVariableCurrentValueState, useVariableDefaultValueState } from './editor/hooks/useVariable'
 import FormInput from './kit/FormInput'
 import FormSelect from './kit/FormSelect'
 import { QueryBlockSelectInput } from './QueryBlockSelectInput'
@@ -44,15 +44,14 @@ const VariableFormInput = styled(FormInput)`
 export const VariableSettingsSection: React.FC<{ storyId: string; blockId: string }> = ({ storyId, blockId }) => {
   const block = useBlockSuspense<Editor.ControlBlock>(blockId)
   const blockTranscations = useBlockTranscations()
+  const [defaultValue, setDefaultValue] = useState<string>(block.content?.defaultValue)
+
   const handleUpdateVariableName = useCallback(
     (value: string) => {
       blockTranscations.updateBlockProps(block.storyId!, block.id, ['content', 'name'], value)
     },
     [block.id, block.storyId, blockTranscations]
   )
-
-  const variableName = block.content.name ?? block.id
-  const [, setVariableValue] = useVariableCurrentValueState(block.storyId!, variableName)
 
   const handleUpdateVariableType = useCallback(
     (value: 'text' | 'number' | 'transclusion' | 'decimal' | 'float') => {
@@ -63,11 +62,17 @@ export const VariableSettingsSection: React.FC<{ storyId: string; blockId: strin
 
   const handleUpdateDefaultValue = useCallback(
     (value: string) => {
-      setVariableValue(value)
       blockTranscations.updateBlockProps(block.storyId!, block.id, ['content', 'defaultValue'], value)
+      // setVariableValue(value)
     },
-    [block.id, block.storyId, blockTranscations, setVariableValue]
+    [block.id, block.storyId, blockTranscations]
   )
+
+  useEffect(() => {
+    if (defaultValue !== block.content?.defaultValue) {
+      handleUpdateDefaultValue(defaultValue)
+    }
+  }, [block.content?.defaultValue, defaultValue, handleUpdateDefaultValue])
 
   return (
     <div>
@@ -102,9 +107,9 @@ export const VariableSettingsSection: React.FC<{ storyId: string; blockId: strin
         <Label>Default value</Label>
         {(block.content.type === 'text' || block.content.type === 'number' || block.content.type === 'float') && (
           <VariableFormInput
-            value={block.content.defaultValue}
+            value={defaultValue}
             onChange={(e) => {
-              handleUpdateDefaultValue(e.currentTarget.value)
+              setDefaultValue(e.currentTarget.value)
             }}
           ></VariableFormInput>
         )}
