@@ -10,7 +10,6 @@ import type { Chart } from './base'
 import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 import IconButton from '@app/components/kit/IconButton'
 import Tippy from '@tippyjs/react'
-import PerfectScrollbar from 'react-perfect-scrollbar'
 import { ConfigSection } from '../components/ConfigSection'
 import { ConfigTab } from '../components/ConfigTab'
 
@@ -184,11 +183,11 @@ export const table: Chart<Type.TABLE> = {
           color: ${ThemingVariables.colors.text[0]};
         `}
       >
-        <PerfectScrollbar
-          options={{ suppressScrollY: true }}
+        <div
           className={css`
             flex: 1;
             width: 100%;
+            overflow-x: auto;
           `}
         >
           <table
@@ -261,7 +260,7 @@ export const table: Chart<Type.TABLE> = {
               ))}
             </tbody>
           </table>
-        </PerfectScrollbar>
+        </div>
         <div
           className={css`
             height: ${tableRowHeight}px;
