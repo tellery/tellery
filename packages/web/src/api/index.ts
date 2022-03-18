@@ -314,6 +314,33 @@ export async function getCollectionSchema(props: {
     .then((res) => res.data.fields)
 }
 
+const getJsonSize = (json: string) => {
+  return new Blob([json]).size
+}
+
+const limitRecordsBySize = (data: Data, sizeLimit: number) => {
+  let upperBoundary = data.records.length
+  let lowerBoundary = 0
+  let cursor = upperBoundary
+
+  while (true) {
+    const trimedData = {
+      ...data,
+      records: data.records.slice(0, cursor)
+    } as Data
+    const size = getJsonSize(JSON.stringify(trimedData))
+    if (size >= sizeLimit) {
+      upperBoundary = cursor - 1
+    } else {
+      if (upperBoundary - cursor <= 1) {
+        return trimedData
+      }
+      lowerBoundary = cursor
+    }
+    cursor = Math.floor((upperBoundary + lowerBoundary) / 2)
+  }
+}
+
 export const sqlRequest = ({
   workspaceId,
   sql,
@@ -349,7 +376,7 @@ export const sqlRequest = ({
     )
     .then((res) => {
       const data = res.data as Data
-      const { fields, records, errMsg } = data
+      const { fields, records, errMsg } = limitRecordsBySize(data, 1 * 1024 * 1024)
       const count: { [key: string]: number } = {}
       return {
         fields: fields?.map(({ name, ...rest }) => {
@@ -364,6 +391,7 @@ export const sqlRequest = ({
       }
     })
     .catch((err) => {
+      console.error(err)
       throw err.response.data
     })
 
