@@ -376,7 +376,7 @@ export const sqlRequest = ({
     )
     .then((res) => {
       const data = res.data as Data
-      const { fields, records, errMsg } = limitRecordsBySize(data, 1 * 1024 * 1024)
+      const { fields, records, errMsg } = limitRecordsBySize(data, 10 * 1024 * 1024)
       const count: { [key: string]: number } = {}
       return {
         fields: fields?.map(({ name, ...rest }) => {
