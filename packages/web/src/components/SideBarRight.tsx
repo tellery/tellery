@@ -245,7 +245,7 @@ export const VariableSideBar: React.FC<{ storyId: string; blockId: string }> = (
 
       <TabPanel {...tab}>
         <React.Suspense fallback={<></>}>
-          <VariableSettingsSection storyId={storyId} blockId={blockId} />
+          <VariableSettingsSection storyId={storyId} blockId={blockId} key={blockId} />
         </React.Suspense>
       </TabPanel>
       {/* <TabPanel {...tab}>
