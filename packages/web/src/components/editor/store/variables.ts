@@ -1,6 +1,6 @@
 import { QuerySnapshotAtom, TelleryStoryBlocks } from '@app/store/block'
 import { Editor } from '@app/types'
-import { BLOCK_ID_REGX, VARIABLE_REGEX } from '@app/utils'
+import { BLOCK_ID_REGX, VariableType, VARIABLE_REGEX } from '@app/utils'
 import * as math from 'mathjs'
 import { atomFamily, selectorFamily } from 'recoil'
 import invariant from 'tiny-invariant'
@@ -19,7 +19,7 @@ export interface TelleryVariable {
   defaultValue: unknown
   currentValue: unknown
   blockId: string
-  type: 'text' | 'number' | 'transclusion' | 'decimal' | 'float'
+  type: VariableType
 }
 
 export const StoryVariables = selectorFamily<Record<string, TelleryVariable>, string>({

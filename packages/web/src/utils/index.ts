@@ -9,6 +9,8 @@ import { Editor } from '@app/types'
 import { mergeTokens } from '@app/components/editor'
 export const DRAG_HANDLE_WIDTH = 4
 
+export type VariableType = 'text' | 'number' | 'transclusion' | 'decimal' | 'float' | 'macro'
+
 export const trasnformPasteBlockLinkToTransclusion = async (
   text: string,
   getBlock: (blockId: string) => Promise<Editor.BaseBlock>

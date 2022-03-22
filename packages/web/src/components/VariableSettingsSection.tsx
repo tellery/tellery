@@ -2,6 +2,7 @@ import { useBlockSuspense, useGetBlock } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
+import { VariableType } from '@app/utils'
 import { css } from '@emotion/css'
 import styled from '@emotion/styled'
 import React, { useCallback, useEffect, useState } from 'react'
@@ -41,6 +42,8 @@ const VariableFormInput = styled(FormInput)`
   padding: 0 8px;
 `
 
+const VariableTypes: VariableType[] = ['text', 'number', 'transclusion', 'float', 'macro']
+
 export const VariableSettingsSection: React.FC<{ storyId: string; blockId: string }> = ({ storyId, blockId }) => {
   const block = useBlockSuspense<Editor.ControlBlock>(blockId)
   const blockTranscations = useBlockTranscations()
@@ -54,7 +57,7 @@ export const VariableSettingsSection: React.FC<{ storyId: string; blockId: strin
   )
 
   const handleUpdateVariableType = useCallback(
-    (value: 'text' | 'number' | 'transclusion' | 'decimal' | 'float') => {
+    (value: VariableType) => {
       blockTranscations.updateBlockProps(block.storyId!, block.id, ['content', 'type'], value)
     },
     [block.id, block.storyId, blockTranscations]
@@ -94,10 +97,10 @@ export const VariableSettingsSection: React.FC<{ storyId: string; blockId: strin
             width: 130px;
           `}
           onChange={(e) => {
-            handleUpdateVariableType(e.target.value as 'text' | 'number' | 'transclusion' | 'float')
+            handleUpdateVariableType(e.target.value as VariableType)
           }}
         >
-          {['text', 'number', 'transclusion', 'float'].map((name) => {
+          {VariableTypes.map((name) => {
             return <option key={name}>{name}</option>
           })}
         </FormSelect>
@@ -105,7 +108,10 @@ export const VariableSettingsSection: React.FC<{ storyId: string; blockId: strin
 
       <FormItem>
         <Label>Default value</Label>
-        {(block.content.type === 'text' || block.content.type === 'number' || block.content.type === 'float') && (
+        {(block.content.type === 'text' ||
+          block.content.type === 'number' ||
+          block.content.type === 'float' ||
+          block.content.type === 'macro') && (
           <VariableFormInput
             value={defaultValue}
             onChange={(e) => {

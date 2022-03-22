@@ -133,7 +133,7 @@ const _ControlBlock: BlockComponent<
           overflow: hidden;
         `}
       >
-        {block.content.type === 'text' && (
+        {(block.content.type === 'text' || block.content.type === 'macro') && (
           <StyledInput
             onBlur={(e) => {
               submitChange(e.currentTarget.value)

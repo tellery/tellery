@@ -1,6 +1,7 @@
 /// <reference types="resize-observer-browser" />
 import type { Config, Type, Data, SQLType } from '../components/v11n/types'
 import type { MotionValue } from 'framer-motion'
+import { VariableType } from '@app/utils'
 
 // fix https://github.com/framer/motion/issues/840
 declare module 'framer-motion' {
@@ -322,7 +323,7 @@ export namespace Editor {
     content: ContentBlock['content'] & {
       name: string
       defaultValue: any
-      type: 'text' | 'number' | 'transclusion' | 'decimal' | 'float'
+      type: VariableType
     }
   }
 

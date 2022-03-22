@@ -32,6 +32,7 @@ export const QuerySelectorFamily = selectorFamily<
           }
           if (variable.currentValue !== undefined) {
             if (variable.type === 'text') return `'${variable.currentValue}'`
+            if (variable.type === 'macro') return `${variable.currentValue}`
             if (variable.type === 'number' || variable.type === 'decimal' || variable.type === 'float')
               return `${variable.currentValue}`
             if (variable.type === 'transclusion') return `{{${variable.currentValue}}}`
