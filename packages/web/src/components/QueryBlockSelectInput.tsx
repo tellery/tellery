@@ -18,9 +18,12 @@ export const QueryBlockSelectInput: React.FC<{ onChange: (blockId: string) => vo
   const { data, isLoading } = useSearchBlocks(keyword, 10, Editor.BlockType.SQL, { suspense: false })
   const items = useMemo(() => {
     return (
-      data?.searchResults.map((blockId) => {
-        return data.blocks[blockId]
-      }) ?? []
+      data?.searchResults
+        .map((blockId) => {
+          return data.blocks[blockId]
+        })
+        // TODO: search result should not return undefined
+        .filter((item) => !!item) ?? []
     )
   }, [data?.blocks, data?.searchResults])
 
