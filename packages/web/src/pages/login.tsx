@@ -18,7 +18,7 @@ export default function Login() {
     formState: { errors },
     handleSubmit,
     watch
-  } = useForm<{ email?: string; password?: string }>({ mode: 'onBlur' })
+  } = useForm<{ email: string; password: string }>({ mode: 'onBlur' })
   const auth = useAuth()
   const handleUserLogin = useAsync(auth.login)
   const navigate = useNavigate()

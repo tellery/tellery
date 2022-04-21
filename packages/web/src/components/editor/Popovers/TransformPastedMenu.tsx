@@ -24,6 +24,7 @@ export const TransformPastedMenu = (props: { storyId: string }) => {
     'selectionchange',
     useCallback(() => {
       const sel = document.getSelection()
+      if (sel?.type === 'None') return
       const _range = sel?.getRangeAt(0)
       _range && setRange(_range)
     }, []),

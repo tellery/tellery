@@ -91,6 +91,7 @@ export const BlockTextOperationMenu = (props: { storyId: string }) => {
     useCallback(() => {
       if (inlineEditing === true) return
       const sel = document.getSelection()
+      if (sel?.type === 'None') return
       const _range = sel?.getRangeAt(0)
       _range && setRange(_range)
     }, [inlineEditing]),

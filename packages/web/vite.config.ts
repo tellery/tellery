@@ -44,6 +44,8 @@ export default defineConfig(({ command, mode }: { command: string; mode: string 
         '/api': {
           target: process.env.DEV_PROXY_API || 'http://localhost:8000',
           changeOrigin: true,
+          secure: false,
+          ws: true,
           configure: (proxy, options) => {
             proxy.on('proxyRes', function (proxyRes, req, res) {
               const cookies = proxyRes.headers['set-cookie'] as unknown as string[]
@@ -52,6 +54,12 @@ export default defineConfig(({ command, mode }: { command: string; mode: string 
               }
             })
           }
+        },
+        '/socket.io': {
+          target: process.env.DEV_PROXY_API || 'http://localhost:8000',
+          changeOrigin: true,
+          secure: false,
+          ws: true
         }
       }
     },

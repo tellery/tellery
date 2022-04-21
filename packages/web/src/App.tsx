@@ -18,7 +18,8 @@ import IconButton from './components/kit/IconButton'
 import { IconCommonClose } from './assets/icons'
 import { loader } from '@monaco-editor/react'
 import { env } from './env'
-
+// TODO: fix react table, upgrade to v8 to solve this problem
+import 'regenerator-runtime/runtime'
 loader.config({ paths: { vs: env.MONACO_CDN } })
 
 const App: React.FC = () => {

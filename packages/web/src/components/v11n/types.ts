@@ -135,6 +135,7 @@ interface TableConfig {
   type: Type.TABLE
   columnOrder: string[]
   columnVisibility: { [key: string]: boolean }
+  displayAs?: { [key: string]: string }
 }
 
 interface ComboConfig<T extends Type = Type.COMBO> {

@@ -1,16 +1,7 @@
-import { useEffect } from 'react'
-import { useNavigate, useLocation } from 'react-router'
+import { Navigate } from 'react-router-dom'
 
 const Page = () => {
-  const navigate = useNavigate()
-  const location = useLocation()
-  useEffect(() => {
-    if (location.pathname === '/') {
-      navigate('/stories')
-    }
-  }, [location, navigate])
-
-  return <></>
+  return <Navigate to="/stories" replace></Navigate>
 }
 
 export default Page

@@ -2,11 +2,7 @@ import { SetStateAction, useAtom } from 'jotai'
 import { atomFamily, atomWithStorage, useAtomCallback } from 'jotai/utils'
 import { useCallback } from 'react'
 
-const blockLocalPreferencesAtoms = atomFamily<
-  { id: string; key: string; initValue: unknown },
-  any,
-  SetStateAction<any>
->(
+const blockLocalPreferencesAtoms = atomFamily<{ id: string; key: string; initValue: unknown }, SetStateAction<any>>(
   (param) => atomWithStorage(`${param.id}:${param.key}`, param.initValue),
   (a, b) => a.id === b.id && a.key === b.key
 )

@@ -13,11 +13,13 @@ export function ConfigSelect(props: {
   disables?: string[]
   value: string
   onChange(value: string): void
+  title?: string
 }) {
   const width = useTextWidth({ text: props.value, font: `12px ${fontFamily}` })
 
   return (
     <select
+      title={props.title}
       disabled={props.disabled}
       className={cx(
         css`
