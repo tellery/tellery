@@ -446,6 +446,28 @@ async function getCollectionSchemaRouter(ctx: Context) {
   ctx.body = { fields }
 }
 
+
+async function getCompiledSql(ctx: Context) {
+  const payload = plainToClass(ExecuteSqlRequest, ctx.request.body)
+  await validate(ctx, payload)
+  const user = mustGetUser(ctx)
+  const { workspaceId, connectorId, sql, maxRow = 1000 } = payload
+
+  const manager = await getIConnectorManagerFromDB(workspaceId, connectorId)
+
+  const { queryBuilderSpec } = await connectorService.getProfileSpec(
+    manager,
+    user.id,
+    workspaceId,
+  )
+
+  const assembledSql = await translate(sql, { queryBuilderSpec }, maxRow)
+
+  ctx.body = {
+    sql: assembledSql
+  }
+}
+
 async function execute(ctx: Context) {
   try {
     const payload = plainToClass(ExecuteSqlRequest, ctx.request.body)
@@ -549,6 +571,7 @@ router.post('/listDatabases', listDatabasesRouter)
 router.post('/listCollections', listCollectionsRouter)
 router.post('/getCollectionSchema', getCollectionSchemaRouter)
 router.post('/executeSql', execute)
+router.post('/getCompiledSql', getCompiledSql)
 router.post('/import', importFromFile)
 router.post('/translateSmartQuery', translateSmartQueryRouter)
 
