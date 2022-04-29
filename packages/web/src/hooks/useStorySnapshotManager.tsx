@@ -1,8 +1,8 @@
-import { sqlRequest, translateSmartQuery } from '@app/api'
+import { sqlRequest } from '@app/api'
 import { isExecuteableBlockType } from '@app/components/editor/Blocks/utils'
 import { QuerySelectorFamily } from '@app/components/editor/store/queries'
 import { charts } from '@app/components/v11n/charts'
-import { Type } from '@app/components/v11n/types'
+import { Data, Type } from '@app/components/v11n/types'
 import { createTranscation } from '@app/context/editorTranscations'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { QuerySnapshotIdAtom, useCreateSnapshot } from '@app/store/block'
@@ -17,9 +17,36 @@ import { useRecoilCallback, useRecoilValue, waitForAll } from 'recoil'
 import invariant from 'tiny-invariant'
 import { useBlockSuspense, useFetchStoryChunk, useGetBlock, useGetSnapshot } from './api'
 import { useCommit } from './useCommit'
-import { useGetCompiledQuery } from './useCompiledQuery'
+import { useGetQuerySql } from './useGetQuerySql'
 import { useStoryPermissions } from './useStoryPermissions'
 import { useStoryResources } from './useStoryResources'
+
+const getJsonSize = (json: string) => {
+  return new Blob([json]).size
+}
+
+const limitRecordsBySize = (data: Data, sizeLimit: number) => {
+  let upperBoundary = data.records.length
+  let lowerBoundary = 0
+  let cursor = upperBoundary
+
+  while (true) {
+    const trimedData = {
+      ...data,
+      records: data.records.slice(0, cursor)
+    } as Data
+    const size = getJsonSize(JSON.stringify(trimedData))
+    if (size >= sizeLimit) {
+      upperBoundary = cursor - 1
+    } else {
+      if (upperBoundary - cursor <= 1) {
+        return trimedData
+      }
+      lowerBoundary = cursor
+    }
+    cursor = Math.floor((upperBoundary + lowerBoundary) / 2)
+  }
+}
 
 export const useRefreshSnapshot = (storyId: string) => {
   const commit = useCommit()
@@ -28,29 +55,13 @@ export const useRefreshSnapshot = (storyId: string) => {
   const createSnapshot = useCreateSnapshot()
   const getSnapshot = useGetSnapshot()
   const getBlock = useGetBlock()
-  const getCompiledQuery = useGetCompiledQuery()
+  const getQuerySql = useGetQuerySql()
 
   const execute = useRecoilCallback(
     ({ set, reset }) =>
       async (queryBlock: Editor.QueryBlock) => {
         const originalBlockId = queryBlock.id
-        const { query, isTemp } = await getCompiledQuery(storyId, queryBlock.id)
-        let sql = ''
-        if (query.type === 'sql') {
-          sql = query.data
-        } else if (query.type === 'smart') {
-          const { queryBuilderId, metricIds, dimensions, filters } = JSON.parse(query.data)
-          sql = (
-            await translateSmartQuery(
-              workspace.id,
-              workspace.preferences?.connectorId!,
-              queryBuilderId,
-              metricIds,
-              dimensions,
-              filters
-            )
-          ).data.sql
-        }
+        const { sql, isTemp } = await getQuerySql(storyId, queryBlock)
         const mutations = queryClient
           .getMutationCache()
           .getAll()
@@ -103,7 +114,7 @@ export const useRefreshSnapshot = (storyId: string) => {
               snapshotId,
               questionId: originalBlockId,
               sql: sql,
-              data: data,
+              data: limitRecordsBySize(data, 10 * 1024 * 1024),
               workspaceId: workspace.id
             })
             const prevSnapshot = await getSnapshot({ snapshotId: queryBlock?.content?.snapshotId })
@@ -168,16 +179,16 @@ export const useRefreshSnapshot = (storyId: string) => {
         })
       },
     [
-      commit,
-      createSnapshot,
-      getSnapshot,
-      getBlock,
-      getCompiledQuery,
-      queryClient,
+      getQuerySql,
       storyId,
+      queryClient,
       workspace.id,
       workspace.preferences.connectorId,
-      workspace.preferences.profile
+      workspace.preferences.profile,
+      createSnapshot,
+      getSnapshot,
+      commit,
+      getBlock
     ]
   )
 

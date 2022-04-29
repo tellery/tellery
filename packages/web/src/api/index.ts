@@ -10,6 +10,7 @@ import JSON5 from 'json5'
 
 import { wrapAuth } from './auth'
 import type { Transcation } from '@app/hooks/useCommit'
+import { RECORD_LIMIT } from '@app/utils'
 
 export const request = wrapAuth(axios.create({ baseURL: '', withCredentials: true }))
 
@@ -36,6 +37,40 @@ export const translateSmartQuery = async (
     dimensions,
     filters
   })
+}
+
+export const getCompiledSql = ({
+  workspaceId,
+  sql,
+  questionId,
+  connectorId,
+  profile,
+  maxRow = RECORD_LIMIT
+}: {
+  workspaceId: string
+  sql: string
+  questionId?: string
+  connectorId: string
+  profile: string
+  maxRow?: number
+}) => {
+  return request
+    .post('/api/connectors/getCompiledSql', {
+      connectorId,
+      sql,
+      workspaceId,
+      questionId,
+      profile,
+      maxRow
+    })
+    .then((res) => {
+      const { sql } = res.data as { sql: string }
+      return sql
+    })
+    .catch((err) => {
+      console.error(err)
+      throw err.response.data
+    })
 }
 
 export const getWorkspaceList = async () =>
@@ -314,40 +349,13 @@ export async function getCollectionSchema(props: {
     .then((res) => res.data.fields)
 }
 
-const getJsonSize = (json: string) => {
-  return new Blob([json]).size
-}
-
-const limitRecordsBySize = (data: Data, sizeLimit: number) => {
-  let upperBoundary = data.records.length
-  let lowerBoundary = 0
-  let cursor = upperBoundary
-
-  while (true) {
-    const trimedData = {
-      ...data,
-      records: data.records.slice(0, cursor)
-    } as Data
-    const size = getJsonSize(JSON.stringify(trimedData))
-    if (size >= sizeLimit) {
-      upperBoundary = cursor - 1
-    } else {
-      if (upperBoundary - cursor <= 1) {
-        return trimedData
-      }
-      lowerBoundary = cursor
-    }
-    cursor = Math.floor((upperBoundary + lowerBoundary) / 2)
-  }
-}
-
 export const sqlRequest = ({
   workspaceId,
   sql,
   questionId,
   connectorId,
   profile,
-  maxRow = 1000
+  maxRow = RECORD_LIMIT
 }: {
   workspaceId: string
   sql: string
@@ -376,7 +384,7 @@ export const sqlRequest = ({
     )
     .then((res) => {
       const data = res.data as Data
-      const { fields, records, errMsg } = limitRecordsBySize(data, 10 * 1024 * 1024)
+      const { fields, records, errMsg } = data
       const count: { [key: string]: number } = {}
       return {
         fields: fields?.map(({ name, ...rest }) => {

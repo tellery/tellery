@@ -35,6 +35,8 @@ export enum TELLERY_MIME_TYPES {
   TOKEN = 'text/tellery-tokens-v1',
   MONACO = 'vscode-editor-data'
 }
+
+export const RECORD_LIMIT = 5000
 export const VARIABLE_REGEX = /\{\{([a-z|A-Z|0-9|_|-]{0,20})\}\}/g
 
 export const BLOCK_ID_REGX = /\{\{([a-z|A-Z|0-9|_|-]{21})\}\}/g

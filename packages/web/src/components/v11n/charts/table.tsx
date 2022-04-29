@@ -382,6 +382,8 @@ export const table: Chart<Type.TABLE> = {
               flex: 1;
               width: 100%;
               overflow-x: auto;
+              /* TODO: append scrollbar size to prevent this */
+              overflow-y: hidden;
             `}
           >
             <table

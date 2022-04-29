@@ -1,3 +1,4 @@
+import { getCompiledSql } from '@app/api'
 import {
   IconCommonLink,
   IconCommonLock,
@@ -15,12 +16,16 @@ import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { env } from '@app/env'
 import { useBlockSuspense, useGetSnapshot, useQuerySnapshotId, useUser } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
+import { useExecuteSql } from '@app/hooks/useExecuteSql'
+import { useGetCompiledSql } from '@app/hooks/useGetCompiledSql'
+import { useGetQuerySql } from '@app/hooks/useGetQuerySql'
 import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
 import { useSideBarQuestionEditor } from '@app/hooks/useSideBarQuestionEditor'
 import { useRefreshSnapshot } from '@app/hooks/useStorySnapshotManager'
+import { useWorkspace, useWorkspaceId } from '@app/hooks/useWorkspace'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
-import { DEFAULT_TIPPY_DELAY, snapshotToCSV, TELLERY_MIME_TYPES } from '@app/utils'
+import { DEFAULT_TIPPY_DELAY, RECORD_LIMIT, snapshotToCSV, TELLERY_MIME_TYPES } from '@app/utils'
 import { css, cx } from '@emotion/css'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import Tippy from '@tippyjs/react'
@@ -60,7 +65,9 @@ export const MoreDropdownSelect: React.FC<{
   const blockTranscations = useBlockTranscations()
   const [open, setOpen] = useState(false)
   const [subMenuOpen, setSubMenuOpen] = useState(false)
-
+  const getCompiledSql = useGetCompiledSql()
+  const executeSql = useExecuteSql()
+  const getQuerySql = useGetQuerySql()
   const closeMenu = useCallback(() => {
     setIsActive(false)
     setOpen(false)
@@ -190,6 +197,24 @@ export const MoreDropdownSelect: React.FC<{
             closeMenu()
           }}
         />
+        <StyledDropDownItem
+          title={t`Copy compiled SQL`}
+          icon={<IconCommonSql color={ThemingVariables.colors.text[0]} />}
+          onClick={async () => {
+            const promise = new Promise<string>((resolve) => {
+              getCompiledSql(block.storyId!, queryBlock).then((sql) => {
+                copy(sql)
+                resolve(sql)
+                closeMenu()
+              })
+            })
+            toast.promise(promise, {
+              pending: 'Compiling SQL...',
+              success: 'Compiled SQL Copied 👌',
+              error: 'Compiling SQL failed 🤯'
+            })
+          }}
+        />
         <DropdownMenu.Root
           open={subMenuOpen}
           onOpenChange={(open) => {
@@ -202,10 +227,9 @@ export const MoreDropdownSelect: React.FC<{
           ></StyledDropDownTriggerItem>
           <StyledDropdownMenuContent open={subMenuOpen}>
             <StyledDropDownItem
-              title={'Download as CSV'}
+              title={`Download as CSV (limit ${RECORD_LIMIT}) `}
               icon={<IconMenuDownload color={ThemingVariables.colors.text[0]} />}
               onClick={async () => {
-                closeMenu()
                 setTimeout(async () => {
                   if (!snaphostId) return
                   const snapshot = await getSnapshot({ snapshotId: snaphostId })
@@ -214,7 +238,33 @@ export const MoreDropdownSelect: React.FC<{
                   const csvString = snapshotToCSV(snapshotData)
                   invariant(csvString, 'csvString is null')
                   csvString && download(csvString, 'data.csv', 'text/csv')
+                  closeMenu()
                 }, 0)
+              }}
+            />
+            <StyledDropDownItem
+              title={`Download as CSV (limit ${RECORD_LIMIT * 2})`}
+              icon={<IconMenuDownload color={ThemingVariables.colors.text[0]} />}
+              onClick={async () => {
+                const promise = new Promise<void>((resolve) => {
+                  getQuerySql(block.storyId!, queryBlock).then(({ sql }) => {
+                    executeSql(sql, RECORD_LIMIT * 2).then(async (data) => {
+                      const snapshotData = data
+                      invariant(snapshotData, 'snapshotData is null')
+                      const csvString = snapshotToCSV(snapshotData)
+                      invariant(csvString, 'csvString is null')
+                      csvString && download(csvString, 'data.csv', 'text/csv')
+                      closeMenu()
+                      resolve()
+                    })
+                  })
+                })
+
+                toast.promise(promise, {
+                  pending: 'Preparing data...',
+                  success: 'Your download will be start soon 👌',
+                  error: 'Execute sql failed 🤯'
+                })
               }}
             />
             <StyledDropDownItem
