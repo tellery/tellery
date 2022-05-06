@@ -705,7 +705,6 @@ const _StoryEditor: React.FC<{
   const globalKeyDownHandler = useCallback(
     (e: KeyboardEvent) => {
       if (e.defaultPrevented) return
-      console.log(e.target)
       const selectionState = getSelection()
       if (selectionState === null) {
         return

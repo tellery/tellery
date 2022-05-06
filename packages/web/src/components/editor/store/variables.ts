@@ -90,7 +90,7 @@ export const FormulaSelectorFamily = selectorFamily<any, { storyId: string; form
         .replace(VARIABLE_REGEX, (variableString) => {
           const variableName = variableString.slice(2, -2)
           const variable = get(VariableAtomFamily({ storyId, name: variableName }))
-          scope[variableName] = variable.currentValue
+          scope[variableName] = variable?.currentValue ?? null
           return variableName
         })
 

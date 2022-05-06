@@ -1,7 +1,7 @@
 import 'normalize.css'
 import React from 'react'
 import { QueryClientProvider } from 'react-query'
-import { BrowserRouter as Router, Routes } from 'react-router-dom'
+import { BrowserRouter as Router, Route } from 'react-router-dom'
 import { Slide, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { RecoilRoot } from 'recoil'
@@ -18,6 +18,7 @@ import IconButton from './components/kit/IconButton'
 import { IconCommonClose } from './assets/icons'
 import { loader } from '@monaco-editor/react'
 import { env } from './env'
+
 // TODO: fix react table, upgrade to v8 to solve this problem
 import 'regenerator-runtime/runtime'
 loader.config({ paths: { vs: env.MONACO_CDN } })

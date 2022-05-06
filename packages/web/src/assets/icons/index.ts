@@ -30,6 +30,7 @@ import IconCommonDot from './common/dot.svg?component'
 import IconCommonDownstream from './common/downstream.svg?component'
 import IconCommonDrag from './common/drag.svg?component'
 import IconCommonEdit from './common/edit.svg?component'
+import IconCommonEnter from './common/enter.svg?component'
 import IconCommonError from './common/error.svg?component'
 import IconCommonFold from './common/fold.svg?component'
 import IconCommonFormula from './common/formula.svg?component'
@@ -153,6 +154,7 @@ export {
   IconCommonDownstream,
   IconCommonDrag,
   IconCommonEdit,
+  IconCommonEnter,
   IconCommonError,
   IconCommonFold,
   IconCommonFormula,

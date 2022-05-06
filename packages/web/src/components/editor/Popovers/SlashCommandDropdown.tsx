@@ -30,12 +30,14 @@ import { BlockFragment } from '@app/utils/dnd'
 import { css, cx } from '@emotion/css'
 import debug from 'debug'
 import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useRecoilValue } from 'recoil'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import invariant from 'tiny-invariant'
 import { mergeTokens, splitToken, tokenPosition2SplitedTokenPosition } from '..'
 import { EditorPopover } from '../EditorPopover'
 import { TellerySelection, tellerySelection2Native, TellerySelectionType } from '../helpers/tellerySelection'
 import { useEditableContextMenu, useEditor } from '../hooks'
+import { StoryVariables } from '../store/variables'
 
 const logger = debug('tellery:slashCommand')
 
@@ -103,13 +105,29 @@ const isEmptyTitleBlock = (block: Editor.BaseBlock) => {
   return block.content.title.length === 0
 }
 
+function* varibleNameMaker() {
+  const name = ['a']
+  let count = 0
+  while (true) {
+    count++
+    yield name.join('')
+    const index = Math.floor(count / 26)
+    if (name[index]) {
+      name[index] = String.fromCharCode(name[index].charCodeAt(0) + 1)
+    } else {
+      name[index] = 'a'
+    }
+  }
+}
+
 export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props) => {
   const { id, keyword, setOpen, blockRef, referenceRange, selection, open } = props
   const editor = useEditor()
   // const [selectedResultIndex, setSelectedResultIndex] = useState(0)
   const currentBlock = useBlockSuspense(id)
   const focusBlockHandler = usePushFocusedBlockIdState()
-  const blockTranscations = useBlockTranscations()
+  const variables = useRecoilValue(StoryVariables(currentBlock.storyId!))
+
   const removeBlockSlashCommandText = useCallback(() => {
     invariant(selection && selection.type !== TellerySelectionType.Block, 'selection type is block')
 
@@ -179,6 +197,39 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
       setOpen(false)
     },
     [editor, insertBlockFragment, setOpen]
+  )
+
+  const createOrToggleControlBlock = useCallback(
+    (options: Partial<Editor.ControlBlock>) => async (block: Editor.BaseBlock) => {
+      invariant(editor, 'editor is null')
+      const generater = varibleNameMaker()
+      let variableName: string
+      while (true) {
+        variableName = generater.next().value as string
+        if (!variables[variableName]) {
+          break
+        }
+      }
+      const newBlock = createEmptyBlock<Editor.ControlBlock>({
+        ...options,
+        content: {
+          ...options.content,
+          name: variableName
+        } as any,
+        parentId: block.parentId,
+        storyId: block.storyId,
+        type: Editor.BlockType.Control
+      })
+      const blockFragment = {
+        children: [newBlock.id],
+        data: {
+          [newBlock.id]: newBlock
+        }
+      }
+      insertBlockFragment(blockFragment, block)
+      setOpen(false)
+    },
+    [editor, insertBlockFragment, setOpen, variables]
   )
 
   const createOrToggleQueryBlock = useCallback(
@@ -304,32 +355,28 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
       },
       {
         title: 'Transclusion Input',
-        action: createOrToggleBlock({
-          type: Editor.BlockType.Control,
+        action: createOrToggleControlBlock({
           content: { type: 'transclusion' } as any
         }),
         icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Text Input',
-        action: createOrToggleBlock({
-          type: Editor.BlockType.Control,
+        action: createOrToggleControlBlock({
           content: { type: 'text' } as any
         }),
         icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Number Input (Decimal)',
-        action: createOrToggleBlock({
-          type: Editor.BlockType.Control,
+        action: createOrToggleControlBlock({
           content: { type: 'number' } as any
         }),
         icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Number Input (Float)',
-        action: createOrToggleBlock({
-          type: Editor.BlockType.Control,
+        action: createOrToggleControlBlock({
           content: { type: 'float' } as any
         }),
         icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
@@ -348,7 +395,7 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
       //   icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
       // }
     ].filter((item) => item.title.toLowerCase().indexOf(keyword.toLowerCase()) !== -1)
-  }, [createOrToggleBlock, createOrToggleQueryBlock, keyword])
+  }, [createOrToggleBlock, createOrToggleControlBlock, createOrToggleQueryBlock, keyword])
 
   useEffect(() => {
     if (operations.length === 0) {

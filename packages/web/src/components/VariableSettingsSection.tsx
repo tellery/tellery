@@ -138,9 +138,9 @@ export const VariableSettingsSection: React.FC<{ storyId: string; blockId: strin
           >
             <QueryBlockSelectInput
               onChange={(blockId: string) => {
-                handleUpdateDefaultValue(blockId)
+                setDefaultValue(blockId)
               }}
-              value={block.content.defaultValue}
+              value={defaultValue}
             />
           </div>
         )}

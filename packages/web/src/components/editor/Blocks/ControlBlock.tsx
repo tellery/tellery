@@ -1,14 +1,14 @@
-import { IconCommonSetting } from '@app/assets/icons'
-import IconButton from '@app/components/kit/IconButton'
+import { IconCommonClose, IconCommonEdit, IconCommonEnter } from '@app/assets/icons'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useSideBarVariableEditor } from '@app/hooks/useSideBarQuestionEditor'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
-import { css } from '@emotion/css'
+import { css, cx } from '@emotion/css'
 import styled from '@emotion/styled'
 import Tippy from '@tippyjs/react'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import DetectableOverflow from 'react-detectable-overflow'
+import { useSearchParams } from 'react-router-dom'
 import { QueryBlockSelectInput } from '../../QueryBlockSelectInput'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
 import { useVariableCurrentValueState } from '../hooks/useVariable'
@@ -21,7 +21,42 @@ const StyledInput = styled.input`
   height: 100%;
   border: none;
   padding: 0 8px;
+  background: transparent;
 `
+
+const useVariableValueState = (key: string, initValue: unknown) => {
+  const [params, setParams] = useSearchParams()
+
+  const setParamsValue = useCallback(
+    (value: string) => {
+      const newParams = new URLSearchParams(params)
+      if (value === initValue) {
+        newParams.delete(key)
+      } else {
+        newParams.set(key, value)
+      }
+      setParams(newParams, { replace: true })
+    },
+    [initValue, key, params, setParams]
+  )
+
+  return [params.get(key) ?? initValue, setParamsValue] as [string, (value: string) => void]
+}
+
+const useVariableName = (block: Editor.ControlBlock) => {
+  const blockTranscation = useBlockTranscations()
+  const setVariableName = useCallback(
+    (value: string) => {
+      blockTranscation.updateBlockProps(block.storyId!, block.id, ['content', 'name'], value)
+    },
+    [block.id, block.storyId, blockTranscation]
+  )
+
+  return useMemo(
+    () => [block.content.name ?? block.id, setVariableName] as [string, (value: string) => void],
+    [block.content.name, block.id, setVariableName]
+  )
+}
 
 const _ControlBlock: BlockComponent<
   React.FC<{
@@ -31,91 +66,149 @@ const _ControlBlock: BlockComponent<
   }>
 > = ({ block, blockFormat, parentType }) => {
   const inputRef = useRef<HTMLInputElement | null>(null)
-  const blockTranscation = useBlockTranscations()
-  const variableName = block.content.name ?? block.id
+  const variableNameInputRef = useRef<HTMLInputElement | null>(null)
+  const [titleEditing, setTitleEditing] = useState(false)
+  const [variableName, setVariableName] = useVariableName(block)
   const [variableValue, setVariableValue] = useVariableCurrentValueState(block.storyId!, variableName)
   const defaultValue = block.content.defaultValue
+  const isDefaultValue = variableValue === defaultValue
   const sideBarVariableEditor = useSideBarVariableEditor(block.storyId!)
+  const [valueEditing, setValueEditing] = useState(false)
+  const [editingValue, setEditingValue] = useVariableValueState(variableName, defaultValue)
+
+  const submitChange = useCallback(
+    (type: string, value: string) => {
+      setEditingValue(value)
+      if (block.content.type === 'number' || block.content.type === 'decimal') {
+        setVariableValue(parseInt(value, 10))
+      } else {
+        setVariableValue(value)
+      }
+    },
+    [block.content.type, setEditingValue, setVariableValue]
+  )
 
   useEffect(() => {
     if (!inputRef.current) return
-    if (defaultValue !== undefined) {
-      inputRef.current.value = defaultValue
+    if (editingValue !== undefined) {
+      inputRef.current.value = editingValue
+      submitChange(block.content.type, editingValue)
     }
-  }, [defaultValue])
+  }, [block.content.type, editingValue, submitChange, titleEditing])
 
-  useEffect(() => {
-    if (variableValue === undefined && block.content.defaultValue) {
-      setVariableValue(block.content.defaultValue)
-    }
-  }, [block.content.defaultValue, setVariableValue, variableValue])
-
-  const submitChange = useCallback(
-    (value: unknown) => {
-      setVariableValue(value)
+  const onValueInputKeydown = useCallback(
+    (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        e.stopPropagation()
+        submitChange(block.content.type, e.currentTarget.value)
+        e.currentTarget.blur()
+      } else {
+        e.stopPropagation()
+      }
     },
-    [setVariableValue]
+    [submitChange, block.content.type]
+  )
+
+  const onBlur = useCallback(
+    (e) => {
+      e.currentTarget.value = editingValue
+      setValueEditing(false)
+    },
+    [editingValue]
   )
 
   const [disableTippy, setDisableTippy] = useState(true)
 
   return (
-    <div
-      className={css`
-        display: flex;
-        max-width: 316px;
-        max-width: min(316px, 100%);
-        height: 36px;
-        background-color: ${ThemingVariables.colors.primary[0]};
-        align-items: center;
-        border-radius: 4px;
-      `}
-      onPaste={(e) => {
-        e.stopPropagation()
-      }}
-      onCopy={(e) => {
-        e.stopPropagation()
-      }}
-      onKeyDown={(e) => {
-        e.stopPropagation()
-      }}
-    >
+    <Tippy content={'Right-click to edit'} placement="right" delay={500}>
       <div
         className={css`
-          max-width: 200px;
-          min-width: 80px;
-          position: relative;
+          display: flex;
+          max-width: 316px;
+          max-width: min(316px, 100%);
+          height: 36px;
+          align-items: center;
+          border: solid 2px ${isDefaultValue ? ThemingVariables.colors.primary[0] : ThemingVariables.colors.primary[2]};
+          border-radius: 4px;
         `}
+        onContextMenuCapture={(e) => {
+          e.stopPropagation()
+          e.preventDefault()
+          sideBarVariableEditor.open({ blockId: block.id, activeTab: 'Variable' })
+        }}
+        onPaste={(e) => {
+          e.stopPropagation()
+        }}
+        onCopy={(e) => {
+          e.stopPropagation()
+        }}
+        onKeyDown={(e) => {
+          e.stopPropagation()
+        }}
       >
-        <DetectableOverflow
+        <div
           className={css`
-            visibility: hidden;
-            padding: 10px 13px;
+            max-width: 200px;
+            top: -6px;
+            left: 10px;
+            position: absolute;
+            font-size: 12px;
+            font-weight: 700;
+            color: ${ThemingVariables.colors.primary[0]};
+            background: ${ThemingVariables.colors.gray[5]};
+            display: inline-flex;
+            align-items: center;
           `}
-          onChange={(overflowed) => {
-            setDisableTippy(!overflowed)
-          }}
         >
-          {variableName}
-        </DetectableOverflow>
-        <Tippy content={variableName} disabled={disableTippy}>
+          {titleEditing ? (
+            <>Variable Name</>
+          ) : (
+            <>
+              <DetectableOverflow
+                className={css`
+                  padding-left: 5px;
+                `}
+                onChange={(overflowed) => {
+                  setDisableTippy(!overflowed)
+                }}
+              >
+                <span>{variableName}</span>
+              </DetectableOverflow>
+              <IconCommonEdit
+                className={cx(
+                  css`
+                    height: 12px;
+                    padding: 0 2px;
+                    cursor: pointer;
+                    /* opacity: 0; */
+                    transition: all 250ms; ;
+                  `,
+                  'icon-common-edit'
+                )}
+                onClick={() => {
+                  setTitleEditing(true)
+                  setTimeout(() => {
+                    if (variableNameInputRef.current) {
+                      variableNameInputRef.current.value = variableName
+                      variableNameInputRef.current?.focus()
+                    }
+                  }, 0)
+                }}
+              />
+            </>
+          )}
+          {/* <Tippy content={variableName} disabled={disableTippy}>
           <input
             className={css`
               outline: none;
               border: none;
               background-color: transparent;
-              color: ${ThemingVariables.colors.gray[5]};
-              position: absolute;
               width: 100%;
-              left: 0;
-              top: 0;
               height: 100%;
               overflow: hidden;
               text-overflow: ellipsis;
-              padding: 10px 13px;
-              ::placeholder {
-                color: ${ThemingVariables.colors.gray[5]};
-              }
+              padding-left: 5px;
             `}
             placeholder="input text"
             onChange={(e) => {
@@ -123,104 +216,126 @@ const _ControlBlock: BlockComponent<
             }}
             value={variableName}
           />
-        </Tippy>
-      </div>
-      <div
-        className={css`
-          flex: 4;
-          padding: 2px 0;
-          height: 100%;
-          overflow: hidden;
-        `}
-      >
-        {(block.content.type === 'text' || block.content.type === 'macro') && (
-          <StyledInput
-            onBlur={(e) => {
-              submitChange(e.currentTarget.value)
-            }}
-            ref={inputRef}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault()
-                e.stopPropagation()
-                e.currentTarget.blur()
-                submitChange(e.currentTarget.value)
-              } else {
-                e.stopPropagation()
+        </Tippy> */}
+        </div>
+        {titleEditing ? (
+          <div
+            className={css`
+              flex: 4;
+              display: flex;
+              padding: 2px 0;
+              > input {
+                flex: 1;
               }
-            }}
-          />
-        )}
-        {block.content.type === 'transclusion' && (
-          <>
-            <QueryBlockSelectInput
-              onChange={(blockId: string) => {
-                submitChange(blockId)
+            `}
+          >
+            <StyledInput
+              onBlur={() => {
+                setTitleEditing(false)
               }}
-              value={variableValue as string | null}
+              ref={variableNameInputRef}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setVariableName(e.currentTarget.value)
+                  setTitleEditing(false)
+                  e.currentTarget.blur()
+                } else {
+                  e.stopPropagation()
+                }
+              }}
             />
+            <div
+              className={css`
+                padding: 0 10px;
+              `}
+            >
+              <IconCommonEnter />
+            </div>
+          </div>
+        ) : (
+          <>
+            <div
+              className={css`
+                flex: 4;
+                padding: 2px 0;
+                height: 100%;
+                margin-left: 2px;
+                overflow: hidden;
+              `}
+            >
+              {(block.content.type === 'text' || block.content.type === 'macro') && (
+                <StyledInput
+                  onBlur={onBlur}
+                  onInput={() => {
+                    setValueEditing(true)
+                  }}
+                  ref={inputRef}
+                  onKeyDown={onValueInputKeydown}
+                />
+              )}
+              {block.content.type === 'transclusion' && (
+                <>
+                  <QueryBlockSelectInput
+                    onChange={(blockId: string) => {
+                      submitChange(block.content.type, blockId)
+                    }}
+                    value={variableValue as string | null}
+                  />
+                </>
+              )}
+              {(block.content.type === 'number' || block.content.type === 'decimal') && (
+                <StyledInput
+                  onBlur={onBlur}
+                  onInput={() => {
+                    setValueEditing(true)
+                  }}
+                  placeholder="input decimal number"
+                  type="number"
+                  ref={inputRef}
+                  onKeyDown={onValueInputKeydown}
+                />
+              )}
+              {block.content.type === 'float' && (
+                <StyledInput
+                  onBlur={onBlur}
+                  onInput={() => {
+                    setValueEditing(true)
+                  }}
+                  placeholder="input float number"
+                  type="text"
+                  ref={inputRef}
+                  onKeyDown={onValueInputKeydown}
+                />
+              )}
+            </div>
+            <div
+              className={css`
+                display: flex;
+                padding: 10px;
+                color: ${ThemingVariables.colors.gray[0]};
+              `}
+            >
+              {valueEditing === true ? (
+                <IconCommonEnter />
+              ) : (
+                isDefaultValue === false && (
+                  <IconCommonClose
+                    className={css`
+                      cursor: pointer;
+                    `}
+                    onClick={() => {
+                      submitChange(block.content.type, defaultValue)
+                    }}
+                  />
+                )
+              )}
+            </div>
           </>
         )}
-        {(block.content.type === 'number' || block.content.type === 'decimal') && (
-          <StyledInput
-            onBlur={(e) => {
-              const value = parseInt(e.currentTarget.value, 10)
-              submitChange(value)
-            }}
-            placeholder="input decimal number"
-            type="number"
-            ref={inputRef}
-            onKeyDown={(e) => {
-              const value = parseInt(e.currentTarget.value, 10)
-              if (e.key === 'Enter' && e.shiftKey === false) {
-                e.preventDefault()
-                e.stopPropagation()
-                e.currentTarget.blur()
-                submitChange(value)
-              } else {
-                e.stopPropagation()
-              }
-            }}
-          />
-        )}
-        {block.content.type === 'float' && (
-          <StyledInput
-            onBlur={(e) => {
-              submitChange(e.currentTarget.value)
-            }}
-            placeholder="input float number"
-            type="text"
-            ref={inputRef}
-            onKeyDown={(e) => {
-              const value = e.currentTarget.value
-              if (e.key === 'Enter' && e.shiftKey === false) {
-                e.preventDefault()
-                e.stopPropagation()
-                e.currentTarget.blur()
-                submitChange(value)
-              } else {
-                e.stopPropagation()
-              }
-            }}
-          />
-        )}
       </div>
-      <div
-        className={css`
-          display: flex;
-          padding: 10px;
-        `}
-      >
-        <IconButton
-          icon={IconCommonSetting}
-          color={ThemingVariables.colors.gray[5]}
-          onClick={(e) => {
-            e.preventDefault()
-            sideBarVariableEditor.open({ blockId: block.id, activeTab: 'Variable' })
-          }}
-        />
-      </div>
-    </div>
+    </Tippy>
   )
 }
 

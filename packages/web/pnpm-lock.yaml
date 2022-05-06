@@ -97,6 +97,7 @@ specifiers:
   highlight.js: ^11.5.1
   html-entities: ^2.3.3
   html2canvas: ^1.4.1
+  human-id: ^3.0.0
   husky: ^7.0.4
   i18next: ^21.6.16
   i18next-browser-languagedetector: ^6.1.4
@@ -123,6 +124,7 @@ specifiers:
   papaparse: ^5.3.2
   polished: ^4.2.2
   prettier: ^2.6.2
+  query-string: ^7.1.1
   react: ^17.0.2
   react-calendar: ^3.7.0
   react-content-loader: ^6.2.0
@@ -168,6 +170,7 @@ specifiers:
   typescript: ^4.6.3
   url-loader: ^4.1.1
   use-immer: ^0.6.0
+  use-query-params: ^1.2.3
   validator: ^13.7.0
   vite: ^2.9.5
   vite-plugin-sentry: ^1.0.14
@@ -221,6 +224,7 @@ dependencies:
   highlight.js: registry.npmjs.org/highlight.js/11.5.1
   html-entities: registry.npmjs.org/html-entities/2.3.3
   html2canvas: registry.npmjs.org/html2canvas/1.4.1
+  human-id: registry.npmjs.org/human-id/3.0.0
   i18next: registry.npmjs.org/i18next/21.6.16
   i18next-browser-languagedetector: registry.npmjs.org/i18next-browser-languagedetector/6.1.4
   i18next-http-backend: registry.npmjs.org/i18next-http-backend/1.4.0
@@ -243,6 +247,7 @@ dependencies:
   numeral: registry.npmjs.org/numeral/2.0.6
   papaparse: registry.npmjs.org/papaparse/5.3.2
   polished: registry.npmjs.org/polished/4.2.2
+  query-string: registry.npmjs.org/query-string/7.1.1
   react: registry.npmjs.org/react/17.0.2
   react-calendar: registry.npmjs.org/react-calendar/3.7.0_react-dom@17.0.2+react@17.0.2
   react-content-loader: registry.npmjs.org/react-content-loader/6.2.0_react@17.0.2
@@ -282,6 +287,7 @@ dependencies:
   tippy.js: registry.npmjs.org/tippy.js/6.3.7
   trendline: registry.npmjs.org/trendline/0.3.1
   use-immer: registry.npmjs.org/use-immer/0.6.0_immer@9.0.12+react@17.0.2
+  use-query-params: registry.npmjs.org/use-query-params/1.2.3_996c41061b6885ad07629ab02e1dfa43
   validator: registry.npmjs.org/validator/13.7.0
   yaml: registry.npmjs.org/yaml/1.10.2
 
@@ -5477,6 +5483,13 @@ packages:
     version: 10.3.1
     dev: false
 
+  registry.npmjs.org/decode-uri-component/0.2.0:
+    resolution: {integrity: sha1-6zkTMzRYd1y4TNGh+uBiEGu4dUU=, registry: https://registry.yarnpkg.com/, tarball: https://registry.npmjs.org/decode-uri-component/-/decode-uri-component-0.2.0.tgz}
+    name: decode-uri-component
+    version: 0.2.0
+    engines: {node: '>=0.10'}
+    dev: false
+
   registry.npmjs.org/deep-eql/3.0.1:
     resolution: {integrity: sha512-+QeIQyN5ZuO+3Uk5DYh6/1eKO0m0YmJFGNmFHGACpf1ClL1nmlV/p4gNgbl2pJGxgXb4faqo6UE+M5ACEMyVcw==, registry: https://registry.yarnpkg.com/, tarball: https://registry.npmjs.org/deep-eql/-/deep-eql-3.0.1.tgz}
     name: deep-eql
@@ -6767,6 +6780,13 @@ packages:
       to-regex-range: registry.npmjs.org/to-regex-range/5.0.1
     dev: true
 
+  registry.npmjs.org/filter-obj/1.1.0:
+    resolution: {integrity: sha1-mzERErxsYSehbgFsbF1/GeCAXFs=, registry: https://registry.yarnpkg.com/, tarball: https://registry.npmjs.org/filter-obj/-/filter-obj-1.1.0.tgz}
+    name: filter-obj
+    version: 1.1.0
+    engines: {node: '>=0.10.0'}
+    dev: false
+
   registry.npmjs.org/find-replace/3.0.0:
     resolution: {integrity: sha512-6Tb2myMioCAgv5kfvP5/PkZZ/ntTpVK39fHY7WkWBgvbeE+VHd/tZuZ4mrC+bxh4cfOZeYKVPaJIZtZXV7GNCQ==, registry: https://registry.yarnpkg.com/, tarball: https://registry.npmjs.org/find-replace/-/find-replace-3.0.0.tgz}
     name: find-replace
@@ -7340,6 +7360,12 @@ packages:
     transitivePeerDependencies:
       - supports-color
     dev: true
+
+  registry.npmjs.org/human-id/3.0.0:
+    resolution: {integrity: sha512-smROKWOQI3rjjR44o5m9Bk2ds5YVTxfeL/rmp28fwOQyNhfQH13KMZ/jUErceC2fBuiQeOrWenopUN8hsBGZtQ==, registry: https://registry.yarnpkg.com/, tarball: https://registry.npmjs.org/human-id/-/human-id-3.0.0.tgz}
+    name: human-id
+    version: 3.0.0
+    dev: false
 
   registry.npmjs.org/human-signals/2.1.0:
     resolution: {integrity: sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==, registry: https://registry.yarnpkg.com/, tarball: https://registry.npmjs.org/human-signals/-/human-signals-2.1.0.tgz}
@@ -9264,6 +9290,18 @@ packages:
       side-channel: registry.npmjs.org/side-channel/1.0.4
     dev: true
 
+  registry.npmjs.org/query-string/7.1.1:
+    resolution: {integrity: sha512-MplouLRDHBZSG9z7fpuAAcI7aAYjDLhtsiVZsevsfaHWDS2IDdORKbSd1kWUA+V4zyva/HZoSfpwnYMMQDhb0w==, registry: https://registry.yarnpkg.com/, tarball: https://registry.npmjs.org/query-string/-/query-string-7.1.1.tgz}
+    name: query-string
+    version: 7.1.1
+    engines: {node: '>=6'}
+    dependencies:
+      decode-uri-component: registry.npmjs.org/decode-uri-component/0.2.0
+      filter-obj: registry.npmjs.org/filter-obj/1.1.0
+      split-on-first: registry.npmjs.org/split-on-first/1.1.0
+      strict-uri-encode: registry.npmjs.org/strict-uri-encode/2.0.0
+    dev: false
+
   registry.npmjs.org/queue-microtask/1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==, registry: https://registry.yarnpkg.com/, tarball: https://registry.npmjs.org/queue-microtask/-/queue-microtask-1.2.3.tgz}
     name: queue-microtask
@@ -10409,6 +10447,17 @@ packages:
       randombytes: registry.npmjs.org/randombytes/2.1.0
     dev: true
 
+  registry.npmjs.org/serialize-query-params/1.3.6_query-string@7.1.1:
+    resolution: {integrity: sha512-VlH7sfWNyPVZClPkRacopn6sn5uQMXBsjPVz1+pBHX895VpcYVznfJtZ49e6jymcrz+l/vowkepCZn/7xEAEdw==, registry: https://registry.yarnpkg.com/, tarball: https://registry.npmjs.org/serialize-query-params/-/serialize-query-params-1.3.6.tgz}
+    id: registry.npmjs.org/serialize-query-params/1.3.6
+    name: serialize-query-params
+    version: 1.3.6
+    peerDependencies:
+      query-string: '>=5.1.1'
+    dependencies:
+      query-string: registry.npmjs.org/query-string/7.1.1
+    dev: false
+
   registry.npmjs.org/set-blocking/2.0.0:
     resolution: {integrity: sha1-BF+XgtARrppoA93TgrJDkrPYkPc=, registry: https://registry.yarnpkg.com/, tarball: https://registry.npmjs.org/set-blocking/-/set-blocking-2.0.0.tgz}
     name: set-blocking
@@ -10580,6 +10629,13 @@ packages:
     name: sourcemap-codec
     version: 1.4.8
 
+  registry.npmjs.org/split-on-first/1.1.0:
+    resolution: {integrity: sha512-43ZssAJaMusuKWL8sKUBQXHWOpq8d6CfN/u1p4gUzfJkM05C8rxTmYrkIPTXapZpORA6LkkzcUulJ8FqA7Uudw==, registry: https://registry.yarnpkg.com/, tarball: https://registry.npmjs.org/split-on-first/-/split-on-first-1.1.0.tgz}
+    name: split-on-first
+    version: 1.1.0
+    engines: {node: '>=6'}
+    dev: false
+
   registry.npmjs.org/sprintf-js/1.0.3:
     resolution: {integrity: sha1-BOaSb2YolTVPPdAVIDYzuFcpfiw=, registry: https://registry.yarnpkg.com/, tarball: https://registry.npmjs.org/sprintf-js/-/sprintf-js-1.0.3.tgz}
     name: sprintf-js
@@ -10650,6 +10706,13 @@ packages:
     version: 2.0.1
     engines: {node: '>= 0.8'}
     dev: true
+
+  registry.npmjs.org/strict-uri-encode/2.0.0:
+    resolution: {integrity: sha1-ucczDHBChi9rFC3CdLvMWGbONUY=, registry: https://registry.yarnpkg.com/, tarball: https://registry.npmjs.org/strict-uri-encode/-/strict-uri-encode-2.0.0.tgz}
+    name: strict-uri-encode
+    version: 2.0.0
+    engines: {node: '>=4'}
+    dev: false
 
   registry.npmjs.org/string-argv/0.3.1:
     resolution: {integrity: sha512-a1uQGz7IyVy9YwhqjZIZu1c8JO8dNIe20xBmSS6qu9kv++k3JGzCVmprbNN5Kn+BgzD5E7YYwg1CcjuJMRNsvg==, registry: https://registry.yarnpkg.com/, tarball: https://registry.npmjs.org/string-argv/-/string-argv-0.3.1.tgz}
@@ -11341,6 +11404,22 @@ packages:
       '@types/react': registry.npmjs.org/@types/react/17.0.44
       react: registry.npmjs.org/react/17.0.2
       use-isomorphic-layout-effect: registry.npmjs.org/use-isomorphic-layout-effect/1.1.2_c8e45b4eb687790dba17b4e1c4b4273f
+    dev: false
+
+  registry.npmjs.org/use-query-params/1.2.3_996c41061b6885ad07629ab02e1dfa43:
+    resolution: {integrity: sha512-cdG0tgbzK+FzsV6DAt2CN8Saa3WpRnze7uC4Rdh7l15epSFq7egmcB/zuREvPNwO5Yk80nUpDZpiyHsoq50d8w==, registry: https://registry.yarnpkg.com/, tarball: https://registry.npmjs.org/use-query-params/-/use-query-params-1.2.3.tgz}
+    id: registry.npmjs.org/use-query-params/1.2.3
+    name: use-query-params
+    version: 1.2.3
+    peerDependencies:
+      query-string: '>=5.1.1'
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+    dependencies:
+      query-string: registry.npmjs.org/query-string/7.1.1
+      react: registry.npmjs.org/react/17.0.2
+      react-dom: registry.npmjs.org/react-dom/17.0.2_react@17.0.2
+      serialize-query-params: registry.npmjs.org/serialize-query-params/1.3.6_query-string@7.1.1
     dev: false
 
   registry.npmjs.org/use-sidecar/1.1.2_c8e45b4eb687790dba17b4e1c4b4273f:
