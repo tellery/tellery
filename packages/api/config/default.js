@@ -40,14 +40,32 @@ module.exports = {
     port: process.env.SERVER_PORT || 8000,
     keepAliveTimeout: process.env.SERVER_KEEP_ALIVE_TIMEOUT || 60 * 1000,
   },
+  oauth2: {
+    clientId: process.env.OAUTH2_CLIENT_ID,
+    clientSecret: process.env.OAUTH2_CLIENT_SECRET,
+    tokenUrl: process.env.OAUTH2_TOKEN_URL,
+    userUrl: process.env.OAUTH2_USER_URL,
+    userMethod: process.env.OAUTH2_USER_METHOD || 'GET',
+    scope: process.env.OAUTH2_SCOPE || '*',
+    grantType: process.env.OAUTH2_GRANT_TYPE || 'authorization_code',
+    redirectUrl: process.env.OAUTH2_REDIRECT_URL,
+  },
   // for SaaS usage
   deploy: {
     mode: process.env.DEPLOY_MODE || 'local',
     userServiceEndpoint: process.env.USER_SERVICE_ENDPOINT || '',
   },
   frontendConfig: {
-    SENTRY_DSN: process.env.FRONTEND_SENTRY_DSN || '',
-    GA4_ID: process.env.FRONTEND_GA4_ID || '',
-    VERSION: '0.8.4',
+    sentry_dsn: process.env.FRONTEND_SENTRY_DSN || '',
+    ga4Id: process.env.FRONTEND_GA4_ID || '',
+    version: '0.8.4',
+    asayerioProjectId: process.env.FRONTEND_ASAYERIO_PROJECT_ID || '',
+    oauth2: {
+      enable: process.env.FRONTEND_OAUTH2_ENABLE || false,
+      clientId: process.env.FRONTEND_OAUTH2_CLIENT_ID || '',
+      scope: process.env.OAUTH2_SCOPE || '*',
+      providerName: process.env.OAUTH2_PROVIDER_NAME || 'provider',
+      providerIcon: process.env.OAUTH2_PROVIDER_ICON || '',
+    },
   },
 }

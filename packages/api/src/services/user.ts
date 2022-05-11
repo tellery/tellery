@@ -107,6 +107,34 @@ export class UserService implements IUserService {
     })
   }
 
+  async createUserIfNotExists({
+    email,
+    username,
+    avatar,
+  }: {
+    email: string
+    username: string
+    avatar: string
+  }): Promise<User> {
+    const r = getManager().getRepository(UserEntity)
+    const user = await r.findOne({
+      email: email,
+    })
+    if (user) {
+      return User.fromEntity(user)
+    } else {
+      const insert = r.create({
+        username: username ?? email.split('@')[0] ?? email,
+        email: email,
+        avatar: avatar ?? '',
+        password: '',
+        status: AccountStatus.ACTIVE,
+      })
+      const insertedUser = await r.save(insert)
+      return User.fromEntity(insertedUser)
+    }
+  }
+
   /**
    *
    * @returns key: email

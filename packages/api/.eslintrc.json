@@ -17,6 +17,7 @@
     "project": "./tsconfig.json"
   },
   "rules": {
+    "prettier/prettier": "error",
     "@typescript-eslint/no-redeclare": "off",
     "@typescript-eslint/no-use-before-define": "off",
     "import/prefer-default-export": "off",

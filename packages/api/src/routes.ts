@@ -19,6 +19,7 @@ router.get('/api/readiness', async (ctx) => {
     ctx.body = 'Unavailable'
   }
 })
+
 router.use(routes.routes(), routes.allowedMethods())
 
 export default router

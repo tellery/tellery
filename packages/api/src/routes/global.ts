@@ -16,6 +16,7 @@ import { SearchResultDataDTO } from '../types/search'
 import { SnapshotDTO } from '../types/snapshot'
 import { StoryDTO } from '../types/story'
 import { UserInfoDTO } from '../types/user'
+import { loadFrontendEnvConfig } from '../utils/frontendInjector'
 import { validate } from '../utils/http'
 import { mustGetUser } from '../utils/user'
 
@@ -208,10 +209,16 @@ async function referenceCompletion(ctx: Context) {
   ctx.body = { results }
 }
 
+async function getAppConfig(ctx: Context) {
+  const config = loadFrontendEnvConfig()
+  ctx.body = config
+}
+
 const router = new Router()
 
 router.post('/search', search)
 router.post('/mgetResources', mgetResources)
 router.post('/referenceCompletion', referenceCompletion)
+router.get('/config', getAppConfig)
 
 export default router
