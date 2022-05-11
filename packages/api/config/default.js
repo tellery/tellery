@@ -41,14 +41,14 @@ module.exports = {
     keepAliveTimeout: process.env.SERVER_KEEP_ALIVE_TIMEOUT || 60 * 1000,
   },
   oauth2: {
-    clientId: process.env.OAUTH2_CLIENT_ID,
-    clientSecret: process.env.OAUTH2_CLIENT_SECRET,
-    tokenUrl: process.env.OAUTH2_TOKEN_URL,
-    userUrl: process.env.OAUTH2_USER_URL,
+    clientId: process.env.OAUTH2_CLIENT_ID ?? '',
+    clientSecret: process.env.OAUTH2_CLIENT_SECRET ?? '',
+    tokenUrl: process.env.OAUTH2_TOKEN_URL ?? '',
+    userUrl: process.env.OAUTH2_USER_URL ?? '',
     userMethod: process.env.OAUTH2_USER_METHOD || 'GET',
     scope: process.env.OAUTH2_SCOPE || '*',
     grantType: process.env.OAUTH2_GRANT_TYPE || 'authorization_code',
-    redirectUrl: process.env.OAUTH2_REDIRECT_URL,
+    redirectUrl: process.env.OAUTH2_REDIRECT_URL ?? '',
   },
   // for SaaS usage
   deploy: {

@@ -76,7 +76,7 @@ class OAuth2 {
         redirect_uri: this.redirectUrl,
         scope: this.scope,
       }),
-    }).then((res) => res.json() as Promise<{ access_token: string; refresh_token: string }>)
+    }).then((res: any) => res.json() as Promise<{ access_token: string; refresh_token: string }>)
 
     return {
       accessToken: response.access_token,
@@ -101,14 +101,14 @@ class OAuth2 {
 }
 
 const client = new OAuth2({
-  clientId: config.get('oauth.clientId'),
-  clientSecret: config.get('oauth.clientSecret'),
-  tokenUrl: config.get('oauth.tokenUrl'),
-  userUrl: config.get('oauth.userUrl'),
-  userMethod: config.get('oauth.userMethod'),
-  grantType: config.get('oauth.grantType'),
-  scope: config.get('oauth.scope'),
-  redirectUrl: config.get('oauth.redirectUrl'),
+  clientId: config.get('oauth2.clientId'),
+  clientSecret: config.get('oauth2.clientSecret'),
+  tokenUrl: config.get('oauth2.tokenUrl'),
+  userUrl: config.get('oauth2.userUrl'),
+  userMethod: config.get('oauth2.userMethod'),
+  grantType: config.get('oauth2.grantType'),
+  scope: config.get('oauth2.scope'),
+  redirectUrl: config.get('oauth2.redirectUrl'),
 })
 
 async function loginOrSignUpViaOauth(ctx: Context) {
