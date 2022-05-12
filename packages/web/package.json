@@ -40,7 +40,7 @@
     "@use-gesture/react": "^10.2.11",
     "@welldone-software/why-did-you-render": "^6.2.3",
     "@wojtekmaj/react-daterange-picker": "^3.4.0",
-    "axios": "0.24.0",
+    "axios": "0.27.2",
     "boring-avatars": "^1.6.3",
     "compute-scroll-into-view": "^1.0.17",
     "copy-to-clipboard": "^3.3.1",
