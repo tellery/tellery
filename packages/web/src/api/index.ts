@@ -81,6 +81,11 @@ export const userLogin = async ({ email, password }: { email: string; password: 
   return data
 }
 
+export const userOauthLogin = async ({ code }: { code: string }) => {
+  const { data } = await request.post<User>('/api/oauth/login', { code })
+  return data
+}
+
 export const userLogout = async () => {
   const { data } = await request.post<User>('/api/users/logout')
   return data

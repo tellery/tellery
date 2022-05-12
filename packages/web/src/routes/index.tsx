@@ -54,6 +54,7 @@ export const AppRoutes = () => {
 
   return (
     <Routes>
+      <Route path="/oauth/callback" element={<Login />}></Route>
       <Route path="/login" element={<Login />}></Route>
       <Route path="/confirm" element={<Confirm />}></Route>
       <Route path="/embed/:id" element={<Embed />}></Route>

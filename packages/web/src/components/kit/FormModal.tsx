@@ -66,7 +66,7 @@ export default forwardRef<
       {body ? (
         <div
           className={css`
-            margin-top: 40px;
+            margin-top: 30px;
             width: 100%;
           `}
         >
@@ -76,7 +76,7 @@ export default forwardRef<
       {footer ? (
         <div
           className={css`
-            margin-top: 40px;
+            margin-top: 30px;
             width: 100%;
           `}
         >

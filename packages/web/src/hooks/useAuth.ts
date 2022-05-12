@@ -1,4 +1,12 @@
-import { request, updateUser, userConfirm, userInviteMembersToWorkspace, userLogin, userLogout } from '@app/api'
+import {
+  request,
+  updateUser,
+  userConfirm,
+  userInviteMembersToWorkspace,
+  userLogin,
+  userLogout,
+  userOauthLogin
+} from '@app/api'
 import type { User } from '@app/hooks/api'
 import { Workspace } from '@app/types'
 import { tracker } from '@app/utils/openReplay'
@@ -16,6 +24,12 @@ export function useProvideAuth() {
 
   const logout = useCallback(async () => {
     return userLogout().then((user) => {
+      setUser(user)
+    })
+  }, [])
+
+  const oauthLogin = useCallback(async (code: string) => {
+    return userOauthLogin({ code }).then((user) => {
       setUser(user)
     })
   }, [])
@@ -62,7 +76,8 @@ export function useProvideAuth() {
     inviteMembersToWorkspace,
     autoLogin,
     update,
-    setUser
+    setUser,
+    oauthLogin
   }
 }
 

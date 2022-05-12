@@ -61,8 +61,8 @@ module.exports = {
     version: '0.8.4',
     asayerioProjectId: process.env.FRONTEND_ASAYERIO_PROJECT_ID || '',
     oauth2: {
-      enable: process.env.FRONTEND_OAUTH2_ENABLE || false,
-      clientId: process.env.FRONTEND_OAUTH2_CLIENT_ID || '',
+      enable: process.env.OAUTH2_ENABLE || false,
+      clientId: process.env.OAUTH2_CLIENT_ID || '',
       scope: process.env.OAUTH2_SCOPE || '*',
       providerName: process.env.OAUTH2_PROVIDER_NAME || 'provider',
       providerIcon: process.env.OAUTH2_PROVIDER_ICON || '',
