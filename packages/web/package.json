@@ -1,4 +1,5 @@
 {
+  "version": "0.8.6",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
