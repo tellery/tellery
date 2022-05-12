@@ -44,7 +44,7 @@ jobs:
         env:
           NODE_ENV: test
         run: |
-          npm ci
+          yarn install
           npm run compile
           npm run typeorm schema:sync
           npm run typeorm migration:run
@@ -83,7 +83,7 @@ jobs:
         env:
           NODE_ENV: test
         run: |
-          npm ci
+          yarn install
           npm run compile
           npm run typeorm schema:sync
           npm run typeorm migration:run
