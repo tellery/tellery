@@ -25,7 +25,7 @@ import { useGetBlockTitleTextSnapshot } from './editor'
 import IconButton from './kit/IconButton'
 import { MenuItem } from './MenuItem'
 
-export const DataAssestCardLoader: React.FC = () => {
+export const DataAssestCardLoader: ReactFCWithChildren = () => {
   return (
     <ContentLoader
       viewBox="0 0 284 110"
@@ -143,7 +143,7 @@ const DataAssestCardContainer = styled.div`
   }
 `
 
-const Draggable: React.FC<{ element?: any; blockId: string; currentStoryId?: string }> = (props) => {
+const Draggable: ReactFCWithChildren<{ element?: any; blockId: string; currentStoryId?: string }> = (props) => {
   const Element = props.element || 'div'
   const queryBlockBlock = useBlockSuspense<Editor.DataAssetBlock>(props.blockId)
   const blockFragment = useMemo(() => {
@@ -196,7 +196,7 @@ const Draggable: React.FC<{ element?: any; blockId: string; currentStoryId?: str
   )
 }
 
-export const DataAssetItem: React.FC<{
+export const DataAssetItem: ReactFCWithChildren<{
   blockId: string
   isExpanded: boolean
   setExpanded?: (expanded: boolean) => void
@@ -328,7 +328,7 @@ export const DataAssetItem: React.FC<{
   )
 }
 
-const DataAssestMenu: React.FC<{ block: Editor.DataAssetBlock; className?: string }> = ({ block, className }) => {
+const DataAssestMenu: ReactFCWithChildren<{ block: Editor.DataAssetBlock; className?: string }> = ({ block, className }) => {
   const animation = useTippyMenuAnimation('scale')
   const [visible, setVisible] = useState(false)
   const show = () => setVisible(true)
@@ -369,7 +369,7 @@ const DataAssestMenu: React.FC<{ block: Editor.DataAssetBlock; className?: strin
   )
 }
 
-export const DataAssestMenuContent: React.FC<{
+export const DataAssestMenuContent: ReactFCWithChildren<{
   style?: MotionStyle
   animate?: AnimationControls
   block: Editor.DataAssetBlock
@@ -405,7 +405,7 @@ export const DataAssestMenuContent: React.FC<{
   )
 }
 
-export const AllMetricsSection: React.FC<{ storyId?: string; className?: string }> = ({ storyId, className }) => {
+export const AllMetricsSection: ReactFCWithChildren<{ storyId?: string; className?: string }> = ({ storyId, className }) => {
   const [keyword, setKeyword] = useState('')
   const metricBlocksQuery = useSearchMetrics(keyword, 1000)
 
@@ -501,6 +501,6 @@ export const AllMetricsSection: React.FC<{ storyId?: string; className?: string 
   )
 }
 
-export const SideBarDataAssets: React.FC<{ storyId: string }> = ({ storyId }) => {
+export const SideBarDataAssets: ReactFCWithChildren<{ storyId: string }> = ({ storyId }) => {
   return <AllMetricsSection storyId={storyId} />
 }

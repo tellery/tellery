@@ -13,7 +13,7 @@ import { useGetBlockTitleTextSnapshot } from '../editor'
 import { StyledDropDownItem, StyledDropdownMenuContent } from '../kit/DropDownMenu'
 import { SearchInput } from './SearchInput'
 
-export const SaveOrMoveToStorySubMenu: React.FC<{
+export const SaveOrMoveToStorySubMenu: ReactFCWithChildren<{
   blockFragment: { children: string[]; data: Record<string, Editor.BaseBlock> } | null
   className?: string
   trigger: ReactNode
@@ -97,7 +97,7 @@ export const SaveOrMoveToStorySubMenu: React.FC<{
           onChange={(e) => {
             setKeyword(e.currentTarget.value)
           }}
-          placeholder={t`Search`}
+          placeholder={t<string>(`Search`)}
         />
         <div
           className={css`

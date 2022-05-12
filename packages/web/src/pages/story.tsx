@@ -26,7 +26,7 @@ import { Helmet } from 'react-helmet'
 import { useParams } from 'react-router-dom'
 import { useRecoilValue } from 'recoil'
 
-const _Page: React.FC = () => {
+const _Page: ReactFCWithChildren = () => {
   const { id } = useParams()
   const recordVisits = useRecordStoryVisits()
   const user = useLoggedUser()
@@ -97,7 +97,7 @@ const _Page: React.FC = () => {
   )
 }
 
-const RightSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
+const RightSideBar: ReactFCWithChildren<{ storyId: string }> = ({ storyId }) => {
   const [rightSideBarState] = useRightSideBarUIConfig()
   const matches = useMediaQuery('only screen and (min-width: 700px)')
 
@@ -125,7 +125,7 @@ const RightSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
   )
 }
 
-const StoryContent: React.FC<{ storyId: string }> = ({ storyId }) => {
+const StoryContent: ReactFCWithChildren<{ storyId: string }> = ({ storyId }) => {
   useFetchStoryChunk(storyId, false)
   const storyBlock = useBlockSuspense<Story | Thought>(storyId)
   const storyBotom = useMemo(() => <StoryBackLinks storyId={storyId} />, [storyId])
@@ -161,7 +161,7 @@ const StoryContent: React.FC<{ storyId: string }> = ({ storyId }) => {
   )
 }
 
-const StoryHeader: React.FC<{ storyId: string }> = ({ storyId }) => {
+const StoryHeader: ReactFCWithChildren<{ storyId: string }> = ({ storyId }) => {
   const storyType = useRecoilValue(BlockTypeAtom(storyId))
   const story = useBlockSuspense(storyId)
   const storyForamt = useRecoilValue(BlockFormatAtom(storyId))

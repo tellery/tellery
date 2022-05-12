@@ -19,7 +19,7 @@ interface EquationBlockInterface extends Editor.BaseBlock {
 }
 
 const _EquationBlock: BlockComponent<
-  React.FC<{
+  ReactFCWithChildren<{
     block: EquationBlockInterface
     parentType: Editor.BlockType
   }>
@@ -103,7 +103,7 @@ const _EquationBlock: BlockComponent<
   )
 }
 
-const _EmbedBlockPopover: React.FC<{
+const _EmbedBlockPopover: ReactFCWithChildren<{
   open: boolean
   setOpen: (value: boolean) => void
   referenceElement: HTMLElement | null

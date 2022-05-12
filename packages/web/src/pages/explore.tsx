@@ -45,7 +45,7 @@ import { toast } from 'react-toastify'
 import { Tab, TabList, TabPanel, useTabState } from 'reakit'
 import { Updater, useImmer } from 'use-immer'
 
-const Diagram: React.FC<{
+const Diagram: ReactFCWithChildren<{
   className?: string
   data: Data | null
   config: Config<Type> | null
@@ -114,10 +114,9 @@ const DEFAULT_LAYOUT_MEASURING: MeasuringConfiguration = {
   }
 }
 
-const CustomDndContext: React.FC<{ setQueryBuilderId: React.Dispatch<React.SetStateAction<string | null>> }> = ({
-  children,
-  setQueryBuilderId
-}) => {
+const CustomDndContext: ReactFCWithChildren<{
+  setQueryBuilderId: React.Dispatch<React.SetStateAction<string | null>>
+}> = ({ children, setQueryBuilderId }) => {
   const [activeId, setActiveId] = useState<string | null>(null)
   const mouseSensor = useSensor(MouseSensor, MouseSensorOptions)
   const sensors = useSensors(mouseSensor)
@@ -163,7 +162,7 @@ const CustomDndContext: React.FC<{ setQueryBuilderId: React.Dispatch<React.SetSt
   )
 }
 
-const Droppable: React.FC<{ className: string; style: React.CSSProperties }> = (props) => {
+const Droppable: ReactFCWithChildren<{ className: string; style: React.CSSProperties }> = (props) => {
   const { isOver, setNodeRef } = useDroppable({
     id: 'explore'
   })
@@ -504,7 +503,7 @@ const Page = () => {
   )
 }
 
-const ExploreSideBarRight: React.FC<{
+const ExploreSideBarRight: ReactFCWithChildren<{
   queryBlock: Editor.SmartQueryBlock
   visBlock: Editor.VisualizationBlock
   setQueryBlock: Updater<Editor.SmartQueryBlock | null>
@@ -561,7 +560,7 @@ const ExploreSideBarRight: React.FC<{
               changeTab('Query')
             }}
           >
-            {t`Query`}
+            {t<string>(`Query`)}
           </Tab>
         ) : null}
         <Tab
@@ -573,7 +572,7 @@ const ExploreSideBarRight: React.FC<{
             changeTab('Visualization')
           }}
         >
-          {t`Visualization`}
+          {t<string>(`Visualization`)}
         </Tab>
       </TabList>
       <PerfectScrollbar

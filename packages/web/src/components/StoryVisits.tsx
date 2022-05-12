@@ -100,7 +100,7 @@ export function StoryVisits(props: { storyId: string; className?: string }) {
   )
 }
 
-const StoryVisitAvatar: React.FC<{ isActive: boolean; user: User; index: number; visit: Visit }> = ({
+const StoryVisitAvatar: ReactFCWithChildren<{ isActive: boolean; user: User; index: number; visit: Visit }> = ({
   isActive,
   user,
   index,

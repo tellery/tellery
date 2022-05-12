@@ -66,6 +66,7 @@ module.exports = {
       scope: process.env.OAUTH2_SCOPE || '*',
       providerName: process.env.OAUTH2_PROVIDER_NAME || 'provider',
       providerIcon: process.env.OAUTH2_PROVIDER_ICON || '',
+      authorizeUrl: process.env.OAUTH2_AUTHORIZE_URL || '',
     },
   },
 }

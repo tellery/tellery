@@ -3,7 +3,7 @@ import React, { useCallback } from 'react'
 import { IconCommonArrowUnfold } from '@app/assets/icons'
 import IconButton from './kit/IconButton'
 
-export const ToggleControl: React.FC<{
+export const ToggleControl: ReactFCWithChildren<{
   className?: string
   value: boolean
   onChange(value: boolean): void

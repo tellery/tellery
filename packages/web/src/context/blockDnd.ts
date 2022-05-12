@@ -28,7 +28,7 @@ export const getFakeDragbleElement = () => {
 
 const getMinvalueEntry = (entries: [string, number][]) => {
   let lowest = Infinity
-  let lowestId = null
+  let lowestId: string | null = null
   for (const [id, value] of entries) {
     if (value <= lowest) {
       lowest = value

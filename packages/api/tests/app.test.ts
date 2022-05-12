@@ -397,7 +397,7 @@ test.serial('post /api/mgetResources', async (t: ExecutionContext<any>) => {
     storyId: ssid,
     type: BlockType.STORY,
     permissions: defaultPermissions,
-    content: { title: [[nanoid()]] },
+    content: { title: [[nanoid()]] } as object,
     children: [],
     alive: true,
     createdById: user.id,
@@ -411,7 +411,7 @@ test.serial('post /api/mgetResources', async (t: ExecutionContext<any>) => {
     storyId: tsid,
     type: BlockType.STORY,
     permissions: defaultPermissions,
-    content: { title: [[nanoid()]] },
+    content: { title: [[nanoid()]] } as object,
     children: [],
     alive: true,
     createdById: user.id,
@@ -455,7 +455,7 @@ test.serial('post /api/mgetResources', async (t: ExecutionContext<any>) => {
     content: {
       title: [[nanoid()]],
       sql: `select * from order${randomId}`,
-    },
+    } as object,
     alive: true,
     createdById: user.id,
   })

@@ -24,7 +24,7 @@ const Image = styled(Img)`
   top: 0;
 `
 
-const ImageLoader: React.FC = () => (
+const ImageLoader: ReactFCWithChildren = () => (
   <div
     className={css`
       height: 100%;
@@ -41,7 +41,7 @@ const ImageLoader: React.FC = () => (
 )
 
 const _ImageBlock: BlockComponent<
-  React.FC<{
+  ReactFCWithChildren<{
     block: Editor.ImageBlock
     blockFormat: BlockFormatInterface
     parentType: Editor.BlockType

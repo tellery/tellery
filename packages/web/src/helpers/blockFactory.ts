@@ -5,7 +5,6 @@ import { blockIdGenerator } from '@app/utils'
 import { cloneDeep } from 'lodash'
 import { useCallback } from 'react'
 import { useRecoilValue } from 'recoil'
-// import { humanId } from 'human-id'
 
 export const useCreateEmptyBlock = () => {
   const handler = useCallback(<T extends Editor.BaseBlock = Editor.BaseBlock>(args: Partial<T>) => {

@@ -60,7 +60,7 @@ const InlineHoverPopoverContainer = styled.div`
   border-radius: 6px;
 `
 
-const InlinePopover: React.FC<{ content: ReactNode; reference: Element | null }> = ({ content, reference }) => {
+const InlinePopover: ReactFCWithChildren<{ content: ReactNode; reference: Element | null }> = ({ content, reference }) => {
   const tippyAnimation = useTippyMenuAnimation('fade')
 
   return (

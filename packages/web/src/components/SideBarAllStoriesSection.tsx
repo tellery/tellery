@@ -14,7 +14,7 @@ import { SearchInput } from './SearchInput'
 import { SideBarContentLayout } from './SideBarContentLayout'
 import type { StoryListItemValue } from './StoryListItem'
 
-export const SideBarAllStoriesSection: React.FC<{ close: Function }> = (props) => {
+export const SideBarAllStoriesSection: ReactFCWithChildren<{ close: Function }> = (props) => {
   const { t } = useTranslation()
   const { data: workspaceView } = useWorkspaceView()
   const [keyword, setKeyword] = useState('')
@@ -78,7 +78,7 @@ export const SideBarAllStoriesSection: React.FC<{ close: Function }> = (props) =
           `}
         >
           <SearchInput
-            placeholder={t`Search`}
+            placeholder={t<string>(`Search`)}
             onChange={(e) => {
               setKeyword(e.target.value)
             }}
@@ -142,7 +142,7 @@ export const SideBarAllStoriesSection: React.FC<{ close: Function }> = (props) =
   )
 }
 
-export const StoryCard: React.FC<{ data: StoryListItemValue; onClick: Function }> = ({ data, onClick }) => {
+export const StoryCard: ReactFCWithChildren<{ data: StoryListItemValue; onClick: Function }> = ({ data, onClick }) => {
   const openStory = useOpenStory()
 
   return (
@@ -268,7 +268,7 @@ export const StoryCard: React.FC<{ data: StoryListItemValue; onClick: Function }
   )
 }
 
-const StoryCards: React.FC<{ items: StoryListItemValue[]; onClick: Function }> = ({ items, onClick }) => {
+const StoryCards: ReactFCWithChildren<{ items: StoryListItemValue[]; onClick: Function }> = ({ items, onClick }) => {
   return (
     <div
       className={css`

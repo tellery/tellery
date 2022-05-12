@@ -12,7 +12,7 @@ import { useBlockLocalPreferences } from '../hooks/useBlockLocalPreferences'
 import { BlockComponent } from './utils'
 
 const _ToggleListBlock: BlockComponent<
-  React.FC<{
+  ReactFCWithChildren<{
     block: Editor.Block
     children: ReactNode
   }>

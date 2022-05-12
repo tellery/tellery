@@ -12,7 +12,7 @@ import { StyledDropDownItem, StyledDropdownMenuContent, StyledDropDownTriggerIte
 import { useMoveOrSaveToStory } from '../../hooks/useMoveOrSaveToStory'
 import { SaveOrMoveToStorySubMenu } from './SaveOrMoveToStorySubMenu'
 
-export const ExploreSaveMenu: React.FC<{
+export const ExploreSaveMenu: ReactFCWithChildren<{
   blockFragment: { children: string[]; data: Record<string, Editor.BaseBlock> } | null
   className?: string
   button: ReactNode
@@ -31,7 +31,7 @@ export const ExploreSaveMenu: React.FC<{
   const saveToTodaysThought = useCallback(async () => {
     if (!thoughts || !blockFragment) return
     const today = dayjs().format('YYYY-MM-DD')
-    let storyId = null
+    let storyId: string | null = null
     if (thoughts.length >= 1 && thoughts[0].date === today) {
       storyId = thoughts[0].id
     } else {
@@ -62,11 +62,11 @@ export const ExploreSaveMenu: React.FC<{
         <SaveOrMoveToStorySubMenu
           blockFragment={blockFragment}
           mode="save"
-          trigger={<StyledDropDownTriggerItem title={t`Save to story`}></StyledDropDownTriggerItem>}
+          trigger={<StyledDropDownTriggerItem title={t<string>(`Save to story`)}></StyledDropDownTriggerItem>}
         />
 
         <StyledDropDownItem
-          title={t`Save to thoughts`}
+          title={t<string>(`Save to thoughts`)}
           onClick={async (e) => {
             await saveToTodaysThought()
             toast('Question saved to thoughts')

@@ -25,7 +25,7 @@ export const useSetDroppingArea = () => {
   const callback = useRecoilTransaction_UNSTABLE<
     [BlockAreaInterface | null | ((oldValue: BlockAreaInterface | null) => BlockAreaInterface)]
   >(({ set, get }) => (newValueOrUpdater) => {
-    let newValue = null
+    let newValue: BlockAreaInterface | null = null
     const oldValue = get(DroppingAreaAtom)
     if (typeof newValueOrUpdater === 'function') {
       newValue = newValueOrUpdater(oldValue)

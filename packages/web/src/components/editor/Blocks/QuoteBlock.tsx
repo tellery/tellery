@@ -7,7 +7,7 @@ import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import { BlockComponent } from './utils'
 
 const _QuoteBlock: BlockComponent<
-  React.FC<{
+  ReactFCWithChildren<{
     block: Editor.Block
   }>
 > = ({ block, children }) => {

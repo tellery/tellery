@@ -2,7 +2,7 @@ import { useDroppable } from '@dnd-kit/core'
 import { css } from '@emotion/css'
 import React, { useEffect, memo } from 'react'
 
-const _DroppleableOverlay: React.FC<{
+const _DroppleableOverlay: ReactFCWithChildren<{
   blockId: string
   storyId: string
   type?: string

@@ -9,7 +9,7 @@ import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import { BlockComponent } from './utils'
 
 const _TodoBlock: BlockComponent<
-  React.FC<{
+  ReactFCWithChildren<{
     block: Editor.TodoBlock
   }>
 > = ({ block, children }) => {

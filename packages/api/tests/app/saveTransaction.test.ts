@@ -466,7 +466,7 @@ test.serial('test saveTransactions with bigInt', async (t: ExecutionContext<any>
     id: sid,
     interKey: sid,
     workspaceId: 'test',
-    content: { title: [[sid]] },
+    content: { title: [[sid]] } as object,
     storyId: sid,
     type: BlockType.STORY,
     parentId: 'test',

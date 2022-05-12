@@ -4,7 +4,7 @@ import { ContentEditable } from '../BlockBase/ContentEditable'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import { BlockComponent } from './utils'
 
-const _TitleBlock: BlockComponent<React.FC<{ block: Editor.BaseBlock }>> = (props: { block: Editor.BaseBlock }) => {
+const _TitleBlock: BlockComponent<ReactFCWithChildren<{ block: Editor.BaseBlock }>> = (props: { block: Editor.BaseBlock }) => {
   const { readonly } = useBlockBehavior()
 
   const { block } = props

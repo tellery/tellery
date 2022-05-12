@@ -4,7 +4,7 @@ import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
 import { motion } from 'framer-motion'
 import { MenuWrapper } from './MenuWrapper'
 
-export const MenuConfirmPopover: React.FC<{ content: ReactNode; width: number; disabled: boolean }> = ({
+export const MenuConfirmPopover: ReactFCWithChildren<{ content: ReactNode; width: number; disabled: boolean }> = ({
   children,
   content,
   width,

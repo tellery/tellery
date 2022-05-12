@@ -98,7 +98,7 @@ export const useBlockTranscationProvider = () => {
         blocksFragment: { children: string[]; data: Record<string, Editor.Block> }
         targetBlockId: string
         direction: 'top' | 'left' | 'bottom' | 'right' | 'child'
-        path?: 'children'
+        path?: string
       }
     ) => {
       const targetBlock = await getBlock(targetBlockId)

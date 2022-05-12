@@ -88,7 +88,7 @@ export default function SideBarVisualization<T extends Type = Type>(props: { sto
   )
 }
 
-export const VisualizationConfig: React.FC<{
+export const VisualizationConfig: ReactFCWithChildren<{
   onChange: (update: (block: WritableDraft<Editor.VisualizationBlock>) => void) => void
   metricIds?: string[]
   dimensions?: Dimension[]

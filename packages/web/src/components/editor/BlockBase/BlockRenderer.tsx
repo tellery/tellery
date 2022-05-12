@@ -125,7 +125,7 @@ const getTextElement = (token: Editor.Token, index: number, classNames?: string)
   return textSpan
 }
 
-export const FormulaResultValueRenderer: React.FC<{ value: any }> = ({ value }) => {
+export const FormulaResultValueRenderer: ReactFCWithChildren<{ value: any }> = ({ value }) => {
   if (typeof value === 'number') {
     return <>{value}</>
   } else if (typeof value === 'string') {

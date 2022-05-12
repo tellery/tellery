@@ -46,7 +46,7 @@
     "ioredis": "^4.28.2",
     "jsonwebtoken": "^8.5.1",
     "koa": "^2.13.4",
-    "koa-body": "^4.2.0",
+    "koa-body": "^5",
     "koa-logger": "^3.2.1",
     "koa-mount": "^4.0.0",
     "koa-router": "^10.1.1",

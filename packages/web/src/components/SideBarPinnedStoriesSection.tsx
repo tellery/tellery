@@ -11,7 +11,7 @@ import Avatar from './Avatar'
 import { useGetBlockTitleTextSnapshot } from './editor'
 import { SideBarContentLayout } from './SideBarContentLayout'
 
-const SideBarLoader: React.FC = () => {
+const SideBarLoader: ReactFCWithChildren = () => {
   return (
     <ContentLoader viewBox="0 0 210 36" style={{ width: '100%', height: '36px', padding: '0 8px' }}>
       <rect x="0" y="0" rx="5" ry="5" width="210" height="36" />
@@ -19,17 +19,17 @@ const SideBarLoader: React.FC = () => {
   )
 }
 
-export const SideBarPinnedStoriesSection: React.FC<{ close: Function }> = (props) => {
+export const SideBarPinnedStoriesSection: ReactFCWithChildren<{ close: Function }> = (props) => {
   const { data: workspaceView } = useWorkspaceView()
   const { t } = useTranslation()
   return (
-    <SideBarContentLayout title={t`Favorites`}>
+    <SideBarContentLayout title={t<string>(`Favorites`)}>
       {workspaceView?.pinnedList && <WorkspaceItems storyIds={workspaceView?.pinnedList} onClick={props.close} />}
     </SideBarContentLayout>
   )
 }
 
-const WorkspaceItems: React.FC<{ storyIds: string[]; onClick: Function }> = ({ storyIds, onClick }) => {
+const WorkspaceItems: ReactFCWithChildren<{ storyIds: string[]; onClick: Function }> = ({ storyIds, onClick }) => {
   return (
     <div
       className={css`
@@ -51,7 +51,7 @@ const WorkspaceItems: React.FC<{ storyIds: string[]; onClick: Function }> = ({ s
   )
 }
 
-export const StoryCard: React.FC<{ blockId: string; onClick: Function }> = ({ blockId, onClick }) => {
+export const StoryCard: ReactFCWithChildren<{ blockId: string; onClick: Function }> = ({ blockId, onClick }) => {
   const block = useBlockSuspense(blockId)
   const openStory = useOpenStory()
   const { data: user } = useUser(block.createdById ?? null)

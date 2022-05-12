@@ -9,10 +9,10 @@ import React, { useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BlockTitle, blockTitleToText } from './editor'
 
-export const QueryBlockSelectInput: React.FC<{ onChange: (blockId: string) => void; value: string | null }> = ({
-  onChange,
-  value
-}) => {
+export const QueryBlockSelectInput: ReactFCWithChildren<{
+  onChange: (blockId: string) => void
+  value: string | null
+}> = ({ onChange, value }) => {
   const [keyword, setKeyword] = useState('')
   const [searchBlockId, setSearchBlockId] = useState<null | string>(null)
   const { data, isLoading } = useSearchBlocks(keyword, 10, Editor.BlockType.SQL, { suspense: false })
@@ -78,7 +78,7 @@ export const QueryBlockSelectInput: React.FC<{ onChange: (blockId: string) => vo
                 setSearchBlockId(null)
               }
             }}
-            placeholder={t`Search`}
+            placeholder={t<string>(`Search`)}
             onPaste={async (e) => {
               e.stopPropagation()
               const text = e.clipboardData.getData('text/plain')

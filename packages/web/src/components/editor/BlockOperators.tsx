@@ -5,7 +5,7 @@ import React from 'react'
 import { useBlockOperators } from './hooks/useStoryOperatorsProvider'
 import Avatar from '../Avatar'
 
-export const OperatorsAvatar: React.FC<{ blockId: string }> = ({ blockId }) => {
+export const OperatorsAvatar: ReactFCWithChildren<{ blockId: string }> = ({ blockId }) => {
   const operators = useBlockOperators(blockId)
   return (
     <div

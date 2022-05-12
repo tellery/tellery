@@ -36,9 +36,12 @@ export interface OperationInterface {
   side?: ReactNode
 }
 
-const _BlockOperationPopover: React.FC<{ id: string; children?: ReactNode; open: boolean; close: Function }> = (
-  props
-) => {
+const _BlockOperationPopover: ReactFCWithChildren<{
+  id: string
+  children?: ReactNode
+  open: boolean
+  close: Function
+}> = (props) => {
   const { id } = props
   const closeHandler = useCallback(() => {
     props.close()
@@ -49,7 +52,10 @@ const _BlockOperationPopover: React.FC<{ id: string; children?: ReactNode; open:
 
 export const BlockOperationPopover = memo(_BlockOperationPopover)
 
-export const BlockPopoverInner: React.FC<{ id: string; requestClose: () => void }> = ({ id, requestClose }) => {
+export const BlockPopoverInner: ReactFCWithChildren<{ id: string; requestClose: () => void }> = ({
+  id,
+  requestClose
+}) => {
   const block = useBlockSuspense<Editor.Block>(id)
   const { data: user } = useUser(block?.lastEditedById ?? null)
   const editor = useEditor<Editor.Block>()
@@ -117,7 +123,7 @@ export const BlockPopoverInner: React.FC<{ id: string; requestClose: () => void 
         mode="move"
         trigger={
           <StyledDropDownTriggerItem
-            title={t`Move to story`}
+            title={t<string>(`Move to story`)}
             icon={<IconMenuMoveTo color={ThemingVariables.colors.text[0]} />}
           ></StyledDropDownTriggerItem>
         }

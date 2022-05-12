@@ -1,4 +1,5 @@
 import { IconCommonClose, IconCommonEdit, IconCommonEnter } from '@app/assets/icons'
+import { DetectableOverflow } from '@app/components/DetectableOverflow'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useSideBarVariableEditor } from '@app/hooks/useSideBarQuestionEditor'
 import { ThemingVariables } from '@app/styles'
@@ -7,7 +8,6 @@ import { css, cx } from '@emotion/css'
 import styled from '@emotion/styled'
 import Tippy from '@tippyjs/react'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import DetectableOverflow from 'react-detectable-overflow'
 import { useSearchParams } from 'react-router-dom'
 import { QueryBlockSelectInput } from '../../QueryBlockSelectInput'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
@@ -59,7 +59,7 @@ const useVariableName = (block: Editor.ControlBlock) => {
 }
 
 const _ControlBlock: BlockComponent<
-  React.FC<{
+  ReactFCWithChildren<{
     block: Editor.ControlBlock
     blockFormat: BlockFormatInterface
     parentType: Editor.BlockType

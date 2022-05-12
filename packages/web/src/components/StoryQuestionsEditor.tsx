@@ -74,7 +74,7 @@ const updateOldDraft = (
   return updatedDraft
 }
 
-const QueryEditorResizer: React.FC<{ y: MotionValue<number> }> = ({ y }) => {
+const QueryEditorResizer: ReactFCWithChildren<{ y: MotionValue<number> }> = ({ y }) => {
   const [resizeConfig, setResizeConfig] = useLocalStorage('MainSQLEditorConfig_v2', {
     y: -300
   })
@@ -114,7 +114,7 @@ const QueryEditorResizer: React.FC<{ y: MotionValue<number> }> = ({ y }) => {
   )
 }
 
-export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId }) => {
+export const StoryQuestionsEditor: ReactFCWithChildren<{ storyId: string }> = ({ storyId }) => {
   const [open, setOpen] = useQuestionEditorOpenState(storyId)
 
   const [resizeConfig] = useLocalStorage('MainSQLEditorConfig_v2', {
@@ -378,7 +378,7 @@ export const StoryQuestionsEditor: React.FC<{ storyId: string }> = ({ storyId })
   )
 }
 
-const TabHeader: React.FC<{
+const TabHeader: ReactFCWithChildren<{
   blockId: string
   hovering: boolean
   storyId: string
@@ -453,7 +453,7 @@ const TabHeader: React.FC<{
   )
 }
 
-const QuestionTab: React.FC<{
+const QuestionTab: ReactFCWithChildren<{
   id: string
   tab: TabStateReturn
   isActive: boolean
@@ -499,7 +499,7 @@ const QuestionTab: React.FC<{
   )
 }
 
-export const StoryQuestionEditor: React.FC<{
+export const StoryQuestionEditor: ReactFCWithChildren<{
   id: string
   setActiveId: (update: SetStateAction<string | null>) => void | Promise<void>
   tab: TabStateReturn
@@ -833,7 +833,7 @@ export const StoryQuestionEditor: React.FC<{
   )
 }
 
-const TabButtons: React.FC<{
+const TabButtons: ReactFCWithChildren<{
   hasError: boolean
   onClickError: React.MouseEventHandler<HTMLButtonElement> | undefined
 }> = ({ onClickError, hasError, children }) => {
@@ -873,7 +873,7 @@ const emitFalsyObject = (object: EditorDraft) => {
   return undefined
 }
 
-export const DraftStatus: React.FC<{
+export const DraftStatus: ReactFCWithChildren<{
   isDraft: boolean
   onCloseClick: React.MouseEventHandler<HTMLDivElement>
   showClose: boolean

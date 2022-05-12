@@ -15,7 +15,7 @@ import { Diagram } from '@app/components/v11n/Diagram'
 import { Config, Data, Type } from '@app/components/v11n/types'
 import { useOnScreen } from '@app/hooks'
 import { useBlockSuspense, useQuerySnapshot, useQuerySnapshotId, useSnapshot } from '@app/hooks/api'
-import { useCommit } from '@app/hooks/useCommit'
+import { Operation, useCommit } from '@app/hooks/useCommit'
 import { useInterval } from '@app/hooks/useInterval'
 import { useQuestionEditor } from '@app/hooks/useQuestionEditor'
 import { useSideBarQuestionEditor, useSideBarRightState } from '@app/hooks/useSideBarQuestionEditor'
@@ -27,7 +27,6 @@ import Tippy from '@tippyjs/react'
 import dayjs from 'dayjs'
 import { motion } from 'framer-motion'
 import React, { memo, ReactNode, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
-import DetectableOverflow from 'react-detectable-overflow'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useHoverDirty, useMeasure } from 'react-use'
@@ -41,6 +40,7 @@ import { useEditor } from '../hooks'
 import { useBlockBehavior } from '../hooks/useBlockBehavior'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
 import { blockManuallyCreatedSubject } from '../oberveables'
+import { DetectableOverflow } from '../../DetectableOverflow'
 import { MoreDropdownSelect } from './menus/MoreDropdownSelect'
 import { BlockComponent, isExecuteableBlockType } from './utils'
 const FOOTER_HEIGHT = 20
@@ -73,7 +73,7 @@ const useVisualizationBlockInstructionsProvider = (block: Editor.VisualizationBl
       },
       restoreOriginalQueryId: async () => {
         if (!fromQueryId) return
-        const operations = []
+        const operations: Operation[] = []
         operations.push({ cmd: 'set', path: ['content', 'queryId'], args: fromQueryId, table: 'block', id: block.id })
         if (block.children?.length) {
           for (let i = 0; i < block.children.length; i++) {
@@ -197,7 +197,7 @@ const _VisualizationBlock: React.ForwardRefRenderFunction<any, QuestionBlockProp
   )
 }
 
-const _VisualizationBlockBody: React.FC<{
+const _VisualizationBlockBody: ReactFCWithChildren<{
   queryId: string
   blockFormat: BlockFormatInterface
   block: Editor.VisualizationBlock
@@ -253,7 +253,7 @@ const _VisualizationBlockBody: React.FC<{
 
 const VisualizationBlockBody = memo(_VisualizationBlockBody)
 
-const _VisualizationBlockContent: React.FC<{
+const _VisualizationBlockContent: ReactFCWithChildren<{
   queryId: string
   block: Editor.VisualizationBlock
   blockFormat: BlockFormatInterface
@@ -311,7 +311,7 @@ VisualizationBlock.meta = {
   isExecuteable: true
 }
 
-const QuestionBlockButtons: React.FC<{
+const QuestionBlockButtons: ReactFCWithChildren<{
   block: Editor.VisualizationBlock
   show: boolean
   slim: boolean
@@ -422,7 +422,7 @@ const _QuestionBlockBody: React.ForwardRefRenderFunction<
 
 const QuestionBlockBody = React.forwardRef(_QuestionBlockBody)
 
-const _QuestionBlockHeader: React.FC<{
+const _QuestionBlockHeader: ReactFCWithChildren<{
   block: Editor.VisualizationBlock
 }> = ({ block }) => {
   const { t } = useTranslation()
@@ -442,7 +442,7 @@ const _QuestionBlockHeader: React.FC<{
         `}
       >
         {isReference && (
-          <Tippy content={t`Click to navigate to the original story`} arrow={false}>
+          <Tippy content={t<string>(`Click to navigate to the original story`)} arrow={false}>
             <Link
               replace
               to={{
@@ -505,7 +505,7 @@ const _QuestionBlockHeader: React.FC<{
 
 const QuestionBlockHeader = memo(_QuestionBlockHeader)
 
-const _QuestionBlockStatus: React.FC<{
+const _QuestionBlockStatus: ReactFCWithChildren<{
   queryId: string
 }> = ({ queryId }) => {
   const queryBlock = useBlockSuspense<Editor.QueryBlock>(queryId)
@@ -611,7 +611,7 @@ const _QuestionBlockStatus: React.FC<{
 }
 const QuestionBlockStatus = memo(_QuestionBlockStatus)
 
-const SnapshotUpdatedAt: React.FC<{
+const SnapshotUpdatedAt: ReactFCWithChildren<{
   loading: boolean
   queryBlock: Editor.QueryBlock
 }> = ({ loading, queryBlock }) => {
@@ -642,12 +642,12 @@ const SnapshotUpdatedAt: React.FC<{
   )
 }
 
-const LazyRenderDiagram: React.FC<{ storyId: string; blockId: string; data?: Data; config: Config<Type> }> = ({
-  storyId,
-  blockId,
-  data,
-  config
-}) => {
+const LazyRenderDiagram: ReactFCWithChildren<{
+  storyId: string
+  blockId: string
+  data?: Data
+  config: Config<Type>
+}> = ({ storyId, blockId, data, config }) => {
   const ref = useRef<HTMLDivElement>(null)
   const [rendered, setRendered] = useState(false)
   const isOnSCreen = useOnScreen(ref)
@@ -710,7 +710,7 @@ const LazyRenderDiagram: React.FC<{ storyId: string; blockId: string; data?: Dat
   )
 }
 
-const VisBlockRefereshButton: React.FC<{
+const VisBlockRefereshButton: ReactFCWithChildren<{
   block: Editor.VisualizationBlock
   hoverContent?: ReactNode
   className: string
@@ -731,7 +731,7 @@ const VisBlockRefereshButton: React.FC<{
   ) : null
 }
 
-const TitleButtonsInner: React.FC<{
+const TitleButtonsInner: ReactFCWithChildren<{
   block: Editor.VisualizationBlock
   slim: boolean
   setIsActive: React.Dispatch<React.SetStateAction<boolean>>
@@ -760,10 +760,14 @@ const TitleButtonsInner: React.FC<{
         {slim === false && (
           <>
             {block.content?.queryId && (
-              <VisBlockRefereshButton className={QuestionBlockIconButton} hoverContent={t`Refresh`} block={block} />
+              <VisBlockRefereshButton
+                className={QuestionBlockIconButton}
+                hoverContent={t<string>(`Refresh`)}
+                block={block}
+              />
             )}
             <IconButton
-              hoverContent={t`Settings`}
+              hoverContent={t<string>(`Settings`)}
               icon={IconCommonSetting}
               color={ThemingVariables.colors.gray[5]}
               onClick={() => sideBarQuestionEditor.open({ blockId: block.id, activeTab: 'Visualization' })}
@@ -771,7 +775,7 @@ const TitleButtonsInner: React.FC<{
             />
             {isOriginalQuestion && (
               <IconButton
-                hoverContent={t`Edit SQL`}
+                hoverContent={t<string>(`Edit SQL`)}
                 className={QuestionBlockIconButton}
                 icon={IconCommonSql}
                 color={ThemingVariables.colors.gray[5]}
@@ -782,7 +786,7 @@ const TitleButtonsInner: React.FC<{
         )}
         {block.content?.queryId && (
           <MoreDropdownSelect
-            hoverContent={t`More`}
+            hoverContent={t<string>(`More`)}
             block={block}
             setIsActive={setIsActive}
             className={QuestionBlockIconButton}

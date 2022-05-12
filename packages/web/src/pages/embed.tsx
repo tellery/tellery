@@ -24,7 +24,7 @@ const Page = () => {
   )
 }
 
-const VisulizationBlockEmbed: React.FC<{ blockId: string }> = ({ blockId }) => {
+const VisulizationBlockEmbed: ReactFCWithChildren<{ blockId: string }> = ({ blockId }) => {
   const block = useBlockSuspense<Editor.VisualizationBlock>(blockId)
   const queryBlock = useBlockSuspense<Editor.QueryBlock>(block.content?.queryId!)
   return (

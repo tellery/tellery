@@ -6,7 +6,7 @@ import React, { useRef } from 'react'
 import type { Editor } from '@app/types'
 import { useEditor } from '../hooks'
 
-export const VirtualBlock: React.FC<{
+export const VirtualBlock: ReactFCWithChildren<{
   block: Editor.Block
 }> = ({ block }) => {
   const commit = useCommit()

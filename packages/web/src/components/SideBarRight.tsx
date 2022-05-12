@@ -27,7 +27,7 @@ import SideBarVisualization from './SideBarVisualization'
 import { SideBarTabHeader } from './v11n/components/Tab'
 import { VariableSettingsSection } from './VariableSettingsSection'
 
-export const DefaultSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
+export const DefaultSideBar: ReactFCWithChildren<{ storyId: string }> = ({ storyId }) => {
   const tab = useTabState()
   const { t } = useTranslation()
 
@@ -51,7 +51,7 @@ export const DefaultSideBar: React.FC<{ storyId: string }> = ({ storyId }) => {
         `}
       >
         <Tab as={SideBarTabHeader} {...tab} id="Data Assets" selected={tab.selectedId === 'Data Assets'}>
-          {t`Data Assets`}
+          {t<string>(`Data Assets`)}
         </Tab>
       </TabList>
       <TabPanel
@@ -77,7 +77,10 @@ const BLOCKTYPE_ICON = {
   [Editor.BlockType.SQL]: IconCommonSqlQuery
 }
 
-export const QuestionTitleEditor: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
+export const QuestionTitleEditor: ReactFCWithChildren<{ blockId: string; storyId: string }> = ({
+  blockId,
+  storyId
+}) => {
   const queryBlock = useBlockSuspense(blockId)
   const blockTranscation = useBlockTranscations()
   const setTitle = useCallback(
@@ -178,7 +181,7 @@ export const QuestionTitleEditor: React.FC<{ blockId: string; storyId: string }>
   )
 }
 
-export const VariableSideBar: React.FC<{ storyId: string; blockId: string }> = ({ storyId, blockId }) => {
+export const VariableSideBar: ReactFCWithChildren<{ storyId: string; blockId: string }> = ({ storyId, blockId }) => {
   const tab = useTabState()
   const { t } = useTranslation()
   const [sideBarEditorState, setSideBarEditorState] = useSideBarRightState(storyId)
@@ -228,7 +231,7 @@ export const VariableSideBar: React.FC<{ storyId: string; blockId: string }> = (
             changeTab('Variable')
           }}
         >
-          {t`Variable`}
+          {t<string>(`Variable`)}
         </Tab>
         {/* <Tab
           as={SideBarTabHeader}
@@ -239,7 +242,7 @@ export const VariableSideBar: React.FC<{ storyId: string; blockId: string }> = (
             changeTab('Help')
           }}
         >
-          {t`Help`}
+          {t<string>(`Help`)}
         </Tab> */}
       </TabList>
 
@@ -257,7 +260,10 @@ export const VariableSideBar: React.FC<{ storyId: string; blockId: string }> = (
   )
 }
 
-export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string }> = ({ storyId, blockId }) => {
+export const QuestionEditorSideBar: ReactFCWithChildren<{ storyId: string; blockId: string }> = ({
+  storyId,
+  blockId
+}) => {
   const tab = useTabState()
   const { t } = useTranslation()
   const block = useBlockSuspense<Editor.VisualizationBlock>(blockId)
@@ -311,7 +317,7 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
               changeTab('Query')
             }}
           >
-            {t`Query`}
+            {t<string>(`Query`)}
           </Tab>
         ) : null}
         <Tab
@@ -323,7 +329,7 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
             changeTab('Visualization')
           }}
         >
-          {t`Visualization`}
+          {t<string>(`Visualization`)}
         </Tab>
         {queryBlock.type !== Editor.BlockType.SmartQuery ? (
           <Tab
@@ -335,7 +341,7 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
               changeTab('Modeling')
             }}
           >
-            {t`Modeling`}
+            {t<string>(`Modeling`)}
           </Tab>
         ) : null}
       </TabList>
@@ -369,7 +375,7 @@ export const QuestionEditorSideBar: React.FC<{ storyId: string; blockId: string 
   )
 }
 
-export const SideBarRight: React.FC<{ storyId: string }> = ({ storyId }) => {
+export const SideBarRight: ReactFCWithChildren<{ storyId: string }> = ({ storyId }) => {
   const [sideBarEditorState] = useSideBarRightState(storyId)
 
   if (sideBarEditorState?.type === 'Variable' && sideBarEditorState.data?.blockId) {

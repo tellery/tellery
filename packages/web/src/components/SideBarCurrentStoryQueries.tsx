@@ -40,7 +40,7 @@ import { SideBarSection } from './SideBarSection'
 import { SideBarSectionHeader } from './SideBarSectionHeader'
 import { TippySingletonContextProvider } from './TippySingletonContextProvider'
 
-const StoryResources: React.FC<{ storyId: string }> = ({ storyId }) => {
+const StoryResources: ReactFCWithChildren<{ storyId: string }> = ({ storyId }) => {
   const resourceBlocks = useStoryResources(storyId)
 
   if (!storyId) return null
@@ -59,14 +59,14 @@ const StoryResources: React.FC<{ storyId: string }> = ({ storyId }) => {
   )
 }
 
-export const CurrentStoryQueries: React.FC<{ storyId: string }> = ({ storyId }) => {
+export const CurrentStoryQueries: ReactFCWithChildren<{ storyId: string }> = ({ storyId }) => {
   useFetchStoryChunk(storyId)
   const { t } = useTranslation()
 
   return storyId ? (
     <React.Suspense fallback={<></>}>
       <SideBarSection>
-        <SideBarSectionHeader>{t`Queries`}</SideBarSectionHeader>
+        <SideBarSectionHeader>{t<string>(`Queries`)}</SideBarSectionHeader>
         <Operations storyId={storyId} />
       </SideBarSection>
       <StoryResources storyId={storyId} />{' '}
@@ -74,7 +74,7 @@ export const CurrentStoryQueries: React.FC<{ storyId: string }> = ({ storyId }) 
   ) : null
 }
 
-const Operations: React.FC<{ storyId: string }> = ({ storyId }) => {
+const Operations: ReactFCWithChildren<{ storyId: string }> = ({ storyId }) => {
   const { t } = useTranslation()
 
   const permissions = useStoryPermissions(storyId)
@@ -96,13 +96,13 @@ const Operations: React.FC<{ storyId: string }> = ({ storyId }) => {
     >
       <TippySingletonContextProvider arrow={false}>
         <ImportOperation storyId={storyId} />
-        <IconButton icon={IconCommonAdd} hoverContent={t`Create a new query`} />
+        <IconButton icon={IconCommonAdd} hoverContent={t<string>(`Create a new query`)} />
       </TippySingletonContextProvider>
     </div>
   )
 }
 
-const ImportOperation: React.FC<{ storyId: string }> = ({ storyId }) => {
+const ImportOperation: ReactFCWithChildren<{ storyId: string }> = ({ storyId }) => {
   const popover = usePopoverState({ placement: 'right-start', animated: true, modal: true })
   const { t } = useTranslation()
   const [keyword, setKeyword] = useState('')
@@ -134,7 +134,7 @@ const ImportOperation: React.FC<{ storyId: string }> = ({ storyId }) => {
     <>
       <PopoverDisclosure
         as={IconButton}
-        hoverContent={t`Import a query from other stories`}
+        hoverContent={t<string>(`Import a query from other stories`)}
         icon={IconMenuImport}
         {...popover}
       ></PopoverDisclosure>
@@ -263,7 +263,7 @@ const ImportOperation: React.FC<{ storyId: string }> = ({ storyId }) => {
   )
 }
 
-const _StoryDataAssetItemContentDraggable: React.FC<{
+const _StoryDataAssetItemContentDraggable: ReactFCWithChildren<{
   storyId: string
   blockId: string
   hoveringHandlers: (...args: any[]) => ReactDOMAttributes
@@ -314,7 +314,7 @@ const _StoryDataAssetItemContentDraggable: React.FC<{
 
 const StoryDataAssetItemContentDraggable = memo(_StoryDataAssetItemContentDraggable)
 
-const StoryDataAssetItemContentInner: React.FC<{
+const StoryDataAssetItemContentInner: ReactFCWithChildren<{
   block: Editor.Block
   storyId: string
   blockId: string
@@ -374,7 +374,7 @@ const StoryDataAssetItemContentInner: React.FC<{
         `}
       >
         {block.type === Editor.BlockType.SnapshotBlock && (
-          <Tippy content={t`Frozen data`} arrow={false} placement="right">
+          <Tippy content={t<string>(`Frozen data`)} arrow={false} placement="right">
             <div>
               <IconCommonLock color={ThemingVariables.colors.text[0]} width="16px" height="16px" />
             </div>
@@ -391,7 +391,7 @@ const StoryDataAssetItemContentInner: React.FC<{
   )
 }
 
-const StoryDataAssetItemContent: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
+const StoryDataAssetItemContent: ReactFCWithChildren<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
   const block = useBlockSuspense(blockId)
   const [hoveringHandlers, isHovering] = useBindHovering()
 
@@ -407,11 +407,14 @@ const StoryDataAssetItemContent: React.FC<{ blockId: string; storyId: string }> 
   )
 }
 
-const StoryDataAssetItem: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
+const StoryDataAssetItem: ReactFCWithChildren<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
   return <StoryDataAssetItemContent blockId={blockId} storyId={storyId} />
 }
 
-const StoryDataAssetItemWithInspectPopover: React.FC<{ blockId: string; storyId: string }> = ({ blockId, storyId }) => {
+const StoryDataAssetItemWithInspectPopover: ReactFCWithChildren<{ blockId: string; storyId: string }> = ({
+  blockId,
+  storyId
+}) => {
   const tippyAnimation = useTippyMenuAnimation('fade')
 
   return (

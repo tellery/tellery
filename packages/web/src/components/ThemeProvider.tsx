@@ -2,7 +2,10 @@ import React, { useMemo } from 'react'
 import { Helmet } from 'react-helmet'
 import { objectKeyValueMapperDeep, TelleryTheme, TelleryThemeLight, ThemeContext } from '../styles/index'
 
-export const ThemeProvider: React.FC<{ theme?: TelleryTheme }> = ({ children, theme = TelleryThemeLight }) => {
+export const ThemeProvider: ReactFCWithChildren<{ theme?: TelleryTheme }> = ({
+  children,
+  theme = TelleryThemeLight
+}) => {
   const styleHTML = useMemo(() => {
     const keyValues: string[] = []
     objectKeyValueMapperDeep(TelleryThemeLight, (key, value) => {

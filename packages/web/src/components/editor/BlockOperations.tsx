@@ -7,7 +7,7 @@ import { css, cx } from '@emotion/css'
 import styled from '@emotion/styled'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { AnimatePresence, motion } from 'framer-motion'
-import React, { memo, useEffect, useMemo, useState } from 'react'
+import React, { memo, ReactNode, useEffect, useMemo, useState } from 'react'
 import { StyledDropdownMenuContent } from '../kit/DropDownMenu'
 import { TellerySelectionType } from './helpers'
 import { useEditor } from './hooks'
@@ -28,13 +28,14 @@ const BlockOperation = styled.div<{ padding: number }>`
 const _BlockDragOperation = React.forwardRef<
   HTMLDivElement,
   {
+    children: ReactNode
     blockId: string
     storyId: string
     dragRef: React.MutableRefObject<HTMLDivElement | null>
     setIsDragging: React.Dispatch<React.SetStateAction<boolean>>
     setOpen: React.Dispatch<React.SetStateAction<boolean>>
   }
->(({ children, ...props }, forwardedRef) => {
+>(({ children: _children, ...props }, forwardedRef) => {
   const { blockId, storyId } = props
   const editor = useEditor()
   const [selectionState] = useStorySelection(storyId)
@@ -118,10 +119,11 @@ const _BlockDragOperation = React.forwardRef<
     </>
   )
 })
+_BlockDragOperation.displayName = 'BlockDragOperation'
 
 const BlockDragOperation = memo(_BlockDragOperation)
 
-export const _BlockOperations: React.FC<{
+export const _BlockOperations: ReactFCWithChildren<{
   blockId: string
   storyId: string
   dragRef: React.MutableRefObject<HTMLDivElement | null>

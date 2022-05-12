@@ -11,7 +11,7 @@ export interface SelectionAreaProps extends Omit<Partial<SelectionOptions>, 'bou
   onStop?: SelectionEvents['stop']
 }
 
-export const SelectionArea: React.FunctionComponent<SelectionAreaProps> = (props) => {
+export const SelectionArea: ReactFCWithChildren<SelectionAreaProps> = (props) => {
   const root = createRef<HTMLDivElement>()
 
   /* eslint-disable react-hooks/exhaustive-deps */

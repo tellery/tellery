@@ -609,7 +609,7 @@ const BlockTextOperationMenuInner = ({
   )
 }
 
-const OperationButtonWithHoverContent: React.FC<{
+const OperationButtonWithHoverContent: ReactFCWithChildren<{
   type: string
   hoverContent: ReactNode
   onClick: () => void
@@ -916,12 +916,12 @@ const AddLinkOperation = (props: {
   )
 }
 
-const FormulaResultRenderer: React.FC<{ storyId: string; formula: string }> = ({ storyId, formula }) => {
+const FormulaResultRenderer: ReactFCWithChildren<{ storyId: string; formula: string }> = ({ storyId, formula }) => {
   const variableValue = useFormula(storyId, formula)
   return <FormulaResultValueRenderer value={variableValue} />
 }
 
-const InlineFormulaInput: React.FC<{
+const InlineFormulaInput: ReactFCWithChildren<{
   storyId: string
   editHandler: (formula: string) => void
   setOpen: (open: boolean) => void

@@ -2,7 +2,7 @@ import { css } from '@emotion/css'
 import React from 'react'
 import { ThemingVariables } from '@app/styles'
 
-export const MenuItemDivider: React.FC = () => {
+export const MenuItemDivider: ReactFCWithChildren = () => {
   return (
     <div
       className={css`

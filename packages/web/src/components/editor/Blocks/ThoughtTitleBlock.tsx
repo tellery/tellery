@@ -5,7 +5,7 @@ import { Editor, Thought } from '@app/types'
 import { ContentEditable } from '../BlockBase/ContentEditable'
 import { BlockComponent } from './utils'
 
-const _ThoughtTitleBlock: BlockComponent<React.FC<{ block: Thought }>> = (props: { block: Thought }) => {
+const _ThoughtTitleBlock: BlockComponent<ReactFCWithChildren<{ block: Thought }>> = (props: { block: Thought }) => {
   const { block } = props
 
   const fakeBlock = useMemo(() => {

@@ -46,7 +46,7 @@ const removePermission = (permissions: Permission[], permission: Permission): Pe
   return filteredPermission
 }
 
-export const StoryConfigPopOver: React.FC<{
+export const StoryConfigPopOver: ReactFCWithChildren<{
   storyId: string
   style?: MotionStyle
   animate?: AnimationControls

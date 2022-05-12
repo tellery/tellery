@@ -6,7 +6,7 @@ import React, { useRef } from 'react'
 import type { Editor } from '@app/types'
 import { useEditor } from '../hooks'
 
-export const DeletedBlock: React.FC<{
+export const DeletedBlock: ReactFCWithChildren<{
   block: Editor.Block
 }> = ({ block }) => {
   const commit = useCommit()

@@ -93,7 +93,7 @@ import { getFilteredOrderdSubsetOfBlocks, getSubsetOfBlocksSnapshot } from './ut
 
 export const logger = debug('tellery:editor')
 
-const _StoryEditor: React.FC<{
+const _StoryEditor: ReactFCWithChildren<{
   storyId: string
   bottom?: ReactNode
   fullWidth?: boolean
@@ -364,7 +364,7 @@ const _StoryEditor: React.FC<{
       blockOptions: Partial<Editor.Block>,
       targetBlockId: string,
       direction: 'top' | 'bottom' | 'child' = 'bottom',
-      path = 'children'
+      path: string = 'children'
     ) => {
       const newBlock = createEmptyBlockWithPermissions({
         ...blockOptions,

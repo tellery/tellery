@@ -14,7 +14,7 @@ import IconButton from './kit/IconButton'
 import { LazyTippy } from './LazyTippy'
 import { MenuWrapper } from './MenuWrapper'
 
-export const SideBarQueryItemDropdownMenuContent: React.FC<{
+export const SideBarQueryItemDropdownMenuContent: ReactFCWithChildren<{
   block: Editor.DataAssetBlock
   onClose: () => void
   storyId: string
@@ -53,7 +53,7 @@ export const SideBarQueryItemDropdownMenuContent: React.FC<{
     <MenuWrapper>
       <MenuItem
         icon={<IconCommonSql color={ThemingVariables.colors.text[0]} />}
-        title={t`Edit SQL`}
+        title={t<string>(`Edit SQL`)}
         onClick={(e) => {
           questionEditor.open({ blockId: block.id, storyId: block.storyId! })
           onClose()
@@ -62,7 +62,7 @@ export const SideBarQueryItemDropdownMenuContent: React.FC<{
       {block.storyId !== storyId && (
         <MenuItem
           icon={<IconCommonBackLink color={ThemingVariables.colors.text[0]} />}
-          title={t`Navigate to the original story`}
+          title={t<string>(`Navigate to the original story`)}
           onClick={(e) => {
             openStory(block.storyId!, { blockId: block.id })
             onClose()
@@ -71,7 +71,7 @@ export const SideBarQueryItemDropdownMenuContent: React.FC<{
       )}
       <MenuItem
         icon={<IconCommonCopy color={ThemingVariables.colors.text[0]} />}
-        title={t`Copy link`}
+        title={t<string>(`Copy link`)}
         onClick={() => {
           copy(window.location.href)
           toast.success('Link copied')
@@ -83,7 +83,7 @@ export const SideBarQueryItemDropdownMenuContent: React.FC<{
         <>
           <MenuItem
             icon={<IconMenuDuplicate color={ThemingVariables.colors.text[0]} />}
-            title={t`Duplicate`}
+            title={t<string>(`Duplicate`)}
             onClick={duplicateQueryHandler}
           />
           <MenuItemDivider />
@@ -140,7 +140,7 @@ export const SideBarQueryItemDropdownMenuContent: React.FC<{
   )
 }
 
-const _SideBarQueryItemDropdownMenu: React.FC<{
+const _SideBarQueryItemDropdownMenu: ReactFCWithChildren<{
   block: Editor.DataAssetBlock
   storyId: string
   show: boolean

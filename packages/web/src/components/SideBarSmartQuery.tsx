@@ -76,7 +76,7 @@ export default function SideBarSmartQuery(props: { storyId: string; blockId: str
   )
 }
 
-export const SmartQueryConfig: React.FC<{
+export const SmartQueryConfig: ReactFCWithChildren<{
   queryBuilderBlock: Editor.QueryBuilder
   metricIds: string[]
   dimensions: Dimension[]
@@ -113,7 +113,7 @@ export const SmartQueryConfig: React.FC<{
               popperOptions={{ modifiers: popperModifiers }}
               content={
                 <MenuWrapper>
-                  {Object.entries(queryBuilderBlock.content?.metrics || {}).map(([metricId, metric]) => (
+                  {Object.entries(queryBuilderBlock.content?.metrics || {}).map(([metricId, metric]: [string, any]) => (
                     <MenuItem
                       key={metricId}
                       title={metric.name}

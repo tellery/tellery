@@ -22,7 +22,7 @@ import { createEmptyBlock, DEFAULT_VISULIZATION_FORMAT } from '@app/helpers/bloc
 import { useBindHovering } from '@app/hooks'
 import { useBlockSuspense } from '@app/hooks/api'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
-import { useCommit } from '@app/hooks/useCommit'
+import { Operation, useCommit } from '@app/hooks/useCommit'
 import { usePushFocusedBlockIdState } from '@app/hooks/usePushFocusedBlockIdState'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
@@ -51,7 +51,7 @@ interface SlachCommandDropDown {
   referenceRange?: null | Range | HTMLElement
 }
 
-export const SlashCommandDropdown: React.FC<SlachCommandDropDown> = (props) => {
+export const SlashCommandDropdown: ReactFCWithChildren<SlachCommandDropDown> = (props) => {
   const { id, keyword, open, setOpen, selection } = props
   const [referenceRange, setReferenceRange] = useState<null | Range | HTMLElement>(null)
 
@@ -120,7 +120,7 @@ function* varibleNameMaker() {
   }
 }
 
-export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props) => {
+export const SlashCommandDropDownInner: ReactFCWithChildren<SlachCommandDropDown> = (props) => {
   const { id, keyword, setOpen, blockRef, referenceRange, selection, open } = props
   const editor = useEditor()
   // const [selectedResultIndex, setSelectedResultIndex] = useState(0)
@@ -153,7 +153,7 @@ export const SlashCommandDropDownInner: React.FC<SlachCommandDropDown> = (props)
   const insertBlockFragment = useCallback(
     (blocksFragment: BlockFragment, block: Editor.Block) => {
       invariant(editor, 'editor is null')
-      const operations = []
+      const operations: Operation[] = []
       operations.push(
         ...insertBlocksAndMoveOperations({
           storyId: block.storyId!,

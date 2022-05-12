@@ -8,7 +8,7 @@ import { BlockTitle } from './editor'
 import { MenuWrapper } from './MenuWrapper'
 import { SQLViewer } from './SQLViewer'
 
-export const SideBarInspectQueryBlockPopover: React.FC<{ blockId: string }> = ({ blockId }) => {
+export const SideBarInspectQueryBlockPopover: ReactFCWithChildren<{ blockId: string }> = ({ blockId }) => {
   const block = useBlockSuspense<Editor.QueryBlock>(blockId)
   const workspace = useWorkspace()
   const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)

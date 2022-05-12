@@ -44,7 +44,7 @@ import { useEditor } from '../../hooks'
 import { useBlockBehavior } from '../../hooks/useBlockBehavior'
 import { isExecuteableBlockType } from '../utils'
 
-export const MoreDropdownSelect: React.FC<{
+export const MoreDropdownSelect: ReactFCWithChildren<{
   block: Editor.VisualizationBlock
   className?: string
   hoverContent?: ReactNode
@@ -110,7 +110,7 @@ export const MoreDropdownSelect: React.FC<{
       </DropdownMenu.Trigger>
       <StyledDropdownMenuContent open={open}>
         <StyledDropDownItem
-          title={t`Copy Link`}
+          title={t<string>(`Copy Link`)}
           icon={<IconCommonLink color={ThemingVariables.colors.text[0]} />}
           onClick={(e) => {
             e.preventDefault()
@@ -137,7 +137,7 @@ export const MoreDropdownSelect: React.FC<{
         />
         {env.VITE_ENABLE_EMBED && (
           <StyledDropDownItem
-            title={t`Copy Embed Link`}
+            title={t<string>(`Copy Embed Link`)}
             icon={<IconCommonLink color={ThemingVariables.colors.text[0]} />}
             onClick={(e) => {
               e.preventDefault()
@@ -158,7 +158,7 @@ export const MoreDropdownSelect: React.FC<{
           />
         )}
         <StyledDropDownItem
-          title={t`Duplicate`}
+          title={t<string>(`Duplicate`)}
           icon={<IconMenuDuplicate color={ThemingVariables.colors.text[0]} />}
           onClick={(e) => {
             e.preventDefault()
@@ -173,7 +173,7 @@ export const MoreDropdownSelect: React.FC<{
         <MenuItemDivider />
         {canRefresh && (
           <StyledDropDownItem
-            title={t`Refresh`}
+            title={t<string>(`Refresh`)}
             icon={<IconCommonRefresh color={ThemingVariables.colors.text[0]} />}
             onClick={() => {
               mutateSnapshot.execute(queryBlock)
@@ -182,7 +182,7 @@ export const MoreDropdownSelect: React.FC<{
           />
         )}
         <StyledDropDownItem
-          title={t`Settings`}
+          title={t<string>(`Settings`)}
           icon={<IconCommonSetting color={ThemingVariables.colors.text[0]} />}
           onClick={() => {
             sideBarQuestionEditor.open({ blockId: block.id, activeTab: 'Visualization' })
@@ -190,7 +190,7 @@ export const MoreDropdownSelect: React.FC<{
           }}
         />
         <StyledDropDownItem
-          title={t`Open in editor`}
+          title={t<string>(`Open in editor`)}
           icon={<IconCommonSql color={ThemingVariables.colors.text[0]} />}
           onClick={() => {
             questionEditor.open({ blockId: block.id, storyId: block.storyId! })
@@ -198,7 +198,7 @@ export const MoreDropdownSelect: React.FC<{
           }}
         />
         <StyledDropDownItem
-          title={t`Copy compiled SQL`}
+          title={t<string>(`Copy compiled SQL`)}
           icon={<IconCommonSql color={ThemingVariables.colors.text[0]} />}
           onClick={async () => {
             const promise = new Promise<string>((resolve) => {
@@ -222,7 +222,7 @@ export const MoreDropdownSelect: React.FC<{
           }}
         >
           <StyledDropDownTriggerItem
-            title={t`Download as`}
+            title={t<string>(`Download as`)}
             icon={<IconMenuDownload color={ThemingVariables.colors.text[0]} />}
           ></StyledDropDownTriggerItem>
           <StyledDropdownMenuContent open={subMenuOpen}>

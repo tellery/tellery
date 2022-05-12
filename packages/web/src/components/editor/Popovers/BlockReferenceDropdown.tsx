@@ -30,7 +30,7 @@ interface BlockReferenceDropDownInterface {
   selection: TellerySelection | null
 }
 
-export const _BlockReferenceDropdown: React.FC<BlockReferenceDropDownInterface> = (props) => {
+export const _BlockReferenceDropdown: ReactFCWithChildren<BlockReferenceDropDownInterface> = (props) => {
   const { id, keyword, open, setOpen, selection } = props
   const [referenceRange, setReferenceRange] = useState<null | Range | HTMLElement>(null)
 
@@ -80,7 +80,7 @@ export const _BlockReferenceDropdown: React.FC<BlockReferenceDropDownInterface> 
   // return <_BlockReferenceDropdownInner {...props} open={!!(referenceRange && open)} referenceRange={referenceRange} />
 }
 
-export const _BlockReferenceDropdownInner: React.FC<
+export const _BlockReferenceDropdownInner: ReactFCWithChildren<
   BlockReferenceDropDownInterface & { referenceRange: null | Range | HTMLElement }
 > = (props) => {
   const { id, keyword, open, setOpen, blockRef, selection, referenceRange } = props
@@ -304,7 +304,7 @@ export const _BlockReferenceDropdownInner: React.FC<
   )
 }
 
-const DropDownMenuItem: React.FC<{
+const DropDownMenuItem: ReactFCWithChildren<{
   onClick: React.MouseEventHandler<HTMLDivElement>
   active: boolean
   setIndex: (index: number) => void

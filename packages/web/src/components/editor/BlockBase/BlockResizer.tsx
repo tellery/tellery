@@ -7,7 +7,7 @@ import type { BlockFormatInterface } from '../hooks'
 import { useBlockHovering } from '../hooks/useBlockHovering'
 const HANDLE_WIDTH = 10
 
-export const BlockResizer: React.FC<{
+export const BlockResizer: ReactFCWithChildren<{
   blockFormat: BlockFormatInterface
   parentType: Editor.BlockType
   blockId: string

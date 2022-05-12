@@ -4,7 +4,7 @@ import { BlockComponent } from './utils'
 import { UploadFilePlaceHolder } from '../BlockBase/UploadFilePlaceHolder'
 
 const _FileBlock: BlockComponent<
-  React.FC<{
+  ReactFCWithChildren<{
     block: Editor.FileBlock
   }>
 > = ({ block }) => {

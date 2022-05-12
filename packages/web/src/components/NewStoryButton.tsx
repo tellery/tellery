@@ -9,7 +9,7 @@ import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
-export const NewStoryButton: React.FC<{ classname: string; tipPlacement?: Placement }> = ({
+export const NewStoryButton: ReactFCWithChildren<{ classname: string; tipPlacement?: Placement }> = ({
   classname,
   tipPlacement = 'right'
 }) => {
@@ -27,7 +27,7 @@ export const NewStoryButton: React.FC<{ classname: string; tipPlacement?: Placem
   const { t } = useTranslation()
 
   return (
-    <Tippy content={t`Create a new story`} hideOnClick={false} arrow={false} placement={tipPlacement}>
+    <Tippy content={t<string>(`Create a new story`)} hideOnClick={false} arrow={false} placement={tipPlacement}>
       <div className={classname} onClick={handleCreateNewSotry}>
         <IconCommonAdd width={20} height={20} color={ThemingVariables.colors.text[0]} />
       </div>

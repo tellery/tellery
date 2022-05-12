@@ -68,7 +68,7 @@ const SideBarContents = {
   }
 }
 
-const SideBarContent: React.FC = () => {
+const SideBarContent: ReactFCWithChildren = () => {
   const [modalContent, setModalContent] = useState<ReactNode>(null)
   const [activeSideBarTab, setActiveSideBarTab] = useState<keyof typeof SideBarContents | null>(null)
   const ref = useRef(null)
@@ -163,7 +163,7 @@ const SideBarContent: React.FC = () => {
           <TippySingletonContextProvider delay={500} placement="right" arrow={false} hideOnClick>
             <MainSideBarItem
               icon={IconCommonSearch}
-              hoverTitle={t`Search`}
+              hoverTitle={t<string>(`Search`)}
               onClick={() => {
                 setOmniboxShow(true)
                 closeSideBar()
@@ -171,7 +171,7 @@ const SideBarContent: React.FC = () => {
             />
             <MainSideBarItem
               icon={IconCommonQuestion}
-              hoverTitle={t`Explore`}
+              hoverTitle={t<string>(`Explore`)}
               onClick={() => {
                 navigate('/explore')
                 closeSideBar()
@@ -179,14 +179,14 @@ const SideBarContent: React.FC = () => {
             />
             <MainSideBarItem
               icon={IconCommonHome}
-              hoverTitle={t`Home`}
+              hoverTitle={t<string>(`Home`)}
               onClick={() => {
                 navigate('/stories')
                 closeSideBar()
               }}
             />
             {/* <MainSideBarItem icon={IconCommonAdd} hoverTitle="Create a new story" onClick={handleCreateNewSotry} /> */}
-            <MainSideBarItem icon={IconCommonSetting} hoverTitle={t`Settings`} onClick={showSettingsModal} />
+            <MainSideBarItem icon={IconCommonSetting} hoverTitle={t<string>(`Settings`)} onClick={showSettingsModal} />
           </TippySingletonContextProvider>
         </div>
       </div>
@@ -199,7 +199,7 @@ const SideBarContent: React.FC = () => {
   )
 }
 
-const FloatingSideBar: React.FC<{ show: boolean; close: Function }> = ({ children, show, close }) => {
+const FloatingSideBar: ReactFCWithChildren<{ show: boolean; close: Function }> = ({ children, show, close }) => {
   const [resizeConfig, setResizeConfig] = useSideBarConfig()
 
   return (
@@ -247,7 +247,7 @@ const FloatingSideBar: React.FC<{ show: boolean; close: Function }> = ({ childre
   )
 }
 
-const UserSection: React.FC<{ onClick(): void }> = ({ onClick }) => {
+const UserSection: ReactFCWithChildren<{ onClick(): void }> = ({ onClick }) => {
   const user = useLoggedUser()
 
   return (

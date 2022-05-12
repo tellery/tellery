@@ -44,7 +44,10 @@ const VariableFormInput = styled(FormInput)`
 
 const VariableTypes: VariableType[] = ['text', 'number', 'transclusion', 'float', 'macro']
 
-export const VariableSettingsSection: React.FC<{ storyId: string; blockId: string }> = ({ storyId, blockId }) => {
+export const VariableSettingsSection: ReactFCWithChildren<{ storyId: string; blockId: string }> = ({
+  storyId,
+  blockId
+}) => {
   const block = useBlockSuspense<Editor.ControlBlock>(blockId)
   const blockTranscations = useBlockTranscations()
   const [defaultValue, setDefaultValue] = useState<string>(block.content?.defaultValue)

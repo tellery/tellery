@@ -19,7 +19,7 @@ const BREAK_POINT = 500
 const GAP_WIDTH = 40
 
 const _GridBlock: BlockComponent<
-  React.FC<{
+  ReactFCWithChildren<{
     block: Editor.Block
   }>
 > = ({ block }) => {
@@ -143,7 +143,7 @@ export const GridBlock = _GridBlock
 // })
 
 const _ColumnBlock: BlockComponent<
-  React.FC<{
+  ReactFCWithChildren<{
     id: string
     childrenCount: number
     width: number

@@ -43,7 +43,7 @@ const useMetabaseToken = (block: Editor.MetabaseBlock) => {
 }
 
 const _MetabaseBlock: BlockComponent<
-  React.FC<{
+  ReactFCWithChildren<{
     block: Editor.MetabaseBlock
     blockFormat: BlockFormatInterface
     parentType: Editor.BlockType

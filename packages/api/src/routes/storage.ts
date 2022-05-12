@@ -1,5 +1,5 @@
 import config from 'config'
-import { File } from 'formidable'
+import type { File } from 'formidable'
 import { promisify } from 'util'
 import { createReadStream, unlink } from 'fs'
 import { plainToClass } from 'class-transformer'
@@ -82,12 +82,12 @@ async function upload(ctx: Context) {
   if (!ctx.request.files) {
     throw StorageError.invalidUpload()
   }
-  const file = ctx.request.files.file as File
-  const { name, size, path } = file
+  const file = ctx.request.files.file as unknown as File
+  const { newFilename, size, filepath } = file
   const { key, workspaceId, contentType } = payload
 
-  const buffer = await readableStreamWrapper(createReadStream(path))
-  await promisify(unlink)(path)
+  const buffer = await readableStreamWrapper(createReadStream(filepath))
+  await promisify(unlink)(filepath)
 
   await selfhostedStorage.putFile({
     key,
@@ -95,12 +95,12 @@ async function upload(ctx: Context) {
     content: buffer,
     contentType,
     size,
-    metadata: { name: name ?? key },
+    metadata: { name: newFilename ?? key },
   })
 
   ctx.body = {
     key: payload.key,
-    name,
+    name: newFilename,
     size,
   }
 }

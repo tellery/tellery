@@ -4,7 +4,7 @@ import React from 'react'
 import { useForm } from 'react-hook-form'
 import { EditorPopover } from '../EditorPopover'
 
-export const EmbedBlockPopover: React.FC<{
+export const EmbedBlockPopover: ReactFCWithChildren<{
   open: boolean
   setOpen: (value: boolean) => void
   referenceElement: HTMLElement | null

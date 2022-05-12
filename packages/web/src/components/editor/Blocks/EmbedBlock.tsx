@@ -8,7 +8,7 @@ import type { BlockFormatInterface } from '../hooks'
 import { BlockComponent } from './utils'
 
 const _EmbedBlock: BlockComponent<
-  React.FC<{
+  ReactFCWithChildren<{
     block: Editor.EmbedBlock
     blockFormat: BlockFormatInterface
     parentType: Editor.BlockType

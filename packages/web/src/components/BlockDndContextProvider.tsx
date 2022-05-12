@@ -48,7 +48,7 @@ const DEFAULT_LAYOUT_MEASURING: MeasuringConfiguration = {
   }
 }
 
-const _TelleryDNDContext: React.FC<{
+const _TelleryDNDContext: ReactFCWithChildren<{
   dataTransferRef: React.MutableRefObject<DataTransfer | null>
   setIsDragging: React.Dispatch<React.SetStateAction<boolean>>
   setPreviewData: React.Dispatch<React.SetStateAction<React.ReactNode>>
@@ -280,7 +280,7 @@ const _TelleryDNDContext: React.FC<{
 
 const TelleryDNDContext = memo(_TelleryDNDContext)
 
-export const BlockDndContextProvider: React.FC = ({ children }) => {
+export const BlockDndContextProvider: ReactFCWithChildren = ({ children }) => {
   const [previewData, setPreviewData] = useState<ReactNode | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const dataTransferRef = useRef<DataTransfer | null>(null)
@@ -343,7 +343,7 @@ export const BlockDndContextProvider: React.FC = ({ children }) => {
   )
 }
 
-const FileDraggble: React.FC = () => {
+const FileDraggble: ReactFCWithChildren = () => {
   const ref = useRef<HTMLDivElement | null>(null)
   const blockDrag = useDraggable({
     id: `drag-native`,

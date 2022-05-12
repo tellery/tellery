@@ -3,7 +3,7 @@ import React, { useRef } from 'react'
 import { BlockPlaceHolder } from './BlockPlaceHolder'
 import { useSetUploadResource, useUploadResource } from '../hooks/useUploadResource'
 
-export const UploadFilePlaceHolder: React.FC<{ blockId: string; text: string; accept: string }> = ({
+export const UploadFilePlaceHolder: ReactFCWithChildren<{ blockId: string; text: string; accept: string }> = ({
   blockId,
   text,
   accept

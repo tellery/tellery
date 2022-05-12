@@ -4,7 +4,7 @@ import { Img } from 'react-image'
 import ContentLoader from 'react-content-loader'
 import React from 'react'
 
-const AvatarLoader: React.FC<{ size: number }> = ({ size }) => (
+const AvatarLoader: ReactFCWithChildren<{ size: number }> = ({ size }) => (
   <ContentLoader width={size} height={size} viewBox={`0 0 40 40`}>
     <circle cx="20" cy="20" r="20" />
   </ContentLoader>

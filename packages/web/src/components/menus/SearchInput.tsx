@@ -3,7 +3,7 @@ import { ThemingVariables } from '@app/styles'
 import { css } from '@emotion/css'
 import React from 'react'
 
-export const SearchInput: React.FC<
+export const SearchInput: ReactFCWithChildren<
   React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>
 > = (props) => {
   return (

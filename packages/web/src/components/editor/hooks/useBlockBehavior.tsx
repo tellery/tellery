@@ -10,7 +10,7 @@ export const BlockBehaviorConext = React.createContext<{
   //       block: Editor.Block
   //       parentType: Editor.BlockType
   //     }>
-  //   | React.FC<{
+  //   | ReactFCWithChildren<{
   //       block: Editor.Block
   //       parentType: Editor.BlockType
   //       hightlighted?: boolean | undefined

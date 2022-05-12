@@ -31,7 +31,7 @@ test('translate', async (t) => {
     content: {
       title: [[nanoid()]],
       sql: `select * from order_x`,
-    },
+    } as object,
     type: BlockType.SQL,
     children: [],
     alive: true,
@@ -46,7 +46,7 @@ test('translate', async (t) => {
     content: {
       materialized: 'table',
       relationName: 'table2',
-    },
+    } as object,
     type: BlockType.DBT,
     children: [],
     alive: true,
@@ -76,7 +76,7 @@ test('translate duplicate references', async (t) => {
     content: {
       title: [[nanoid()]],
       sql: `select * from order_x`,
-    },
+    } as object,
     type: BlockType.SQL,
     children: [],
     alive: true,
@@ -109,7 +109,7 @@ test('cyclic assemble', async (t) => {
     content: {
       title: [[nanoid()]],
       sql: `select * from {{${blockId2}}}`,
-    },
+    } as object,
     type: BlockType.SQL,
     children: [],
     alive: true,
@@ -125,7 +125,7 @@ test('cyclic assemble', async (t) => {
     content: {
       title: [[nanoid()]],
       sql: `select * from {{${blockId1}}}`,
-    },
+    } as object,
     type: BlockType.SQL,
     children: [],
     alive: true,

@@ -4,6 +4,7 @@
 /* Use this file to declare any custom file extensions for importing */
 /* Use this folder to also add/extend a package d.ts file, if needed. */
 import type React from 'react'
+
 import type katex from '@types/katex'
 /* CSS MODULES */
 declare module '*.module.css' {
@@ -84,6 +85,14 @@ declare global {
     }
   }
 
+  declare module 'react' {
+    interface FunctionComponent<P = {}> {
+      (props: PropsWithChildren<P>, context?: any): ReactElement<any, any> | null
+    }
+  }
+
+  declare type PropsWithChildrenOnly = PropsWithChildren<unknown>
+  declare type ReactFCWithChildren<T = {}> = React.FC<PropsWithChildrenOnly & T>
   declare interface Document {
     caretPositionFromPoint?: (x: number, y: number) => CaretPosition
   }

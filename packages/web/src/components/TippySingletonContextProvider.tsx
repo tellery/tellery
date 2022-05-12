@@ -3,7 +3,7 @@ import { DEFAULT_TIPPY_DELAY } from '@app/utils'
 import Tippy, { TippyProps, useSingleton } from '@tippyjs/react'
 import React from 'react'
 
-export const TippySingletonContextProvider: React.FC<Omit<TippyProps, 'children'>> = ({
+export const TippySingletonContextProvider: ReactFCWithChildren<Omit<TippyProps, 'children'>> = ({
   children,
   delay = DEFAULT_TIPPY_DELAY,
   ...rest

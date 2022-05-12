@@ -3,7 +3,7 @@ import { css } from '@emotion/css'
 import React, { memo } from 'react'
 import { ThemingVariables } from '@app/styles'
 
-const _DroppingAreaIndicator: React.FC<{
+const _DroppingAreaIndicator: ReactFCWithChildren<{
   blockId: string
 }> = ({ blockId }) => {
   const droppingArea = useDroppingAreaBlock(blockId)

@@ -229,7 +229,7 @@ const codeBlockRenderer = (language: string = 'SQL') => {
 }
 
 const _CodeBlock: BlockComponent<
-  React.FC<{
+  ReactFCWithChildren<{
     block: Editor.CodeBlock
   }>
 > = ({ block }) => {

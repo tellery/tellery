@@ -156,7 +156,7 @@ export const getDuplicatedBlocksFragment = (
     const currentBlock = data[currentId]
     const newId = blockIdGenerator()
     const fragment = getDuplicatedBlocksFragment(currentBlock.children ?? [], data, storyId, newId, blockMapping)
-    let newBlock = null
+    let newBlock: Editor.BaseBlock | null = null
     if (currentBlock.type === Editor.BlockType.Visualization) {
       const vizBlock = currentBlock as Editor.VisualizationBlock
       newBlock = createEmptyBlock<Editor.VisualizationBlock>({
@@ -410,7 +410,7 @@ export const insertBlocksAndMoveOperations = ({
   targetBlock: Editor.Block
   storyId: string
   direction: 'top' | 'left' | 'bottom' | 'right' | 'child'
-  path?: 'children'
+  path?: string
 }) => {
   const operations: Operation[] = []
 
@@ -479,7 +479,7 @@ export const moveBlocksTranscation = ({
   storyId: string
   direction: 'top' | 'left' | 'bottom' | 'right' | 'child'
   deleteSourceBlock: boolean
-  path?: 'children'
+  path?: string
 }) => {
   const operations: Operation[] = []
   const leadingSourceBlockId = sourceBlockFragment.children[0]!

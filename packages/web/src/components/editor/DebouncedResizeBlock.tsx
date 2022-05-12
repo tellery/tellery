@@ -2,7 +2,7 @@ import { css, cx } from '@emotion/css'
 import React, { useEffect, useRef } from 'react'
 import { useDebouncedDimension } from './hooks/useDebouncedDimensions'
 
-export const DebouncedResizeBlock: React.FC<{
+export const DebouncedResizeBlock: ReactFCWithChildren<{
   className?: string
   disableY?: boolean
   showOverlay?: boolean

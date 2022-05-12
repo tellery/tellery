@@ -3,9 +3,10 @@ import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { css, cx } from '@emotion/css'
 import { dequal } from 'dequal'
-import { AnimateSharedLayout, motion } from 'framer-motion'
+import { motion } from 'framer-motion'
 import React, { memo, useEffect, useMemo, useRef } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
+import { AnimationSharedLayoutWithChildren } from '../AnimationSharedLayoutWithChildren'
 import { BlockOperations } from './BlockOperations'
 import { OperatorsAvatar } from './BlockOperators'
 import { BlockInner } from './Blocks'
@@ -41,9 +42,7 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetError
   )
 }
 
-// const BlockInner = _BlockInner
-
-const _ContentBlocks: React.FC<{
+const _ContentBlocks: ReactFCWithChildren<{
   blockIds: string[]
   small?: boolean
   parentType: Editor.BlockType
@@ -63,19 +62,19 @@ const _ContentBlocks: React.FC<{
   }, [small, readonly, draggable, highlightedBlockId])
 
   return (
-    <AnimateSharedLayout>
+    <AnimationSharedLayoutWithChildren>
       <BlockBehaviorConext.Provider value={behavior}>
         {props.blockIds.map((blockId) => (
           <ContentBlockPure key={blockId} id={blockId} parentType={props.parentType} />
         ))}
       </BlockBehaviorConext.Provider>
-    </AnimateSharedLayout>
+    </AnimationSharedLayoutWithChildren>
   )
 }
 
 export const ContentBlocks = memo(_ContentBlocks, (a, b) => dequal(a, b))
 
-export const _ContentBlockPure: React.FC<{
+export const _ContentBlockPure: ReactFCWithChildren<{
   id: string
   parentType: Editor.BlockType
 }> = (props) => {
@@ -90,7 +89,7 @@ export const ContentBlockPure = memo(_ContentBlockPure)
 //   customName: 'BlockInner'
 // }
 
-export const ContentBlockInner: React.FC<{
+export const ContentBlockInner: ReactFCWithChildren<{
   block: Editor.Block
   parentType: Editor.BlockType
 }> = ({ block, parentType = Editor.BlockType.Story }) => {
@@ -257,7 +256,7 @@ const getBlockClassNames = (blockType: Editor.BlockType, isSelecteable: boolean)
   ]
 }
 
-export const BlockSelectedOverlay: React.FC<{ blockId: string; selected?: boolean }> = ({
+export const BlockSelectedOverlay: ReactFCWithChildren<{ blockId: string; selected?: boolean }> = ({
   blockId,
   selected = false
 }) => {
@@ -281,7 +280,7 @@ export const BlockSelectedOverlay: React.FC<{ blockId: string; selected?: boolea
   )
 }
 
-export const BlockChildren: React.FC<{
+export const BlockChildren: ReactFCWithChildren<{
   className?: string
   childrenIds: string[]
   parentType: Editor.BlockType

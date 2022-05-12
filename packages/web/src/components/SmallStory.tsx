@@ -77,7 +77,7 @@ export function SmallStory(props: { storyId: string; blockId?: string; className
   )
 }
 
-const StoryContent: React.FC<{ storyId: string; blockId?: string; containerRef: React.RefObject<HTMLDivElement> }> = ({
+const StoryContent: ReactFCWithChildren<{ storyId: string; blockId?: string; containerRef: React.RefObject<HTMLDivElement> }> = ({
   storyId,
   blockId,
   containerRef

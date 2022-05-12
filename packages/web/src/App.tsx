@@ -1,10 +1,10 @@
 import 'normalize.css'
 import React from 'react'
 import { QueryClientProvider } from 'react-query'
-import { BrowserRouter as Router, Route } from 'react-router-dom'
+import { BrowserRouter as Router } from 'react-router-dom'
 import { Slide, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { RecoilRoot } from 'recoil'
+import { RecoilRoot as _RecoilRoot } from 'recoil'
 import 'tippy.js/animations/scale.css'
 import 'tippy.js/dist/tippy.css'
 import { AuthProvider } from './components/AuthProvider'
@@ -23,7 +23,9 @@ import { env } from './env'
 import 'regenerator-runtime/runtime'
 loader.config({ paths: { vs: env.MONACO_CDN } })
 
-const App: React.FC = () => {
+// TODO:React 18
+const RecoilRoot = _RecoilRoot as ReactFCWithChildren
+const App: ReactFCWithChildren = () => {
   return (
     <>
       <ThemeProvider>

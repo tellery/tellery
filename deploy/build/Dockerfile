@@ -1,32 +1,26 @@
-FROM node:16 AS pnpm-installed
-RUN curl -f https://get.pnpm.io/v6.16.js | node - add --global pnpm
-
-FROM pnpm-installed as api-builder
+FROM node:16.4.1-slim as api-builder
 ENV TZ Asia/Shanghai
 WORKDIR /app/tellery-api
-COPY packages/api/pnpm-lock.yaml .
-RUN pnpm fetch
 COPY packages/api/package.json .
-RUN pnpm install -r 
+COPY packages/api/yarn.lock .
+RUN yarn install
 COPY packages/api .
 COPY packages/protobufs /app/protobufs
 RUN npm run compile
 
-FROM pnpm-installed as web-builder
+FROM node:16.4.1-alpine as web-builder
 WORKDIR /app/tellery-web
-COPY packages/web/pnpm-lock.yaml .
-RUN pnpm fetch
 COPY packages/web/package.json .
-RUN pnpm install -r
+COPY packages/web/yarn.lock .
+RUN yarn install --frozen-lockfile
 COPY packages/web .
-RUN pnpm build
+RUN yarn build
 
-FROM pnpm-installed
+FROM node:16.4.1-alpine
 WORKDIR /tellery
-COPY --from=api-builder /app/tellery-api/pnpm-lock.yaml .
-RUN pnpm fetch
 COPY --from=api-builder /app/tellery-api/package.json .
-RUN pnpm install -r  --prod
+COPY --from=api-builder /app/tellery-api/yarn.lock .
+RUN yarn install --production
 COPY --from=api-builder /app/tellery-api/dist dist
 COPY --from=api-builder /app/tellery-api/config config
 COPY --from=web-builder /app/tellery-web/dist dist/src/assets/web

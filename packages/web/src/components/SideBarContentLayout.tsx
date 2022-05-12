@@ -3,7 +3,7 @@ import { css } from '@emotion/css'
 import styled from '@emotion/styled'
 import React, { ReactNode } from 'react'
 
-export const SideBarContentLayout: React.FC<{ title: ReactNode }> = ({ children, title }) => {
+export const SideBarContentLayout: ReactFCWithChildren<{ title: ReactNode }> = ({ children, title }) => {
   return (
     <>
       <div

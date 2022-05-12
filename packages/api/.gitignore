@@ -4,3 +4,4 @@ src/protobufs/
 .nyc_output/
 .vscode/
 src/socket/index.html
+.env

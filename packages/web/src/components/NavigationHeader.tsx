@@ -31,7 +31,7 @@ import { StoryConfigPopOver } from './StoryConfigPopOver'
 import { StoryVisits } from './StoryVisits'
 import { TippySingletonContextProvider } from './TippySingletonContextProvider'
 
-const StoryTitle: React.FC<{ storyId: string; title?: string }> = (props) => {
+const StoryTitle: ReactFCWithChildren<{ storyId: string; title?: string }> = (props) => {
   const permissions = useStoryPermissions(props.storyId)
 
   return (
@@ -229,7 +229,7 @@ export const _NavigationHeader = (props: {
   )
 }
 
-const StoryConfigButton: React.FC<{ storyId: string }> = ({ storyId }) => {
+const StoryConfigButton: ReactFCWithChildren<{ storyId: string }> = ({ storyId }) => {
   const animation = useTippyMenuAnimation('scale')
 
   return (
@@ -263,7 +263,7 @@ const StoryConfigButton: React.FC<{ storyId: string }> = ({ storyId }) => {
   )
 }
 
-export const RefreshAllQuestionBlockButton: React.FC<{ storyId: string }> = ({ storyId }) => {
+export const RefreshAllQuestionBlockButton: ReactFCWithChildren<{ storyId: string }> = ({ storyId }) => {
   const storySnapshotManger = useStorySnapshotManagerProvider(storyId)
   const { t } = useTranslation()
   if (storySnapshotManger.total <= 0) return null

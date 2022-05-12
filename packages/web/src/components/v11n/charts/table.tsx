@@ -104,7 +104,7 @@ const getDisplayTypeData = (text: string, type: DISPLAY_AS_TYPE) => {
   return [data, asType] as [string[], DISPLAY_AS_TYPE]
 }
 
-const CellRenderer: React.FC<{ cell: any; displayType: DisplayType; displayAs?: DISPLAY_AS_TYPE }> = ({
+const CellRenderer: ReactFCWithChildren<{ cell: any; displayType: DisplayType; displayAs?: DISPLAY_AS_TYPE }> = ({
   cell,
   displayType,
   displayAs = DISPLAY_AS_TYPE.Auto

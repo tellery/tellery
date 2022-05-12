@@ -8,7 +8,7 @@ import React, { ReactNode, useEffect, useRef, useState } from 'react'
 import { ThemingVariables } from '@app/styles'
 import { BlockingUI } from '@app/components/editor/BlockBase/BlockingUIBlock'
 
-export const ThoughtItemHeader: React.FC<{ date: string; id: string; className?: string }> = ({
+export const ThoughtItemHeader: ReactFCWithChildren<{ date: string; id: string; className?: string }> = ({
   date,
   id,
   className
@@ -31,7 +31,7 @@ export const ThoughtItemHeader: React.FC<{ date: string; id: string; className?:
   )
 }
 
-export const ThoughtItem: React.FC<{ id: string; date: string; isFirst: boolean; top?: ReactNode }> = ({
+export const ThoughtItem: ReactFCWithChildren<{ id: string; date: string; isFirst: boolean; top?: ReactNode }> = ({
   id,
   date,
   isFirst,

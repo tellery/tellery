@@ -6,7 +6,7 @@ import { BlockDndContextProvider } from './BlockDndContextProvider'
 import { BlockTranscationProvider } from './BlockTranscationProvider'
 import { WorkspaceProvider } from './WorkspaceProvider'
 
-export const CombineProviderSession: React.FC = ({ children }) => {
+export const CombineProviderSession: ReactFCWithChildren = ({ children }) => {
   return (
     <WorkspaceProvider>
       <CommitContextProvider>

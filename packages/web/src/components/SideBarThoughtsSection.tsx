@@ -17,7 +17,7 @@ import { FormButton } from './kit/FormButton'
 import { MenuItemDivider } from './MenuItemDivider'
 import { SideBarContentLayout } from './SideBarContentLayout'
 
-export const SideBarThoughtsSection: React.FC<{ close: Function }> = (props) => {
+export const SideBarThoughtsSection: ReactFCWithChildren<{ close: Function }> = (props) => {
   const { data: thoughts, refetch: refetchThoughts } = useAllThoughts()
   const openStory = useOpenStory()
   const [date, setDate] = useState(new Date())
@@ -50,7 +50,7 @@ export const SideBarThoughtsSection: React.FC<{ close: Function }> = (props) => 
   }, [activeStartDate, thoughts])
 
   return (
-    <SideBarContentLayout title={t`Thoughts`}>
+    <SideBarContentLayout title={t<string>(`Thoughts`)}>
       <div
         className={css`
           display: flex;
@@ -90,7 +90,7 @@ export const SideBarThoughtsSection: React.FC<{ close: Function }> = (props) => 
           </div>
           {/* <IconButton
             icon={IconCommonAdd}
-            hoverContent={t`Capture today's thought`}
+            hoverContent={t<string>(`Capture today's thought<string>`)}
             disabled={showCreateTodaysNotes === false}
             onClick={createTodaysNotes}
           /> */}
@@ -115,7 +115,7 @@ export const SideBarThoughtsSection: React.FC<{ close: Function }> = (props) => 
                 margin-right: 4px;
               `}
             />
-            <span>{t`Capture today's thought`}</span>
+            <span>{t<string>(`Capture today's thought<string>`)}</span>
           </FormButton>
         )}
         <div
@@ -132,7 +132,11 @@ export const SideBarThoughtsSection: React.FC<{ close: Function }> = (props) => 
   )
 }
 
-const StoryCard: React.FC<{ thoughtId: string; date: string; onClick: Function }> = ({ thoughtId, date, onClick }) => {
+const StoryCard: ReactFCWithChildren<{ thoughtId: string; date: string; onClick: Function }> = ({
+  thoughtId,
+  date,
+  onClick
+}) => {
   const blocksMap = useStoryBlocksMap(thoughtId)
   const thought = blocksMap?.[thoughtId]
   const openStory = useOpenStory()
@@ -206,7 +210,7 @@ const StoryCard: React.FC<{ thoughtId: string; date: string; onClick: Function }
   )
 }
 
-const StoryCards: React.FC<{ thoughtIds: { id: string; date: string }[]; onClick: Function }> = ({
+const StoryCards: ReactFCWithChildren<{ thoughtIds: { id: string; date: string }[]; onClick: Function }> = ({
   thoughtIds,
   onClick
 }) => {

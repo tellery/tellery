@@ -4,7 +4,7 @@ import { css, cx } from '@emotion/css'
 import { IconCommonSearch } from '@app/assets/icons'
 import { useGetBlockTitleTextSnapshot } from '@app/components/editor'
 import { StoryListItem, StoryListItemValue } from '@app/components/StoryListItem'
-import { AnimateSharedLayout, motion } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useMediaQuery, useSearchParams } from '@app/hooks'
 import { useStoriesSearch, useWorkspaceView } from '@app/hooks/api'
 import { SVG2DataURI } from '@app/lib/svg'
@@ -14,9 +14,10 @@ import mergeRefs from 'react-merge-refs'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import { areEqual, ListChildComponentProps, ListOnScrollProps, VariableSizeList } from 'react-window'
 import InfiniteLoader from 'react-window-infinite-loader'
-import { breakpoints, mq, ThemingVariables } from '@app/styles'
+import { breakpoints, ThemingVariables } from '@app/styles'
 import { NewStoryButton } from '@app/components/NewStoryButton'
 import { between } from 'polished'
+import { AnimationSharedLayoutWithChildren } from '@app/components/AnimationSharedLayoutWithChildren'
 
 const RenderItem = memo(function Item({ index, style, data }: ListChildComponentProps) {
   const { isItemLoaded, isFooter, items, workspaceView, refetch, refetchWorkspaceView, large, width } = data
@@ -148,7 +149,7 @@ const Page = () => {
       <Helmet>
         <title>All Stories - Tellery</title>
       </Helmet>
-      <AnimateSharedLayout>
+      <AnimationSharedLayoutWithChildren>
         <div
           className={css`
             position: relative;
@@ -377,7 +378,7 @@ const Page = () => {
             </AutoSizer>
           </div>
         </div>
-      </AnimateSharedLayout>
+      </AnimationSharedLayoutWithChildren>
     </>
   )
 }

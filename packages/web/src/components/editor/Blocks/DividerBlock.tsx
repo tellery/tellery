@@ -5,7 +5,7 @@ import { Editor } from '@app/types'
 import { BlockComponent } from './utils'
 
 const _DividerBlock: BlockComponent<
-  React.FC<{
+  ReactFCWithChildren<{
     block: Editor.Block
   }>
 > = ({ children }) => {

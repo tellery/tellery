@@ -48,7 +48,7 @@ export function initSocketServer(s: Server): SocketIO {
       password,
       port,
     })
-    io.adapter(createPostgresAdapter(pool))
+    io.adapter(createPostgresAdapter(pool) as any)
     emitter = new PGEmitter(pool)
   }
 

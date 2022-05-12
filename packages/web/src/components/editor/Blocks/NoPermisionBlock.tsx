@@ -3,7 +3,7 @@ import { css } from '@emotion/css'
 import React from 'react'
 import type { Editor } from '@app/types'
 
-export const NoPermissionBlock: React.FC<{
+export const NoPermissionBlock: ReactFCWithChildren<{
   block: Editor.Block
 }> = () => {
   return (
