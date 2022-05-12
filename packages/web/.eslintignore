@@ -9,5 +9,5 @@ nginx.conf
 public/
 assets/
 *.md
-node_modules
+node_modules/
 react-snowpack
