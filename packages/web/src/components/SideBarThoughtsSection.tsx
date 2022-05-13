@@ -115,7 +115,7 @@ export const SideBarThoughtsSection: ReactFCWithChildren<{ close: Function }> = 
                 margin-right: 4px;
               `}
             />
-            <span>{t<string>(`Capture today's thought<string>`)}</span>
+            <span>{t<string>(`Capture today's thought`)}</span>
           </FormButton>
         )}
         <div
