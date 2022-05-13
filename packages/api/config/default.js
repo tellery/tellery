@@ -36,7 +36,7 @@ module.exports = {
   server: {
     host: process.env.SERVER_HOST,
     protocol: process.env.SERVER_PROTO || 'http',
-    webPort: process.env.SERVER_WEB_PORT || 80,
+    webPort: parseInt(process.env.SERVER_WEB_PORT, 10) || 80,
     port: process.env.SERVER_PORT || 8000,
     keepAliveTimeout: process.env.SERVER_KEEP_ALIVE_TIMEOUT || 60 * 1000,
   },
