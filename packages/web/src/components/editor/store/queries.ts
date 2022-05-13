@@ -25,9 +25,9 @@ export const QuerySelectorFamily = selectorFamily<
         const replacedData = data.replace(VARIABLE_REGEX, (name) => {
           const variableName = name.slice(2, -2)
           const variable = get(VariableAtomFamily({ storyId, name: variableName }))
+          console.log(variable)
           if (!variable) return ' '
-          const isDefault = variable.defaultValue === variable.currentValue
-          if (isDefault !== true) {
+          if (variable.isDefault === false) {
             isTemp = true
           }
           if (variable.currentValue !== undefined) {

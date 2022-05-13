@@ -11,7 +11,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { QueryBlockSelectInput } from '../../QueryBlockSelectInput'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
-import { useVariableCurrentValueState } from '../hooks/useVariable'
+import { useVariableState } from '../hooks/useVariable'
 import { BlockComponent } from './utils'
 
 const StyledInput = styled.input`
@@ -69,23 +69,19 @@ const _ControlBlock: BlockComponent<
   const variableNameInputRef = useRef<HTMLInputElement | null>(null)
   const [titleEditing, setTitleEditing] = useState(false)
   const [variableName, setVariableName] = useVariableName(block)
-  const [variableValue, setVariableValue] = useVariableCurrentValueState(block.storyId!, variableName)
-  const defaultValue = block.content.defaultValue
-  const isDefaultValue = variableValue === defaultValue
+  const [variable, setVariable] = useVariableState(block.storyId!, variableName)
+  const defaultRawValue = block.content.defaultValue
+  const isDefaultValue = variable.isDefault
   const sideBarVariableEditor = useSideBarVariableEditor(block.storyId!)
   const [valueEditing, setValueEditing] = useState(false)
-  const [editingValue, setEditingValue] = useVariableValueState(variableName, defaultValue)
+  const [editingValue, setEditingValue] = useVariableValueState(variableName, defaultRawValue)
 
   const submitChange = useCallback(
     (type: string, value: string) => {
       setEditingValue(value)
-      if (block.content.type === 'number' || block.content.type === 'decimal') {
-        setVariableValue(parseInt(value, 10))
-      } else {
-        setVariableValue(value)
-      }
+      setVariable(value)
     },
-    [block.content.type, setEditingValue, setVariableValue]
+    [setEditingValue, setVariable]
   )
 
   useEffect(() => {
@@ -281,7 +277,7 @@ const _ControlBlock: BlockComponent<
                     onChange={(blockId: string) => {
                       submitChange(block.content.type, blockId)
                     }}
-                    value={variableValue as string | null}
+                    value={variable.currentRawValue as string | null}
                   />
                 </>
               )}
@@ -326,7 +322,7 @@ const _ControlBlock: BlockComponent<
                       cursor: pointer;
                     `}
                     onClick={() => {
-                      submitChange(block.content.type, defaultValue)
+                      submitChange(block.content.type, defaultRawValue)
                     }}
                   />
                 )

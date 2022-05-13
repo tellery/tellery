@@ -275,6 +275,7 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
     }
   }, [queryClient, refreshSnapshot, executeableQuestionBlocks])
 
+  // console.log(compiledQueries)
   useEffect(() => {
     if (!previousComipledQueriesRef) return
     for (let i = 0; i < compiledQueries.length; i++) {

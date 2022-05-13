@@ -199,7 +199,7 @@ function useSqlEditorVariableAutoCompletion(storyId: string, languageId?: string
             suggestions: Object.keys(variables).map((name, index) => ({
               range: current.range,
               label: name,
-              detail: String(variables[name]?.defaultValue || ''),
+              detail: String(variables[name]?.currentRawValue || ''),
               kind: monaco.languages.CompletionItemKind.Variable,
               insertText: `{{${name}}}`,
               filterText: `{{${keyword}}}`,
