@@ -60,7 +60,7 @@ export default function Login() {
 
   const navigateToNext = useCallback(() => {
     if (callbackUrl.current) {
-      window.location.href = callbackUrl.current
+      navigate(callbackUrl.current)
     } else {
       navigate('/')
     }
@@ -132,7 +132,7 @@ export default function Login() {
                   `}
                   href={`${env.oauth2.authorizeUrl}&redirect_uri=${encodeURIComponent(
                     `${window.location.protocol}//${window.location.host}/oauth/callback`
-                  )}${callbackUrl.current ? `&state=${encodeState({ callbackUrl: callbackUrl.current })}` : ''}`}
+                  )}${`&state=${encodeState({ callbackUrl: callbackUrl.current ?? '' })}`}`}
                 >
                   <img
                     src={env.oauth2.providerIcon}

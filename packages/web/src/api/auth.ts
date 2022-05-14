@@ -21,7 +21,12 @@ export function wrapAuth(axios: AxiosInstance | AxiosStatic) {
     if (error.response.status === 401) {
       if (currentState.retryCount <= 0) {
         if (window.location.pathname !== '/login') {
-          window.open(`/login?callback=${encodeURIComponent(window.location.href)}`, '_self')
+          window.open(
+            `/login?callback=${encodeURIComponent(
+              `${window.location.pathname}${window.location.search}${window.location.hash}`
+            )}`,
+            '_self'
+          )
         }
         throw new Error('Retry Count Exceed')
       }

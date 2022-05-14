@@ -126,8 +126,7 @@ export class UserService implements IUserService {
       const insert = r.create({
         username: username ?? email.split('@')[0] ?? email,
         email: email,
-        avatar: avatar ?? '',
-        password: '',
+        avatar: avatar,
         status: AccountStatus.ACTIVE,
       })
       const insertedUser = await r.save(insert)
