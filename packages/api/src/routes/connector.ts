@@ -446,7 +446,6 @@ async function getCollectionSchemaRouter(ctx: Context) {
   ctx.body = { fields }
 }
 
-
 async function getCompiledSql(ctx: Context) {
   const payload = plainToClass(ExecuteSqlRequest, ctx.request.body)
   await validate(ctx, payload)
@@ -455,16 +454,12 @@ async function getCompiledSql(ctx: Context) {
 
   const manager = await getIConnectorManagerFromDB(workspaceId, connectorId)
 
-  const { queryBuilderSpec } = await connectorService.getProfileSpec(
-    manager,
-    user.id,
-    workspaceId,
-  )
+  const { queryBuilderSpec } = await connectorService.getProfileSpec(manager, user.id, workspaceId)
 
   const assembledSql = await translate(sql, { queryBuilderSpec }, maxRow)
 
   ctx.body = {
-    sql: assembledSql
+    sql: assembledSql,
   }
 }
 

@@ -93,13 +93,13 @@ export class ConnectorManager implements IConnectorManager {
     } else {
       throw new Error(`Invalid auth type for grpcConnector: ${authType}`)
     }
-    this.connectorClient = new ConnectorServiceClient(url, credential)
+    this.connectorClient = new ConnectorServiceClient(url, credential, {})
     this.profileClient = new ProfileServiceClient(url, credential)
     this.dbtClient = new DbtServiceClient(url, credential)
   }
 
   public checkAuth(authType: AuthType, authData: AuthData): boolean {
-    return this.authType === authType && this.authData === authData
+    return this.authType === authType && _.isEqual(this.authData, authData)
   }
 
   private createMetadata(): Metadata {
@@ -175,6 +175,7 @@ export class ConnectorManager implements IConnectorManager {
   }
 
   async getProfile(): Promise<Profile | undefined> {
+    console.log('get profile')
     try {
       const profile = await beautyCall(
         this.profileClient.getProfile,
