@@ -247,7 +247,12 @@ export class UserService implements IUserService {
    * @return { userId: string, expiresAt: number}
    */
   async verifyToken(token: string): Promise<{ userId: string; expiresAt: number }> {
-    const payload = this.decryptToken(token)
+    let payload: TokenPayload | null = null
+    try {
+      payload = this.decryptToken(token)
+    } catch (e) {
+      throw UnauthorizedError.notLogin()
+    }
     if (payload.expiresAt < _.now()) {
       throw UnauthorizedError.notLogin()
     }
