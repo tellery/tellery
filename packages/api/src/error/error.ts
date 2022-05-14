@@ -36,6 +36,10 @@ export class UnauthorizedError extends Error {
   static notExist(): UnauthorizedError {
     return new UnauthorizedError('not exist')
   }
+
+  static tokenInvalid(): UnauthorizedError {
+    return new UnauthorizedError('token invalid')
+  }
 }
 
 export class InternalError extends Error {

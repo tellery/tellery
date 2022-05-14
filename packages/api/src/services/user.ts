@@ -41,7 +41,7 @@ interface IUserService {
   verifyToken(token: string): Promise<{
     userId: string
     expiresAt: number
-  }>
+  } | null>
 
   getInfos(ids: string[]): Promise<UserInfoDTO[]>
 }
@@ -246,12 +246,12 @@ export class UserService implements IUserService {
   /**
    * @return { userId: string, expiresAt: number}
    */
-  async verifyToken(token: string): Promise<{ userId: string; expiresAt: number }> {
+  async verifyToken(token: string): Promise<{ userId: string; expiresAt: number } | null> {
     let payload: TokenPayload | null = null
     try {
       payload = this.decryptToken(token)
     } catch (e) {
-      throw UnauthorizedError.notLogin()
+      return null
     }
     if (payload.expiresAt < _.now()) {
       throw UnauthorizedError.notLogin()
@@ -288,7 +288,7 @@ export class AnonymousUserService extends UserService {
    * so the user middleware will generate a new token cookie for users
    * @returns generated: the user is created by this function
    */
-  async verifyToken(token: string): Promise<{ userId: string; expiresAt: number }> {
+  async verifyToken(token: string): Promise<{ userId: string; expiresAt: number } | null> {
     console.debug('anonymous ....................')
 
     return super.verifyToken(token).catch(async (err) => {

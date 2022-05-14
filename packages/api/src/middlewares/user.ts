@@ -16,7 +16,7 @@ const d15 = 1000 * 3600 * 24 * 15
 
 export default async function user(ctx: Context, next: Next): Promise<unknown> {
   const token = ctx.headers[USER_TOKEN_HEADER_KEY] || ctx.cookies.get(USER_TOKEN_HEADER_KEY)
-  let payload: { userId: string; expiresAt: number } | undefined
+  let payload: { userId: string; expiresAt: number } | null = null
   const skipAuth = ignorePaths.some((p) => ctx.path.startsWith(p))
 
   if (!skipAuth) {
@@ -26,7 +26,7 @@ export default async function user(ctx: Context, next: Next): Promise<unknown> {
       // special logic for anonymous users
       payload = await userService.verifyToken(token?.toString() ?? '')
       // invited new user to workspace
-      if (_(payload).get('generated')) {
+      if (payload && _(payload).get('generated')) {
         const workspace = await getRepository(WorkspaceEntity).findOneOrFail({
           order: {
             createdAt: 'ASC',
