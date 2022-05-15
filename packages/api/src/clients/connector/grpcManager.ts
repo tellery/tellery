@@ -175,7 +175,6 @@ export class ConnectorManager implements IConnectorManager {
   }
 
   async getProfile(): Promise<Profile | undefined> {
-    console.log('get profile')
     try {
       const profile = await beautyCall(
         this.profileClient.getProfile,

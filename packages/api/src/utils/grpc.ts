@@ -19,8 +19,12 @@ export function beautyCall<ReqT, RespT>(
   errCount = 0,
 ): Promise<RespT> {
   return promisify(func)
-    .bind(client)(request, metadata || new grpc.Metadata(), options || {})
+    .bind(client)(request, metadata || new grpc.Metadata(), {
+      deadline: new Date().getSeconds() + 5,
+      ...options,
+    })
     .catch((e: grpc.ServiceError) => {
+      console.log('grpc fail count', errCount, e.code)
       if (errCount < 3 && e.code && e.code === grpc.status.UNAVAILABLE) {
         return beautyCall(func, client, request, metadata, options, errCount + 1)
       }

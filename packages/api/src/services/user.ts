@@ -21,6 +21,8 @@ type TokenPayload = {
   userId: string
   passHash: string
   expiresAt: number
+  generated?: boolean
+  email?: string
 }
 
 interface IUserService {
@@ -246,7 +248,7 @@ export class UserService implements IUserService {
   /**
    * @return { userId: string, expiresAt: number}
    */
-  async verifyToken(token: string): Promise<{ userId: string; expiresAt: number } | null> {
+  async verifyToken(token: string): Promise<TokenPayload | null> {
     let payload: TokenPayload | null = null
     try {
       payload = this.decryptToken(token)
@@ -288,11 +290,11 @@ export class AnonymousUserService extends UserService {
    * so the user middleware will generate a new token cookie for users
    * @returns generated: the user is created by this function
    */
-  async verifyToken(token: string): Promise<{ userId: string; expiresAt: number } | null> {
+  async verifyToken(token: string): Promise<TokenPayload> {
     console.debug('anonymous ....................')
-
-    return super.verifyToken(token).catch(async (err) => {
-      console.debug(err)
+    const payload = await super.verifyToken(token)
+    if (payload === null) {
+      console.debug('payload is null')
       const email = this.randomEmail()
       const user = (
         await this.createUserByEmailsIfNotExist([email], undefined, AccountStatus.ACTIVE)
@@ -303,8 +305,10 @@ export class AnonymousUserService extends UserService {
         expiresAt: _.now() + 3600 * 1000,
         generated: true,
         email: user.email,
-      }
-    })
+      } as TokenPayload
+    } else {
+      return payload
+    }
   }
 
   async generateUserVerification(): Promise<never> {
