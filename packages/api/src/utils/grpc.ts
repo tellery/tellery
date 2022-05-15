@@ -25,7 +25,11 @@ export function beautyCall<ReqT, RespT>(
     })
     .catch((e: grpc.ServiceError) => {
       console.log('grpc fail count', errCount, e.code)
-      if (errCount < 3 && e.code && e.code === grpc.status.UNAVAILABLE) {
+      if (
+        errCount < 3 &&
+        e.code &&
+        (e.code === grpc.status.UNAVAILABLE || e.code === grpc.status.UNKNOWN)
+      ) {
         return beautyCall(func, client, request, metadata, options, errCount + 1)
       }
       let code: number
