@@ -20,7 +20,7 @@ export function beautyCall<ReqT, RespT>(
 ): Promise<RespT> {
   return promisify(func)
     .bind(client)(request, metadata || new grpc.Metadata(), {
-      deadline: new Date().getSeconds() + 5,
+      deadline: 5 * 1000,
       ...options,
     })
     .catch((e: grpc.ServiceError) => {
