@@ -27,7 +27,7 @@
   "license": "ISC",
   "dependencies": {
     "@grpc/grpc-js": "^1.6.7",
-    "@socket.io/postgres-adapter": "^0.1.1",
+    "@socket.io/postgres-adapter": "^0.3.0",
     "@socket.io/postgres-emitter": "^0.1.0",
     "@socket.io/redis-emitter": "^4.1.0",
     "aws-sdk": "^2.1047.0",
