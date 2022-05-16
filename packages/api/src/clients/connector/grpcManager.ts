@@ -1,5 +1,5 @@
 import { Transform, TransformCallback } from 'stream'
-import { credentials, ChannelCredentials, Metadata } from 'grpc'
+import { credentials, ChannelCredentials, Metadata } from '@grpc/grpc-js'
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb'
 import _ from 'lodash'
 import { AuthType, AuthData } from '../../types/auth'

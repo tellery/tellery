@@ -8,7 +8,7 @@
     "start:websocket": "node dist/src/socket/index.js",
     "dev": "COMPATIBLE=true NODE_ENV=dev concurrently \"tsc -w\" \"cross-env nodemon dist/src/index.js\"",
     "dev:websocket": "NODE_ENV=dev concurrently \"tsc -w\" \"cross-env nodemon dist/src/socket/index.js\"",
-    "proto": "mkdir -p dist/src/protobufs src/protobufs && grpc_tools_node_protoc --js_out=import_style=commonjs,binary:dist/src/protobufs --grpc_out=dist/src/protobufs --plugin=grpc_node_plugin -I ../protobufs ../protobufs/*.proto && grpc_tools_node_protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=src/protobufs -I ../protobufs ../protobufs/*.proto",
+    "proto": "mkdir -p dist/src/protobufs src/protobufs && grpc_tools_node_protoc --js_out=import_style=commonjs,binary:dist/src/protobufs --grpc_out=grpc_js:dist/src/protobufs --plugin=grpc_node_plugin -I ../protobufs ../protobufs/*.proto && grpc_tools_node_protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=grpc_js:src/protobufs -I ../protobufs ../protobufs/*.proto",
     "typeorm": "node ./node_modules/typeorm/cli.js -f dist/ormconfig.js",
     "compile": "npm run clean && npm run proto && npm run assets && tsc",
     "assets": "cp -r src/assets dist/src",
@@ -26,6 +26,7 @@
   "author": "iftech",
   "license": "ISC",
   "dependencies": {
+    "@grpc/grpc-js": "^1.6.7",
     "@socket.io/postgres-adapter": "^0.1.1",
     "@socket.io/postgres-emitter": "^0.1.0",
     "@socket.io/redis-emitter": "^4.1.0",

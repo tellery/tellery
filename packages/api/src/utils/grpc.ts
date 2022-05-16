@@ -1,4 +1,4 @@
-import grpc from 'grpc'
+import * as grpc from '@grpc/grpc-js'
 import createError from 'http-errors'
 import { promisify } from 'util'
 import { errorResponse } from './http'
