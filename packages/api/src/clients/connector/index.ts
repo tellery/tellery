@@ -14,7 +14,7 @@ export function getIConnectorManager(
   authType: AuthType,
   authData: AuthData,
 ): IConnectorManager {
-  return getGrpcConnector(workspaceId, url, authType, authData)
+  return getGrpcConnector(workspaceId, 'localhost:50051', authType, authData)
 }
 
 export async function getIConnectorManagerFromDB(

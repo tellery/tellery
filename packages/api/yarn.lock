@@ -396,14 +396,16 @@
   resolved "https://registry.yarnpkg.com/@socket.io/component-emitter/-/component-emitter-3.1.0.tgz#96116f2a912e0c02817345b3c10751069920d553"
   integrity sha512-+9jVqKhRSpsc591z5vX+X5Yyw+he/HCB4iQ/RYxw35CEPaY1gnsNE43nf9n9AaYjAQrTiI/mOwKUKdUs9vf7Xg==
 
-"@socket.io/postgres-adapter@^0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@socket.io/postgres-adapter/-/postgres-adapter-0.1.1.tgz#8b5811af5ff54bd1c2ea1bf8cf2dd72684ccf3af"
-  integrity sha512-xUWeLC1Tz771XIEoJ0iuPTRUbEg8aQdyb1CSHXAT2y+WxvtGy7XxDN5kwkGSumyfxb+Qo8RSX8ZfTmbdx+gXXQ==
+"@socket.io/postgres-adapter@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@socket.io/postgres-adapter/-/postgres-adapter-0.3.0.tgz#44da249ec759a3c4bbf19bb35209584191cb467e"
+  integrity sha512-G9MrTCgSrO/Z5JDYIB2H4CI/baRwR/kQgwOfMNp39FvuPgKQ6I9iUM/mn6OhI5N6rMl8nzWNg4P8SiBa7kUtAQ==
   dependencies:
     "@msgpack/msgpack" "~2.7.0"
+    "@types/pg" "^8.6.1"
     debug "~4.3.1"
-    socket.io-adapter "~2.3.0"
+    pg "^8.0.0"
+    socket.io-adapter "~2.4.0"
 
 "@socket.io/postgres-emitter@^0.1.0":
   version "0.1.0"
@@ -690,15 +692,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-17.0.32.tgz#51d59d7a90ef2d0ae961791e0900cad2393a0149"
   integrity sha512-eAIcfAvhf/BkHcf4pkLJ7ECpBAhh9kcxRBpip9cTiO+hf+aJrsxYxBeS6OXvOd9WqNAJmavXVpZvY1rBjNsXmw==
 
-"@types/node@>=12.12.47", "@types/node@>=13.7.0":
+"@types/node@>=12.12.47", "@types/node@>=13.7.0", "@types/node@^17.0.33":
   version "17.0.33"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-17.0.33.tgz#3c1879b276dc63e73030bb91165e62a4509cd506"
   integrity sha512-miWq2m2FiQZmaHfdZNcbpp9PuXg34W5JZ5CrJ/BaS70VuhoJENBEQybeiYSaPBRNq6KQGnjfEnc/F3PN++D+XQ==
-
-"@types/node@^16.11.15":
-  version "16.11.34"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-16.11.34.tgz#520224e4be4448c279ecad09639ab460cc441a50"
-  integrity sha512-UrWGDyLAlQ2Z8bNOGWTsqbP9ZcBeTYBVuTRNxXTztBy5KhWUFI3BaeDWoCP/CzV/EVGgO1NTYzv9ZytBI9GAEw==
 
 "@types/nodemailer@^6.4.4":
   version "6.4.4"
@@ -712,7 +709,7 @@
   resolved "https://registry.yarnpkg.com/@types/normalize-package-data/-/normalize-package-data-2.4.1.tgz#d3357479a0fdfdd5907fe67e17e0a85c906e1301"
   integrity sha512-Gj7cI7z+98M282Tqmp2K5EIsoouUEzbBJhQQzDE3jSIRk6r9gsz0oUokqIUR4u1R3dMHo0pDHM7sNOHyhulypw==
 
-"@types/pg@^8.6.2":
+"@types/pg@^8.6.1", "@types/pg@^8.6.2":
   version "8.6.5"
   resolved "https://registry.yarnpkg.com/@types/pg/-/pg-8.6.5.tgz#2dce9cb468a6a5e0f1296a59aea3ac75dd27b702"
   integrity sha512-tOkGtAqRVkHa/PVZicq67zuujI4Oorfglsr2IbKofDwBSysnaqSx7W1mDqFqdkGE6Fbgh+PZAl0r/BWON/mozw==
@@ -1135,9 +1132,9 @@ ava@^3.15.0:
     yargs "^16.2.0"
 
 aws-sdk@^2.1047.0:
-  version "2.1133.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1133.0.tgz#db530faaa8dbe98503fd600b4e95efdd1c3996c7"
-  integrity sha512-TK7lcDxkrAc15Lmx030u4Wn3P798oxBVs79DBsD8+cZcW5Y8Gvat+evIZpkDoqh8YsfegvlI2jFg4ECQxKYPVA==
+  version "2.1135.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1135.0.tgz#8c14aa6894be529cb5fb7b6d19f3dc70e4f35816"
+  integrity sha512-bl9n4QgrEh52hmQ+Jo76BgJXM/p+PwfVZvImEQHFeel/33H/PDLcTJquEw5bzxM1HRNI24iH+FNPwyWLMrttTw==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
@@ -2180,10 +2177,10 @@ eslint-config-airbnb-base@^15.0.0:
     object.entries "^1.1.5"
     semver "^6.3.0"
 
-eslint-config-airbnb-typescript@^16.1.0:
-  version "16.2.0"
-  resolved "https://registry.yarnpkg.com/eslint-config-airbnb-typescript/-/eslint-config-airbnb-typescript-16.2.0.tgz#9193fafd62f1cbf444895f4495eae334baf3265b"
-  integrity sha512-OUaMPZpTOZGKd5tXOjJ9PRU4iYNW/Z5DoHIynjsVK/FpkWdiY5+nxQW6TiJAlLwVI1l53xUOrnlZWtVBVQzuWA==
+eslint-config-airbnb-typescript@^17.0.0:
+  version "17.0.0"
+  resolved "https://registry.yarnpkg.com/eslint-config-airbnb-typescript/-/eslint-config-airbnb-typescript-17.0.0.tgz#360dbcf810b26bbcf2ff716198465775f1c49a07"
+  integrity sha512-elNiuzD0kPAPTXjFWg+lE24nMdHMtuxgYoD30OyMD6yrW1AhFZPAg27VX7d3tzOErw+dgJTNWfRSDqEcXb4V0g==
   dependencies:
     eslint-config-airbnb-base "^15.0.0"
 
@@ -4433,7 +4430,7 @@ pg-types@^2.1.0, pg-types@^2.2.0:
     postgres-date "~1.0.4"
     postgres-interval "^1.1.0"
 
-pg@^8.7.1:
+pg@^8.0.0, pg@^8.7.1:
   version "8.7.3"
   resolved "https://registry.yarnpkg.com/pg/-/pg-8.7.3.tgz#8a5bdd664ca4fda4db7997ec634c6e5455b27c44"
   integrity sha512-HPmH4GH4H3AOprDJOazoIcpI49XFsHCe8xlrjHkWiapdbHK+HLtbm/GQzXYAZwmPju/kzKhjaSfMACG+8cgJcw==
@@ -4996,11 +4993,6 @@ socket.io-adapter@~2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/socket.io-adapter/-/socket.io-adapter-2.2.0.tgz#43af9157c4609e74b8addc6867873ac7eb48fda2"
   integrity sha512-rG49L+FwaVEwuAdeBRq49M97YI3ElVabJPzvHT9S6a2CWhDKnjSFasvwAwSYPRhQzfn4NtDIbCaGYgOCOU/rlg==
-
-socket.io-adapter@~2.3.0:
-  version "2.3.3"
-  resolved "https://registry.yarnpkg.com/socket.io-adapter/-/socket.io-adapter-2.3.3.tgz#4d6111e4d42e9f7646e365b4f578269821f13486"
-  integrity sha512-Qd/iwn3VskrpNO60BeRyCyr8ZWw9CPZyitW4AQwmRZ8zCiyDiL+znRnWX6tDHXnWn1sJrM1+b6Mn6wEDJJ4aYQ==
 
 socket.io-adapter@~2.4.0:
   version "2.4.0"
