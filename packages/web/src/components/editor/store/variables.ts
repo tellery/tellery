@@ -71,20 +71,21 @@ export const VariableTempRawValueAtomFamily = atomFamily<string | null, { storyI
   default: null
 })
 
-export const VariableAtomFamily = selectorFamily<TelleryVariable, { storyId: string; name: string }>({
+export const VariableAtomFamily = selectorFamily<TelleryVariable | DefaultValue, { storyId: string; name: string }>({
   key: 'VariableAtomFamily',
   get:
     ({ storyId, name }) =>
     ({ get }) => {
       const variables = get(StoryVariables(storyId))
       const variable = variables[name]
+      if (!variable) return new DefaultValue()
       const tempRawValue = get(VariableTempRawValueAtomFamily({ storyId, name }))
       const currentRawValue = tempRawValue ?? variable?.defaultRawValue ?? ''
       return {
         ...variable,
         tempRawValue,
         currentRawValue,
-        currentValue: variableRawValueToValue(currentRawValue, variables[name].type),
+        currentValue: variableRawValueToValue(currentRawValue, variables[name]?.type),
         isDefault: currentRawValue === variable.defaultRawValue
       } as TelleryVariable
     },
@@ -123,7 +124,7 @@ export const FormulaSelectorFamily = selectorFamily<any, { storyId: string; form
         .replace(VARIABLE_REGEX, (variableString) => {
           const variableName = variableString.slice(2, -2)
           const variable = get(VariableAtomFamily({ storyId, name: variableName }))
-          scope[variableName] = variable?.currentValue ?? null
+          scope[variableName] = variable instanceof DefaultValue ? null : variable.currentValue
           return variableName
         })
 

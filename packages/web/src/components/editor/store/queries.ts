@@ -1,7 +1,7 @@
 import { TelleryBlockAtom } from '@app/store/block'
 import { Editor } from '@app/types'
 import { VARIABLE_REGEX } from '@app/utils'
-import { selectorFamily } from 'recoil'
+import { DefaultValue, selectorFamily } from 'recoil'
 import { VariableAtomFamily } from './variables'
 
 export const QuerySelectorFamily = selectorFamily<
@@ -25,8 +25,7 @@ export const QuerySelectorFamily = selectorFamily<
         const replacedData = data.replace(VARIABLE_REGEX, (name) => {
           const variableName = name.slice(2, -2)
           const variable = get(VariableAtomFamily({ storyId, name: variableName }))
-          console.log(variable)
-          if (!variable) return ' '
+          if (!variable || variable instanceof DefaultValue) return ' '
           if (variable.isDefault === false) {
             isTemp = true
           }

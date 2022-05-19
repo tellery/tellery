@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { useRecoilState } from 'recoil'
+import { DefaultValue, useRecoilState } from 'recoil'
 import { TelleryVariable, VariableAtomFamily } from '../store/variables'
 
 export const useVariableState = (storyId: string, name: string) => {
@@ -7,6 +7,7 @@ export const useVariableState = (storyId: string, name: string) => {
   const setValue = useCallback(
     (value: string) => {
       setState((oldState) => {
+        if (oldState instanceof DefaultValue) return oldState
         return {
           ...oldState,
           tempRawValue: value
