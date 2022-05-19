@@ -21,13 +21,13 @@ object ProjectConfig {
     val deployMode: DeployMode
         get() = DeployMode.valueOf(
             env.getOrDefault(
-                "connector.deployMode",
+                "DEPLOY_MODE",
                 DeployMode.LOCAL.name
             )
         )
 
     val workspaceId: String
-        get() = env["connector.workspaceId"] ?: throw RuntimeException()
+        get() = env["WORKSPACE_ID"] ?: env["connector.workspaceId"] ?: throw RuntimeException()
 
     val databaseURL: String?
         get() = env["connector.cluster.db_url"]

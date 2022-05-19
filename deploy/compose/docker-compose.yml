@@ -1,14 +1,17 @@
 version: "3.6"
 
-x-connector-volume: &connector_volume
+x-connector-volume:
+  &connector_volume
   type: bind
   source: ./tellery-connector/profile.json
   target: /usr/app/profile.json
 
-x-restart-policy: &restart_policy
+x-restart-policy:
+  &restart_policy
   restart: unless-stopped
 
-x-tellery-defaults: &tellery_defaults
+x-tellery-defaults:
+  &tellery_defaults
   restart: on-failure
   depends_on:
     - redis
@@ -18,7 +21,8 @@ x-tellery-defaults: &tellery_defaults
     - -c
   command:
     - npm start
-  environment: &tellery_default_env
+  environment:
+    &tellery_default_env
     NODE_ENV: production
     PG_USERNAME: ${POSTGRES_USERNAME}
     PG_HOST: postgresql
@@ -53,7 +57,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     healthcheck:
       # Using default user "postgres" from sentry/sentry.conf.example.py or value of POSTGRES_USER if provided
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}" ]
       interval: 2s
       timeout: 3s
       retries: 30
@@ -84,12 +88,7 @@ services:
         BASE_IMAGE: ${TELLERY_SERVER_IMAGE}
     command:
       - >-
-        until pg_isready -U ${POSTGRES_USER:-postgres} -h postgresql; do sleep 1; done &&
-        npm run typeorm schema:sync &&
-        npm run typeorm migration:run &&
-        npm run create:user &&
-        npm run create:workspace &&
-        npm run create:initStory
+        until pg_isready -U ${POSTGRES_USER:-postgres} -h postgresql; do sleep 1; done && npm run typeorm schema:sync && npm run typeorm migration:run && npm run create:user && npm run create:workspace && npm run create:initStory
 
   tellery-server:
     <<: *tellery_defaults
@@ -100,8 +99,8 @@ services:
   tellery-connector:
     <<: *restart_policy
     environment:
-      connector.deployMode: "LOCAL"
-      connector.workspaceId: "0"
+      DEPLOY_MODE: "LOCAL"
+      WORKSPACE_ID: "0"
     image: ${TELLERY_CONNECTOR_IMAGE}
     ports:
       - 50051:50051
