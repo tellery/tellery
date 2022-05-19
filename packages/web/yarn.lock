@@ -2181,10 +2181,10 @@
   resolved "https://registry.yarnpkg.com/@types/range-parser/-/range-parser-1.2.4.tgz#cd667bcfdd025213aafb7ca5915a932590acdcdc"
   integrity sha512-EEhsLsD6UsDM1yFhAvy0Cjr6VwmpMWqFBCb9w07wVugF7w9nfajxLuVmngTIpgS6svCnm6Vaw+MZhoDCKnOfsw==
 
-"@types/react-calendar@^3.0.0", "@types/react-calendar@^3.5.0":
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/@types/react-calendar/-/react-calendar-3.5.0.tgz#8195a33e20395e1f5171eea9c80156f3a5115b43"
-  integrity sha512-qVSA5M0+SwLRINpE81TMUTh0NwJVed8T+lplJ7v0XAe4EHlMyNeNlkN9suKBxlwIEZ/62QP/m0QjGNCwdOy8PQ==
+"@types/react-calendar@^3.0.0", "@types/react-calendar@^3.5.1":
+  version "3.5.1"
+  resolved "https://registry.yarnpkg.com/@types/react-calendar/-/react-calendar-3.5.1.tgz#5597f5e58d69bd13972f88546b50f9a3b98518db"
+  integrity sha512-d71cKkkSN8CA4PWx87jQOrEyElc2uY3hwpXmceroaPMrMaZ9fPlLFPLP0OCaay5nlJ6ErNmHVb75lE1huharPQ==
   dependencies:
     "@types/react" "*"
 
@@ -5049,10 +5049,10 @@ i18next-http-backend@^1.4.0:
   dependencies:
     cross-fetch "3.1.5"
 
-i18next@^21.8.1:
-  version "21.8.1"
-  resolved "https://registry.yarnpkg.com/i18next/-/i18next-21.8.1.tgz#44e083ade3dfe08c8099882c560d3c7294cdf679"
-  integrity sha512-uulZBD5kLME7Ucz8pFwpC7jXDjq4BHkio3b6GBw1ykXNHA8rIAk1S2t6zb2Ripf9OMetMkysiDRlPlCVqjvQeg==
+i18next@^21.8.3:
+  version "21.8.3"
+  resolved "https://registry.yarnpkg.com/i18next/-/i18next-21.8.3.tgz#1d90fbb8907ba94c2320111ec2c43cdffe4f3fc2"
+  integrity sha512-I6QEXu096oaNH8h+hs2eHu6hxtWPdb/rsoRFHmFep01uuwB0h86ckXaT14ladhstWenEScsxiAQ2TW9fmDG57Q==
   dependencies:
     "@babel/runtime" "^7.17.2"
 
@@ -6018,10 +6018,10 @@ mocha@^9.2.2:
     yargs-parser "20.2.4"
     yargs-unparser "2.0.0"
 
-monaco-editor@^0.31.1:
-  version "0.31.1"
-  resolved "https://registry.yarnpkg.com/monaco-editor/-/monaco-editor-0.31.1.tgz#67f597b3e45679d1f551237e12a3a42c4438b97b"
-  integrity sha512-FYPwxGZAeP6mRRyrr5XTGHD9gRXVjy7GUzF4IPChnyt3fS5WrNxIkS8DNujWf6EQy0Zlzpxw8oTVE+mWI2/D1Q==
+monaco-editor@^0.33.0:
+  version "0.33.0"
+  resolved "https://registry.yarnpkg.com/monaco-editor/-/monaco-editor-0.33.0.tgz#842e244f3750a2482f8a29c676b5684e75ff34af"
+  integrity sha512-VcRWPSLIUEgQJQIE0pVT8FcGBIgFoxz7jtqctE+IiCxWugD0DwgyQBcZBhdSrdMC84eumoqMZsGl2GTreOzwqw==
 
 ms@2.0.0:
   version "2.0.0"
@@ -6830,10 +6830,10 @@ react-textarea-autosize@^8.3.3:
     use-composed-ref "^1.0.0"
     use-latest "^1.0.0"
 
-react-toastify@^8.2.0:
-  version "8.2.0"
-  resolved "https://registry.yarnpkg.com/react-toastify/-/react-toastify-8.2.0.tgz#ef7d56bdfdc6272ca6b228368ab564721c3a3244"
-  integrity sha512-Pg2Ju7NngAamarFvLwqrFomJ57u/Ay6i6zfLurt/qPynWkAkOthu6vxfqYpJCyNhHRhR4hu7+bySSeWWJu6PAg==
+react-toastify@^9.0.1:
+  version "9.0.1"
+  resolved "https://registry.yarnpkg.com/react-toastify/-/react-toastify-9.0.1.tgz#2f3abd26a75efd55a82cb9c0a897c865218ea420"
+  integrity sha512-c2zeZHkCX+WXuItS/JRqQ/8CH8Qm/je+M0rt09xe9fnu5YPJigtNOdD8zX4fwLA093V2am3abkGfOowwpkrwOQ==
   dependencies:
     clsx "^1.1.1"
 
@@ -7994,10 +7994,10 @@ use-composed-ref@^1.0.0:
   resolved "https://registry.yarnpkg.com/use-composed-ref/-/use-composed-ref-1.3.0.tgz#3d8104db34b7b264030a9d916c5e94fbe280dbda"
   integrity sha512-GLMG0Jc/jiKov/3Ulid1wbv3r54K9HlMW29IWcDFPEqFkSO2nS0MuefWgMJpeHQ9YJeXDL3ZUF+P3jdXlZX/cQ==
 
-use-immer@^0.6.0:
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/use-immer/-/use-immer-0.6.0.tgz#ca6aa5ade93018e2c65cf128d19ada54fc23f70d"
-  integrity sha512-dFGRfvWCqPDTOt/S431ETYTg6+uxbpb7A1pptufwXVzGJY3RlXr38+3wyLNpc6SbbmAKjWl6+EP6uW74fkEsXQ==
+use-immer@^0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/use-immer/-/use-immer-0.7.0.tgz#e3bfbb806b5e3ff6e37441be74c306d91c1e0962"
+  integrity sha512-Re4hjrP3a/2ABZjAc0b7AK9s626bnO+H33RO2VUhiDZ2StBz5B663K6WNNlr4QtHWaGUmvLpwt3whFvvWuolQw==
 
 use-isomorphic-layout-effect@^1.1.1:
   version "1.1.2"
