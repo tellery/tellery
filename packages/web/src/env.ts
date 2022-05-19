@@ -29,7 +29,7 @@ export const env = {
     'https://cdn.jsdelivr.net/npm/monaco-editor@0.30.1/min/vs') as string,
   oauth2: {
     ...TelleryBootstrap.oauth2,
-    enable: !!import.meta.env.VITE_OAUTH2_ENABLE,
+    enable: TelleryBootstrap.oauth2?.enable ?? import.meta.env.VITE_OAUTH2_ENABLE === 'true',
     authorizeUrl: TelleryBootstrap.oauth2?.authorizeUrl ?? import.meta.env.VITE_OAUTH2_AUTHORIZE_URL,
     providerName: TelleryBootstrap.oauth2?.providerName ?? import.meta.env.VITE_OAUTH2_PROVIDER_NAME,
     providerIcon: TelleryBootstrap.oauth2?.providerIcon ?? import.meta.env.VITE_OAUTH2_PROVIDER_ICON
