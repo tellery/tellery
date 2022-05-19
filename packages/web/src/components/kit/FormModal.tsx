@@ -4,18 +4,18 @@ import { forwardRef, FormHTMLAttributes, ReactNode } from 'react'
 import { ThemingVariables } from '@app/styles'
 
 export default forwardRef<
-  HTMLFormElement,
+  HTMLDivElement,
   {
     title?: string
     subtitle?: string
     body?: ReactNode
     footer?: ReactNode
-  } & FormHTMLAttributes<HTMLFormElement>
+  } & FormHTMLAttributes<HTMLDivElement>
 >(function FormModal(props, ref) {
   const { title, subtitle, body, footer, className, ...restProps } = props
 
   return (
-    <form
+    <div
       {...restProps}
       ref={ref}
       className={cx(
@@ -83,6 +83,6 @@ export default forwardRef<
           {footer}
         </div>
       ) : null}
-    </form>
+    </div>
   )
 })

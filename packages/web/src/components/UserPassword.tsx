@@ -1,7 +1,6 @@
 import { useAsync } from '@app/hooks'
 import type { User } from '@app/hooks/api'
 import { useAuth } from '@app/hooks/useAuth'
-import { ThemingVariables } from '@app/styles'
 import { css } from '@emotion/css'
 import { ErrorMessage } from '@hookform/error-message'
 import { useEffect } from 'react'
@@ -11,7 +10,7 @@ import FormError from './kit/FormError'
 import FormInput from './kit/FormInput'
 import FormLabel from './kit/FormLabel'
 
-export default function UserPassword(props: { onClose(): void }) {
+export default function UserPassword(props: { onClose(): void; confirmText?: string }) {
   const { user } = useAuth()
   const auth = useAuth()
   const handleUpdateUser = useAsync(auth.update)
@@ -41,23 +40,11 @@ export default function UserPassword(props: { onClose(): void }) {
       className={css`
         flex: 1;
         height: 100%;
-        padding: 30px 32px 16px;
         display: flex;
         flex-direction: column;
       `}
       onSubmit={handleSubmit(handleUpdateUser.execute)}
     >
-      <h2
-        className={css`
-          font-weight: 600;
-          font-size: 16px;
-          line-height: 19px;
-          margin: 0;
-          color: ${ThemingVariables.colors.text[0]};
-        `}
-      >
-        Password
-      </h2>
       {user?.status === 'active' ? (
         <div
           className={css`
@@ -135,7 +122,7 @@ export default function UserPassword(props: { onClose(): void }) {
           `}
           loading={handleUpdateUser.status === 'pending'}
         >
-          Update password
+          {props.confirmText ?? 'Update password'}
         </FormButton>
       </div>
       <FormError message={(handleUpdateUser.error?.response?.data as any)?.errMsg} />

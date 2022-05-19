@@ -36,7 +36,7 @@ export function UserModal(props: { onClose(): void }) {
         flex-direction: column;
         align-items: center;
         background-color: rgba(0, 0, 0, 0.5);
-        z-index: 9999999999;
+        z-index: 99999;
       `}
     >
       <div
@@ -116,8 +116,48 @@ export function UserModal(props: { onClose(): void }) {
             ))}
           </ul>
         </div>
-        {tab === Tabs.Account ? <UserAccount onClose={props.onClose} /> : null}
-        {tab === Tabs.Password ? <UserPassword onClose={props.onClose} /> : null}
+        <div
+          className={css`
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            padding: 30px 32px 16px;
+          `}
+        >
+          {tab === Tabs.Account ? (
+            <>
+              <h2
+                className={css`
+                  font-weight: 600;
+                  font-size: 16px;
+                  line-height: 19px;
+                  margin: 0;
+                  color: ${ThemingVariables.colors.text[0]};
+                `}
+              >
+                Account
+              </h2>
+              <UserAccount onClose={props.onClose} />
+            </>
+          ) : null}
+          {tab === Tabs.Password ? (
+            <>
+              <h2
+                className={css`
+                  font-weight: 600;
+                  font-size: 16px;
+                  line-height: 19px;
+                  margin: 0;
+                  color: ${ThemingVariables.colors.text[0]};
+                `}
+              >
+                Password
+              </h2>
+              <UserPassword onClose={props.onClose} />
+            </>
+          ) : null}
+        </div>
       </div>
     </motion.div>
   )

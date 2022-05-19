@@ -55,23 +55,11 @@ export default function UserAccount(props: { onClose(): void }) {
       className={css`
         flex: 1;
         height: 100%;
-        padding: 30px 32px 16px;
         display: flex;
         flex-direction: column;
       `}
       onSubmit={handleSubmit(handleUpdateUser.execute)}
     >
-      <h2
-        className={css`
-          font-weight: 600;
-          font-size: 16px;
-          line-height: 19px;
-          margin: 0;
-          color: ${ThemingVariables.colors.text[0]};
-        `}
-      >
-        Account
-      </h2>
       <div
         className={css`
           padding: 24px 0;
