@@ -92,6 +92,7 @@ export class UserService implements IUserService {
   ): Promise<{ email: string; inviteLink: string }[]> {
     const emails = _(users).map('email').value()
     const { name } = await workspaceService.mustFindOneWithMembers(workspaceId)
+    const [operator] = await this.getInfos([operatorId])
     return getManager().transaction(async (t) => {
       const userMap = await this.createUserByEmailsIfNotExist(emails, t, AccountStatus.CREATING)
       const userWithRole = _(users)
@@ -99,7 +100,7 @@ export class UserService implements IUserService {
         .value()
       await workspaceService.addMembers(operatorId, workspaceId, userWithRole, t)
       return emailService.sendInvitationEmails(
-        operatorId,
+        operator.name,
         _(userMap)
           .values()
           .map((u) => ({ userId: u.id, email: u.email }))
