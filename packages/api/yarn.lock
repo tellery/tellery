@@ -2137,6 +2137,11 @@ es6-error@^4.0.1:
   resolved "https://registry.yarnpkg.com/es6-error/-/es6-error-4.1.1.tgz#9e3af407459deed47e9a91f9b885a84eb05c561d"
   integrity sha512-Um/+FxMr9CISWh0bi5Zv0iOD+4cFh5qLeks1qhAopKVAJw3drgKbKySikp7wGhDL0HPeaja0P5ULZrxLkniUVg==
 
+es6-promise@^3.3.1:
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/es6-promise/-/es6-promise-3.3.1.tgz#a08cdde84ccdbf34d027a1451bc91d4bcd28a613"
+  integrity sha1-oIzd6EzNvzTQJ6FFG8kdS80ophM=
+
 escalade@^3.1.1:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/escalade/-/escalade-3.1.1.tgz#d8cfdc7000965c5a0174b4a82eaa5c0552742e40"
@@ -3451,6 +3456,14 @@ keyv@^4.0.0:
   dependencies:
     compress-brotli "^1.3.8"
     json-buffer "3.0.1"
+
+koa-better-http-proxy@^0.2.10:
+  version "0.2.10"
+  resolved "https://registry.yarnpkg.com/koa-better-http-proxy/-/koa-better-http-proxy-0.2.10.tgz#b739588d443199888e9fffcdba65c7475957eecc"
+  integrity sha512-i47bpzbMFOMvPoM7sUovsIfepPSDNZpNVV4expEER2wWaCGWLTRcWfx/wVOKA3gJLMdLLwzx9tZlyF5EGC1ZYg==
+  dependencies:
+    es6-promise "^3.3.1"
+    raw-body "^2.2.0"
 
 koa-body@^5:
   version "5.0.0"

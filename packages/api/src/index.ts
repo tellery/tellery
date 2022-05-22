@@ -1,23 +1,17 @@
-import './core/block/init'
-import 'reflect-metadata'
-
 import config from 'config'
 import { createServer } from 'http'
 import Koa from 'koa'
 import koaBody from 'koa-body'
 import logger from 'koa-logger'
-import mount from 'koa-mount'
-import serve from 'koa-static'
-import path from 'path'
-import { historyApiFallback } from 'koa2-connect-history-api-fallback'
-
+import 'reflect-metadata'
 import { initDatabaseConRetry } from './clients/db/orm'
+import './core/block/init'
 import error from './middlewares/error'
+import frontend from './middlewares/frontend'
 import user from './middlewares/user'
 import router from './routes'
 import { initSocketServer } from './socket/app'
 import { isTest } from './utils/env'
-import { injectFrontendEnv } from './utils/frontendInjector'
 
 initDatabaseConRetry(99).catch((err) => console.error(err))
 
@@ -33,8 +27,6 @@ if (config.get('deploy.mode') !== 'local' && !config.has('redis.url')) {
   process.exit(1)
 }
 
-const staticDirPath = path.join(__dirname, 'assets')
-
 const app = new Koa()
   .use(
     koaBody({
@@ -49,9 +41,7 @@ const app = new Koa()
   .use(logger())
   .use(user)
   .use(router.routes())
-  .use(mount('/api/static', serve(path.join(staticDirPath, 'images'))))
-  .use(historyApiFallback({ index: '/index.html', whiteList: ['/api'] }))
-  .use(mount('/', serve(path.join(staticDirPath, 'web'))))
+  .use(frontend)
 
 app.proxy = true
 
@@ -63,7 +53,6 @@ if (!config.has('socket.url')) {
 }
 
 if (!isTest()) {
-  injectFrontendEnv(path.join(staticDirPath, 'web'))
   server.listen(port, () => {
     console.log('Server listening at port %d', port)
   })
