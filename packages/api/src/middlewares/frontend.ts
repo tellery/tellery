@@ -7,17 +7,21 @@ import compose from 'koa-compose'
 import { historyApiFallback } from 'koa2-connect-history-api-fallback'
 import { loadFrontendEnvConfig } from '../utils/frontendInjector'
 
-const frontendAssestUrl = config.get<string>('frontendConfig.assestsUrl')
-const isWebUrl = frontendAssestUrl.startsWith('http')
-
+const frontendAssestDir = config.get<string>('frontendConfig.assestsUrl')
+const frontendHost = config.get<string>('frontendConfig.host')
+const isWebUrl = frontendAssestDir.startsWith('http')
+const isHttps = frontendAssestDir.startsWith('https')
 const staticDirPath = path.join(__dirname, 'assets')
-const webUrl = isWebUrl ? new URL(frontendAssestUrl) : null
-
+const webUrl = isWebUrl ? new URL(frontendAssestDir) : null
 const frontendEnv = loadFrontendEnvConfig()
 const envString = JSON.stringify(frontendEnv)
 
 const staticMiddleware = isWebUrl
   ? proxy(webUrl?.host ?? '', {
+      proxyReqOptDecorator(request) {
+        request.headers.host = frontendHost
+        return request
+      },
       userResDecorator(proxyRes, proxyResData, ctx) {
         if (ctx.path === '/index.html') {
           return Buffer.from(
@@ -38,8 +42,8 @@ const staticMiddleware = isWebUrl
       proxyReqPathResolver: (ctx) => {
         return `${webUrl?.pathname}${ctx.path}`
       },
-      https: true,
-      preserveHostHdr: true,
+      https: isHttps,
+      preserveHostHdr: false,
     })
   : mount('/', serve(path.join(staticDirPath, 'web')))
 
