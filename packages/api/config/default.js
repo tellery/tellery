@@ -57,7 +57,7 @@ module.exports = {
   },
   frontendConfig: {
     host: process.env.FRONTEND_HOST || '',
-    assestsUrl: process.env.FRONTEND_ASSESTS_URL || './assets',
+    assestsUrl: process.env.FRONTEND_ASSESTS_URL || '../assets',
     sentry_dsn: process.env.FRONTEND_SENTRY_DSN || '',
     ga4Id: process.env.FRONTEND_GA4_ID || '',
     version: '0.8.6',

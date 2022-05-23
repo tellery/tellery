@@ -11,7 +11,7 @@ const frontendAssestDir = config.get<string>('frontendConfig.assestsUrl')
 const frontendHost = config.get<string>('frontendConfig.host')
 const isWebUrl = frontendAssestDir.startsWith('http')
 const isHttps = frontendAssestDir.startsWith('https')
-const staticDirPath = path.join(__dirname, 'assets')
+const staticDirPath = path.join(__dirname, frontendAssestDir)
 const webUrl = isWebUrl ? new URL(frontendAssestDir) : null
 const frontendEnv = loadFrontendEnvConfig()
 const envString = JSON.stringify(frontendEnv)
@@ -40,7 +40,7 @@ const staticMiddleware = isWebUrl
         }
       },
       proxyReqPathResolver: (ctx) => {
-        return `${webUrl?.pathname}${ctx.path}`
+        return `${webUrl?.pathname === '/' ? '' : webUrl?.pathname}${ctx.path}`
       },
       https: isHttps,
       preserveHostHdr: false,
