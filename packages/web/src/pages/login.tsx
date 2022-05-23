@@ -103,6 +103,7 @@ export default function Login() {
       `}
     >
       <FormModal
+        as="form"
         onSubmit={handleSubmit(handleUserLogin.execute)}
         title="Login to Tellery"
         body={

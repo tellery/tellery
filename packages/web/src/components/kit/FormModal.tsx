@@ -1,21 +1,22 @@
-import { css, cx } from '@emotion/css'
-import { forwardRef, FormHTMLAttributes, ReactNode } from 'react'
-
 import { ThemingVariables } from '@app/styles'
+import { css, cx } from '@emotion/css'
+import { FormHTMLAttributes, forwardRef, ReactNode } from 'react'
 
 export default forwardRef<
-  HTMLDivElement,
+  HTMLElement,
   {
     title?: string
     subtitle?: string
     body?: ReactNode
     footer?: ReactNode
-  } & FormHTMLAttributes<HTMLDivElement>
+    as?: string
+  } & FormHTMLAttributes<HTMLElement>
 >(function FormModal(props, ref) {
   const { title, subtitle, body, footer, className, ...restProps } = props
+  const Tag = (props.as ?? 'form') as any
 
   return (
-    <div
+    <Tag
       {...restProps}
       ref={ref}
       className={cx(
@@ -83,6 +84,6 @@ export default forwardRef<
           {footer}
         </div>
       ) : null}
-    </div>
+    </Tag>
   )
 })

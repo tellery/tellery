@@ -39,6 +39,7 @@ export default function Confirm() {
     >
       {handleUserConfirm.status === 'success' ? (
         <FormModal
+          as="div"
           title="Welcome to Tellery"
           subtitle="Choose your password to continue"
           body={
