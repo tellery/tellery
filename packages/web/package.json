@@ -37,7 +37,7 @@
     "@types/katex": "^0.11.1",
     "@types/react-table": "^7.7.12",
     "@types/stats.js": "^0.17.0",
-    "@use-gesture/react": "^10.2.11",
+    "@use-gesture/react": "^10.2.15",
     "@welldone-software/why-did-you-render": "^6.2.3",
     "@wojtekmaj/react-daterange-picker": "^3.4.0",
     "axios": "^0.27.2",
