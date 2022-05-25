@@ -23,7 +23,7 @@ export default function useSqlEditorTransclusion(props: {
   storyId: string
   blockId: string
   languageId?: string
-  editor?: editor.IStandaloneCodeEditor
+  editor?: editor.IStandaloneCodeEditor | null
 }) {
   const { editor } = props
   const workspace = useWorkspace()

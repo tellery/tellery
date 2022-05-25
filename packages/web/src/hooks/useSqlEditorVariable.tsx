@@ -17,7 +17,7 @@ export default function useSqlEditorVariable(props: {
   storyId: string
   blockId: string
   languageId?: string
-  editor?: editor.IStandaloneCodeEditor
+  editor?: editor.IStandaloneCodeEditor | null
 }) {
   useSqlEditorVariableAutoCompletion(props.storyId, props.languageId)
   const { editor } = props

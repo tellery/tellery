@@ -324,6 +324,7 @@ export const StoryQuestionsEditor: ReactFCWithChildren<{ storyId: string }> = ({
           <React.Suspense key={id} fallback={<BlockingUI blocking={true} />}>
             <StoryQuestionEditor
               tab={tab}
+              key={id}
               isActive={activeId === id}
               id={id}
               setActiveId={setActiveId}
@@ -332,47 +333,6 @@ export const StoryQuestionsEditor: ReactFCWithChildren<{ storyId: string }> = ({
             />
           </React.Suspense>
         ))}
-        {/* <div
-            className={css`
-              box-shadow: 0px -1px 0px ${ThemingVariables.colors.gray[1]};
-              padding: 0 8px;
-              display: flex;
-              height: 44px;
-              background-color: ${ThemingVariables.colors.gray[5]};
-              position: relative;
-              flex-shrink: 0;
-              flex: 1;
-              overflow: hidden;
-              z-index: 1001;
-            `}
-          >
-            {open === false && (
-              <div
-                className={css`
-                  display: flex;
-                  align-items: center;
-                  position: absolute;
-                  top: 0;
-                  bottom: 0;
-                  right: 0;
-                  padding: 0 16px;
-                  height: 100%;
-                `}
-              >
-                <IconButton
-                  hoverContent="Click to open query editor"
-                  icon={IconCommonArrowUpDown}
-                  onClick={() => {
-                    setOpen(true)
-                  }}
-                  className={css`
-                    margin-left: auto;
-                  `}
-                />
-              </div>
-            )}
-          </div> */}
-        {/* <EditorContent storyId={storyId} /> */}
       </motion.div>
     </>
   )
@@ -405,7 +365,7 @@ const TabHeader: ReactFCWithChildren<{
     (block as Editor.VisualizationBlock)?.content?.queryId ?? blockId
   )
 
-  const mutatingCount = useDraftBlockMutating(blockId)
+  const mutatingCount = useDraftBlockMutating(queryBlock.id)
 
   const getBlockTitle = useGetBlockTitleTextSnapshot()
 
@@ -632,62 +592,26 @@ export const StoryQuestionEditor: ReactFCWithChildren<{
     }
     save()
 
-    // TODO: wait for save
-    setTimeout(() => {
-      refreshSnapshot.execute(queryBlock).then((res) => {
-        if (res.errMsg) {
-          setSQLError(res.errMsg)
-          setSqlSidePanel(true)
-        } else {
-          setSQLError(null)
-          setSqlSidePanel(false)
-        }
-      })
-    }, 0)
-
-    // const data = await executeSQL.mutateAsync({
-    //   workspaceId: workspace.id,
-    //   sql,
-    //   questionId: queryBlock.id,
-    //   connectorId: workspace.preferences.connectorId!,
-    //   profile: workspace.preferences.profile!
-    // })
-    // if (typeof data !== 'object' || data.errMsg) {
-    //   setSQLError(data.errMsg ?? 'unknown error')
-    //   setSqlSidePanel(true)
-    //   return
-    // }
-    // setSQLError(null)
-    // setSqlSidePanel(false)
-    // const snapshotId = blockIdGenerator()
-    // const originalBlockId = queryBlock.id
-    // invariant(queryBlock, 'originalBlock is undefined')
-    // // TODO: fix snap shot question id
-    // await createSnapshot({
-    //   snapshotId,
-    //   questionId: originalBlockId,
-    //   sql: sql,
-    //   data: data,
-    //   workspaceId: workspace.id
-    // })
-
-    // save(snapshotId)
+    refreshSnapshot.execute({ ...queryBlock, content: { ...queryBlock.content, sql: sql } }).then((res) => {
+      if (res.errMsg) {
+        setSQLError(res.errMsg)
+        setSqlSidePanel(true)
+      } else {
+        setSQLError(null)
+        setSqlSidePanel(false)
+      }
+    })
     sidebarEditor.setState({ blockId: block.id, activeTab: 'Visualization' })
   }, [queryBlock, sql, save, sidebarEditor, block.id, refreshSnapshot])
 
   const cancelExecuteSql = useCallback(() => {
     if (block?.id) {
       refreshSnapshot.cancel(queryBlock?.id)
-      // const mutations = queryClient.getMutationCache().getAll()
-      // mutations
-      //   .filter((mutation) => mutation.options.mutationKey === `draft/${block.id}`)
-      //   .forEach((mutation) => {
-      //     queryClient.getMutationCache().remove(mutation)
-      //   })
-      // executeSQL.reset()
     }
   }, [block?.id, queryBlock?.id, refreshSnapshot])
 
+  const latestSave = useLatest(save)
+  const latestRun = useLatest(run)
   const keyDownHandler = useCallback(
     (e: React.KeyboardEvent) => {
       const handlers: { hotkeys: string[]; handler: (e: KeyboardEvent) => void }[] = [
@@ -696,7 +620,7 @@ export const StoryQuestionEditor: ReactFCWithChildren<{
           handler: (e) => {
             e.preventDefault()
             e.stopPropagation()
-            run()
+            latestRun?.current()
           }
         },
         {
@@ -704,7 +628,7 @@ export const StoryQuestionEditor: ReactFCWithChildren<{
           handler: (e) => {
             e.preventDefault()
             e.stopPropagation()
-            save()
+            latestSave.current?.()
           }
         }
       ]
@@ -713,10 +637,8 @@ export const StoryQuestionEditor: ReactFCWithChildren<{
       )
       matchingHandler?.handler(e.nativeEvent)
     },
-    [run, save]
+    [latestRun, latestSave]
   )
-
-  // const mutatingCount = useDraftBlockMutating(block.id)
 
   const isDBT = block.type === Editor.BlockType.DBT
 
@@ -725,9 +647,6 @@ export const StoryQuestionEditor: ReactFCWithChildren<{
     queryBlock.type === Editor.BlockType.SnapshotBlock ||
     !!(visualizationBlock && queryBlock.storyId !== visualizationBlock?.storyId) ||
     queryBlock.type === Editor.BlockType.SmartQuery
-
-  const latestSave = useLatest(save)
-  const latestRun = useLatest(run)
 
   return (
     <TabPanel
@@ -796,12 +715,14 @@ export const StoryQuestionEditor: ReactFCWithChildren<{
               flex: 1;
               width: 0 !important;
             `}
+            key={id}
             blockId={block.id}
             value={sql}
             storyId={storyId}
             padding={{ top: 20, bottom: 0 }}
             languageId={profileType}
             onChange={setSql}
+            isActive={isActive}
             onRun={latestRun}
             onSave={latestSave}
             readOnly={sqlReadOnly}

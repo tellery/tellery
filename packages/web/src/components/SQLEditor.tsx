@@ -7,10 +7,12 @@ import { css, cx } from '@emotion/css'
 import MonacoEditor, { useMonaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor/esm/vs/editor/editor.api'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import invariant from 'tiny-invariant'
 import { CircularLoading } from './CircularLoading'
 
 export function SQLEditor(props: {
   blockId: string
+  isActive?: boolean
   languageId?: string
   storyId: string
   value: string
@@ -28,9 +30,9 @@ export function SQLEditor(props: {
     readonly current: () => Promise<void>
   }
 }) {
-  const [editor, setEditor] = useState<editor.IStandaloneCodeEditor>()
   const { onRun, onSave } = props
   const monaco = useMonaco()
+  const [editor, setEditor] = useState<editor.IStandaloneCodeEditor>()
 
   const getBlock = useGetBlock()
 
@@ -39,34 +41,33 @@ export function SQLEditor(props: {
   }, [editor])
 
   useEffect(() => {
-    if (!editor || !monaco) {
+    // TODO: a monaco editor bug, see: https://github.com/microsoft/monaco-editor/issues/2947
+    if (!editor || !monaco || !props.isActive) {
       return
     }
+    console.log('command register')
+    invariant(editor, 'editor is null')
     const unsubscribe = editor.onDidPaste((e) => {
-      const pastedString = editor.getModel()?.getValueInRange(e.range)
+      const pastedString = editor!.getModel()?.getValueInRange(e.range)
       if (!pastedString) return
 
       trasnformPasteBlockLinkToTransclusion(pastedString, getBlock).then((transformedText) => {
         if (transformedText) {
-          editor.setSelection(e.range)
+          editor!.setSelection(e.range)
           const id = { major: 1, minor: 1 }
           const text = `{{${transformedText}}}`
           const op = { identifier: id, range: e.range, text: text, forceMoveMarkers: true }
-          editor.executeEdits('transform-pasted-text', [op])
+          editor!.executeEdits('transform-pasted-text', [op])
         }
       })
     })
-
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => onSave?.current())
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => onRun?.current())
-    editor.onKeyDown((e) => {
-      console.log(e)
-      // e.preventDefault()
-    })
     return () => {
       unsubscribe.dispose()
     }
-  }, [editor, getBlock, monaco, onRun, onSave])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editor, getBlock, monaco, onRun, onSave, props.isActive])
 
   const { onChange } = props
   const handleChange = useCallback(
@@ -94,13 +95,13 @@ export function SQLEditor(props: {
     storyId: props.storyId,
     blockId: props.blockId,
     languageId: props.languageId,
-    editor
+    editor: editor
   })
   const variableWidgets = useSqlEditorVariable({
     storyId: props.storyId,
     blockId: props.blockId,
     languageId: props.languageId,
-    editor
+    editor: editor
   })
 
   return (
@@ -122,6 +123,7 @@ export function SQLEditor(props: {
         wrapperProps={{
           className: props.className
         }}
+        path={props.blockId}
         theme="tellery"
         value={props.value}
         onChange={handleChange}

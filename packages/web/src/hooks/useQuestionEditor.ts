@@ -27,7 +27,7 @@ type BlockDraft = Record<
 
 export const useDraftBlockMutating = (blockId: string) => {
   const refreshingSnapshot = useIsMutating({
-    predicate: (mutation) => (mutation.options.mutationKey as string) === `draft/${blockId}`
+    predicate: (mutation) => (mutation.options.mutationKey as string)?.endsWith(blockId)
   })
 
   return refreshingSnapshot
