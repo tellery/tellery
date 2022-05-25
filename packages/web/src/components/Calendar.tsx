@@ -102,8 +102,8 @@ export const Calendar = forwardRef<
             padding: 20px 8px;
 
             & .react-calendar__navigation {
+              display: flex;
               margin-bottom: 8px;
-
               .react-calendar__navigation__label {
                 outline: none;
                 border: none;

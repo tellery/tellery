@@ -60,7 +60,10 @@ const InlineHoverPopoverContainer = styled.div`
   border-radius: 6px;
 `
 
-const InlinePopover: ReactFCWithChildren<{ content: ReactNode; reference: Element | null }> = ({ content, reference }) => {
+const InlinePopover: ReactFCWithChildren<{ content: ReactNode; reference: Element | null }> = ({
+  content,
+  reference
+}) => {
   const tippyAnimation = useTippyMenuAnimation('fade')
 
   return (
@@ -243,7 +246,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
     }
   }, [editor, isFocusing, localSelection, block, titleTokens])
 
-  const splitedTokens: Editor.Token[] = useMemo(() => splitToken(block.content?.title ?? []), [block.content?.title])
+  const splitedTokens: Editor.Token[] = useMemo(() => splitToken(titleTokens ?? []), [titleTokens])
   const previousSplitedTokens = usePrevious(splitedTokens)
 
   useEffect(() => {
@@ -270,6 +273,7 @@ const _ContentEditable: React.ForwardRefRenderFunction<
       const changedLength = splitedTokens.length - previousSplitedTokens?.length
       const currentToken = titleTokens[localSelection?.anchor.nodeIndex] ?? ['']
       const textBefore = currentToken[0].slice(0, localSelection?.anchor.offset)
+      logger(changedLength, textBefore)
 
       if (changedLength > 0 && /[[|【]{2}$/.test(textBefore) && props.disableReferenceDropdown !== true) {
         setShowReferenceDropdown(true)
