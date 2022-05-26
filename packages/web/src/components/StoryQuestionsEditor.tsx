@@ -25,6 +25,7 @@ import { useWorkspace } from '@app/hooks/useWorkspace'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { DRAG_HANDLE_WIDTH } from '@app/utils'
+import { waitForTranscationApplied } from '@app/utils/oberveables'
 import { css, cx } from '@emotion/css'
 import MonacoEditor from '@monaco-editor/react'
 import Tippy from '@tippyjs/react'
@@ -486,15 +487,16 @@ export const StoryQuestionEditor: ReactFCWithChildren<{
 
   const commit = useCommit()
 
-  const setSqlBlock = useCallback<SetBlock<Editor.QueryBlock>>(
-    (id, update) => {
+  const setSqlBlock = useCallback(
+    async (id, update) => {
       const oldBlock = queryBlock
       const newBlock = produce(oldBlock, update)
 
-      commit({
+      const [trascationId] = commit({
         transcation: setBlockTranscation({ oldBlock, newBlock }),
         storyId: queryBlock.storyId!
       })
+      await waitForTranscationApplied(trascationId)
     },
     [commit, queryBlock]
   )
@@ -558,7 +560,7 @@ export const StoryQuestionEditor: ReactFCWithChildren<{
         toast.error('question is readonly')
         return
       }
-      setSqlBlock(queryBlock.id, (draftBlock) => {
+      return setSqlBlock(queryBlock.id, (draftBlock) => {
         if (draftBlock.type === Editor.BlockType.SQL || draftBlock.type === Editor.BlockType.QueryBuilder) {
           ;(draftBlock as Editor.SQLBlock).content!.sql = sql
         }
@@ -591,17 +593,18 @@ export const StoryQuestionEditor: ReactFCWithChildren<{
       return
     }
     save()
-
-    refreshSnapshot.execute({ ...queryBlock, content: { ...queryBlock.content, sql: sql } }).then((res) => {
-      if (res.errMsg) {
-        setSQLError(res.errMsg)
-        setSqlSidePanel(true)
-      } else {
-        setSQLError(null)
-        setSqlSidePanel(false)
-      }
-    })
-    sidebarEditor.setState({ blockId: block.id, activeTab: 'Visualization' })
+    setTimeout(() => {
+      refreshSnapshot.execute(queryBlock).then((res) => {
+        if (res.errMsg) {
+          setSQLError(res.errMsg)
+          setSqlSidePanel(true)
+        } else {
+          setSQLError(null)
+          setSqlSidePanel(false)
+        }
+      })
+      sidebarEditor.setState({ blockId: block.id, activeTab: 'Visualization' })
+    }, 0)
   }, [queryBlock, sql, save, sidebarEditor, block.id, refreshSnapshot])
 
   const cancelExecuteSql = useCallback(() => {
