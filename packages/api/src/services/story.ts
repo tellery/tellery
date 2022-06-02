@@ -7,7 +7,7 @@ import { StoryBlock } from '../core/block/story'
 import { LinkWithStoryId, loadLinkEntitiesByStoryIds } from '../core/link'
 import { getIPermission, IPermission } from '../core/permission'
 import { searchBlocksGroupByStory } from '../core/search'
-import { getISearch, ISearch } from '../core/search/interface'
+import { getISearch, ISearch, SearchFilter } from '../core/search/interface'
 import BlockEntity from '../entities/block'
 import { VisitEntity } from '../entities/visit'
 import { BlockType } from '../types/block'
@@ -87,12 +87,14 @@ export class StoryService {
       .value()
   }
 
-  async search(
-    workspaceId: string,
-    operatorId: string,
-    keyword: string,
-    next?: LoadMoreKey,
-  ): Promise<{ results: SearchedStoryDTO; next?: LoadMoreKey }> {
+  async search(options: {
+    workspaceId: string
+    operatorId: string
+    createdBy?: string
+    keyword: string
+    next?: LoadMoreKey
+  }): Promise<{ results: SearchedStoryDTO; next?: LoadMoreKey }> {
+    const { workspaceId, operatorId, keyword, createdBy, next } = options
     const query = await this.permission.getSearchBlocksQuery(operatorId, workspaceId)
 
     const { limit = 20, timestamp = _.now() } = next ?? {}
@@ -100,16 +102,26 @@ export class StoryService {
     const hints = await searchBlocksGroupByStory(
       this.iSearch,
       keyword,
-      mergeSearchFilters([
-        query,
-        {
-          query: (t) => `${t}.alive = :alive AND ${t}.updatedAt < :updatedAt`,
-          parameters: {
-            alive: true,
-            updatedAt: new Date(timestamp),
+      mergeSearchFilters(
+        [
+          query,
+          {
+            query: (t: unknown) => `${t}.alive = :alive AND ${t}.updatedAt < :updatedAt`,
+            parameters: {
+              alive: true,
+              updatedAt: new Date(timestamp),
+            },
           },
-        },
-      ]),
+          createdBy
+            ? {
+                query: (t: unknown) => `${t}.createdById = :createdById`,
+                parameters: {
+                  createdById: createdBy,
+                },
+              }
+            : null,
+        ].filter((x) => x !== null) as SearchFilter[],
+      ),
       limit,
       0,
     )

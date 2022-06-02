@@ -18,6 +18,20 @@ import { breakpoints, ThemingVariables } from '@app/styles'
 import { NewStoryButton } from '@app/components/NewStoryButton'
 import { between } from 'polished'
 import { AnimationSharedLayoutWithChildren } from '@app/components/AnimationSharedLayoutWithChildren'
+import { useAuth } from '@app/hooks/useAuth'
+import { MenuItem } from '@app/components/MenuItem'
+import { MenuWrapper } from '@app/components/MenuWrapper'
+import { ListBox } from '@app/components/ListBox'
+
+enum StoreidCreatedByValue {
+  ALL,
+  ME
+}
+
+const StoriesCreatedByOptions = [
+  { name: 'All', value: StoreidCreatedByValue.ALL },
+  { name: 'Created by me', value: StoreidCreatedByValue.ME }
+]
 
 const RenderItem = memo(function Item({ index, style, data }: ListChildComponentProps) {
   const { isItemLoaded, isFooter, items, workspaceView, refetch, refetchWorkspaceView, large, width } = data
@@ -72,13 +86,23 @@ const Page = () => {
   const searchParams = useSearchParams()
   const s = (searchParams.get('s') as string) ?? ''
   const [keyword, setKeyword] = useState('')
+  const { user } = useAuth()
+  const [storiesFilterCreatedBy, setStoriesFilterCreatedBy] = useState(StoriesCreatedByOptions[0])
+
+  const createdBy = useMemo(() => {
+    if (storiesFilterCreatedBy.value === StoreidCreatedByValue.ME) {
+      return user!.id
+    } else {
+      return undefined
+    }
+  }, [storiesFilterCreatedBy, user])
   useEffect(() => {
     if (s) {
       setKeyword(s)
     }
   }, [s])
   const getBlockTitle = useGetBlockTitleTextSnapshot()
-  const { data, fetchNextPage, refetch } = useStoriesSearch(keyword)
+  const { data, fetchNextPage, refetch } = useStoriesSearch(keyword, { createdBy })
   const { data: workspaceView } = useWorkspaceView()
   const items = useMemo<StoryListItemValue[]>(
     () =>
@@ -239,6 +263,7 @@ const Page = () => {
                     setKeyword(e.target.value)
                   }}
                 />
+
                 <NewStoryButton
                   tipPlacement="bottom"
                   classname={css`
@@ -258,6 +283,7 @@ const Page = () => {
                 />
               </motion.div>
             </div>
+
             {width >= breakpoints[0] && (
               <motion.div
                 layoutId="header"
@@ -319,6 +345,15 @@ const Page = () => {
                   className={css`
                     width: 90px;
                   `}
+                />
+                <ListBox
+                  value={storiesFilterCreatedBy}
+                  options={StoriesCreatedByOptions}
+                  onChange={(value) => {
+                    setStoriesFilterCreatedBy(value)
+                    listRef.current?.scrollToItem(0)
+                  }}
+                  className={css``}
                 />
               </motion.div>
             )}

@@ -126,16 +126,22 @@ export const useStoryPinnedStatus = (id?: string) => {
 //   return result
 // }
 
-export const useStoriesSearch = (keyword: string) => {
+export const useStoriesSearch = (
+  keyword: string,
+  options?: {
+    createdBy?: string
+  }
+) => {
   const workspace = useWorkspace()
   const result = useInfiniteQuery(
-    ['stories', 'search', workspace, keyword],
+    ['stories', 'search', workspace, keyword, JSON.stringify(options ?? {})],
     async ({ pageParam }) =>
       request
         .post('/api/stories/search', {
           keyword,
           workspaceId: workspace.id,
-          next: pageParam
+          next: pageParam,
+          createdBy: options?.createdBy
         })
         .then((res) => {
           return res.data as {

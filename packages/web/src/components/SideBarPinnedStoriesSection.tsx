@@ -1,6 +1,5 @@
 import { useOpenStory } from '@app/hooks'
 import { useBlockSuspense, useUser, useWorkspaceView } from '@app/hooks/api'
-import { useStoryPathParams } from '@app/hooks/useStoryPathParams'
 import { ThemingVariables } from '@app/styles'
 import { css } from '@emotion/css'
 import dayjs from 'dayjs'

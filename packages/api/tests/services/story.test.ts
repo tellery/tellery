@@ -176,7 +176,11 @@ test('searchStoriesInService', async (t) => {
     targetAlive: true,
   })
 
-  const res1 = await storyService.search(story1.parentId, 'test', title)
+  const res1 = await storyService.search({
+    workspaceId: story1.parentId,
+    operatorId: 'test',
+    keyword: title,
+  })
 
   t.not(res1.results.searchResults.length, 0)
   const storyIdByRes1 = _(res1.results.searchResults).find((s) => s === story1.id)!
@@ -185,7 +189,11 @@ test('searchStoriesInService', async (t) => {
   t.deepEqual(res1.results.links[storyIdByRes1].length, 1)
   t.not(res1.results.users![user.id], undefined)
 
-  const res2 = await storyService.search(story1.parentId, 'test', bid)
+  const res2 = await storyService.search({
+    workspaceId: story1.parentId,
+    operatorId: 'test',
+    keyword: bid,
+  })
   const blockByRes2 = _(res2.results.blocks).find((s) => s.id === story1.id)!
 
   t.not(blockByRes2, undefined)
@@ -193,12 +201,20 @@ test('searchStoriesInService', async (t) => {
   await getRepository(BlockEntity).update({ id: story1.id }, { alive: false })
 
   // should not be searched (with keyword)
-  const res3 = await storyService.search(story1.parentId, 'test', `${title}fake`)
+  const res3 = await storyService.search({
+    workspaceId: story1.parentId,
+    operatorId: 'test',
+    keyword: `${title}fake`,
+  })
   const storyIdByRes3 = _(res3.results.searchResults).find((s) => s === story1.id)!
   t.is(storyIdByRes3, undefined)
 
   // should not be searched (without keyword)
-  const res4 = await storyService.search(story1.parentId, 'test', '')
+  const res4 = await storyService.search({
+    workspaceId: story1.parentId,
+    operatorId: 'test',
+    keyword: '',
+  })
   const storyIdByRes4 = _(res4.results.searchResults).find((s) => s === story1.id)!
   t.is(storyIdByRes4, undefined)
 

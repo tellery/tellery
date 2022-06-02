@@ -8,8 +8,8 @@ import { AnimatePresence, motion } from 'framer-motion'
 
 export const StyledDropdownMenuContent = React.forwardRef<
   HTMLDivElement,
-  { open: boolean; className?: string } & React.ComponentProps<typeof DropdownMenu.Content>
->(({ children, open, className, ...props }, ref) => {
+  { open: boolean; className?: string; width?: number } & React.ComponentProps<typeof DropdownMenu.Content>
+>(({ children, open, className, width = 260, ...props }, ref) => {
   return (
     <AnimatePresence>
       {open && (
@@ -26,7 +26,7 @@ export const StyledDropdownMenuContent = React.forwardRef<
                 box-shadow: ${ThemingVariables.boxShadows[0]};
                 border-radius: 8px;
                 padding: 8px;
-                width: 260px;
+                width: ${width}px;
                 overflow: hidden;
                 outline: none;
                 display: flex;

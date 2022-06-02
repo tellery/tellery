@@ -38,6 +38,8 @@ class SearchStoriesRequest {
   @IsDefined()
   keyword!: string
 
+  createdBy?: string
+
   @IsDefined()
   workspaceId!: string
 
@@ -97,7 +99,13 @@ async function searchStories(ctx: Context) {
   await validate(ctx, payload)
   const user = mustGetUser(ctx)
 
-  const res = await storyService.search(payload.workspaceId, user.id, payload.keyword, payload.next)
+  const res = await storyService.search({
+    workspaceId: payload.workspaceId,
+    operatorId: user.id,
+    keyword: payload.keyword,
+    next: payload.next,
+    createdBy: payload.createdBy,
+  })
   ctx.body = res
 }
 
