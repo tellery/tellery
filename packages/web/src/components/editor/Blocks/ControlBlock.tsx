@@ -1,6 +1,7 @@
 import { IconCommonClose, IconCommonEdit, IconCommonEnter } from '@app/assets/icons'
 import { DetectableOverflow } from '@app/components/DetectableOverflow'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
+import { useSearchParamsState } from '@app/hooks/useSearchParamsState'
 import { useSideBarVariableEditor } from '@app/hooks/useSideBarQuestionEditor'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
@@ -8,7 +9,6 @@ import { css, cx } from '@emotion/css'
 import styled from '@emotion/styled'
 import Tippy from '@tippyjs/react'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
 import { QueryBlockSelectInput } from '../../QueryBlockSelectInput'
 import type { BlockFormatInterface } from '../hooks/useBlockFormat'
 import { useVariableState } from '../hooks/useVariable'
@@ -23,25 +23,6 @@ const StyledInput = styled.input`
   padding: 0 8px;
   background: transparent;
 `
-
-const useVariableValueState = (key: string, initValue: unknown) => {
-  const [params, setParams] = useSearchParams()
-
-  const setParamsValue = useCallback(
-    (value: string) => {
-      const newParams = new URLSearchParams(params)
-      if (value === initValue) {
-        newParams.delete(key)
-      } else {
-        newParams.set(key, value)
-      }
-      setParams(newParams, { replace: true })
-    },
-    [initValue, key, params, setParams]
-  )
-
-  return [params.get(key) ?? initValue, setParamsValue] as [string, (value: string) => void]
-}
 
 const useVariableName = (block: Editor.ControlBlock) => {
   const blockTranscation = useBlockTranscations()
@@ -74,7 +55,7 @@ const _ControlBlock: BlockComponent<
   const isDefaultValue = variable.isDefault
   const sideBarVariableEditor = useSideBarVariableEditor(block.storyId!)
   const [valueEditing, setValueEditing] = useState(false)
-  const [editingValue, setEditingValue] = useVariableValueState(variableName, defaultRawValue)
+  const [editingValue, setEditingValue] = useSearchParamsState(variableName, defaultRawValue)
 
   const submitChange = useCallback(
     (type: string, value: string) => {

@@ -5,10 +5,11 @@ import IconButton from '@app/components/kit/IconButton'
 import { ListBox } from '@app/components/ListBox'
 import { NewStoryButton } from '@app/components/NewStoryButton'
 import { StoryListItem, StoryListItemValue } from '@app/components/StoryListItem'
-import { useMediaQuery, useSearchParams } from '@app/hooks'
+import { useMediaQuery } from '@app/hooks'
 import { useStoriesSearch, useWorkspaceView } from '@app/hooks/api'
 import { useAuth } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
+import { useSearchParamsState } from '@app/hooks/useSearchParamsState'
 import { SVG2DataURI } from '@app/lib/svg'
 import { breakpoints, ThemingVariables } from '@app/styles'
 import { DEFAULT_TITLE } from '@app/utils'
@@ -82,9 +83,7 @@ const RenderItem = memo(function Item({ index, style, data }: ListChildComponent
 }, areEqual)
 
 const Page = () => {
-  const searchParams = useSearchParams()
-  const s = (searchParams.get('s') as string) ?? ''
-  const [keyword, setKeyword] = useState('')
+  const [keyword, setKeyword] = useSearchParamsState('s', '')
   const { user } = useAuth()
   const [storiesFilterCreatedBy, setStoriesFilterCreatedBy] = useState(StoriesCreatedByOptions[0])
 
@@ -95,11 +94,7 @@ const Page = () => {
       return undefined
     }
   }, [storiesFilterCreatedBy, user])
-  useEffect(() => {
-    if (s) {
-      setKeyword(s)
-    }
-  }, [s])
+
   const getBlockTitle = useGetBlockTitleTextSnapshot()
   const { data, fetchNextPage, refetch } = useStoriesSearch(keyword, { createdBy })
   const { data: workspaceView } = useWorkspaceView()
