@@ -1,27 +1,26 @@
-import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
-import { DEFAULT_TITLE } from '@app/utils'
-import { css, cx } from '@emotion/css'
-import { IconCommonSearch } from '@app/assets/icons'
+import { IconCommonFilter, IconCommonSearch } from '@app/assets/icons'
+import { AnimationSharedLayoutWithChildren } from '@app/components/AnimationSharedLayoutWithChildren'
 import { useGetBlockTitleTextSnapshot } from '@app/components/editor'
+import IconButton from '@app/components/kit/IconButton'
+import { ListBox } from '@app/components/ListBox'
+import { NewStoryButton } from '@app/components/NewStoryButton'
 import { StoryListItem, StoryListItemValue } from '@app/components/StoryListItem'
-import { motion } from 'framer-motion'
 import { useMediaQuery, useSearchParams } from '@app/hooks'
 import { useStoriesSearch, useWorkspaceView } from '@app/hooks/api'
+import { useAuth } from '@app/hooks/useAuth'
+import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { SVG2DataURI } from '@app/lib/svg'
+import { breakpoints, ThemingVariables } from '@app/styles'
+import { DEFAULT_TITLE } from '@app/utils'
+import { css, cx } from '@emotion/css'
+import { motion } from 'framer-motion'
+import { between } from 'polished'
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Helmet } from 'react-helmet'
 import mergeRefs from 'react-merge-refs'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import { areEqual, ListChildComponentProps, ListOnScrollProps, VariableSizeList } from 'react-window'
 import InfiniteLoader from 'react-window-infinite-loader'
-import { breakpoints, ThemingVariables } from '@app/styles'
-import { NewStoryButton } from '@app/components/NewStoryButton'
-import { between } from 'polished'
-import { AnimationSharedLayoutWithChildren } from '@app/components/AnimationSharedLayoutWithChildren'
-import { useAuth } from '@app/hooks/useAuth'
-import { MenuItem } from '@app/components/MenuItem'
-import { MenuWrapper } from '@app/components/MenuWrapper'
-import { ListBox } from '@app/components/ListBox'
 
 enum StoreidCreatedByValue {
   ALL,
@@ -30,7 +29,7 @@ enum StoreidCreatedByValue {
 
 const StoriesCreatedByOptions = [
   { name: 'All', value: StoreidCreatedByValue.ALL },
-  { name: 'Created by me', value: StoreidCreatedByValue.ME }
+  { name: 'Owned by me', value: StoreidCreatedByValue.ME }
 ]
 
 const RenderItem = memo(function Item({ index, style, data }: ListChildComponentProps) {
@@ -353,6 +352,20 @@ const Page = () => {
                     setStoriesFilterCreatedBy(value)
                     listRef.current?.scrollToItem(0)
                   }}
+                  content={
+                    <IconButton
+                      color={
+                        storiesFilterCreatedBy.value === StoreidCreatedByValue.ALL
+                          ? ThemingVariables.colors.primary[0]
+                          : ThemingVariables.colors.primary[1]
+                      }
+                      hoverContent={'stories filter'}
+                      icon={IconCommonFilter}
+                      className={css`
+                        margin-right: 6px;
+                      `}
+                    />
+                  }
                   className={css``}
                 />
               </motion.div>

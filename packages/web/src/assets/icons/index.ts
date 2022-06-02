@@ -32,6 +32,7 @@ import IconCommonDrag from './common/drag.svg?component'
 import IconCommonEdit from './common/edit.svg?component'
 import IconCommonEnter from './common/enter.svg?component'
 import IconCommonError from './common/error.svg?component'
+import IconCommonFilter from './common/filter.svg?component'
 import IconCommonFold from './common/fold.svg?component'
 import IconCommonFormula from './common/formula.svg?component'
 import IconCommonHandler from './common/handler.svg?component'
@@ -156,6 +157,7 @@ export {
   IconCommonEdit,
   IconCommonEnter,
   IconCommonError,
+  IconCommonFilter,
   IconCommonFold,
   IconCommonFormula,
   IconCommonHandler,

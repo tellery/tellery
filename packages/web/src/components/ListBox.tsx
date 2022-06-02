@@ -1,8 +1,9 @@
-import { IconCommonCheck, IconCommonMenu } from '@app/assets/icons'
+import { IconCommonCheck, IconCommonFilter, IconCommonMenu } from '@app/assets/icons'
 import { StyledDropDownItem, StyledDropdownMenuContent } from '@app/components/kit/DropDownMenu'
+import { ThemingVariables } from '@app/styles'
 import { css, cx } from '@emotion/css'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import React, { useRef, useState } from 'react'
+import React, { ReactNode, useRef, useState } from 'react'
 import IconButton from './kit/IconButton'
 
 export const ListBox: ReactFCWithChildren<{
@@ -10,7 +11,8 @@ export const ListBox: ReactFCWithChildren<{
   onChange: (value: string) => void
   value: { name: string; value: string } | null
   className?: string
-}> = ({ className, onChange, value, options }) => {
+  content?: ReactNode
+}> = ({ className, onChange, value, options, content }) => {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -43,12 +45,7 @@ export const ListBox: ReactFCWithChildren<{
           className
         )}
       >
-        <IconButton
-          icon={IconCommonMenu}
-          className={css`
-            margin-right: 6px;
-          `}
-        />
+        {content}
       </DropdownMenu.Trigger>
       <StyledDropdownMenuContent
         open={open}
