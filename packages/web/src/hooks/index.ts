@@ -53,8 +53,10 @@ interface OpenStoryOpetions {
 }
 
 export const useOpenStory = () => {
+  const location = useLocation()
   const navigate = useNavigate()
   const [openInNewTab, setOpenInNewTab] = useState(false)
+
   useEffect(() => {
     function down(e: KeyboardEvent) {
       setOpenInNewTab(e.ctrlKey || e.metaKey)
@@ -74,15 +76,23 @@ export const useOpenStory = () => {
   const handler = useCallback(
     (storyId: string, options?: OpenStoryOpetions) => {
       const { blockId } = options ?? {}
-      const targetUrl = `/story/${storyId}${blockId ? `#${blockId}` : ''}`
-
+      const pathName = `/story/${storyId}`
+      const isSamePage = location.pathname === pathName
+      const url = new URL(window.location.href)
+      url.pathname = pathName
+      if (isSamePage === false) {
+        url.searchParams.forEach((value, key) => {
+          url.searchParams.delete(key)
+        })
+      }
+      url.hash = blockId ? `#${blockId}` : ''
       if (openInNewTab) {
-        window.open(targetUrl)
+        window.open(url.href)
       } else {
-        navigate(targetUrl)
+        navigate(`${url.pathname}${url.search}${url.hash}`)
       }
     },
-    [navigate, openInNewTab]
+    [location.pathname, navigate, openInNewTab]
   )
   return handler
 }
