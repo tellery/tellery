@@ -1,7 +1,7 @@
 import { getBlockElementById } from '@app/components/editor/helpers/contentEditable'
 import { BlockSnapshot, getBlockFromSnapshot } from '@app/store/block'
 import { Direction, Editor } from '@app/types'
-import { CollisionDetection } from '@dnd-kit/core'
+import { CollisionDetection, UniqueIdentifier } from '@dnd-kit/core'
 import debug from 'debug'
 import invariant from 'tiny-invariant'
 export const logger = debug('tellery:dnd')
@@ -26,32 +26,30 @@ export const getFakeDragbleElement = () => {
   return element
 }
 
-const getMinvalueEntry = (entries: [string, number][]) => {
-  let lowest = Infinity
-  let lowestId: string | null = null
-  for (const [id, value] of entries) {
-    if (value <= lowest) {
-      lowest = value
-      lowestId = id
-    }
+interface ICollision {
+  id: UniqueIdentifier
+  data: {
+    value: number
   }
-  if (lowestId) {
-    return [lowestId, lowest]
-  }
-  return null
 }
 
-export const closetBorder: CollisionDetection = ({ active, collisionRect, droppableContainers }) => {
+export const closetBorder: CollisionDetection = ({
+  active,
+  collisionRect,
+  droppableRects,
+  pointerCoordinates,
+  droppableContainers
+}) => {
   const hitedRects = droppableContainers
     .filter((container) => {
-      const { rect } = container
-      const currentRect = rect.current
+      const { id } = container
+      const currentRect = droppableRects.get(id)
       if (!currentRect) return false
       if (
-        collisionRect.left >= currentRect.offsetLeft &&
-        collisionRect.top >= currentRect.offsetTop &&
-        collisionRect.left <= currentRect.offsetLeft + currentRect.width &&
-        collisionRect.top <= currentRect.offsetTop + currentRect.height
+        collisionRect.left >= currentRect?.left &&
+        collisionRect.top >= currentRect.top &&
+        collisionRect.left <= currentRect.left + currentRect.width &&
+        collisionRect.top <= currentRect.top + currentRect.height
       ) {
         return true
       }
@@ -59,98 +57,90 @@ export const closetBorder: CollisionDetection = ({ active, collisionRect, droppa
     })
     .map(({ id, rect }) => {
       invariant(rect.current)
-      return [id, rect.current.width * rect.current.height]
-    }) as [string, number][]
+      return { id, data: { value: rect.current.width * rect.current.height } }
+    })
 
   if (hitedRects.length) {
-    const result = getMinvalueEntry(hitedRects)!
-    return result[0] as string
+    return hitedRects
   }
 
   const closestLeftDistances = droppableContainers
     .filter(({ id }) => {
-      return id.indexOf('row') === -1
+      return id.toString().indexOf('row') === -1
     })
-    .filter(({ rect }) => {
-      const currentRect = rect.current
+    .filter(({ id }) => {
+      const currentRect = droppableRects.get(id)
       if (!currentRect) return false
       return (
-        collisionRect.left <= currentRect.offsetLeft &&
-        collisionRect.top >= currentRect.offsetTop &&
-        collisionRect.top <= currentRect.offsetTop + currentRect.height
+        collisionRect.left <= currentRect.left &&
+        collisionRect.top >= currentRect.top &&
+        collisionRect.top <= currentRect.top + currentRect.height
       )
     })
     .map(({ id, rect }) => {
       invariant(rect.current)
-      return [id, rect.current.offsetLeft - collisionRect.offsetTop]
-    }) as [string, number][]
-
-  const closetLeft = getMinvalueEntry(closestLeftDistances)
+      return { id, data: { value: rect.current.left - collisionRect.top } }
+    }) as ICollision[]
 
   const closestRightDistances = droppableContainers
     .filter(({ id }) => {
-      return id.indexOf('row') === -1
+      return id.toString().indexOf('row') === -1
     })
-    .filter(({ rect }) => {
-      const currentRect = rect.current
+    .filter(({ id }) => {
+      const currentRect = droppableRects.get(id)
       if (!currentRect) return false
       return (
-        collisionRect.left >= currentRect.offsetLeft + currentRect.width &&
-        collisionRect.top >= currentRect.offsetTop &&
-        collisionRect.top <= currentRect.offsetTop + currentRect.height
+        collisionRect.left >= currentRect.left + currentRect.width &&
+        collisionRect.top >= currentRect.top &&
+        collisionRect.top <= currentRect.top + currentRect.height
       )
     })
-    .map(({ id, rect }) => {
-      const currentRect = rect.current
+    .map(({ id }) => {
+      const currentRect = droppableRects.get(id)
       if (!currentRect) return false
-      return [id, collisionRect.left - (currentRect.offsetLeft + currentRect.width)]
-    }) as [string, number][]
-  const closetRight = getMinvalueEntry(closestRightDistances)
+      return { id, data: { value: collisionRect.left - (currentRect.left + currentRect.width) } }
+    }) as ICollision[]
 
   const closestTopDistances = droppableContainers
-    .filter(({ rect }) => {
-      const currentRect = rect.current
+    .filter(({ id }) => {
+      const currentRect = droppableRects.get(id)
       if (!currentRect) return false
       return (
-        collisionRect.top <= currentRect.offsetTop &&
-        collisionRect.left >= currentRect.offsetLeft &&
-        collisionRect.left <= currentRect.offsetLeft + currentRect.width
+        collisionRect.top <= currentRect.top &&
+        collisionRect.left >= currentRect.left &&
+        collisionRect.left <= currentRect.left + currentRect.width
       )
     })
-    .map(({ id, rect }) => {
-      const currentRect = rect.current
+    .map(({ id }) => {
+      const currentRect = droppableRects.get(id)
       if (!currentRect) return false
-      return [id, currentRect.offsetTop - collisionRect.top]
-    }) as [string, number][]
-  const closetTop = getMinvalueEntry(closestTopDistances)
+      return { id, data: { value: currentRect.top - collisionRect.top } }
+    }) as ICollision[]
 
   const closestBottomDistances = droppableContainers
-    .filter(({ rect }) => {
-      const currentRect = rect.current
+    .filter(({ id }) => {
+      const currentRect = droppableRects.get(id)
       if (!currentRect) return false
       return (
-        collisionRect.top >= currentRect.offsetTop + currentRect.height &&
-        collisionRect.left >= currentRect.offsetLeft &&
-        collisionRect.left <= currentRect.offsetLeft + currentRect.width
+        collisionRect.top >= currentRect.top + currentRect.height &&
+        collisionRect.left >= currentRect.left &&
+        collisionRect.left <= currentRect.left + currentRect.width
       )
     })
-    .map(({ id, rect }) => {
-      const currentRect = rect.current
+    .map(({ id }) => {
+      const currentRect = droppableRects.get(id)
       if (!currentRect) return false
-      return [id, collisionRect.top - (currentRect.offsetTop + currentRect.height)]
-    }) as [string, number][]
+      return { id, data: { value: collisionRect.top - (currentRect.top + currentRect.height) } }
+    }) as ICollision[]
 
-  const closetBottom = getMinvalueEntry(closestBottomDistances)
+  const collisions = [
+    ...closestBottomDistances,
+    ...closestLeftDistances,
+    ...closestRightDistances,
+    ...closestTopDistances
+  ]
 
-  const closet = getMinvalueEntry(
-    [closetLeft, closetRight, closetTop, closetBottom].filter((x) => !!x) as [string, number][]
-  )
-
-  if (closet) {
-    return closet[0] as string
-  }
-
-  return null
+  return collisions.sort((a, b) => a.data.value - b.data.value)
 }
 
 export const findDroppbleBlockIdAndDirection = (

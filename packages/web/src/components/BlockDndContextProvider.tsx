@@ -12,7 +12,6 @@ import {
   DragMoveEvent,
   DragOverlay,
   DragStartEvent,
-  getBoundingClientRect,
   MeasuringConfiguration,
   MeasuringFrequency,
   MeasuringStrategy,
@@ -42,8 +41,7 @@ import { DataAssetItem } from './SideBarDataAssets'
 
 const DEFAULT_LAYOUT_MEASURING: MeasuringConfiguration = {
   droppable: {
-    measure: getBoundingClientRect,
-    strategy: MeasuringStrategy.BeforeDragging,
+    strategy: MeasuringStrategy.WhileDragging,
     frequency: MeasuringFrequency.Optimized
   }
 }

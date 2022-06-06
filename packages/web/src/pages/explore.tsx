@@ -25,7 +25,6 @@ import {
   DragEndEvent,
   DragOverlay,
   DragStartEvent,
-  getBoundingClientRect,
   MeasuringConfiguration,
   MeasuringFrequency,
   MeasuringStrategy,
@@ -108,8 +107,7 @@ const Diagram: ReactFCWithChildren<{
 
 const DEFAULT_LAYOUT_MEASURING: MeasuringConfiguration = {
   droppable: {
-    measure: getBoundingClientRect,
-    strategy: MeasuringStrategy.BeforeDragging,
+    strategy: MeasuringStrategy.WhileDragging,
     frequency: MeasuringFrequency.Optimized
   }
 }
