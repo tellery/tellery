@@ -15,15 +15,20 @@ import { uuid } from '../testutils'
 
 const workspaceId = nanoid()
 
-test.before((t: ExecutionContext<any>) => {
+test.before(async (t: ExecutionContext<any>) => {
   const port = random(8000, 20000, false)
   t.context.server = app
-
-  t.context.server.listen(port, () => {
-    t.context.prefixUrl = `http://localhost:${port}`
-    createDatabaseCon()
-      .then(() => (t as any).end())
-      .catch((err) => console.error(err))
+  return new Promise((resolve, reject) => {
+    t.context.server.listen(port, () => {
+      t.context.prefixUrl = `http://localhost:${port}`
+      createDatabaseCon()
+        .then(() => {
+          resolve()
+        })
+        .catch((err) => {
+          reject(err)
+        })
+    })
   })
 })
 
@@ -31,7 +36,7 @@ test.after.always((t: ExecutionContext<any>) => {
   t.context.server.close()
 })
 
-test.beforeEach((t: ExecutionContext<any>) => {
+test.beforeEach(async (t: ExecutionContext<any>) => {
   const socket = io(`${t.context.prefixUrl}/workspace`, {
     reconnectionAttempts: 10,
     transports: ['websocket'],
@@ -40,9 +45,11 @@ test.beforeEach((t: ExecutionContext<any>) => {
       userId: 'testUser1',
     },
   })
-  socket.on('connect', () => {
-    t.context.client = socket
-    ;(t as any).end()
+  return new Promise((resolve) => {
+    socket.on('connect', () => {
+      t.context.client = socket
+      resolve()
+    })
   })
 })
 

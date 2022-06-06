@@ -1,6 +1,6 @@
 /* eslint no-param-reassign: ["error", { "props": false }] */
 import test, { ExecutionContext } from 'ava'
-import got from 'got/dist/source'
+import got from 'got'
 import { random } from 'lodash'
 import { nanoid } from 'nanoid'
 import { getRepository } from 'typeorm'
@@ -12,14 +12,20 @@ import { defaultUserService as userService } from '../../src/services/user'
 import { AccountStatus } from '../../src/types/user'
 import { USER_TOKEN_HEADER_KEY } from '../../src/utils/user'
 
-test.before((t: ExecutionContext<any>) => {
+test.before(async (t: ExecutionContext<any>) => {
   const port = random(8000, 20000, false)
   t.context.server = app
-  t.context.server.listen(port, () => {
-    t.context.prefixUrl = `http://localhost:${port}`
-    createDatabaseCon()
-      .then(() => (t as any).end())
-      .catch((err) => console.error(err))
+  return new Promise((resolve, reject) => {
+    t.context.server.listen(port, () => {
+      t.context.prefixUrl = `http://localhost:${port}`
+      createDatabaseCon()
+        .then(() => {
+          resolve()
+        })
+        .catch((err) => {
+          reject(err)
+        })
+    })
   })
 })
 
@@ -28,6 +34,7 @@ test.after.always((t: ExecutionContext<any>) => {
 })
 
 test.serial('post api generate user', async (t: ExecutionContext<any>) => {
+  console.log('t.context.prefixUrl,', t.context.prefixUrl)
   try {
     await got<any>('api/users/generate', {
       prefixUrl: t.context.prefixUrl,
