@@ -2793,10 +2793,10 @@
     portfinder "^1.0.28"
     source-map "^0.7.3"
 
-"@welldone-software/why-did-you-render@^6.2.3":
-  version "6.2.3"
-  resolved "https://registry.yarnpkg.com/@welldone-software/why-did-you-render/-/why-did-you-render-6.2.3.tgz#cdd5e27cf25b7e767c1c0b0e8808f67d3f6be833"
-  integrity sha512-FQgi90jvC9uw2aALlonJfqaWOvU5UUBBVvdAnS2iryXwCc4YJkKsPJY5Y/LzaND3OIyk8XGUn1vTRn6hcem28Q==
+"@welldone-software/why-did-you-render@^7.0.1":
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/@welldone-software/why-did-you-render/-/why-did-you-render-7.0.1.tgz#09f487d84844bd8e66435843c2e0305702e61efb"
+  integrity sha512-Qe/8Xxa2G+LMdI6VoazescPzjjkHYduCDa8aHOJR50e9Bgs8ihkfMBY+ev7B4oc3N59Zm547Sgjf8h5y0FOyoA==
   dependencies:
     lodash "^4"
 
