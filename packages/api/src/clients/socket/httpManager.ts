@@ -18,7 +18,9 @@ export class HttpSocketManager implements SocketManager {
         beforeError: [getUpstreamHook(this.upstream)],
       },
       prefixUrl: url,
-      timeout: this.timeout,
+      timeout: {
+        response: this.timeout,
+      },
       responseType: 'json',
     })
   }

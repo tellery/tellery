@@ -327,7 +327,9 @@ export class SaaSExternalUserService implements IUserService {
       beforeError: [getUpstreamHook('CloudUserService')],
     },
     prefixUrl: config.get<string>('deploy.userServiceEndpoint'),
-    timeout: 5000,
+    timeout: {
+      response: 5000,
+    },
     responseType: 'json',
   })
 

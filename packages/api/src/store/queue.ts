@@ -67,7 +67,7 @@ export class RedisQueue<T> implements Queue<T> {
   async addAll(key: string, elements: T[]): Promise<void> {
     await this.client.rpush(
       key,
-      _(elements)
+      ..._(elements)
         .map((ele) => JSON.stringify(ele))
         .value(),
     )

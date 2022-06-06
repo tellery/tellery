@@ -12,7 +12,7 @@ import { defaultUserService as userService } from '../../src/services/user'
 import { AccountStatus } from '../../src/types/user'
 import { USER_TOKEN_HEADER_KEY } from '../../src/utils/user'
 
-test.before.cb((t: ExecutionContext<any>) => {
+test.before((t: ExecutionContext<any>) => {
   const port = random(8000, 20000, false)
   t.context.server = app
   t.context.server.listen(port, () => {

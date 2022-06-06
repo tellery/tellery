@@ -1,7 +1,7 @@
-import IORedis from 'ioredis'
+import IORedis, { Redis } from 'ioredis'
 import config from 'config'
 
-let client: IORedis.Redis
+let client: Redis
 
 function createRedisCon(redisUrl: string) {
   client = new IORedis(redisUrl, { keyPrefix: 'tellery:' })

@@ -183,10 +183,10 @@ test('searchStoriesInService', async (t) => {
   })
 
   t.not(res1.results.searchResults.length, 0)
-  const storyIdByRes1 = _(res1.results.searchResults).find((s) => s === story1.id)!
+  const storyIdByRes1 = _(res1.results.searchResults).find((s) => s === story1.id)
 
   t.not(storyIdByRes1, undefined)
-  t.deepEqual(res1.results.links[storyIdByRes1].length, 1)
+  t.deepEqual(res1.results.links[storyIdByRes1!].length, 1)
   t.not(res1.results.users![user.id], undefined)
 
   const res2 = await storyService.search({
@@ -194,7 +194,7 @@ test('searchStoriesInService', async (t) => {
     operatorId: 'test',
     keyword: bid,
   })
-  const blockByRes2 = _(res2.results.blocks).find((s) => s.id === story1.id)!
+  const blockByRes2 = _(res2.results.blocks).find((s) => s.id === story1.id)
 
   t.not(blockByRes2, undefined)
 
@@ -206,7 +206,7 @@ test('searchStoriesInService', async (t) => {
     operatorId: 'test',
     keyword: `${title}fake`,
   })
-  const storyIdByRes3 = _(res3.results.searchResults).find((s) => s === story1.id)!
+  const storyIdByRes3 = _(res3.results.searchResults).find((s) => s === story1.id)
   t.is(storyIdByRes3, undefined)
 
   // should not be searched (without keyword)
@@ -215,7 +215,7 @@ test('searchStoriesInService', async (t) => {
     operatorId: 'test',
     keyword: '',
   })
-  const storyIdByRes4 = _(res4.results.searchResults).find((s) => s === story1.id)!
+  const storyIdByRes4 = _(res4.results.searchResults).find((s) => s === story1.id)
   t.is(storyIdByRes4, undefined)
 
   await getRepository(UserEntity).delete(user.id)

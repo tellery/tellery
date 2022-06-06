@@ -415,7 +415,7 @@ export async function cascadeUpdateBlocks<T extends TelleryBaseEntity>(
   blockIdField: keyof T = 'id',
 ): Promise<void> {
   const [updateSql, params] = updateClause
-    .where(`${updateClause.alias}."${blockIdField}" in (SELECT id FROM result)`)
+    .where(`${updateClause.alias}."${String(blockIdField)}" in (SELECT id FROM result)`)
     .getQueryAndParameters()
 
   return manager.query(

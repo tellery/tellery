@@ -28,7 +28,7 @@ import { set, uuid } from './testutils'
 const delay = 800
 const workspaceId = nanoid()
 
-test.before.cb((t: ExecutionContext<any>) => {
+test.before((t: ExecutionContext<any>) => {
   const port = random(8000, 20000, false)
   t.context.server = app
 
@@ -44,7 +44,7 @@ test.after.always((t: ExecutionContext<any>) => {
   t.context.server.close()
 })
 
-test.beforeEach.cb((t: ExecutionContext<any>) => {
+test.beforeEach((t: ExecutionContext<any>) => {
   const socket = io(`${t.context.prefixUrl}/workspace`, {
     reconnectionAttempts: 10,
     transports: ['websocket'],
