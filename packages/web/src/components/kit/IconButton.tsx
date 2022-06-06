@@ -12,10 +12,12 @@ export default forwardRef<
     size?: number
     hoverContent?: ReactNode
     spin?: boolean
+    as?: string
   } & ButtonHTMLAttributes<HTMLButtonElement>
 >(function IconButton(props, ref) {
   const { icon, spin, size, className, hoverContent, ...restProps } = props
   const tippySingleton = useTippySingleton()
+  const Tag = (props.as ?? 'button') as any
 
   return (
     <Tippy
@@ -25,7 +27,7 @@ export default forwardRef<
       arrow={false}
       disabled={!hoverContent}
     >
-      <button
+      <Tag
         ref={ref}
         className={cx(
           css`
@@ -46,7 +48,7 @@ export default forwardRef<
         {...restProps}
       >
         <Icon icon={icon} size={size} spin={spin} color={props.color} />
-      </button>
+      </Tag>
     </Tippy>
   )
 })

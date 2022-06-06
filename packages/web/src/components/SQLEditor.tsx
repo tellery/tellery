@@ -45,7 +45,6 @@ export function SQLEditor(props: {
     if (!editor || !monaco || !props.isActive) {
       return
     }
-    console.log('command register')
     invariant(editor, 'editor is null')
     const unsubscribe = editor.onDidPaste((e) => {
       const pastedString = editor!.getModel()?.getValueInRange(e.range)

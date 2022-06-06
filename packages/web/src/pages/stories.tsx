@@ -1,5 +1,4 @@
 import { IconCommonFilter, IconCommonSearch } from '@app/assets/icons'
-import { AnimationSharedLayoutWithChildren } from '@app/components/AnimationSharedLayoutWithChildren'
 import { useGetBlockTitleTextSnapshot } from '@app/components/editor'
 import IconButton from '@app/components/kit/IconButton'
 import { ListBox } from '@app/components/ListBox'
@@ -167,261 +166,260 @@ const Page = () => {
       <Helmet>
         <title>All Stories - Tellery</title>
       </Helmet>
-      <AnimationSharedLayoutWithChildren>
+      <div
+        className={css`
+          position: relative;
+          height: 100%;
+        `}
+      >
         <div
           className={css`
-            position: relative;
-            height: 100%;
+            background: ${ThemingVariables.colors.gray[5]};
+            position: absolute;
+            top: 0;
+            width: 100%;
+            z-index: 100;
           `}
         >
           <div
-            className={css`
-              background: ${ThemingVariables.colors.gray[5]};
-              position: absolute;
-              top: 0;
-              width: 100%;
-              z-index: 100;
-            `}
+            className={cx(
+              css`
+                width: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+              `,
+              sticky
+                ? css`
+                    flex-direction: row;
+                    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.08);
+                    height: 76px;
+                    padding: 0 ${between('30px', '120px')};
+                  `
+                : css`
+                    flex-direction: column;
+                    margin-bottom: 40px;
+                  `
+            )}
           >
-            <div
+            <motion.h1
+              layoutId="title"
               className={cx(
-                css`
-                  width: 100%;
-                  display: flex;
-                  align-items: center;
-                  justify-content: space-between;
-                `,
                 sticky
                   ? css`
-                      flex-direction: row;
-                      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.08);
-                      height: 76px;
-                      padding: 0 ${between('30px', '120px')};
+                      font-size: ${between('20px', '24px')};
+                      line-height: 30px;
+                      font-weight: 500;
                     `
                   : css`
-                      flex-direction: column;
-                      margin-bottom: 40px;
+                      line-height: 59px;
+                      font-weight: 700;
+                      margin: 40px 0 20px;
+                      font-size: ${between('30px', '48px')};
                     `
               )}
             >
-              <motion.h1
-                layoutId="title"
-                className={cx(
-                  sticky
-                    ? css`
-                        font-size: ${between('20px', '24px')};
-                        line-height: 30px;
-                        font-weight: 500;
-                      `
-                    : css`
-                        line-height: 59px;
-                        font-weight: 700;
-                        margin: 40px 0 20px;
-                        font-size: ${between('30px', '48px')};
-                      `
-                )}
-              >
-                Stories
-              </motion.h1>
-              <motion.div
-                layout="position"
-                layoutId="input"
+              Stories
+            </motion.h1>
+            <motion.div
+              layout="position"
+              layoutId="input"
+              className={css`
+                display: flex;
+              `}
+            >
+              <input
+                autoFocus={true}
                 className={css`
-                  display: flex;
-                `}
-              >
-                <input
-                  autoFocus={true}
-                  className={css`
-                    flex-shrink: 0;
-                    height: 44px;
-                    background: ${ThemingVariables.colors.gray[5]};
-                    border: 1px solid ${ThemingVariables.colors.gray[1]};
-                    outline: none;
-                    box-sizing: border-box;
-                    box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.08), 0px 1px 2px rgba(0, 0, 0, 0.08);
-                    border-radius: 8px;
-                    padding: 0 15px;
-                    background-repeat: no-repeat;
-                    background-position: calc(100% - 15px) 50%;
-                    &::placeholder {
-                      font-size: 16px;
-                      color: ${ThemingVariables.colors.gray[0]};
-                    }
-                    width: ${between('120px', '500px')};
-                  `}
-                  style={{ backgroundImage: SVG2DataURI(IconCommonSearch) }}
-                  placeholder="Search"
-                  value={keyword}
-                  onChange={(e) => {
-                    setKeyword(e.target.value)
-                  }}
-                />
-
-                <NewStoryButton
-                  tipPlacement="bottom"
-                  classname={css`
-                    background: #ffffff;
-                    border: 1px solid ${ThemingVariables.colors.gray[1]};
-                    box-sizing: border-box;
-                    border-radius: 8px;
-                    height: 44px;
-                    width: 44px;
-                    display: flex;
-                    margin-left: 10px;
-                    justify-content: center;
-                    align-items: center;
-                    box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.08), 0px 1px 2px rgba(0, 0, 0, 0.08);
-                    cursor: pointer;
-                  `}
-                />
-              </motion.div>
-            </div>
-
-            {width >= breakpoints[0] && (
-              <motion.div
-                layoutId="header"
-                layout="position"
-                className={css`
-                  font-weight: 500;
-                  font-size: 16px;
-                  height: 60px;
-                  line-height: 60px;
-                  box-shadow: 0px 1px 0px ${ThemingVariables.colors.gray[1]};
-                  display: flex;
-                  margin: 0 ${between('20px', '120px')};
-
-                  & > div {
-                    padding: 0 15px;
-                    text-align: start;
-                    vertical-align: middle;
-                    display: inline-block;
-                    flex-shrink: 0;
+                  flex-shrink: 0;
+                  height: 44px;
+                  background: ${ThemingVariables.colors.gray[5]};
+                  border: 1px solid ${ThemingVariables.colors.gray[1]};
+                  outline: none;
+                  box-sizing: border-box;
+                  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.08), 0px 1px 2px rgba(0, 0, 0, 0.08);
+                  border-radius: 8px;
+                  padding: 0 15px;
+                  background-repeat: no-repeat;
+                  background-position: calc(100% - 15px) 50%;
+                  &::placeholder {
+                    font-size: 16px;
+                    color: ${ThemingVariables.colors.gray[0]};
                   }
+                  width: ${between('120px', '500px')};
+                `}
+                style={{ backgroundImage: SVG2DataURI(IconCommonSearch) }}
+                placeholder="Search"
+                value={keyword}
+                onChange={(e) => {
+                  setKeyword(e.target.value)
+                }}
+              />
+
+              <NewStoryButton
+                tipPlacement="bottom"
+                classname={css`
+                  background: #ffffff;
+                  border: 1px solid ${ThemingVariables.colors.gray[1]};
+                  box-sizing: border-box;
+                  border-radius: 8px;
+                  height: 44px;
+                  width: 44px;
+                  display: flex;
+                  margin-left: 10px;
+                  justify-content: center;
+                  align-items: center;
+                  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.08), 0px 1px 2px rgba(0, 0, 0, 0.08);
+                  cursor: pointer;
+                `}
+              />
+            </motion.div>
+          </div>
+
+          {width >= breakpoints[0] && (
+            <motion.div
+              layoutId="header"
+              layout="position"
+              className={css`
+                font-weight: 500;
+                font-size: 16px;
+                height: 60px;
+                line-height: 60px;
+                box-shadow: 0px 1px 0px ${ThemingVariables.colors.gray[1]};
+                display: flex;
+                margin: 0 ${between('20px', '120px')};
+
+                & > div {
+                  padding: 0 15px;
+                  text-align: start;
+                  vertical-align: middle;
+                  display: inline-block;
+                  flex-shrink: 0;
+                }
+              `}
+            >
+              <div
+                className={css`
+                  flex: 1;
+                  width: 0;
                 `}
               >
+                Story
+              </div>
+              {width >= breakpoints[0] && (
                 <div
                   className={css`
-                    flex: 1;
-                    width: 0;
+                    width: 200px;
                   `}
                 >
-                  Story
+                  Owner
                 </div>
-                {width >= breakpoints[0] && (
-                  <div
-                    className={css`
-                      width: 200px;
-                    `}
-                  >
-                    Owner
-                  </div>
-                )}
-                {width >= breakpoints[1] ? (
-                  <div
-                    className={css`
-                      width: 200px;
-                    `}
-                  >
-                    Related Stories
-                  </div>
-                ) : null}
-                {width >= breakpoints[2] ? (
-                  <div
-                    className={css`
-                      width: 150px;
-                    `}
-                  >
-                    Last Modified
-                  </div>
-                ) : null}
+              )}
+              {width >= breakpoints[1] ? (
                 <div
                   className={css`
-                    width: 90px;
+                    width: 200px;
                   `}
-                />
-                <ListBox
-                  value={storiesFilterCreatedBy}
-                  options={StoriesCreatedByOptions}
-                  onChange={(value) => {
-                    setStoriesFilterCreatedBy(value)
-                    listRef.current?.scrollToItem(0)
-                  }}
-                  content={
-                    <IconButton
-                      color={
-                        storiesFilterCreatedBy.value === StoreidCreatedByValue.ALL
-                          ? ThemingVariables.colors.primary[0]
-                          : ThemingVariables.colors.primary[1]
-                      }
-                      hoverContent={'stories filter'}
-                      icon={IconCommonFilter}
-                      className={css`
-                        margin-right: 6px;
-                      `}
-                    />
-                  }
-                  className={css``}
-                />
-              </motion.div>
-            )}
-          </div>
-          <div
-            // style={{
-            //   paddingTop: sticky ? (width >= breakpoints[0] ? 60 : 0) + 76 : 264
-            // }}
-            className={css`
-              height: 100%;
-              overflow: hidden;
-            `}
-          >
-            <AutoSizer>
-              {({ width, height }) => (
-                <InfiniteLoader
-                  minimumBatchSize={20}
-                  isItemLoaded={isItemLoaded}
-                  itemCount={items.length + 1}
-                  loadMoreItems={async () => {
-                    await fetchNextPage()
-                  }}
                 >
-                  {({ onItemsRendered, ref }) => {
-                    setWidth(width)
-                    return (
-                      <VariableSizeList
-                        onScroll={handleScroll}
-                        itemCount={items.length + 1}
-                        itemData={{
-                          isItemLoaded,
-                          isFooter,
-                          items,
-                          workspaceView: workspaceView,
-                          refetch,
-                          refetchWorkspaceView,
-                          large,
-                          width
-                        }}
-                        onItemsRendered={onItemsRendered}
-                        ref={mergeRefs([ref, listRef])}
-                        width={width}
-                        height={height}
-                        // itemSize={(index) => (large ? 32 : 0) + 20}
-                        itemSize={(index) =>
-                          (isSmallScreen === false && index === 0 ? 264 : 0) +
-                          (isSmallScreen === true && index === 0 ? 76 : 0) +
-                          (large ? 92 : 60)
-                        }
-                      >
-                        {RenderItem}
-                      </VariableSizeList>
-                    )
-                  }}
-                </InfiniteLoader>
-              )}
-            </AutoSizer>
-          </div>
+                  Related Stories
+                </div>
+              ) : null}
+              {width >= breakpoints[2] ? (
+                <div
+                  className={css`
+                    width: 150px;
+                  `}
+                >
+                  Last Modified
+                </div>
+              ) : null}
+              <div
+                className={css`
+                  width: 90px;
+                `}
+              />
+              <ListBox
+                value={storiesFilterCreatedBy}
+                options={StoriesCreatedByOptions}
+                onChange={(value) => {
+                  setStoriesFilterCreatedBy(value)
+                  listRef.current?.scrollToItem(0)
+                }}
+                content={
+                  <IconButton
+                    as="div"
+                    color={
+                      storiesFilterCreatedBy.value === StoreidCreatedByValue.ALL
+                        ? ThemingVariables.colors.primary[0]
+                        : ThemingVariables.colors.primary[1]
+                    }
+                    hoverContent={'stories filter'}
+                    icon={IconCommonFilter}
+                    className={css`
+                      margin-right: 6px;
+                    `}
+                  />
+                }
+                className={css``}
+              />
+            </motion.div>
+          )}
         </div>
-      </AnimationSharedLayoutWithChildren>
+        <div
+          // style={{
+          //   paddingTop: sticky ? (width >= breakpoints[0] ? 60 : 0) + 76 : 264
+          // }}
+          className={css`
+            height: 100%;
+            overflow: hidden;
+          `}
+        >
+          <AutoSizer>
+            {({ width, height }) => (
+              <InfiniteLoader
+                minimumBatchSize={20}
+                isItemLoaded={isItemLoaded}
+                itemCount={items.length + 1}
+                loadMoreItems={async () => {
+                  await fetchNextPage()
+                }}
+              >
+                {({ onItemsRendered, ref }) => {
+                  setWidth(width)
+                  return (
+                    <VariableSizeList
+                      onScroll={handleScroll}
+                      itemCount={items.length + 1}
+                      itemData={{
+                        isItemLoaded,
+                        isFooter,
+                        items,
+                        workspaceView: workspaceView,
+                        refetch,
+                        refetchWorkspaceView,
+                        large,
+                        width
+                      }}
+                      onItemsRendered={onItemsRendered}
+                      ref={mergeRefs([ref, listRef])}
+                      width={width}
+                      height={height}
+                      // itemSize={(index) => (large ? 32 : 0) + 20}
+                      itemSize={(index) =>
+                        (isSmallScreen === false && index === 0 ? 264 : 0) +
+                        (isSmallScreen === true && index === 0 ? 76 : 0) +
+                        (large ? 92 : 60)
+                      }
+                    >
+                      {RenderItem}
+                    </VariableSizeList>
+                  )
+                }}
+              </InfiniteLoader>
+            )}
+          </AutoSizer>
+        </div>
+      </div>
     </>
   )
 }

@@ -1,39 +1,47 @@
-import {
-  IconCommonArrowLeft,
-  IconCommonArrowUnfold,
-  IconCommonLink,
-  IconMenuHide,
-  IconMenuShow
-} from '@app/assets/icons'
+import { IconCommonArrowLeft, IconCommonArrowUnfold, IconMenuHide, IconMenuShow } from '@app/assets/icons'
 import IconButton from '@app/components/kit/IconButton'
+import { useDebounce } from '@app/hooks'
 import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 import { ThemingVariables } from '@app/styles'
 import { css, cx } from '@emotion/css'
+import {
+  ColumnOrderState,
+  createTable,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  SortingState,
+  useTableInstance
+} from '@tanstack/react-table'
 import Tippy from '@tippyjs/react'
 import { sortBy } from 'lodash'
-import React, { useEffect, useMemo } from 'react'
-import { useAsyncDebounce, useGlobalFilter, usePagination, useSortBy, useTable } from 'react-table'
+import React, { useEffect, useMemo, useState } from 'react'
 import { ConfigSection } from '../components/ConfigSection'
 import { ConfigSelect } from '../components/ConfigSelect'
 import { ConfigTab } from '../components/ConfigTab'
 import { SortableList } from '../components/SortableList'
-import { DisplayType, Type } from '../types'
+import { DisplayType, SQLType, Type } from '../types'
 import { formatRecord, isNumeric, isTimeSeries } from '../utils'
 import type { Chart } from './base'
+
+const tableInstance = createTable()
+  .setRowType<unknown[]>()
+  .setColumnMetaType<{ name: string; sqlType: SQLType; displayType: DisplayType }>()
 
 const TABLE_ROW_HEIGHT_MIN = 30
 
 const VERTICAL_BORDER_WITDH = 0
 
-function GlobalFilter({ globalFilter, setGlobalFilter }: any) {
-  const [value, setValue] = React.useState(globalFilter)
-  const onChange = useAsyncDebounce((value) => {
-    setGlobalFilter(value || undefined)
+function GlobalFilter({ value, setGlobalFilter }: { value?: string; setGlobalFilter: (value: string) => void }) {
+  const [_value, setValue] = useState(value)
+  const onChange = useDebounce((_value) => {
+    setGlobalFilter(_value || undefined)
   }, 200)
 
   return (
     <input
-      value={value || ''}
+      value={_value || ''}
       onChange={(e) => {
         setValue(e.target.value)
         onChange(e.target.value)
@@ -109,12 +117,13 @@ const CellRenderer: ReactFCWithChildren<{ cell: any; displayType: DisplayType; d
   displayType,
   displayAs = DISPLAY_AS_TYPE.Auto
 }) => {
+  const value = cell.getValue(cell.column.id)
   if (displayType !== 'STRING') {
-    return <>{formatRecord(cell.value, displayType)}</>
+    return <>{formatRecord(value, displayType)}</>
   }
-  const [data, asType] = getDisplayTypeData(cell.value, displayAs)
+  const [data, asType] = getDisplayTypeData(value, displayAs)
   if (asType === DISPLAY_AS_TYPE.Text) {
-    return <>{formatRecord(cell.value, displayType)}</>
+    return <>{formatRecord(value, displayType)}</>
   } else if (asType === DISPLAY_AS_TYPE.Image) {
     return (
       <>
@@ -153,18 +162,13 @@ const CellRenderer: ReactFCWithChildren<{ cell: any; displayType: DisplayType; d
               rel="noreferrer"
             >
               {extractHostFromLink(item)}
-              {/* <IconCommonLink
-                className={css`
-                  height: 12px;
-                `}
-              /> */}
             </a>
           )
         })}
       </>
     )
   }
-  return <>{formatRecord(cell.value, displayType)}</>
+  return <>{formatRecord(value, displayType)}</>
 }
 
 export const table: Chart<Type.TABLE> = {
@@ -292,77 +296,77 @@ export const table: Chart<Type.TABLE> = {
   },
 
   Diagram(props) {
-    // TODO: remove this
-    const columnOrder = useMemo(
+    const columnOrder = useMemo<ColumnOrderState>(
       () =>
         sortBy(props.config.columnOrder).join() === sortBy(props.data.fields.map(({ name }) => name)).join()
           ? props.config.columnOrder
           : props.data.fields.map(({ name }) => name),
       [props.config.columnOrder, props.data.fields]
     )
-
-    const order = useMemo<{ [key: string]: number }>(() => {
-      const map = props.data.fields.reduce((obj, { name }, index) => {
-        obj[name] = index
-        return obj
-      }, {} as { [name: string]: number })
-      return columnOrder.reduce((obj, name, index) => {
-        const item = props.data.fields[index]
-        if (item) {
-          obj[item.name] = map[name]
-        }
-        return obj
-      }, {} as { [name: string]: number })
-    }, [columnOrder, props.data])
+    const columnVisibility = props.config.columnVisibility
 
     const columns = useMemo(
       () =>
-        props.data.fields
-          .filter(({ name }) => props.config.columnVisibility[name] !== false)
-          .filter(({ name }) => props.data.fields[order[name]])
-          .map(({ name }, index) => ({
-            ...props.data.fields[order[name]],
-            order: order[name],
-            Header: name,
-            accessor: (record: any) => record[order[name]]
-          })),
-      [order, props.config.columnVisibility, props.data]
+        props.data.fields.map((field, index) =>
+          tableInstance.createDataColumn((record) => record[index], {
+            id: field.name,
+            meta: {
+              name: field.name,
+              displayType: field.displayType,
+              sqlType: field.sqlType
+            }
+          })
+        ),
+      [props.data]
     )
     const displayTypes = useDataFieldsDisplayType(props.data.fields)
+    const [globalFilter, setGlobalFilter] = React.useState('')
+    const [sorting, setSorting] = React.useState<SortingState>([])
 
     const {
-      getTableProps,
-      getTableBodyProps,
-      headerGroups,
-      prepareRow,
-      page,
-      canPreviousPage,
-      canNextPage,
-      nextPage,
-      previousPage,
+      getHeaderGroups,
+      getRowModel,
       setPageSize,
-      state: { pageIndex, pageSize, globalFilter },
-      preGlobalFilteredRows,
-      setGlobalFilter
-    } = useTable(
+      getState,
+      getPrePaginationRowModel,
+      getCanNextPage,
+      getCanPreviousPage,
+      previousPage,
+      nextPage
+      // state: { globalFilter },
+      // preGlobalFilteredRows,
+      // setGlobalFilter
+    } = useTableInstance(
+      tableInstance,
       {
         columns: columns,
-        data: props.data.records,
-        initialState: {
-          pageSize: getPageSizeByHeight(props.dimensions.height)
-        }
-      } as any,
-      useGlobalFilter,
-      useSortBy,
-      usePagination
-    ) as any
+        data: props.data.records as unknown[][],
+        state: {
+          // pagination,
+          columnVisibility,
+          columnOrder,
+          globalFilter,
+          sorting
+        },
+        onSortingChange: setSorting,
+        onGlobalFilterChange: setGlobalFilter,
+        globalFilterFn: 'includesString',
+        getFilteredRowModel: getFilteredRowModel(),
+        getSortedRowModel: getSortedRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
+        getCoreRowModel: getCoreRowModel()
+      }
+      // useGlobalFilter,
+      // useSortBy,
+      // usePagination
+    )
 
     useEffect(() => {
       setPageSize(getPageSizeByHeight(props.dimensions.height))
     }, [props.dimensions.height, setPageSize])
 
-    const tableRowHeight = (props.dimensions.height - VERTICAL_BORDER_WITDH) / (pageSize + 2) - VERTICAL_BORDER_WITDH
-
+    const tableRowHeight =
+      (props.dimensions.height - VERTICAL_BORDER_WITDH) / (getState().pagination.pageSize + 2) - VERTICAL_BORDER_WITDH
     return (
       <>
         <div
@@ -387,7 +391,7 @@ export const table: Chart<Type.TABLE> = {
             `}
           >
             <table
-              {...getTableProps()}
+              // {...getTableProps()}
               className={css`
                 min-width: 100%;
                 max-height: 100%;
@@ -405,54 +409,61 @@ export const table: Chart<Type.TABLE> = {
               `}
             >
               <thead>
-                {headerGroups.map((headerGroup: any) => (
+                {getHeaderGroups().map((headerGroup) => (
                   // eslint-disable-next-line react/jsx-key
-                  <tr {...headerGroup.getHeaderGroupProps()}>
-                    {headerGroup.headers.map((column: any) => (
-                      <th
-                        {...column.getHeaderProps(column.getSortByToggleProps())}
-                        className={css`
-                          height: ${tableRowHeight}px;
-                          padding: 0 10px;
-                          background: ${ThemingVariables.colors.primary[3]};
-                          font-weight: normal;
-                          white-space: nowrap;
-                        `}
-                        key={column.name}
-                        align={isNumeric(column.displayType) && !isTimeSeries(column.displayType) ? 'right' : 'left'}
-                      >
-                        <Tippy content={column.sqlType} delay={300}>
-                          <span> {column.render('Header')}</span>
-                        </Tippy>
-
-                        {/* Add a sort direction indicator */}
-                        {column.isSorted && (
-                          <IconCommonArrowLeft
-                            style={{
-                              width: 10,
-                              lineHeight: '100%',
-                              transform: column.isSortedDesc ? 'rotate(-90deg)' : 'rotate(-270deg)',
-                              verticalAlign: 'middle',
-                              marginLeft: 5
-                            }}
-                          />
-                        )}
-                      </th>
-                    ))}
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map((header) =>
+                      header.isPlaceholder ? null : (
+                        <th
+                          key={header.id}
+                          colSpan={header.colSpan}
+                          className={css`
+                            height: ${tableRowHeight}px;
+                            padding: 0 10px;
+                            background: ${ThemingVariables.colors.primary[3]};
+                            font-weight: normal;
+                            white-space: nowrap;
+                            cursor: pointer;
+                          `}
+                          align={
+                            isNumeric(header.column.columnDef.meta?.displayType) &&
+                            !isTimeSeries(header.column.columnDef.meta?.displayType)
+                              ? 'right'
+                              : 'left'
+                          }
+                          onClick={header.column.getToggleSortingHandler()}
+                        >
+                          <Tippy content={header.column.columnDef.meta?.sqlType} delay={300}>
+                            <span> {header.renderHeader()}</span>
+                          </Tippy>
+                          {header.column.getIsSorted() && (
+                            <IconCommonArrowLeft
+                              style={{
+                                width: 10,
+                                lineHeight: '100%',
+                                transform: header.column.getIsSorted() === 'asc' ? 'rotate(-90deg)' : 'rotate(-270deg)',
+                                verticalAlign: 'middle',
+                                marginLeft: 5
+                              }}
+                            />
+                          )}
+                        </th>
+                      )
+                    )}
                   </tr>
                 ))}
               </thead>
-              <tbody {...getTableBodyProps()}>
-                {page.map((row: unknown) => {
+              <tbody>
+                {/* {page.map((row: unknown) => {
                   prepareRow(row)
                   return null
-                })}
-                {page.map((row: any, index: number) => (
-                  <tr key={index.toString()} {...row.getRowProps()}>
-                    {row.cells.map((cell: any) => (
+                })} */}
+                {getRowModel().rows.map((row, index: number) => (
+                  <tr key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
                       <td
-                        key={cell.column.name}
-                        {...cell.getCellProps()}
+                        key={cell.column.columnDef.meta?.name}
+                        // {...cell.getCellProps()}
                         className={cx(
                           css`
                             height: ${tableRowHeight}px;
@@ -479,23 +490,19 @@ export const table: Chart<Type.TABLE> = {
                               cursor: pointer;
                               display: inline-block;
                             }
-                          `,
-                          row[cell.column.order] === null
-                            ? css`
-                                color: ${ThemingVariables.colors.text[2]};
-                              `
-                            : undefined
+                          `
                         )}
                         align={
-                          isNumeric(cell.column.displayType) && !isTimeSeries(cell.column.displayType)
+                          isNumeric(cell.column.columnDef.meta?.displayType) &&
+                          !isTimeSeries(cell.column.columnDef.meta?.displayType)
                             ? 'right'
                             : 'left'
                         }
                       >
                         <CellRenderer
                           cell={cell}
-                          displayType={displayTypes[cell.column.name]}
-                          displayAs={props.config.displayAs?.[cell.column.name] as DISPLAY_AS_TYPE}
+                          displayType={displayTypes[cell.column.columnDef.meta!.name]}
+                          displayAs={props.config.displayAs?.[cell.column.columnDef.meta!.name] as DISPLAY_AS_TYPE}
                         />
                       </td>
                     ))}
@@ -521,13 +528,9 @@ export const table: Chart<Type.TABLE> = {
                 margin-right: 10px;
               `}
             >
-              {props.data.records.length}&nbsp;rows
+              {getPrePaginationRowModel().rows.length}&nbsp;rows
             </div>
-            <GlobalFilter
-              preGlobalFilteredRows={preGlobalFilteredRows}
-              globalFilter={globalFilter}
-              setGlobalFilter={setGlobalFilter}
-            />
+            <GlobalFilter value={globalFilter ?? ''} setGlobalFilter={setGlobalFilter} />
             <div
               className={css`
                 flex: 1;
@@ -535,7 +538,7 @@ export const table: Chart<Type.TABLE> = {
             />
             <IconButton
               icon={IconCommonArrowUnfold}
-              disabled={!canPreviousPage}
+              disabled={getCanPreviousPage() === false}
               color={ThemingVariables.colors.text[0]}
               onClick={() => {
                 previousPage()
@@ -546,10 +549,11 @@ export const table: Chart<Type.TABLE> = {
                 transform: rotate(180deg);
               `}
             />
-            {pageSize * pageIndex + 1}~{pageSize * (pageIndex + 1)}
+            {getState().pagination.pageSize * getState().pagination.pageIndex + 1}~
+            {getState().pagination.pageSize * (getState().pagination.pageIndex + 1)}
             <IconButton
               icon={IconCommonArrowUnfold}
-              disabled={!canNextPage}
+              disabled={getCanNextPage() === false}
               color={ThemingVariables.colors.text[0]}
               onClick={() => {
                 nextPage()

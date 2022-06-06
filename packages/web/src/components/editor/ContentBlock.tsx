@@ -6,7 +6,6 @@ import { dequal } from 'dequal'
 import { motion } from 'framer-motion'
 import React, { memo, useEffect, useMemo, useRef } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
-import { AnimationSharedLayoutWithChildren } from '../AnimationSharedLayoutWithChildren'
 import { BlockOperations } from './BlockOperations'
 import { OperatorsAvatar } from './BlockOperators'
 import { BlockInner } from './Blocks'
@@ -62,13 +61,11 @@ const _ContentBlocks: ReactFCWithChildren<{
   }, [small, readonly, draggable, highlightedBlockId])
 
   return (
-    <AnimationSharedLayoutWithChildren>
-      <BlockBehaviorConext.Provider value={behavior}>
-        {props.blockIds.map((blockId) => (
-          <ContentBlockPure key={blockId} id={blockId} parentType={props.parentType} />
-        ))}
-      </BlockBehaviorConext.Provider>
-    </AnimationSharedLayoutWithChildren>
+    <BlockBehaviorConext.Provider value={behavior}>
+      {props.blockIds.map((blockId) => (
+        <ContentBlockPure key={blockId} id={blockId} parentType={props.parentType} />
+      ))}
+    </BlockBehaviorConext.Provider>
   )
 }
 
