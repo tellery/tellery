@@ -13,7 +13,6 @@ import { MouseSensorOptions } from '@app/context/blockDnd'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useBlockSuspense } from '@app/hooks/api'
 import { useDimensions } from '@app/hooks/useDimensions'
-import { useSideBarRightState } from '@app/hooks/useSideBarQuestionEditor'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { ThemingVariables } from '@app/styles'
 import { Dimension, Editor } from '@app/types'
@@ -35,13 +34,13 @@ import {
 } from '@dnd-kit/core'
 import { css } from '@emotion/css'
 import styled from '@emotion/styled'
+import * as Tabs from '@radix-ui/react-tabs'
 import copy from 'copy-to-clipboard'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import { useMutation, useQueryClient } from 'react-query'
 import { toast } from 'react-toastify'
-import { Tab, TabList, TabPanel, useTabState } from 'reakit'
 import { Updater, useImmer } from 'use-immer'
 
 const Diagram: ReactFCWithChildren<{
@@ -508,39 +507,22 @@ const ExploreSideBarRight: ReactFCWithChildren<{
   data: Data | null
   setVisBlock: Updater<Editor.VisualizationBlock | null>
 }> = ({ queryBlock, visBlock, setQueryBlock, setVisBlock, data }) => {
-  const tab = useTabState()
   const { t } = useTranslation()
-  const [sideBarEditorState, setSideBarEditorState] = useSideBarRightState('explore')
+  const [tab, setTab] = useState('Query')
   const queryBuilderBlock = useBlockSuspense(queryBlock.content.queryBuilderId)
-  useEffect(() => {
-    if (sideBarEditorState?.data?.activeTab) {
-      tab.setSelectedId(sideBarEditorState.data?.activeTab)
-    }
-  }, [sideBarEditorState, tab])
-
-  const changeTab = useCallback(
-    (tab: 'Visualization' | 'Query') => {
-      setSideBarEditorState((value) => {
-        if (value) {
-          return { ...value, activeTab: tab }
-        }
-        return value
-      })
-    },
-    [setSideBarEditorState]
-  )
 
   return (
-    <div
+    <Tabs.Root
+      value={tab}
       className={css`
         height: 100%;
         display: flex;
         background-color: #fff;
         flex-direction: column;
       `}
+      onValueChange={setTab}
     >
-      <TabList
-        {...tab}
+      <Tabs.List
         className={css`
           border-bottom: solid 1px ${ThemingVariables.colors.gray[1]};
           overflow-x: auto;
@@ -548,38 +530,20 @@ const ExploreSideBarRight: ReactFCWithChildren<{
           padding-right: 16px;
         `}
       >
-        {queryBlock.type === Editor.BlockType.SmartQuery ? (
-          <Tab
-            as={SideBarTabHeader}
-            {...tab}
-            id="Query"
-            selected={tab.selectedId === 'Query'}
-            onClick={() => {
-              changeTab('Query')
-            }}
-          >
-            {t<string>(`Query`)}
-          </Tab>
-        ) : null}
-        <Tab
-          as={SideBarTabHeader}
-          {...tab}
-          id="Visualization"
-          selected={tab.selectedId === 'Visualization'}
-          onClick={() => {
-            changeTab('Visualization')
-          }}
-        >
-          {t<string>(`Visualization`)}
-        </Tab>
-      </TabList>
+        <Tabs.Trigger value="Query" asChild>
+          <SideBarTabHeader selected={tab === 'Query'}>{t<string>(`Query`)}</SideBarTabHeader>
+        </Tabs.Trigger>
+        <Tabs.Trigger value="Visualization" asChild>
+          <SideBarTabHeader selected={tab === 'Visualization'}>{t<string>(`Visualization`)}</SideBarTabHeader>
+        </Tabs.Trigger>
+      </Tabs.List>
       <PerfectScrollbar
         options={{ suppressScrollX: true }}
         className={css`
           flex: 1;
         `}
       >
-        <TabPanel {...tab}>
+        <Tabs.Content value="Query" asChild>
           <SmartQueryConfig
             queryBuilderBlock={queryBuilderBlock}
             metricIds={queryBlock.content.metricIds}
@@ -587,8 +551,8 @@ const ExploreSideBarRight: ReactFCWithChildren<{
             filters={queryBlock.content.filters}
             onChange={setQueryBlock as any}
           />
-        </TabPanel>
-        <TabPanel {...tab}>
+        </Tabs.Content>
+        <Tabs.Content value="Visualization" asChild>
           <VisualizationConfig
             config={visBlock.content?.visualization}
             data={data}
@@ -596,9 +560,9 @@ const ExploreSideBarRight: ReactFCWithChildren<{
             dimensions={queryBlock.content.dimensions}
             onChange={setVisBlock as any}
           />
-        </TabPanel>
+        </Tabs.Content>
       </PerfectScrollbar>
-    </div>
+    </Tabs.Root>
   )
 }
 

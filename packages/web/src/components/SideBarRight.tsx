@@ -13,10 +13,10 @@ import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { DEFAULT_TITLE } from '@app/utils'
 import { css } from '@emotion/css'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import * as Tabs from '@radix-ui/react-tabs'
+import React, { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import PerfectScrollbar from 'react-perfect-scrollbar'
-import { Tab, TabList, TabPanel, useTabState } from 'reakit/Tab'
 import { useSideBarQuestionEditor, useSideBarRightState } from '../hooks/useSideBarQuestionEditor'
 import { ContentEditablePureText, EditableSimpleRef } from './editor/BlockBase/ContentEditablePureText'
 import IconButton from './kit/IconButton'
@@ -28,44 +28,48 @@ import { SideBarTabHeader } from './v11n/components/Tab'
 import { VariableSettingsSection } from './VariableSettingsSection'
 
 export const DefaultSideBar: ReactFCWithChildren<{ storyId: string }> = ({ storyId }) => {
-  const tab = useTabState()
   const { t } = useTranslation()
 
   return (
-    <div
-      className={css`
-        height: 100%;
-        display: flex;
-        background-color: #fff;
-        flex-direction: column;
-      `}
-    >
-      <TabList
-        {...tab}
+    <Tabs.Root asChild value="tab1">
+      <div
         className={css`
-          border-bottom: solid 1px ${ThemingVariables.colors.gray[1]};
-          overflow-x: auto;
-          white-space: nowrap;
-          padding-right: 16px;
-          flex-shrink: 0;
+          height: 100%;
+          display: flex;
+          background-color: #fff;
+          flex-direction: column;
         `}
       >
-        <Tab as={SideBarTabHeader} {...tab} id="Data Assets" selected={tab.selectedId === 'Data Assets'}>
-          {t<string>(`Data Assets`)}
-        </Tab>
-      </TabList>
-      <TabPanel
-        {...tab}
-        className={css`
-          flex: 1;
-          overflow: hidden;
-        `}
-      >
-        <React.Suspense fallback={<></>}>
-          <SideBarDataAssets storyId={storyId} />
-        </React.Suspense>
-      </TabPanel>
-    </div>
+        <Tabs.List
+          className={css`
+            border-bottom: solid 1px ${ThemingVariables.colors.gray[1]};
+            overflow-x: auto;
+            white-space: nowrap;
+            padding-right: 16px;
+            flex-shrink: 0;
+          `}
+        >
+          <Tabs.Trigger
+            value="tab1"
+            asChild
+            // selected={tab.selectedId === 'Data Assets'}
+          >
+            <SideBarTabHeader selected>{t<string>(`Data Assets`)}</SideBarTabHeader>
+          </Tabs.Trigger>
+        </Tabs.List>
+        <Tabs.Content
+          value="tab1"
+          className={css`
+            flex: 1;
+            overflow: hidden;
+          `}
+        >
+          <React.Suspense fallback={<></>}>
+            <SideBarDataAssets storyId={storyId} />
+          </React.Suspense>
+        </Tabs.Content>
+      </div>
+    </Tabs.Root>
   )
 }
 
@@ -182,81 +186,40 @@ export const QuestionTitleEditor: ReactFCWithChildren<{ blockId: string; storyId
 }
 
 export const VariableSideBar: ReactFCWithChildren<{ storyId: string; blockId: string }> = ({ storyId, blockId }) => {
-  const tab = useTabState()
   const { t } = useTranslation()
-  const [sideBarEditorState, setSideBarEditorState] = useSideBarRightState(storyId)
-
-  useEffect(() => {
-    if (sideBarEditorState?.data?.activeTab) {
-      tab.setSelectedId(sideBarEditorState.data?.activeTab)
-    }
-  }, [sideBarEditorState, tab])
-
-  const changeTab = useCallback(
-    (tab: 'Variable' | 'Help') => {
-      setSideBarEditorState((value) => {
-        if (value) {
-          return { ...value, data: { ...value.data, activeTab: tab } }
-        }
-        return value
-      })
-    },
-    [setSideBarEditorState]
-  )
 
   return (
-    <div
-      className={css`
-        height: 100%;
-        display: flex;
-        background-color: #fff;
-        flex-direction: column;
-      `}
-    >
-      <TabList
-        {...tab}
+    <Tabs.Root asChild value="Variable">
+      <div
         className={css`
-          border-bottom: solid 1px ${ThemingVariables.colors.gray[1]};
-          overflow-x: auto;
-          white-space: nowrap;
-          padding-right: 16px;
+          height: 100%;
+          display: flex;
+          background-color: #fff;
+          flex-direction: column;
         `}
       >
-        <Tab
-          as={SideBarTabHeader}
-          {...tab}
-          id="Variable"
-          selected={tab.selectedId === 'Variable'}
-          onClick={() => {
-            changeTab('Variable')
-          }}
+        <Tabs.List
+          className={css`
+            border-bottom: solid 1px ${ThemingVariables.colors.gray[1]};
+            overflow-x: auto;
+            white-space: nowrap;
+            padding-right: 16px;
+          `}
         >
-          {t<string>(`Variable`)}
-        </Tab>
-        {/* <Tab
-          as={SideBarTabHeader}
-          {...tab}
-          id="Help"
-          selected={tab.selectedId === 'Help'}
-          onClick={() => {
-            changeTab('Help')
-          }}
-        >
-          {t<string>(`Help`)}
-        </Tab> */}
-      </TabList>
+          <Tabs.Tabs asChild>
+            <Tabs.TabsTrigger value="Variable" asChild>
+              <SideBarTabHeader selected>{t<string>(`Variable`)}</SideBarTabHeader>
+            </Tabs.TabsTrigger>
+          </Tabs.Tabs>
+        </Tabs.List>
 
-      <TabPanel {...tab}>
-        <React.Suspense fallback={<></>}>
-          <VariableSettingsSection storyId={storyId} blockId={blockId} key={blockId} />
-        </React.Suspense>
-      </TabPanel>
-      {/* <TabPanel {...tab}>
+        <Tabs.Content value="Variable">
           <React.Suspense fallback={<></>}>
-            <SideBarVisualization storyId={storyId} blockId={blockId} key={blockId} />
+            <VariableSettingsSection storyId={storyId} blockId={blockId} key={blockId} />
           </React.Suspense>
-        </TabPanel> */}
-    </div>
+        </Tabs.Content>
+      </div>
+    </Tabs.Root>
   )
 }
 
@@ -264,17 +227,10 @@ export const QuestionEditorSideBar: ReactFCWithChildren<{ storyId: string; block
   storyId,
   blockId
 }) => {
-  const tab = useTabState()
   const { t } = useTranslation()
   const block = useBlockSuspense<Editor.VisualizationBlock>(blockId)
   const queryBlock = useBlockSuspense(block.content?.queryId || blockId)
   const [sideBarEditorState, setSideBarEditorState] = useSideBarRightState(storyId)
-
-  useEffect(() => {
-    if (sideBarEditorState?.data?.activeTab) {
-      tab.setSelectedId(sideBarEditorState.data?.activeTab)
-    }
-  }, [sideBarEditorState, tab])
 
   const changeTab = useCallback(
     (tab: 'Visualization' | 'Modeling' | 'Query') => {
@@ -288,90 +244,74 @@ export const QuestionEditorSideBar: ReactFCWithChildren<{ storyId: string; block
     [setSideBarEditorState]
   )
 
+  const tabValue = sideBarEditorState?.data?.activeTab ?? 'Visualization'
+
   return (
-    <div
-      className={css`
-        height: 100%;
-        display: flex;
-        background-color: #fff;
-        flex-direction: column;
-      `}
+    <Tabs.Root
+      value={tabValue}
+      onValueChange={(value) => {
+        changeTab(value as 'Visualization' | 'Modeling' | 'Query')
+      }}
     >
-      <QuestionTitleEditor blockId={queryBlock.id} storyId={storyId} key={blockId} />
-      <TabList
-        {...tab}
+      <div
         className={css`
-          border-bottom: solid 1px ${ThemingVariables.colors.gray[1]};
-          overflow-x: auto;
-          white-space: nowrap;
-          padding-right: 16px;
+          height: 100%;
+          display: flex;
+          background-color: #fff;
+          flex-direction: column;
         `}
       >
-        {queryBlock.type === Editor.BlockType.SmartQuery ? (
-          <Tab
-            as={SideBarTabHeader}
-            {...tab}
-            id="Query"
-            selected={tab.selectedId === 'Query'}
-            onClick={() => {
-              changeTab('Query')
-            }}
-          >
-            {t<string>(`Query`)}
-          </Tab>
-        ) : null}
-        <Tab
-          as={SideBarTabHeader}
-          {...tab}
-          id="Visualization"
-          selected={tab.selectedId === 'Visualization'}
-          onClick={() => {
-            changeTab('Visualization')
-          }}
+        <QuestionTitleEditor blockId={queryBlock.id} storyId={storyId} key={blockId} />
+        <Tabs.List
+          className={css`
+            border-bottom: solid 1px ${ThemingVariables.colors.gray[1]};
+            overflow-x: auto;
+            white-space: nowrap;
+            padding-right: 16px;
+          `}
         >
-          {t<string>(`Visualization`)}
-        </Tab>
-        {queryBlock.type !== Editor.BlockType.SmartQuery ? (
-          <Tab
-            as={SideBarTabHeader}
-            {...tab}
-            id="Modeling"
-            selected={tab.selectedId === 'Modeling'}
-            onClick={() => {
-              changeTab('Modeling')
-            }}
-          >
-            {t<string>(`Modeling`)}
-          </Tab>
-        ) : null}
-      </TabList>
-      <PerfectScrollbar
-        options={{ suppressScrollX: true }}
-        className={css`
-          flex: 1;
-        `}
-      >
-        {queryBlock.type === Editor.BlockType.SmartQuery ? (
-          <TabPanel {...tab}>
+          {queryBlock.type === Editor.BlockType.SmartQuery ? (
+            <Tabs.Trigger asChild value="Query">
+              <SideBarTabHeader selected={tabValue === 'Query'}>{t<string>(`Query`)}</SideBarTabHeader>
+            </Tabs.Trigger>
+          ) : null}
+          <Tabs.Trigger asChild value="Visualization">
+            <SideBarTabHeader selected={tabValue === 'Visualization'}>{t<string>(`Visualization`)}</SideBarTabHeader>
+          </Tabs.Trigger>
+          {queryBlock.type !== Editor.BlockType.SmartQuery ? (
+            <Tabs.Trigger asChild value="Modeling">
+              <SideBarTabHeader selected={tabValue === 'Modeling'}>{t<string>(`Modeling`)}</SideBarTabHeader>
+            </Tabs.Trigger>
+          ) : null}
+        </Tabs.List>
+        <PerfectScrollbar
+          options={{ suppressScrollX: true }}
+          className={css`
+            flex: 1;
+          `}
+        >
+          {queryBlock.type === Editor.BlockType.SmartQuery ? (
+            <Tabs.Content value="Query">
+              <React.Suspense fallback={<></>}>
+                <SideBarSmartQuery storyId={storyId} blockId={blockId} />
+              </React.Suspense>
+            </Tabs.Content>
+          ) : null}
+          <Tabs.Content value="Visualization">
             <React.Suspense fallback={<></>}>
-              <SideBarSmartQuery storyId={storyId} blockId={blockId} />
+              <SideBarVisualization storyId={storyId} blockId={blockId} key={blockId} />
             </React.Suspense>
-          </TabPanel>
-        ) : null}
-        <TabPanel {...tab}>
-          <React.Suspense fallback={<></>}>
-            <SideBarVisualization storyId={storyId} blockId={blockId} key={blockId} />
-          </React.Suspense>
-        </TabPanel>
-        {queryBlock.type !== Editor.BlockType.SmartQuery ? (
-          <TabPanel {...tab}>
-            <React.Suspense fallback={<></>}>
-              <SideBarModeling storyId={storyId} blockId={blockId} />
-            </React.Suspense>
-          </TabPanel>
-        ) : null}
-      </PerfectScrollbar>
-    </div>
+          </Tabs.Content>
+          {queryBlock.type !== Editor.BlockType.SmartQuery ? (
+            <Tabs.Content value="Modeling">
+              <React.Suspense fallback={<></>}>
+                <SideBarModeling storyId={storyId} blockId={blockId} />
+              </React.Suspense>
+            </Tabs.Content>
+          ) : null}
+        </PerfectScrollbar>
+      </div>
+    </Tabs.Root>
   )
 }
 

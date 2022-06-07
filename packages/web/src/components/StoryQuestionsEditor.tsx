@@ -38,14 +38,13 @@ import React, { SetStateAction, useCallback, useEffect, useMemo, useRef, useStat
 import ReactDOM from 'react-dom'
 import { toast } from 'react-toastify'
 import { useEvent, useLatest, useWindowSize } from 'react-use'
-import { Tab, TabList, TabPanel, TabStateReturn, useTabState } from 'reakit/Tab'
+import * as Tabs from '@radix-ui/react-tabs'
 import YAML from 'yaml'
 import { setBlockTranscation } from '../context/editorTranscations'
 import { BlockingUI } from './BlockingUI'
 import { CircularLoading } from './CircularLoading'
 import { BlockTitle, useGetBlockTitleTextSnapshot } from './editor'
 import { isExecuteableBlockType } from './editor/Blocks/utils'
-import type { SetBlock } from './editor/types'
 import IconButton from './kit/IconButton'
 import { TippySingletonContextProvider } from './TippySingletonContextProvider'
 
@@ -138,14 +137,16 @@ export const StoryQuestionsEditor: ReactFCWithChildren<{ storyId: string }> = ({
 
   const [questionBlocksMap, setQuestionBlocksMap] = useQuestionEditorBlockMapState(storyId)
   const [activeId, setActiveId] = useQuestionEditorActiveIdState(storyId)
-  const tab = useTabState()
+  const [tab, setTab] = useState<string>()
 
   const opendQuestionBlockIds = useMemo(() => {
     return Object.keys(questionBlocksMap)
   }, [questionBlocksMap])
 
   useEffect(() => {
-    tab.setSelectedId(activeId)
+    if (activeId) {
+      setTab(activeId)
+    }
   }, [activeId, tab])
 
   useEffect(() => {
@@ -216,125 +217,130 @@ export const StoryQuestionsEditor: ReactFCWithChildren<{ storyId: string }> = ({
         }}
       ></motion.div>
 
-      <motion.div
-        style={{
-          height: height,
-          y: translateY
-        }}
-        className={css`
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          width: 100%;
-          user-select: none;
-          z-index: 1000;
-          display: flex;
-          flex-direction: column;
-          background-color: ${ThemingVariables.colors.gray[5]};
-          transition: transform 0.25s ease-in-out;
-        `}
-      >
-        {open && <QueryEditorResizer y={y} />}
-        <TabList
-          {...tab}
-          aria-label="Question Editor Tabs"
+      <Tabs.Root asChild value={tab} onValueChange={setTab}>
+        <motion.div
           style={{
-            backgroundColor: ThemingVariables.colors.gray[4],
-            paddingRight: 50
+            height: height,
+            y: translateY
           }}
           className={css`
-            border-top: solid 1px ${ThemingVariables.colors.gray[1]};
-            border-bottom: solid 1px ${ThemingVariables.colors.gray[1]};
-            transition: all 250ms;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            user-select: none;
+            z-index: 1000;
             display: flex;
-            position: relative;
-            flex: 0 0 44px;
-            overflow: hidden;
+            flex-direction: column;
+            background-color: ${ThemingVariables.colors.gray[5]};
+            transition: transform 0.25s ease-in-out;
           `}
         >
-          <div
+          {open && <QueryEditorResizer y={y} />}
+          <Tabs.List
+            aria-label="Question Editor Tabs"
+            style={{
+              backgroundColor: ThemingVariables.colors.gray[4],
+              paddingRight: 50
+            }}
             className={css`
-              flex: 1;
-              height: 100%;
+              border-top: solid 1px ${ThemingVariables.colors.gray[1]};
+              border-bottom: solid 1px ${ThemingVariables.colors.gray[1]};
+              transition: all 250ms;
               display: flex;
-              flex-wrap: nowrap;
-              overflow-x: auto;
-              overflow-y: hidden;
-              padding: 0 8px;
-              ::-webkit-scrollbar {
-                display: none;
-              }
-              > * + * {
-                margin-left: 8px;
-              }
+              position: relative;
+              flex: 0 0 44px;
+              overflow: hidden;
             `}
           >
-            {opendQuestionBlockIds?.map((id) => {
-              return (
-                <React.Suspense key={id} fallback={null}>
-                  <QuestionTab
-                    id={id}
-                    isActive={id === activeId}
-                    tab={tab}
-                    isOpen={open}
-                    onClick={() => {
-                      setActiveId(id)
-                      setOpen(true)
-                    }}
-                    storyId={storyId}
-                    closeTabById={closeTabById}
-                  />
-                </React.Suspense>
-              )
-            })}
-            <Tippy
-              content={open ? 'Click to close query editor' : 'Click to open query editor'}
-              hideOnClick
-              arrow={false}
-              delay={[500, 0]}
-              duration={[500, 0]}
+            <div
+              className={css`
+                flex: 1;
+                height: 100%;
+                display: flex;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                overflow-y: hidden;
+                padding: 0 8px;
+                ::-webkit-scrollbar {
+                  display: none;
+                }
+                > * + * {
+                  margin-left: 8px;
+                }
+              `}
             >
-              <IconButton
-                icon={IconCommonArrowDropDown}
-                onClick={() => {
-                  setOpen(!open)
-                }}
-                style={{
-                  transform: `rotate(${open ? '0' : '180deg'})`
-                }}
-                className={css`
-                  margin-left: auto;
-                  transition: transform 250ms;
-                  display: flex;
-                  align-items: center;
-                  position: absolute;
-                  top: 0;
-                  bottom: 0;
-                  right: 0;
-                  padding: 0 12px;
-                  height: 100%;
-                  background-color: ${ThemingVariables.colors.gray[2]};
-                `}
-              />
-            </Tippy>
-          </div>
-          <div id="questions-editor-tab-slot"></div>
-        </TabList>
-        {opendQuestionBlockIds.map((id) => (
-          <React.Suspense key={id} fallback={<BlockingUI blocking={true} />}>
-            <StoryQuestionEditor
-              tab={tab}
-              key={id}
-              isActive={activeId === id}
-              id={id}
-              setActiveId={setActiveId}
-              storyId={storyId}
-              isOpen={open}
-            />
-          </React.Suspense>
-        ))}
-      </motion.div>
+              {opendQuestionBlockIds?.map((id) => {
+                return (
+                  <Tabs.Trigger key={id} value={id} asChild>
+                    <React.Suspense fallback={null}>
+                      <QuestionTab
+                        id={id}
+                        isActive={id === activeId}
+                        tab={tab}
+                        isOpen={open}
+                        onClick={() => {
+                          setActiveId(id)
+                          setOpen(true)
+                        }}
+                        storyId={storyId}
+                        closeTabById={closeTabById}
+                      />
+                    </React.Suspense>
+                  </Tabs.Trigger>
+                )
+              })}
+              <Tippy
+                content={open ? 'Click to close query editor' : 'Click to open query editor'}
+                hideOnClick
+                arrow={false}
+                delay={[500, 0]}
+                duration={[500, 0]}
+              >
+                <IconButton
+                  icon={IconCommonArrowDropDown}
+                  onClick={() => {
+                    setOpen(!open)
+                  }}
+                  style={{
+                    transform: `rotate(${open ? '0' : '180deg'})`
+                  }}
+                  className={css`
+                    margin-left: auto;
+                    transition: transform 250ms;
+                    display: flex;
+                    align-items: center;
+                    position: absolute;
+                    top: 0;
+                    bottom: 0;
+                    right: 0;
+                    padding: 0 12px;
+                    height: 100%;
+                    background-color: ${ThemingVariables.colors.gray[2]};
+                  `}
+                />
+              </Tippy>
+            </div>
+            <div id="questions-editor-tab-slot"></div>
+          </Tabs.List>
+          {opendQuestionBlockIds.map((id) => (
+            <Tabs.Content key={id} value={id} asChild>
+              <React.Suspense fallback={<BlockingUI blocking={true} />}>
+                <StoryQuestionEditor
+                  tab={tab}
+                  key={id}
+                  isActive={activeId === id}
+                  id={id}
+                  setActiveId={setActiveId}
+                  storyId={storyId}
+                  isOpen={open}
+                />
+              </React.Suspense>
+            </Tabs.Content>
+          ))}
+        </motion.div>
+      </Tabs.Root>
     </>
   )
 }
@@ -416,19 +422,16 @@ const TabHeader: ReactFCWithChildren<{
 
 const QuestionTab: ReactFCWithChildren<{
   id: string
-  tab: TabStateReturn
   isActive: boolean
   isOpen: boolean
   onClick: () => void
   storyId: string
   closeTabById: (tabId: string) => void
-}> = ({ id, tab, isActive, isOpen, onClick, storyId, closeTabById }) => {
+}> = ({ id, isActive, isOpen, onClick, storyId, closeTabById }) => {
   const [bindHoveringEvents, isHovering] = useBindHovering()
 
   return (
-    <Tab
-      key={id}
-      {...tab}
+    <div
       {...bindHoveringEvents()}
       onClick={onClick}
       className={cx(
@@ -456,20 +459,19 @@ const QuestionTab: ReactFCWithChildren<{
       )}
     >
       <TabHeader blockId={id} hovering={isHovering} storyId={storyId} closeTabById={closeTabById} />
-    </Tab>
+    </div>
   )
 }
 
 export const StoryQuestionEditor: ReactFCWithChildren<{
   id: string
   setActiveId: (update: SetStateAction<string | null>) => void | Promise<void>
-  tab: TabStateReturn
   storyId: string
   isOpen: boolean
   isActive: boolean
   // block: Editor.QuestionBlock
   // originalBlock: Editor.QuestionBlock
-}> = ({ id, tab, storyId, isActive }) => {
+}> = ({ id, storyId, isActive }) => {
   const block = useBlockSuspense<Editor.VisualizationBlock | Editor.QueryBlock>(id)
   const visualizationBlock: Editor.VisualizationBlock | null =
     block.type === Editor.BlockType.Visualization ? block : null
@@ -652,9 +654,7 @@ export const StoryQuestionEditor: ReactFCWithChildren<{
     queryBlock.type === Editor.BlockType.SmartQuery
 
   return (
-    <TabPanel
-      {...tab}
-      tabId={id}
+    <div
       className={cx(
         css`
           flex: 1;
@@ -753,7 +753,7 @@ export const StoryQuestionEditor: ReactFCWithChildren<{
           </div>
         )}
       </div>
-    </TabPanel>
+    </div>
   )
 }
 

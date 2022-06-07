@@ -56,7 +56,7 @@ export default defineConfig(({ command, mode }: { command: string; mode: string 
           }
         },
         '/api': {
-          target: 'http://localhost:8000',
+          target: process.env.DEV_PROXY_API || 'http://localhost:8000',
           changeOrigin: true,
           secure: false,
           ws: true,

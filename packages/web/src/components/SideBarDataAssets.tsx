@@ -12,7 +12,7 @@ import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { addPrefixToBlockTitle, blockIdGenerator } from '@app/utils'
-import { DndBlocksFragment, DndItemDataBlockType, DnDItemTypes } from '@app/utils/dnd'
+import { DndBlocksFragment, DnDItemTypes } from '@app/utils/dnd'
 import { useDraggable } from '@dnd-kit/core'
 import { css, cx } from '@emotion/css'
 import styled from '@emotion/styled'
@@ -328,7 +328,10 @@ export const DataAssetItem: ReactFCWithChildren<{
   )
 }
 
-const DataAssestMenu: ReactFCWithChildren<{ block: Editor.DataAssetBlock; className?: string }> = ({ block, className }) => {
+const DataAssestMenu: ReactFCWithChildren<{ block: Editor.DataAssetBlock; className?: string }> = ({
+  block,
+  className
+}) => {
   const animation = useTippyMenuAnimation('scale')
   const [visible, setVisible] = useState(false)
   const show = () => setVisible(true)
@@ -405,7 +408,10 @@ export const DataAssestMenuContent: ReactFCWithChildren<{
   )
 }
 
-export const AllMetricsSection: ReactFCWithChildren<{ storyId?: string; className?: string }> = ({ storyId, className }) => {
+export const AllMetricsSection: ReactFCWithChildren<{ storyId?: string; className?: string }> = ({
+  storyId,
+  className
+}) => {
   const [keyword, setKeyword] = useState('')
   const metricBlocksQuery = useSearchMetrics(keyword, 1000)
 

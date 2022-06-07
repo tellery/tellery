@@ -24,7 +24,6 @@ import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useClickAway, useEvent, useScrollbarWidth } from 'react-use'
-import { Button } from 'reakit'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import invariant from 'tiny-invariant'
 import {
@@ -643,7 +642,7 @@ const _StoryEditor: ReactFCWithChildren<{
             >
               {t('You pasted {{count}} question', { count: originalQuestionsBlocks.length })}
             </div>
-            <Button
+            <button
               color={ThemingVariables.colors.text[0]}
               className={css`
                 margin-left: 30px;
@@ -662,7 +661,7 @@ const _StoryEditor: ReactFCWithChildren<{
               }}
             >
               Stay in sync
-            </Button>
+            </button>
           </div>,
           { position: 'bottom-center', autoClose: 10000 }
         )

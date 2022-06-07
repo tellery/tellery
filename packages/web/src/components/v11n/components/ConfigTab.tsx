@@ -1,20 +1,21 @@
 import { css } from '@emotion/css'
-import { Tab, TabList, TabPanel, useTabState } from 'reakit/Tab'
-import React, { ReactNode, useEffect } from 'react'
+import * as Tabs from '@radix-ui/react-tabs'
+import React, { ReactNode, useEffect, useState } from 'react'
 import { SideBarTabHeader } from './Tab'
 import { ThemingVariables } from '@app/styles'
 
 export function ConfigTab(props: { tabs: string[]; tab?: string; children: ReactNode[] | ReactNode }) {
-  const tabState = useTabState()
-  const { setSelectedId } = tabState
+  const [activeTab, setActiveTab] = useState<string | undefined>(props.tab ?? props.tabs[0])
   useEffect(() => {
     if (props.tab) {
-      setSelectedId(props.tab)
+      setActiveTab(props.tab)
     }
-  }, [props.tab, props.tabs, setSelectedId])
+  }, [props.tab, props.tabs])
 
   return (
-    <div
+    <Tabs.Root
+      value={activeTab}
+      onValueChange={setActiveTab}
       className={css`
         height: 100%;
         overflow-y: hidden;
@@ -22,8 +23,7 @@ export function ConfigTab(props: { tabs: string[]; tab?: string; children: React
         flex-direction: column;
       `}
     >
-      <TabList
-        {...tabState}
+      <Tabs.List
         className={css`
           overflow-x: auto;
           white-space: nowrap;
@@ -32,16 +32,16 @@ export function ConfigTab(props: { tabs: string[]; tab?: string; children: React
         `}
       >
         {props.tabs.map((tab) => (
-          <Tab key={tab} as={SideBarTabHeader} {...tabState} id={tab} selected={tabState.selectedId === tab}>
-            {tab}
-          </Tab>
+          <Tabs.Trigger key={tab} asChild value={tab}>
+            <SideBarTabHeader selected={tab === activeTab}>{tab}</SideBarTabHeader>
+          </Tabs.Trigger>
         ))}
-      </TabList>
+      </Tabs.List>
       {props.tabs.map((tab, index) => (
-        <TabPanel key={tab} {...tabState}>
+        <Tabs.Content key={tab} value={tab} asChild>
           {Array.isArray(props.children) ? props.children[index] : props.children}
-        </TabPanel>
+        </Tabs.Content>
       ))}
-    </div>
+    </Tabs.Root>
   )
 }
