@@ -16,7 +16,7 @@ export const request = wrapAuth(axios.create({ baseURL: '', withCredentials: tru
 
 request.interceptors.response.use(undefined, (error) => {
   if (error.response.status >= 400) {
-    toast.error(`Error ${error.response.status}: ${error.response.data.errMsg}`)
+    toast.error(`Error ${error.response.status}: ${error.response.data.errMsg}`, { autoClose: false })
   }
   return Promise.reject(error)
 })
