@@ -249,67 +249,65 @@ export const QuestionEditorSideBar: ReactFCWithChildren<{ storyId: string; block
   return (
     <Tabs.Root
       value={tabValue}
+      className={css`
+        height: 100%;
+        display: flex;
+        background-color: #fff;
+        flex-direction: column;
+        overflow-y: hidden;
+      `}
       onValueChange={(value) => {
         changeTab(value as 'Visualization' | 'Modeling' | 'Query')
       }}
     >
-      <div
+      <QuestionTitleEditor blockId={queryBlock.id} storyId={storyId} key={blockId} />
+      <Tabs.List
         className={css`
-          height: 100%;
-          display: flex;
-          background-color: #fff;
-          flex-direction: column;
+          border-bottom: solid 1px ${ThemingVariables.colors.gray[1]};
+          overflow-x: auto;
+          white-space: nowrap;
+          padding-right: 16px;
+          flex-shrink: 0;
         `}
       >
-        <QuestionTitleEditor blockId={queryBlock.id} storyId={storyId} key={blockId} />
-        <Tabs.List
-          className={css`
-            border-bottom: solid 1px ${ThemingVariables.colors.gray[1]};
-            overflow-x: auto;
-            white-space: nowrap;
-            padding-right: 16px;
-          `}
-        >
-          {queryBlock.type === Editor.BlockType.SmartQuery ? (
-            <Tabs.Trigger asChild value="Query">
-              <SideBarTabHeader selected={tabValue === 'Query'}>{t<string>(`Query`)}</SideBarTabHeader>
-            </Tabs.Trigger>
-          ) : null}
-          <Tabs.Trigger asChild value="Visualization">
-            <SideBarTabHeader selected={tabValue === 'Visualization'}>{t<string>(`Visualization`)}</SideBarTabHeader>
+        {queryBlock.type === Editor.BlockType.SmartQuery ? (
+          <Tabs.Trigger asChild value="Query">
+            <SideBarTabHeader selected={tabValue === 'Query'}>{t<string>(`Query`)}</SideBarTabHeader>
           </Tabs.Trigger>
-          {queryBlock.type !== Editor.BlockType.SmartQuery ? (
-            <Tabs.Trigger asChild value="Modeling">
-              <SideBarTabHeader selected={tabValue === 'Modeling'}>{t<string>(`Modeling`)}</SideBarTabHeader>
-            </Tabs.Trigger>
-          ) : null}
-        </Tabs.List>
-        <PerfectScrollbar
-          options={{ suppressScrollX: true }}
-          className={css`
-            flex: 1;
-          `}
-        >
-          {queryBlock.type === Editor.BlockType.SmartQuery ? (
-            <Tabs.Content value="Query">
-              <React.Suspense fallback={<></>}>
-                <SideBarSmartQuery storyId={storyId} blockId={blockId} />
-              </React.Suspense>
-            </Tabs.Content>
-          ) : null}
-          <Tabs.Content value="Visualization">
+        ) : null}
+        <Tabs.Trigger asChild value="Visualization">
+          <SideBarTabHeader selected={tabValue === 'Visualization'}>{t<string>(`Visualization`)}</SideBarTabHeader>
+        </Tabs.Trigger>
+        {queryBlock.type !== Editor.BlockType.SmartQuery ? (
+          <Tabs.Trigger asChild value="Modeling">
+            <SideBarTabHeader selected={tabValue === 'Modeling'}>{t<string>(`Modeling`)}</SideBarTabHeader>
+          </Tabs.Trigger>
+        ) : null}
+      </Tabs.List>
+      <div
+        className={css`
+          overflow-y: hidden;
+        `}
+      >
+        {queryBlock.type === Editor.BlockType.SmartQuery ? (
+          <Tabs.Content value="Query" asChild>
             <React.Suspense fallback={<></>}>
-              <SideBarVisualization storyId={storyId} blockId={blockId} key={blockId} />
+              <SideBarSmartQuery storyId={storyId} blockId={blockId} />
             </React.Suspense>
           </Tabs.Content>
-          {queryBlock.type !== Editor.BlockType.SmartQuery ? (
-            <Tabs.Content value="Modeling">
-              <React.Suspense fallback={<></>}>
-                <SideBarModeling storyId={storyId} blockId={blockId} />
-              </React.Suspense>
-            </Tabs.Content>
-          ) : null}
-        </PerfectScrollbar>
+        ) : null}
+        <Tabs.Content value="Visualization" asChild>
+          <React.Suspense fallback={<></>}>
+            <SideBarVisualization storyId={storyId} blockId={blockId} key={blockId} />
+          </React.Suspense>
+        </Tabs.Content>
+        {queryBlock.type !== Editor.BlockType.SmartQuery ? (
+          <Tabs.Content value="Modeling" asChild>
+            <React.Suspense fallback={<></>}>
+              <SideBarModeling storyId={storyId} blockId={blockId} />
+            </React.Suspense>
+          </Tabs.Content>
+        ) : null}
       </div>
     </Tabs.Root>
   )

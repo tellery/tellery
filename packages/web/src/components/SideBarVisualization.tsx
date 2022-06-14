@@ -134,7 +134,14 @@ export const VisualizationConfig: ReactFCWithChildren<{
   )
 
   return (
-    <>
+    <div
+      className={css`
+        height: 100%;
+        overflow-y: hidden;
+        display: flex;
+        flex-direction: column;
+      `}
+    >
       <div
         className={css`
           padding: 14px 8px 0;
@@ -178,9 +185,17 @@ export const VisualizationConfig: ReactFCWithChildren<{
           />
         ))}
       </div>
-      {config && chart && chart.type === config.type && data ? (
-        <chart.Configuration data={data} config={config as never} onConfigChange={handleConfigChange as never} />
-      ) : null}
-    </>
+
+      <div
+        className={css`
+          flex: 1;
+          overflow-y: hidden;
+        `}
+      >
+        {config && chart && chart.type === config.type && data ? (
+          <chart.Configuration data={data} config={config as never} onConfigChange={handleConfigChange as never} />
+        ) : null}
+      </div>
+    </div>
   )
 }

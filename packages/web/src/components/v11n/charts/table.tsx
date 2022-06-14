@@ -17,6 +17,7 @@ import {
 import Tippy from '@tippyjs/react'
 import { sortBy } from 'lodash'
 import React, { useEffect, useMemo, useState } from 'react'
+import { DetectableOverflow } from '@app/components/DetectableOverflow'
 import { ConfigSection } from '../components/ConfigSection'
 import { ConfigSelect } from '../components/ConfigSelect'
 import { ConfigTab } from '../components/ConfigTab'
@@ -24,6 +25,7 @@ import { SortableList } from '../components/SortableList'
 import { DisplayType, SQLType, Type } from '../types'
 import { formatRecord, isNumeric, isTimeSeries } from '../utils'
 import type { Chart } from './base'
+import { TippySingletonContextProvider } from '@app/components/TippySingletonContextProvider'
 
 const tableInstance = createTable()
   .setRowType<unknown[]>()
@@ -209,6 +211,7 @@ export const table: Chart<Type.TABLE> = {
                 <div
                   className={css`
                     width: 100%;
+                    overflow-x: hidden;
                     font-size: 12px;
                     padding: 0 6px;
                     height: 32px;
@@ -222,17 +225,19 @@ export const table: Chart<Type.TABLE> = {
                     }
                   `}
                 >
-                  <div
-                    className={css`
-                      flex-grow: 1;
-                      flex-shrink: 0;
-                      margin-right: 10px;
-                      overflow: hidden;
-                      text-overflow: ellipsis;
-                    `}
-                  >
-                    {item}
-                  </div>
+                  <Tippy content={item} placement="left" delay={[1000, 500]}>
+                    <div
+                      className={css`
+                        flex-grow: 1;
+                        flex-shrink: 1;
+                        margin-right: 10px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                      `}
+                    >
+                      <span>{item}</span>
+                    </div>
+                  </Tippy>
                   {filed?.displayType === 'STRING' && (
                     <div
                       className={css`

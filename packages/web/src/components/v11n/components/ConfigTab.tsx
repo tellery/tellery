@@ -17,10 +17,10 @@ export function ConfigTab(props: { tabs: string[]; tab?: string; children: React
       value={activeTab}
       onValueChange={setActiveTab}
       className={css`
-        height: 100%;
-        overflow-y: hidden;
         display: flex;
         flex-direction: column;
+        overflow-y: hidden;
+        height: 100%;
       `}
     >
       <Tabs.List
@@ -28,6 +28,7 @@ export function ConfigTab(props: { tabs: string[]; tab?: string; children: React
           overflow-x: auto;
           white-space: nowrap;
           padding-right: 16px;
+          flex-shrink: 0;
           border-bottom: 1px solid ${ThemingVariables.colors.gray[1]};
         `}
       >
@@ -38,7 +39,14 @@ export function ConfigTab(props: { tabs: string[]; tab?: string; children: React
         ))}
       </Tabs.List>
       {props.tabs.map((tab, index) => (
-        <Tabs.Content key={tab} value={tab} asChild>
+        <Tabs.Content
+          key={tab}
+          value={tab}
+          className={css`
+            flex: 1;
+            overflow-y: auto;
+          `}
+        >
           {Array.isArray(props.children) ? props.children[index] : props.children}
         </Tabs.Content>
       ))}
