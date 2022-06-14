@@ -61,7 +61,7 @@ export const closetBorder: CollisionDetection = ({
     })
 
   if (hitedRects.length) {
-    return hitedRects
+    return hitedRects.sort((a, b) => a.data.value - b.data.value)
   }
 
   const closestLeftDistances = droppableContainers
