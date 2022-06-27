@@ -91,7 +91,7 @@
     "@types/test-listen": "^1.1.0",
     "@types/uuid": "^8.3.3",
     "@typescript-eslint/eslint-plugin": "^5.8.0",
-    "@typescript-eslint/parser": "^5.8.0",
+    "@typescript-eslint/parser": "^5.30.0",
     "ava": "^4.3.0",
     "concurrently": "^7.2.1",
     "cross-env": "^7.0.3",
