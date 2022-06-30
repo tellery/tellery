@@ -30,15 +30,15 @@ export function LegendContentVertical(props: Props) {
           verticalAlign: props.verticalAlign
         }}
       >
-        {props.payload?.map((item) => (
+        {props.payload?.map((item, index) => (
           <LegendItem
             key={item.id}
             value={item}
             onMouseEnter={() => {
-              props.onMouseEnter?.(item as unknown as MouseEvent)
+              ;(props.onMouseEnter as any)?.(item as unknown as MouseEvent)
             }}
             onMouseLeave={() => {
-              props.onMouseLeave?.(item as unknown as MouseEvent)
+              ;(props.onMouseLeave as any)?.(item as unknown as MouseEvent)
             }}
           />
         ))}

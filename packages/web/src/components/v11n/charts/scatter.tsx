@@ -425,11 +425,9 @@ export const scatter: Chart<Type.SCATTER> = {
                     ? ThemingVariables.colors.visualizationOther
                     : ThemingVariables.colors.visualization[color.color]
               }))}
-              onMouseEnter={
-                ((value: { value: string }) => {
-                  setHoverDataKey(value.value)
-                }) as unknown as (event: MouseEvent) => void
-              }
+              onMouseEnter={(data, index, event) => {
+                setHoverDataKey(data.value)
+              }}
               onMouseLeave={() => {
                 setHoverDataKey(undefined)
               }}

@@ -928,11 +928,9 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                 dataKey: valueKey(shape.key),
                 yAxisId: calcYAxisId(shape.groupId)
               }))}
-              onMouseEnter={
-                ((value: { id: string }) => {
-                  setHoverDataKey(valueKey(value.id))
-                }) as unknown as (event: MouseEvent) => void
-              }
+              onMouseEnter={(data, index, event) => {
+                setHoverDataKey(data.dataKey)
+              }}
               onMouseLeave={() => {
                 setHoverDataKey(undefined)
               }}

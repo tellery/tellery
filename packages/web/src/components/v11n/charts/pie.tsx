@@ -247,11 +247,9 @@ export const pie: Chart<Type.PIE> = {
                   ? ThemingVariables.colors.visualizationOther
                   : ThemingVariables.colors.visualization[slice.color]
             }))}
-            onMouseEnter={
-              ((value: { id: string }) => {
-                setHoverDataKey(value.id)
-              }) as unknown as (event: MouseEvent) => void
-            }
+            onMouseEnter={(data) => {
+              setHoverDataKey(data.id)
+            }}
             onMouseLeave={() => {
               setHoverDataKey(undefined)
             }}

@@ -2,8 +2,9 @@ import type { AxiosError } from 'axios'
 import { debounce } from 'lodash'
 import { MutableRefObject, RefObject, useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useHover, ReactDOMAttributes } from '@use-gesture/react'
+import { useHover } from '@use-gesture/react'
 import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect'
+import { ReactDOMAttributes } from '@use-gesture/react/dist/declarations/src/types'
 export { useMediaQueries, useMediaQuery } from '@react-hook/media-query'
 
 export const useMounted = (): RefObject<boolean> => {

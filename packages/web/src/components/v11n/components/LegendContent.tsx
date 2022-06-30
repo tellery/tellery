@@ -65,10 +65,10 @@ export function LegendContent(props: Props) {
             value={item}
             isSmall={isSmall}
             onMouseEnter={() => {
-              props.onMouseEnter?.(item as unknown as MouseEvent)
+              ;(props.onMouseEnter as any)?.(item as unknown as MouseEvent)
             }}
             onMouseLeave={() => {
-              props.onMouseLeave?.(item as unknown as MouseEvent)
+              ;(props.onMouseLeave as any)?.(item as unknown as MouseEvent)
             }}
           />
         ))}
