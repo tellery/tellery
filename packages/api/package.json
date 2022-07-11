@@ -90,7 +90,7 @@
     "@types/redis": "^4.0.11",
     "@types/test-listen": "^1.1.0",
     "@types/uuid": "^8.3.3",
-    "@typescript-eslint/eslint-plugin": "^5.8.0",
+    "@typescript-eslint/eslint-plugin": "^5.30.6",
     "@typescript-eslint/parser": "^5.8.0",
     "ava": "^4.3.0",
     "concurrently": "^7.2.1",
