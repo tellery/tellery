@@ -30,7 +30,7 @@
     "@socket.io/postgres-adapter": "^0.3.0",
     "@socket.io/postgres-emitter": "^0.1.0",
     "@socket.io/redis-emitter": "^4.1.0",
-    "aws-sdk": "^2.1047.0",
+    "aws-sdk": "^2.1172.0",
     "bluebird": "^3.7.2",
     "cache-manager": "^4.0.1",
     "cache-manager-ioredis": "^2.1.0",
