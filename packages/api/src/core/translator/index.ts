@@ -12,9 +12,16 @@ import { ISqlTranslator } from './interface'
 import * as dbtTranslator from './dbt'
 import * as sqlTranslator from './sql'
 import * as smartQueryTranslator from './smartQuery'
-
+import mustacheParser from './mustacheParser'
 const translators: ISqlTranslator[] = [sqlTranslator, dbtTranslator, smartQueryTranslator]
-
+const VARIABLE_REGEX = /\{\{([a-z|A-Z|0-9|_|-]{0,20})\}\}/g
+// {{start}}
+// {{blockId(start=start,end='2021-22')}}
+// {{blockId(start=start,end=end)}}
+// {{blockId(name=name) as $alias}}
+// Matcher of the form {{ $blockId as $alias }} or {{ $blockId }} or {{ $blockId | name=value, name2=value2 }} or {{ $blockId | name=$var, name2=$var2 }} or {{ $blockId | name={var}, name2={var2} }} or {{ $blockId as $alias | name=value, name2=value2 }}
+// const partialQueryPattern = /{{\s*([a-zA-Z0-9-_]+)\s*(?:as\s+(\w[\w\d]*))?\s*}}/gi
+const mustachePattern = /{{\s*(.+)\s*}}/g
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 8)
 
 const rootKey = 'root'
@@ -24,18 +31,26 @@ type PartialQuery = {
   endIndex: number
   blockId: string
   alias: string
+  params: Record<string, string>
+}
+
+type PartialExpression = {
+  startIndex: number
+  endIndex: number
+  name: string
+  alias: string
+  type: 'transclusion' | 'variable'
+  params: Record<string, string>
 }
 
 type SQLPieces = {
   subs: {
-    blockId: string
     alias: string
+    params: Record<string, string>
+    blockId: string
   }[]
   mainBody: string
 }
-
-// Matcher of the form {{ $blockId as $alias }} or {{ $blockId }}
-const partialQueryPattern = /{{\s*([a-zA-Z0-9-_]+)\s*(?:as\s+(\w[\w\d]*))?\s*}}/gi
 
 function withLimit(sql: string, limit: number): string {
   const singleLinedSql = sql.replace(/\n/g, ' ')
@@ -142,6 +157,55 @@ async function buildGraph(
   return res
 }
 
+const replaceSqlVariables = (data: string, params: Record<string, string>): string => {
+  const result = data.replace(VARIABLE_REGEX, (name) => {
+    const variableName = name.slice(2, -2)
+    const value = params[variableName]
+    if (!value) {
+      throw new Error('variable not found')
+    }
+    if (value.startsWith('"')) {
+      return value.slice(1, -1) ?? ''
+    } else {
+      return `{{${value ?? ''}}}`
+    }
+  })
+  return result
+}
+
+const getCTEBody = (mainBody: string, commonTableExprs: string[]) => {
+  if (commonTableExprs.length === 0) return mainBody
+  // remove leading space and newlines, for further check
+  const polishedMainBody = mainBody.trim()
+  // compatible with `with recursive clause` in main body
+  if (polishedMainBody.toLowerCase().startsWith('with recursive')) {
+    return `WITH RECURSIVE \n${commonTableExprs.join(',\n')},\n${polishedMainBody.substring(15)}`
+  } else {
+    const commonTableExprBody = `WITH\n${commonTableExprs.join(',\n')}`
+    // compatible with `with clause` in main body
+    if (polishedMainBody.toLowerCase().startsWith('with ')) {
+      return `${commonTableExprBody},\n${polishedMainBody.substring(5)}`
+    } else {
+      return `${commonTableExprBody}\n${polishedMainBody}`
+    }
+  }
+}
+
+const getParamsWithContext = (params: Record<string, string>, context: Record<string, string>) => {
+  const newParams: Record<string, string> = {}
+  for (const key in params) {
+    const value = params[key]
+    if (value.startsWith('"')) {
+      // literal expression
+      newParams[key] = value
+    } else {
+      // replace with context params
+      newParams[key] = context[value]
+    }
+  }
+  return newParams
+}
+
 export function buildSqlFromGraph(graph: DirectedGraph<SQLPieces, string>): string {
   const sqlMap: { [k: string]: string } = {}
 
@@ -150,72 +214,87 @@ export function buildSqlFromGraph(graph: DirectedGraph<SQLPieces, string>): stri
     return root.mainBody
   }
 
-  const stack = new Array<{ blockId: string; alias?: string }>()
-  stack.push({ blockId: rootKey })
-
+  const stack = new Array<Pick<PartialQuery, 'alias' | 'blockId' | 'params'>>()
+  stack.push({ blockId: rootKey, alias: '', params: {} })
+  console.log('build sql')
   while (stack.length !== 0) {
-    const { blockId, alias } = stack.slice(-1)[0]
+    const { blockId, alias, params } = stack.slice(-1)[0]
+    const { subs, mainBody } = graph.getNode(blockId)
+
+    let isComplete = true
+    subs.forEach((s) => {
+      if (!sqlMap[sqlMapKey(s.blockId, s.alias)]) {
+        isComplete = false
+
+        stack.push({
+          ...s,
+          blockId: s.blockId,
+          params: getParamsWithContext(s.params, params),
+        })
+      }
+    })
+
+    if (!isComplete) {
+      continue
+    }
 
     let cteBody = ''
-    let record = false
-    const { subs, mainBody } = graph.getNode(blockId)
-    if (subs.length === 0) {
-      stack.pop()
-      cteBody = mainBody
-      record = true
-    } else {
-      let whole = true
-      subs.forEach((s) => {
-        if (!sqlMap[sqlMapKey(s.blockId, s.alias)]) {
-          whole = false
-          stack.push(s)
-        }
-      })
+    stack.pop()
 
-      if (whole) {
-        stack.pop()
-        record = true
+    const commonTableExprs = _(subs)
+      .map((s) =>
+        replaceSqlVariables(
+          sqlMap[sqlMapKey(s.blockId, s.alias)],
+          getParamsWithContext(s.params, params),
+        ),
+      )
+      .value()
+    cteBody = getCTEBody(replaceSqlVariables(mainBody, params), commonTableExprs)
 
-        const commonTableExprs = _(subs)
-          .map((s) => sqlMap[sqlMapKey(s.blockId, s.alias)])
-          .value()
-        // remove leading space and newlines, for further check
-        const polishedMainBody = mainBody.trim()
-        // compatible with `with recursive clause` in main body
-        if (polishedMainBody.toLowerCase().startsWith('with recursive')) {
-          cteBody = `WITH RECURSIVE \n${commonTableExprs.join(
-            ',\n',
-          )},\n${polishedMainBody.substring(15)}`
-        } else {
-          const commonTableExprBody = `WITH\n${commonTableExprs.join(',\n')}`
-          // compatible with `with clause` in main body
-          if (polishedMainBody.toLowerCase().startsWith('with ')) {
-            cteBody = `${commonTableExprBody},\n${polishedMainBody.substring(5)}`
-          } else {
-            cteBody = `${commonTableExprBody}\n${polishedMainBody}`
-          }
-        }
-      }
-    }
+    const result = alias
+      ? `  ${alias} AS (\n    ${cteBody.replace(/\n/g, '\n    ')}\n  )`
+      : cteBody.replace(/\n/g, '\n    ')
 
-    if (record) {
-      sqlMap[sqlMapKey(blockId, alias)] = alias
-        ? `  ${alias} AS (\n    ${cteBody.replace(/\n/g, '\n    ')}\n  )`
-        : cteBody.replace(/\n/g, '\n    ')
-    }
+    sqlMap[sqlMapKey(blockId, alias)] = result
   }
+  console.log(sqlMap)
   return sqlMap[sqlMapKey(rootKey)]
 }
 
 function extractPartialQueries(sql: string): PartialQuery[] {
-  const matches = Array.from(sql.matchAll(partialQueryPattern))
+  const expressions = extractExpressions(sql)
 
-  return _.map(matches, (match) => ({
-    startIndex: match.index!,
-    endIndex: match.index! + match[0].length,
-    blockId: match[1],
-    alias: match[2] ?? nanoid(),
-  }))
+  return (
+    expressions
+      // block id len is 21
+      .filter((expression) => expression.type === 'transclusion')
+      .map((expression) => ({
+        ...expression,
+        blockId: expression.name,
+      }))
+  )
+}
+
+function extractExpressions(sql: string): PartialExpression[] {
+  const matches = Array.from(sql.matchAll(mustachePattern))
+
+  return _.map(matches, (match) => {
+    const matchText = match[1]
+    try {
+      const result = mustacheParser.parse(matchText, {})
+      return {
+        startIndex: match.index!,
+        endIndex: match.index! + match[0].length,
+        name: result.name,
+        type: result.name.length === 21 ? 'transclusion' : 'variable',
+        params: result.params,
+        alias: result.alias ?? nanoid(),
+      }
+    } catch (err) {
+      console.error(err)
+      return null
+    }
+  }).filter((expression) => !!expression) as PartialExpression[]
 }
 
 /*
@@ -238,7 +317,7 @@ function sqlMacro(sql: string): SQLPieces {
 
   return {
     mainBody,
-    subs: _.map(partialQueries, (i) => _.pick(i, ['blockId', 'alias'])),
+    subs: _.map(partialQueries, (i) => _.pick(i, ['blockId', 'alias', 'params'])),
   }
 }
 

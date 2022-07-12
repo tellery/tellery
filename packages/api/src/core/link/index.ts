@@ -49,7 +49,7 @@ export function getLinksFromSql(input?: string): Link[] {
   }
   const partialQueries = extractPartialQueries(input)
   const links = _.map(partialQueries, ({ blockId }) => ({
-    blockId,
+    blockId: blockId,
     type: LinkType.QUESTION,
   }))
   // extract questions it referred by transclusion from its sql
