@@ -21,7 +21,7 @@ const VARIABLE_REGEX = /\{\{([a-z|A-Z|0-9|_|-]{0,20})\}\}/g
 // {{blockId(name=name) as $alias}}
 // Matcher of the form {{ $blockId as $alias }} or {{ $blockId }} or {{ $blockId | name=value, name2=value2 }} or {{ $blockId | name=$var, name2=$var2 }} or {{ $blockId | name={var}, name2={var2} }} or {{ $blockId as $alias | name=value, name2=value2 }}
 // const partialQueryPattern = /{{\s*([a-zA-Z0-9-_]+)\s*(?:as\s+(\w[\w\d]*))?\s*}}/gi
-const mustachePattern = /{{\s*(.+)\s*}}/g
+const mustachePattern = /{{\s*(.+?)\s*}}/g
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 8)
 
 const rootKey = 'root'
@@ -31,7 +31,7 @@ type PartialQuery = {
   endIndex: number
   blockId: string
   alias: string
-  params: Record<string, string>
+  params?: Record<string, string>
 }
 
 type PartialExpression = {
@@ -40,13 +40,13 @@ type PartialExpression = {
   name: string
   alias: string
   type: 'transclusion' | 'variable'
-  params: Record<string, string>
+  params?: Record<string, string>
 }
 
 type SQLPieces = {
   subs: {
     alias: string
-    params: Record<string, string>
+    params?: Record<string, string>
     blockId: string
   }[]
   mainBody: string
@@ -157,7 +157,7 @@ async function buildGraph(
   return res
 }
 
-const replaceSqlVariables = (data: string, params: Record<string, string>): string => {
+const replaceSqlVariables = (data: string, params: Record<string, string> = {}): string => {
   const result = data.replace(VARIABLE_REGEX, (name) => {
     const variableName = name.slice(2, -2)
     const value = params[variableName]
@@ -191,7 +191,10 @@ const getCTEBody = (mainBody: string, commonTableExprs: string[]) => {
   }
 }
 
-const getParamsWithContext = (params: Record<string, string>, context: Record<string, string>) => {
+const getParamsWithContext = (
+  params: Record<string, string> = {},
+  context: Record<string, string> = {},
+) => {
   const newParams: Record<string, string> = {}
   for (const key in params) {
     const value = params[key]
@@ -216,7 +219,6 @@ export function buildSqlFromGraph(graph: DirectedGraph<SQLPieces, string>): stri
 
   const stack = new Array<Pick<PartialQuery, 'alias' | 'blockId' | 'params'>>()
   stack.push({ blockId: rootKey, alias: '', params: {} })
-  console.log('build sql')
   while (stack.length !== 0) {
     const { blockId, alias, params } = stack.slice(-1)[0]
     const { subs, mainBody } = graph.getNode(blockId)
@@ -257,7 +259,7 @@ export function buildSqlFromGraph(graph: DirectedGraph<SQLPieces, string>): stri
 
     sqlMap[sqlMapKey(blockId, alias)] = result
   }
-  console.log(sqlMap)
+  // console.log(sqlMap)
   return sqlMap[sqlMapKey(rootKey)]
 }
 
@@ -291,10 +293,10 @@ function extractExpressions(sql: string): PartialExpression[] {
         alias: result.alias ?? nanoid(),
       }
     } catch (err) {
-      console.error(err)
+      console.error(err, sql)
       return null
     }
-  }).filter((expression) => !!expression) as PartialExpression[]
+  }).filter((item) => !!item) as PartialExpression[]
 }
 
 /*

@@ -3,7 +3,7 @@ import { Editor } from '@app/types'
 import { DefaultValue, selectorFamily } from 'recoil'
 import { TelleryVariable, VariableAtomFamily } from './variables'
 import mustacheParser from '@app/lib/mustache-parser'
-const mustachePattern = /{{\s*(.+)\s*}}/g
+const mustachePattern = /{{\s*(.+?)\s*}}/g
 
 const getVariableLiteral = (variable: TelleryVariable) => {
   if (variable.type === 'text') return `'${variable.currentValue}'`
@@ -40,15 +40,18 @@ export const QuerySelectorFamily = selectorFamily<
     ({ storyId, queryId }) =>
     async ({ get }) => {
       const queryBlock = get(TelleryBlockAtom(queryId)) as Editor.QueryBlock
+      console.log('QuerySelectorFamily', queryBlock)
       let isTemp = false
       const getReplacedQuery = (data: string, type: 'sql' | 'smart' = 'sql') => {
         const replacedData = data.replace(mustachePattern, (match) => {
+          console.log('getReplacedQuery', match)
           const expressionText = match.slice(2, -2)
           let expression: null | {
             name: string
             params: Record<string, string>
             alias?: string
           } = null
+          console.log(mustacheParser.parse(expressionText, {}))
           try {
             expression = mustacheParser.parse(expressionText, {})
           } catch (err) {
@@ -99,6 +102,9 @@ export const QuerySelectorFamily = selectorFamily<
           },
           isTemp: isTemp
         }
+      }
+      if (queryBlock.type === Editor.BlockType.SQL || queryBlock.type === Editor.BlockType.QueryBuilder) {
+        return getReplacedQuery((queryBlock as Editor.SQLBlock).content?.sql ?? '')
       }
       try {
         if (queryBlock.type === Editor.BlockType.SmartQuery) {

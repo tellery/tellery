@@ -161,7 +161,7 @@ test('buildSqlFromGraph', async (t) => {
   const bid2 = nanoid()
   const bid3 = nanoid()
   const g = new DirectedGraph<{
-    subs: { blockId: string; alias: string }[]
+    subs: { blockId: string; alias: string; params?: Record<string, string> }[]
     mainBody: string
   }>()
   g.addNode('root', {

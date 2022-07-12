@@ -29,6 +29,7 @@ export async function getIConnectorManagerFromDB(
     return getIConnectorManager(
       connector.workspaceId,
       connector.url,
+      // 'localhost:50051',
       connector.authType,
       connector.authData,
     )
