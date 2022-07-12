@@ -40,22 +40,19 @@ export const QuerySelectorFamily = selectorFamily<
     ({ storyId, queryId }) =>
     async ({ get }) => {
       const queryBlock = get(TelleryBlockAtom(queryId)) as Editor.QueryBlock
-      console.log('QuerySelectorFamily', queryBlock)
       let isTemp = false
       const getReplacedQuery = (data: string, type: 'sql' | 'smart' = 'sql') => {
         const replacedData = data.replace(mustachePattern, (match) => {
-          console.log('getReplacedQuery', match)
           const expressionText = match.slice(2, -2)
           let expression: null | {
             name: string
             params: Record<string, string>
             alias?: string
           } = null
-          console.log(mustacheParser.parse(expressionText, {}))
           try {
             expression = mustacheParser.parse(expressionText, {})
           } catch (err) {
-            console.error(match, err)
+            console.error(data, match, err)
           }
           if (expression === null) return match
           if (expression.name.length === 21) {
