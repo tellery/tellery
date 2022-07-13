@@ -51,7 +51,7 @@
     "downloadjs": "^1.4.7",
     "downshift": "^6.1.7",
     "exceljs": "^4.3.0",
-    "focus-trap-react": "^8.10.0",
+    "focus-trap-react": "^9.0.2",
     "framer-motion": "^6.3.3",
     "highlight.js": "^11.5.1",
     "html-entities": "^2.3.3",
