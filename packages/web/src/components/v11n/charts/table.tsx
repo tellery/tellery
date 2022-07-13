@@ -5,31 +5,26 @@ import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 import { ThemingVariables } from '@app/styles'
 import { css, cx } from '@emotion/css'
 import {
+  ColumnDef,
   ColumnOrderState,
-  createTable,
+  flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   SortingState,
-  useTableInstance
+  useReactTable
 } from '@tanstack/react-table'
 import Tippy from '@tippyjs/react'
 import { sortBy } from 'lodash'
 import React, { useEffect, useMemo, useState } from 'react'
-import { DetectableOverflow } from '@app/components/DetectableOverflow'
 import { ConfigSection } from '../components/ConfigSection'
 import { ConfigSelect } from '../components/ConfigSelect'
 import { ConfigTab } from '../components/ConfigTab'
 import { SortableList } from '../components/SortableList'
-import { DisplayType, SQLType, Type } from '../types'
+import { DisplayType, Type } from '../types'
 import { formatRecord, isNumeric, isTimeSeries } from '../utils'
 import type { Chart } from './base'
-import { TippySingletonContextProvider } from '@app/components/TippySingletonContextProvider'
-
-const tableInstance = createTable()
-  .setRowType<unknown[]>()
-  .setColumnMetaType<{ name: string; sqlType: SQLType; displayType: DisplayType }>()
 
 const TABLE_ROW_HEIGHT_MIN = 30
 
@@ -173,6 +168,14 @@ const CellRenderer: ReactFCWithChildren<{ cell: any; displayType: DisplayType; d
   return <>{formatRecord(value, displayType)}</>
 }
 
+declare module '@tanstack/table-core' {
+  interface ColumnMeta {
+    name: string
+    displayType: DisplayType
+    sqlType: string
+  }
+}
+
 export const table: Chart<Type.TABLE> = {
   type: Type.TABLE,
 
@@ -309,19 +312,17 @@ export const table: Chart<Type.TABLE> = {
       [props.config.columnOrder, props.data.fields]
     )
     const columnVisibility = props.config.columnVisibility
-
     const columns = useMemo(
       () =>
-        props.data.fields.map((field, index) =>
-          tableInstance.createDataColumn((record) => record[index], {
-            id: field.name,
-            meta: {
-              name: field.name,
-              displayType: field.displayType,
-              sqlType: field.sqlType
-            }
-          })
-        ),
+        props.data.fields.map((field, index) => ({
+          id: field.name,
+          accessorFn: (record) => record[index],
+          meta: {
+            name: field.name,
+            displayType: field.displayType,
+            sqlType: field.sqlType
+          }
+        })) as ColumnDef<unknown[]>[],
       [props.data]
     )
     const displayTypes = useDataFieldsDisplayType(props.data.fields)
@@ -338,11 +339,11 @@ export const table: Chart<Type.TABLE> = {
       getCanPreviousPage,
       previousPage,
       nextPage
+
       // state: { globalFilter },
       // preGlobalFilteredRows,
       // setGlobalFilter
-    } = useTableInstance(
-      tableInstance,
+    } = useReactTable(
       {
         columns: columns,
         data: props.data.records as unknown[][],
@@ -439,7 +440,7 @@ export const table: Chart<Type.TABLE> = {
                           onClick={header.column.getToggleSortingHandler()}
                         >
                           <Tippy content={header.column.columnDef.meta?.sqlType} delay={300}>
-                            <span> {header.renderHeader()}</span>
+                            <span> {flexRender(header.column.columnDef.header, header.getContext())}</span>
                           </Tippy>
                           {header.column.getIsSorted() && (
                             <IconCommonArrowLeft
