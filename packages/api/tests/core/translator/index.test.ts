@@ -146,13 +146,17 @@ test('cyclic assemble', async (t) => {
 })
 
 test('sqlMacro', (t) => {
-  const sql = `select * from {{blockId1 as t1}} left join {{blockId2}} p on t1.a = p.a union all {{ blockId3 }} order by c`
+  const sql = `select * from {{8wmfUh2YWFXjXwjZJ04K1 as t1}} left join {{8wmfUh2YWFXjXwjZJ04K2}} p on t1.a = p.a union all {{ 8wmfUh2YWFXjXwjZJ04K3 }} order by c`
   const { mainBody, subs } = sqlMacro(sql)
   t.deepEqual(
     mainBody,
     `select * from t1 left join ${subs[1].alias} p on t1.a = p.a union all ${subs[2].alias} order by c`,
   )
-  t.deepEqual(_(subs).map('blockId').value(), ['blockId1', 'blockId2', 'blockId3'])
+  t.deepEqual(_(subs).map('blockId').value(), [
+    '8wmfUh2YWFXjXwjZJ04K1',
+    '8wmfUh2YWFXjXwjZJ04K2',
+    '8wmfUh2YWFXjXwjZJ04K3',
+  ])
   t.deepEqual(subs[0].alias, 't1')
 })
 
