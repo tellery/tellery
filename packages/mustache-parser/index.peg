@@ -1,0 +1,48 @@
+//==========================
+//Simple Tellery SQL prammar
+//==========================
+//generated on https://pegjs.org/online
+//==========================
+//Accepts expressions 
+//start
+//blockId(start=start,end='2021-22')
+//blockId(start=start,end=end)
+//blockId(name=name) as $alias
+//==========================
+Start
+  = Expression
+
+Expression
+  = _ name:Word _ params:Params? _ alias:("as" _ alias:Word)? _ {
+      return {
+        name: name,
+        params: params,
+        alias: alias?.[2]
+      };
+    }
+
+Params
+  = "(" _ pairs:(Param _ ","? _ )+ _ ")" { 
+      return pairs.reduce((acc,c) => {
+        const param = c[0]
+        acc[param.key] = param.value
+        return acc
+      },{}); 
+    }
+
+Param
+  = _ left:Word _ "=" _ right:String _ { return {key: left, value: right};}
+  /  _ left:Word _ "=" _ right:Word _ { return {key: left, value: right};}
+
+String "string"
+  = "\"" sentence:([^\"]+) "\"" { return "\"" + sentence.join('') + "\"";}
+  / "\'" sentence:([^\']+) "\'" { return "\"" + sentence.join('') + "\"";}
+
+Integer "integer"
+  = _ [0-9]+ { return parseInt(text(), 10); }
+
+Word "word"
+  = _ expr:([a-z|A-Z|0-9|_|-]+) { return expr.join(""); }
+
+_ "whitespace"
+  = [ \t\n\r]*

@@ -11,14 +11,14 @@ test('getLinksFromSql', (t) => {
     nanoid(),
     BlockParentType.BLOCK,
     nanoid(),
-    { sql: 'select * from {{bid}}' },
+    { sql: 'select * from {{lYQZVPExSyRMbKb7lICsY}}' },
     true,
     0,
   )
   const links = block.getLinksFromContent()
   t.deepEqual(links, [
     {
-      blockId: 'bid',
+      blockId: 'lYQZVPExSyRMbKb7lICsY',
       type: LinkType.QUESTION,
     },
   ])

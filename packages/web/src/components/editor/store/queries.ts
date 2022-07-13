@@ -2,7 +2,7 @@ import { TelleryBlockAtom } from '@app/store/block'
 import { Editor } from '@app/types'
 import { DefaultValue, selectorFamily } from 'recoil'
 import { TelleryVariable, VariableAtomFamily } from './variables'
-import mustacheParser from '@app/lib/mustache-parser'
+import * as mustacheParser from '@tellery/mustache-parser'
 const mustachePattern = /{{\s*(.+?)\s*}}/g
 
 const getVariableLiteral = (variable: TelleryVariable) => {

@@ -25,24 +25,24 @@ test.after.always(async () => {
 })
 
 test('getLinksFromToken', (t) => {
-  const story = getLinksFromToken([['‣', [['r', 's', 'sid']]]])
+  const story = getLinksFromToken([['‣', [['r', 's', 'lYQZVPExSyRMbKb7lICsY']]]])
   t.deepEqual(story, [
     {
-      blockId: 'sid',
+      blockId: 'lYQZVPExSyRMbKb7lICsY',
       type: LinkType.BLOCK,
     },
   ])
-  const block = getLinksFromToken([['‣', [['r', 'b', 'bid']]]])
+  const block = getLinksFromToken([['‣', [['r', 'b', 'lYQZVPExSyRMbKb7lICsY']]]])
   t.deepEqual(block, [
     {
-      blockId: 'bid',
+      blockId: 'lYQZVPExSyRMbKb7lICsY',
       type: LinkType.BLOCK,
     },
   ])
-  const block2 = getLinksFromToken([[' ', [['r', 'b', 'bid']]]])
+  const block2 = getLinksFromToken([[' ', [['r', 'b', 'lYQZVPExSyRMbKb7lICsY']]]])
   t.deepEqual(block2, [
     {
-      blockId: 'bid',
+      blockId: 'lYQZVPExSyRMbKb7lICsY',
       type: LinkType.BLOCK,
     },
   ])

@@ -12,7 +12,7 @@ import { ISqlTranslator } from './interface'
 import * as dbtTranslator from './dbt'
 import * as sqlTranslator from './sql'
 import * as smartQueryTranslator from './smartQuery'
-import mustacheParser from './mustacheParser'
+import * as mustacheParser from '@tellery/mustache-parser'
 const translators: ISqlTranslator[] = [sqlTranslator, dbtTranslator, smartQueryTranslator]
 const VARIABLE_REGEX = /\{\{([a-z|A-Z|0-9|_|-]{0,20})\}\}/g
 // {{start}}

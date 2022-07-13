@@ -2003,6 +2003,11 @@
   resolved "https://registry.yarnpkg.com/@tanstack/table-core/-/table-core-8.0.13.tgz#e5dc7ab9a5ca8224e128251b55749a13b81bd421"
   integrity sha512-2G9DVpeIarsCkWNFe4ZPDDQQHK6XEqGr8C+G8eoSiPvM077LRg+oK150get3kRjbNUaHUT6RUEjc0lXNC6V83w==
 
+"@tellery/mustache-parser@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@tellery/mustache-parser/-/mustache-parser-1.0.0.tgz#8b14e2f152e3bda4a6d4b66e88da501a4f0c41fa"
+  integrity sha512-ea0mCMqCi7NnFwPrCLatV+Z4HeTfZoHh2x+HuT1iivx9LlZML90DHbDYQmvLzRldVIhHNPIAxBiz8HkgCArrww==
+
 "@tellery/recharts@^2.1.12":
   version "2.1.12"
   resolved "https://registry.yarnpkg.com/@tellery/recharts/-/recharts-2.1.12.tgz#31550f26c74abed8895788a011441e337e5a1a21"
