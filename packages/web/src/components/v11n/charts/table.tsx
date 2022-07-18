@@ -4,9 +4,11 @@ import { useDebounce } from '@app/hooks'
 import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 import { ThemingVariables } from '@app/styles'
 import { css, cx } from '@emotion/css'
+import { rankItem } from '@tanstack/match-sorter-utils'
 import {
   ColumnDef,
   ColumnOrderState,
+  FilterFn,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -29,6 +31,19 @@ import type { Chart } from './base'
 const TABLE_ROW_HEIGHT_MIN = 30
 
 const VERTICAL_BORDER_WITDH = 0
+
+const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
+  // Rank the item
+  const itemRank = rankItem(row.getValue(columnId), value)
+
+  // Store the itemRank info
+  addMeta({
+    itemRank
+  })
+
+  // Return if the item should be filtered in/out
+  return itemRank.passed
+}
 
 function GlobalFilter({ value, setGlobalFilter }: { value?: string; setGlobalFilter: (value: string) => void }) {
   const [_value, setValue] = useState(value)
@@ -356,7 +371,8 @@ export const table: Chart<Type.TABLE> = {
         },
         onSortingChange: setSorting,
         onGlobalFilterChange: setGlobalFilter,
-        globalFilterFn: 'includesString',
+        // globalFilterFn: fuzzyFilter,
+        globalFilterFn: fuzzyFilter,
         getFilteredRowModel: getFilteredRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
