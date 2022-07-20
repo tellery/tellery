@@ -130,6 +130,7 @@ export class UserService implements IUserService {
         username: username ?? email.split('@')[0] ?? email,
         email: email,
         avatar: avatar,
+        password: '',
         status: AccountStatus.ACTIVE,
       })
       const insertedUser = await r.save(insert)
