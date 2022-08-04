@@ -1,6 +1,6 @@
 import { IconCommonArrowLeft, IconCommonArrowUnfold, IconMenuHide, IconMenuShow } from '@app/assets/icons'
 import IconButton from '@app/components/kit/IconButton'
-import { useDebounce } from '@app/hooks'
+import { useBindHovering, useDebounce } from '@app/hooks'
 import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
 import { ThemingVariables } from '@app/styles'
 import { css, cx } from '@emotion/css'
@@ -19,7 +19,7 @@ import {
 } from '@tanstack/react-table'
 import Tippy from '@tippyjs/react'
 import { sortBy } from 'lodash'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { memo, useEffect, useMemo, useState } from 'react'
 import { ConfigSection } from '../components/ConfigSection'
 import { ConfigSelect } from '../components/ConfigSelect'
 import { ConfigTab } from '../components/ConfigTab'
@@ -27,6 +27,7 @@ import { SortableList } from '../components/SortableList'
 import { DisplayType, Type } from '../types'
 import { formatRecord, isNumeric, isTimeSeries } from '../utils'
 import type { Chart } from './base'
+import { usePopper } from 'react-popper'
 
 const TABLE_ROW_HEIGHT_MIN = 30
 
@@ -90,7 +91,7 @@ enum DISPLAY_AS_TYPE {
 }
 const DISPLAY_AS_TYPES = [DISPLAY_AS_TYPE.Auto, DISPLAY_AS_TYPE.Text, DISPLAY_AS_TYPE.Link, DISPLAY_AS_TYPE.Image]
 
-const isImage = (text: string) => /^https?:\/\/.+\.(jpg|jpeg|png|gif|bmp|svg)$/i.test(text)
+const isImage = (text: string) => /^https?:\/\/.*\/.*\.(png|gif|webp|jpeg|jpg|heic|bmp)\??.*/i.test(text)
 const isLink = (text: string) => /^https?:\/\//.test(text)
 const extractHostFromLink = (link: string) => {
   try {
@@ -124,6 +125,62 @@ const getDisplayTypeData = (text: string, type: DISPLAY_AS_TYPE) => {
   return [data, asType] as [string[], DISPLAY_AS_TYPE]
 }
 
+const ImageRenderer: React.FC<{ src: string }> = memo(({ src }) => {
+  const [referenceElement, setReferenceElement] = useState<HTMLImageElement | null>(null)
+  const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null)
+  const { styles, attributes } = usePopper(referenceElement, popperElement, {
+    strategy: 'fixed',
+    placement: 'right-start'
+  })
+  const [bind, hovering] = useBindHovering()
+  return (
+    <>
+      <div
+        className={css`
+          position: relative;
+          width: 24px;
+          height: 24px;
+        `}
+        {...bind()}
+      >
+        <img
+          ref={setReferenceElement}
+          title={src}
+          src={src}
+          className={css`
+            width: 24px;
+            height: 24px;
+            object-fit: cover;
+          `}
+        ></img>
+        {hovering && (
+          <div
+            ref={setPopperElement}
+            className={css`
+              width: 300px;
+              height: 300px;
+              z-index: 1000;
+            `}
+            style={styles.popper}
+            {...attributes.popper}
+          >
+            <img
+              title={src}
+              src={src}
+              className={css`
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+              `}
+            ></img>
+          </div>
+        )}
+      </div>
+    </>
+  )
+})
+ImageRenderer.displayName = 'ImageRenderer'
+
 const CellRenderer: ReactFCWithChildren<{ cell: any; displayType: DisplayType; displayAs?: DISPLAY_AS_TYPE }> = ({
   cell,
   displayType,
@@ -140,18 +197,7 @@ const CellRenderer: ReactFCWithChildren<{ cell: any; displayType: DisplayType; d
     return (
       <>
         {data.map((item, i) => {
-          return (
-            <img
-              title={item}
-              key={i}
-              src={item}
-              className={css`
-                width: 24px;
-                height: 24px;
-                object-fit: cover;
-              `}
-            ></img>
-          )
+          return <ImageRenderer src={item} key={i} />
         })}
       </>
     )
@@ -358,30 +404,24 @@ export const table: Chart<Type.TABLE> = {
       // state: { globalFilter },
       // preGlobalFilteredRows,
       // setGlobalFilter
-    } = useReactTable(
-      {
-        columns: columns,
-        data: props.data.records as unknown[][],
-        state: {
-          // pagination,
-          columnVisibility,
-          columnOrder,
-          globalFilter,
-          sorting
-        },
-        onSortingChange: setSorting,
-        onGlobalFilterChange: setGlobalFilter,
-        // globalFilterFn: fuzzyFilter,
-        globalFilterFn: fuzzyFilter,
-        getFilteredRowModel: getFilteredRowModel(),
-        getSortedRowModel: getSortedRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
-        getCoreRowModel: getCoreRowModel()
-      }
-      // useGlobalFilter,
-      // useSortBy,
-      // usePagination
-    )
+    } = useReactTable({
+      columns: columns,
+      data: props.data.records as unknown[][],
+      state: {
+        // pagination,
+        columnVisibility,
+        columnOrder,
+        globalFilter,
+        sorting
+      },
+      onSortingChange: setSorting,
+      onGlobalFilterChange: setGlobalFilter,
+      globalFilterFn: fuzzyFilter,
+      getFilteredRowModel: getFilteredRowModel(),
+      getSortedRowModel: getSortedRowModel(),
+      getPaginationRowModel: getPaginationRowModel(),
+      getCoreRowModel: getCoreRowModel()
+    })
 
     useEffect(() => {
       setPageSize(getPageSizeByHeight(props.dimensions.height))
