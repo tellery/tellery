@@ -21,7 +21,7 @@ export const DEFAULT_VISULIZATION_FORMAT = {
   aspectRatio: DEFAULT_QUESTION_BLOCK_ASPECT_RATIO
 }
 
-export const createEmptyBlock = <T extends Editor.BaseBlock = Editor.BaseBlock>(args: Partial<T>) => {
+export const createEmptyBlock = <T extends Editor.BaseBlock = Editor.BaseBlock>(args: RecursivePartial<T>) => {
   const id = args?.id ?? blockIdGenerator()
   const now = new Date().valueOf()
   const commonParts = {
@@ -39,7 +39,7 @@ export const createEmptyBlock = <T extends Editor.BaseBlock = Editor.BaseBlock>(
     // TODO: implement default permissions
     permissions: args.permissions,
     version: 0
-  } as unknown as T
+  } as T
 
   switch (args.type) {
     case Editor.BlockType.Visualization: {

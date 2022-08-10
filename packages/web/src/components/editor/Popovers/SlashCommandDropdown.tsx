@@ -1,4 +1,5 @@
 import {
+  IconCommonCalendar,
   IconCommonLink,
   IconCommonSqlQuery,
   IconMenuBulletedList,
@@ -184,10 +185,14 @@ export const SlashCommandDropDownInner: ReactFCWithChildren<SlachCommandDropDown
   )
 
   const createOrToggleBlock = useCallback(
-    (options: Partial<Editor.Block>) => async (block: Editor.BaseBlock) => {
+    (options: RecursivePartial<Editor.Block>) => async (block: Editor.Block) => {
       invariant(editor, 'editor is null')
-      const newBlock = createEmptyBlock({ ...options, parentId: block.parentId, storyId: block.storyId })
-      const blockFragment = {
+      const newBlock = createEmptyBlock({
+        ...options,
+        parentId: block.parentId,
+        storyId: block.storyId
+      })
+      const blockFragment: BlockFragment = {
         children: [newBlock.id],
         data: {
           [newBlock.id]: newBlock
@@ -200,7 +205,7 @@ export const SlashCommandDropDownInner: ReactFCWithChildren<SlachCommandDropDown
   )
 
   const createOrToggleControlBlock = useCallback(
-    (options: Partial<Editor.ControlBlock>) => async (block: Editor.BaseBlock) => {
+    (options: RecursivePartial<Editor.ControlBlock>) => async (block: Editor.BaseBlock) => {
       invariant(editor, 'editor is null')
       const generater = varibleNameMaker()
       let variableName: string
@@ -213,9 +218,9 @@ export const SlashCommandDropDownInner: ReactFCWithChildren<SlachCommandDropDown
       const newBlock = createEmptyBlock<Editor.ControlBlock>({
         ...options,
         content: {
-          ...options.content,
+          ...options.content!,
           name: variableName
-        } as any,
+        },
         parentId: block.parentId,
         storyId: block.storyId,
         type: Editor.BlockType.Control
@@ -226,7 +231,7 @@ export const SlashCommandDropDownInner: ReactFCWithChildren<SlachCommandDropDown
           [newBlock.id]: newBlock
         }
       }
-      insertBlockFragment(blockFragment, block)
+      insertBlockFragment(blockFragment, block as Editor.Block)
       setOpen(false)
     },
     [editor, insertBlockFragment, setOpen, variables]
@@ -338,46 +343,53 @@ export const SlashCommandDropDownInner: ReactFCWithChildren<SlachCommandDropDown
         action: createOrToggleBlock({ type: Editor.BlockType.Embed }),
         icon: <IconCommonLink color={ThemingVariables.colors.text[0]} />
       },
-      {
-        title: 'Metabase (Beta)',
-        action: createOrToggleBlock({ type: Editor.BlockType.Metabase }),
-        icon: <IconCommonLink color={ThemingVariables.colors.text[0]} />
-      },
+      // {
+      //   title: 'Metabase (Beta)',
+      //   action: createOrToggleBlock({ type: Editor.BlockType.Metabase }),
+      //   icon: <IconCommonLink color={ThemingVariables.colors.text[0]} />
+      // },
       {
         title: 'Line Divider',
         action: createOrToggleBlock({ type: Editor.BlockType.Divider }),
         icon: <IconMenuDivider color={ThemingVariables.colors.text[0]} />
       },
       {
-        title: 'Block Equation (Beta)',
+        title: 'Block Equation',
         action: createOrToggleBlock({ type: Editor.BlockType.Equation }),
         icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Transclusion Input',
         action: createOrToggleControlBlock({
-          content: { type: 'transclusion' } as any
+          content: { type: 'transclusion' }
         }),
         icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Text Input',
         action: createOrToggleControlBlock({
-          content: { type: 'text' } as any
+          content: { type: 'text' }
         }),
         icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
       },
       {
-        title: 'Number Input (Decimal)',
+        title: 'Date Input',
         action: createOrToggleControlBlock({
-          content: { type: 'number' } as any
+          content: { type: 'date' }
+        }),
+        icon: <IconCommonCalendar color={ThemingVariables.colors.text[0]} />
+      },
+      {
+        title: 'Number Input (Integer)',
+        action: createOrToggleControlBlock({
+          content: { type: 'number' }
         }),
         icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
       },
       {
         title: 'Number Input (Float)',
         action: createOrToggleControlBlock({
-          content: { type: 'float' } as any
+          content: { type: 'float' }
         }),
         icon: <IconMenuCode color={ThemingVariables.colors.text[0]} />
       }

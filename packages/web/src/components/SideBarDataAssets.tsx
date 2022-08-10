@@ -143,7 +143,7 @@ const DataAssestCardContainer = styled.div`
   }
 `
 
-const Draggable: ReactFCWithChildren<{ element?: any; blockId: string; currentStoryId?: string }> = (props) => {
+const Draggable: ReactFCWithChildren<{ element?: string; blockId: string; currentStoryId?: string }> = (props) => {
   const Element = props.element || 'div'
   const queryBlockBlock = useBlockSuspense<Editor.DataAssetBlock>(props.blockId)
   const blockFragment = useMemo(() => {

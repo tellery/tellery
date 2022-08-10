@@ -73,7 +73,9 @@ declare global {
     const content: React.ForwardRefExoticComponent<React.SVGAttributes<SVGElement>>
     export default content
   }
-
+  type RecursivePartial<T> = {
+    [P in keyof T]?: RecursivePartial<T[P]>
+  }
   interface ImportMeta {
     env: {
       GITHUB_AUTH_TOKEN: string

@@ -1,20 +1,25 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ThemingVariables } from '@app/styles'
 import { css, cx } from '@emotion/css'
-import { FormHTMLAttributes, forwardRef, ReactNode } from 'react'
+import { forwardRef, ReactNode, ComponentType, ForwardedRef } from 'react'
 
 export default forwardRef<
-  HTMLElement,
+  HTMLOrSVGElement,
   {
     title?: string
     subtitle?: string
     body?: ReactNode
     footer?: ReactNode
-    as?: string
-  } & FormHTMLAttributes<HTMLElement>
+    as?: keyof JSX.IntrinsicElements
+  } & React.HTMLAttributes<HTMLOrSVGElement>
 >(function FormModal(props, ref) {
-  const { title, subtitle, body, footer, className, ...restProps } = props
-  const Tag = (props.as ?? 'form') as any
-
+  const { title, subtitle, body, footer, className, as, ...restProps } = props
+  const Tag = (as || ('form' as keyof JSX.IntrinsicElements)) as unknown as ComponentType<
+    {
+      children: ReactNode
+      ref: ForwardedRef<HTMLOrSVGElement>
+    } & React.HTMLAttributes<HTMLOrSVGElement>
+  >
   return (
     <Tag
       {...restProps}

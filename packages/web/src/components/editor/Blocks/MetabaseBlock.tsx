@@ -84,7 +84,7 @@ const _MetabaseBlock: BlockComponent<
           onSubmit={useCallback(
             ({ src }: { src: string }) => {
               const url = new URL(src)
-              let content: any = {
+              let content: Editor.Block['content'] = {
                 ...block.content,
                 siteURL: `${url.protocol}//${url.host}`
               }

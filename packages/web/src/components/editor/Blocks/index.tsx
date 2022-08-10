@@ -1,5 +1,5 @@
 import { Editor } from '@app/types'
-import React, { memo, ReactNode } from 'react'
+import React, { isValidElement, memo, ReactNode } from 'react'
 import type { BlockFormatInterface } from '../hooks'
 import { DeletedBlock } from './DeletedBlock'
 import { NoPermissionBlock } from './NoPermisionBlock'
@@ -38,8 +38,8 @@ const _BlockInner: React.ForwardRefRenderFunction<
   //   return <NoPermissionBlock block={block} />
   // }
 
-  const Component = Blocks[block.type]
-  if (!Component) {
+  const Component = Blocks[block.type] as BlockComponent<ReactFCWithChildren>
+  if (!Component || isValidElement(Component)) {
     return <UnknownBlock block={block}></UnknownBlock>
   }
 

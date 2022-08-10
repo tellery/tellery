@@ -621,7 +621,7 @@ const OperationButtonWithHoverContent: ReactFCWithChildren<{
     <>
       <Tippy
         key={type}
-        singleton={tippySingleton as any}
+        singleton={tippySingleton}
         content={hoverContent}
         hideOnClick={false}
         animation="fade"

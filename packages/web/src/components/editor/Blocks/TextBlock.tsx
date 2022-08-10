@@ -10,7 +10,7 @@ interface TextBlockProps {
   children: ReactNode
 }
 
-const _TextBlock: React.ForwardRefRenderFunction<any, TextBlockProps> = ({ block, children }, ref) => {
+const _TextBlock: React.ForwardRefRenderFunction<unknown, TextBlockProps> = ({ block, children }, ref) => {
   const editableRef = useRef<EditableRef>(null)
   const { readonly } = useBlockBehavior()
 

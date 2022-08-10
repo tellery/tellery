@@ -3,12 +3,16 @@ import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
 import { VariableType } from '@app/utils'
-import { css } from '@emotion/css'
+import { css, cx } from '@emotion/css'
 import styled from '@emotion/styled'
 import React, { useCallback, useEffect, useState } from 'react'
+import DatePicker from 'react-date-picker/dist/entry.nostyle'
 import FormInput from './kit/FormInput'
 import FormSelect from './kit/FormSelect'
 import { QueryBlockSelectInput } from './QueryBlockSelectInput'
+import { IconCommonArrowDouble, IconCommonArrowDropDown } from '@app/assets/icons'
+import { calenderClassName } from './FilterPopover'
+import dayjs from 'dayjs'
 
 const SectionHeader = styled.div`
   font-family: Helvetica Neue;
@@ -35,13 +39,83 @@ const FormItem = styled.div`
   padding: 0 10px;
   align-items: center;
 `
-const VariableFormInput = styled(FormInput)`
+const InputWrapperStyle = css`
   width: 130px;
   height: 32px;
   padding: 0 8px;
+  border: 1px solid ${ThemingVariables.colors.gray[1]};
+  border-radius: 8px;
+  outline: none;
+  font-size: 14px;
+  font-weight: normal;
+  padding: 0 15px;
+  height: 36px;
+  box-sizing: border-box;
+  background-color: ${ThemingVariables.colors.gray[5]};
 `
 
-const VariableTypes: VariableType[] = ['text', 'number', 'transclusion', 'float', 'macro']
+const VariableTypes: VariableType[] = ['text', 'number', 'transclusion', 'float', 'macro', 'date']
+const isValidDate = (d: string) => {
+  return dayjs(d).isValid()
+}
+
+export const VariableDatePicker: React.FC<{
+  value: string
+  setValue: (value: string) => void
+
+  className?: string
+}> = ({ value, setValue, className = InputWrapperStyle }) => {
+  return (
+    <DatePicker
+      view="month"
+      format="yyyy-MM-dd"
+      maxDetail="month"
+      calendarIcon={null}
+      clearIcon={null}
+      prev2Label={
+        <IconCommonArrowDouble
+          color={ThemingVariables.colors.text[1]}
+          className={css`
+            display: block;
+            transform: rotate(180deg);
+          `}
+        />
+      }
+      prevLabel={
+        <IconCommonArrowDropDown
+          color={ThemingVariables.colors.text[1]}
+          className={css`
+            display: block;
+            transform: rotate(90deg);
+          `}
+        />
+      }
+      nextLabel={
+        <IconCommonArrowDropDown
+          color={ThemingVariables.colors.text[1]}
+          className={css`
+            display: block;
+            transform: rotate(270deg);
+          `}
+        />
+      }
+      next2Label={<IconCommonArrowDouble color={ThemingVariables.colors.text[1]} />}
+      value={isValidDate(value) ? new Date(value) : new Date()}
+      onChange={(v?: Date) => setValue(dayjs(v).format('YYYY-MM-DD'))}
+      className={cx(
+        calenderClassName,
+        css`
+          .react-date-picker__wrapper {
+            ${className}
+            input {
+              outline: none;
+            }
+          }
+        `
+      )}
+    />
+  )
+}
 
 export const VariableSettingsSection: ReactFCWithChildren<{ storyId: string; blockId: string }> = ({
   storyId,
@@ -84,20 +158,19 @@ export const VariableSettingsSection: ReactFCWithChildren<{ storyId: string; blo
       <SectionHeader>Settings</SectionHeader>
       <FormItem>
         <Label>Variable name</Label>
-        <VariableFormInput
+        <FormInput
+          className={InputWrapperStyle}
           value={block.content.name}
           onChange={(e) => {
             handleUpdateVariableName(e.currentTarget.value)
           }}
-        ></VariableFormInput>
+        ></FormInput>
       </FormItem>
       <FormItem>
         <Label>Variable type</Label>
         <FormSelect
           value={block.content.type}
-          className={css`
-            width: 130px;
-          `}
+          className={InputWrapperStyle}
           onChange={(e) => {
             handleUpdateVariableType(e.target.value as VariableType)
           }}
@@ -114,30 +187,16 @@ export const VariableSettingsSection: ReactFCWithChildren<{ storyId: string; blo
           block.content.type === 'number' ||
           block.content.type === 'float' ||
           block.content.type === 'macro') && (
-          <VariableFormInput
+          <FormInput
+            className={InputWrapperStyle}
             value={defaultValue}
             onChange={(e) => {
               setDefaultValue(e.currentTarget.value)
             }}
-          ></VariableFormInput>
+          ></FormInput>
         )}
         {block.content.type === 'transclusion' && (
-          <div
-            className={css`
-              width: 130px;
-              height: 32px;
-              padding: 0 8px;
-              border: 1px solid ${ThemingVariables.colors.gray[1]};
-              border-radius: 8px;
-              outline: none;
-              font-size: 14px;
-              font-weight: normal;
-              padding: 0 15px;
-              height: 36px;
-              box-sizing: border-box;
-              background-color: ${ThemingVariables.colors.gray[5]};
-            `}
-          >
+          <div className={InputWrapperStyle}>
             <QueryBlockSelectInput
               onChange={(blockId: string) => {
                 setDefaultValue(blockId)
@@ -146,6 +205,7 @@ export const VariableSettingsSection: ReactFCWithChildren<{ storyId: string; blo
             />
           </div>
         )}
+        {block.content.type === 'date' && <VariableDatePicker value={defaultValue} setValue={setDefaultValue} />}
       </FormItem>
     </div>
   )

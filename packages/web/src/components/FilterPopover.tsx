@@ -100,7 +100,7 @@ const funcArgs = {
   [Editor.Filter.IN]: 1
 }
 
-const calenderClassName = css`
+export const calenderClassName = css`
   .react-calendar {
     width: 290px;
     padding: 10px;
@@ -160,8 +160,9 @@ const calenderClassName = css`
 
   .react-calendar__tile {
     font-weight: 500;
-    font-size: 14px;
+    font-size: 12px;
     line-height: 17px;
+    white-space: nowrap;
     background: transparent;
     border: none;
     outline: none;

@@ -31,6 +31,7 @@ export const variableRawValueToValue = (rawValue: string, type: VariableType) =>
   if (type === 'number' || type === 'decimal') return parseInt(rawValue, 10)
   if (type === 'float') return parseFloat(rawValue)
   if (type === 'transclusion') return rawValue
+  if (type === 'date') return rawValue
   return rawValue
 }
 

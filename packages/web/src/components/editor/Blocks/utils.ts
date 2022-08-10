@@ -1,4 +1,5 @@
 import { Editor } from '@app/types'
+import { ReactComponentElement } from 'react'
 import { BulletListBlock } from './BulletListBlock'
 import { CodeBlock } from './CodeBlock'
 import { ControlBlock } from './ControlBlock'
@@ -32,7 +33,7 @@ export type BlockComponent<P = {}> = P & {
   }
 }
 
-const SQLBlock = { ...VirtualBlock } as BlockComponent<any>
+const SQLBlock = { ...VirtualBlock } as BlockComponent<unknown>
 SQLBlock.meta = {
   isText: false,
   forwardRef: true,
@@ -42,7 +43,7 @@ SQLBlock.meta = {
   isQuery: true
 }
 
-const QueryBuilderBlock = { ...VirtualBlock } as BlockComponent<any>
+const QueryBuilderBlock = { ...VirtualBlock } as BlockComponent<unknown>
 QueryBuilderBlock.meta = {
   isText: false,
   forwardRef: true,
@@ -52,7 +53,7 @@ QueryBuilderBlock.meta = {
   isQuery: true
 }
 
-const SnapshotBlock = { ...VirtualBlock } as BlockComponent<any>
+const SnapshotBlock = { ...VirtualBlock } as BlockComponent<unknown>
 SnapshotBlock.meta = {
   isText: false,
   forwardRef: true,
@@ -62,7 +63,7 @@ SnapshotBlock.meta = {
   isQuery: true
 }
 
-const SmartQueryBlock = { ...VirtualBlock } as BlockComponent<any>
+const SmartQueryBlock = { ...VirtualBlock } as BlockComponent<unknown>
 SmartQueryBlock.meta = {
   isText: false,
   forwardRef: true,
@@ -72,7 +73,7 @@ SmartQueryBlock.meta = {
   isQuery: true
 }
 
-const DBTBlock = { ...VirtualBlock } as BlockComponent<any>
+const DBTBlock = { ...VirtualBlock } as BlockComponent<unknown>
 DBTBlock.meta = {
   isText: false,
   forwardRef: true,
@@ -82,7 +83,7 @@ DBTBlock.meta = {
   isQuery: true
 }
 
-export const Blocks: Record<string, BlockComponent<any>> = {
+export const Blocks: Record<string, BlockComponent<ReactFCWithChildren | {}>> = {
   [Editor.BlockType.Text]: TextBlock,
   [Editor.BlockType.Header]: TextBlock,
   [Editor.BlockType.SubHeader]: TextBlock,

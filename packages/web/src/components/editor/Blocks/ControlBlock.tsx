@@ -1,5 +1,6 @@
 import { IconCommonClose, IconCommonEdit, IconCommonEnter } from '@app/assets/icons'
 import { DetectableOverflow } from '@app/components/DetectableOverflow'
+import { VariableDatePicker } from '@app/components/VariableSettingsSection'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useSearchParamsState } from '@app/hooks/useSearchParamsState'
 import { useSideBarVariableEditor } from '@app/hooks/useSideBarQuestionEditor'
@@ -40,7 +41,8 @@ const useVariableName = (block: Editor.ControlBlock) => {
 }
 
 const _ControlBlock: BlockComponent<
-  ReactFCWithChildren<{
+  React.FC<{
+    children: React.ReactNode
     block: Editor.ControlBlock
     blockFormat: BlockFormatInterface
     parentType: Editor.BlockType
@@ -239,7 +241,7 @@ const _ControlBlock: BlockComponent<
                 padding: 2px 0;
                 height: 100%;
                 margin-left: 2px;
-                overflow: hidden;
+                /* overflow: hidden; */
               `}
             >
               {(block.content.type === 'text' || block.content.type === 'macro') && (
@@ -285,6 +287,28 @@ const _ControlBlock: BlockComponent<
                   ref={inputRef}
                   onKeyDown={onValueInputKeydown}
                 />
+              )}
+              {block.content.type === 'date' && (
+                <div
+                  className={css`
+                    height: 100%;
+                    width: 100%;
+                    .react-date-picker {
+                      height: 100%;
+                      width: 100%;
+                    }
+                  `}
+                >
+                  <VariableDatePicker
+                    className={css`
+                      height: 100%;
+                      width: 100%;
+                      border: none;
+                    `}
+                    value={variable.currentRawValue}
+                    setValue={(value: string) => submitChange(block.content.type, value)}
+                  />
+                </div>
               )}
             </div>
             <div

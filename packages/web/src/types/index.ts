@@ -213,7 +213,7 @@ export namespace Editor {
     permissions: Permission[]
     content?: {
       title?: Token[]
-    }
+    } & object
     storyId?: string
   }
 
@@ -322,7 +322,7 @@ export namespace Editor {
   export interface ControlBlock extends ContentBlock {
     content: ContentBlock['content'] & {
       name: string
-      defaultValue: any
+      defaultValue: string
       type: VariableType
     }
   }

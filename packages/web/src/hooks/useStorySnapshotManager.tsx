@@ -73,6 +73,9 @@ export const useRefreshSnapshot = (storyId: string) => {
           mutation.cancel()
         })
 
+        // TODO: a workaround to sql exectue multiple time with empty sql content
+        if (sql.length === 0) return { data: {}, isTemp, errMsg: null }
+
         return queryClient.executeMutation({
           mutationFn: sqlRequest,
           variables: {
