@@ -6,7 +6,7 @@ import * as mustacheParser from '@tellery/mustache-parser'
 const mustachePattern = /{{\s*(.+?)\s*}}/g
 
 const getVariableLiteral = (variable: TelleryVariable) => {
-  if (variable.type === 'text') return `'${variable.currentValue}'`
+  if (variable.type === 'text' || variable.type === 'date') return `'${variable.currentValue}'`
   if (variable.type === 'macro') return `${variable.currentValue}`
   if (variable.type === 'number' || variable.type === 'decimal' || variable.type === 'float')
     return `${variable.currentValue}`

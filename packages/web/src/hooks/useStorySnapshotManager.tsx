@@ -18,6 +18,8 @@ import invariant from 'tiny-invariant'
 import { useBlockSuspense, useFetchStoryChunk, useGetBlock, useGetSnapshot } from './api'
 import { useCommit } from './useCommit'
 import { useGetQuerySql } from './useGetQuerySql'
+import { useQuestionEditorActiveIdState, useQuestionEditorBlockMapState } from './useQuestionEditor'
+import { useStoryBlocksMap } from './useStoryBlock'
 import { useStoryPermissions } from './useStoryPermissions'
 import { useStoryResources } from './useStoryResources'
 
@@ -234,7 +236,14 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
   const storyBlock = useBlockSuspense<Story>(storyId)
   const resourcesBlocks = useStoryResources(storyId)
   const queryClient = useQueryClient()
-
+  const [activeId] = useQuestionEditorActiveIdState(storyId)
+  const storyBlocksMap = useStoryBlocksMap(storyId)
+  const currentActiveQueryBlockId = useRef<string | null>(null)
+  useEffect(() => {
+    if (!storyBlocksMap || !activeId) return
+    const activeQuestionBlock = storyBlocksMap[activeId] as Editor.VisualizationBlock
+    currentActiveQueryBlockId.current = activeQuestionBlock.content?.queryId!
+  }, [storyBlocksMap, activeId])
   const executeableQuestionBlocks = useMemo(() => {
     return resourcesBlocks.filter((block) => isExecuteableBlockType(block.type))
   }, [resourcesBlocks])
@@ -282,16 +291,19 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
     if (!previousComipledQueriesRef) return
     for (let i = 0; i < compiledQueries.length; i++) {
       const currentQuery = compiledQueries[i]
+      const queryBlock = executeableQuestionBlocks[i]
+      if (currentActiveQueryBlockId.current === currentQuery.query.id) {
+        continue
+      }
       const previousQuery = previousComipledQueriesRef.find(
         (previousQuery) => previousQuery.query.id === currentQuery.query.id
       )
       if (!previousQuery || !currentQuery) continue
       if (dequal(previousQuery, currentQuery) !== true) {
-        const queryBlock = executeableQuestionBlocks[i]
         refreshSnapshot.execute(queryBlock)
       }
     }
-  }, [previousComipledQueriesRef, compiledQueries, executeableQuestionBlocks, refreshSnapshot])
+  }, [previousComipledQueriesRef, compiledQueries, executeableQuestionBlocks, refreshSnapshot, activeId])
 
   const runAll = useCallback(() => {
     executeableQuestionBlocks.forEach((questionBlock: Editor.DataAssetBlock) => {

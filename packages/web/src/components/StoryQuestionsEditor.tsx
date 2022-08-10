@@ -594,19 +594,17 @@ export const StoryQuestionEditor: ReactFCWithChildren<{
     if (!isExecuteableBlockType(queryBlock.type)) {
       return
     }
-    save()
-    setTimeout(() => {
-      refreshSnapshot.execute(queryBlock).then((res) => {
-        if (res.errMsg) {
-          setSQLError(res.errMsg)
-          setSqlSidePanel(true)
-        } else {
-          setSQLError(null)
-          setSqlSidePanel(false)
-        }
-      })
-      sidebarEditor.setState({ blockId: block.id, activeTab: 'Visualization' })
-    }, 0)
+    await save()
+    refreshSnapshot.execute(queryBlock).then((res) => {
+      if (res.errMsg) {
+        setSQLError(res.errMsg)
+        setSqlSidePanel(true)
+      } else {
+        setSQLError(null)
+        setSqlSidePanel(false)
+      }
+    })
+    sidebarEditor.setState({ blockId: block.id, activeTab: 'Visualization' })
   }, [queryBlock, sql, save, sidebarEditor, block.id, refreshSnapshot])
 
   const cancelExecuteSql = useCallback(() => {
