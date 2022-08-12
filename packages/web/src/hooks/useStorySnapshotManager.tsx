@@ -242,7 +242,11 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
   useEffect(() => {
     if (!storyBlocksMap || !activeId) return
     const activeQuestionBlock = storyBlocksMap[activeId] as Editor.VisualizationBlock
-    currentActiveQueryBlockId.current = activeQuestionBlock.content?.queryId!
+    if (!activeQuestionBlock) {
+      currentActiveQueryBlockId.current = null
+    } else {
+      currentActiveQueryBlockId.current = activeQuestionBlock.content?.queryId!
+    }
   }, [storyBlocksMap, activeId])
   const executeableQuestionBlocks = useMemo(() => {
     return resourcesBlocks.filter((block) => isExecuteableBlockType(block.type))
