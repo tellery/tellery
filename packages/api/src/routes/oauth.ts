@@ -6,6 +6,8 @@ import { defaultUserService as userService } from '../services/user'
 import { validate } from '../utils/http'
 import config from 'config'
 import fetch from 'node-fetch'
+import workspaceService from '../services/workspace'
+import { PermissionWorkspaceRole } from '../types/permission'
 
 class LoginRequest {
   @IsDefined()
@@ -122,7 +124,11 @@ async function loginOrSignUpViaOauth(ctx: Context) {
     username: oauthUser.name,
     avatar: oauthUser.picture,
   })
-
+  await workspaceService.addMemberToWorkspaceIfNotExist(
+    user.id,
+    PermissionWorkspaceRole.MEMBER,
+    config.get('oauth2.defaultWorkspaceId'),
+  )
   const token = await userService.generateToken(user.id)
   setToken(ctx, token)
   ctx.body = user.toDTO()

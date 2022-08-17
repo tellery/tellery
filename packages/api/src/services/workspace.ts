@@ -196,7 +196,7 @@ export class WorkspaceService {
   }
 
   async addMembers(
-    operatorId: string,
+    operatorId: string | undefined,
     workspaceId: string,
     usersWithRole: {
       userId: string
@@ -224,6 +224,17 @@ export class WorkspaceService {
       .values(entities)
       .orIgnore()
       .execute()
+  }
+
+  async addMemberToWorkspaceIfNotExist(
+    userId: string,
+    role: PermissionWorkspaceRole,
+    workspaceId: string,
+  ): Promise<void> {
+    const workspace = await this.mustFindOneWithMembers(workspaceId)
+    if (!_.find(workspace.members, (m) => m.userId === userId)) {
+      await this.addMembers(undefined, workspaceId, [{ userId, role }])
+    }
   }
 
   async kickoutMembers(

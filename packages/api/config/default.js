@@ -49,6 +49,7 @@ module.exports = {
     scope: process.env.OAUTH2_SCOPE || '*',
     grantType: process.env.OAUTH2_GRANT_TYPE || 'authorization_code',
     redirectUrl: process.env.OAUTH2_REDIRECT_URL ?? '',
+    defaultWorkspaceId: process.env.OAUTH2_DEFAULT_WORKSPACE_ID ?? '',
   },
   // for SaaS usage
   deploy: {
