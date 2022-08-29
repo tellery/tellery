@@ -1,4 +1,5 @@
 import { IconCommonArrowLeft, IconCommonArrowUnfold, IconMenuHide, IconMenuShow } from '@app/assets/icons'
+import FormSwitch from '@app/components/kit/FormSwitch'
 import IconButton from '@app/components/kit/IconButton'
 import { useBindHovering, useDebounce } from '@app/hooks'
 import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
@@ -18,16 +19,17 @@ import {
   useReactTable
 } from '@tanstack/react-table'
 import Tippy from '@tippyjs/react'
-import { sortBy } from 'lodash'
+import { sortBy, uniq } from 'lodash'
 import React, { memo, useEffect, useMemo, useState } from 'react'
+import { usePopper } from 'react-popper'
+import { ConfigItem } from '../components/ConfigItem'
 import { ConfigSection } from '../components/ConfigSection'
 import { ConfigSelect } from '../components/ConfigSelect'
 import { ConfigTab } from '../components/ConfigTab'
 import { SortableList } from '../components/SortableList'
-import { DisplayType, Type } from '../types'
+import { Config, Data, DisplayType, Type } from '../types'
 import { formatRecord, isNumeric, isTimeSeries } from '../utils'
 import type { Chart } from './base'
-import { usePopper } from 'react-popper'
 
 const TABLE_ROW_HEIGHT_MIN = 30
 
@@ -124,7 +126,44 @@ const getDisplayTypeData = (text: string, type: DISPLAY_AS_TYPE) => {
 
   return [data, asType] as [string[], DISPLAY_AS_TYPE]
 }
-
+const pivotTable = (data: Data, config: Config<Type.TABLE>) => {
+  const { pivotTable: pivotTableConfig } = config
+  if (!pivotTableConfig) return data
+  const groupByIndex = data.fields.findIndex(
+    (field) => field.name !== pivotTableConfig?.cellColumn && field.name !== pivotTableConfig?.cellColumn
+  )
+  const cellIndex = data.fields.findIndex((field) => field.name === pivotTableConfig?.cellColumn)
+  const groupedRecord = data.records.reduce((a, c) => {
+    const groupId = c[groupByIndex] as string
+    if (!a[groupId]) {
+      a[groupId] = [] as Data['records']
+    }
+    ;(a[groupId] as unknown[][]).push(c)
+    return a
+  }, {} as Record<string, Data['records']>)
+  const pivotColumnIndex = data.fields.findIndex((field) => field.name === pivotTableConfig?.pivotColumn)
+  const pivotColumns = uniq(data.records.map((record) => record[pivotColumnIndex]))
+  const ids = Object.keys(groupedRecord)
+  const records = ids.map((id) => {
+    return [
+      id,
+      ...pivotColumns.map((column) => {
+        const records = groupedRecord[id]
+        const record = records.find((record) => record[pivotColumnIndex] === column)
+        return record ? record[cellIndex] : ''
+      })
+    ]
+  })
+  return {
+    fields: [
+      data.fields[groupByIndex],
+      ...pivotColumns.map((column) => {
+        return { ...data.fields[cellIndex], name: column }
+      })
+    ],
+    records
+  }
+}
 const ImageRenderer: React.FC<{ src: string }> = memo(({ src }) => {
   const [referenceElement, setReferenceElement] = useState<HTMLImageElement | null>(null)
   const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null)
@@ -260,122 +299,192 @@ export const table: Chart<Type.TABLE> = {
           : props.data.fields.map(({ name }) => name),
       [props.config.columnOrder, props.data.fields]
     )
-
+    const fileds = props.data.fields ?? []
+    const pivotTableAvailable = fileds.length === 3
     return (
       <ConfigTab tabs={['Data']}>
-        <ConfigSection title="Columns">
-          <SortableList
-            value={columnOrder}
-            onChange={(value) => {
-              props.onConfigChange('columnOrder', value)
-            }}
-            renderItem={(item) => {
-              const filed = props.data.fields.find((f) => f.name === item)
-              return (
+        <>
+          {pivotTableAvailable && (
+            <ConfigSection title="Pivot Table">
+              <ConfigItem label="Enable">
                 <div
                   className={css`
-                    width: 100%;
-                    overflow-x: hidden;
-                    font-size: 12px;
-                    padding: 0 6px;
-                    height: 32px;
-                    color: ${ThemingVariables.colors.text[0]};
                     display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    border-radius: 4px;
-                    :hover {
-                      background-color: ${ThemingVariables.colors.primary[5]};
-                    }
+                    justify-content: flex-end;
+                    line-height: 0;
+                    padding-right: 6px;
                   `}
                 >
-                  <Tippy content={item} placement="left" delay={[1000, 500]}>
-                    <div
-                      className={css`
-                        flex-grow: 1;
-                        flex-shrink: 1;
-                        margin-right: 10px;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                      `}
-                    >
-                      <span>{item}</span>
-                    </div>
-                  </Tippy>
-                  {filed?.displayType === 'STRING' && (
-                    <div
-                      className={css`
-                        flex-shrink: 0;
-                        width: 100px;
-                        margin-right: 10px;
-                      `}
-                    >
-                      <ConfigSelect
-                        title="string display as"
-                        options={DISPLAY_AS_TYPES}
-                        value={props.config.displayAs?.[item] ?? DISPLAY_AS_TYPE.Auto}
-                        className={css`
-                          height: 28px;
-                        `}
-                        onChange={(value) => {
-                          props.onConfigChange('displayAs', {
-                            ...props.config.displayAs,
-                            [item]: value
-                          })
-                        }}
-                      />
-                    </div>
-                  )}
-                  {props.config.columnVisibility[item] === false ? (
-                    <IconButton
-                      icon={IconMenuHide}
-                      color={ThemingVariables.colors.text[1]}
-                      className={css`
-                        flex-shrink: 0;
-                      `}
-                      onClick={() => {
-                        props.onConfigChange('columnVisibility', {
-                          ...props.config.columnVisibility,
-                          [item]: true
-                        })
-                      }}
-                    />
-                  ) : (
-                    <IconButton
-                      icon={IconMenuShow}
-                      color={ThemingVariables.colors.text[1]}
-                      className={css`
-                        flex-shrink: 0;
-                      `}
-                      onClick={() => {
-                        props.onConfigChange('columnVisibility', {
-                          ...props.config.columnVisibility,
-                          [item]: false
-                        })
-                      }}
-                    />
-                  )}
+                  <FormSwitch
+                    checked={!!props.config.pivotTable}
+                    onChange={(e) => {
+                      props.onConfigChange(
+                        'pivotTable',
+                        e.currentTarget.checked
+                          ? {
+                              pivotColumn: fileds[0]?.name,
+                              cellColumn: fileds[0]?.name
+                            }
+                          : undefined
+                      )
+                    }}
+                  />
                 </div>
-              )
-            }}
-          />
-        </ConfigSection>
+              </ConfigItem>
+              {props.config.pivotTable && (
+                <>
+                  <ConfigItem label="Pivot Column">
+                    <ConfigSelect
+                      onChange={(value) => {
+                        props.onConfigChange('pivotTable', {
+                          pivotColumn: value,
+                          cellColumn: props.config.pivotTable!.cellColumn
+                        })
+                      }}
+                      value={props.config.pivotTable!.pivotColumn}
+                      options={props.data.fields?.map((field) => field.name)}
+                    ></ConfigSelect>
+                  </ConfigItem>
+                  <ConfigItem label="Cell Column">
+                    <ConfigSelect
+                      onChange={(value) => {
+                        props.onConfigChange('pivotTable', {
+                          pivotColumn: props.config.pivotTable!.pivotColumn,
+                          cellColumn: value
+                        })
+                      }}
+                      value={props.config.pivotTable!.cellColumn}
+                      options={props.data.fields?.map((field) => field.name)}
+                    ></ConfigSelect>
+                  </ConfigItem>
+                </>
+              )}
+            </ConfigSection>
+          )}
+          {!props.config.pivotTable && (
+            <ConfigSection title="Columns">
+              <SortableList
+                value={columnOrder}
+                onChange={(value) => {
+                  props.onConfigChange('columnOrder', value)
+                }}
+                renderItem={(item) => {
+                  const filed = props.data.fields.find((f) => f.name === item)
+                  return (
+                    <div
+                      className={css`
+                        width: 100%;
+                        overflow-x: hidden;
+                        font-size: 12px;
+                        padding: 0 6px;
+                        height: 32px;
+                        color: ${ThemingVariables.colors.text[0]};
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        border-radius: 4px;
+                        :hover {
+                          background-color: ${ThemingVariables.colors.primary[5]};
+                        }
+                      `}
+                    >
+                      <Tippy content={item} placement="left" delay={[1000, 500]}>
+                        <div
+                          className={css`
+                            flex-grow: 1;
+                            flex-shrink: 1;
+                            margin-right: 10px;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                          `}
+                        >
+                          <span>{item}</span>
+                        </div>
+                      </Tippy>
+
+                      {filed?.displayType === 'STRING' && (
+                        <div
+                          className={css`
+                            flex-shrink: 0;
+                            width: 100px;
+                            margin-right: 10px;
+                          `}
+                        >
+                          <ConfigSelect
+                            title="string display as"
+                            options={DISPLAY_AS_TYPES}
+                            value={props.config.displayAs?.[item] ?? DISPLAY_AS_TYPE.Auto}
+                            className={css`
+                              height: 28px;
+                            `}
+                            onChange={(value) => {
+                              props.onConfigChange('displayAs', {
+                                ...props.config.displayAs,
+                                [item]: value
+                              })
+                            }}
+                          />
+                        </div>
+                      )}
+                      {props.config.columnVisibility[item] === false ? (
+                        <IconButton
+                          icon={IconMenuHide}
+                          color={ThemingVariables.colors.text[1]}
+                          className={css`
+                            flex-shrink: 0;
+                          `}
+                          onClick={() => {
+                            props.onConfigChange('columnVisibility', {
+                              ...props.config.columnVisibility,
+                              [item]: true
+                            })
+                          }}
+                        />
+                      ) : (
+                        <IconButton
+                          icon={IconMenuShow}
+                          color={ThemingVariables.colors.text[1]}
+                          className={css`
+                            flex-shrink: 0;
+                          `}
+                          onClick={() => {
+                            props.onConfigChange('columnVisibility', {
+                              ...props.config.columnVisibility,
+                              [item]: false
+                            })
+                          }}
+                        />
+                      )}
+                    </div>
+                  )
+                }}
+              />
+            </ConfigSection>
+          )}
+        </>
       </ConfigTab>
     )
   },
 
   Diagram(props) {
+    const data = useMemo(() => {
+      if (props.config.pivotTable) {
+        return pivotTable(props.data, props.config)
+      } else {
+        return props.data
+      }
+    }, [props.data, props.config])
     const columnOrder = useMemo<ColumnOrderState>(
       () =>
-        sortBy(props.config.columnOrder).join() === sortBy(props.data.fields.map(({ name }) => name)).join()
+        sortBy(props.config.columnOrder).join() === sortBy(data.fields.map(({ name }) => name)).join()
           ? props.config.columnOrder
-          : props.data.fields.map(({ name }) => name),
-      [props.config.columnOrder, props.data.fields]
+          : data.fields.map(({ name }) => name),
+      [props.config.columnOrder, data.fields]
     )
     const columnVisibility = props.config.columnVisibility
     const columns = useMemo(
       () =>
-        props.data.fields.map((field, index) => ({
+        data.fields.map((field, index) => ({
           id: field.name,
           accessorFn: (record) => record[index],
           meta: {
@@ -384,9 +493,9 @@ export const table: Chart<Type.TABLE> = {
             sqlType: field.sqlType
           }
         })) as ColumnDef<unknown[]>[],
-      [props.data]
+      [data]
     )
-    const displayTypes = useDataFieldsDisplayType(props.data.fields)
+    const displayTypes = useDataFieldsDisplayType(data.fields)
     const [globalFilter, setGlobalFilter] = React.useState('')
     const [sorting, setSorting] = React.useState<SortingState>([])
 
@@ -406,7 +515,7 @@ export const table: Chart<Type.TABLE> = {
       // setGlobalFilter
     } = useReactTable({
       columns: columns,
-      data: props.data.records as unknown[][],
+      data: data.records as unknown[][],
       state: {
         // pagination,
         columnVisibility,

@@ -7,7 +7,7 @@ import {
 } from '@app/assets/icons'
 import { createEmptyBlock } from '@app/helpers/blockFactory'
 import { useOpenStory } from '@app/hooks'
-import { useBlockSuspense, useQuerySnapshot, useSearchMetrics } from '@app/hooks/api'
+import { useBlockSuspense, useQuerySnapshotWithoutRecords, useSearchMetrics } from '@app/hooks/api'
 import { useTippyMenuAnimation } from '@app/hooks/useTippyMenuAnimation'
 import { ThemingVariables } from '@app/styles'
 import { Editor } from '@app/types'
@@ -204,14 +204,14 @@ export const DataAssetItem: ReactFCWithChildren<{
   const getBlockTitle = useGetBlockTitleTextSnapshot()
   const block = useBlockSuspense<Editor.DataAssetBlock>(blockId)
 
-  const snapshot = useQuerySnapshot(block.id)
+  const { data: snapshot } = useQuerySnapshotWithoutRecords(block.content?.snapshotId)
 
   const fields = useMemo(
     () =>
       snapshot?.data.fields
-        .filter((field) => field.sqlType)
+        ?.filter((field) => field.sqlType)
         .map((field) => ({ name: field.name, type: field.sqlType! })),
-    [snapshot?.data.fields]
+    [snapshot]
   )
 
   return (

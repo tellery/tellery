@@ -209,7 +209,7 @@ export interface EntityRequest {
   blockId?: string
 }
 
-const entityTypes = ['blocks', 'users', 'links', 'snapshots']
+const entityTypes = ['blocks', 'users', 'links', 'snapshots', 'snapshotsFields']
 export interface EntityRequestItems {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: Record<string, any>
@@ -230,6 +230,10 @@ export const fetchEntities = debounce((items: EntityRequestItems, workspaceId: s
         })),
         ...(Object.values(items?.snapshots ?? {}) as { args: EntityRequest }[]).map(({ args }) => ({
           type: 'snapshot',
+          ...args
+        })),
+        ...(Object.values(items?.snapshotsFields ?? {}) as { args: EntityRequest }[]).map(({ args }) => ({
+          type: 'snapshotFields',
           ...args
         })),
         ...(Object.values(items?.users ?? {}) as { args: EntityRequest }[]).map(({ args }) => ({
@@ -271,6 +275,9 @@ export const fetchEntities = debounce((items: EntityRequestItems, workspaceId: s
             case 'snapshots':
               resolve(res.data?.[type]?.[id] ?? { alive: false })
               break
+            case 'snapshotsFields':
+              resolve(res.data?.[type]?.[id] ?? { alive: false })
+              break
           }
         })
       }
@@ -288,7 +295,7 @@ export const fetchEntities = debounce((items: EntityRequestItems, workspaceId: s
 })
 
 export const fetchEntity = <T>(
-  type: 'block' | 'question' | 'user' | 'link' | 'snapshot',
+  type: 'block' | 'question' | 'user' | 'link' | 'snapshot' | 'snapshotFields',
   args: EntityRequest,
   workspaceId: string
 ): Promise<T> => {
@@ -301,6 +308,10 @@ export const fetchEntity = <T>(
       snapshots: {
         ...fetcher.items?.snapshots,
         ...(type === 'snapshot' ? { [args.id]: { resolve, reject, args } } : {})
+      },
+      snapshotsFields: {
+        ...fetcher.items?.snapshotsFields,
+        ...(type === 'snapshotFields' ? { [args.id]: { resolve, reject, args } } : {})
       },
       users: {
         ...fetcher.items?.users,
@@ -337,6 +348,10 @@ export const fetchQuestionBackLinks = (blockId: string, workspaceId: string) => 
 
 export const fetchSnapshot = (snapshotId: string, workspaceId: string) => {
   return fetchEntity<Snapshot>('snapshot', { id: snapshotId }, workspaceId)
+}
+
+export const fetchSnapshotFields = (snapshotId: string, workspaceId: string) => {
+  return fetchEntity<Snapshot>('snapshotFields', { id: snapshotId }, workspaceId)
 }
 
 export async function getCollectionSchema(props: {

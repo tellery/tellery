@@ -22,7 +22,6 @@ export class SnapshotService {
     await canGetWorkspaceData(this.permission, operatorId, workspaceId)
 
     const mgetList = await this.mgetByIds(snapshotIds)
-
     return _(mgetList)
       .map((l) => l.toDTO())
       .value()

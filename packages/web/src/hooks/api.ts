@@ -3,6 +3,8 @@ import {
   EntityRequest,
   fetchEntity,
   fetchQuestionBackLinks,
+  fetchSnapshot,
+  fetchSnapshotFields,
   fetchStoryBackLinks,
   getCollectionSchema,
   request,
@@ -13,7 +15,16 @@ import {
 } from '@app/api'
 import { useAsync } from '@app/hooks'
 import { useWorkspace } from '@app/hooks/useWorkspace'
-import type { AvailableConfig, BackLinks, Dimension, ProfileConfig, Story, UserInfo, Workspace } from '@app/types'
+import type {
+  AvailableConfig,
+  BackLinks,
+  Dimension,
+  ProfileConfig,
+  Snapshot,
+  Story,
+  UserInfo,
+  Workspace
+} from '@app/types'
 import { Editor } from '@app/types'
 import { queryClient } from '@app/utils'
 import { compact } from 'lodash'
@@ -468,6 +479,15 @@ export const useQuerySnapshot = (queryId: string) => {
   const atom = useRecoilValue(QuerySnapshotAtom({ blockId: queryId }))
 
   return atom
+}
+
+export const useQuerySnapshotWithoutRecords = (queryId?: string) => {
+  const workspace = useWorkspace()
+  return useQuery<Snapshot>(['snapshotFields', queryId], () => fetchSnapshotFields(queryId!, workspace.id), {
+    enabled: !!queryId,
+    keepPreviousData: true,
+    suspense: true
+  })
 }
 
 export const useGetSnapshot = () => {

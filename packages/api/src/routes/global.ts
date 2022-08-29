@@ -60,6 +60,8 @@ class MgetResourcesRequest {
         return 'links'
       case 'snapshot':
         return 'snapshots'
+      case 'snapshotFields':
+        return 'snapshotsFields'
       default:
         return 'unknown'
     }
@@ -100,6 +102,18 @@ async function mgetResources(ctx: Context) {
           return blockService.mget(uid, workspaceId, ids)
         case 'snapshot':
           return snapshotService.mget(uid, workspaceId, ids)
+        case 'snapshotFields':
+          return snapshotService.mget(uid, workspaceId, ids).then((res) =>
+            res.map((s) => {
+              return {
+                ...s,
+                data: {
+                  fields: s.data.fields,
+                  records: [],
+                },
+              }
+            }),
+          )
         case 'user':
           return userService.getInfos(_(v).map('id').compact().value())
         case 'link':

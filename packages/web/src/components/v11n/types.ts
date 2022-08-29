@@ -131,11 +131,15 @@ export enum ComboStack {
   STACK_100 = 'stack 100%'
 }
 
-interface TableConfig {
+export interface TableConfig {
   type: Type.TABLE
   columnOrder: string[]
   columnVisibility: { [key: string]: boolean }
   displayAs?: { [key: string]: string }
+  pivotTable?: {
+    pivotColumn: string
+    cellColumn: string
+  }
 }
 
 interface ComboConfig<T extends Type = Type.COMBO> {
