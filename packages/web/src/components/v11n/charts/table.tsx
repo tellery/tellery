@@ -158,7 +158,7 @@ const pivotTable = (data: Data, config: Config<Type.TABLE>) => {
     fields: [
       data.fields[groupByIndex],
       ...pivotColumns.map((column) => {
-        return { ...data.fields[cellIndex], name: column }
+        return { ...data.fields[cellIndex], name: column as string }
       })
     ],
     records
