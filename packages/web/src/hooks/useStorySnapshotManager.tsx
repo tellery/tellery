@@ -119,7 +119,9 @@ export const useRefreshSnapshot = (storyId: string) => {
               snapshotId,
               questionId: originalBlockId,
               sql: sql,
-              data: limitRecordsBySize(data, 10 * 1024 * 1024),
+              // TODO: Temporary remove the data size limit, it seems causes limit data records length to 1
+              // data: limitRecordsBySize(data, 10 * 1024 * 1024),
+              data: data,
               workspaceId: workspace.id
             })
             const prevSnapshot = await getSnapshot({ snapshotId: queryBlock?.content?.snapshotId })
