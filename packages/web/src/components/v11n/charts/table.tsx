@@ -302,167 +302,169 @@ export const table: Chart<Type.TABLE> = {
     const fileds = props.data.fields ?? []
     const pivotTableAvailable = fileds.length === 3
     return (
-      <ConfigTab tabs={['Data']}>
-        <>
-          {pivotTableAvailable && (
-            <ConfigSection title="Pivot Table">
-              <ConfigItem label="Enable">
-                <div
-                  className={css`
-                    display: flex;
-                    justify-content: flex-end;
-                    line-height: 0;
-                    padding-right: 6px;
-                  `}
-                >
-                  <FormSwitch
-                    checked={!!props.config.pivotTable}
-                    onChange={(e) => {
-                      props.onConfigChange(
-                        'pivotTable',
-                        e.currentTarget.checked
-                          ? {
-                              pivotColumn: fileds[0]?.name,
-                              cellColumn: fileds[0]?.name
-                            }
-                          : undefined
-                      )
-                    }}
-                  />
-                </div>
-              </ConfigItem>
-              {props.config.pivotTable && (
-                <>
-                  <ConfigItem label="Pivot Column">
-                    <ConfigSelect
-                      onChange={(value) => {
-                        props.onConfigChange('pivotTable', {
-                          pivotColumn: value,
-                          cellColumn: props.config.pivotTable!.cellColumn
-                        })
+      <>
+        <ConfigTab tabs={['Data', 'Color']}>
+          <>
+            {pivotTableAvailable && (
+              <ConfigSection title="Pivot Table">
+                <ConfigItem label="Enable">
+                  <div
+                    className={css`
+                      display: flex;
+                      justify-content: flex-end;
+                      line-height: 0;
+                      padding-right: 6px;
+                    `}
+                  >
+                    <FormSwitch
+                      checked={!!props.config.pivotTable}
+                      onChange={(e) => {
+                        props.onConfigChange(
+                          'pivotTable',
+                          e.currentTarget.checked
+                            ? {
+                                pivotColumn: fileds[0]?.name,
+                                cellColumn: fileds[0]?.name
+                              }
+                            : undefined
+                        )
                       }}
-                      value={props.config.pivotTable!.pivotColumn}
-                      options={props.data.fields?.map((field) => field.name)}
-                    ></ConfigSelect>
-                  </ConfigItem>
-                  <ConfigItem label="Cell Column">
-                    <ConfigSelect
-                      onChange={(value) => {
-                        props.onConfigChange('pivotTable', {
-                          pivotColumn: props.config.pivotTable!.pivotColumn,
-                          cellColumn: value
-                        })
-                      }}
-                      value={props.config.pivotTable!.cellColumn}
-                      options={props.data.fields?.map((field) => field.name)}
-                    ></ConfigSelect>
-                  </ConfigItem>
-                </>
-              )}
-            </ConfigSection>
-          )}
-          {!props.config.pivotTable && (
-            <ConfigSection title="Columns">
-              <SortableList
-                value={columnOrder}
-                onChange={(value) => {
-                  props.onConfigChange('columnOrder', value)
-                }}
-                renderItem={(item) => {
-                  const filed = props.data.fields.find((f) => f.name === item)
-                  return (
-                    <div
-                      className={css`
-                        width: 100%;
-                        overflow-x: hidden;
-                        font-size: 12px;
-                        padding: 0 6px;
-                        height: 32px;
-                        color: ${ThemingVariables.colors.text[0]};
-                        display: flex;
-                        align-items: center;
-                        justify-content: space-between;
-                        border-radius: 4px;
-                        :hover {
-                          background-color: ${ThemingVariables.colors.primary[5]};
-                        }
-                      `}
-                    >
-                      <Tippy content={item} placement="left" delay={[1000, 500]}>
-                        <div
-                          className={css`
-                            flex-grow: 1;
-                            flex-shrink: 1;
-                            margin-right: 10px;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                          `}
-                        >
-                          <span>{item}</span>
-                        </div>
-                      </Tippy>
-
-                      {filed?.displayType === 'STRING' && (
-                        <div
-                          className={css`
-                            flex-shrink: 0;
-                            width: 100px;
-                            margin-right: 10px;
-                          `}
-                        >
-                          <ConfigSelect
-                            title="string display as"
-                            options={DISPLAY_AS_TYPES}
-                            value={props.config.displayAs?.[item] ?? DISPLAY_AS_TYPE.Auto}
+                    />
+                  </div>
+                </ConfigItem>
+                {props.config.pivotTable && (
+                  <>
+                    <ConfigItem label="Pivot Column">
+                      <ConfigSelect
+                        onChange={(value) => {
+                          props.onConfigChange('pivotTable', {
+                            pivotColumn: value,
+                            cellColumn: props.config.pivotTable!.cellColumn
+                          })
+                        }}
+                        value={props.config.pivotTable!.pivotColumn}
+                        options={props.data.fields?.map((field) => field.name)}
+                      ></ConfigSelect>
+                    </ConfigItem>
+                    <ConfigItem label="Cell Column">
+                      <ConfigSelect
+                        onChange={(value) => {
+                          props.onConfigChange('pivotTable', {
+                            pivotColumn: props.config.pivotTable!.pivotColumn,
+                            cellColumn: value
+                          })
+                        }}
+                        value={props.config.pivotTable!.cellColumn}
+                        options={props.data.fields?.map((field) => field.name)}
+                      ></ConfigSelect>
+                    </ConfigItem>
+                  </>
+                )}
+              </ConfigSection>
+            )}
+            {!props.config.pivotTable && (
+              <ConfigSection title="Columns">
+                <SortableList
+                  value={columnOrder}
+                  onChange={(value) => {
+                    props.onConfigChange('columnOrder', value)
+                  }}
+                  renderItem={(item) => {
+                    const filed = props.data.fields.find((f) => f.name === item)
+                    return (
+                      <div
+                        className={css`
+                          width: 100%;
+                          overflow-x: hidden;
+                          font-size: 12px;
+                          padding: 0 6px;
+                          height: 32px;
+                          color: ${ThemingVariables.colors.text[0]};
+                          display: flex;
+                          align-items: center;
+                          justify-content: space-between;
+                          border-radius: 4px;
+                          :hover {
+                            background-color: ${ThemingVariables.colors.primary[5]};
+                          }
+                        `}
+                      >
+                        <Tippy content={item} placement="left" delay={[1000, 500]}>
+                          <div
                             className={css`
-                              height: 28px;
+                              flex-grow: 1;
+                              flex-shrink: 1;
+                              margin-right: 10px;
+                              overflow: hidden;
+                              text-overflow: ellipsis;
                             `}
-                            onChange={(value) => {
-                              props.onConfigChange('displayAs', {
-                                ...props.config.displayAs,
-                                [item]: value
+                          >
+                            <span>{item}</span>
+                          </div>
+                        </Tippy>
+
+                        {filed?.displayType === 'STRING' && (
+                          <div
+                            className={css`
+                              flex-shrink: 0;
+                              width: 100px;
+                              margin-right: 10px;
+                            `}
+                          >
+                            <ConfigSelect
+                              title="string display as"
+                              options={DISPLAY_AS_TYPES}
+                              value={props.config.displayAs?.[item] ?? DISPLAY_AS_TYPE.Auto}
+                              className={css`
+                                height: 28px;
+                              `}
+                              onChange={(value) => {
+                                props.onConfigChange('displayAs', {
+                                  ...props.config.displayAs,
+                                  [item]: value
+                                })
+                              }}
+                            />
+                          </div>
+                        )}
+                        {props.config.columnVisibility[item] === false ? (
+                          <IconButton
+                            icon={IconMenuHide}
+                            color={ThemingVariables.colors.text[1]}
+                            className={css`
+                              flex-shrink: 0;
+                            `}
+                            onClick={() => {
+                              props.onConfigChange('columnVisibility', {
+                                ...props.config.columnVisibility,
+                                [item]: true
                               })
                             }}
                           />
-                        </div>
-                      )}
-                      {props.config.columnVisibility[item] === false ? (
-                        <IconButton
-                          icon={IconMenuHide}
-                          color={ThemingVariables.colors.text[1]}
-                          className={css`
-                            flex-shrink: 0;
-                          `}
-                          onClick={() => {
-                            props.onConfigChange('columnVisibility', {
-                              ...props.config.columnVisibility,
-                              [item]: true
-                            })
-                          }}
-                        />
-                      ) : (
-                        <IconButton
-                          icon={IconMenuShow}
-                          color={ThemingVariables.colors.text[1]}
-                          className={css`
-                            flex-shrink: 0;
-                          `}
-                          onClick={() => {
-                            props.onConfigChange('columnVisibility', {
-                              ...props.config.columnVisibility,
-                              [item]: false
-                            })
-                          }}
-                        />
-                      )}
-                    </div>
-                  )
-                }}
-              />
-            </ConfigSection>
-          )}
-        </>
-      </ConfigTab>
+                        ) : (
+                          <IconButton
+                            icon={IconMenuShow}
+                            color={ThemingVariables.colors.text[1]}
+                            className={css`
+                              flex-shrink: 0;
+                            `}
+                            onClick={() => {
+                              props.onConfigChange('columnVisibility', {
+                                ...props.config.columnVisibility,
+                                [item]: false
+                              })
+                            }}
+                          />
+                        )}
+                      </div>
+                    )
+                  }}
+                />
+              </ConfigSection>
+            )}
+          </>
+        </ConfigTab>
+      </>
     )
   },
 

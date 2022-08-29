@@ -550,9 +550,10 @@ export const StoryQuestionEditor: ReactFCWithChildren<{
   )
 
   // const executeSQL = useExecuteSQL(`draft/${block.id}`)
+  const refreshSnapshot = useRefreshSnapshot(storyId)
 
   const save = useCallback(
-    (snapshotId?: string) => {
+    async (snapshotId?: string) => {
       if (!block) {
         toast.error('block is undefined')
         return
@@ -562,7 +563,7 @@ export const StoryQuestionEditor: ReactFCWithChildren<{
         toast.error('question is readonly')
         return
       }
-      return setSqlBlock(queryBlock.id, (draftBlock) => {
+      await setSqlBlock(queryBlock.id, (draftBlock) => {
         if (draftBlock.type === Editor.BlockType.SQL || draftBlock.type === Editor.BlockType.QueryBuilder) {
           ;(draftBlock as Editor.SQLBlock).content!.sql = sql
         }
@@ -574,8 +575,17 @@ export const StoryQuestionEditor: ReactFCWithChildren<{
         }
         draftBlock.content!.title = queryTitle ?? []
       })
+      return refreshSnapshot.execute(queryBlock).then((res) => {
+        if (res.errMsg) {
+          setSQLError(res.errMsg)
+          setSqlSidePanel(true)
+        } else {
+          setSQLError(null)
+          setSqlSidePanel(false)
+        }
+      })
     },
-    [block, readonly, setSqlBlock, queryBlock.id, sql, queryTitle]
+    [block, readonly, setSqlBlock, queryBlock, refreshSnapshot, queryTitle, sql]
   )
 
   const [sqlError, setSQLError] = useState<string | null>(null)
@@ -585,7 +595,6 @@ export const StoryQuestionEditor: ReactFCWithChildren<{
   const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)
   const profileType = profile?.type
   const sidebarEditor = useSideBarQuestionEditor(storyId)
-  const refreshSnapshot = useRefreshSnapshot(storyId)
   const mutatingCount = useSnapshotMutating(queryBlock.id)
 
   const run = useCallback(async () => {
@@ -595,17 +604,9 @@ export const StoryQuestionEditor: ReactFCWithChildren<{
       return
     }
     await save()
-    refreshSnapshot.execute(queryBlock).then((res) => {
-      if (res.errMsg) {
-        setSQLError(res.errMsg)
-        setSqlSidePanel(true)
-      } else {
-        setSQLError(null)
-        setSqlSidePanel(false)
-      }
-    })
+
     sidebarEditor.setState({ blockId: block.id, activeTab: 'Visualization' })
-  }, [queryBlock, sql, save, sidebarEditor, block.id, refreshSnapshot])
+  }, [queryBlock, sql, save, sidebarEditor, block.id])
 
   const cancelExecuteSql = useCallback(() => {
     if (block?.id) {

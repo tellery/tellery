@@ -644,6 +644,7 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
         ),
       [groups, props.config.shapes]
     )
+    // TODO: remove this later
     const padding = useMemo(() => {
       if (groups.left?.shape === ComboShape.BAR || groups.right?.shape === ComboShape.BAR) {
         const barsCount =
@@ -794,9 +795,9 @@ export const combo: Chart<Type.COMBO | Type.LINE | Type.BAR | Type.AREA> = {
                   }
                 : undefined
             }
+            // padding={padding}
             stroke={ThemingVariables.colors.text[1]}
             tickFormatter={(tick) => formatRecord(tick, xDisplayType)}
-            padding={padding}
             type={
               props.config.xType === 'linear'
                 ? 'number'
