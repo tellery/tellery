@@ -1,4 +1,5 @@
 import type { ScaleType } from '@tellery/recharts/types/util/types'
+import { TelleryTheme } from './../../styles/index'
 
 export enum DisplayType {
   UNKNOWN = 'UNKNOWN',
@@ -131,6 +132,13 @@ export enum ComboStack {
   STACK_100 = 'stack 100%'
 }
 
+export interface TableConfigFormatterCondition {
+  columns: string[]
+  type: 'range'
+  colorsPreset?: keyof TelleryTheme['colors']['visualizationGradientColors']
+  range?: ['minimum' | string, 'maximum' | string]
+}
+
 export interface TableConfig {
   type: Type.TABLE
   columnOrder: string[]
@@ -140,6 +148,7 @@ export interface TableConfig {
     pivotColumn: string
     cellColumn: string
   }
+  conditions?: TableConfigFormatterCondition[]
 }
 
 interface ComboConfig<T extends Type = Type.COMBO> {

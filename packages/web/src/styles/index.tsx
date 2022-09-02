@@ -23,6 +23,14 @@ export interface TelleryTheme {
     visualization: string[]
     visualizationOther: string
     visualizationOtherHighlight: string
+    visualizationGradientColors: {
+      blue: string[]
+      'blue-reverse': string[]
+      orange: string[]
+      'orange-reverse': string[]
+      hue: string[]
+      'hue-reverse': string[]
+    }
   }
   boxShadows: string[]
   // breakpoints: number[]
@@ -57,8 +65,8 @@ export const TelleryThemeLight: TelleryTheme = {
     warning: ['#F9C226', '#FDEFC8'],
     // https://blueprintjs.com/docs/#core/colors.extended-colors
     visualization: [
-      '#5B8FF9',
-      '#61DDAA',
+      '#5b8ff9',
+      '#61ddaa',
       '#65789B',
       '#F6BD16',
       '#7262fd',
@@ -68,6 +76,14 @@ export const TelleryThemeLight: TelleryTheme = {
       '#008685',
       '#F08BB4'
     ],
+    visualizationGradientColors: {
+      blue: ['#ffffff', '#d6e3fd', '#adc7fc', '#84abfb', '#5b8ff9'],
+      'blue-reverse': ['#5b8ff9', '#84abfb', '#adc7fc', '#d6e3fd', '#ffffff'],
+      orange: ['#ffffff', '#fde3ce', '#fbc89e', '#f8ac6d', '#f6903d'],
+      'orange-reverse': ['#f6903d', '#f8ac6d', '#fbc89e', '#fde3ce', '#ffffff'],
+      hue: ['#61ddaa', '#7ee26b', '#dde775', '#eca580', '#f08bb4'],
+      'hue-reverse': ['#f08bb4', '#eca580', '#dde775', '#7ee26b', '#61ddaa']
+    },
     visualizationOther: '#DEDEDE',
     visualizationOtherHighlight: '#999999'
   },

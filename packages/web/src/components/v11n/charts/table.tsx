@@ -3,7 +3,7 @@ import FormSwitch from '@app/components/kit/FormSwitch'
 import IconButton from '@app/components/kit/IconButton'
 import { useBindHovering, useDebounce } from '@app/hooks'
 import { useDataFieldsDisplayType } from '@app/hooks/useDataFieldsDisplayType'
-import { ThemingVariables } from '@app/styles'
+import { TelleryThemeLight, ThemingVariables } from '@app/styles'
 import { css, cx } from '@emotion/css'
 import { rankItem } from '@tanstack/match-sorter-utils'
 import {
@@ -22,19 +22,22 @@ import Tippy from '@tippyjs/react'
 import { sortBy, uniq } from 'lodash'
 import React, { memo, useEffect, useMemo, useState } from 'react'
 import { usePopper } from 'react-popper'
+import { ConfigInput } from '../components/ConfigInput'
 import { ConfigItem } from '../components/ConfigItem'
 import { ConfigSection } from '../components/ConfigSection'
 import { ConfigSelect } from '../components/ConfigSelect'
 import { ConfigTab } from '../components/ConfigTab'
 import { SortableList } from '../components/SortableList'
-import { Config, Data, DisplayType, Type } from '../types'
+import { Config, Data, DisplayType, TableConfigFormatterCondition, Type } from '../types'
 import { formatRecord, isNumeric, isTimeSeries } from '../utils'
 import type { Chart } from './base'
 
 const TABLE_ROW_HEIGHT_MIN = 30
 
 const VERTICAL_BORDER_WITDH = 0
-
+interface TableData extends Data {
+  records: { value: unknown; backgroundColor?: string }[][]
+}
 const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
   // Rank the item
   const itemRank = rankItem(row.getValue(columnId), value)
@@ -126,31 +129,48 @@ const getDisplayTypeData = (text: string, type: DISPLAY_AS_TYPE) => {
 
   return [data, asType] as [string[], DISPLAY_AS_TYPE]
 }
-const pivotTable = (data: Data, config: Config<Type.TABLE>) => {
+const transformTableData = (data: Data): TableData => {
+  return {
+    ...data,
+    records: data.records.map((row) => {
+      return row.map((cell) => ({
+        value: cell
+      }))
+    })
+  }
+}
+const pivotTable = (data: TableData, config: Config<Type.TABLE>): TableData => {
   const { pivotTable: pivotTableConfig } = config
   if (!pivotTableConfig) return data
+
   const groupByIndex = data.fields.findIndex(
-    (field) => field.name !== pivotTableConfig?.cellColumn && field.name !== pivotTableConfig?.cellColumn
+    (field) => field.name !== pivotTableConfig?.pivotColumn && field.name !== pivotTableConfig?.cellColumn
   )
-  const cellIndex = data.fields.findIndex((field) => field.name === pivotTableConfig?.cellColumn)
   const groupedRecord = data.records.reduce((a, c) => {
-    const groupId = c[groupByIndex] as string
+    const groupId = c[groupByIndex].value as string
     if (!a[groupId]) {
-      a[groupId] = [] as Data['records']
+      a[groupId] = [] as TableData['records']
     }
-    ;(a[groupId] as unknown[][]).push(c)
+    ;(a[groupId] as TableData['records']).push(c)
     return a
-  }, {} as Record<string, Data['records']>)
+  }, {} as Record<string, TableData['records']>)
+
   const pivotColumnIndex = data.fields.findIndex((field) => field.name === pivotTableConfig?.pivotColumn)
-  const pivotColumns = uniq(data.records.map((record) => record[pivotColumnIndex]))
+  const pivotColumns = uniq(data.records.map((record) => record[pivotColumnIndex].value as string))
   const ids = Object.keys(groupedRecord)
+
+  const cellIndex = data.fields.findIndex((field) => field.name === pivotTableConfig?.cellColumn)
   const records = ids.map((id) => {
     return [
-      id,
+      { value: id },
       ...pivotColumns.map((column) => {
         const records = groupedRecord[id]
-        const record = records.find((record) => record[pivotColumnIndex] === column)
-        return record ? record[cellIndex] : ''
+        const record = records.find((record) => record[pivotColumnIndex].value === column)
+        return record
+          ? record[cellIndex]
+          : {
+              value: ''
+            }
       })
     ]
   })
@@ -220,12 +240,15 @@ const ImageRenderer: React.FC<{ src: string }> = memo(({ src }) => {
 })
 ImageRenderer.displayName = 'ImageRenderer'
 
-const CellRenderer: ReactFCWithChildren<{ cell: any; displayType: DisplayType; displayAs?: DISPLAY_AS_TYPE }> = ({
-  cell,
-  displayType,
-  displayAs = DISPLAY_AS_TYPE.Auto
-}) => {
-  const value = cell.getValue(cell.column.id)
+const CellRenderer: ReactFCWithChildren<{
+  cell: {
+    value: unknown
+    backgroundColor?: string
+  }
+  displayType: DisplayType
+  displayAs?: DISPLAY_AS_TYPE
+}> = ({ cell, displayType, displayAs = DISPLAY_AS_TYPE.Auto }) => {
+  const { value } = cell.getValue(cell.column.id)
   if (displayType !== 'STRING') {
     return <>{formatRecord(value, displayType)}</>
   }
@@ -268,6 +291,69 @@ const CellRenderer: ReactFCWithChildren<{ cell: any; displayType: DisplayType; d
   return <>{formatRecord(value, displayType)}</>
 }
 
+const taintCellByCodition = (data: TableData, condition: TableConfigFormatterCondition): TableData => {
+  const columnIndexes = condition.columns.map((columnName) => {
+    return data.fields.findIndex((field) => field.name === columnName)
+  })
+  const getMinMax = () => {
+    const minMax: [number, number] = data.records.reduce(
+      (a: [number, number], c) => {
+        for (let i of columnIndexes) {
+          const value = parseFloat(c[i].value as any)
+          if (isNaN(value)) {
+            continue
+          }
+          if (value < a[0]) {
+            a[0] = value
+          }
+          if (value > a[1]) {
+            a[1] = value
+          }
+        }
+        return a
+      },
+      [Infinity, -Infinity]
+    )
+    return minMax
+  }
+  const getRange = (): [number, number] => {
+    let range = condition.range ?? ['minimum', 'maximum']
+    if (range[0] === 'minimum' || range[1] === 'maximum') {
+      return [
+        range[0] === 'minimum' ? getMinMax()[0] : parseFloat(range[0]),
+        range[1] === 'maximum' ? getMinMax()[1] : parseFloat(range[1])
+      ]
+    }
+    const min = parseFloat(range[0])
+    const max = parseFloat(range[1])
+    return [isNaN(min) ? 0 : min, isNaN(max) ? 0 : max]
+  }
+  const range = getRange()
+  const colors = ThemingVariables.colors.visualizationGradientColors[condition.colorsPreset! ?? 'blue']
+  const getColorByValue = (value: number, range: [number, number], colors: string[]) => {
+    const [min, max] = range
+    const index = Math.floor(((value - min) / (max - min)) * (colors.length - 1))
+    return colors[index]
+  }
+  return {
+    ...data,
+    records: data.records.map((row) => {
+      const taintedRow = row.map((cell, cellIndex) => {
+        if (columnIndexes.includes(cellIndex)) {
+          const value = parseFloat(row[cellIndex].value as any)
+          return {
+            ...cell,
+            backgroundColor: getColorByValue(value, range, colors)
+          }
+        } else {
+          return { ...cell }
+        }
+      })
+      return taintedRow
+    })
+  }
+}
+
 declare module '@tanstack/table-core' {
   interface ColumnMeta {
     name: string
@@ -301,10 +387,16 @@ export const table: Chart<Type.TABLE> = {
     )
     const fileds = props.data.fields ?? []
     const pivotTableAvailable = fileds.length === 3
+    const condition = props.config.conditions?.[0] ?? {
+      columns: [],
+      type: 'range',
+      colorsPreset: undefined,
+      range: ['minimum', 'maximum']
+    }
     return (
       <>
-        <ConfigTab tabs={['Data', 'Color']}>
-          <>
+        <ConfigTab tabs={['Data', 'Condition']}>
+          <div>
             {pivotTableAvailable && (
               <ConfigSection title="Pivot Table">
                 <ConfigItem label="Enable">
@@ -462,19 +554,133 @@ export const table: Chart<Type.TABLE> = {
                 />
               </ConfigSection>
             )}
-          </>
+          </div>
+          <div>
+            <ConfigSection title="Conditional Formatter">
+              <ConfigItem label="Enable">
+                <div
+                  className={css`
+                    display: flex;
+                    justify-content: flex-end;
+                    line-height: 0;
+                    padding-right: 6px;
+                  `}
+                >
+                  <FormSwitch
+                    checked={!!props.config.conditions}
+                    onChange={(e) => {
+                      props.onConfigChange('conditions', e.currentTarget.checked ? [condition] : undefined)
+                    }}
+                  />
+                </div>
+              </ConfigItem>
+              {props.config.conditions && (
+                <>
+                  <ConfigItem label="Affected Column">
+                    <ConfigSelect
+                      onChange={(value) => {
+                        props.onConfigChange('conditions', [
+                          {
+                            ...condition,
+                            columns: [value]
+                          }
+                        ])
+                      }}
+                      value={condition?.columns[0] ?? 'Select a column'}
+                      options={props.data.fields?.map((field) => field.name)}
+                    ></ConfigSelect>
+                  </ConfigItem>
+                  <ConfigItem label="Colors">
+                    <ConfigSelect
+                      onChange={(value) => {
+                        props.onConfigChange('conditions', [
+                          {
+                            ...condition,
+                            colorsPreset: value as any
+                          }
+                        ])
+                      }}
+                      value={condition?.colorsPreset ?? 'Select a preset'}
+                      options={Object.keys(TelleryThemeLight.colors.visualizationGradientColors)}
+                    ></ConfigSelect>
+                  </ConfigItem>
+                  <ConfigItem label="Start Range">
+                    <ConfigSelect
+                      onChange={(value) => {
+                        props.onConfigChange('conditions', [
+                          {
+                            ...condition,
+                            range: [value === 'minimum' ? 'minimum' : '0', condition?.range![1]]
+                          }
+                        ])
+                      }}
+                      value={condition.range![0] === 'minimum' ? 'minimum' : 'custom'}
+                      options={['minimum', 'custom']}
+                    ></ConfigSelect>
+                  </ConfigItem>
+                  {condition.range?.[0] !== 'minimum' && (
+                    <ConfigItem label="Minimum Value">
+                      <ConfigInput
+                        value={condition.range?.[0] ?? '0'}
+                        onChange={(value) => {
+                          props.onConfigChange('conditions', [
+                            {
+                              ...condition,
+                              range: [value, condition?.range![1]]
+                            }
+                          ])
+                        }}
+                      ></ConfigInput>
+                    </ConfigItem>
+                  )}
+
+                  <ConfigItem label="End Range">
+                    <ConfigSelect
+                      onChange={(value) => {
+                        props.onConfigChange('conditions', [
+                          {
+                            ...condition,
+                            range: [condition?.range![0], value === 'maximum' ? 'maximum' : '0']
+                          }
+                        ])
+                      }}
+                      value={condition.range![1] === 'maximum' ? 'maximum' : 'custom'}
+                      options={['maximum', 'custom']}
+                    ></ConfigSelect>
+                  </ConfigItem>
+                  {condition.range?.[1] !== 'maximum' && (
+                    <ConfigItem label="Maximum Value">
+                      <ConfigInput
+                        value={condition.range?.[1] ?? '0'}
+                        onChange={(value) => {
+                          props.onConfigChange('conditions', [
+                            {
+                              ...condition,
+                              range: [condition?.range![0], value]
+                            }
+                          ])
+                        }}
+                      ></ConfigInput>
+                    </ConfigItem>
+                  )}
+                </>
+              )}
+            </ConfigSection>
+          </div>
         </ConfigTab>
       </>
     )
   },
 
   Diagram(props) {
-    const data = useMemo(() => {
-      if (props.config.pivotTable) {
-        return pivotTable(props.data, props.config)
-      } else {
-        return props.data
-      }
+    const data: TableData = useMemo(() => {
+      const transformedTableData = transformTableData(props.data)
+      let coloredData =
+        props.config.conditions?.reduce((acc, condition) => {
+          return taintCellByCodition(acc, condition)
+        }, transformedTableData) ?? transformedTableData
+      let pivotedData: TableData = props.config.pivotTable ? pivotTable(coloredData, props.config) : coloredData
+      return pivotedData
     }, [props.data, props.config])
     const columnOrder = useMemo<ColumnOrderState>(
       () =>
@@ -517,7 +723,7 @@ export const table: Chart<Type.TABLE> = {
       // setGlobalFilter
     } = useReactTable({
       columns: columns,
-      data: data.records as unknown[][],
+      data: data.records,
       state: {
         // pagination,
         columnVisibility,
@@ -627,11 +833,7 @@ export const table: Chart<Type.TABLE> = {
                 ))}
               </thead>
               <tbody>
-                {/* {page.map((row: unknown) => {
-                  prepareRow(row)
-                  return null
-                })} */}
-                {getRowModel().rows.map((row, index: number) => (
+                {getRowModel().rows.map((row) => (
                   <tr key={row.id}>
                     {row.getVisibleCells().map((cell) => (
                       <td
@@ -671,6 +873,9 @@ export const table: Chart<Type.TABLE> = {
                             ? 'right'
                             : 'left'
                         }
+                        style={{
+                          background: (cell.getValue() as { backgroundColor?: string }).backgroundColor
+                        }}
                       >
                         <CellRenderer
                           cell={cell}
