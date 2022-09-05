@@ -47,7 +47,8 @@ export const useSetUploadResource = () => {
   const callback = useRecoilTransaction_UNSTABLE(
     ({ set }) =>
       ({ blockId, file }: { blockId: string; file: File }) => {
-        set(BlockFileResource(blockId), { file: file, status: 'IDLE' })
+        // TODO: no any
+        set(BlockFileResource(blockId) as any, { file: file, status: 'IDLE' })
       },
     []
   )

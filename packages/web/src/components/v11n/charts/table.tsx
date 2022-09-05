@@ -15,6 +15,7 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  RowData,
   SortingState,
   useReactTable
 } from '@tanstack/react-table'
@@ -35,12 +36,31 @@ import type { Chart } from './base'
 const TABLE_ROW_HEIGHT_MIN = 30
 
 const VERTICAL_BORDER_WITDH = 0
-interface TableData extends Data {
-  records: { value: unknown; backgroundColor?: string }[][]
+
+interface TableCell {
+  value: unknown
+  backgroundColor?: string
 }
-const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
+interface TableData extends Data {
+  records: TableCell[][]
+}
+
+const RegexFilter: FilterFn<TableCell[]> = (row, columnId, filterValue, addMeta) => {
+  if (!filterValue) {
+    return true
+  }
+  const regex = new RegExp(filterValue, 'i')
+  const value = row.getValue(columnId) as string
+  console.log(regex, value)
+  if (regex.test(value)) {
+    return true
+  }
+  return false
+}
+
+const fuzzyFilter: FilterFn<TableCell[]> = (row, columnId, filterValue, addMeta) => {
   // Rank the item
-  const itemRank = rankItem(row.getValue(columnId), value)
+  const itemRank = rankItem(row.getValue(columnId), filterValue)
 
   // Store the itemRank info
   addMeta({
@@ -49,6 +69,14 @@ const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
 
   // Return if the item should be filtered in/out
   return itemRank.passed
+}
+
+const fuzzyOrRegexFilter: FilterFn<TableCell[]> = (row, columnId, filterValue, addMeta) => {
+  if (filterValue.startsWith('/') && filterValue.endsWith('/')) {
+    return RegexFilter(row, columnId, filterValue.slice(1, -1), addMeta)
+  } else {
+    return fuzzyFilter(row, columnId, filterValue, addMeta)
+  }
 }
 
 function GlobalFilter({ value, setGlobalFilter }: { value?: string; setGlobalFilter: (value: string) => void }) {
@@ -241,14 +269,11 @@ const ImageRenderer: React.FC<{ src: string }> = memo(({ src }) => {
 ImageRenderer.displayName = 'ImageRenderer'
 
 const CellRenderer: ReactFCWithChildren<{
-  cell: {
-    value: unknown
-    backgroundColor?: string
-  }
+  cell
   displayType: DisplayType
   displayAs?: DISPLAY_AS_TYPE
 }> = ({ cell, displayType, displayAs = DISPLAY_AS_TYPE.Auto }) => {
-  const { value } = cell.getValue(cell.column.id)
+  const value = cell.getValue(cell.column.id)
   if (displayType !== 'STRING') {
     return <>{formatRecord(value, displayType)}</>
   }
@@ -355,7 +380,7 @@ const taintCellByCodition = (data: TableData, condition: TableConfigFormatterCon
 }
 
 declare module '@tanstack/table-core' {
-  interface ColumnMeta {
+  interface ColumnMeta<TData extends RowData, TValue> {
     name: string
     displayType: DisplayType
     sqlType: string
@@ -694,19 +719,18 @@ export const table: Chart<Type.TABLE> = {
       () =>
         data.fields.map((field, index) => ({
           id: field.name,
-          accessorFn: (record) => record[index],
+          accessorFn: (record) => record[index].value,
           meta: {
             name: field.name,
             displayType: field.displayType,
             sqlType: field.sqlType
           }
-        })) as ColumnDef<unknown[]>[],
+        })) as ColumnDef<TableCell[]>[],
       [data]
     )
     const displayTypes = useDataFieldsDisplayType(data.fields)
     const [globalFilter, setGlobalFilter] = React.useState('')
     const [sorting, setSorting] = React.useState<SortingState>([])
-
     const {
       getHeaderGroups,
       getRowModel,
@@ -717,7 +741,6 @@ export const table: Chart<Type.TABLE> = {
       getCanPreviousPage,
       previousPage,
       nextPage
-
       // state: { globalFilter },
       // preGlobalFilteredRows,
       // setGlobalFilter
@@ -733,11 +756,15 @@ export const table: Chart<Type.TABLE> = {
       },
       onSortingChange: setSorting,
       onGlobalFilterChange: setGlobalFilter,
-      globalFilterFn: fuzzyFilter,
+      globalFilterFn: fuzzyOrRegexFilter,
       getFilteredRowModel: getFilteredRowModel(),
       getSortedRowModel: getSortedRowModel(),
       getPaginationRowModel: getPaginationRowModel(),
-      getCoreRowModel: getCoreRowModel()
+      getCoreRowModel: getCoreRowModel(),
+      enableGlobalFilter: true,
+      debugTable: true,
+      debugHeaders: true,
+      debugColumns: false
     })
 
     useEffect(() => {
