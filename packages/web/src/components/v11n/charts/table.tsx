@@ -901,7 +901,7 @@ export const table: Chart<Type.TABLE> = {
                             : 'left'
                         }
                         style={{
-                          background: (cell.getValue() as { backgroundColor?: string }).backgroundColor
+                          background: (cell.getValue() as { backgroundColor?: string })?.backgroundColor
                         }}
                       >
                         <CellRenderer
