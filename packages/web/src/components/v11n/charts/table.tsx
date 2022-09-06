@@ -45,13 +45,23 @@ interface TableData extends Data {
   records: TableCell[][]
 }
 
+const META_SEPARATOR = '\ue0ff'
+const trimMetaFromCell = (value: string) => {
+  return value.split(META_SEPARATOR)[0]
+}
+
+const extractMetaFromCell = (value: string) => {
+  const meta = value.split(META_SEPARATOR)[1]
+  const result = meta ? JSON.parse(meta) : {}
+  return result
+}
+
 const RegexFilter: FilterFn<TableCell[]> = (row, columnId, filterValue, addMeta) => {
   if (!filterValue) {
     return true
   }
   const regex = new RegExp(filterValue, 'i')
-  const value = row.getValue(columnId) as string
-  console.log(regex, value)
+  const value = trimMetaFromCell(row.getValue(columnId)) as string
   if (regex.test(value)) {
     return true
   }
@@ -60,7 +70,7 @@ const RegexFilter: FilterFn<TableCell[]> = (row, columnId, filterValue, addMeta)
 
 const fuzzyFilter: FilterFn<TableCell[]> = (row, columnId, filterValue, addMeta) => {
   // Rank the item
-  const itemRank = rankItem(row.getValue(columnId), filterValue)
+  const itemRank = rankItem(trimMetaFromCell(row.getValue(columnId)), filterValue)
 
   // Store the itemRank info
   addMeta({
@@ -273,7 +283,7 @@ const CellRenderer: ReactFCWithChildren<{
   displayType: DisplayType
   displayAs?: DISPLAY_AS_TYPE
 }> = ({ cell, displayType, displayAs = DISPLAY_AS_TYPE.Auto }) => {
-  const value = cell.getValue(cell.column.id)
+  const value = trimMetaFromCell(cell.getValue(cell.column.id))
   if (displayType !== 'STRING') {
     return <>{formatRecord(value, displayType)}</>
   }
@@ -719,7 +729,14 @@ export const table: Chart<Type.TABLE> = {
       () =>
         data.fields.map((field, index) => ({
           id: field.name,
-          accessorFn: (record) => record[index].value,
+          accessorFn: (record) => {
+            if (record[index].backgroundColor) {
+              console.log('bg', record[index])
+            }
+            const meta = { ...record[index] }
+            delete meta['value']
+            return `${record[index].value}${META_SEPARATOR}${JSON.stringify(meta)}`
+          },
           meta: {
             name: field.name,
             displayType: field.displayType,
@@ -862,55 +879,58 @@ export const table: Chart<Type.TABLE> = {
               <tbody>
                 {getRowModel().rows.map((row) => (
                   <tr key={row.id}>
-                    {row.getVisibleCells().map((cell) => (
-                      <td
-                        key={cell.column.columnDef.meta?.name}
-                        // {...cell.getCellProps()}
-                        className={cx(
-                          css`
-                            height: ${tableRowHeight}px;
-                            padding: 0 10px;
-                            font-weight: normal;
-                            white-space: nowrap;
-                            text-overflow: ellipsis;
-                            overflow: hidden;
-                            max-width: 400px;
-                            font-variant-numeric: tabular-nums;
-                            position: relative;
-                            user-select: all;
-                            .copy-icon {
-                              cursor: pointer;
-                              display: none;
-                              position: absolute;
-                              right: 10px;
-                              top: 0;
-                              bottom: 0;
-                              margin: auto;
-                              opacity: 0.8;
-                            }
-                            &:hover .copy-icon {
-                              cursor: pointer;
-                              display: inline-block;
-                            }
-                          `
-                        )}
-                        align={
-                          isNumeric(cell.column.columnDef.meta?.displayType) &&
-                          !isTimeSeries(cell.column.columnDef.meta?.displayType)
-                            ? 'right'
-                            : 'left'
-                        }
-                        style={{
-                          background: (cell.getValue() as { backgroundColor?: string })?.backgroundColor
-                        }}
-                      >
-                        <CellRenderer
-                          cell={cell}
-                          displayType={displayTypes[cell.column.columnDef.meta!.name]}
-                          displayAs={props.config.displayAs?.[cell.column.columnDef.meta!.name] as DISPLAY_AS_TYPE}
-                        />
-                      </td>
-                    ))}
+                    {row.getVisibleCells().map((cell, index) => {
+                      return (
+                        <td
+                          key={cell.column.columnDef.meta?.name}
+                          // {...cell.getCellProps()}
+                          className={cx(
+                            css`
+                              height: ${tableRowHeight}px;
+                              padding: 0 10px;
+                              font-weight: normal;
+                              white-space: nowrap;
+                              text-overflow: ellipsis;
+                              overflow: hidden;
+                              max-width: 400px;
+                              font-variant-numeric: tabular-nums;
+                              position: relative;
+                              user-select: all;
+                              .copy-icon {
+                                cursor: pointer;
+                                display: none;
+                                position: absolute;
+                                right: 10px;
+                                top: 0;
+                                bottom: 0;
+                                margin: auto;
+                                opacity: 0.8;
+                              }
+                              &:hover .copy-icon {
+                                cursor: pointer;
+                                display: inline-block;
+                              }
+                            `
+                          )}
+                          align={
+                            isNumeric(cell.column.columnDef.meta?.displayType) &&
+                            !isTimeSeries(cell.column.columnDef.meta?.displayType)
+                              ? 'right'
+                              : 'left'
+                          }
+                          style={{
+                            background: (extractMetaFromCell(cell.getValue() as string) as { backgroundColor?: string })
+                              ?.backgroundColor
+                          }}
+                        >
+                          <CellRenderer
+                            cell={cell}
+                            displayType={displayTypes[cell.column.columnDef.meta!.name]}
+                            displayAs={props.config.displayAs?.[cell.column.columnDef.meta!.name] as DISPLAY_AS_TYPE}
+                          />
+                        </td>
+                      )
+                    })}
                   </tr>
                 ))}
               </tbody>

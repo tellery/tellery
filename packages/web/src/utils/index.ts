@@ -111,7 +111,8 @@ export function getOwnerDocument(target: Event['target']) {
 export enum TelleryGlyph {
   BI_LINK = '\ue000',
   FORMULA = '\ue001',
-  EQUATION = '\ue002'
+  EQUATION = '\ue002',
+  SEPARATOR = '\ue0ff'
 }
 
 export { isUrl }
