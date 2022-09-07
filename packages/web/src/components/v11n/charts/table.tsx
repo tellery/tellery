@@ -45,15 +45,8 @@ interface TableData extends Data {
   records: TableCell[][]
 }
 
-const META_SEPARATOR = '\ue0ff'
-const trimMetaFromCell = (value: string) => {
-  return value.split(META_SEPARATOR)[0]
-}
-
-const extractMetaFromCell = (value: string) => {
-  const meta = value.split(META_SEPARATOR)[1]
-  const result = meta ? JSON.parse(meta) : {}
-  return result
+const getValueFromCell = (value: string) => {
+  return JSON.parse(value).value
 }
 
 const RegexFilter: FilterFn<TableCell[]> = (row, columnId, filterValue, addMeta) => {
@@ -61,7 +54,7 @@ const RegexFilter: FilterFn<TableCell[]> = (row, columnId, filterValue, addMeta)
     return true
   }
   const regex = new RegExp(filterValue, 'i')
-  const value = trimMetaFromCell(row.getValue(columnId)) as string
+  const value = getValueFromCell(row.getValue(columnId)) as string
   if (regex.test(value)) {
     return true
   }
@@ -70,7 +63,7 @@ const RegexFilter: FilterFn<TableCell[]> = (row, columnId, filterValue, addMeta)
 
 const fuzzyFilter: FilterFn<TableCell[]> = (row, columnId, filterValue, addMeta) => {
   // Rank the item
-  const itemRank = rankItem(trimMetaFromCell(row.getValue(columnId)), filterValue)
+  const itemRank = rankItem(getValueFromCell(row.getValue(columnId)), filterValue)
 
   // Store the itemRank info
   addMeta({
@@ -283,7 +276,7 @@ const CellRenderer: ReactFCWithChildren<{
   displayType: DisplayType
   displayAs?: DISPLAY_AS_TYPE
 }> = ({ cell, displayType, displayAs = DISPLAY_AS_TYPE.Auto }) => {
-  const value = trimMetaFromCell(cell.getValue(cell.column.id))
+  const value = getValueFromCell(cell.getValue(cell.column.id))
   if (displayType !== 'STRING') {
     return <>{formatRecord(value, displayType)}</>
   }
@@ -730,12 +723,7 @@ export const table: Chart<Type.TABLE> = {
         data.fields.map((field, index) => ({
           id: field.name,
           accessorFn: (record) => {
-            if (record[index].backgroundColor) {
-              console.log('bg', record[index])
-            }
-            const meta = { ...record[index] }
-            delete meta['value']
-            return `${record[index].value}${META_SEPARATOR}${JSON.stringify(meta)}`
+            return JSON.stringify(record[index])
           },
           meta: {
             name: field.name,
@@ -919,7 +907,7 @@ export const table: Chart<Type.TABLE> = {
                               : 'left'
                           }
                           style={{
-                            background: (extractMetaFromCell(cell.getValue() as string) as { backgroundColor?: string })
+                            background: (JSON.parse(cell.getValue() as string) as { backgroundColor?: string })
                               ?.backgroundColor
                           }}
                         >
