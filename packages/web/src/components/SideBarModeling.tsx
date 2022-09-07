@@ -20,6 +20,7 @@ import {
   useQuestionDownstreams
 } from '@app/hooks/api'
 import { useCommit } from '@app/hooks/useCommit'
+import { useCurrentConnector } from '@app/hooks/useCurrentConnector'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { ThemingVariables } from '@app/styles'
 import { AggregatedMetric, CustomSQLMetric, Editor, Metric } from '@app/types'
@@ -543,7 +544,8 @@ function SQLMiniEditor(props: {
   onChange(value: string): void
 }) {
   const workspace = useWorkspace()
-  const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)
+  const currentConnector = useCurrentConnector()
+  const { data: profile } = useConnectorsGetProfile(currentConnector?.id)
   const monaco = useMonaco()
   useEffect(() => {
     monaco?.editor.defineTheme('tellery-mini', {

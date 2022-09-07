@@ -381,7 +381,7 @@ export const sqlRequest = ({
   sql: string
   questionId?: string
   connectorId: string
-  profile: string
+  profile?: string
   maxRow?: number
 }) => {
   const source = axios.CancelToken.source()

@@ -20,11 +20,13 @@ import { breakpoints, ThemingVariables } from '@app/styles'
 import { Editor, Story } from '@app/types'
 import { DEFAULT_TIPPY_DELAY } from '@app/utils'
 import { css } from '@emotion/css'
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import Tippy from '@tippyjs/react'
 import { dequal } from 'dequal'
-import React, { memo, useCallback } from 'react'
+import React, { memo, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useStorySnapshotManagerProvider } from '../hooks/useStorySnapshotManager'
+import { StyledDropdownMenuContent } from './kit/DropDownMenu'
 import IconButton from './kit/IconButton'
 import { RefreshButton } from './RefreshButton'
 import { StoryConfigPopOver } from './StoryConfigPopOver'
@@ -231,35 +233,28 @@ export const _NavigationHeader = (props: {
 
 const StoryConfigButton: ReactFCWithChildren<{ storyId: string }> = ({ storyId }) => {
   const animation = useTippyMenuAnimation('scale')
-
+  const [open, setOpen] = useState(false)
   return (
-    <Tippy
-      render={(attrs) => <StoryConfigPopOver storyId={storyId} animate={animation.controls} {...attrs} />}
-      hideOnClick={true}
-      theme="tellery"
-      animation={true}
-      onMount={animation.onMount}
-      onHide={(instance) => {
-        animation.onHide(instance)
-      }}
-      duration={150}
-      arrow={false}
-      interactive
-      trigger="click"
-      popperOptions={{
-        modifiers: [
-          {
-            name: 'offset',
-            enabled: true,
-            options: {
-              offset: [10, 20]
-            }
-          }
-        ]
+    <DropdownMenu.Root
+      open={open}
+      onOpenChange={(open) => {
+        setOpen(open)
       }}
     >
-      <IconButton icon={IconCommonMore} color={ThemingVariables.colors.text[0]} />
-    </Tippy>
+      <DropdownMenu.Trigger asChild>
+        <IconButton icon={IconCommonMore} color={ThemingVariables.colors.text[0]} />
+      </DropdownMenu.Trigger>
+      <StyledDropdownMenuContent
+        sideOffset={15}
+        open={open}
+        className={css`
+          padding: 0;
+        `}
+      >
+        <StoryConfigPopOver storyId={storyId} animate={animation.controls} />
+      </StyledDropdownMenuContent>
+      {/* <DropdownMenu.Arrow /> */}
+    </DropdownMenu.Root>
   )
 }
 

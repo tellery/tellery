@@ -18,6 +18,7 @@ import { useWorkspace } from '@app/hooks/useWorkspace'
 import type {
   AvailableConfig,
   BackLinks,
+  Connector,
   Dimension,
   ProfileConfig,
   Snapshot,
@@ -567,18 +568,33 @@ export function useWorkspaceView() {
 
 export function useWorkspaceDetail() {
   const workspace = useWorkspace()
-  return useQuery(['workspaces', 'getDetail', workspace], () =>
-    request
-      .post<{ workspace: Workspace }>('/api/workspaces/getDetail', { workspaceId: workspace.id })
-      .then((res) => res.data.workspace)
+  return useQuery(
+    ['workspaces', 'getDetail', workspace],
+    () =>
+      request
+        .post<{ workspace: Workspace }>('/api/workspaces/getDetail', { workspaceId: workspace.id })
+        .then((res) => res.data.workspace),
+    { suspense: false }
   )
 }
 
 export function useWorkspaceUpdate() {
   const workspace = useWorkspace()
   const handleUpdate = useCallback(
-    (payload: { name?: string; avatar?: string; resetInviteCode?: boolean }) =>
-      request.post('/api/workspaces/update', { ...payload, workspaceId: workspace.id }),
+    (payload: { name?: string; avatar?: string; resetInviteCode?: boolean }) => {
+      return request.post('/api/workspaces/update', { ...payload, workspaceId: workspace.id })
+    },
+    [workspace.id]
+  )
+  return useAsync(handleUpdate)
+}
+
+export function useWorkspacePreferencesUpdate() {
+  const workspace = useWorkspace()
+  const handleUpdate = useCallback(
+    (preferences: Record<string, unknown>) => {
+      return request.post('/api/workspaces/updatePreferences', { preferences, workspaceId: workspace.id })
+    },
     [workspace.id]
   )
   return useAsync(handleUpdate)
@@ -658,7 +674,7 @@ export const useConnectorsList = () => {
   const workspace = useWorkspace()
   return useQuery(['connector', 'list', workspace], () =>
     request
-      .post<{ connectors: { id: string; url: string; name: string }[] }>('/api/connectors/list', {
+      .post<{ connectors: Connector[] }>('/api/connectors/list', {
         workspaceId: workspace.id
       })
       .then((res) => res.data.connectors)

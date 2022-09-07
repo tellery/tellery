@@ -1,4 +1,9 @@
-import { useWorkspaceDetail, useWorkspaceUpdate } from '@app/hooks/api'
+import {
+  useConnectorsList,
+  useWorkspaceDetail,
+  useWorkspacePreferencesUpdate,
+  useWorkspaceUpdate
+} from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { ThemingVariables } from '@app/styles'
 import type { Workspace } from '@app/types'
@@ -6,24 +11,39 @@ import { fileLoader } from '@app/utils'
 import { uploadFile } from '@app/utils/upload'
 import { css } from '@emotion/css'
 import { pick } from 'lodash'
-import { useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { FormButton } from './kit/FormButton'
 import FormError from './kit/FormError'
 import FormFileButton from './kit/FormFileButton'
 import FormInput from './kit/FormInput'
 import FormLabel from './kit/FormLabel'
+import FormSelect from './kit/FormSelect'
 
 export function WorkspacePreferences(props: { onClose(): void }) {
   const { data: workspace, refetch } = useWorkspaceDetail()
-  const { register, reset, watch, setValue, handleSubmit } = useForm<Pick<Workspace, 'avatar' | 'name'>>({
-    defaultValues: pick(workspace, ['avatar', 'name']),
+  const { register, reset, watch, setValue, handleSubmit } = useForm<
+    Pick<Workspace, 'avatar' | 'name' | 'preferences'>
+  >({
+    defaultValues: pick(workspace, ['avatar', 'name', 'preferences']),
     mode: 'onBlur'
   })
+  const { data: connectors } = useConnectorsList()
+
   useEffect(() => {
-    reset(pick(workspace, ['avatar', 'name']))
+    if (workspace) {
+      reset(pick(workspace, ['avatar', 'name', 'preferences']))
+    }
   }, [workspace, reset])
   const handleWorkspaceUpdate = useWorkspaceUpdate()
+  const handleWorkspacePreferencesUpdate = useWorkspacePreferencesUpdate()
+  const submit = useCallback(
+    (args) => {
+      handleWorkspaceUpdate.execute(args)
+      handleWorkspacePreferencesUpdate.execute(args.preferences)
+    },
+    [handleWorkspacePreferencesUpdate, handleWorkspaceUpdate]
+  )
   const { onClose } = props
   useEffect(() => {
     if (handleWorkspaceUpdate.status === 'success') {
@@ -45,7 +65,7 @@ export function WorkspacePreferences(props: { onClose(): void }) {
         display: flex;
         flex-direction: column;
       `}
-      onSubmit={handleSubmit(handleWorkspaceUpdate.execute)}
+      onSubmit={handleSubmit(submit)}
     >
       <h2
         className={css`
@@ -93,13 +113,37 @@ export function WorkspacePreferences(props: { onClose(): void }) {
         </FormFileButton>
       </div>
       <FormLabel>Name</FormLabel>
-      <FormInput {...register('name')} disabled={disabled} />
+      <FormInput
+        {...register('name')}
+        disabled={disabled}
+        className={css`
+          margin-bottom: 20px;
+        `}
+      />
+      <FormLabel>Default Connector</FormLabel>
+      <FormSelect
+        className={css`
+          width: 100%;
+          margin-bottom: 20px;
+        `}
+        {...register('preferences.connectorId')}
+      >
+        {connectors?.map((connector) => (
+          <option key={connector.id} value={connector.id}>
+            {connector.name}
+          </option>
+        ))}
+      </FormSelect>
+      <FormLabel>DB imports to</FormLabel>
+      <FormInput {...register('preferences.dbImportsTo')} />
       <div
         className={css`
           flex: 1;
         `}
       />
       <FormError message={(handleWorkspaceUpdate.error?.response?.data as any)?.errMsg} />
+      <FormError message={(handleWorkspacePreferencesUpdate.error?.response?.data as any)?.errMsg} />
+
       <FormButton
         type="submit"
         variant="primary"
@@ -108,7 +152,7 @@ export function WorkspacePreferences(props: { onClose(): void }) {
           margin-top: 5px;
         `}
         disabled={disabled}
-        loading={handleWorkspaceUpdate.status === 'pending'}
+        loading={handleWorkspaceUpdate.status === 'pending' || handleWorkspacePreferencesUpdate.status === 'pending'}
       >
         Update
       </FormButton>

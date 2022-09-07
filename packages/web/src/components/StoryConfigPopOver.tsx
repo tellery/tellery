@@ -1,5 +1,7 @@
 import {
+  IconCommonCheck,
   IconCommonCopy,
+  IconCommonDataAssetSetting,
   IconCommonLock,
   IconCommonRefresh,
   IconMenuDelete,
@@ -12,7 +14,7 @@ import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { createTranscation } from '@app/context/editorTranscations'
 import { env } from '@app/env'
 import { useOpenStory } from '@app/hooks'
-import { useBlockSuspense, useUser } from '@app/hooks/api'
+import { useBlockSuspense, useConnectorsList, useUser } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
 import { useBlockTranscations } from '@app/hooks/useBlockTranscation'
 import { useCommit } from '@app/hooks/useCommit'
@@ -22,13 +24,15 @@ import type { Permission, PermissionEntityRole, Story } from '@app/types'
 import { blockIdGenerator } from '@app/utils'
 import { waitForTranscationApplied } from '@app/utils/oberveables'
 import { css, cx } from '@emotion/css'
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import Tippy from '@tippyjs/react'
 import copy from 'copy-to-clipboard'
 import dayjs from 'dayjs'
 import { AnimationControls, motion, MotionStyle } from 'framer-motion'
-import React, { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import { StyledDropDownItem, StyledDropdownMenuSubContent, StyledDropDownSubTriggerItem } from './kit/DropDownMenu'
 
 const upsertPermission = (permissions: Permission[], permission: Permission): Permission[] => {
   const filteredPermission = permissions.filter(
@@ -59,6 +63,7 @@ export const StoryConfigPopOver: ReactFCWithChildren<{
   const user = useLoggedUser()
   const navigate = useNavigate()
   const permissions = useStoryPermissions(story.id)
+  const { data: connectors } = useConnectorsList()
 
   const setWorkspacePermission = useCallback(
     async (role: PermissionEntityRole | null) => {
@@ -129,7 +134,8 @@ export const StoryConfigPopOver: ReactFCWithChildren<{
     !!story?.permissions?.some((permission) => {
       return permission.type === 'workspace'
     }) === false
-
+  console.log(story.format, story.format?.connectorId, !story.format?.connectorId)
+  const [open, setOpen] = useState(false)
   return (
     <motion.div
       style={props.style}
@@ -176,7 +182,6 @@ export const StoryConfigPopOver: ReactFCWithChildren<{
         onClick={() => {
           copy(window.location.href)
           toast.success('Link copied')
-          // setOpen(false)
         }}
       />
       <MenuItem
@@ -194,6 +199,41 @@ export const StoryConfigPopOver: ReactFCWithChildren<{
           }}
           side={<FormSwitch checked={readOnlyStatus} readOnly disabled={!permissions.canWrite} />}
         />
+      )}
+      {permissions.canWrite && (
+        <DropdownMenu.Sub
+          open={open}
+          onOpenChange={(open) => {
+            setOpen(open)
+          }}
+        >
+          <StyledDropDownSubTriggerItem
+            title={'Default connector'}
+            icon={<IconCommonDataAssetSetting color={ThemingVariables.colors.text[0]} />}
+          ></StyledDropDownSubTriggerItem>
+
+          <StyledDropdownMenuSubContent open={open} width={200}>
+            <StyledDropDownItem
+              title={`Inherited`}
+              onClick={async () => {
+                setStoryFormat('connectorId', undefined as any)
+              }}
+              side={!story.format?.connectorId && <IconCommonCheck />}
+            />
+            {connectors?.map((connector) => {
+              return (
+                <StyledDropDownItem
+                  key={connector.id}
+                  title={connector.name}
+                  onClick={async () => {
+                    setStoryFormat('connectorId', connector.id)
+                  }}
+                  side={story.format?.connectorId === connector.id && <IconCommonCheck />}
+                />
+              )
+            })}
+          </StyledDropdownMenuSubContent>
+        </DropdownMenu.Sub>
       )}
       {permissions.canWrite && story.createdById === user.id && (
         <Tippy content="Only you can view or edit this story" placement="left" delay={500} arrow={false}>

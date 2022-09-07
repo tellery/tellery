@@ -5,12 +5,12 @@ import { blockIdGenerator } from '@app/utils'
 import { waitForTranscationApplied } from '@app/utils/oberveables'
 import { css } from '@emotion/css'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import { useMoveOrSaveToStory } from '../../hooks/useMoveOrSaveToStory'
 import { useGetBlockTitleTextSnapshot } from '../editor'
-import { StyledDropDownItem, StyledDropdownMenuContent } from '../kit/DropDownMenu'
+import { StyledDropDownItem, StyledDropdownMenuSubContent } from '../kit/DropDownMenu'
 import { SearchInput } from './SearchInput'
 
 export const SaveOrMoveToStorySubMenu: ReactFCWithChildren<{
@@ -80,14 +80,15 @@ export const SaveOrMoveToStorySubMenu: ReactFCWithChildren<{
   )
 
   return (
-    <DropdownMenu.Root
+    <DropdownMenu.Sub
       open={open}
       onOpenChange={(open) => {
         setOpen(open)
       }}
+      defaultOpen
     >
       {trigger}
-      <StyledDropdownMenuContent
+      <StyledDropdownMenuSubContent
         open={open}
         className={css`
           padding: 0;
@@ -139,7 +140,7 @@ export const SaveOrMoveToStorySubMenu: ReactFCWithChildren<{
         </div>
 
         <DropdownMenu.Arrow />
-      </StyledDropdownMenuContent>
-    </DropdownMenu.Root>
+      </StyledDropdownMenuSubContent>
+    </DropdownMenu.Sub>
   )
 }

@@ -18,7 +18,7 @@ import invariant from 'tiny-invariant'
 import { useBlockSuspense, useFetchStoryChunk, useGetBlock, useGetSnapshot } from './api'
 import { useCommit } from './useCommit'
 import { useGetQuerySql } from './useGetQuerySql'
-import { useQuestionEditorActiveIdState, useQuestionEditorBlockMapState } from './useQuestionEditor'
+import { useQuestionEditorActiveIdState } from './useQuestionEditor'
 import { useStoryBlocksMap } from './useStoryBlock'
 import { useStoryPermissions } from './useStoryPermissions'
 import { useStoryResources } from './useStoryResources'
@@ -51,6 +51,7 @@ const limitRecordsBySize = (data: Data, sizeLimit: number) => {
 }
 
 export const useRefreshSnapshot = (storyId: string) => {
+  const storyBlock = useBlockSuspense<Story>(storyId)
   const commit = useCommit()
   const workspace = useWorkspace()
   const queryClient = useQueryClient()
@@ -58,7 +59,7 @@ export const useRefreshSnapshot = (storyId: string) => {
   const getSnapshot = useGetSnapshot()
   const getBlock = useGetBlock()
   const getQuerySql = useGetQuerySql()
-
+  const connectorId = storyBlock.format?.connectorId ?? workspace.preferences.connectorId
   const execute = useRecoilCallback(
     ({ set, reset }) =>
       async (queryBlock: Editor.QueryBlock) => {
@@ -84,8 +85,7 @@ export const useRefreshSnapshot = (storyId: string) => {
             workspaceId: workspace.id,
             sql,
             questionId: originalBlockId,
-            connectorId: workspace.preferences.connectorId!,
-            profile: workspace.preferences.profile!
+            connectorId: connectorId!
           },
           mutationKey: ['story', queryBlock.storyId, queryBlock.id, originalBlockId].join('/'),
           onSuccess: async (data) => {
@@ -185,18 +185,7 @@ export const useRefreshSnapshot = (storyId: string) => {
           }
         })
       },
-    [
-      getQuerySql,
-      storyId,
-      queryClient,
-      workspace.id,
-      workspace.preferences.connectorId,
-      workspace.preferences.profile,
-      createSnapshot,
-      getSnapshot,
-      commit,
-      getBlock
-    ]
+    [getQuerySql, storyId, queryClient, workspace.id, connectorId, createSnapshot, getSnapshot, commit, getBlock]
   )
 
   const cancel = useCallback(

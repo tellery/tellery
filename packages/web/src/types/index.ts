@@ -393,6 +393,7 @@ export interface Story extends Editor.BaseBlock {
     smallText?: boolean
     fontFamily?: string
     showBorder?: boolean
+    connectorId?: string
   }
 }
 
@@ -443,6 +444,12 @@ export type Workspace = {
     profile?: string
     emailConfig?: boolean
   }
+}
+
+export type Connector = {
+  id: string
+  url: string
+  name: string
 }
 
 export type ProfileConfig = {

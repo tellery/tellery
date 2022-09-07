@@ -10,6 +10,7 @@ import {
 import { MainSideBarItem } from '@app/components/MainSideBarItem'
 import { useConnectorsGetProfile } from '@app/hooks/api'
 import { useLoggedUser } from '@app/hooks/useAuth'
+import { useCurrentConnector } from '@app/hooks/useCurrentConnector'
 import { useSideBarConfig } from '@app/hooks/useSideBarConfig'
 import { useWorkspace } from '@app/hooks/useWorkspace'
 import { omniboxShowState } from '@app/store'
@@ -73,8 +74,8 @@ const SideBarContent: ReactFCWithChildren = () => {
   const [activeSideBarTab, setActiveSideBarTab] = useState<keyof typeof SideBarContents | null>(null)
   const ref = useRef(null)
   const navigate = useNavigate()
-  const workspace = useWorkspace()
-  const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)
+  const currentConnector = useCurrentConnector()
+  const { data: profile } = useConnectorsGetProfile(currentConnector?.id)
   const setOmniboxShow = useUpdateAtom(omniboxShowState)
   const closeSideBar = useCallback(() => {
     !!activeSideBarTab && setActiveSideBarTab(null)

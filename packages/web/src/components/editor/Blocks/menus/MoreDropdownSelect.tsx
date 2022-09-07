@@ -37,7 +37,13 @@ import React, { ReactNode, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import invariant from 'tiny-invariant'
-import { StyledDropDownItem, StyledDropdownMenuContent, StyledDropDownTriggerItem } from '../../../kit/DropDownMenu'
+import {
+  StyledDropDownItem,
+  StyledDropdownMenuContent,
+  StyledDropdownMenuSubContent,
+  StyledDropDownSubTriggerItem,
+  StyledDropDownTriggerItem
+} from '../../../kit/DropDownMenu'
 import { TellerySelectionType } from '../../helpers'
 import { getBlockImageById } from '../../helpers/contentEditable'
 import { useEditor } from '../../hooks'
@@ -215,17 +221,17 @@ export const MoreDropdownSelect: ReactFCWithChildren<{
             })
           }}
         />
-        <DropdownMenu.Root
+        <DropdownMenu.Sub
           open={subMenuOpen}
           onOpenChange={(open) => {
             setSubMenuOpen(open)
           }}
         >
-          <StyledDropDownTriggerItem
+          <StyledDropDownSubTriggerItem
             title={t<string>(`Download as`)}
             icon={<IconMenuDownload color={ThemingVariables.colors.text[0]} />}
-          ></StyledDropDownTriggerItem>
-          <StyledDropdownMenuContent open={subMenuOpen}>
+          ></StyledDropDownSubTriggerItem>
+          <StyledDropdownMenuSubContent open={subMenuOpen}>
             <StyledDropDownItem
               title={`Download as CSV (limit ${RECORD_LIMIT}) `}
               icon={<IconMenuDownload color={ThemingVariables.colors.text[0]} />}
@@ -286,8 +292,8 @@ export const MoreDropdownSelect: ReactFCWithChildren<{
               }}
             />
             <DropdownMenu.Arrow />
-          </StyledDropdownMenuContent>
-        </DropdownMenu.Root>
+          </StyledDropdownMenuSubContent>
+        </DropdownMenu.Sub>
 
         {canConvertDataAsset && queryBlock.type === Editor.BlockType.SQL && (
           <Tippy

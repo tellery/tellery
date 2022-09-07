@@ -9,7 +9,7 @@ import { useLoggedUser } from '@app/hooks/useAuth'
 import { ThemingVariables } from '@app/styles'
 import type { AvailableConfig, ProfileConfig } from '@app/types'
 import { css } from '@emotion/css'
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useForm, UseFormRegister } from 'react-hook-form'
 import { FormButton } from './kit/FormButton'
 import FormFileButton from './kit/FormFileButton'
@@ -19,21 +19,11 @@ import FormSelect from './kit/FormSelect'
 import FormSwitch from './kit/FormSwitch'
 
 export function WorkspaceDatabases(props: { onClose(): void }) {
-  const { data: workspace } = useWorkspaceDetail()
-  const { data: connectors, refetch } = useConnectorsList()
-  const connector = useMemo(
-    () => connectors?.find((c) => c.id === workspace?.preferences.connectorId),
-    [connectors, workspace?.preferences.connectorId]
-  )
   const { onClose } = props
   const handleClose = useCallback(() => {
-    refetch()
     onClose()
-  }, [onClose, refetch])
+  }, [onClose])
 
-  if (!connector) {
-    return null
-  }
   return (
     <div
       className={css`
@@ -44,38 +34,6 @@ export function WorkspaceDatabases(props: { onClose(): void }) {
         flex-direction: column;
       `}
     >
-      <Connector {...connector} onClose={handleClose} />
-    </div>
-  )
-}
-
-function Connector(props: { id: string; url: string; name: string; onClose(): void }) {
-  const { data: workspace } = useWorkspaceDetail()
-  const { data: profileConfig, refetch } = useConnectorsGetProfile(props.id)
-  const { register, reset, handleSubmit, watch, setValue } = useForm<ProfileConfig>({
-    defaultValues: profileConfig,
-    mode: 'onBlur'
-  })
-  const type = watch('type')
-  useEffect(() => {
-    reset(profileConfig)
-  }, [profileConfig, reset])
-  const { data: availableConfigs } = useConnectorsGetProfileConfigs(props.id)
-  const availableConfig = useMemo(() => availableConfigs?.find((ac) => ac.type === type), [availableConfigs, type])
-  const handleUpsertProfile = useConnectorsUpsertProfile(props.id)
-  const { onClose } = props
-  useEffect(() => {
-    if (handleUpsertProfile.status === 'success') {
-      refetch()
-      onClose()
-    }
-  }, [handleUpsertProfile.status, onClose, refetch])
-  const user = useLoggedUser()
-  const me = useMemo(() => workspace?.members.find(({ userId }) => userId === user.id), [user.id, workspace?.members])
-  const disabled = me?.role !== 'admin'
-
-  return (
-    <>
       <h2
         className={css`
           font-weight: 600;
@@ -88,6 +46,44 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
       >
         Database Profile
       </h2>
+
+      <Connector onClose={handleClose} />
+    </div>
+  )
+}
+
+function Connector({ onClose }: { onClose(): void }) {
+  const { data: connectors } = useConnectorsList()
+  const { data: workspace } = useWorkspaceDetail()
+  const [currentConnectorId, setCurrentConnectorId] = useState(workspace?.preferences.connectorId)
+  const connector = useMemo(
+    () => connectors?.find((c) => c.id === currentConnectorId)!,
+    [connectors, currentConnectorId]
+  )
+  const { data: profileConfig, refetch } = useConnectorsGetProfile(currentConnectorId)
+  const { register, reset, handleSubmit, watch, setValue } = useForm<ProfileConfig>({
+    defaultValues: profileConfig,
+    mode: 'onBlur'
+  })
+  const type = watch('type')
+  useEffect(() => {
+    reset(profileConfig)
+  }, [profileConfig, reset])
+  const { data: availableConfigs } = useConnectorsGetProfileConfigs(connector.id)
+  const availableConfig = useMemo(() => availableConfigs?.find((ac) => ac.type === type), [availableConfigs, type])
+  const handleUpsertProfile = useConnectorsUpsertProfile(connector.id)
+  useEffect(() => {
+    if (handleUpsertProfile.status === 'success') {
+      refetch()
+      onClose()
+    }
+  }, [handleUpsertProfile.status, onClose, refetch])
+  const user = useLoggedUser()
+  const me = useMemo(() => workspace?.members.find(({ userId }) => userId === user.id), [user.id, workspace?.members])
+  const disabled = me?.role !== 'admin'
+
+  return (
+    <>
       <div
         className={css`
           flex: 1;
@@ -97,6 +93,23 @@ function Connector(props: { id: string; url: string; name: string; onClose(): vo
         `}
       >
         <form>
+          <FormLabel>Connector</FormLabel>
+          <FormSelect
+            className={css`
+              width: 100%;
+              margin-bottom: 20px;
+            `}
+            onChange={(e) => {
+              setCurrentConnectorId(e.target.value)
+            }}
+            value={currentConnectorId}
+          >
+            {connectors?.map((connector) => (
+              <option key={connector.id} value={connector.id}>
+                {connector.name}
+              </option>
+            ))}
+          </FormSelect>
           <FormLabel required={true}>Type</FormLabel>
           <FormSelect
             className={css`

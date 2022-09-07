@@ -8,7 +8,12 @@ import dayjs from 'dayjs'
 import React, { ReactNode, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
-import { StyledDropDownItem, StyledDropdownMenuContent, StyledDropDownTriggerItem } from '../kit/DropDownMenu'
+import {
+  StyledDropDownItem,
+  StyledDropdownMenuContent,
+  StyledDropDownSubTriggerItem,
+  StyledDropDownTriggerItem
+} from '../kit/DropDownMenu'
 import { useMoveOrSaveToStory } from '../../hooks/useMoveOrSaveToStory'
 import { SaveOrMoveToStorySubMenu } from './SaveOrMoveToStorySubMenu'
 
@@ -62,7 +67,7 @@ export const ExploreSaveMenu: ReactFCWithChildren<{
         <SaveOrMoveToStorySubMenu
           blockFragment={blockFragment}
           mode="save"
-          trigger={<StyledDropDownTriggerItem title={t<string>(`Save to story`)}></StyledDropDownTriggerItem>}
+          trigger={<StyledDropDownSubTriggerItem title={t<string>(`Save to story`)}></StyledDropDownSubTriggerItem>}
         />
 
         <StyledDropDownItem

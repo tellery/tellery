@@ -132,6 +132,7 @@ export const StoryQuestionsEditor: ReactFCWithChildren<{ storyId: string }> = ({
   }, [height, windowHeight, y])
 
   const workspace = useWorkspace()
+
   const { data: profile } = useConnectorsGetProfile(workspace.preferences.connectorId)
   useSqlEditor(profile?.type)
 

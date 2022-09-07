@@ -11,39 +11,82 @@ export const StyledDropdownMenuContent = React.forwardRef<
   { open: boolean; className?: string; width?: number } & React.ComponentProps<typeof DropdownMenu.Content>
 >(({ children, open, className, width = 260, ...props }, ref) => {
   return (
-    <AnimatePresence>
-      {open && (
-        <DropdownMenu.Content asChild forceMount ref={ref} {...props}>
-          <motion.div
-            initial={'inactive'}
-            animate={'active'}
-            exit={'inactive'}
-            transition={{ duration: 0.15 }}
-            variants={PopoverMotionVariants.scale}
-            className={cx(
-              css`
-                background: ${ThemingVariables.colors.gray[5]};
-                box-shadow: ${ThemingVariables.boxShadows[0]};
-                border-radius: 8px;
-                padding: 8px;
-                width: ${width}px;
-                overflow: hidden;
-                outline: none;
-                display: flex;
-                flex-direction: column;
-              `,
-              className
-            )}
-          >
-            {children}
-          </motion.div>
-        </DropdownMenu.Content>
-      )}
-    </AnimatePresence>
+    <DropdownMenu.Portal forceMount>
+      <AnimatePresence>
+        {open && (
+          <DropdownMenu.Content asChild forceMount ref={ref} {...props}>
+            <motion.div
+              initial={'inactive'}
+              animate={'active'}
+              exit={'inactive'}
+              transition={{ duration: 0.15 }}
+              variants={PopoverMotionVariants.scale}
+              className={cx(
+                css`
+                  background: ${ThemingVariables.colors.gray[5]};
+                  box-shadow: ${ThemingVariables.boxShadows[0]};
+                  border-radius: 8px;
+                  padding: 8px;
+                  width: ${width}px;
+                  overflow: hidden;
+                  outline: none;
+                  display: flex;
+                  flex-direction: column;
+                `,
+                className
+              )}
+            >
+              {children}
+            </motion.div>
+          </DropdownMenu.Content>
+        )}
+      </AnimatePresence>
+    </DropdownMenu.Portal>
   )
 })
 
 StyledDropdownMenuContent.displayName = 'StyledDropdownMenuContent'
+
+export const StyledDropdownMenuSubContent = React.forwardRef<
+  HTMLDivElement,
+  { open: boolean; className?: string; width?: number } & React.ComponentProps<typeof DropdownMenu.Content>
+>(({ children, open, className, width = 260, ...props }, ref) => {
+  return (
+    <DropdownMenu.Portal forceMount>
+      <AnimatePresence>
+        {open && (
+          <DropdownMenu.SubContent asChild ref={ref} {...props}>
+            <motion.div
+              initial={'inactive'}
+              animate={'active'}
+              exit={'inactive'}
+              transition={{ duration: 0.15 }}
+              variants={PopoverMotionVariants.scale}
+              className={cx(
+                css`
+                  background: ${ThemingVariables.colors.gray[5]};
+                  box-shadow: ${ThemingVariables.boxShadows[0]};
+                  border-radius: 8px;
+                  padding: 8px;
+                  width: ${width}px;
+                  overflow: hidden;
+                  outline: none;
+                  display: flex;
+                  flex-direction: column;
+                `,
+                className
+              )}
+            >
+              {children}
+            </motion.div>
+          </DropdownMenu.SubContent>
+        )}
+      </AnimatePresence>
+    </DropdownMenu.Portal>
+  )
+})
+
+StyledDropdownMenuSubContent.displayName = 'StyledDropdownMenuSubContent'
 
 type SyltedMenuItemProps = {
   icon?: ReactNode
@@ -141,7 +184,7 @@ StyledDropDownItem.displayName = 'StyledDropDownItem'
 
 export const StyledDropDownTriggerItem = forwardRef<HTMLDivElement, SyltedMenuItemProps>((props, ref) => {
   return (
-    <DropdownMenu.TriggerItem asChild>
+    <DropdownMenu.Trigger asChild>
       <StyledMenuItem
         {...props}
         ref={ref}
@@ -153,7 +196,26 @@ export const StyledDropDownTriggerItem = forwardRef<HTMLDivElement, SyltedMenuIt
           />
         }
       />
-    </DropdownMenu.TriggerItem>
+    </DropdownMenu.Trigger>
   )
 })
 StyledDropDownTriggerItem.displayName = 'StyledDropDownTriggerItem'
+
+export const StyledDropDownSubTriggerItem = forwardRef<HTMLDivElement, SyltedMenuItemProps>((props, ref) => {
+  return (
+    <DropdownMenu.SubTrigger asChild>
+      <StyledMenuItem
+        {...props}
+        ref={ref}
+        side={
+          <IconCommonArrowDropDown
+            className={css`
+              transform: rotate(-90deg);
+            `}
+          />
+        }
+      />
+    </DropdownMenu.SubTrigger>
+  )
+})
+StyledDropDownSubTriggerItem.displayName = 'StyledDropDownSubTrigger'

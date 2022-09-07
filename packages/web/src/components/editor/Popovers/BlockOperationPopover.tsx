@@ -7,7 +7,11 @@ import {
   IconMenuInsertBefore,
   IconMenuMoveTo
 } from '@app/assets/icons'
-import { StyledDropDownItem, StyledDropDownTriggerItem } from '@app/components/kit/DropDownMenu'
+import {
+  StyledDropDownItem,
+  StyledDropDownSubTriggerItem,
+  StyledDropDownTriggerItem
+} from '@app/components/kit/DropDownMenu'
 import FormSwitch from '@app/components/kit/FormSwitch'
 import { MenuItemDivider } from '@app/components/MenuItemDivider'
 import { SaveOrMoveToStorySubMenu } from '@app/components/menus/SaveOrMoveToStorySubMenu'
@@ -122,10 +126,10 @@ export const BlockPopoverInner: ReactFCWithChildren<{ id: string; requestClose: 
         blockFragment={blockFragment}
         mode="move"
         trigger={
-          <StyledDropDownTriggerItem
+          <StyledDropDownSubTriggerItem
             title={t<string>(`Move to story`)}
             icon={<IconMenuMoveTo color={ThemingVariables.colors.text[0]} />}
-          ></StyledDropDownTriggerItem>
+          ></StyledDropDownSubTriggerItem>
         }
       />
       <MenuItemDivider />
