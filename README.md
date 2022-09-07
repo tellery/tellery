@@ -98,7 +98,7 @@ Learn how to start analysis with Tellery:
 
 ## Community support
 
-- Looking to get answers to questions? Join the chat on [Slack](https://join.slack.com/t/telleryio/shared_invite/zt-s37tgvo7-QBdpggK_uG6QqJVWhSXlFg)
+- Looking to get answers to questions? Join the chat on [Discord](https://discord.gg/gAxqpvQUZV)
 - Want to report a bug or request a feature? Open an [issue](/issues/new).
 - Read all the latest news on [Twitter](https://twitter.com/telleryhq)
 
