@@ -264,23 +264,24 @@ export const useStorySnapshotManagerProvider = (storyId: string) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshOnInit, refreshSnapshot])
 
-  useEffect(() => {
-    for (const queryBlock of executeableQuestionBlocks) {
-      const snapshotId = queryBlock?.content?.snapshotId
-      const blockId = queryBlock.id
-      const mutatingCount = queryClient.isMutating({
-        predicate: (mutation) => (mutation.options.mutationKey as string)?.endsWith(blockId)
-      })
-      if (blockId && !snapshotId && mutatingCount === 0 && !queryBlock.content?.error) {
-        if (
-          (queryBlock.type === Editor.BlockType.SQL && (queryBlock as Editor.SQLBlock).content?.sql) ||
-          queryBlock.type === Editor.BlockType.SmartQuery
-        ) {
-          refreshSnapshot.execute(queryBlock)
-        }
-      }
-    }
-  }, [queryClient, refreshSnapshot, executeableQuestionBlocks])
+  // Refresh snapshot when snapshot is null
+  // useEffect(() => {
+  //   for (const queryBlock of executeableQuestionBlocks) {
+  //     const snapshotId = queryBlock?.content?.snapshotId
+  //     const blockId = queryBlock.id
+  //     const mutatingCount = queryClient.isMutating({
+  //       predicate: (mutation) => (mutation.options.mutationKey as string)?.endsWith(blockId)
+  //     })
+  //     if (blockId && !snapshotId && mutatingCount === 0 && !queryBlock.content?.error) {
+  //       if (
+  //         (queryBlock.type === Editor.BlockType.SQL && (queryBlock as Editor.SQLBlock).content?.sql) ||
+  //         queryBlock.type === Editor.BlockType.SmartQuery
+  //       ) {
+  //         refreshSnapshot.execute(queryBlock)
+  //       }
+  //     }
+  //   }
+  // }, [queryClient, refreshSnapshot, executeableQuestionBlocks])
 
   useEffect(() => {
     if (!previousComipledQueriesRef) return
