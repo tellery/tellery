@@ -5,17 +5,21 @@ import config from 'config'
 import proxy from 'koa-better-http-proxy'
 import compose from 'koa-compose'
 import { historyApiFallback } from 'koa2-connect-history-api-fallback'
-import { loadFrontendEnvConfig } from '../utils/frontendInjector'
+import { injectFrontendEnvToFile, loadFrontendEnvConfig } from '../utils/frontendInjector'
 import koa from 'koa'
 
-const frontendAssestDir = config.get<string>('frontendConfig.assestsUrl')
+const frontendAssetDir = config.get<string>('frontendConfig.assetsUrl')
 const frontendHost = config.get<string>('frontendConfig.host')
-const isWebUrl = frontendAssestDir.startsWith('http')
-const isHttps = frontendAssestDir.startsWith('https')
-const staticDirPath = path.join(__dirname, frontendAssestDir)
+const isWebUrl = frontendAssetDir.startsWith('http')
+const isHttps = frontendAssetDir.startsWith('https')
+const staticDirPath = path.join(__dirname, frontendAssetDir)
 const webUrl = isWebUrl ? new URL('http://localhost:3000') : null
 const frontendEnv = loadFrontendEnvConfig()
 const envString = JSON.stringify(frontendEnv)
+
+if (!isWebUrl) {
+  injectFrontendEnvToFile(path.join(staticDirPath, 'web'), envString)
+}
 
 const injectEnvMiddleware: koa.Middleware = async (ctx, next) => {
   const contentType = ctx.response.headers['content-type']
