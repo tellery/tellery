@@ -1522,10 +1522,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@openreplay/tracker@^3.5.9":
-  version "3.6.1"
-  resolved "https://registry.yarnpkg.com/@openreplay/tracker/-/tracker-3.6.1.tgz#f504354a12fc9c8eff8673fec63ca13b988dbf18"
-  integrity sha512-lpZd86fI/rYk+syuAQiORHVW1GIKKwJal/+K+lhmnTodmSEM9gSVcb2REbwv9HUJhSO4zZo6894idqnkmZG86g==
+"@openreplay/tracker@^4.1.6":
+  version "4.1.6"
+  resolved "https://registry.yarnpkg.com/@openreplay/tracker/-/tracker-4.1.6.tgz#b805ae75cdd2374771b5cc82f00d9a686c02fda3"
+  integrity sha512-BfVqHfYWPdZVByyEZCbQVgXlRMrAPdwoxMuCEu68Ss27t5s/EQDqNN5VuNCUhfPMP2LY2VOV2WEspolfTHED6A==
   dependencies:
     error-stack-parser "^2.0.6"
 
