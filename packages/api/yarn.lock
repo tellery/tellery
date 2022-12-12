@@ -2632,10 +2632,10 @@ graceful-fs@^4.1.15, graceful-fs@^4.2.4:
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.10.tgz#147d3a006da4ca3ce14728c7aefc287c367d7a6c"
   integrity sha512-9ByhssR2fPVsNZj478qUUbKfmL0+t5BDVyjShtyZZLiK7ZDAArFFfopyOTj0M05wE2tJPisA4iTnnXl2YoPvOA==
 
-grpc-tools@^1.11.2:
-  version "1.11.2"
-  resolved "https://registry.yarnpkg.com/grpc-tools/-/grpc-tools-1.11.2.tgz#22d802d40012510ccc6591d11f9c94109ac07aab"
-  integrity sha512-4+EgpnnkJraamY++oyBCw5Hp9huRYfgakjNVKbiE3PgO9Tv5ydVlRo7ZyGJ0C0SEiA7HhbVc1sNNtIyK7FiEtg==
+grpc-tools@^1.12.3:
+  version "1.12.3"
+  resolved "https://registry.yarnpkg.com/grpc-tools/-/grpc-tools-1.12.3.tgz#bedbb880e564a52b192d693300280ed7ab45e61d"
+  integrity sha512-KJgk65dbGqkMuj0xiuT5uk45GcqrFfWTSqpk6Ktd0Ds2cEe9QtPQG/uWCGk185ShXCdgYFLRwfh+FyjQ3nlBNw==
   dependencies:
     "@mapbox/node-pre-gyp" "^1.0.5"
 
