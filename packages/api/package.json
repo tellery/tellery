@@ -45,7 +45,7 @@
     "got": "^11.8.3",
     "http-errors": "^2.0.0",
     "ioredis": "^5.0.6",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "koa": "^2.13.4",
     "koa-better-http-proxy": "^0.2.10",
     "koa-body": "^5",
