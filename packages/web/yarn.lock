@@ -2616,10 +2616,10 @@
   resolved "https://registry.yarnpkg.com/@types/validator/-/validator-13.7.6.tgz#631f1acd15cbac9cb0a114da7e87575f1c95b46a"
   integrity sha512-uBsnWETsUagQ0n6G2wcXNIufpTNJir0zqzG4p62fhnwzs48d/iuOWEEo0d3iUxN7D+9R/8CSvWGKS+KmaD0mWA==
 
-"@types/web@^0.0.67":
-  version "0.0.67"
-  resolved "https://registry.yarnpkg.com/@types/web/-/web-0.0.67.tgz#de0c381533547bb4c3db3ed1c57c31fd10d18564"
-  integrity sha512-gB8AszSq0hXzzW4uhmf+rmuggfjnvoF+WlkD8oJ3EkgUjLEgMAlF/RPfnwcI80jSOauKRitWEA4qZacQrJu5Ow==
+"@types/web@^0.0.88":
+  version "0.0.88"
+  resolved "https://registry.yarnpkg.com/@types/web/-/web-0.0.88.tgz#dee69810cc708942df8ae66f91afa7ac0d05bd2a"
+  integrity sha512-tyHSEGw+CxJIt7IbyrZ+S+sAApY9QhjEpC7I695r09dP2hKzYnTjM5vg81e+zJUadFKH2tZO/hu83HdShQ5fBQ==
 
 "@types/ws@^7.4.0":
   version "7.4.7"
