@@ -39,7 +39,7 @@
     "class-validator": "^0.13.2",
     "config": "^3.3.6",
     "cookies": "^0.8.0",
-    "eta": "^1.12.3",
+    "eta": "^2.0.0",
     "formidable": "^2.0.1",
     "google-protobuf": "^3.19.1",
     "got": "^11.8.3",
