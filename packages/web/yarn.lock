@@ -5725,10 +5725,10 @@ javascript-natural-sort@^0.7.1:
   resolved "https://registry.yarnpkg.com/javascript-natural-sort/-/javascript-natural-sort-0.7.1.tgz#f9e2303d4507f6d74355a73664d1440fb5a0ef59"
   integrity sha512-nO6jcEfZWQXDhOiBtG2KvKyEptz7RVbpGP4vTD2hLBdmNQSsCiicO2Ioinv6UI4y9ukqnBpy+XZ9H6uLNgJTlw==
 
-jotai@^1.6.4:
-  version "1.7.4"
-  resolved "https://registry.yarnpkg.com/jotai/-/jotai-1.7.4.tgz#f732c814dddff5998a558450bacf5ee1b8024fb0"
-  integrity sha512-PvkjL6DA4I0GFNFWt/1MKouTpN6Ohj0qyfuV4LoYGBHQRlf38qF6cPILozYsYZi2Nfeap9MdzWVGSYu1qBElKQ==
+jotai@^2.2.1:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/jotai/-/jotai-2.2.1.tgz#0a95b88c5f3ea4fd656b5f79af6f84e895f84f5a"
+  integrity sha512-Gz4tpbRQy9OiFgBwF9F7TieDn0UTE3C0IFSDuxHjOIvgn2tACH30UKz6p/wIlfoZROXSTCIxEvYEa7Y25WM+8g==
 
 js-cookie@^2.2.1:
   version "2.2.1"
