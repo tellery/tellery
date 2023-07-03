@@ -29,7 +29,7 @@
     "@grpc/grpc-js": "^1.6.7",
     "@socket.io/postgres-adapter": "^0.3.0",
     "@socket.io/postgres-emitter": "^0.1.0",
-    "@socket.io/redis-emitter": "^4.1.0",
+    "@socket.io/redis-emitter": "^5.1.0",
     "@tellery/mustache-parser": "^1.0.0",
     "aws-sdk": "^2.1047.0",
     "bluebird": "^3.7.2",
