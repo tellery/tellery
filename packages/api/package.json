@@ -26,7 +26,7 @@
   "author": "iftech",
   "license": "ISC",
   "dependencies": {
-    "@grpc/grpc-js": "^1.6.7",
+    "@grpc/grpc-js": "^1.9.1",
     "@socket.io/postgres-adapter": "^0.3.0",
     "@socket.io/postgres-emitter": "^0.1.0",
     "@socket.io/redis-emitter": "^4.1.0",
