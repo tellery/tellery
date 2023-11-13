@@ -27,7 +27,7 @@ dependencies {
     implementation(platform("com.google.cloud:libraries-bom:24.1.0"))
     implementation("net.snowflake:snowflake-jdbc:3.13.12")
     runtimeOnly("org.postgresql:postgresql:42.3.1")
-    runtimeOnly("com.amazon.redshift:redshift-jdbc42:2.1.0.3")
+    runtimeOnly("com.amazon.redshift:redshift-jdbc42:2.1.0.22")
     implementation("com.google.cloud:google-cloud-bigquery")
 }
 
