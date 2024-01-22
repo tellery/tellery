@@ -33,7 +33,7 @@ jobs:
           postgresql user: postgres
           postgresql password: root
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -72,7 +72,7 @@ jobs:
           redis version: "5"
           number of databases: 100
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
