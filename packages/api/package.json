@@ -31,7 +31,7 @@
     "@socket.io/postgres-emitter": "^0.1.0",
     "@socket.io/redis-emitter": "^4.1.0",
     "@tellery/mustache-parser": "^1.0.0",
-    "aws-sdk": "^2.1047.0",
+    "aws-sdk": "^2.1555.0",
     "bluebird": "^3.7.2",
     "cache-manager": "^4.0.1",
     "cache-manager-ioredis": "^2.1.0",
