@@ -141,7 +141,7 @@
     "@types/katex": "^0.14.0",
     "@types/lodash": "^4.14.182",
     "@types/mocha": "^9.1.1",
-    "@types/node": "^17.0.26",
+    "@types/node": "^20.11.28",
     "@types/numeral": "^2.0.2",
     "@types/papaparse": "^5.3.2",
     "@types/react": "^18.0.9",
