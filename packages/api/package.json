@@ -40,7 +40,7 @@
     "config": "^3.3.6",
     "cookies": "^0.8.0",
     "eta": "^1.12.3",
-    "formidable": "^2.0.1",
+    "formidable": "^3.2.4",
     "google-protobuf": "^3.19.1",
     "got": "^11.8.3",
     "http-errors": "^2.0.0",

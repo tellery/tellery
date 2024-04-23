@@ -2411,6 +2411,15 @@ formidable@^2.0.1:
     once "1.4.0"
     qs "6.9.3"
 
+formidable@^3.2.4:
+  version "3.2.4"
+  resolved "https://registry.yarnpkg.com/formidable/-/formidable-3.2.4.tgz#c0019368718de33ecb637c66d03b6342a677893a"
+  integrity sha512-8/5nJsq+o2o1+Dryx1k5gLTDaw0dNE9kL4P3srKArO6zhoerGm42/R8zq+L5EkV7kckNTvJpJke0kI8JseL3RQ==
+  dependencies:
+    dezalgo "1.0.3"
+    hexoid "1.0.0"
+    once "1.4.0"
+
 fresh@~0.5.2:
   version "0.5.2"
   resolved "https://registry.yarnpkg.com/fresh/-/fresh-0.5.2.tgz#3d8cadd90d976569fa835ab1f8e4b23a105605a7"
