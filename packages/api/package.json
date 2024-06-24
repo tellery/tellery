@@ -63,7 +63,7 @@
     "pg": "^8.7.1",
     "reflect-metadata": "^0.1.13",
     "search-query-parser": "^1.6.0",
-    "socket.io": "^4.4.0",
+    "socket.io": "^4.7.5",
     "socket.io-client": "^4.4.0",
     "socket.io-redis": "^6.1.1",
     "typeorm": "^0.2.41"
