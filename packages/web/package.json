@@ -50,7 +50,7 @@
     "debug": "^4.3.4",
     "dequal": "^2.0.2",
     "downloadjs": "^1.4.7",
-    "downshift": "^6.1.7",
+    "downshift": "^9.0.8",
     "exceljs": "^4.3.0",
     "focus-trap-react": "^8.10.0",
     "framer-motion": "^6.3.3",
