@@ -27,7 +27,7 @@
     "@radix-ui/react-dropdown-menu": "^1.0.0",
     "@radix-ui/react-tabs": "^0.1.5",
     "@react-hook/media-query": "^1.1.1",
-    "@sentry/browser": "^7.0.0",
+    "@sentry/browser": "^9.14.0",
     "@sentry/react": "^7.0.0",
     "@sentry/tracing": "^7.0.0",
     "@socket.io/component-emitter": "^3.1.0",
