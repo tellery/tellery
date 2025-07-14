@@ -136,7 +136,7 @@
     "@types/d3-shape": "^3.0.2",
     "@types/debug": "^4.1.7",
     "@types/downloadjs": "^1.4.3",
-    "@types/is-hotkey": "^0.1.7",
+    "@types/is-hotkey": "^0.1.10",
     "@types/is-url": "^1.2.30",
     "@types/katex": "^0.14.0",
     "@types/lodash": "^4.14.182",
