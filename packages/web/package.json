@@ -69,7 +69,7 @@
     "jotai": "^1.6.4",
     "json5": "^2.2.1",
     "katex": "^0.16.0",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "lowlight": "^2.6.1",
     "mathjs": "^10.5.0",
     "mini-svg-data-uri": "^1.4.4",
