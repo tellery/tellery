@@ -37,7 +37,7 @@
     "cache-manager-ioredis": "^2.1.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
-    "config": "^3.3.6",
+    "config": "^4.4.1",
     "cookies": "^0.8.0",
     "eta": "^1.12.3",
     "formidable": "^2.0.1",
@@ -71,7 +71,7 @@
   "devDependencies": {
     "@types/bluebird": "^3.5.36",
     "@types/cache-manager": "^3.4.2",
-    "@types/config": "0.0.41",
+    "@types/config": "4.4.0",
     "@types/cookies": "^0.7.7",
     "@types/formidable": "^2.0.5",
     "@types/google-protobuf": "^3.15.5",
