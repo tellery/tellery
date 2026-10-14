@@ -36,7 +36,7 @@ dependencies {
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
 
     api("ch.qos.logback:logback-classic:$logbackVersion")
-    api("io.github.microutils:kotlin-logging:2.1.21")
+    api("io.github.microutils:kotlin-logging:3.0.5")
     api("javax.annotation:javax.annotation-api:1.3.2")
 
     api("io.grpc:grpc-stub:$grpcVersion")
